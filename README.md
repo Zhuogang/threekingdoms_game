@@ -112,11 +112,13 @@ Run `npm run build` and serve **only `dist/`** from any static HTTP(S) host. Rel
 
 The GitHub Actions workflow runs formatting, unit tests, compilation, gameplay browser tests, and production browser tests when this branch is pushed. No deployment is included in this release commit.
 
-## Relationship to 三国霸业
+## Credits and relationship to 三国霸业
+
+**Main reference:** [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main). Thank you to **erduoniba and the project's contributors** for sharing the Baye source and making this learning remake possible.
 
 This is an unofficial learning remake of Baye's campaign-and-battle structure, with an authored scenario and ruleset. It does not claim exact legacy formulas, content, mod compatibility, or official affiliation. Maps, symbols, and sounds are generated in code; the new runtime includes no copied legacy sprites, portraits, libraries, music, or executables.
 
-**`baye-fmj-app-main/` is a local, read-only reference.** It is ignored by Git and excluded from compilation, formatting, tests, and the release. A fresh clone can build and play without it. Installed dependencies, build output, browser reports, and local QA artifacts are also ignored.
+The reference repository is not required to build or play this standalone remake. Installed dependencies, build output, browser reports, and local QA artifacts are ignored by Git.
 
 Future work includes longer human balance testing, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. Multiplayer, mobile-first controls, cloud saves, and mod support are outside v0.1.
 
@@ -128,4 +130,4 @@ Future work includes longer human balance testing, Firefox/Safari coverage, full
 - Windows 用户安装依赖后，也可双击 `Start-Hegemony.cmd`。
 - 随时通过 **Eng / 中文** 切换语言；选择势力后发展城池、招募武将、编组军队，逐步统一天下。
 - 每次成功操作都会自动存档，战斗中也可续玩；请在“存档与读档”中导出 JSON 作为备份。
-- 原始参考目录保持不变，不进入 Git 提交，也不参与运行。此版本采用自编场景和规则，并非对原版全部内容与公式的逐项复刻。
+- 主要参考与致谢：[erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main)。感谢 erduoniba 及项目贡献者开源分享《三国霸业》源码。此版本采用自编场景和规则，并非对原版全部内容与公式的逐项复刻。
