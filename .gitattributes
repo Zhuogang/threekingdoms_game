@@ -1,0 +1,4 @@
+# Keep source formatting stable on Windows, macOS, and Linux.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary

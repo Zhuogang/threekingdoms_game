@@ -1,0 +1,9 @@
+node_modules/
+# Read-only original source; never include it in remake releases.
+/baye-fmj-app-main/
+dist/
+test-results/
+playwright-report/
+.vite/
+*.local
+.artifacts/
