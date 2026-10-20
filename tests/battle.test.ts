@@ -75,6 +75,8 @@ function game(): GameState {
     ruleset: 'baye-atlas-1',
     revision: 0,
     playerFactionId: 'blue',
+    rivalAggression: 'balanced',
+    reports: { pending: null, latest: null },
     year: 190,
     month: 1,
     turn: 0,

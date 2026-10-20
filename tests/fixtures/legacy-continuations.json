@@ -1,0 +1,89 @@
+{
+  "sourceCommit": "dbc9302f1e7b5c9178e0cbd7a5000f1fd01c3aeb",
+  "continuations": [
+    {
+      "fixture": "battle",
+      "commands": [{ "type": "battleAuto" }],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "a14cff1d3f086fcf42db56cf144be7be000f199f06d1846c25c90dd260e33daf",
+      "turn": 1,
+      "phase": "planning"
+    },
+    {
+      "fixture": "queued-battle",
+      "commands": [{ "type": "battleAuto" }, { "type": "battleAuto" }],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "b63305416bbc19a529c4bef446fca05e5a9902c8f787a840c0c23817e4fab746",
+      "turn": 1,
+      "phase": "planning"
+    },
+    {
+      "fixture": "dense-battle",
+      "commands": [{ "type": "battleAuto" }],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "5ee9e93e9277b5772d48b50b378d8ab7505144217d5b2c9d3311b479535b63a2",
+      "turn": 1,
+      "phase": "planning"
+    }
+  ]
+}

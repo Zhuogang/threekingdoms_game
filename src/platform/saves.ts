@@ -84,11 +84,54 @@ const battle = z.object({
   log: z.array(z.string().max(1000)).max(500),
   outcome: z.enum(['attacker', 'defender']).nullable(),
 });
+const eventBase = { key: z.string().min(1).max(220), sequence: nonnegative };
+const reportEvent = z.discriminatedUnion('kind', [
+  z.object({
+    ...eventBase,
+    kind: z.literal('battle'),
+    orderId: id,
+    sourceId: id,
+    targetId: id,
+    attackerId: id,
+    defenderId: id.nullable(),
+    outcome: z.enum(['captured', 'held']),
+    days: nonnegative,
+    involvesPlayer: z.boolean(),
+    bordersPlayer: z.boolean(),
+  }),
+  z.object({
+    ...eventBase,
+    kind: z.literal('allianceExpired'),
+    a: id,
+    b: id,
+    involvesPlayer: z.boolean(),
+  }),
+  z.object({
+    ...eventBase,
+    kind: z.literal('borderRecruitment'),
+    cityId: id,
+    factionId: id,
+    troops: nonnegative,
+  }),
+]);
+const report = z.object({
+  turn: nonnegative,
+  year: integer.min(190).max(9999),
+  month: integer.min(1).max(12),
+  partial: z.boolean(),
+  events: z.array(reportEvent).max(128),
+  omitted: nonnegative,
+  seenKeys: z.array(z.string().min(1).max(220)).max(256),
+});
 const stateSchema = z.object({
   version: z.literal(1),
   ruleset: z.literal('baye-atlas-1'),
   revision: nonnegative,
   playerFactionId: id,
+  rivalAggression: z.enum(['cautious', 'balanced', 'aggressive']).default('balanced'),
+  reports: z
+    .object({ pending: report.nullable(), latest: report.nullable() })
+    .default({ pending: null, latest: null }),
   year: integer.min(190).max(9999),
   month: integer.min(1).max(12),
   turn: nonnegative,

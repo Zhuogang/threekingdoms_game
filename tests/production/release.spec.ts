@@ -31,6 +31,7 @@ async function savedState(page: Page): Promise<GameState> {
 test('built release works beneath a subdirectory in both languages with persistent saves', async ({
   page,
 }, testInfo) => {
+  const expectedOrigin = new URL(String(testInfo.project.use.baseURL)).origin;
   const errors: string[] = [],
     failed: string[] = [],
     external: string[] = [];
@@ -38,8 +39,7 @@ test('built release works beneath a subdirectory in both languages with persiste
   page.on('requestfailed', (request) => failed.push(request.url()));
   page.on('request', (request) => {
     const url = new URL(request.url());
-    if (url.protocol.startsWith('http') && url.origin !== 'http://127.0.0.1:4173')
-      external.push(url.href);
+    if (url.protocol.startsWith('http') && url.origin !== expectedOrigin) external.push(url.href);
   });
   const response = await page.goto('./');
   expect(response?.status()).toBe(200);

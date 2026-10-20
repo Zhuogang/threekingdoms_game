@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Application, Container, Graphics, Text, type TextStyleOptions } from 'pixi.js';
 import { FACTIONS } from '../content/scenario';
+import { getOfficerIdentity } from '../content/officerIdentity';
+import { TROOP_VISUALS } from '../content/troopVisuals';
+import { DISPLAY_PRESETS, type DisplayPreset } from '../ui/display';
+import {
+  battleBoard,
+  cameraFit,
+  cameraOrigin,
+  screenToWorld,
+  BATTLE_INSETS,
+  CAMPAIGN_INSETS,
+} from './cameraGeometry';
 import { getAttackTargets, getReachableTiles } from '../game/battle';
 import type { BattleState, BattleUnit, City, GameState, Terrain } from '../game/types';
 import { translateText, type Locale } from '../i18n/core';
@@ -25,6 +36,8 @@ export interface GameMapProps {
   onBattleTile: (x: number, y: number) => void;
   reducedMotion?: boolean;
   locale: Locale;
+  displayPreset?: DisplayPreset;
+  cameraFocus?: { kind: 'city' | 'unit'; id: string; serial: number };
 }
 
 const INK = 0x3c4540;
@@ -287,7 +300,8 @@ function drawCampaign(
   const { state, selectedCityId } = props;
   // Keep names readable on a laptop without making neighboring labels collide
   // in a very narrow pane. Zoom continues to scale the whole atlas naturally.
-  const labelScale = Math.min(1.85, Math.max(1, 12.5 / (13 * fit)));
+  const tokens = DISPLAY_PRESETS[props.displayPreset ?? 'comfortable'];
+  const labelScale = tokens.cityLabel / (13 * fit);
   const territories = new Graphics();
   parent.addChild(territories);
   for (const city of state.cities) {
@@ -340,7 +354,12 @@ function drawCampaign(
       .fill(factionColor(order.factionId));
   }
   let selectionRing: Graphics | null = null;
-  for (const city of state.cities) {
+  const occupied: LabelHitArea[] = [];
+  const cityPriority = (city: City) =>
+    city.id === selectedCityId ? 0 : city.factionId === state.playerFactionId ? 1 : 2;
+  for (const city of [...state.cities].sort(
+    (a, b) => cityPriority(a) - cityPriority(b) || a.id.localeCompare(b.id),
+  )) {
     const active = city.id === selectedCityId;
     const own = city.factionId === state.playerFactionId;
     const neighbor = selected?.neighbors.includes(city.id) ?? false;
@@ -350,7 +369,7 @@ function drawCampaign(
     if (active) {
       selectionRing = new Graphics();
       selectionRing.position.set(city.x, city.y);
-      selectionRing.circle(0, 0, 18).stroke({ color: GOLD, width: 1.2, alpha: 0.7 });
+      selectionRing.circle(0, 0, 18).stroke({ color: 0x4b3822, width: 2 / fit, alpha: 1 });
       selectionRing.circle(0, 0, 23).stroke({ color: GOLD, width: 0.6, alpha: 0.28 });
       parent.addChild(selectionRing);
       marker.circle(city.x, city.y, 16).fill({ color: GOLD, alpha: 0.12 });
@@ -368,20 +387,46 @@ function drawCampaign(
     marker.rect(city.x - 3, city.y - 4, 1.4, 2).fill(0xf7f1df);
     marker.rect(city.x - 0.7, city.y - 4, 1.4, 2).fill(0xf7f1df);
     marker.rect(city.x + 1.6, city.y - 4, 1.4, 2).fill(0xf7f1df);
-    const textY = city.y + (active ? 30 : 25);
+    const textY = city.y + (active ? 34 : 28) / fit;
     const name = label(parent, props.locale === 'zh' ? city.chinese : city.name, city.x, textY, {
-      fontSize: (active ? 15 : 13) * labelScale,
+      fontSize: (active ? 14.5 : 13) * labelScale,
       fontWeight: active || own ? '600' : '400',
       fill: active ? 0x70532e : INK,
       stroke: { color: PAPER, width: 3, join: 'round' },
     });
-    name.alpha = city.factionId ? 1 : 0.74;
-    labelHitAreas.set(city.id, {
-      left: city.x - name.width / 2 - 7,
-      right: city.x + name.width / 2 + 7,
-      top: textY - name.height / 2 - 5,
-      bottom: textY + name.height / 2 + 5,
+    const gap = 4 / fit;
+    const candidates = [
+      { x: city.x, y: textY },
+      { x: city.x, y: city.y - 28 / fit },
+      { x: city.x + name.width / 2 + 18 / fit, y: city.y },
+      { x: city.x - name.width / 2 - 18 / fit, y: city.y },
+    ];
+    const position = candidates.find((point) => {
+      const area = {
+        left: point.x - name.width / 2 - gap,
+        right: point.x + name.width / 2 + gap,
+        top: point.y - name.height / 2 - gap,
+        bottom: point.y + name.height / 2 + gap,
+      };
+      return !occupied.some(
+        (other) =>
+          area.left < other.right &&
+          area.right > other.left &&
+          area.top < other.bottom &&
+          area.bottom > other.top,
+      );
     });
+    if (position || active) {
+      name.position.set((position ?? candidates[0]!).x, (position ?? candidates[0]!).y);
+      const area = {
+        left: name.x - name.width / 2 - gap,
+        right: name.x + name.width / 2 + gap,
+        top: name.y - name.height / 2 - gap,
+        bottom: name.y + name.height / 2 + gap,
+      };
+      occupied.push(area);
+      labelHitAreas.set(city.id, area);
+    } else name.visible = false;
     if (active) {
       label(parent, props.locale === 'zh' ? '' : city.chinese, city.x, city.y - 32, {
         fontSize: 12 * labelScale,
@@ -403,14 +448,7 @@ function drawCampaign(
 }
 
 function boardGeometry(battle: BattleState): BoardGeometry {
-  const tile = Math.min(74, 834 / battle.width, 548 / battle.height);
-  return {
-    tile,
-    left: (ATLAS_WIDTH - tile * battle.width) / 2,
-    top: (ATLAS_HEIGHT - tile * battle.height) / 2,
-    width: tile * battle.width,
-    height: tile * battle.height,
-  };
+  return battleBoard(battle.width, battle.height);
 }
 
 function drawBattleUnit(
@@ -420,92 +458,119 @@ function drawBattleUnit(
   board: BoardGeometry,
   selected: boolean,
   target: boolean,
-  textScale: number,
+  scale: number,
+  props: GameMapProps,
 ): Graphics | null {
-  const color = factionColor(unit.side === 'attacker' ? battle.attackerId : battle.defenderId);
-  const x = board.left + (unit.x + 0.5) * board.tile;
-  const y = board.top + (unit.y + 0.5) * board.tile;
-  // Reserve room between stacked units for readable counts at laptop fit.
-  const size = Math.min(20, board.tile * (textScale > 1.8 ? 0.27 : 0.31));
+  const tokens = DISPLAY_PRESETS[props.displayPreset ?? 'comfortable'];
+  const factionId = unit.side === 'attacker' ? battle.attackerId : battle.defenderId;
+  const faction = FACTIONS.find((item) => item.id === factionId);
+  const color = factionColor(factionId);
+  const x = board.left + unit.x * board.tile,
+    y = board.top + unit.y * board.tile;
+  const cssTile = board.tile * scale,
+    inset = 3 / scale;
   const g = new Graphics();
   parent.addChild(g);
-  let ring: Graphics | null = null;
-  if (selected) {
-    ring = new Graphics();
-    parent.addChild(ring);
-    ring.position.set(x, y);
-    ring.circle(0, 0, size + 8).stroke({ color: GOLD, width: 1.7, alpha: 0.95 });
-  }
-  if (target) {
-    g.circle(x, y, size + 6).stroke({ color: 0xa54438, width: 1.5, alpha: 0.85 });
-    for (let i = 0; i < 4; i++) {
-      const angle = (Math.PI / 2) * i;
-      g.moveTo(x + Math.cos(angle) * (size + 4), y + Math.sin(angle) * (size + 4))
-        .lineTo(x + Math.cos(angle) * (size + 10), y + Math.sin(angle) * (size + 10))
-        .stroke({ color: 0xa54438, width: 1.5 });
-    }
-  }
-  g.ellipse(x, y + size * 0.8, size + 2, size * 0.4).fill({ color: INK, alpha: 0.15 });
-  const shield = [
-    x - size * 0.85,
-    y - size * 0.82,
-    x + size * 0.85,
-    y - size * 0.82,
-    x + size * 0.85,
-    y + size * 0.2,
-    x,
-    y + size * 0.93,
-    x - size * 0.85,
-    y + size * 0.2,
-  ];
-  g.poly(shield).fill(color).stroke({ color: 0xf2e9cf, width: 1.8 });
-  g.poly([
-    x - size * 0.65,
-    y - size * 0.61,
-    x + size * 0.65,
-    y - size * 0.61,
-    x + size * 0.65,
-    y + size * 0.1,
-    x,
-    y + size * 0.68,
-    x - size * 0.65,
-    y + size * 0.1,
-  ]).stroke({ color: 0xf2e9cf, width: 0.5, alpha: 0.55 });
-  const glyphs: Record<BattleUnit['troopType'], string> = {
-    infantry: '兵',
-    cavalry: '騎',
-    archer: '弓',
-    naval: '舟',
-    elite: '勇',
-    guard: '衛',
-  };
-  const typeText = label(parent, glyphs[unit.troopType], x, y - 2, {
-    fontSize: size * 0.9,
-    fill: 0xf5eedb,
+  g.roundRect(x + inset, y + inset, board.tile - inset * 2, board.tile - inset * 2, 3 / scale)
+    .fill(0xf7f0da)
+    .stroke({ color: 0x364137, width: 1.3 / scale });
+  g.roundRect(x + inset, y + inset, board.tile - inset * 2, board.tile * 0.28, 2 / scale).fill({
+    color,
+    alpha: 0.26,
   });
-  if (unit.acted) {
-    g.alpha = 0.6;
-    typeText.alpha = 0.65;
-  }
-  const ratio = Math.max(0, Math.min(1, unit.troops / Math.max(1, unit.initialTroops)));
-  g.roundRect(x - size, y + size + 2, size * 2, 3, 1).fill({ color: 0x3d4439, alpha: 0.22 });
-  g.roundRect(x - size, y + size + 2, size * 2 * ratio, 3, 1).fill(color);
-  const countFontSize = 9 * textScale;
-  label(parent, unit.troops.toLocaleString(), x, y + size + 7 + countFontSize / 2, {
+  g.rect(x + inset, y + inset, 3 / scale, board.tile - inset * 2).fill(color);
+  const iconSize = cssTile >= 60 ? 19 : 14;
+  const badgeFont = cssTile >= 60 ? tokens.secondaryText : 12;
+  const icon = new Graphics().svg(
+    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#26362c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+      TROOP_VISUALS[unit.troopType].paths.map((d) => '<path d="' + d + '"/>').join('') +
+      '</svg>',
+  );
+  icon.scale.set(iconSize / 24 / scale);
+  icon.position.set(x + board.tile * 0.12, y + board.tile * 0.045);
+  parent.addChild(icon);
+  label(parent, faction?.chinese ?? '守', x + board.tile * 0.62, y + board.tile * 0.17, {
+    fontSize: badgeFont / scale,
+    fill: 0x26362c,
+    fontWeight: '700',
+  });
+  const readiness = unit.status === 'confused' ? '?' : unit.acted ? '✓' : unit.moved ? '↗' : '•';
+  label(parent, readiness, x + board.tile * 0.85, y + board.tile * 0.17, {
     fontFamily: SANS,
-    fontSize: countFontSize,
-    fontWeight: '600',
-    fill: 0x354137,
-    stroke: { color: 0xe9e7d8, width: 2.5, join: 'round' },
+    fontSize: badgeFont / scale,
+    fill: unit.status === 'confused' ? 0x8b3128 : 0x26362c,
+    fontWeight: '700',
   });
-  if (unit.status !== 'normal') {
-    label(parent, unit.status === 'inspired' ? '↑' : '?', x + size, y - size, {
+  const identity = getOfficerIdentity(unit.officerId);
+  const surname = identity
+    ? props.locale === 'zh' || cssTile < 60
+      ? identity.surnameZh
+      : identity.surnameEn
+    : props.locale === 'zh'
+      ? '守军'
+      : 'Guard';
+  const surnameFont = Math.min(tokens.mainText, Math.max(12, cssTile * 0.3));
+  label(parent, surname, x + board.tile / 2, y + board.tile * 0.47, {
+    fontFamily: props.locale === 'zh' ? SERIF : SANS,
+    fontSize: surnameFont / scale,
+    fontWeight: '700',
+    fill: 0x26362c,
+  });
+  label(parent, unit.troops.toLocaleString('en'), x + board.tile / 2, y + board.tile * 0.76, {
+    fontFamily: SANS,
+    fontSize: tokens.troopCount / scale,
+    fontWeight: '600',
+    fill: 0x26362c,
+  });
+  const ratio = Math.max(0, Math.min(1, unit.troops / Math.max(1, unit.initialTroops)));
+  g.rect(
+    x + inset + 2 / scale,
+    y + board.tile - 6 / scale,
+    board.tile - 2 * inset - 4 / scale,
+    2 / scale,
+  ).fill(0xa3a98f);
+  g.rect(
+    x + inset + 2 / scale,
+    y + board.tile - 6 / scale,
+    (board.tile - 2 * inset - 4 / scale) * ratio,
+    2 / scale,
+  ).fill(0x294a33);
+  if (unit.status === 'inspired')
+    label(parent, '↑', x + board.tile * 0.89, y + board.tile * 0.49, {
       fontFamily: SANS,
-      fontSize: 13,
-      fontWeight: '700',
-      fill: unit.status === 'inspired' ? 0x487950 : 0x904d36,
+      fontSize: badgeFont / scale,
+      fill: 0x294a33,
     });
-  }
+  if (target)
+    g.roundRect(
+      x + 1 / scale,
+      y + 1 / scale,
+      board.tile - 2 / scale,
+      board.tile - 2 / scale,
+      4 / scale,
+    ).stroke({ color: 0x922f28, width: 2.5 / scale });
+  if (!selected) return null;
+  const ring = new Graphics();
+  parent.addChild(ring);
+  ring.position.set(x + board.tile / 2, y + board.tile / 2);
+  ring
+    .roundRect(
+      -board.tile / 2 + 1 / scale,
+      -board.tile / 2 + 1 / scale,
+      board.tile - 2 / scale,
+      board.tile - 2 / scale,
+      4 / scale,
+    )
+    .stroke({ color: 0x26362c, width: 4 / scale });
+  ring
+    .roundRect(
+      -board.tile / 2 + 2 / scale,
+      -board.tile / 2 + 2 / scale,
+      board.tile - 4 / scale,
+      board.tile - 4 / scale,
+      4 / scale,
+    )
+    .stroke({ color: 0xf2c268, width: 2 / scale });
   return ring;
 }
 
@@ -514,7 +579,7 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
   if (!battle) return null;
   const board = boardGeometry(battle);
   // Preserve critical information when fitting a complete board on a laptop.
-  const textScale = Math.min(2.4, Math.max(1, 11.5 / (9 * fit)));
+  const textScale = 14 / (9 * fit);
   const g = new Graphics();
   parent.addChild(g);
   g.rect(-2000, -2000, 5000, 5000).fill(PAPER);
@@ -531,7 +596,11 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
         color: TERRAIN[terrain],
         alpha: 0.96,
       });
-      g.rect(tx, ty, board.tile, board.tile).stroke({ color: 0x6f7a62, width: 0.7, alpha: 0.18 });
+      g.rect(tx, ty, board.tile, board.tile).stroke({
+        color: 0x6f7a62,
+        width: 1 / fit,
+        alpha: 0.6,
+      });
       for (let d = 0; d < 7; d++) {
         const px = tx + 7 + random() * (board.tile - 14);
         const py = ty + 7 + random() * (board.tile - 14);
@@ -571,7 +640,7 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
       const y = board.top + point.y * board.tile;
       g.rect(x + 2, y + 2, board.tile - 4, board.tile - 4)
         .fill({ color: 0xf9f4d7, alpha: 0.24 })
-        .stroke({ color: 0x8c8b58, width: 1, alpha: 0.5 });
+        .stroke({ color: 0x2f5739, width: 2 / fit, alpha: 0.9 });
       g.circle(x + board.tile / 2, y + board.tile / 2, 2.3).fill({ color: 0x738367, alpha: 0.55 });
     }
   }
@@ -591,22 +660,6 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
       fill: 0x59654f,
     });
   }
-  label(
-    parent,
-    translateText('ATTACKER CAMP', props.locale),
-    board.left,
-    board.top + board.height + 27,
-    { fontFamily: SANS, fontSize: 8 * textScale, letterSpacing: 1.7, fill: 0x59654f },
-    0,
-  );
-  label(
-    parent,
-    translateText('DEFENDER CAMP', props.locale),
-    board.left + board.width,
-    board.top + board.height + 27,
-    { fontFamily: SANS, fontSize: 8 * textScale, letterSpacing: 1.7, fill: 0x59654f },
-    1,
-  );
   const targets = active ? getAttackTargets(battle, active.id) : [];
   let selectionRing: Graphics | null = null;
   for (const unit of battle.units.filter((item) => item.troops > 0)) {
@@ -617,7 +670,8 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
       board,
       unit.id === props.selectedUnitId,
       targets.includes(unit.id),
-      textScale,
+      fit,
+      props,
     );
     if (ring) selectionRing = ring;
   }
@@ -635,7 +689,12 @@ export default function GameMap(props: GameMapProps) {
   const propsRef = useRef(props);
   propsRef.current = props;
   const redrawRef = useRef<(() => void) | null>(null);
-  const controlsRef = useRef<{ zoom: (factor: number) => void; reset: () => void } | null>(null);
+  const controlsRef = useRef<{
+    zoom: (factor: number) => void;
+    reset: () => void;
+    readable: () => void;
+    center: () => void;
+  } | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -691,48 +750,177 @@ export default function GameMap(props: GameMapProps) {
         const cityLabelHitAreas = new Map<string, LabelHitArea>();
         let redrawOnResize: (() => void) | null = null;
         let wasBattle = false;
+        let lastBattleId: string | null = null;
+        let lastPreset = propsRef.current.displayPreset;
+        let lastFocusSerial: number | undefined;
+        let cameraMode: 'fit' | 'readable' | 'free' = 'fit';
+        let campaignCamera = { x: 0, y: 0, zoom: 1 };
         const view: Viewport = { x: 0, y: 0, zoom: 1, fit: 1, width: 1, height: 1 };
+        const geometry = () => {
+          const battle =
+            propsRef.current.state.phase === 'battle' ? propsRef.current.state.battle : null;
+          return {
+            battle,
+            bounds: battle
+              ? boardGeometry(battle)
+              : { left: 0, top: 0, width: ATLAS_WIDTH, height: ATLAS_HEIGHT },
+            insets: battle ? BATTLE_INSETS : CAMPAIGN_INSETS,
+          };
+        };
+        const recalculateFit = () => {
+          const { bounds, insets } = geometry();
+          view.fit = cameraFit(view.width, view.height, bounds, insets);
+        };
         const applyView = () => {
+          const { battle, bounds, insets } = geometry();
           const scale = view.fit * view.zoom;
-          const maxX = Math.max(0, (ATLAS_WIDTH * scale - view.width) / 2) + view.width * 0.22;
-          const maxY = Math.max(0, (ATLAS_HEIGHT * scale - view.height) / 2) + view.height * 0.22;
+          const availableWidth = view.width - insets.left - insets.right,
+            availableHeight = view.height - insets.top - insets.bottom;
+          const maxX =
+            Math.max(0, (bounds.width * scale - availableWidth) / 2) + availableWidth * 0.22;
+          const maxY =
+            Math.max(0, (bounds.height * scale - availableHeight) / 2) + availableHeight * 0.22;
           view.x = Math.max(-maxX, Math.min(maxX, view.x));
           view.y = Math.max(-maxY, Math.min(maxY, view.y));
+          const origin = cameraOrigin(view.width, view.height, bounds, insets, scale, view);
           world.scale.set(scale);
-          world.position.set(
-            (view.width - ATLAS_WIDTH * scale) / 2 + view.x,
-            (view.height - ATLAS_HEIGHT * scale) / 2 + view.y,
+          world.position.set(origin.x, origin.y);
+          const tokens = DISPLAY_PRESETS[propsRef.current.displayPreset ?? 'comfortable'];
+          host.parentElement!.dataset.mode = battle ? 'battle' : 'campaign';
+          host.parentElement!.dataset.cameraScale = String(scale);
+          host.parentElement!.dataset.cityFontSize = String(tokens.cityLabel);
+          if (battle) {
+            const board = boardGeometry(battle),
+              tile = board.tile * scale;
+            host.parentElement!.dataset.tileSize = String(tile);
+            host.parentElement!.dataset.boardLeft = String(origin.x + board.left * scale);
+            host.parentElement!.dataset.boardTop = String(origin.y + board.top * scale);
+            host.parentElement!.dataset.boardRight = String(
+              origin.x + (board.left + board.width) * scale,
+            );
+            host.parentElement!.dataset.boardBottom = String(
+              origin.y + (board.top + board.height) * scale,
+            );
+            host.parentElement!.dataset.countFontSize = String(tokens.troopCount);
+            host.parentElement!.dataset.crestFontSize = String(
+              tile >= 60 ? tokens.secondaryText : 12,
+            );
+            host.parentElement!.dataset.statusFontSize = String(
+              tile >= 60 ? tokens.secondaryText : 12,
+            );
+            host.parentElement!.dataset.surnameFontSize = String(
+              Math.min(tokens.mainText, Math.max(12, tile * 0.3)),
+            );
+          }
+        };
+        const focusSelected = (force = true, request?: GameMapProps['cameraFocus']) => {
+          const current = propsRef.current,
+            { battle, bounds, insets } = geometry();
+          const unit = battle?.units.find(
+            (item) =>
+              item.id === (request?.kind === 'unit' ? request.id : current.selectedUnitId) &&
+              item.troops > 0,
           );
+          const city = !battle
+            ? current.state.cities.find(
+                (item) =>
+                  item.id === (request?.kind === 'city' ? request.id : current.selectedCityId),
+              )
+            : undefined;
+          const board = battle ? boardGeometry(battle) : null;
+          const point =
+            unit && board
+              ? {
+                  x: board.left + (unit.x + 0.5) * board.tile,
+                  y: board.top + (unit.y + 0.5) * board.tile,
+                }
+              : city;
+          if (!point) return;
+          const scale = view.fit * view.zoom,
+            half = board ? (board.tile * scale) / 2 : 24;
+          const sx = world.x + point.x * scale,
+            sy = world.y + point.y * scale;
+          if (
+            !force &&
+            sx - half >= insets.left - 0.5 &&
+            sx + half <= view.width - insets.right + 0.5 &&
+            sy - half >= insets.top - 0.5 &&
+            sy + half <= view.height - insets.bottom + 0.5
+          )
+            return;
+          view.x = (bounds.left + bounds.width / 2 - point.x) * scale;
+          view.y = (bounds.top + bounds.height / 2 - point.y) * scale;
+          applyView();
         };
         const reset = () => {
+          cameraMode = 'fit';
+          recalculateFit();
           view.zoom = 1;
           view.x = 0;
           view.y = 0;
           applyView();
+          redrawRef.current?.();
+        };
+        const readable = () => {
+          cameraMode = 'readable';
+          recalculateFit();
+          const { battle } = geometry();
+          view.zoom = battle
+            ? Math.max(
+                1,
+                DISPLAY_PRESETS[propsRef.current.displayPreset ?? 'comfortable'].tileSize /
+                  (boardGeometry(battle).tile * view.fit),
+              )
+            : 1.25;
+          view.x = 0;
+          view.y = 0;
+          applyView();
+          focusSelected(false);
         };
         const resize = () => {
           if (cancelled || destroyCalled) return;
           view.width = Math.max(1, host.clientWidth);
           view.height = Math.max(1, host.clientHeight);
           app.renderer.resize(view.width, view.height);
-          const oldFit = view.fit;
-          // Reserve room for the map legend and controls at the viewport edges.
-          view.fit = Math.min(
-            Math.max(1, view.width - 36) / ATLAS_WIDTH,
-            Math.max(1, view.height - 52) / ATLAS_HEIGHT,
-          );
+          recalculateFit();
+          if (cameraMode === 'readable') {
+            const { battle } = geometry();
+            if (battle)
+              view.zoom = Math.max(
+                1,
+                DISPLAY_PRESETS[propsRef.current.displayPreset ?? 'comfortable'].tileSize /
+                  (boardGeometry(battle).tile * view.fit),
+              );
+            if (view.zoom === 1) {
+              view.x = 0;
+              view.y = 0;
+            }
+          }
           applyView();
-          if (Math.abs(oldFit - view.fit) > 0.001) redrawOnResize?.();
+          redrawOnResize?.();
         };
         const zoomAt = (factor: number, x = view.width / 2, y = view.height / 2) => {
+          cameraMode = 'free';
           const previous = view.zoom;
-          view.zoom = Math.max(0.8, Math.min(2.7, previous * factor));
+          view.zoom = Math.max(0.8, Math.min(4, previous * factor));
           const ratio = view.zoom / previous;
-          view.x = (view.x - (x - view.width / 2)) * ratio + (x - view.width / 2);
-          view.y = (view.y - (y - view.height / 2)) * ratio + (y - view.height / 2);
+          const { insets } = geometry();
+          const cx = insets.left + (view.width - insets.left - insets.right) / 2,
+            cy = insets.top + (view.height - insets.top - insets.bottom) / 2;
+          view.x = (view.x - (x - cx)) * ratio + (x - cx);
+          view.y = (view.y - (y - cy)) * ratio + (y - cy);
           applyView();
+          redrawRef.current?.();
         };
-        controlsRef.current = { zoom: (factor) => zoomAt(factor), reset };
+        controlsRef.current = {
+          zoom: (factor) => zoomAt(factor),
+          reset,
+          readable: () => {
+            readable();
+            redrawRef.current?.();
+          },
+          center: () => focusSelected(),
+        };
         const redraw = () => {
           if (cancelled) return;
           const current = propsRef.current;
@@ -749,14 +937,37 @@ export default function GameMap(props: GameMapProps) {
             ),
           );
           const isBattle = current.state.phase === 'battle' && current.state.battle !== null;
+          const battleId = isBattle ? current.state.battle!.id : null;
+          if (battleId !== lastBattleId) {
+            if (isBattle) {
+              if (!wasBattle) campaignCamera = { x: view.x, y: view.y, zoom: view.zoom };
+              readable();
+            } else {
+              Object.assign(view, campaignCamera);
+              recalculateFit();
+              applyView();
+            }
+            lastBattleId = battleId;
+          }
+          if (current.displayPreset !== lastPreset) {
+            lastPreset = current.displayPreset;
+            if (isBattle) readable();
+            else {
+              applyView();
+              focusSelected(false);
+            }
+          }
+          if (current.cameraFocus?.serial !== lastFocusSerial) {
+            lastFocusSerial = current.cameraFocus?.serial;
+            if (current.cameraFocus) focusSelected(true, current.cameraFocus);
+          }
           background.visible = !isBattle;
           selectionRing = null;
           clearContainer(foreground);
           cityLabelHitAreas.clear();
           selectionRing = isBattle
-            ? drawBattle(foreground, current, view.fit)
-            : drawCampaign(foreground, current, view.fit, cityLabelHitAreas);
-          if (wasBattle !== isBattle) reset();
+            ? drawBattle(foreground, current, view.fit * view.zoom)
+            : drawCampaign(foreground, current, view.fit * view.zoom, cityLabelHitAreas);
           wasBattle = isBattle;
         };
         redrawRef.current = redraw;
@@ -767,10 +978,11 @@ export default function GameMap(props: GameMapProps) {
         observer.observe(host);
         const toWorld = (event: { clientX: number; clientY: number }) => {
           const box = app.canvas.getBoundingClientRect();
-          return {
-            x: (event.clientX - box.left - world.x) / world.scale.x,
-            y: (event.clientY - box.top - world.y) / world.scale.y,
-          };
+          return screenToWorld(
+            { x: event.clientX - box.left, y: event.clientY - box.top },
+            { x: world.x, y: world.y },
+            world.scale.x,
+          );
         };
         const cityAtPoint = (point: { x: number; y: number }): City | undefined => {
           const cities = [...propsRef.current.state.cities].sort(
@@ -911,7 +1123,14 @@ export default function GameMap(props: GameMapProps) {
 
   useEffect(() => {
     redrawRef.current?.();
-  }, [props.state, props.selectedCityId, props.selectedUnitId, props.locale]);
+  }, [
+    props.state,
+    props.selectedCityId,
+    props.selectedUnitId,
+    props.locale,
+    props.displayPreset,
+    props.cameraFocus,
+  ]);
 
   return (
     <div
@@ -955,12 +1174,31 @@ export default function GameMap(props: GameMapProps) {
         </button>
         <button
           type="button"
-          title={tx('Reset map view')}
-          aria-label={tx('Reset map view')}
+          className={props.state.phase === 'battle' ? 'map-control-label' : undefined}
+          title={tx(props.state.phase === 'battle' ? 'Fit battlefield' : 'Reset map view')}
+          aria-label={tx(props.state.phase === 'battle' ? 'Fit battlefield' : 'Reset map view')}
           onClick={() => controlsRef.current?.reset()}
         >
-          ⌖
+          {props.state.phase === 'battle' ? tx('Fit battlefield') : '⌖'}
         </button>
+        {props.state.phase === 'battle' && (
+          <>
+            <button
+              type="button"
+              className="map-control-label"
+              onClick={() => controlsRef.current?.readable()}
+            >
+              {tx('Readable tiles')}
+            </button>
+            <button
+              type="button"
+              className="map-control-label"
+              onClick={() => controlsRef.current?.center()}
+            >
+              {tx('Center selected unit')}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

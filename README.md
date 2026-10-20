@@ -50,6 +50,16 @@ No account, server backend, API key, remote art service, or reference files are 
 
 Drag the map to pan, scroll to zoom, and double-click to reset. The city index provides a text alternative for selecting cities. **How to play** contains further guidance.
 
+## Readable maps, recognizable commanders
+
+Open **Settings** to choose **Compact**, **Comfortable** (default), or **Large**. The preference applies immediately to text, controls, and map presentation and stays with your browser. In battle, use **Fit battlefield** for an overview, **Readable tiles** for larger units, and **Center selected unit** to find your commander. Larger tiles can require panning on a laptop.
+
+All **52 named officers have distinct illustrated headshots**. Banners show family names and current allegiance; six shared troop symbols identify Infantry, Cavalry, Archers, Marines, Vanguard, and Guard. The **Troops & banners legend** explains the symbols and action states. **Next ready commander** cycles through commanders who can still act. Enemy commander portraits and full names are available in the battle sidebar.
+
+![The officer portrait collection](docs/images/officer-headshots.jpg)
+
+Choose **Cautious**, **Balanced**, or **Aggressive** rivals when starting a campaign, or change the setting during campaign planning. This changes how readily all rivals start wars, including against each other. It supplies no combat or resource bonuses. The **Monthly report** summarizes battles, alliance expirations, and recruitment near your borders; select a city event to focus its location.
+
 ## Saving your progress
 
 **All progress saved** means the latest snapshot has committed to IndexedDB, including the current battle, RNG state, pending armies, and monthly continuation. Saving starts when a command is accepted. If a write fails, **Retry save** retries the latest in-memory state; failed writes preserve the previous committed save.
@@ -70,6 +80,8 @@ npm run build            # Strict TypeScript check and production dist/
 npm run test:production  # Test dist/ under /hegemony/, including reload and battle continuation
 npm run preview          # Preview the production build
 npm run format:check     # Source and documentation formatting
+npm run validate:portraits # Coverage, provenance, dimensions, checksums, and payload budget
+npm run diagnostics:ai   # Fixed 180-campaign rival-policy comparison (writes .artifacts/)
 npm audit                # Known dependency advisories
 ```
 
@@ -98,13 +110,16 @@ React controls / PixiJS map
 - **Language is presentation.** English canonical messages stay compatible with existing saves; Chinese catalogs translate the interface and history at display time.
 - **The browser is the platform layer.** Storage, file downloads, and audio are separate from the simulation. React manages accessible controls; PixiJS draws the atlas and battlefield.
 
-| Read next                                          | Purpose                                                                 |
-| -------------------------------------------------- | ----------------------------------------------------------------------- |
-| [Implementation and rules](docs/implementation.md) | Command costs, economy, AI, tactical formulas, and a guided source tour |
-| [Architecture](docs/architecture.md)               | Original design decisions and tradeoffs                                 |
-| [Roadmap](docs/roadmap.md)                         | Milestones and future quality goals                                     |
-| [Reference baseline](docs/reference-baseline.md)   | Findings from the original source                                       |
-| [Validation](docs/validation.md)                   | Reproducible tests and release limitations                              |
+| Read next                                              | Purpose                                                                 |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [Implementation and rules](docs/implementation.md)     | Command costs, economy, AI, tactical formulas, and a guided source tour |
+| [Architecture](docs/architecture.md)                   | Original design decisions and tradeoffs                                 |
+| [Roadmap](docs/roadmap.md)                             | Milestones and future quality goals                                     |
+| [Reference baseline](docs/reference-baseline.md)       | Findings from the original source                                       |
+| [Validation](docs/validation.md)                       | Reproducible tests and release limitations                              |
+| [v0.1 improvement plan](docs/v0.1-improvement-plan.md) | Scope, measurements, and implementation acceptance criteria             |
+| [Rival policy measurements](docs/ai-balance.md)        | Baseline comparison and aggression tuning evidence                      |
+| [Portrait credits](docs/assets/portrait-credits.md)    | Original artwork provenance and officer identity mapping                |
 
 ## Static hosting
 
@@ -118,6 +133,8 @@ The GitHub Actions workflow runs formatting, unit tests, compilation, gameplay b
 
 This is an unofficial learning remake of Baye's campaign-and-battle structure, with an authored scenario and ruleset. It does not claim exact legacy formulas, content, mod compatibility, or official affiliation. Maps, symbols, and sounds are generated in code; the new runtime includes no copied legacy sprites, portraits, libraries, music, or executables.
 
+The headshots are original imagined historical illustrations created for this project using OpenAI's built-in image generation tool. They are artistic interpretations rather than authenticated contemporary likenesses. See the [portrait provenance and prompt records](docs/assets/portrait-credits.md).
+
 The reference repository is not required to build or play this standalone remake. Installed dependencies, build output, browser reports, and local QA artifacts are ignored by Git.
 
 Future work includes longer human balance testing, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. Multiplayer, mobile-first controls, cloud saves, and mod support are outside v0.1.
@@ -130,4 +147,7 @@ Future work includes longer human balance testing, Firefox/Safari coverage, full
 - Windows 用户安装依赖后，也可双击 `Start-Hegemony.cmd`。
 - 随时通过 **Eng / 中文** 切换语言；选择势力后发展城池、招募武将、编组军队，逐步统一天下。
 - 每次成功操作都会自动存档，战斗中也可续玩；请在“存档与读档”中导出 JSON 作为备份。
+- 在“设置”选择紧凑、舒适或大字显示。战斗中可使用“适应战场”“清晰格子”“居中所选部队”和“下一位可行动武将”。
+- 全部 52 位具名武将拥有独立头像；旗帜标明姓氏与当前势力，六种兵种图标和行动标记可在图例中查看。
+- 开局或战役规划阶段可选择谨慎、均衡、激进的对手。此设置影响开战意愿，不增加战斗属性或资源；“月度军报”展示已发生的战事、盟约到期与边境募兵。
 - 主要参考与致谢：[erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main)。感谢 erduoniba 及项目贡献者开源分享《三国霸业》源码。此版本采用自编场景和规则，并非对原版全部内容与公式的逐项复刻。

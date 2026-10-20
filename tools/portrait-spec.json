@@ -1,0 +1,482 @@
+{
+  "artDirection": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: ",
+  "officers": [
+    [
+      "caocao",
+      "Cao Cao",
+      "曹操",
+      "Cao",
+      "曹",
+      35,
+      "shrewd statesman-warrior; narrow perceptive eyes, neat black moustache, short pointed beard, formal black Han headcloth, blue-grey robe and armor collar"
+    ],
+    [
+      "xiahoudun",
+      "Xiahou Dun",
+      "夏侯惇",
+      "Xiahou",
+      "夏侯",
+      34,
+      "rugged square-jawed cavalry commander; both eyes intact in 190 AD, thick horizontal eyebrows, blunt short beard, iron helmet, dark blue armor, resolute gaze"
+    ],
+    [
+      "xunyu",
+      "Xun Yu",
+      "荀彧",
+      "Xun",
+      "荀",
+      27,
+      "refined young scholar; slender oval face, fine arched brows, tiny neat moustache, tall black scholar cap, ivory and pale slate robes, calm thoughtful gaze"
+    ],
+    [
+      "caoren",
+      "Cao Ren",
+      "曹仁",
+      "Cao",
+      "曹",
+      22,
+      "young steadfast defender; broad round face, clean-shaven, thick brows, tied topknot under low iron cap, blue-grey lamellar armor, alert serious eyes"
+    ],
+    [
+      "xiahouyuan",
+      "Xiahou Yuan",
+      "夏侯渊",
+      "Xiahou",
+      "夏侯",
+      27,
+      "lean swift cavalry commander distinct from Xiahou Dun; long angular face, narrow moustache, small chin beard, cloth-wrapped helmet, brown and slate armor, keen lively eyes"
+    ],
+    [
+      "chengyu",
+      "Cheng Yu",
+      "程昱",
+      "Cheng",
+      "程",
+      49,
+      "tall austere strategist; long narrow face, high forehead, greying long forked beard, black rectangular scholar headdress, deep moss robe, penetrating eyes"
+    ],
+    [
+      "yujin",
+      "Yu Jin",
+      "于禁",
+      "Yu",
+      "于",
+      29,
+      "disciplined infantry commander; rectangular face, trimmed box beard, level brows, simple iron helmet with dark cloth neck guard, practical charcoal armor, restrained expression"
+    ],
+    [
+      "liubei",
+      "Liu Bei",
+      "刘备",
+      "Liu",
+      "刘",
+      29,
+      "benevolent aspiring ruler; long ears, gentle broad-set eyes, oval face, thin moustache and modest beard, simple green Han robe, black folded headcloth, warm dignified expression"
+    ],
+    [
+      "guanyu",
+      "Guan Yu",
+      "关羽",
+      "Guan",
+      "关",
+      30,
+      "majestic warrior; naturally ruddy long face, magnificent long black beard, phoenix-shaped eyes, green headcloth and muted green robe over armor, composed heroic expression"
+    ],
+    [
+      "zhangfei",
+      "Zhang Fei",
+      "张飞",
+      "Zhang",
+      "张",
+      23,
+      "powerful young warrior; broad dark sun-weathered face, large round fierce eyes, bristling short black beard and moustache, dark tied headcloth, heavy brown armor, energetic expression"
+    ],
+    [
+      "jianyong",
+      "Jian Yong",
+      "简雍",
+      "Jian",
+      "简",
+      29,
+      "easygoing literate envoy; round friendly face, slightly smiling eyes, sparse moustache, casual dark headcloth, simple tan scholar robes, relaxed human warmth"
+    ],
+    [
+      "sunjian",
+      "Sun Jian",
+      "孙坚",
+      "Sun",
+      "孙",
+      35,
+      "formidable southern ruler; broad sun-tanned face, short thick black beard, tiger-like bright eyes, low bronze helmet with red cloth, weathered russet armor, bold assured expression"
+    ],
+    [
+      "sunce",
+      "Sun Ce",
+      "孙策",
+      "Sun",
+      "孙",
+      16,
+      "youthful teenage noble warrior; clean-shaven handsome round-oval face, lively confident eyes, small tied topknot, light russet training armor and cream collar, visibly young rather than mature"
+    ],
+    [
+      "huanggai",
+      "Huang Gai",
+      "黄盖",
+      "Huang",
+      "黄",
+      44,
+      "seasoned river commander; broad weathered face, strong nose, salt-and-pepper cropped beard, red-brown headscarf, practical bronze armor, steady loyal expression"
+    ],
+    [
+      "chengpu",
+      "Cheng Pu",
+      "程普",
+      "Cheng",
+      "程",
+      36,
+      "experienced composed guard commander; long sturdy face, black moustache and tapered beard, low dark helmet, copper-brown lamellar armor, measured vigilant eyes"
+    ],
+    [
+      "handang",
+      "Han Dang",
+      "韩当",
+      "Han",
+      "韩",
+      34,
+      "hardy river soldier; wide cheekbones, sun-tanned skin, short stubble beard, coarse dark red headwrap, leather and bronze shoulder armor, open direct gaze"
+    ],
+    [
+      "zuzhao",
+      "Zu Mao",
+      "祖茂",
+      "Zu",
+      "祖",
+      32,
+      "loyal southern infantry officer Zu Mao; square face, thick moustache and clean chin, red cloth headband with simple iron cap, russet armor, protective earnest expression"
+    ],
+    [
+      "yuanshao",
+      "Yuan Shao",
+      "袁绍",
+      "Yuan",
+      "袁",
+      36,
+      "aristocratic northern ruler; refined broad face, carefully shaped moustache and full tapered beard, elaborate black official cap with subtle gold trim, muted ochre brocade, proud stately gaze"
+    ],
+    [
+      "yanliang",
+      "Yan Liang",
+      "颜良",
+      "Yan",
+      "颜",
+      29,
+      "imposing cavalry champion; wide heavy jaw, thick upward brows, short rough beard, tall iron helmet with restrained ochre tassel, heavy dark armor, fierce focused expression"
+    ],
+    [
+      "wenchou",
+      "Wen Chou",
+      "文丑",
+      "Wen",
+      "文",
+      28,
+      "tough northern horseman; long craggy face, broad nose, curling moustache, stubbled chin, rounded iron helmet and rough brown cloak, intense deep-set eyes, distinct from Yan Liang"
+    ],
+    [
+      "zhanghe",
+      "Zhang He",
+      "张郃",
+      "Zhang",
+      "张",
+      23,
+      "agile young tactician-warrior; elegant angular face, clean chin and small moustache, tidy topknot under slim helmet, olive and steel armor, observant calculating eyes"
+    ],
+    [
+      "tianfeng",
+      "Tian Feng",
+      "田丰",
+      "Tian",
+      "田",
+      46,
+      "principled mature adviser; broad forehead, furrowed brow, slightly hooked nose, greying straight beard, tall plain scholar cap, dark ochre robe, stern honest expression"
+    ],
+    [
+      "jushou",
+      "Ju Shou",
+      "沮授",
+      "Ju",
+      "沮",
+      32,
+      "thoughtful northern strategist; narrow oval face, fine eyebrows, neat moustache and short split beard, folded black cap, pale olive robe, patient concerned eyes"
+    ],
+    [
+      "guotu",
+      "Guo Tu",
+      "郭图",
+      "Guo",
+      "郭",
+      31,
+      "ambitious court adviser; full rounded cheeks, thin alert eyes, delicate moustache, short beard, slightly ornate black cap, muted gold robe, self-assured reserved smile"
+    ],
+    [
+      "dongzhuo",
+      "Dong Zhuo",
+      "董卓",
+      "Dong",
+      "董",
+      50,
+      "powerful intimidating warlord; heavy broad face and thick neck, fleshy cheeks, dense greying beard, ornate bronze official headpiece, dark plum robes over armor, imperious stare"
+    ],
+    [
+      "lubu",
+      "Lü Bu",
+      "吕布",
+      "Lü",
+      "吕",
+      30,
+      "exceptionally athletic handsome cavalry champion; sharp cheekbones, clean-shaven strong jaw, intense eyes, compact bronze warrior crown with small red plume entirely visible, dark red lamellar armor, proud expression"
+    ],
+    [
+      "jiaxu",
+      "Jia Xu",
+      "贾诩",
+      "Jia",
+      "贾",
+      43,
+      "quiet calculating adviser; thin long face, hooded calm eyes, narrow greying goatee, austere black scholar hat, charcoal-purple robe, discreet enigmatic expression"
+    ],
+    [
+      "liru",
+      "Li Ru",
+      "李儒",
+      "Li",
+      "李",
+      38,
+      "severe court strategist; high narrow forehead, sharply arched brows, thin moustache and long thin beard, tall angular black cap, muted plum scholar robes, cool analytical gaze"
+    ],
+    [
+      "lijue",
+      "Li Jue",
+      "李傕",
+      "Li",
+      "李",
+      34,
+      "rough western cavalry officer; broad scar-weathered cheek, heavy black moustache, short irregular beard, iron helmet with leather flaps, worn brown armor, suspicious narrowed eyes"
+    ],
+    [
+      "guosi",
+      "Guo Si",
+      "郭汜",
+      "Guo",
+      "郭",
+      35,
+      "hard-bitten infantry commander; narrow sinewy face, uneven stubble, thick low eyebrows, tied leather headwrap, dark weathered armor, sharp impatient expression"
+    ],
+    [
+      "huaxiong",
+      "Hua Xiong",
+      "华雄",
+      "Hua",
+      "华",
+      31,
+      "massive frontier warrior; very broad square face, bushy moustache and thick beard, sturdy bronze helmet, heavy charcoal lamellar armor with fur-edged collar, fearless imposing gaze"
+    ],
+    [
+      "zhangliao",
+      "Zhang Liao",
+      "张辽",
+      "Zhang",
+      "张",
+      21,
+      "promising young cavalry officer; clean-shaven lean face, straight dark eyebrows, simple narrow iron helmet, dark slate armor, composed clear-eyed courage"
+    ],
+    [
+      "liuyan",
+      "Liu Yan",
+      "刘焉",
+      "Liu",
+      "刘",
+      55,
+      "elder western ruler; dignified long face, creased eyes, flowing grey moustache and beard, formal black governor cap, muted violet robe, measured authoritative expression"
+    ],
+    [
+      "liuzhang",
+      "Liu Zhang",
+      "刘璋",
+      "Liu",
+      "刘",
+      24,
+      "gentle young noble; soft round face, small moustache and clean chin, modest folded official cap, pale lavender robe, uncertain kind eyes"
+    ],
+    [
+      "zhangren",
+      "Zhang Ren",
+      "张任",
+      "Zhang",
+      "张",
+      30,
+      "steadfast western archer commander; lean angular face, short neat beard, dark cloth coif and simple helmet, subdued violet and brown armor, unwavering alert eyes"
+    ],
+    [
+      "yanyan",
+      "Yan Yan",
+      "严颜",
+      "Yan",
+      "严",
+      45,
+      "rugged veteran defender; sun-weathered broad face, heavy grey-flecked beard, scar along eyebrow, low iron helmet, worn olive armor, proud unyielding expression"
+    ],
+    [
+      "wuyi",
+      "Wu Yi",
+      "吴懿",
+      "Wu",
+      "吴",
+      29,
+      "practical western infantry officer; long oval face, short moustache and rounded beard, cloth-wrapped cap, brown lamellar armor and purple sash collar, calm competent gaze"
+    ],
+    [
+      "huangquan",
+      "Huang Quan",
+      "黄权",
+      "Huang",
+      "黄",
+      21,
+      "young meticulous scholar-officer; slender youthful face, clean-shaven, keen gentle eyes, compact black scholar cap, pale violet-grey robe, serious thoughtful expression"
+    ],
+    [
+      "zhaoyun",
+      "Zhao Yun",
+      "赵云",
+      "Zhao",
+      "赵",
+      22,
+      "young gallant cavalry warrior; handsome long oval face, clean-shaven, bright steady eyes, simple silver-grey helmet with compact pale plume, light steel armor, noble serene expression"
+    ],
+    [
+      "taishici",
+      "Taishi Ci",
+      "太史慈",
+      "Taishi",
+      "太史",
+      24,
+      "vigorous young archer; sun-tanned angular face, short moustache and clean chin, dark blue headband beneath light helmet, light bronze armor, open fearless eyes"
+    ],
+    [
+      "dianwei",
+      "Dian Wei",
+      "典韦",
+      "Dian",
+      "典",
+      25,
+      "enormously strong guard; broad round weathered face, thick neck, rough bristling black beard, simple black headwrap, heavy dark leather and iron armor, fierce protective expression"
+    ],
+    [
+      "xuchu",
+      "Xu Chu",
+      "许褚",
+      "Xu",
+      "许",
+      22,
+      "powerful young warrior; massive square jaw, full cheeks, short stubble, tightly tied brown cloth cap, heavy coarse brown armor, direct earnest eyes, distinct from Dian Wei"
+    ],
+    [
+      "xuhuang",
+      "Xu Huang",
+      "徐晃",
+      "Xu",
+      "徐",
+      23,
+      "disciplined young infantry officer; narrow rectangular face, neat small moustache, white headcloth under low iron cap, slate armor, calm restrained alertness"
+    ],
+    [
+      "ganning",
+      "Gan Ning",
+      "甘宁",
+      "Gan",
+      "甘",
+      22,
+      "bold young river adventurer; lean sun-tanned face, playful intense eyes, small moustache, crimson headscarf and dark tied hair, rough russet leather armor, confident half smile"
+    ],
+    [
+      "huangzhong",
+      "Huang Zhong",
+      "黄忠",
+      "Huang",
+      "黄",
+      42,
+      "experienced archer in his early forties, not an elderly man; weathered long face, black beard with a few silver strands, simple olive headcloth, bronze armor, patient sharp gaze"
+    ],
+    [
+      "weiyan",
+      "Wei Yan",
+      "魏延",
+      "Wei",
+      "魏",
+      20,
+      "ambitious young infantry warrior; strong triangular face, clean chin, bold eyebrows, reddish-brown tied headcloth, dark green armor, intense proud youthful expression"
+    ],
+    [
+      "zhouyu",
+      "Zhou Yu",
+      "周瑜",
+      "Zhou",
+      "周",
+      16,
+      "beautiful youthful teenage scholar-musician and future commander; clean-shaven delicate oval face, poised bright eyes, small scholar headcloth, pale russet and cream robes, clearly adolescent and refined"
+    ],
+    [
+      "lusu",
+      "Lu Su",
+      "鲁肃",
+      "Lu",
+      "鲁",
+      18,
+      "young broad-minded scholar; clean-shaven rounded long face, kind wide eyes, plain black scholar cap, muted green-grey robes, thoughtful gentle expression, visibly late teens"
+    ],
+    [
+      "fazheng",
+      "Fa Zheng",
+      "法正",
+      "Fa",
+      "法",
+      16,
+      "intelligent teenage scholar; narrow youthful face, clean-shaven, sharp curious eyes, small dark scholar headcloth, pale lilac robe, reserved perceptive expression"
+    ],
+    [
+      "zhangsong",
+      "Zhang Song",
+      "张松",
+      "Zhang",
+      "张",
+      22,
+      "brilliant unconventional young scholar; short broad face, high forehead, distinctive strong nose, sparse thin moustache, simple low black cap, brown-violet robe, wry clever expression"
+    ],
+    [
+      "chenqun",
+      "Chen Qun",
+      "陈群",
+      "Chen",
+      "陈",
+      20,
+      "serious young administrator; smooth oval face, clean-shaven, straight brows and thoughtful eyes, modest upright black cap, pale blue-grey robes, composed precise expression"
+    ],
+    [
+      "maliang",
+      "Ma Teng",
+      "马腾",
+      "Ma",
+      "马",
+      34,
+      "Ma Teng western horse-lord, not Ma Liang; broad sun-weathered face, strong nose, thick moustache and short beard, frontier iron helmet with leather neck guard, ochre cloak and bronze armor, proud steady gaze"
+    ],
+    [
+      "garrison",
+      "City garrison",
+      "城防守军",
+      "Garrison",
+      "守",
+      30,
+      "anonymous ordinary city guard; approachable weathered face, small moustache, plain iron cap and simple brown quilted armor, neutral vigilant expression, modest equipment, distinct from named generals"
+    ]
+  ]
+}

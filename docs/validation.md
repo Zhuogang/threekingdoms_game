@@ -1,6 +1,69 @@
 # Hegemony of the Three Kingdoms v0.1 — validation
 
-October 17, 2026. The release audit passed **121 unit tests, 18 gameplay browser tests, three production browser tests, strict compilation, formatting, and dependency auditing**. Six reproduced defects were fixed with regression coverage. These results apply to the authored `baye-atlas-1` ruleset; they do not establish exact parity with the legacy engine or guarantee that no bugs remain.
+October 19, 2026. The v0.1 improvements passed **170 unit tests, 41 development browser tests, six production browser tests, strict compilation, formatting, and portrait validation**. The final 12-case display matrix was repeated after formatting and adding explicit campaign-font assertions. All 52 named officers have distinct local headshots, plus a separate garrison image. Existing pre-change saves retain exact gameplay/RNG continuation. These results apply to the authored `baye-atlas-1` ruleset and the tested browser; independent player enjoyment and representative human balance acceptance remain unverified.
+
+## October 19 improvement checks
+
+| Check                        | Actual result and evidence                                                                                                                                                                                                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm test`                   | **170 passed in nine files**, final run 8.69 seconds. Includes 36 deterministic rival-policy correctness campaigns, threshold/safeguard boundaries, structured reports, original save SHA256 and continuation hashes, camera coordinates, roster identity, and presentation preferences. |
+| `npm run test:e2e`           | **41 passed** in installed Chrome on Windows: original 18 journeys plus 23 improvement cases. Full run 3.2 minutes; final 12-case matrix rerun also passed, covering 24 scenes with explicit campaign and battlefield fonts, fit margins, and preset tile sizes.                         |
+| `npm run test:production`    | **6 passed in 29.1 seconds**, actual `dist/` under `/hegemony/`: all 106 portrait renditions decode, no external art requests, bilingual saves, queued-battle reports, portable backups, forced portrait fallback, and alternate rendering with WebGL unavailable.                       |
+| `npm run build`              | **Passed** strict TypeScript compilation and Vite production bundling. Existing dependency annotation/chunk-size advisories remain nonfatal. No dependency packages were changed.                                                                                                        |
+| `npm run validate:portraits` | **Passed** 52 named mappings + garrison, 106 WebP files, complete provenance/checksums, 128/256-pixel renditions, **0.95 MiB** image payload below 3.5 MiB. Two coding agents reviewed the complete labeled contact sheet.                                                               |
+| `npm run format:check`       | **Passed** source, tests, tools, documentation, and configuration. Immutable legacy captures are excluded from reformatting and verified by their SHA256 manifest.                                                                                                                       |
+| Rival-policy diagnostics     | **60 baseline + 180 initial-preset + 180 final-preset campaigns**. No invalid states or provision shortages in these diagnostic runs. See [measurements and tuning](ai-balance.md) and raw per-run records.                                                                              |
+
+Production validation used `HEGEMONY_PRODUCTION_PORT=4174`: another Chrome connection had bound
+the default local port 4173, causing Windows `EACCES` before any test could start. No other process
+was stopped. The production test configuration now accepts this optional port override while
+retaining 4173 by default; external-request assertions use the configured origin and remain strict.
+
+In PowerShell, an alternate local production-test port can be selected with:
+
+```powershell
+$env:HEGEMONY_PRODUCTION_PORT = '4174'
+npm run test:production
+```
+
+The final development game still uses port 5173. The test-port override does not change game saves
+or deployment paths.
+
+### Coverage and measurements
+
+- Primary scenes: 1366 × 768 and 1920 × 1080, Compact/Comfortable/Large, English/Chinese,
+  campaign/battle. Comfortable Fit cells measure **49.2** and **80.4 CSS pixels** respectively.
+  Readable cells meet 48/64/80 minima. The 1280 × 720 smoke retains at least 44-pixel fit cells.
+- Real Chrome **200% browser zoom** was set through Chrome's own Appearance setting in an isolated
+  test profile: outer width 1920, inner width 960, device pixel ratio 2, visual viewport scale 1.
+  Settings, language, saving, commander selection, and battle end-day remained reachable. This was
+  not simulated with CSS scaling or a device-pixel-ratio override.
+- Pointer tests select corner and central units after pan/zoom/resize and prove that a drag does
+  not issue an order. Keyboard tests use Tab, Enter, Space, and Escape with visible focus.
+- Bilingual functional playthroughs advance three months and manually move/rally in battle.
+  A two-battle month survives reload, manual slot, export/import, and refresh with complete
+  GameState equality against uninterrupted execution, including reports and RNG.
+- Named identity cases include actual Dian Wei recruitment, changed allegiance/captivity, and
+  the stable-ID exceptions Ma Teng (`maliang`) and Zu Mao (`zuzhao`).
+- Targeted contrast review corrected selected/focus/readiness colors, attack text, faction crest
+  backdrops, and campaign selection. Readable badge fonts are 12/14/16 with display presets.
+  Reduced-motion and DOM identity alternatives were exercised. This is not a full accessibility
+  certification.
+
+See the [58-criterion acceptance record](v0.1-improvement-acceptance.md),
+[browser evidence](validation-browser-2026-10-19.md),
+[portrait credits](assets/portrait-credits.md), and
+[pre-change baseline](validation-baseline-2026-10-19.md).
+
+The hosted GitHub Actions workflow has not been run from this local task. Firefox/Safari,
+representative low-end hardware profiling, and independent timed usability/player-balance review
+remain outside the verified claims. The human targets in the plan are explicitly pending.
+
+## Previous release audit — October 17
+
+The original release audit passed 121 unit tests, 18 gameplay browser tests, three production
+browser tests, strict compilation, formatting, and dependency auditing. Six reproduced defects were
+fixed with regression coverage. The historical detail below is retained for provenance.
 
 ## Release checks
 

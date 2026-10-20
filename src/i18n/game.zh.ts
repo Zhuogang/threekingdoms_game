@@ -154,6 +154,14 @@ export const GAME_ZH: Record<string, string> = {
 
   // Command validation: these are shown in tooltips and notifications as well.
   'Choose a ruler from this scenario.': '请选择本剧本中的一位君主。',
+  'Choose a valid rival aggression.': '请选择有效的对手进攻倾向。',
+  'Monthly report event capacity exceeded.': '月度军报记录数量超出上限。',
+  'Invalid monthly report data.': '月度军报数据无效。',
+  'The monthly report date is inconsistent.': '月度军报的年月与回合数不一致。',
+  'Invalid or duplicate monthly report event.': '月度军报记录无效或重复。',
+  'Invalid monthly battle report.': '月度战斗报告无效。',
+  'Invalid monthly alliance report.': '月度盟约报告无效。',
+  'Invalid monthly recruitment report.': '月度征兵报告无效。',
   'This order is not supported.': '不支持此命令。',
   'Finish the current battle before issuing city orders.': '请先结束当前战斗，再下达城池命令。',
   'Select a city under your control.': '请选择己方控制的城池。',

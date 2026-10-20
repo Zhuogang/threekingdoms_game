@@ -1,5 +1,64 @@
 /** UI copy uses canonical English keys so old save labels and notifications stay portable. */
 export const UI_ZH: Record<string, string> = {
+  'Enemy commanders': '敌方武将',
+  'Display size': '显示大小',
+  Compact: '紧凑',
+  Comfortable: '舒适',
+  Large: '大字',
+  'Applies to maps, text, and controls. Saved in this browser.':
+    '调整地图、文字与按钮大小，设置保存在此浏览器中。',
+  'Starting position': '开局形势',
+  'Rival aggression': '对手进攻倾向',
+  Cautious: '谨慎',
+  Balanced: '均衡',
+  Aggressive: '激进',
+  'Controls how readily rivals start wars against you and each other. It grants no combat or resource bonuses.':
+    '决定对手向你或其他势力开战的意愿，不提供战斗或资源加成。',
+  'Controls willingness to start wars; no combat or resource bonuses.':
+    '调整开战意愿，不提供战斗或资源加成。',
+  'Campaign setting: takes effect next month and is saved with your progress.':
+    '战役设置：下次月度结算时生效，并随进度存档。',
+  'Rival aggression can be changed during campaign planning after the current month resolves.':
+    '当前月份结算完毕后，可在战役筹划阶段修改对手进攻倾向。',
+  'Next ready commander': '下一位可行动武将',
+  'No ready commanders remain. End the day to continue.': '已无可行动武将，结束当日以继续。',
+  'Troops & banners legend': '兵种与旗帜图例',
+  'Troop and banner meanings': '兵种与旗帜含义',
+  'Banner color and crest show allegiance. The surname identifies the commander.':
+    '旗帜颜色与纹章表示所属势力，姓氏标识领军武将。',
+  'Moved · action ready': '已移动 · 仍可行动',
+  'Finished for today': '今日行动完毕',
+  'Confused · unavailable': '混乱 · 无法行动',
+  'Inspired is an extra status. It does not restore an action.':
+    '振奋是额外状态，不会恢复行动机会。',
+  'The garrison': '守军',
+  'Monthly report': '月度军报',
+  'View report': '查看军报',
+  Highlights: '要闻',
+  'Partial history: earlier events were not recorded in this older save.':
+    '记录不完整：此旧版存档未记录本月较早发生的事件。',
+  '{attacker} captured {city} from {defender} after {days} days.':
+    '{attacker}经过{days}日战斗，从{defender}手中攻占{city}。',
+  '{defender} held {city} against {attacker} after {days} days.':
+    '{defender}经过{days}日战斗，守住{city}，击退{attacker}。',
+  'The alliance between {first} and {second} expired.': '{first}与{second}的盟约到期。',
+  '{faction} recruited {count} reserves in {city}, near your borders.':
+    '{faction}在邻近你方边境的{city}招募了{count}名预备兵。',
+  'A quiet month: no major rival developments to report.': '本月平静，暂无重要对手动向。',
+  '{count} additional records were omitted from this report.':
+    '另有{count}条记录因军报容量限制未收录。',
+  '{count} more events in the full report.': '完整军报中另有{count}项事件。',
+  'Reports describe committed events, not predictions.': '军报记载已发生事件，并非预测。',
+  'Artwork & reference credits': '美术与参考来源',
+  'Officer illustrations': '武将肖像',
+  '52 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.':
+    '本项目制作了52幅独立武将肖像及1幅守军肖像，均为艺术演绎，并非经过考证的历史真实容貌。',
+  'Portraits are bundled locally. Identity stays with the officer when allegiance changes.':
+    '肖像随游戏本地提供，武将变更所属势力时仍保持同一人物形象。',
+  'View artwork provenance and rights records': '查看美术创作来源与权利记录',
+  'Main game reference': '主要游戏参考',
+  'Baye / 三国霸业 inspired the core game. The web remake uses its own authored atlas and presentation.':
+    '游戏核心参考Baye《三国霸业》，网页版使用独立绘制的地图与界面。',
   'Close dialog': '关闭对话框',
   'Hegemony of the Three Kingdoms': '三国霸业',
   HEGEMONY: '三国霸业',

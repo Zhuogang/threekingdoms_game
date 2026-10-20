@@ -1,6 +1,21 @@
 import { FACTIONS, INITIAL_CITIES, INITIAL_OFFICERS } from '../content/scenario';
 import { autoResolveBattle, createBattle, processBattleCommand } from './battle';
 import { addLog, random } from './random';
+import {
+  attackSafeguards,
+  attackWilling,
+  isRivalAggression,
+  type AiAttackCandidate,
+  type CampaignObserver,
+  type RivalAggression,
+} from './aiPolicy';
+import {
+  beginMonthlyReport,
+  ensureMonthlyReport,
+  publishMonthlyReport,
+  recordMonthlyEvent,
+  validateReports,
+} from './reports';
 import type {
   Action,
   ActionInfo,
@@ -174,14 +189,21 @@ function chooseGovernor(state: GameState, city: City): void {
   }
 }
 
-export function createGame(factionId: string, seed = 190): GameState {
+export function createGame(
+  factionId: string,
+  seed = 190,
+  rivalAggression: RivalAggression = 'balanced',
+): GameState {
   if (!FACTIONS.some((f) => f.id === factionId))
     throw new Error('Choose a ruler from this scenario.');
+  if (!isRivalAggression(rivalAggression)) throw new Error('Choose a valid rival aggression.');
   const state: GameState = {
     version: 1,
     ruleset: 'baye-atlas-1',
     revision: 0,
     playerFactionId: factionId,
+    rivalAggression,
+    reports: { pending: null, latest: null },
     year: 190,
     month: 1,
     turn: 0,
@@ -372,9 +394,26 @@ function cityAction(
     }
     case 'recruit': {
       const gain = Math.min(city.population - 1000, 300 + officer.force * 5);
+      const beforeReserve = city.reserve;
       city.population -= gain;
       city.reserve = bounded(city.reserve + gain, RESOURCE_CAP);
       city.loyalty = bounded(city.loyalty - 2, 100);
+      if (
+        state.reports.pending &&
+        factionId !== state.playerFactionId &&
+        city.neighbors.some(
+          (id) =>
+            state.cities.find((neighbor) => neighbor.id === id)?.factionId ===
+            state.playerFactionId,
+        ) &&
+        city.reserve > beforeReserve
+      )
+        recordMonthlyEvent(state, {
+          kind: 'borderRecruitment',
+          cityId: city.id,
+          factionId,
+          troops: city.reserve - beforeReserve,
+        });
       announce(`${officer.name} recruits ${gain} soldiers into the reserve.`);
       break;
     }
@@ -627,12 +666,13 @@ function transfer(
 }
 
 /** AI gets no free resources: it uses exactly the same action, muster and march rules. */
-function planAi(state: GameState): void {
+function planAi(state: GameState, observer?: CampaignObserver): void {
   for (const faction of FACTIONS) {
     if (faction.id === state.playerFactionId) continue;
     const cities = state.cities
       .filter((c) => c.factionId === faction.id)
       .sort((a, b) => a.id.localeCompare(b.id));
+    if (cities.length) observer?.aiFactionMonth?.(faction.id);
     for (const city of cities) {
       const officers = serving(state, city)
         .filter((o) => !o.busy)
@@ -641,7 +681,7 @@ function planAi(state: GameState): void {
       for (const officer of officers) {
         const desired = Math.min(
           MAX_TROOPS,
-          officer.troops + city.reserve,
+          officer.troops + Math.max(0, city.reserve - 500),
           officer.force > 80 ? 2200 : 1500,
         );
         if (desired > officer.troops)
@@ -661,18 +701,44 @@ function planAi(state: GameState): void {
         .sort((a, b) => strength(state, a) - strength(state, b) || a.id.localeCompare(b.id));
       const army = officers.filter((o) => o.troops > 0 && o.stamina >= 15).slice(0, 10);
       const power = army.reduce((sum, o) => sum + o.troops * (0.6 + o.force / 100), 0);
-      const target = enemies.find((c) => power > strength(state, c) * 1.35 + c.defense * 7 + 300);
-      if (target && army.length && state.turn > 0)
-        march(
+      const candidates: AiAttackCandidate[] = enemies.map((target) => ({
+        turn: state.turn,
+        factionId: faction.id,
+        sourceId: city.id,
+        targetId: target.id,
+        attackingPower: power,
+        defendingTroops: strength(state, target),
+        defense: target.defense,
+        attackingTroops: army.reduce((sum, officer) => sum + officer.troops, 0),
+        sourceTroops: strength(state, city),
+        reserve: city.reserve,
+        food: city.food,
+      }));
+      if (army.length && state.turn > 0)
+        candidates.forEach((candidate) => observer?.aiCandidate?.(candidate));
+      const target = candidates.find((candidate) =>
+        attackWilling(candidate, state.rivalAggression),
+      );
+      if (target && army.length && state.turn > 0) observer?.aiDecision?.(target);
+      if (
+        target &&
+        army.length &&
+        state.turn > 0 &&
+        attackSafeguards(target).reserves &&
+        attackSafeguards(target).food
+      ) {
+        const error = march(
           state,
           {
             type: 'march',
             sourceId: city.id,
-            targetId: target.id,
+            targetId: target.targetId,
             officerIds: army.map((o) => o.id),
           },
           faction.id,
         );
+        if (!error) observer?.aiMarch?.(state.orders[state.orders.length - 1]!);
+      }
       for (const officer of officers.filter((o) => !o.busy)) {
         let action: Action;
         if (officer.loyalty < 55 && city.gold >= 100) action = 'reward';
@@ -697,7 +763,7 @@ function planAi(state: GameState): void {
 }
 
 /** Resolve city ownership and all casualties once, before advancing the cursor. */
-function applyBattleAftermath(state: GameState): void {
+function applyBattleAftermath(state: GameState, observer?: CampaignObserver): void {
   const battle = state.battle;
   if (!battle?.outcome) return;
   const target = state.cities.find((c) => c.id === battle.order.targetId)!;
@@ -795,11 +861,32 @@ function applyBattleAftermath(state: GameState): void {
     );
   }
   state.cities.forEach((city) => chooseGovernor(state, city));
+  recordMonthlyEvent(state, {
+    kind: 'battle',
+    orderId: battle.order.id,
+    sourceId: source.id,
+    targetId: target.id,
+    attackerId: battle.attackerId,
+    defenderId: formerOwner,
+    outcome: target.factionId !== formerOwner ? 'captured' : 'held',
+    days: battle.day,
+    involvesPlayer: [battle.attackerId, formerOwner].includes(state.playerFactionId),
+    bordersPlayer:
+      target.factionId !== formerOwner &&
+      target.neighbors.some(
+        (id) => state.cities.find((city) => city.id === id)?.factionId === state.playerFactionId,
+      ),
+  });
+  observer?.battleResult?.({
+    attackerId: battle.attackerId,
+    defenderId: formerOwner,
+    captured: target.factionId !== formerOwner,
+  });
   state.battle = null;
   if (state.resolution) state.resolution.index++;
 }
 
-function finishMonth(state: GameState): void {
+function finishMonth(state: GameState, observer?: CampaignObserver): void {
   state.turn++;
   state.month++;
   if (state.month > 12) {
@@ -811,6 +898,12 @@ function finishMonth(state: GameState): void {
   }
   state.alliances = state.alliances.filter((a) => {
     if (a.untilTurn <= state.turn) {
+      recordMonthlyEvent(state, {
+        kind: 'allianceExpired',
+        a: a.a,
+        b: a.b,
+        involvesPlayer: [a.a, a.b].includes(state.playerFactionId),
+      });
       addLog(
         state,
         `The alliance between ${factionName(a.a)} and ${factionName(a.b)} expires.`,
@@ -834,6 +927,12 @@ function finishMonth(state: GameState): void {
       goldBefore = city.gold;
     city.food = bounded(city.food + harvest, RESOURCE_CAP);
     city.gold = bounded(city.gold + income, RESOURCE_CAP);
+    if (city.factionId !== state.playerFactionId)
+      observer?.aiUpkeep?.({
+        cityId: city.id,
+        factionId: city.factionId,
+        shortage: city.food < upkeep,
+      });
     if (city.food < upkeep) {
       city.food = 0;
       city.loyalty = bounded(city.loyalty - 8, 100);
@@ -905,6 +1004,7 @@ function finishMonth(state: GameState): void {
     'economy',
   );
   checkVictory(state);
+  publishMonthlyReport(state);
 }
 
 function checkVictory(state: GameState): void {
@@ -932,7 +1032,7 @@ function checkVictory(state: GameState): void {
   }
 }
 
-function resolveOrders(state: GameState): void {
+function resolveOrders(state: GameState, observer?: CampaignObserver): void {
   const resolution = state.resolution;
   if (!resolution) return;
   while (resolution.index < resolution.queue.length) {
@@ -971,7 +1071,7 @@ function resolveOrders(state: GameState): void {
     state.battle = createBattle(state, order);
     state.phase = 'battle';
     if (state.battle.outcome) {
-      applyBattleAftermath(state);
+      applyBattleAftermath(state, observer);
       continue;
     }
     if (order.factionId === state.playerFactionId || target.factionId === state.playerFactionId) {
@@ -983,14 +1083,18 @@ function resolveOrders(state: GameState): void {
       return;
     }
     autoResolveBattle(state);
-    applyBattleAftermath(state);
+    applyBattleAftermath(state, observer);
   }
   resolution.stage = 'upkeep';
-  finishMonth(state);
+  finishMonth(state, observer);
 }
 
 /** Public reducer: invalid commands return the original object and never consume RNG. */
-export function dispatch(state: GameState, command: GameCommand): CommandResult {
+export function dispatch(
+  state: GameState,
+  command: GameCommand,
+  observer?: CampaignObserver,
+): CommandResult {
   if (state.phase === 'finished')
     return {
       ok: false,
@@ -1003,16 +1107,21 @@ export function dispatch(state: GameState, command: GameCommand): CommandResult 
   if (battleCommand) {
     if (draft.phase !== 'battle' || !draft.battle) error = 'There is no active battle.';
     else {
+      ensureMonthlyReport(draft);
       error = processBattleCommand(draft, command);
       if (!error && draft.battle.outcome) {
-        applyBattleAftermath(draft);
-        resolveOrders(draft);
+        applyBattleAftermath(draft, observer);
+        resolveOrders(draft, observer);
       }
     }
-  } else if (draft.phase !== 'planning' || draft.resolution)
+  } else if (draft.phase !== 'planning' || draft.resolution || draft.battle)
     error = 'Finish the current battle before issuing campaign orders.';
   else {
     switch (command.type) {
+      case 'setRivalAggression':
+        if (!isRivalAggression(command.value)) error = 'Choose a valid rival aggression.';
+        else draft.rivalAggression = command.value;
+        break;
       case 'action':
         error = cityAction(draft, command, draft.playerFactionId);
         break;
@@ -1026,10 +1135,11 @@ export function dispatch(state: GameState, command: GameCommand): CommandResult 
         error = march(draft, command, draft.playerFactionId);
         break;
       case 'endMonth':
-        planAi(draft);
+        beginMonthlyReport(draft);
+        planAi(draft, observer);
         draft.resolution = { queue: structuredClone(draft.orders), index: 0, stage: 'orders' };
         draft.orders = [];
-        resolveOrders(draft);
+        resolveOrders(draft, observer);
         break;
       default:
         error = 'Unknown game command.';
@@ -1048,6 +1158,7 @@ export function validateState(state: GameState): string | null {
     Number.isSafeInteger(value) && value >= low && value <= high;
   if (!FACTIONS.some((f) => f.id === state.playerFactionId))
     return 'The player faction is not part of this scenario.';
+  if (!isRivalAggression(state.rivalAggression)) return 'Choose a valid rival aggression.';
   if (
     !integral(state.year, 190, 9999) ||
     !integral(state.month, 1, 12) ||
@@ -1393,5 +1504,7 @@ export function validateState(state: GameState): string | null {
     )
   )
     return 'Invalid chronicle entries.';
+  const reportError = validateReports(state);
+  if (reportError) return reportError;
   return null;
 }

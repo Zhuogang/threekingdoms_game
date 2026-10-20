@@ -1,3 +1,7 @@
+import type { RivalAggression } from './aiPolicy';
+import type { MonthlyReports } from './reports';
+export type { RivalAggression } from './aiPolicy';
+export type { MonthlyReport, MonthlyReportEvent, MonthlyReports } from './reports';
 export type TroopType = 'infantry' | 'cavalry' | 'archer' | 'naval' | 'elite' | 'guard';
 export type Terrain = 'plain' | 'forest' | 'hill' | 'water' | 'fort';
 export type Action =
@@ -125,6 +129,8 @@ export interface GameState {
   ruleset: 'baye-atlas-1';
   revision: number;
   playerFactionId: string;
+  rivalAggression: RivalAggression;
+  reports: MonthlyReports;
   year: number;
   month: number;
   turn: number;
@@ -142,6 +148,7 @@ export interface GameState {
   stats: { battlesWon: number; commandsIssued: number; citiesCaptured: number };
 }
 export type GameCommand =
+  | { type: 'setRivalAggression'; value: RivalAggression }
   | { type: 'action'; action: Action; cityId: string; officerId: string; targetId?: string }
   | { type: 'march'; sourceId: string; targetId: string; officerIds: string[] }
   | {
