@@ -132,6 +132,7 @@ for (const faction of FACTIONS) {
         return true;
       };
       let unified: number | null = null;
+      let peakCities = 0;
       for (let month = 0; month < months && state.phase !== 'finished'; month++) {
         botMonth(
           () => state,
@@ -143,6 +144,11 @@ for (const faction of FACTIONS) {
           if (guard >= 60) throw new Error('Unbounded monthly battle resolution.');
           apply({ type: 'battleAuto' }, true);
         }
+        for (const rival of FACTIONS)
+          peakCities = Math.max(
+            peakCities,
+            state.cities.filter((c) => c.factionId === rival.id).length,
+          );
       }
       if (state.phase === 'finished' && state.winner === faction.id) unified = state.turn;
       campaigns.push({
@@ -156,6 +162,7 @@ for (const faction of FACTIONS) {
         cities: state.cities.filter((c) => c.factionId === faction.id).length,
         captures,
         coalitions,
+        peakCities,
         plunders: rawPlunders,
         raidBattles,
         unopposedRaids: unopposed,
@@ -175,11 +182,9 @@ const actionTotals: Record<string, number> = {};
 for (const battle of decisive)
   for (const [kind, count] of Object.entries(battle.actions))
     actionTotals[kind] = (actionTotals[kind] ?? 0) + count;
+// Count unit-turns by outcome: a unit that only moves or holds ends its turn with wait.
 const mixTotal =
-  (actionTotals.attack ?? 0) +
-  (actionTotals.tactic ?? 0) +
-  (actionTotals.move ?? 0) +
-  (actionTotals.wait ?? 0);
+  (actionTotals.attack ?? 0) + (actionTotals.tactic ?? 0) + (actionTotals.wait ?? 0);
 const upsets = decisive.filter((b) => {
   const winnerStart = b.winner === 'attacker' ? b.attackerStart : b.defenderStart;
   const loserStart = b.winner === 'attacker' ? b.defenderStart : b.attackerStart;
@@ -195,6 +200,18 @@ const contested = decisive.filter((b) => {
   const ratio = b.attackerStart / Math.max(1, b.defenderStart);
   return ratio >= 0.6 && ratio <= 1.6;
 });
+const upsetIn = (set: BattleRecord[]) =>
+  set.filter((b) => {
+    const winnerStart = b.winner === 'attacker' ? b.attackerStart : b.defenderStart;
+    const loserStart = b.winner === 'attacker' ? b.defenderStart : b.attackerStart;
+    return winnerStart < loserStart;
+  }).length;
+const closeIn = (set: BattleRecord[]) =>
+  set.filter((b) => {
+    const start = b.winner === 'attacker' ? b.attackerStart : b.defenderStart;
+    const end = b.winner === 'attacker' ? b.attackerEnd : b.defenderEnd;
+    return start > 0 && end / start < 0.5;
+  }).length;
 const marchTotal = botSum('marches');
 const nonDefault = Object.entries(
   campaigns.reduce(
@@ -222,7 +239,7 @@ const summary = {
   actionMixPercent: {
     attack: pct(actionTotals.attack ?? 0, mixTotal),
     tactic: pct(actionTotals.tactic ?? 0, mixTotal),
-    moveOnly: pct((actionTotals.move ?? 0) + (actionTotals.wait ?? 0), mixTotal),
+    moveOnly: pct(actionTotals.wait ?? 0, mixTotal),
     counters: actionTotals.counter ?? 0,
   },
   contested: {
@@ -233,6 +250,8 @@ const summary = {
       contested.filter((b) => b.winner === 'attacker').length,
       contested.length,
     ),
+    upsetPercent: pct(upsetIn(contested), contested.length),
+    closeBattlePercent: pct(closeIn(contested), contested.length),
   },
   upsetPercent: pct(upsets.length, decisive.length),
   closeBattlePercent: pct(close.length, decisive.length),
@@ -258,6 +277,11 @@ const summary = {
     campaigns.filter((c) => c.unified !== null).map((c) => Number(c.unified)),
   ),
   coalitionRuns: pct(campaigns.filter((c) => Number(c.coalitions) > 0).length, campaigns.length),
+  // Runs in which someone actually reached the coalition threshold of ten cities.
+  coalitionInRunsWithLeader: pct(
+    campaigns.filter((c) => Number(c.peakCities) >= 10 && Number(c.coalitions) > 0).length,
+    campaigns.filter((c) => Number(c.peakCities) >= 10).length,
+  ),
   playerCapturesPerCampaign:
     Math.round((sum((c) => Number(c.captures)) * 10) / campaigns.length) / 10,
   autoResolveMs: { median: median(autoResolveMs), p95: percentile(autoResolveMs, 0.95) },

@@ -1,4 +1,4 @@
-import { getPersuadeChance } from '../src/game/campaign';
+﻿import { getPersuadeChance } from '../src/game/campaign';
 import { supplyFood } from '../src/game/supply';
 import type { Action, GameCommand, GameState, Officer, SupplyDays } from '../src/game/types';
 
@@ -186,7 +186,7 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     const threat = Math.max(0, ...enemies.map((c) => strengthOf(state(), c.id)));
     stats.eligibleCityMonths++;
     if (
-      threat > 1.8 * strengthOf(state(), id) &&
+      threat > 2.8 * strengthOf(state(), id) &&
       city.loyalty >= 10 &&
       state().turn >= city.plunderCooldownUntil
     ) {
@@ -211,3 +211,4 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     }
   }
 }
+
