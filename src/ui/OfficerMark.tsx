@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react';
-import { factionById } from '../content/scenario';
 import { getOfficerIdentity } from '../content/officerIdentity';
 import type { Officer } from '../game/types';
 import Portrait from './Portrait';
 import TroopIcon from './TroopIcon';
+import { useFaction } from './FactionsContext';
 
 export default function OfficerMark({
   officer,
@@ -13,7 +13,7 @@ export default function OfficerMark({
   size?: 'normal' | 'small' | 'large';
 }) {
   const identity = getOfficerIdentity(officer.id);
-  const faction = factionById(officer.factionId);
+  const faction = useFaction(officer.factionId);
   return (
     <div
       className={`officer-mark ${size}`}

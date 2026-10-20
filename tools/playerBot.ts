@@ -88,7 +88,19 @@ const enemyPower = (state: GameState, cityId: string): number => {
   return power(officers) + Math.max(0, city.reserve - 500) * (0.6 + bestForce / 100);
 };
 
-export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): void {
+/**
+ * 
+ormal plays to win; 	urtle (review R6) never marches, raids or sacks, but musters,
+ * recruits, develops and decides prisoners like the normal bot.
+ */
+export type BotMode = 'normal' | 'turtle';
+
+export function botMonth(
+  get: () => GameState,
+  apply: Apply,
+  stats: BotStats,
+  mode: BotMode = 'normal',
+): void {
   const me = get().playerFactionId;
   for (const city0 of get().cities.filter((c) => c.factionId === me)) {
     const id = city0.id;
@@ -201,7 +213,7 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     const myPower = power(army);
     const upkeep = Math.ceil(home * 0.12);
     let attacked = false;
-    if (army.length && state().turn > 0) {
+    if (army.length && state().turn > 0 && mode !== 'turtle') {
       const target = enemies.find(
         (c) =>
           myPower > strengthOf(state(), c.id) * MARCH_POWER_RATIO + c.defense * 7 + 300 &&

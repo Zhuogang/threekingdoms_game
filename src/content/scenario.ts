@@ -435,6 +435,17 @@ export function activateScenario(id: string): ScenarioDefinition {
   }
   return scenario;
 }
+/**
+ * The scenario a game belongs to, read from the game itself. The UI uses these instead of
+ * the live bindings above, so it never depends on which game last called activateScenario.
+ */
+export const scenarioOf = (state: { scenarioId: string }): ScenarioDefinition =>
+  scenarioById(state.scenarioId) ?? SCENARIOS[0]!;
+export const factionsOf = (state: { scenarioId: string }): Faction[] => scenarioOf(state).factions;
+export const factionOf = (
+  state: { scenarioId: string },
+  id: string | null | undefined,
+): Faction | undefined => factionsOf(state).find((f) => f.id === id);
 export function factionById(id: string | null | undefined): Faction | undefined {
   return FACTIONS.find((f) => f.id === id);
 }

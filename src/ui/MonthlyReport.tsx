@@ -11,7 +11,7 @@ import {
   UserMinus,
   UserPlus,
 } from 'lucide-react';
-import { factionById } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import { GOAL_IDS } from '../game/advisor';
 import { HEGEMON_MONTHS } from '../game/world';
 import type { GameState, MonthlyReportEvent } from '../game/types';
@@ -48,7 +48,7 @@ export default function MonthlyReport({
   const events = expanded ? report.events : highlights;
   const cityName = (id: string) => state.cities.find((city) => city.id === id)?.name ?? id;
   const officerName = (id: string) => state.officers.find((o) => o.id === id)?.name ?? id;
-  const factionName = (id: string | null) => factionById(id)?.name ?? 'The garrison';
+  const factionName = (id: string | null) => factionOf(state, id)?.name ?? 'The garrison';
   function description(event: MonthlyReportEvent) {
     switch (event.kind) {
       case 'battle':

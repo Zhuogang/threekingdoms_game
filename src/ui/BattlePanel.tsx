@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   ArrowRight,
   ChevronDown,
@@ -19,7 +19,8 @@ import {
   Wind,
   X,
 } from 'lucide-react';
-import { TROOP_LABELS, factionById } from '../content/scenario';
+import { TROOP_LABELS } from '../content/scenario';
+import { FactionsContext } from './FactionsContext';
 import {
   TACTIC_POINT_CAP,
   forecastAttack,
@@ -107,6 +108,7 @@ export interface BattlePanelProps {
 /** The tactical command sidebar: unit orders, forecasts, supplies and the battle log. */
 export default function BattlePanel(props: BattlePanelProps) {
   const { t, tx } = useI18n();
+  const factions = useContext(FactionsContext);
   const { battle, unit, canAct, skill, execute } = props;
   const [legendOpen, setLegendOpen] = useState(false);
   const nextUnit = nextReadyUnit(battle, unit?.id ?? null);
@@ -140,8 +142,8 @@ export default function BattlePanel(props: BattlePanelProps) {
       <Wind size={16} />
     );
   const foeName = (u: BattleUnit) =>
-    factionById(u.side === 'attacker' ? battle.attackerId : battle.defenderId)?.name ??
-    'The garrison';
+    factions.find((f) => f.id === (u.side === 'attacker' ? battle.attackerId : battle.defenderId))
+      ?.name ?? 'The garrison';
   const moraleLabel = (u: BattleUnit) => {
     const state = moraleState(u);
     return state === 'routed' ? 'Routed' : state === 'wavering' ? 'Wavering' : null;

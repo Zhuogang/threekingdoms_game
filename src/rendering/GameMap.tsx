@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Application, Container, Graphics, Text, type TextStyleOptions } from 'pixi.js';
-import { FACTIONS } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import { getOfficerIdentity } from '../content/officerIdentity';
 import { TROOP_VISUALS } from '../content/troopVisuals';
 import { DISPLAY_PRESETS, type DisplayPreset } from '../ui/display';
@@ -85,8 +85,8 @@ interface LabelHitArea {
   bottom: number;
 }
 
-function factionColor(id: string | null): number {
-  const hex = FACTIONS.find((faction) => faction.id === id)?.color ?? '#8b8c79';
+function factionColor(state: GameState, id: string | null): number {
+  const hex = factionOf(state, id)?.color ?? '#8b8c79';
   return Number.parseInt(hex.replace('#', ''), 16);
 }
 
@@ -319,7 +319,7 @@ function drawCampaign(
     const polygon = influencePolygon(city, state.cities);
     if (polygon.length < 3) continue;
     const points = polygon.flatMap((point) => [point.x, point.y]);
-    territories.poly(points).fill({ color: factionColor(city.factionId), alpha: 0.035 });
+    territories.poly(points).fill({ color: factionColor(state, city.factionId), alpha: 0.035 });
   }
   const roads = new Graphics();
   parent.addChild(roads);
@@ -348,7 +348,7 @@ function drawCampaign(
     roads
       .moveTo(from.x, from.y)
       .lineTo(to.x, to.y)
-      .stroke({ color: factionColor(order.factionId), width: 2, alpha: 0.7 });
+      .stroke({ color: factionColor(state, order.factionId), width: 2, alpha: 0.7 });
     const angle = Math.atan2(to.y - from.y, to.x - from.x);
     const x = from.x + (to.x - from.x) * 0.64;
     const y = from.y + (to.y - from.y) * 0.64;
@@ -361,7 +361,7 @@ function drawCampaign(
         x + Math.cos(angle - 2.4) * 6,
         y + Math.sin(angle - 2.4) * 6,
       ])
-      .fill(factionColor(order.factionId));
+      .fill(factionColor(state, order.factionId));
   }
   let selectionRing: Graphics | null = null;
   const occupied: LabelHitArea[] = [];
@@ -373,7 +373,7 @@ function drawCampaign(
     const active = city.id === selectedCityId;
     const own = city.factionId === state.playerFactionId;
     const neighbor = selected?.neighbors.includes(city.id) ?? false;
-    const color = factionColor(city.factionId);
+    const color = factionColor(state, city.factionId);
     const marker = new Graphics();
     parent.addChild(marker);
     if (active) {
@@ -481,8 +481,8 @@ function drawBattleUnit(
   layer.addChild(parent);
   const tokens = DISPLAY_PRESETS[props.displayPreset ?? 'comfortable'];
   const factionId = unit.side === 'attacker' ? battle.attackerId : battle.defenderId;
-  const faction = FACTIONS.find((item) => item.id === factionId);
-  const color = factionColor(factionId);
+  const faction = factionOf(props.state, factionId);
+  const color = factionColor(props.state, factionId);
   const x = board.left + unit.x * board.tile,
     y = board.top + unit.y * board.tile;
   const cssTile = board.tile * scale,

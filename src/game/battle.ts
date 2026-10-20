@@ -2,7 +2,7 @@ import { battlefieldProfile } from '../content/scenario';
 import { hasTrait } from '../content/traits';
 import { random } from './random';
 import { SUPPLY_DIVISOR } from './supply';
-import type { BattleObserver } from './aiPolicy';
+import type { BattleObserver, WaitReason } from './aiPolicy';
 import type {
   AttackOrder,
   BattleSide,
@@ -86,6 +86,31 @@ const GATE_DAMAGE = 0.75;
 export const DEFAULT_DAY_LIMIT = 30;
 /** Centre-out deployment keeps the camp lanes closed on day one. */
 export const DEPLOY_ROWS = [5, 4, 6, 3, 7, 2, 8, 1, 9, 0];
+/** Share of a unit's troops a normal hit, a fire tactic and rockfall convert into damage. */
+export const NORMAL_DAMAGE_RATE = 0.25;
+export const FIRE_DAMAGE_RATE = 0.22;
+export const ROCKFALL_DAMAGE_RATE = 0.18;
+/** A weaker defender's units stay within this many tiles of their camp. */
+export const HOLD_NEAR_CAMP_RADIUS = 3;
+/**
+ * The live values of the balance levers, read by the engine. They start at the constants
+ * above, and only balance sweeps (DIAGNOSTIC_TUNING) change them; games never do.
+ */
+export const battleTuning = {
+  normalDamageRate: NORMAL_DAMAGE_RATE,
+  fireDamageRate: FIRE_DAMAGE_RATE,
+  rockfallDamageRate: ROCKFALL_DAMAGE_RATE,
+  counterRate: COUNTER_RATE,
+  guardCounterRate: GUARD_COUNTER_RATE,
+  flankBonus: FLANK_BONUS,
+  flankCap: FLANK_CAP,
+  routedMorale: ROUTED_MORALE,
+  holdNearCampRadius: HOLD_NEAR_CAMP_RADIUS,
+  /** An army whose every living unit is routed breaks at the end of the day. */
+  armyBreak: true,
+};
+export type BattleTuning = typeof battleTuning;
+export const DEFAULT_BATTLE_TUNING: Readonly<BattleTuning> = Object.freeze({ ...battleTuning });
 /** Tactical AI v2 is the default; v1 is kept for mirrored comparisons. */
 export type TacticalAi = 'v1' | 'v2';
 export const battleConfig: { tacticalAi: TacticalAi | Record<Side, TacticalAi> } = {
@@ -141,7 +166,8 @@ export const campTile = (battle: BattleState, side: Side): Tile => ({
 const camp = campTile;
 export const isWavering = (unit: Pick<BattleUnit, 'morale'>): boolean =>
   unit.morale < WAVERING_MORALE;
-export const isRouted = (unit: Pick<BattleUnit, 'morale'>): boolean => unit.morale < ROUTED_MORALE;
+export const isRouted = (unit: Pick<BattleUnit, 'morale'>): boolean =>
+  unit.morale < battleTuning.routedMorale;
 export type MoraleState = 'steady' | 'wavering' | 'routed';
 export function moraleState(unit: Pick<BattleUnit, 'morale'>): MoraleState {
   return isRouted(unit) ? 'routed' : isWavering(unit) ? 'wavering' : 'steady';
@@ -690,7 +716,7 @@ export function flankingMultiplier(
       candidate.id !== source.id &&
       distance(candidate, target) === 1,
   ).length;
-  return 1 + Math.min(FLANK_CAP, FLANK_BONUS * flankers);
+  return 1 + Math.min(battleTuning.flankCap, battleTuning.flankBonus * flankers);
 }
 
 /** Raw (unfloored) normal-attack damage. `variation` is 0.88–1.12 in play. */
@@ -714,7 +740,7 @@ export function normalDamage(
   return Math.max(
     20,
     source.troops *
-      0.25 *
+      battleTuning.normalDamageRate *
       force *
       morale *
       weather *
@@ -741,13 +767,18 @@ export function fireDamage(
   const ground = terrainAt(battle, target);
   const forest = ground === 'forest' ? 1.4 : ground === 'water' ? 0.35 : 1;
   const intelligence = Math.max(0.35, (source.intellect + 30) / (target.intellect + 55));
-  return Math.max(12, source.troops * 0.22 * intelligence * weather * forest * variation);
+  return Math.max(
+    12,
+    source.troops * battleTuning.fireDamageRate * intelligence * weather * forest * variation,
+  );
 }
 
 /** Rockfall ignores terrain defense and has no random component. */
 export function rockfallDamage(source: BattleUnit, target: BattleUnit): number {
   return Math.floor(
-    source.troops * 0.18 * Math.max(0.35, (source.intellect + 30) / (target.intellect + 55)),
+    source.troops *
+      battleTuning.rockfallDamageRate *
+      Math.max(0.35, (source.intellect + 30) / (target.intellect + 55)),
   );
 }
 
@@ -759,7 +790,7 @@ const moraleAfterHit = (target: BattleUnit, casualties: number): number =>
     target.morale - Math.ceil((casualties / Math.max(1, target.initialTroops)) * 45),
   );
 const counterRate = (counterer: Pick<BattleUnit, 'troopType'>): number =>
-  counterer.troopType === 'guard' ? GUARD_COUNTER_RATE : COUNTER_RATE;
+  counterer.troopType === 'guard' ? battleTuning.guardCounterRate : battleTuning.counterRate;
 function counterDamage(
   battle: BattleState,
   counterer: BattleUnit,
@@ -1026,7 +1057,8 @@ function attack(
   );
   source.acted = true;
   source.moved = true;
-  if (kind === 'attack') observer?.battleAction?.({ side: source.side, kind: 'attack' });
+  if (kind === 'attack')
+    observer?.battleAction?.({ side: source.side, kind: 'attack', day: battle.day });
   log(
     battle,
     kind === 'ambush'
@@ -1041,7 +1073,7 @@ function attack(
       counterDamage(battle, target, source, (88 + random(draft, 25)) / 100),
       distance(source, target) === 1,
     );
-    observer?.battleAction?.({ side: target.side, kind: 'counter' });
+    observer?.battleAction?.({ side: target.side, kind: 'counter', day: battle.day });
     log(battle, `${target.name} counterattacks: ${num(answer)} casualties.`);
   }
   checkOutcome(battle);
@@ -1063,7 +1095,7 @@ function castSkill(
   target: BattleUnit,
 ): void {
   spendTacticPoints(battle, source, kind);
-  observer?.battleAction?.({ side: source.side, kind: 'tactic', skill: kind });
+  observer?.battleAction?.({ side: source.side, kind: 'tactic', skill: kind, day: battle.day });
   if (kind === 'ambush') {
     attack(draft, battle, source, target, 'ambush');
     return;
@@ -1106,7 +1138,7 @@ function castSkill(
 
 function move(battle: BattleState, unit: BattleUnit, destination: Tile): void {
   if (destination.x !== unit.x || destination.y !== unit.y)
-    observer?.battleAction?.({ side: unit.side, kind: 'move' });
+    observer?.battleAction?.({ side: unit.side, kind: 'move', day: battle.day });
   unit.x = destination.x;
   unit.y = destination.y;
   unit.moved = true;
@@ -1131,11 +1163,17 @@ function endTurnForUnit(unit: BattleUnit): void {
   unit.moved = true;
 }
 
-function runAction(draft: GameState, battle: BattleState, unit: BattleUnit, action: AiAction) {
+function runAction(
+  draft: GameState,
+  battle: BattleState,
+  unit: BattleUnit,
+  action: AiAction,
+  waitReason?: WaitReason,
+) {
   if (action.kind === 'attack') attack(draft, battle, unit, action.target);
   else if (action.kind === 'skill') castSkill(draft, battle, unit, action.skill, action.target);
   else {
-    observer?.battleAction?.({ side: unit.side, kind: 'wait' });
+    observer?.battleAction?.({ side: unit.side, kind: 'wait', day: battle.day, waitReason });
     endTurnForUnit(unit);
   }
 }
@@ -1340,7 +1378,8 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
 
   const restrict = (tile: Tile): boolean => {
     if (unit.id === context.guardId && distance(tile, context.ownCamp) > 1) return false;
-    if (context.holdNearCamp && distance(tile, context.ownCamp) > 3) return false;
+    if (context.holdNearCamp && distance(tile, context.ownCamp) > battleTuning.holdNearCampRadius)
+      return false;
     return true;
   };
   let candidates = tiles.filter(([index]) => restrict(tileOf(battle, index)));
@@ -1501,7 +1540,7 @@ function aiTacticValue(
   const after = target.morale - ROCKFALL_MORALE;
   const breaks =
     (target.morale >= WAVERING_MORALE && after < WAVERING_MORALE ? 1 : 0) +
-    (target.morale >= ROUTED_MORALE && after < ROUTED_MORALE ? 1 : 0);
+    (target.morale >= battleTuning.routedMorale && after < battleTuning.routedMorale ? 1 : 0);
   return mid + ROCKFALL_MORALE * MORALE_POINT_VALUE + breaks * MORALE_BREAK_BONUS;
 }
 
@@ -1539,6 +1578,14 @@ function forecastSkillFor(
   return result;
 }
 
+/** Why a tactical-AI unit ended its turn without attacking, for diagnostics only. */
+function waitReasonFor(battle: BattleState, unit: BattleUnit, context: AiContext): WaitReason {
+  if (isRouted(unit)) return 'routed';
+  if (getAttackTargets(battle, unit.id).length) return 'targetInRange';
+  if (unit.id === context.guardId || context.holdNearCamp) return 'heldBack';
+  return 'noTarget';
+}
+
 function aiTurnV2(draft: GameState, battle: BattleState, side: Side): void {
   const context = buildContext(battle, side);
   // Support units act first so a rally lands before its ally attacks.
@@ -1559,7 +1606,13 @@ function aiTurnV2(draft: GameState, battle: BattleState, side: Side): void {
     if (!unit.moved && (plan.tile.x !== unit.x || plan.tile.y !== unit.y))
       move(battle, unit, plan.tile);
     if (battle.outcome) break;
-    runAction(draft, battle, unit, plan.action);
+    runAction(
+      draft,
+      battle,
+      unit,
+      plan.action,
+      observer ? waitReasonFor(battle, unit, context) : undefined,
+    );
   }
 }
 
@@ -1599,7 +1652,7 @@ function finishDay(draft: GameState, battle: BattleState): void {
     const units = alive(battle, side);
     return units.length > 0 && units.every(isRouted);
   };
-  if (broken('attacker') || broken('defender')) {
+  if (battleTuning.armyBreak && (broken('attacker') || broken('defender'))) {
     const loser: Side = broken('attacker') ? 'attacker' : 'defender';
     log(
       battle,
@@ -1704,7 +1757,12 @@ export function processBattleCommand(draft: GameState, command: GameCommand): st
     return null;
   }
   if (command.type === 'battleWait') {
-    observer?.battleAction?.({ side: unit.side, kind: 'wait' });
+    observer?.battleAction?.({
+      side: unit.side,
+      kind: 'wait',
+      day: battle.day,
+      waitReason: 'player',
+    });
     unit.moved = true;
     unit.acted = true;
     return null;

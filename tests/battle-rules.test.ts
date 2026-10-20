@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEPLOY_ROWS,
+  DEFAULT_BATTLE_TUNING,
   autoResolveBattle,
   battleConfig,
+  battleTuning,
   campTile,
   createBattle,
   fireDamage,
@@ -20,6 +22,7 @@ import {
   processBattleCommand,
   startingTacticPoints,
   supplyDaysLeft,
+  withBattleObserver,
 } from '../src/game/battle';
 import { battlefieldProfile } from '../src/content/scenario';
 import type { BattleState, BattleUnit, Terrain } from '../src/game/types';
@@ -991,6 +994,54 @@ describe('tactical AI v2', () => {
     }
     expect(finished).toBeGreaterThanOrEqual(trials * 0.8);
     expect(totalDays / trials).toBeLessThan(18);
+  });
+
+  it('routes the balance levers through battleTuning, whose defaults are the named constants', () => {
+    expect(battleTuning).toEqual(DEFAULT_BATTLE_TUNING);
+    expect(DEFAULT_BATTLE_TUNING.normalDamageRate).toBe(0.25);
+    const battle = battlefield();
+    const a = find(battle, 'a');
+    const b = find(battle, 'b');
+    const base = normalDamage(battle, a, b, 1);
+    try {
+      battleTuning.normalDamageRate = 0.2;
+      expect(normalDamage(battle, a, b, 1)).toBeCloseTo(base * 0.8, 6);
+      battleTuning.routedMorale = 30;
+      expect(moraleState({ morale: 25 })).toBe('routed');
+    } finally {
+      Object.assign(battleTuning, DEFAULT_BATTLE_TUNING);
+    }
+    expect(normalDamage(battle, a, b, 1)).toBe(base);
+  });
+
+  it('tells diagnostics the day of every action and why each AI unit waited, without changing play', () => {
+    const setup = () => {
+      const state = game();
+      state.rng = 77;
+      state.officers = Array.from({ length: 6 }, (_, i) => [
+        officer(`a-${i}`, 'home', 'blue'),
+        officer(`b-${i}`, 'target', 'red'),
+      ]).flat();
+      state.battle = createBattle(state, {
+        ...order,
+        officerIds: state.officers.filter((o) => o.factionId === 'blue').map((o) => o.id),
+      });
+      return state;
+    };
+    const events: { kind: string; day?: number; waitReason?: string }[] = [];
+    const watched = setup();
+    withBattleObserver({ battleAction: (event) => events.push(event) }, () =>
+      autoResolveBattle(watched),
+    );
+    const plain = setup();
+    autoResolveBattle(plain);
+    expect(watched).toEqual(plain);
+    expect(events.length).toBeGreaterThan(0);
+    expect(events.every((e) => Number.isInteger(e.day) && e.day! >= 1)).toBe(true);
+    const waits = events.filter((e) => e.kind === 'wait');
+    expect(waits.length).toBeGreaterThan(0);
+    for (const wait of waits)
+      expect(['routed', 'targetInRange', 'heldBack', 'noTarget']).toContain(wait.waitReason);
   });
 
   it('beats the legacy AI in at least 60% of decisive mirrored battles', () => {

@@ -12,10 +12,11 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:production": "playwright test --config playwright.production.config.ts",
+    "test:fps": "playwright test --config playwright.fps.config.ts",
     "validate:portraits": "node tools/validate-portraits.mjs",
     "diagnostics:ai": "node tools/ai-diagnostics.mjs",
-    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts .prettierrc.json",
-    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts .prettierrc.json"
+    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json",
+    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json"
   },
   "engines": {
     "node": ">=22.12.0"

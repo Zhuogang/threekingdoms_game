@@ -1,5 +1,5 @@
 import { Gavel, Handshake, Unlock } from 'lucide-react';
-import { factionById } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import { getActionInfo, getPersuadeChance } from '../game/campaign';
 import type { City, GameCommand, GameState } from '../game/types';
 import { useI18n } from '../i18n';
@@ -51,7 +51,7 @@ export default function PrisonerPanel({
             <span>
               <strong>{tx(prisoner.name)}</strong>
               <small>
-                {tx(factionById(prisoner.factionId)?.name ?? '')} · {t('Loyalty')}{' '}
+                {tx(factionOf(state, prisoner.factionId)?.name ?? '')} · {t('Loyalty')}{' '}
                 {prisoner.loyalty}
               </small>
             </span>

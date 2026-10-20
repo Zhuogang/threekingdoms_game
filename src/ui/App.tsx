@@ -54,11 +54,11 @@ import {
 import { session } from '../app/session';
 import {
   DEFAULT_SCENARIO_ID,
-  FACTIONS,
-  SCENARIO,
   SCENARIOS,
   TROOP_LABELS,
-  factionById,
+  factionOf,
+  factionsOf,
+  scenarioOf,
 } from '../content/scenario';
 import {
   getActionInfo,
@@ -98,6 +98,7 @@ import AdvisorPanel from './AdvisorPanel';
 import BattleSummary, { playerWon } from './BattleSummary';
 import MarchDialog from './MarchDialog';
 import OfficerMark from './OfficerMark';
+import { FactionsContext } from './FactionsContext';
 import PrisonerPanel from './PrisonerPanel';
 import TraitChips from './TraitChips';
 import TroopLegend from './TroopLegend';
@@ -260,6 +261,10 @@ function randomSeed(): string {
 }
 const AGGRESSION_OPTIONS: RivalAggression[] = ['cautious', 'balanced', 'aggressive'];
 const TRUCE_MONTHS = 2;
+/** A saved slot's scenario, read from its envelope (slot summaries predate scenarios). */
+const slotScenario = (record: SaveRecord) => ({
+  scenarioId: /"scenario":"([\w-]+)"/.exec(record.payload)?.[1] ?? DEFAULT_SCENARIO_ID,
+});
 // The map (Pixi) and the battle panel load on demand, keeping them out of the first chunk.
 const GameMap = lazy(() => import('../rendering/GameMap'));
 const BattlePanel = lazy(() => import('./BattlePanel'));
@@ -471,7 +476,7 @@ export default function App() {
     [skill, setSkill] = useState<BattleSkill | null>(null);
   const [battleDestination, setBattleDestination] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
-  const player = factionById(state.playerFactionId)!;
+  const player = factionOf(state, state.playerFactionId)!;
   const owned = state.cities.filter((c) => c.factionId === state.playerFactionId);
   const city = state.cities.find((c) => c.id === selectedCityId) ?? owned[0] ?? state.cities[0]!;
   const friendly = city.factionId === state.playerFactionId;
@@ -637,7 +642,7 @@ export default function App() {
       aging: newAging,
     });
     const next = session.getSnapshot();
-    const leader = next.officers.find((o) => o.name === factionById(ruler)?.leader);
+    const leader = next.officers.find((o) => o.name === factionOf(next, ruler)?.leader);
     focusCity(
       leader?.cityId ?? next.cities.find((c) => c.factionId === ruler)?.id ?? next.cities[0]!.id,
     );
@@ -840,1040 +845,1200 @@ export default function App() {
   }
 
   return (
-    <div
-      className={`game-shell ${reducedMotion ? 'reduced-motion' : ''} ${isBattle ? 'in-battle' : ''}`}
-      data-display={displayPreset}
-      style={
-        {
-          '--text-main': `${DISPLAY_PRESETS[displayPreset].mainText}px`,
-          '--text-secondary': `${DISPLAY_PRESETS[displayPreset].secondaryText}px`,
-          '--control-height': `${DISPLAY_PRESETS[displayPreset].controlHeight}px`,
-          '--portrait-small': `${{ compact: 40, comfortable: 48, large: 56 }[displayPreset]}px`,
-          '--portrait-large': `${{ compact: 96, comfortable: 128, large: 160 }[displayPreset]}px`,
-        } as React.CSSProperties
-      }
-    >
-      <header className="masthead">
-        <a
-          className="brand"
-          href="#"
-          aria-label={t('Hegemony of the Three Kingdoms')}
-          onClick={(e) => {
-            e.preventDefault();
-            setSection('realm');
-          }}
-        >
-          <span className="brand-seal">霸</span>
-          <span className="brand-word">
-            {t('HEGEMONY')}
-            <small>{t('THREE KINGDOMS')}</small>
-          </span>
-        </a>
-        <nav aria-label={t('Main navigation')}>
-          <button
-            className={section === 'realm' ? 'active' : ''}
-            onClick={() => setSection('realm')}
+    <FactionsContext.Provider value={factionsOf(state)}>
+      <div
+        className={`game-shell ${reducedMotion ? 'reduced-motion' : ''} ${isBattle ? 'in-battle' : ''}`}
+        data-display={displayPreset}
+        style={
+          {
+            '--text-main': `${DISPLAY_PRESETS[displayPreset].mainText}px`,
+            '--text-secondary': `${DISPLAY_PRESETS[displayPreset].secondaryText}px`,
+            '--control-height': `${DISPLAY_PRESETS[displayPreset].controlHeight}px`,
+            '--portrait-small': `${{ compact: 40, comfortable: 48, large: 56 }[displayPreset]}px`,
+            '--portrait-large': `${{ compact: 96, comfortable: 128, large: 160 }[displayPreset]}px`,
+          } as React.CSSProperties
+        }
+      >
+        <header className="masthead">
+          <a
+            className="brand"
+            href="#"
+            aria-label={t('Hegemony of the Three Kingdoms')}
+            onClick={(e) => {
+              e.preventDefault();
+              setSection('realm');
+            }}
           >
-            <Map size={16} />
-            {t('The realm')}
-          </button>
-          <button
-            className={section === 'officers' ? 'active' : ''}
-            onClick={() => setSection('officers')}
-          >
-            <Users size={16} />
-            {t('Officers')}
-          </button>
-          <button
-            className={section === 'chronicle' ? 'active' : ''}
-            onClick={() => setSection('chronicle')}
-          >
-            <ScrollText size={16} />
-            {t('Chronicle')}
-            {state.log.length > 0 && <span className="nav-dot" />}
-          </button>
-        </nav>
-        <div className="masthead-tools">
-          <LanguageSwitch />
-          <button className="icon-button" onClick={openSaves} aria-label={t('Save and load')}>
-            <Save size={18} />
-          </button>
-          <button
-            className="icon-button"
-            onClick={() => setModal('help')}
-            aria-label={t('How to play')}
-          >
-            <CircleHelp size={18} />
-          </button>
-          <button
-            className="icon-button"
-            onClick={() => setModal('settings')}
-            aria-label={t('Settings')}
-          >
-            <Settings size={18} />
-          </button>
-          <span className="vertical-line" />
-          <div className="ruler-chip">
-            <span style={{ background: player.color }}>{player.chinese}</span>
-            <div>
-              {tx(player.name)}
-              <small>{t('Your banner')}</small>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <section className="campaign-bar" aria-label={t('Campaign summary')}>
-        <div className="scenario-title">
-          <span className="eyebrow">
-            {t('CAMPAIGN 01')} <span className="tiny-line" />
-          </span>
-          <h1>{tx(SCENARIO.title)}</h1>
-        </div>
-        <div className="realm-stats">
-          <Stat
-            icon={Landmark}
-            label={t('Cities')}
-            value={
-              <>
-                {owned.length}
-                <em> / {state.cities.length}</em>
-              </>
-            }
-          />
-          <Stat
-            icon={Coins}
-            label={t('Treasury')}
-            value={compact(owned.reduce((s, c) => s + c.gold, 0))}
-          />
-          <Stat
-            icon={Wheat}
-            label={t('Provisions')}
-            value={compact(owned.reduce((s, c) => s + c.food, 0))}
-          />
-          <Stat icon={Shield} label={t('Field troops')} value={compact(army)} />
-        </div>
-        <div className="date-box">
-          <span>{tx(MONTHS[state.month - 1])}</span>
-          <strong>
-            {state.year}
-            <small> {t('AD')}</small>
-          </strong>
-        </div>
-      </section>
-
-      <main className="workspace">
-        <section
-          className="map-pane"
-          aria-label={tx(isBattle ? 'Tactical battlefield' : 'Campaign map')}
-        >
-          <div className="map-topline">
-            <span className="map-kicker">
-              <i />{' '}
-              {isBattle
-                ? t('BATTLE OF {city}', {
-                    city: state.cities.find((c) => c.id === battle.order.targetId)?.name ?? '',
-                  })
-                : t('THE HAN REALM')}
+            <span className="brand-seal">霸</span>
+            <span className="brand-word">
+              {t('HEGEMONY')}
+              <small>{t('THREE KINGDOMS')}</small>
             </span>
-            <span>
-              {isBattle
-                ? t('DAY {day} / {limit}', { day: battle.day, limit: battle.dayLimit })
-                : tx('山河万里 · A THOUSAND LEAGUES')}
-            </span>
-          </div>
-          <Suspense fallback={<div className="map-loading" aria-busy="true" />}>
-            <GameMap
-              state={state}
-              locale={locale}
-              selectedCityId={city.id}
-              onSelectCity={chooseCity}
-              selectedUnitId={unit?.id ?? null}
-              onSelectUnit={selectBattleUnit}
-              onBattleTile={moveBattleUnit}
-              reducedMotion={reducedMotion}
-              displayPreset={displayPreset}
-              cameraFocus={cameraFocus ?? undefined}
-              showThreat={showThreat && isBattle}
-            />
-          </Suspense>
-          {!isBattle && (
-            <>
-              <div className="map-legend">
-                {FACTIONS.map((f) => (
-                  <span key={f.id}>
-                    <i style={{ background: f.color }} />
-                    {tx(f.name)}
-                  </span>
-                ))}
-                <span>
-                  <i style={{ background: '#9b9587' }} />
-                  {t('Unclaimed')}
-                </span>
+          </a>
+          <nav aria-label={t('Main navigation')}>
+            <button
+              className={section === 'realm' ? 'active' : ''}
+              onClick={() => setSection('realm')}
+            >
+              <Map size={16} />
+              {t('The realm')}
+            </button>
+            <button
+              className={section === 'officers' ? 'active' : ''}
+              onClick={() => setSection('officers')}
+            >
+              <Users size={16} />
+              {t('Officers')}
+            </button>
+            <button
+              className={section === 'chronicle' ? 'active' : ''}
+              onClick={() => setSection('chronicle')}
+            >
+              <ScrollText size={16} />
+              {t('Chronicle')}
+              {state.log.length > 0 && <span className="nav-dot" />}
+            </button>
+          </nav>
+          <div className="masthead-tools">
+            <LanguageSwitch />
+            <button className="icon-button" onClick={openSaves} aria-label={t('Save and load')}>
+              <Save size={18} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={() => setModal('help')}
+              aria-label={t('How to play')}
+            >
+              <CircleHelp size={18} />
+            </button>
+            <button
+              className="icon-button"
+              onClick={() => setModal('settings')}
+              aria-label={t('Settings')}
+            >
+              <Settings size={18} />
+            </button>
+            <span className="vertical-line" />
+            <div className="ruler-chip">
+              <span style={{ background: player.color }}>{player.chinese}</span>
+              <div>
+                {tx(player.name)}
+                <small>{t('Your banner')}</small>
               </div>
-              <button
-                className="city-index-button"
-                onClick={() => setCityList(!cityList)}
-                aria-expanded={cityList}
-              >
-                <Landmark size={15} />
-                {t('City index')} <ChevronDown size={14} />
-              </button>
-              {cityList && (
-                <div className="city-index">
-                  <div className="search-field">
-                    <Search size={15} />
-                    <input
-                      placeholder={t('Find a city…')}
-                      value={cityFilter}
-                      onChange={(e) => setCityFilter(e.target.value)}
-                      aria-label={t('Find a city')}
-                    />
-                  </div>
-                  {state.cities
-                    .filter((c) =>
-                      (c.name + c.chinese).toLowerCase().includes(cityFilter.toLowerCase()),
-                    )
-                    .map((c) => (
-                      <button key={c.id} onClick={() => chooseCity(c.id)}>
-                        <i style={{ background: factionById(c.factionId)?.color ?? '#999' }} />
-                        <span>
-                          {tx(c.name)}
-                          {locale === 'en' && <small>{c.chinese}</small>}
-                        </span>
-                        <ChevronRight size={13} />
-                      </button>
-                    ))}
-                </div>
-              )}
-            </>
-          )}
-          {busy && (
-            <div className="processing">
-              <div className="spinner" />
-              <strong>{t('The realm stirs…')}</strong>
-              <span>{t('Resolving orders and rival ambitions')}</span>
             </div>
-          )}
+          </div>
+        </header>
+
+        <section className="campaign-bar" aria-label={t('Campaign summary')}>
+          <div className="scenario-title">
+            <span className="eyebrow">
+              {t('CAMPAIGN 01')} <span className="tiny-line" />
+            </span>
+            <h1>{tx(scenarioOf(state).title)}</h1>
+          </div>
+          <div className="realm-stats">
+            <Stat
+              icon={Landmark}
+              label={t('Cities')}
+              value={
+                <>
+                  {owned.length}
+                  <em> / {state.cities.length}</em>
+                </>
+              }
+            />
+            <Stat
+              icon={Coins}
+              label={t('Treasury')}
+              value={compact(owned.reduce((s, c) => s + c.gold, 0))}
+            />
+            <Stat
+              icon={Wheat}
+              label={t('Provisions')}
+              value={compact(owned.reduce((s, c) => s + c.food, 0))}
+            />
+            <Stat icon={Shield} label={t('Field troops')} value={compact(army)} />
+          </div>
+          <div className="date-box">
+            <span>{tx(MONTHS[state.month - 1])}</span>
+            <strong>
+              {state.year}
+              <small> {t('AD')}</small>
+            </strong>
+          </div>
         </section>
 
-        <aside className="inspector">
-          {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}
-          {!isBattle && section === 'realm' && started && (
-            <AdvisorPanel state={state} onFocusCity={focusCity} execute={execute} />
-          )}
-          ﻿{' '}
-          {isBattle && battle ? (
-            <Suspense fallback={null}>
-              <BattlePanel
-                battle={battle}
-                unit={unit}
-                canAct={canBattleAct}
-                skill={skill}
-                setSkill={setSkill}
-                reachableTiles={reachableTiles}
-                destination={battleDestination}
-                setDestination={setBattleDestination}
-                moveUnit={moveBattleUnit}
-                selectUnit={(id) => {
-                  setSelectedUnitId(id);
-                  setSkill(null);
-                  setBattleDestination('');
-                }}
-                chooseSkill={chooseBattleSkill}
-                performTarget={performBattleTarget}
-                execute={execute}
-                nextCommander={nextCommander}
-                showThreat={showThreat}
-                setShowThreat={setShowThreat}
-                advanceToContact={advanceToContact}
-                advancing={advancing}
+        <main className="workspace">
+          <section
+            className="map-pane"
+            aria-label={tx(isBattle ? 'Tactical battlefield' : 'Campaign map')}
+          >
+            <div className="map-topline">
+              <span className="map-kicker">
+                <i />{' '}
+                {isBattle
+                  ? t('BATTLE OF {city}', {
+                      city: state.cities.find((c) => c.id === battle.order.targetId)?.name ?? '',
+                    })
+                  : t('THE HAN REALM')}
+              </span>
+              <span>
+                {isBattle
+                  ? t('DAY {day} / {limit}', { day: battle.day, limit: battle.dayLimit })
+                  : tx('山河万里 · A THOUSAND LEAGUES')}
+              </span>
+            </div>
+            <Suspense fallback={<div className="map-loading" aria-busy="true" />}>
+              <GameMap
+                state={state}
+                locale={locale}
+                selectedCityId={city.id}
+                onSelectCity={chooseCity}
+                selectedUnitId={unit?.id ?? null}
+                onSelectUnit={selectBattleUnit}
+                onBattleTile={moveBattleUnit}
+                reducedMotion={reducedMotion}
+                displayPreset={displayPreset}
+                cameraFocus={cameraFocus ?? undefined}
+                showThreat={showThreat && isBattle}
               />
             </Suspense>
-          ) : section === 'officers' ? (
-            <>
-              <div className="inspector-title">
-                <span className="eyebrow">{t('THE PEOPLE BEHIND YOUR BANNER')}</span>
-                <h2>{t('Council of officers')}</h2>
-                <p>{t('Talent wins battles. Loyalty holds a realm.')}</p>
-              </div>
-              <div className="search-field roster-search">
-                <Search size={15} />
-                <input
-                  placeholder={t('Search your officers…')}
-                  value={officerFilter}
-                  onChange={(e) => setOfficerFilter(e.target.value)}
-                  aria-label={t('Search officers')}
-                />
-              </div>
-              <div className="roster">
-                {state.officers
-                  .filter(
-                    (o) =>
-                      o.factionId === player.id &&
-                      !o.captive &&
-                      (o.name + o.chinese).toLowerCase().includes(officerFilter.toLowerCase()),
-                  )
-                  .sort((a, b) => b.force + b.intellect - a.force - a.intellect)
-                  .map((o) => (
-                    <button
-                      className="roster-row"
-                      key={o.id}
-                      onClick={() => {
-                        chooseCity(o.cityId);
-                        setSelectedOfficerId(o.id);
-                        setGroup(1);
-                      }}
-                    >
-                      <OfficerMark officer={o} />
-                      <span className="roster-info">
-                        <strong>{tx(o.name)}</strong>
-                        <small>
-                          <TroopIcon type={o.troopType} />
-                          {tx(TROOP_LABELS[o.troopType])} ·{' '}
-                          {tx(state.cities.find((c) => c.id === o.cityId)?.name)} ·{' '}
-                          {tx(o.busy ? 'On assignment' : 'Available')}
-                        </small>
-                        <span>
-                          <Swords size={11} />
-                          {o.force}
-                          <BookOpen size={11} />
-                          {o.intellect}
-                          <Heart size={11} />
-                          {o.loyalty}
-                          {o.level > 0 && (
-                            <>
-                              <Star size={11} />
-                              {o.level}
-                            </>
-                          )}
-                        </span>
-                      </span>
-                      <ChevronRight size={14} />
-                    </button>
-                  ))}
-              </div>
-              {(() => {
-                const captured = state.officers.filter(
-                  (o) => o.factionId === player.id && o.captive && o.fate === 'active',
-                );
-                if (!captured.length) return null;
-                return (
-                  <div className="roster roster-captives" data-testid="captured-officers">
-                    <span className="eyebrow">{t('CAPTURED OFFICERS')}</span>
-                    {captured.map((o) => {
-                      const holding = state.cities.find((c) => c.id === o.cityId);
-                      return (
-                        <div className="roster-row" key={o.id}>
-                          <OfficerMark officer={o} />
-                          <span className="roster-info">
-                            <strong>{tx(o.name)}</strong>
-                            <small>
-                              {t('Held by {faction} in {city}', {
-                                faction: tx(
-                                  factionById(holding?.factionId)?.name ?? 'The garrison',
-                                ),
-                                city: tx(holding?.name ?? o.cityId),
-                              })}
-                            </small>
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </>
-          ) : section === 'chronicle' ? (
-            <>
-              <div className="inspector-title">
-                <span className="eyebrow">{t('A HISTORY IN THE MAKING')}</span>
-                <h2>{t('The chronicle')}</h2>
-                <p>{t('Every decision leaves its mark.')}</p>
-              </div>
-              <div className="chronicle">
-                {[...state.log].reverse().map((entry) => (
-                  <article key={entry.id} className={entry.kind}>
-                    <span className="log-icon">
-                      {entry.kind === 'military' ? (
-                        <Swords size={14} />
-                      ) : entry.kind === 'economy' ? (
-                        <Wheat size={14} />
-                      ) : entry.kind === 'diplomacy' ? (
-                        <Handshake size={14} />
-                      ) : (
-                        <ScrollText size={14} />
-                      )}
+            {!isBattle && (
+              <>
+                <div className="map-legend">
+                  {factionsOf(state).map((f) => (
+                    <span key={f.id}>
+                      <i style={{ background: f.color }} />
+                      {tx(f.name)}
                     </span>
-                    <div>
-                      <small>
-                        {t('TURN')} {entry.turn + 1} · {tx(entry.kind.toUpperCase())}
-                      </small>
-                      <p>{tx(entry.text)}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="city-heading">
-                <div>
-                  <span className="eyebrow">{tx(city.region)}</span>
-                  <h2>
-                    {tx(city.name)}
-                    {locale === 'en' && <span>{city.chinese}</span>}
-                  </h2>
+                  ))}
+                  <span>
+                    <i style={{ background: '#9b9587' }} />
+                    {t('Unclaimed')}
+                  </span>
                 </div>
-                <span
-                  className="ownership-badge"
-                  style={
-                    {
-                      '--badge-color': factionById(city.factionId)?.color ?? '#7b786b',
-                    } as React.CSSProperties
-                  }
+                <button
+                  className="city-index-button"
+                  onClick={() => setCityList(!cityList)}
+                  aria-expanded={cityList}
                 >
-                  <i />
-                  {friendly ? t('YOUR CITY') : tx(factionById(city.factionId)?.name ?? 'UNCLAIMED')}
-                </span>
+                  <Landmark size={15} />
+                  {t('City index')} <ChevronDown size={14} />
+                </button>
+                {cityList && (
+                  <div className="city-index">
+                    <div className="search-field">
+                      <Search size={15} />
+                      <input
+                        placeholder={t('Find a city…')}
+                        value={cityFilter}
+                        onChange={(e) => setCityFilter(e.target.value)}
+                        aria-label={t('Find a city')}
+                      />
+                    </div>
+                    {state.cities
+                      .filter((c) =>
+                        (c.name + c.chinese).toLowerCase().includes(cityFilter.toLowerCase()),
+                      )
+                      .map((c) => (
+                        <button key={c.id} onClick={() => chooseCity(c.id)}>
+                          <i
+                            style={{ background: factionOf(state, c.factionId)?.color ?? '#999' }}
+                          />
+                          <span>
+                            {tx(c.name)}
+                            {locale === 'en' && <small>{c.chinese}</small>}
+                          </span>
+                          <ChevronRight size={13} />
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </>
+            )}
+            {busy && (
+              <div className="processing">
+                <div className="spinner" />
+                <strong>{t('The realm stirs…')}</strong>
+                <span>{t('Resolving orders and rival ambitions')}</span>
               </div>
-              <div className="city-resources">
-                <Stat
-                  icon={Users}
-                  label={t('Population')}
-                  value={fogged ? approx(city.population, 'population') : compact(city.population)}
+            )}
+          </section>
+
+          <aside className="inspector">
+            {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}
+            {!isBattle && section === 'realm' && started && (
+              <AdvisorPanel state={state} onFocusCity={focusCity} execute={execute} />
+            )}
+            ﻿{' '}
+            {isBattle && battle ? (
+              <Suspense fallback={null}>
+                <BattlePanel
+                  battle={battle}
+                  unit={unit}
+                  canAct={canBattleAct}
+                  skill={skill}
+                  setSkill={setSkill}
+                  reachableTiles={reachableTiles}
+                  destination={battleDestination}
+                  setDestination={setBattleDestination}
+                  moveUnit={moveBattleUnit}
+                  selectUnit={(id) => {
+                    setSelectedUnitId(id);
+                    setSkill(null);
+                    setBattleDestination('');
+                  }}
+                  chooseSkill={chooseBattleSkill}
+                  performTarget={performBattleTarget}
+                  execute={execute}
+                  nextCommander={nextCommander}
+                  showThreat={showThreat}
+                  setShowThreat={setShowThreat}
+                  advanceToContact={advanceToContact}
+                  advancing={advancing}
                 />
-                <Stat icon={Coins} label={t('Gold')} value={approx(city.gold, 'gold')} />
-                <Stat
-                  icon={Wheat}
-                  label={t('Food')}
-                  value={fogged ? approx(city.food, 'food') : compact(city.food)}
-                />
-                <Stat icon={Shield} label={t('Reserves')} value={approx(city.reserve, 'reserve')} />
-              </div>
-              {fogged && (
-                <p className="inline-notice" role="note" data-testid="fog-notice">
-                  {t(
-                    'Fog of war: these figures are estimates. Scout this city from a neighboring city of yours to see exact numbers for two months.',
-                  )}
-                </p>
-              )}
-              <div className="city-meters">
-                <Meter label={t('Agriculture')} value={city.farming} max={999} fog={fogged} />
-                <Meter
-                  label={t('Commerce')}
-                  value={city.commerce}
-                  max={999}
-                  color="#b28b50"
-                  fog={fogged}
-                />
-                <div className="split-meters">
-                  <Meter label={t('Public loyalty')} value={city.loyalty} fog={fogged} />
-                  <Meter
-                    label={t('Fortifications')}
-                    value={city.defense}
-                    color="#82909b"
-                    fog={fogged}
+              </Suspense>
+            ) : section === 'officers' ? (
+              <>
+                <div className="inspector-title">
+                  <span className="eyebrow">{t('THE PEOPLE BEHIND YOUR BANNER')}</span>
+                  <h2>{t('Council of officers')}</h2>
+                  <p>{t('Talent wins battles. Loyalty holds a realm.')}</p>
+                </div>
+                <div className="search-field roster-search">
+                  <Search size={15} />
+                  <input
+                    placeholder={t('Search your officers…')}
+                    value={officerFilter}
+                    onChange={(e) => setOfficerFilter(e.target.value)}
+                    aria-label={t('Search officers')}
                   />
                 </div>
-              </div>
-              <div className="section-heading">
-                <h3>{t('Officers in residence')}</h3>
-                <span>
-                  {available.length} {t('available')}
-                </span>
-              </div>
-              <div className="officer-select-row">
-                {cityOfficers.length ? (
-                  cityOfficers.map((o) => (
-                    <button
-                      key={o.id}
-                      className={`officer-choice ${officer?.id === o.id ? 'selected' : ''} ${o.busy ? 'busy' : ''}`}
-                      onClick={() => setSelectedOfficerId(o.id)}
-                      title={t('{name} · {status}', {
-                        name: o.name,
-                        status: o.busy ? 'On assignment' : 'Available',
-                      })}
-                      aria-label={t('Select {name}', { name: o.name })}
-                    >
-                      <OfficerMark officer={o} size="small" />
-                      {o.busy ? (
-                        <span className="busy-dot" />
-                      ) : officer?.id === o.id ? (
-                        <span className="selected-check">
-                          <Check size={9} />
-                        </span>
-                      ) : null}
-                    </button>
-                  ))
-                ) : (
-                  <p className="subtle">{t('No sworn officers in this city.')}</p>
-                )}
-              </div>
-              {officer && (
-                <div className="officer-summary">
-                  <Portrait officerId={officer.id} large />
-                  <div>
-                    <strong>{tx(officer.name)}</strong>
-                    <span className="troop-description">
-                      <TroopIcon type={officer.troopType} />
-                      {tx(TROOP_LABELS[officer.troopType])} ·{' '}
-                      {fogged ? approx(officer.troops, officer.id) : number(officer.troops)}{' '}
-                      {t('troops')}
-                    </span>
-                    <TraitChips officerId={officer.id} />
-                  </div>
-                  <div className="officer-attributes">
-                    <span title={t('Might')}>
-                      <Swords size={13} />
-                      {officer.force}
-                    </span>
-                    <span title={t('Intellect')}>
-                      <BookOpen size={13} />
-                      {officer.intellect}
-                    </span>
-                    <span title={t('Stamina')}>
-                      <Heart size={13} />
-                      {officer.stamina}
-                    </span>
-                    {officer.level > 0 && (
-                      <span title={t('Veteran level')}>
-                        <Star size={13} />
-                        {officer.level}
-                      </span>
-                    )}
-                  </div>
-                  {officer.equipment && (
-                    <small className="equipment-label">
-                      <Shield size={12} />
-                      {tx(officer.equipment)}
-                    </small>
-                  )}
-                </div>
-              )}
-              {friendly && state.phase === 'planning' ? (
-                <>
-                  <div className="command-tabs" role="tablist" aria-label={t('Command category')}>
-                    {GROUPS.map((g, index) => (
+                <div className="roster">
+                  {state.officers
+                    .filter(
+                      (o) =>
+                        o.factionId === player.id &&
+                        !o.captive &&
+                        (o.name + o.chinese).toLowerCase().includes(officerFilter.toLowerCase()),
+                    )
+                    .sort((a, b) => b.force + b.intellect - a.force - a.intellect)
+                    .map((o) => (
                       <button
-                        role="tab"
-                        aria-selected={group === index}
-                        key={g.name}
-                        className={`${group === index ? 'active' : ''} ${g.warning ? 'warning' : ''}`}
+                        className="roster-row"
+                        key={o.id}
                         onClick={() => {
-                          setGroup(index);
-                          setTargetId('');
+                          chooseCity(o.cityId);
+                          setSelectedOfficerId(o.id);
+                          setGroup(1);
                         }}
                       >
-                        {tx(g.name)}
+                        <OfficerMark officer={o} />
+                        <span className="roster-info">
+                          <strong>{tx(o.name)}</strong>
+                          <small>
+                            <TroopIcon type={o.troopType} />
+                            {tx(TROOP_LABELS[o.troopType])} ·{' '}
+                            {tx(state.cities.find((c) => c.id === o.cityId)?.name)} ·{' '}
+                            {tx(o.busy ? 'On assignment' : 'Available')}
+                          </small>
+                          <span>
+                            <Swords size={11} />
+                            {o.force}
+                            <BookOpen size={11} />
+                            {o.intellect}
+                            <Heart size={11} />
+                            {o.loyalty}
+                            {o.level > 0 && (
+                              <>
+                                <Star size={11} />
+                                {o.level}
+                              </>
+                            )}
+                          </span>
+                        </span>
+                        <ChevronRight size={14} />
                       </button>
                     ))}
-                  </div>
-                  {group === 1 && officer && (
-                    <div className="diplomacy-target">
-                      <label htmlFor="reorganize-type">{t('Reorganize as')}</label>
-                      <select
-                        id="reorganize-type"
-                        value={reorganizeType}
-                        onChange={(e) => setReorganizeType(e.target.value as TroopType | '')}
-                      >
-                        <option value="">{t('Choose a troop type')}</option>
-                        {(Object.keys(TROOP_LABELS) as TroopType[])
-                          .filter((type) => type !== officer.troopType)
-                          .map((type) => (
-                            <option key={type} value={type}>
-                              {tx(TROOP_LABELS[type])}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                  )}
-                  {group === 2 && (
-                    <div className="diplomacy-target">
-                      <label htmlFor="diplomatic-target">{t('Diplomatic target')}</label>
-                      <select
-                        id="diplomatic-target"
-                        value={targetId}
-                        onChange={(e) => setTargetId(e.target.value)}
-                      >
-                        <option value="">{t('Choose a city, ruler, or officer')}</option>
-                        <optgroup label={t('Neighboring cities — scout or subvert')}>
-                          {state.cities
-                            .filter((c) => city.neighbors.includes(c.id))
-                            .map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {tx(c.name)} · {tx(factionById(c.factionId)?.name ?? 'Unclaimed')}
-                              </option>
-                            ))}
-                        </optgroup>
-                        <optgroup label={t('Rival rulers — alliance')}>
-                          {FACTIONS.filter(
-                            (f) => f.id !== player.id && enemies.some((c) => c.factionId === f.id),
-                          ).map((f) => (
-                            <option key={f.id} value={f.id}>
-                              {tx(f.name)} ·{' '}
-                              {t('{count}% chance', {
-                                count: getAllianceChance(
-                                  state,
-                                  player.id,
-                                  f.id,
-                                  officer?.intellect ?? 0,
-                                ),
-                              })}
-                            </option>
-                          ))}
-                        </optgroup>
-                        <optgroup label={t('Officers — persuade')}>
-                          {state.officers
-                            .filter(
-                              (o) =>
-                                isActiveOfficer(o) &&
-                                (o.factionId !== player.id || o.captive) &&
-                                (officer
-                                  ? getPersuadeChance(state, officer.id, o.id) !== null
-                                  : true) &&
-                                (o.cityId === city.id ||
-                                  (city.neighbors.includes(o.cityId) && o.factionId && !o.captive)),
-                            )
-                            .map((o) => (
-                              <option value={o.id} key={o.id}>
-                                {tx(o.name)} ·{' '}
-                                {tx(state.cities.find((c) => c.id === o.cityId)?.name)}
-                                {officer
-                                  ? ` · ${t('{count}% chance', {
-                                      count: getPersuadeChance(state, officer.id, o.id) ?? 0,
-                                    })}`
-                                  : ''}
-                              </option>
-                            ))}
-                        </optgroup>
-                      </select>
-                      {activeAlliances.map((alliance) => {
-                        const other = alliance.a === player.id ? alliance.b : alliance.a;
+                </div>
+                {(() => {
+                  const captured = state.officers.filter(
+                    (o) => o.factionId === player.id && o.captive && o.fate === 'active',
+                  );
+                  if (!captured.length) return null;
+                  return (
+                    <div className="roster roster-captives" data-testid="captured-officers">
+                      <span className="eyebrow">{t('CAPTURED OFFICERS')}</span>
+                      {captured.map((o) => {
+                        const holding = state.cities.find((c) => c.id === o.cityId);
                         return (
-                          <div className="alliance-row" key={`${alliance.a}-${alliance.b}`}>
-                            <Handshake size={14} />
-                            <span>
-                              {t('Allied with {faction} for {count} more months', {
-                                faction: factionById(other)?.name ?? other,
-                                count: alliance.untilTurn - state.turn,
-                              })}
+                          <div className="roster-row" key={o.id}>
+                            <OfficerMark officer={o} />
+                            <span className="roster-info">
+                              <strong>{tx(o.name)}</strong>
+                              <small>
+                                {t('Held by {faction} in {city}', {
+                                  faction: tx(
+                                    factionOf(state, holding?.factionId)?.name ?? 'The garrison',
+                                  ),
+                                  city: tx(holding?.name ?? o.cityId),
+                                })}
+                              </small>
                             </span>
-                            <button
-                              className="text-button danger"
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    t(
-                                      'Break the alliance with {faction}? Rulers remember: future treaties will be harder to win.',
-                                      { faction: factionById(other)?.name ?? other },
-                                    ),
-                                  )
-                                )
-                                  execute({ type: 'breakAlliance', factionId: other });
-                              }}
-                            >
-                              {t('Break alliance')}
-                            </button>
                           </div>
                         );
                       })}
                     </div>
-                  )}
-                  {officer?.busy && (
-                    <div className="inline-notice">
-                      {t('{name} is on assignment. Choose another officer or advance the month.', {
-                        name: officer.name,
-                      })}
-                    </div>
-                  )}
-                  <div className="command-grid">
-                    {GROUPS[group]!.actions.map((action) => {
-                      const info = getActionInfo(state, action, city.id, officer?.id),
-                        Icon = ACTIONS[action];
-                      return (
-                        <button
-                          key={action}
-                          disabled={!!info.reason}
-                          className={GROUPS[group]!.warning ? 'warning' : ''}
-                          onClick={() => performAction(action)}
-                          onMouseEnter={() => setPreviewAction(action)}
-                          onFocus={() => setPreviewAction(action)}
-                          title={tx(info.reason ?? info.description)}
-                        >
-                          <Icon size={18} />
-                          <span>
-                            <strong>{tx(info.label)}</strong>
-                            <small>
-                              {info.gold > 0 ? (
-                                <>
-                                  <Coins size={10} />
-                                  {info.gold}
-                                </>
-                              ) : (
-                                t('No gold cost')
-                              )}
-                              <span>
-                                {' '}
-                                · {info.stamina} {t('stamina')}
-                              </span>
-                            </small>
-                          </span>
-                          <ChevronRight size={13} />
-                        </button>
-                      );
-                    })}
+                  );
+                })()}
+              </>
+            ) : section === 'chronicle' ? (
+              <>
+                <div className="inspector-title">
+                  <span className="eyebrow">{t('A HISTORY IN THE MAKING')}</span>
+                  <h2>{t('The chronicle')}</h2>
+                  <p>{t('Every decision leaves its mark.')}</p>
+                </div>
+                <div className="chronicle">
+                  {[...state.log].reverse().map((entry) => (
+                    <article key={entry.id} className={entry.kind}>
+                      <span className="log-icon">
+                        {entry.kind === 'military' ? (
+                          <Swords size={14} />
+                        ) : entry.kind === 'economy' ? (
+                          <Wheat size={14} />
+                        ) : entry.kind === 'diplomacy' ? (
+                          <Handshake size={14} />
+                        ) : (
+                          <ScrollText size={14} />
+                        )}
+                      </span>
+                      <div>
+                        <small>
+                          {t('TURN')} {entry.turn + 1} · {tx(entry.kind.toUpperCase())}
+                        </small>
+                        <p>{tx(entry.text)}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="city-heading">
+                  <div>
+                    <span className="eyebrow">{tx(city.region)}</span>
+                    <h2>
+                      {tx(city.name)}
+                      {locale === 'en' && <span>{city.chinese}</span>}
+                    </h2>
                   </div>
-                  {officer &&
-                    (() => {
-                      const shown =
-                        previewAction && GROUPS[group]!.actions.includes(previewAction)
-                          ? previewAction
-                          : GROUPS[group]!.actions[0]!;
-                      const preview = getActionPreview(
-                        state,
-                        shown,
-                        city.id,
-                        officer.id,
-                        targetId || undefined,
-                      );
-                      return preview ? (
-                        <ActionPreviewBox
-                          action={shown}
-                          preview={preview}
-                          city={city}
-                          label={getActionInfo(state, shown, city.id, officer.id).label}
-                        />
-                      ) : null;
-                    })()}
-                  <PrisonerPanel state={state} city={city} execute={execute} />
-                  <div className="military-orders">
-                    <button
-                      className="primary-outline"
-                      onClick={openMarch}
-                      disabled={!available.some((o) => o.troops > 0)}
-                    >
-                      <Swords size={16} />
-                      {t('March an army')}
-                      <ArrowUpRight size={15} />
-                    </button>
-                    <div>
-                      <button
-                        onClick={() => {
-                          setMuster(officer?.troops ?? 0);
-                          setModal('muster');
-                        }}
-                        disabled={!officer || officer.busy}
-                      >
-                        <Shield size={14} />
-                        {t('Muster')}
-                      </button>
-                      <button onClick={openTransfer} disabled={!officer || officer.busy}>
-                        <Truck size={14} />
-                        {t('Transfer')}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : !friendly ? (
-                <div className="foreign-city">
-                  <Flag size={22} />
-                  <h3>{tx(city.factionId ? 'Beyond your borders' : 'A city without a banner')}</h3>
-                  <p>
-                    {tx(
-                      city.factionId
-                        ? 'Inspect this stronghold, then select an adjacent city of your own to prepare an army.'
-                        : 'An opportunity to expand your realm. March an army from an adjacent city to claim it.',
+                  <span
+                    className="ownership-badge"
+                    style={
+                      {
+                        '--badge-color': factionOf(state, city.factionId)?.color ?? '#7b786b',
+                      } as React.CSSProperties
+                    }
+                  >
+                    <i />
+                    {friendly
+                      ? t('YOUR CITY')
+                      : tx(factionOf(state, city.factionId)?.name ?? 'UNCLAIMED')}
+                  </span>
+                </div>
+                <div className="city-resources">
+                  <Stat
+                    icon={Users}
+                    label={t('Population')}
+                    value={
+                      fogged ? approx(city.population, 'population') : compact(city.population)
+                    }
+                  />
+                  <Stat icon={Coins} label={t('Gold')} value={approx(city.gold, 'gold')} />
+                  <Stat
+                    icon={Wheat}
+                    label={t('Food')}
+                    value={fogged ? approx(city.food, 'food') : compact(city.food)}
+                  />
+                  <Stat
+                    icon={Shield}
+                    label={t('Reserves')}
+                    value={approx(city.reserve, 'reserve')}
+                  />
+                </div>
+                {fogged && (
+                  <p className="inline-notice" role="note" data-testid="fog-notice">
+                    {t(
+                      'Fog of war: these figures are estimates. Scout this city from a neighboring city of yours to see exact numbers for two months.',
                     )}
                   </p>
-                  {state.cities
-                    .filter((c) => c.factionId === player.id && c.neighbors.includes(city.id))
-                    .map((c) => (
-                      <button className="text-button" key={c.id} onClick={() => chooseCity(c.id)}>
-                        {t('Prepare in {city}', { city: c.name })}
-                        <ArrowRight size={14} />
-                      </button>
-                    ))}
-                </div>
-              ) : null}
-              {state.orders
-                .filter((o) => o.sourceId === city.id)
-                .map((o) => (
-                  <div className="queued-order" key={o.id}>
-                    <Tent size={16} />
-                    <span>
-                      {t('March to {city}', {
-                        city: state.cities.find((c) => c.id === o.targetId)?.name ?? '',
-                      })}
-                      <small>{t('Departs when the month advances')}</small>
-                    </span>
+                )}
+                <div className="city-meters">
+                  <Meter label={t('Agriculture')} value={city.farming} max={999} fog={fogged} />
+                  <Meter
+                    label={t('Commerce')}
+                    value={city.commerce}
+                    max={999}
+                    color="#b28b50"
+                    fog={fogged}
+                  />
+                  <div className="split-meters">
+                    <Meter label={t('Public loyalty')} value={city.loyalty} fog={fogged} />
+                    <Meter
+                      label={t('Fortifications')}
+                      value={city.defense}
+                      color="#82909b"
+                      fog={fogged}
+                    />
                   </div>
-                ))}
-            </>
-          )}
-        </aside>
-      </main>
-
-      <footer className="campaign-footer">
-        <div className="save-status">
-          <span className={`status-dot ${saving === 'Save unavailable' ? 'error' : ''}`} />
-          {tx(saving)}
-          {saveStatus.status === 'error' && (
-            <button className="retry-save" onClick={() => void retrySave()}>
-              {t('Retry save')}
-            </button>
-          )}
-          <span className="footer-separator">/</span>
-          <span>
-            {t('Turn')} {state.turn + 1}
-          </span>
-          {activeAlliances.length > 0 && (
-            <span className="alliance-indicator">
-              <Handshake size={13} />
-              {t(activeAlliances.length > 1 ? '{count} alliances' : '{count} alliance', {
-                count: activeAlliances.length,
-              })}
-            </span>
-          )}
-        </div>
-        <div className="footer-objective">
-          <Flag size={14} />
-          <span>{t('Unite the realm')}</span>
-          <div>
-            <i style={{ width: `${(owned.length / state.cities.length) * 100}%` }} />
-          </div>
-          <strong>
-            {owned.length}/{state.cities.length}
-          </strong>
-        </div>
-        <button
-          className="end-turn"
-          onClick={endTurn}
-          disabled={busy || state.phase === 'finished' || !started}
-        >
-          <span>
-            {tx(isBattle ? 'End battle day' : 'Advance month')}
-            <small>
-              {isBattle
-                ? t('Let the enemy respond')
-                : t('{month} {year}', {
-                    month: MONTHS[state.month % 12]!,
-                    year: state.month === 12 ? state.year + 1 : state.year,
-                  })}
-            </small>
-          </span>
-          <ArrowRight size={21} />
-        </button>
-      </footer>
-
-      {toast && (
-        <div className={`toast ${toast.bad ? 'error' : ''}`} role={toast.bad ? 'alert' : 'status'}>
-          {toast.bad ? <CircleHelp size={18} /> : <Check size={18} />}
-          <span>{tx(toast.text)}</span>
-          <button onClick={() => setToast(null)} aria-label={t('Dismiss notification')}>
-            <X size={15} />
-          </button>
-        </div>
-      )}
-      <input
-        ref={fileInput}
-        type="file"
-        accept=".json,application/json"
-        disabled={!ready}
-        hidden
-        onChange={(e) => void importFile(e.target.files?.[0])}
-      />
-
-      {modal === 'start' && (
-        <Dialog
-          title={t('Choose your banner')}
-          eyebrow={t('THE FALL OF THE HAN · 190 AD')}
-          onClose={closeModal}
-          canClose={started}
-          wide
-        >
-          <div className="new-campaign">
-            <div className="campaign-intro">
-              <div className="intro-seal">
-                霸<br />业
-              </div>
-              <h3>
-                {t('An empire divided.')}
-                <br />
-                <em>{t('A mandate to claim.')}</em>
-              </h3>
-              <p>{tx(SCENARIO.description)}</p>
-              <div className="intro-facts">
-                <span>
-                  <Landmark size={15} />
-                  {t('24 cities')}
-                </span>
-                <span>
-                  <Flag size={15} />
-                  {t('6 rival houses')}
-                </span>
-                <span>
-                  <Users size={15} />
-                  {t('52 officers')}
-                </span>
-              </div>
-              <p className="intro-footnote">
-                {t('Build your cities. Win their loyalty.')}
-                <br />
-                {t('Write the next chapter of the realm.')}
-              </p>
-              <button
-                className="text-button"
-                disabled={!ready}
-                onClick={() => fileInput.current?.click()}
-              >
-                <Upload size={14} />
-                {t('Import a saved campaign')}
-              </button>
-            </div>
-            <div className="ruler-selection">
-              <div className="scenario-picker" role="radiogroup" aria-label={t('Scenario')}>
-                {SCENARIOS.map((entry) => (
-                  <button
-                    key={entry.id}
-                    role="radio"
-                    aria-checked={newScenario === entry.id}
-                    className={newScenario === entry.id ? 'selected' : ''}
-                    onClick={() => {
-                      setNewScenario(entry.id);
-                      if (!entry.factions.some((f) => f.id === ruler))
-                        setRuler(entry.factions[0]!.id);
-                    }}
-                  >
-                    <strong>{tx(entry.title)}</strong>
-                    <small>
-                      {entry.year} {t('AD')}
-                    </small>
-                  </button>
-                ))}
-              </div>
-              <p className="subtle">
-                {tx(SCENARIOS.find((entry) => entry.id === newScenario)?.description)}
-              </p>
-              <div className="faction-grid">
-                {pickerFactions.map((f) => (
-                  <button
-                    key={f.id}
-                    className={`faction-card ${ruler === f.id ? 'selected' : ''}`}
-                    onClick={() => setRuler(f.id)}
-                    style={{ '--faction-color': f.color } as React.CSSProperties}
-                  >
-                    <div className="ruler-portrait">
-                      <Portrait
-                        officerId={
-                          state.officers.find((officer) => officer.name === f.leader)?.id ??
-                          'garrison'
-                        }
-                      />
-                      <span className="faction-emblem">{f.chinese}</span>
+                </div>
+                <div className="section-heading">
+                  <h3>{t('Officers in residence')}</h3>
+                  <span>
+                    {available.length} {t('available')}
+                  </span>
+                </div>
+                <div className="officer-select-row">
+                  {cityOfficers.length ? (
+                    cityOfficers.map((o) => (
+                      <button
+                        key={o.id}
+                        className={`officer-choice ${officer?.id === o.id ? 'selected' : ''} ${o.busy ? 'busy' : ''}`}
+                        onClick={() => setSelectedOfficerId(o.id)}
+                        title={t('{name} · {status}', {
+                          name: o.name,
+                          status: o.busy ? 'On assignment' : 'Available',
+                        })}
+                        aria-label={t('Select {name}', { name: o.name })}
+                      >
+                        <OfficerMark officer={o} size="small" />
+                        {o.busy ? (
+                          <span className="busy-dot" />
+                        ) : officer?.id === o.id ? (
+                          <span className="selected-check">
+                            <Check size={9} />
+                          </span>
+                        ) : null}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="subtle">{t('No sworn officers in this city.')}</p>
+                  )}
+                </div>
+                {officer && (
+                  <div className="officer-summary">
+                    <Portrait officerId={officer.id} large />
+                    <div>
+                      <strong>{tx(officer.name)}</strong>
+                      <span className="troop-description">
+                        <TroopIcon type={officer.troopType} />
+                        {tx(TROOP_LABELS[officer.troopType])} ·{' '}
+                        {fogged ? approx(officer.troops, officer.id) : number(officer.troops)}{' '}
+                        {t('troops')}
+                      </span>
+                      <TraitChips officerId={officer.id} />
                     </div>
-                    <span>
-                      <strong>{tx(f.name)}</strong>
-                      <small>{tx(f.motto)}</small>
-                      <em>
-                        {t('Starting position')}: {tx(f.difficulty)}
-                      </em>
-                    </span>
-                    {ruler === f.id && <Check size={16} />}
-                  </button>
-                ))}
-              </div>
-              <div className="ruler-description">
-                <span className="eyebrow">{t('YOUR CAMPAIGN')}</span>
-                <p>{tx(pickerFactions.find((f) => f.id === ruler)?.description)}</p>
-              </div>
-              <div className="begin-campaign">
-                <button className="primary-button" onClick={startCampaign} disabled={!ready}>
-                  {t('Raise your banner')}
-                  <ArrowRight size={18} />
+                    <div className="officer-attributes">
+                      <span title={t('Might')}>
+                        <Swords size={13} />
+                        {officer.force}
+                      </span>
+                      <span title={t('Intellect')}>
+                        <BookOpen size={13} />
+                        {officer.intellect}
+                      </span>
+                      <span title={t('Stamina')}>
+                        <Heart size={13} />
+                        {officer.stamina}
+                      </span>
+                      {officer.level > 0 && (
+                        <span title={t('Veteran level')}>
+                          <Star size={13} />
+                          {officer.level}
+                        </span>
+                      )}
+                    </div>
+                    {officer.equipment && (
+                      <small className="equipment-label">
+                        <Shield size={12} />
+                        {tx(officer.equipment)}
+                      </small>
+                    )}
+                  </div>
+                )}
+                {friendly && state.phase === 'planning' ? (
+                  <>
+                    <div className="command-tabs" role="tablist" aria-label={t('Command category')}>
+                      {GROUPS.map((g, index) => (
+                        <button
+                          role="tab"
+                          aria-selected={group === index}
+                          key={g.name}
+                          className={`${group === index ? 'active' : ''} ${g.warning ? 'warning' : ''}`}
+                          onClick={() => {
+                            setGroup(index);
+                            setTargetId('');
+                          }}
+                        >
+                          {tx(g.name)}
+                        </button>
+                      ))}
+                    </div>
+                    {group === 1 && officer && (
+                      <div className="diplomacy-target">
+                        <label htmlFor="reorganize-type">{t('Reorganize as')}</label>
+                        <select
+                          id="reorganize-type"
+                          value={reorganizeType}
+                          onChange={(e) => setReorganizeType(e.target.value as TroopType | '')}
+                        >
+                          <option value="">{t('Choose a troop type')}</option>
+                          {(Object.keys(TROOP_LABELS) as TroopType[])
+                            .filter((type) => type !== officer.troopType)
+                            .map((type) => (
+                              <option key={type} value={type}>
+                                {tx(TROOP_LABELS[type])}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
+                    {group === 2 && (
+                      <div className="diplomacy-target">
+                        <label htmlFor="diplomatic-target">{t('Diplomatic target')}</label>
+                        <select
+                          id="diplomatic-target"
+                          value={targetId}
+                          onChange={(e) => setTargetId(e.target.value)}
+                        >
+                          <option value="">{t('Choose a city, ruler, or officer')}</option>
+                          <optgroup label={t('Neighboring cities — scout or subvert')}>
+                            {state.cities
+                              .filter((c) => city.neighbors.includes(c.id))
+                              .map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {tx(c.name)} ·{' '}
+                                  {tx(factionOf(state, c.factionId)?.name ?? 'Unclaimed')}
+                                </option>
+                              ))}
+                          </optgroup>
+                          <optgroup label={t('Rival rulers — alliance')}>
+                            {factionsOf(state)
+                              .filter(
+                                (f) =>
+                                  f.id !== player.id && enemies.some((c) => c.factionId === f.id),
+                              )
+                              .map((f) => (
+                                <option key={f.id} value={f.id}>
+                                  {tx(f.name)} ·{' '}
+                                  {t('{count}% chance', {
+                                    count: getAllianceChance(
+                                      state,
+                                      player.id,
+                                      f.id,
+                                      officer?.intellect ?? 0,
+                                    ),
+                                  })}
+                                </option>
+                              ))}
+                          </optgroup>
+                          <optgroup label={t('Officers — persuade')}>
+                            {state.officers
+                              .filter(
+                                (o) =>
+                                  isActiveOfficer(o) &&
+                                  (o.factionId !== player.id || o.captive) &&
+                                  (officer
+                                    ? getPersuadeChance(state, officer.id, o.id) !== null
+                                    : true) &&
+                                  (o.cityId === city.id ||
+                                    (city.neighbors.includes(o.cityId) &&
+                                      o.factionId &&
+                                      !o.captive)),
+                              )
+                              .map((o) => (
+                                <option value={o.id} key={o.id}>
+                                  {tx(o.name)} ·{' '}
+                                  {tx(state.cities.find((c) => c.id === o.cityId)?.name)}
+                                  {officer
+                                    ? ` · ${t('{count}% chance', {
+                                        count: getPersuadeChance(state, officer.id, o.id) ?? 0,
+                                      })}`
+                                    : ''}
+                                </option>
+                              ))}
+                          </optgroup>
+                        </select>
+                        {activeAlliances.map((alliance) => {
+                          const other = alliance.a === player.id ? alliance.b : alliance.a;
+                          return (
+                            <div className="alliance-row" key={`${alliance.a}-${alliance.b}`}>
+                              <Handshake size={14} />
+                              <span>
+                                {t('Allied with {faction} for {count} more months', {
+                                  faction: factionOf(state, other)?.name ?? other,
+                                  count: alliance.untilTurn - state.turn,
+                                })}
+                              </span>
+                              <button
+                                className="text-button danger"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      t(
+                                        'Break the alliance with {faction}? Rulers remember: future treaties will be harder to win.',
+                                        { faction: factionOf(state, other)?.name ?? other },
+                                      ),
+                                    )
+                                  )
+                                    execute({ type: 'breakAlliance', factionId: other });
+                                }}
+                              >
+                                {t('Break alliance')}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {officer?.busy && (
+                      <div className="inline-notice">
+                        {t(
+                          '{name} is on assignment. Choose another officer or advance the month.',
+                          {
+                            name: officer.name,
+                          },
+                        )}
+                      </div>
+                    )}
+                    <div className="command-grid">
+                      {GROUPS[group]!.actions.map((action) => {
+                        const info = getActionInfo(state, action, city.id, officer?.id),
+                          Icon = ACTIONS[action];
+                        return (
+                          <button
+                            key={action}
+                            disabled={!!info.reason}
+                            className={GROUPS[group]!.warning ? 'warning' : ''}
+                            onClick={() => performAction(action)}
+                            onMouseEnter={() => setPreviewAction(action)}
+                            onFocus={() => setPreviewAction(action)}
+                            title={tx(info.reason ?? info.description)}
+                          >
+                            <Icon size={18} />
+                            <span>
+                              <strong>{tx(info.label)}</strong>
+                              <small>
+                                {info.gold > 0 ? (
+                                  <>
+                                    <Coins size={10} />
+                                    {info.gold}
+                                  </>
+                                ) : (
+                                  t('No gold cost')
+                                )}
+                                <span>
+                                  {' '}
+                                  · {info.stamina} {t('stamina')}
+                                </span>
+                              </small>
+                            </span>
+                            <ChevronRight size={13} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {officer &&
+                      (() => {
+                        const shown =
+                          previewAction && GROUPS[group]!.actions.includes(previewAction)
+                            ? previewAction
+                            : GROUPS[group]!.actions[0]!;
+                        const preview = getActionPreview(
+                          state,
+                          shown,
+                          city.id,
+                          officer.id,
+                          targetId || undefined,
+                        );
+                        return preview ? (
+                          <ActionPreviewBox
+                            action={shown}
+                            preview={preview}
+                            city={city}
+                            label={getActionInfo(state, shown, city.id, officer.id).label}
+                          />
+                        ) : null;
+                      })()}
+                    <PrisonerPanel state={state} city={city} execute={execute} />
+                    <div className="military-orders">
+                      <button
+                        className="primary-outline"
+                        onClick={openMarch}
+                        disabled={!available.some((o) => o.troops > 0)}
+                      >
+                        <Swords size={16} />
+                        {t('March an army')}
+                        <ArrowUpRight size={15} />
+                      </button>
+                      <div>
+                        <button
+                          onClick={() => {
+                            setMuster(officer?.troops ?? 0);
+                            setModal('muster');
+                          }}
+                          disabled={!officer || officer.busy}
+                        >
+                          <Shield size={14} />
+                          {t('Muster')}
+                        </button>
+                        <button onClick={openTransfer} disabled={!officer || officer.busy}>
+                          <Truck size={14} />
+                          {t('Transfer')}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : !friendly ? (
+                  <div className="foreign-city">
+                    <Flag size={22} />
+                    <h3>
+                      {tx(city.factionId ? 'Beyond your borders' : 'A city without a banner')}
+                    </h3>
+                    <p>
+                      {tx(
+                        city.factionId
+                          ? 'Inspect this stronghold, then select an adjacent city of your own to prepare an army.'
+                          : 'An opportunity to expand your realm. March an army from an adjacent city to claim it.',
+                      )}
+                    </p>
+                    {state.cities
+                      .filter((c) => c.factionId === player.id && c.neighbors.includes(city.id))
+                      .map((c) => (
+                        <button className="text-button" key={c.id} onClick={() => chooseCity(c.id)}>
+                          {t('Prepare in {city}', { city: c.name })}
+                          <ArrowRight size={14} />
+                        </button>
+                      ))}
+                  </div>
+                ) : null}
+                {state.orders
+                  .filter((o) => o.sourceId === city.id)
+                  .map((o) => (
+                    <div className="queued-order" key={o.id}>
+                      <Tent size={16} />
+                      <span>
+                        {t('March to {city}', {
+                          city: state.cities.find((c) => c.id === o.targetId)?.name ?? '',
+                        })}
+                        <small>{t('Departs when the month advances')}</small>
+                      </span>
+                    </div>
+                  ))}
+              </>
+            )}
+          </aside>
+        </main>
+
+        <footer className="campaign-footer">
+          <div className="save-status">
+            <span className={`status-dot ${saving === 'Save unavailable' ? 'error' : ''}`} />
+            {tx(saving)}
+            {saveStatus.status === 'error' && (
+              <button className="retry-save" onClick={() => void retrySave()}>
+                {t('Retry save')}
+              </button>
+            )}
+            <span className="footer-separator">/</span>
+            <span>
+              {t('Turn')} {state.turn + 1}
+            </span>
+            {activeAlliances.length > 0 && (
+              <span className="alliance-indicator">
+                <Handshake size={13} />
+                {t(activeAlliances.length > 1 ? '{count} alliances' : '{count} alliance', {
+                  count: activeAlliances.length,
+                })}
+              </span>
+            )}
+          </div>
+          <div className="footer-objective">
+            <Flag size={14} />
+            <span>{t('Unite the realm')}</span>
+            <div>
+              <i style={{ width: `${(owned.length / state.cities.length) * 100}%` }} />
+            </div>
+            <strong>
+              {owned.length}/{state.cities.length}
+            </strong>
+          </div>
+          <button
+            className="end-turn"
+            onClick={endTurn}
+            disabled={busy || state.phase === 'finished' || !started}
+          >
+            <span>
+              {tx(isBattle ? 'End battle day' : 'Advance month')}
+              <small>
+                {isBattle
+                  ? t('Let the enemy respond')
+                  : t('{month} {year}', {
+                      month: MONTHS[state.month % 12]!,
+                      year: state.month === 12 ? state.year + 1 : state.year,
+                    })}
+              </small>
+            </span>
+            <ArrowRight size={21} />
+          </button>
+        </footer>
+
+        {toast && (
+          <div
+            className={`toast ${toast.bad ? 'error' : ''}`}
+            role={toast.bad ? 'alert' : 'status'}
+          >
+            {toast.bad ? <CircleHelp size={18} /> : <Check size={18} />}
+            <span>{tx(toast.text)}</span>
+            <button onClick={() => setToast(null)} aria-label={t('Dismiss notification')}>
+              <X size={15} />
+            </button>
+          </div>
+        )}
+        <input
+          ref={fileInput}
+          type="file"
+          accept=".json,application/json"
+          disabled={!ready}
+          hidden
+          onChange={(e) => void importFile(e.target.files?.[0])}
+        />
+
+        {modal === 'start' && (
+          <Dialog
+            title={t('Choose your banner')}
+            eyebrow={t('THE FALL OF THE HAN · 190 AD')}
+            onClose={closeModal}
+            canClose={started}
+            wide
+          >
+            <div className="new-campaign">
+              <div className="campaign-intro">
+                <div className="intro-seal">
+                  霸<br />业
+                </div>
+                <h3>
+                  {t('An empire divided.')}
+                  <br />
+                  <em>{t('A mandate to claim.')}</em>
+                </h3>
+                <p>{tx(scenarioOf(state).description)}</p>
+                <div className="intro-facts">
+                  <span>
+                    <Landmark size={15} />
+                    {t('24 cities')}
+                  </span>
+                  <span>
+                    <Flag size={15} />
+                    {t('6 rival houses')}
+                  </span>
+                  <span>
+                    <Users size={15} />
+                    {t('52 officers')}
+                  </span>
+                </div>
+                <p className="intro-footnote">
+                  {t('Build your cities. Win their loyalty.')}
+                  <br />
+                  {t('Write the next chapter of the realm.')}
+                </p>
+                <button
+                  className="text-button"
+                  disabled={!ready}
+                  onClick={() => fileInput.current?.click()}
+                >
+                  <Upload size={14} />
+                  {t('Import a saved campaign')}
                 </button>
               </div>
-              <details className="advanced-setup" open={advancedOpen}>
-                <summary
-                  onClick={(event) => {
-                    event.preventDefault();
-                    setAdvancedOpen(!advancedOpen);
-                  }}
-                >
-                  {t('Advanced')}
-                </summary>
-                <label className="field-label">
-                  {t('World seed')}
-                  <input
-                    aria-label={t('World seed')}
-                    value={seed}
-                    onChange={(e) => setSeed(e.target.value)}
-                    inputMode="numeric"
-                    maxLength={10}
-                  />
-                </label>
+              <div className="ruler-selection">
+                <div className="scenario-picker" role="radiogroup" aria-label={t('Scenario')}>
+                  {SCENARIOS.map((entry) => (
+                    <button
+                      key={entry.id}
+                      role="radio"
+                      aria-checked={newScenario === entry.id}
+                      className={newScenario === entry.id ? 'selected' : ''}
+                      onClick={() => {
+                        setNewScenario(entry.id);
+                        if (!entry.factions.some((f) => f.id === ruler))
+                          setRuler(entry.factions[0]!.id);
+                      }}
+                    >
+                      <strong>{tx(entry.title)}</strong>
+                      <small>
+                        {entry.year} {t('AD')}
+                      </small>
+                    </button>
+                  ))}
+                </div>
                 <p className="subtle">
-                  {t(
-                    'A random seed is chosen for every new campaign. Enter one to replay a world.',
-                  )}
+                  {tx(SCENARIOS.find((entry) => entry.id === newScenario)?.description)}
                 </p>
+                <div className="faction-grid">
+                  {pickerFactions.map((f) => (
+                    <button
+                      key={f.id}
+                      className={`faction-card ${ruler === f.id ? 'selected' : ''}`}
+                      onClick={() => setRuler(f.id)}
+                      style={{ '--faction-color': f.color } as React.CSSProperties}
+                    >
+                      <div className="ruler-portrait">
+                        <Portrait
+                          officerId={
+                            state.officers.find((officer) => officer.name === f.leader)?.id ??
+                            'garrison'
+                          }
+                        />
+                        <span className="faction-emblem">{f.chinese}</span>
+                      </div>
+                      <span>
+                        <strong>{tx(f.name)}</strong>
+                        <small>{tx(f.motto)}</small>
+                        <em>
+                          {t('Starting position')}: {tx(f.difficulty)}
+                        </em>
+                      </span>
+                      {ruler === f.id && <Check size={16} />}
+                    </button>
+                  ))}
+                </div>
+                <div className="ruler-description">
+                  <span className="eyebrow">{t('YOUR CAMPAIGN')}</span>
+                  <p>{tx(pickerFactions.find((f) => f.id === ruler)?.description)}</p>
+                </div>
+                <div className="begin-campaign">
+                  <button className="primary-button" onClick={startCampaign} disabled={!ready}>
+                    {t('Raise your banner')}
+                    <ArrowRight size={18} />
+                  </button>
+                </div>
+                <details className="advanced-setup" open={advancedOpen}>
+                  <summary
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setAdvancedOpen(!advancedOpen);
+                    }}
+                  >
+                    {t('Advanced')}
+                  </summary>
+                  <label className="field-label">
+                    {t('World seed')}
+                    <input
+                      aria-label={t('World seed')}
+                      value={seed}
+                      onChange={(e) => setSeed(e.target.value)}
+                      inputMode="numeric"
+                      maxLength={10}
+                    />
+                  </label>
+                  <p className="subtle">
+                    {t(
+                      'A random seed is chosen for every new campaign. Enter one to replay a world.',
+                    )}
+                  </p>
+                  <label className="check-row">
+                    <input
+                      type="checkbox"
+                      checked={newAging}
+                      onChange={(event) => setNewAging(event.target.checked)}
+                    />
+                    <span>
+                      <strong>{t('Natural aging')}</strong>
+                      <small>
+                        {t(
+                          'Veteran officers past sixty may die of old age each January. Off by default.',
+                        )}
+                      </small>
+                    </span>
+                  </label>
+                </details>
                 <label className="check-row">
                   <input
                     type="checkbox"
-                    checked={newAging}
-                    onChange={(event) => setNewAging(event.target.checked)}
+                    checked={truce}
+                    onChange={(event) => {
+                      setTruce(event.target.checked);
+                      setTruceTouched(true);
+                    }}
                   />
                   <span>
-                    <strong>{t('Natural aging')}</strong>
+                    <strong>{t('Opening truce (2 months)')}</strong>
                     <small>
-                      {t(
-                        'Veteran officers past sixty may die of old age each January. Off by default.',
-                      )}
+                      {t('Rival houses will not march against anyone for the first two months.')}
                     </small>
                   </span>
                 </label>
-              </details>
-              <label className="check-row">
-                <input
-                  type="checkbox"
-                  checked={truce}
-                  onChange={(event) => {
-                    setTruce(event.target.checked);
-                    setTruceTouched(true);
-                  }}
-                />
+                <label className="field-label">
+                  {t('Difficulty')}
+                  <select
+                    aria-label={t('Difficulty')}
+                    value={newDifficulty}
+                    onChange={(event) => {
+                      const next = event.target.value as Difficulty;
+                      setNewDifficulty(next);
+                      setNewAggression(DIFFICULTY_PRESETS[next].aggression);
+                    }}
+                  >
+                    {DIFFICULTIES.map((value) => (
+                      <option value={value} key={value}>
+                        {t(DIFFICULTY_PRESETS[value].label)}
+                      </option>
+                    ))}
+                  </select>
+                  <small>{t(DIFFICULTY_PRESETS[newDifficulty].description)}</small>
+                </label>
+                <label className="field-label aggression-setup">
+                  {t('Rival aggression')}
+                  <select
+                    aria-label={t('Rival aggression')}
+                    value={newAggression}
+                    onChange={(event) => setNewAggression(event.target.value as RivalAggression)}
+                  >
+                    {AGGRESSION_OPTIONS.map((value) => (
+                      <option value={value} key={value}>
+                        {t(AGGRESSION_LABELS[value])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="subtle">
+                  {t(
+                    'Controls how readily rivals start wars against you and each other. It grants no combat or resource bonuses.',
+                  )}
+                </p>
+                {started && (
+                  <p className="subtle">
+                    {t(
+                      'Starting a new campaign replaces the autosave. Use a manual slot to keep your current campaign.',
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Dialog>
+        )}
+
+        {modal === 'help' && (
+          <Dialog
+            title={t('The art of ruling')}
+            eyebrow={t('A FIELD GUIDE TO HEGEMONY')}
+            onClose={() => setModal(null)}
+            wide
+          >
+            <div className="help-grid">
+              <article>
+                <span>01</span>
+                <h3>{t('Cultivate your cities')}</h3>
+                <p>
+                  {t(
+                    'Select a city you own, then an available officer. Develop agriculture for harvests, commerce for income, and governance for defenses. Each officer receives one assignment per month. Rewards raise loyalty; feasts restore stamina.',
+                  )}
+                </p>
+              </article>
+              <article>
+                <span>02</span>
+                <h3>{t('Prepare your army')}</h3>
+                <p>
+                  {t(
+                    'Recruit reserves, then use Muster to assign them to officers. Choose March, select an adjacent target and your commanders. Food is committed when the order is issued. Your army departs when you advance the month.',
+                  )}
+                </p>
+              </article>
+              <article>
+                <span>03</span>
+                <h3>{t('Command the battlefield')}</h3>
+                <p>
+                  {t(
+                    'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.',
+                  )}
+                </p>
+              </article>
+              <article>
+                <span>04</span>
+                <h3>{t('Shape the realm')}</h3>
+                <p>
+                  {t(
+                    'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Raid, sack or plunder when you must, but a ruined city breeds unrest. Captured officers may be recruited, released or executed. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.',
+                  )}
+                </p>
+              </article>
+            </div>
+            <TroopLegend />
+            <div className="help-bottom">
+              <div>
+                <strong>{t('Map controls')}</strong>
+                <p>
+                  {t('Drag to pan · Scroll to zoom · Double-click to reset')}
+                  <br />
+                  {t('Use City index to select cities with the keyboard.')}
+                </p>
+              </div>
+              <div>
+                <strong>{t('Your campaign is saved automatically')}</strong>
+                <p>
+                  {t('Use Save & load for manual slots and portable JSON backups.')}
+                  <br />
+                  {t(
+                    'Battle progress is saved too. Browser storage can be cleared; export a copy.',
+                  )}
+                </p>
+              </div>
+            </div>
+          </Dialog>
+        )}
+
+        {modal === 'settings' && (
+          <Dialog
+            title={t('Your campaign, your pace')}
+            eyebrow={t('SETTINGS')}
+            onClose={() => setModal(null)}
+          >
+            <div className="settings-list">
+              <label className="preference-select">
                 <span>
-                  <strong>{t('Opening truce (2 months)')}</strong>
+                  <Eye size={18} />
+                  <strong>{t('Display size')}</strong>
+                  <small>{t('Applies to maps, text, and controls. Saved in this browser.')}</small>
+                </span>
+                <select
+                  aria-label={t('Display size')}
+                  value={displayPreset}
+                  onChange={(event) => setDisplayPreset(event.target.value as DisplayPreset)}
+                >
+                  <option value="compact">{t('Compact')}</option>
+                  <option value="comfortable">{t('Comfortable')}</option>
+                  <option value="large">{t('Large')}</option>
+                </select>
+              </label>
+              <label className="preference-select">
+                <span>
+                  <Swords size={18} />
+                  <strong>{t('Rival aggression')}</strong>
                   <small>
-                    {t('Rival houses will not march against anyone for the first two months.')}
+                    {t('Controls willingness to start wars; no combat or resource bonuses.')}
                   </small>
                 </span>
-              </label>
-              <label className="field-label">
-                {t('Difficulty')}
-                <select
-                  aria-label={t('Difficulty')}
-                  value={newDifficulty}
-                  onChange={(event) => {
-                    const next = event.target.value as Difficulty;
-                    setNewDifficulty(next);
-                    setNewAggression(DIFFICULTY_PRESETS[next].aggression);
-                  }}
-                >
-                  {DIFFICULTIES.map((value) => (
-                    <option value={value} key={value}>
-                      {t(DIFFICULTY_PRESETS[value].label)}
-                    </option>
-                  ))}
-                </select>
-                <small>{t(DIFFICULTY_PRESETS[newDifficulty].description)}</small>
-              </label>
-              <label className="field-label aggression-setup">
-                {t('Rival aggression')}
                 <select
                   aria-label={t('Rival aggression')}
-                  value={newAggression}
-                  onChange={(event) => setNewAggression(event.target.value as RivalAggression)}
+                  value={state.rivalAggression}
+                  disabled={!started || busy || state.phase !== 'planning' || !!state.resolution}
+                  onChange={(event) =>
+                    execute({
+                      type: 'setRivalAggression',
+                      value: event.target.value as RivalAggression,
+                    })
+                  }
                 >
                   {AGGRESSION_OPTIONS.map((value) => (
                     <option value={value} key={value}>
@@ -1884,546 +2049,420 @@ export default function App() {
               </label>
               <p className="subtle">
                 {t(
-                  'Controls how readily rivals start wars against you and each other. It grants no combat or resource bonuses.',
+                  state.phase === 'planning' && !state.resolution
+                    ? 'Campaign setting: takes effect next month and is saved with your progress.'
+                    : 'Rival aggression can be changed during campaign planning after the current month resolves.',
                 )}
               </p>
-              {started && (
-                <p className="subtle">
-                  {t(
-                    'Starting a new campaign replaces the autosave. Use a manual slot to keep your current campaign.',
-                  )}
-                </p>
-              )}
+              <label>
+                <span>
+                  <Hourglass size={18} />
+                  <strong>{t('Natural aging')}</strong>
+                  <small>
+                    {t(
+                      'Veteran officers past sixty may die of old age each January. Off by default.',
+                    )}
+                  </small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={state.aging}
+                  disabled={!started || busy || state.phase !== 'planning' || !!state.resolution}
+                  onChange={(event) => execute({ type: 'setAging', value: event.target.checked })}
+                />
+              </label>
+              <label>
+                <span>
+                  <Volume2 size={18} />
+                  <strong>{t('Sound effects')}</strong>
+                  <small>{t('Gentle feedback for actions and turns')}</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={sound}
+                  onChange={(e) => setSound(e.target.checked)}
+                />
+              </label>
+              <label>
+                <span>
+                  <Sparkles size={18} />
+                  <strong>{t('Reduce motion')}</strong>
+                  <small>{t('Keep the interface still and focused')}</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={reducedMotion}
+                  onChange={(e) => setReducedMotion(e.target.checked)}
+                />
+              </label>
             </div>
-          </div>
-        </Dialog>
-      )}
+            <div className="settings-footer">
+              <span className="eyebrow">{t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}</span>
+              <p>
+                {t(
+                  'A web remake inspired by 三国霸业 (Baye). One realm, six houses, and a history that belongs to you.',
+                )}
+              </p>
+              <button className="primary-outline" onClick={() => setModal('start')}>
+                <RotateCcw size={16} />
+                {t('Begin a new campaign')}
+              </button>
+              <button className="text-button" onClick={() => setModal('help')}>
+                {t('Read the field guide')}
+                <ArrowRight size={14} />
+              </button>
+              <button className="text-button" onClick={() => setModal('credits')}>
+                {t('Artwork & reference credits')}
+                <ArrowRight size={14} />
+              </button>
+            </div>
+          </Dialog>
+        )}
 
-      {modal === 'help' && (
-        <Dialog
-          title={t('The art of ruling')}
-          eyebrow={t('A FIELD GUIDE TO HEGEMONY')}
-          onClose={() => setModal(null)}
-          wide
-        >
-          <div className="help-grid">
-            <article>
-              <span>01</span>
-              <h3>{t('Cultivate your cities')}</h3>
+        {modal === 'credits' && (
+          <Dialog
+            title={t('Artwork & reference credits')}
+            eyebrow={t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}
+            onClose={() => setModal('settings')}
+          >
+            <div className="credits-copy">
+              <h3>{t('Officer illustrations')}</h3>
               <p>
                 {t(
-                  'Select a city you own, then an available officer. Develop agriculture for harvests, commerce for income, and governance for defenses. Each officer receives one assignment per month. Rewards raise loyalty; feasts restore stamina.',
+                  '52 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.',
                 )}
               </p>
-            </article>
-            <article>
-              <span>02</span>
-              <h3>{t('Prepare your army')}</h3>
               <p>
                 {t(
-                  'Recruit reserves, then use Muster to assign them to officers. Choose March, select an adjacent target and your commanders. Food is committed when the order is issued. Your army departs when you advance the month.',
+                  'Portraits are bundled locally. Identity stays with the officer when allegiance changes.',
                 )}
               </p>
-            </article>
-            <article>
-              <span>03</span>
-              <h3>{t('Command the battlefield')}</h3>
+              <a
+                href={`${import.meta.env.BASE_URL}assets/portraits/credits.json`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('View artwork provenance and rights records')}
+                <ArrowUpRight size={16} />
+              </a>
+              <h3>{t('Main game reference')}</h3>
+              <a
+                href="https://github.com/erduoniba/baye-fmj-app/tree/main"
+                target="_blank"
+                rel="noreferrer"
+              >
+                erduoniba/baye-fmj-app
+                <ArrowUpRight size={16} />
+              </a>
               <p>
                 {t(
-                  'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.',
+                  'Baye / 三国霸业 inspired the core game. The web remake uses its own authored atlas and presentation.',
                 )}
-              </p>
-            </article>
-            <article>
-              <span>04</span>
-              <h3>{t('Shape the realm')}</h3>
-              <p>
-                {t(
-                  'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Raid, sack or plunder when you must, but a ruined city breeds unrest. Captured officers may be recruited, released or executed. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.',
-                )}
-              </p>
-            </article>
-          </div>
-          <TroopLegend />
-          <div className="help-bottom">
-            <div>
-              <strong>{t('Map controls')}</strong>
-              <p>
-                {t('Drag to pan · Scroll to zoom · Double-click to reset')}
-                <br />
-                {t('Use City index to select cities with the keyboard.')}
               </p>
             </div>
-            <div>
-              <strong>{t('Your campaign is saved automatically')}</strong>
-              <p>
-                {t('Use Save & load for manual slots and portable JSON backups.')}
-                <br />
-                {t('Battle progress is saved too. Browser storage can be cleared; export a copy.')}
-              </p>
-            </div>
-          </div>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
 
-      {modal === 'settings' && (
-        <Dialog
-          title={t('Your campaign, your pace')}
-          eyebrow={t('SETTINGS')}
-          onClose={() => setModal(null)}
-        >
-          <div className="settings-list">
-            <label className="preference-select">
-              <span>
-                <Eye size={18} />
-                <strong>{t('Display size')}</strong>
-                <small>{t('Applies to maps, text, and controls. Saved in this browser.')}</small>
-              </span>
-              <select
-                aria-label={t('Display size')}
-                value={displayPreset}
-                onChange={(event) => setDisplayPreset(event.target.value as DisplayPreset)}
+        {modal === 'saves' && (
+          <Dialog
+            title={t('Keep your history')}
+            eyebrow={t('SAVE & LOAD')}
+            onClose={() => setModal(null)}
+          >
+            <div className="save-slots" aria-busy={slotsLoading}>
+              {['auto', 'slot-1', 'slot-2', 'slot-3'].map((id, i) => {
+                const record = slots.find((r) => r.id === id);
+                return (
+                  <div className="save-slot" key={id}>
+                    <div className="slot-number">
+                      {i === 0 ? <RotateCcw size={18} /> : String(i).padStart(2, '0')}
+                    </div>
+                    <div>
+                      <strong>
+                        {i === 0 ? t('Autosave') : t('Campaign slot {slot}', { slot: i })}
+                      </strong>
+                      <span>
+                        {slotsLoading
+                          ? t('Reading saved campaigns…')
+                          : record?.summary
+                            ? t('{ruler} · {month} {year}', {
+                                ruler:
+                                  factionOf(slotScenario(record), record.summary.factionId)?.name ??
+                                  record.summary.factionId,
+                                month: MONTHS[record.summary.month - 1] ?? '',
+                                year: record.summary.year,
+                              })
+                            : tx(record?.name ?? 'An unwritten history')}
+                      </span>
+                      {record && (
+                        <small>
+                          {new Date(record.savedAt).toLocaleString(
+                            locale === 'zh' ? 'zh-CN' : 'en-US',
+                          )}
+                        </small>
+                      )}
+                    </div>
+                    <div className="slot-actions">
+                      {record && (
+                        <button disabled={slotsLoading} onClick={() => restore(record)}>
+                          {t('Load')}
+                        </button>
+                      )}
+                      {i > 0 && (
+                        <button disabled={slotsLoading} onClick={() => void manualSave(id)}>
+                          {t('Save')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="save-file-actions">
+              <button className="primary-outline" onClick={() => downloadSave(state)}>
+                <ArrowDownToLine size={16} />
+                {t('Export campaign')}
+              </button>
+              <button
+                className="primary-outline"
+                disabled={!ready}
+                onClick={() => fileInput.current?.click()}
               >
-                <option value="compact">{t('Compact')}</option>
-                <option value="comfortable">{t('Comfortable')}</option>
-                <option value="large">{t('Large')}</option>
-              </select>
-            </label>
-            <label className="preference-select">
-              <span>
-                <Swords size={18} />
-                <strong>{t('Rival aggression')}</strong>
-                <small>
-                  {t('Controls willingness to start wars; no combat or resource bonuses.')}
-                </small>
-              </span>
-              <select
-                aria-label={t('Rival aggression')}
-                value={state.rivalAggression}
-                disabled={!started || busy || state.phase !== 'planning' || !!state.resolution}
-                onChange={(event) =>
-                  execute({
-                    type: 'setRivalAggression',
-                    value: event.target.value as RivalAggression,
-                  })
-                }
-              >
-                {AGGRESSION_OPTIONS.map((value) => (
-                  <option value={value} key={value}>
-                    {t(AGGRESSION_LABELS[value])}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <Upload size={16} />
+                {t('Import file')}
+              </button>
+            </div>
             <p className="subtle">
               {t(
-                state.phase === 'planning' && !state.resolution
-                  ? 'Campaign setting: takes effect next month and is saved with your progress.'
-                  : 'Rival aggression can be changed during campaign planning after the current month resolves.',
+                'Export a backup before clearing browser data. Saves include ongoing battles and the exact state of your campaign.',
               )}
             </p>
-            <label>
-              <span>
-                <Hourglass size={18} />
-                <strong>{t('Natural aging')}</strong>
-                <small>
-                  {t(
-                    'Veteran officers past sixty may die of old age each January. Off by default.',
-                  )}
-                </small>
-              </span>
-              <input
-                type="checkbox"
-                checked={state.aging}
-                disabled={!started || busy || state.phase !== 'planning' || !!state.resolution}
-                onChange={(event) => execute({ type: 'setAging', value: event.target.checked })}
-              />
-            </label>
-            <label>
-              <span>
-                <Volume2 size={18} />
-                <strong>{t('Sound effects')}</strong>
-                <small>{t('Gentle feedback for actions and turns')}</small>
-              </span>
-              <input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} />
-            </label>
-            <label>
-              <span>
-                <Sparkles size={18} />
-                <strong>{t('Reduce motion')}</strong>
-                <small>{t('Keep the interface still and focused')}</small>
-              </span>
-              <input
-                type="checkbox"
-                checked={reducedMotion}
-                onChange={(e) => setReducedMotion(e.target.checked)}
-              />
-            </label>
-          </div>
-          <div className="settings-footer">
-            <span className="eyebrow">{t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}</span>
-            <p>
-              {t(
-                'A web remake inspired by 三国霸业 (Baye). One realm, six houses, and a history that belongs to you.',
-              )}
-            </p>
-            <button className="primary-outline" onClick={() => setModal('start')}>
-              <RotateCcw size={16} />
-              {t('Begin a new campaign')}
-            </button>
-            <button className="text-button" onClick={() => setModal('help')}>
-              {t('Read the field guide')}
-              <ArrowRight size={14} />
-            </button>
-            <button className="text-button" onClick={() => setModal('credits')}>
-              {t('Artwork & reference credits')}
-              <ArrowRight size={14} />
-            </button>
-          </div>
-        </Dialog>
-      )}
+          </Dialog>
+        )}
 
-      {modal === 'credits' && (
-        <Dialog
-          title={t('Artwork & reference credits')}
-          eyebrow={t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}
-          onClose={() => setModal('settings')}
-        >
-          <div className="credits-copy">
-            <h3>{t('Officer illustrations')}</h3>
-            <p>
-              {t(
-                '52 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.',
-              )}
-            </p>
-            <p>
-              {t(
-                'Portraits are bundled locally. Identity stays with the officer when allegiance changes.',
-              )}
-            </p>
-            <a
-              href={`${import.meta.env.BASE_URL}assets/portraits/credits.json`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t('View artwork provenance and rights records')}
-              <ArrowUpRight size={16} />
-            </a>
-            <h3>{t('Main game reference')}</h3>
-            <a
-              href="https://github.com/erduoniba/baye-fmj-app/tree/main"
-              target="_blank"
-              rel="noreferrer"
-            >
-              erduoniba/baye-fmj-app
-              <ArrowUpRight size={16} />
-            </a>
-            <p>
-              {t(
-                'Baye / 三国霸业 inspired the core game. The web remake uses its own authored atlas and presentation.',
-              )}
-            </p>
-          </div>
-        </Dialog>
-      )}
-
-      {modal === 'saves' && (
-        <Dialog
-          title={t('Keep your history')}
-          eyebrow={t('SAVE & LOAD')}
-          onClose={() => setModal(null)}
-        >
-          <div className="save-slots" aria-busy={slotsLoading}>
-            {['auto', 'slot-1', 'slot-2', 'slot-3'].map((id, i) => {
-              const record = slots.find((r) => r.id === id);
-              return (
-                <div className="save-slot" key={id}>
-                  <div className="slot-number">
-                    {i === 0 ? <RotateCcw size={18} /> : String(i).padStart(2, '0')}
-                  </div>
-                  <div>
-                    <strong>
-                      {i === 0 ? t('Autosave') : t('Campaign slot {slot}', { slot: i })}
-                    </strong>
-                    <span>
-                      {slotsLoading
-                        ? t('Reading saved campaigns…')
-                        : record?.summary
-                          ? t('{ruler} · {month} {year}', {
-                              ruler:
-                                factionById(record.summary.factionId)?.name ??
-                                record.summary.factionId,
-                              month: MONTHS[record.summary.month - 1] ?? '',
-                              year: record.summary.year,
-                            })
-                          : tx(record?.name ?? 'An unwritten history')}
-                    </span>
-                    {record && (
-                      <small>
-                        {new Date(record.savedAt).toLocaleString(
-                          locale === 'zh' ? 'zh-CN' : 'en-US',
-                        )}
-                      </small>
-                    )}
-                  </div>
-                  <div className="slot-actions">
-                    {record && (
-                      <button disabled={slotsLoading} onClick={() => restore(record)}>
-                        {t('Load')}
-                      </button>
-                    )}
-                    {i > 0 && (
-                      <button disabled={slotsLoading} onClick={() => void manualSave(id)}>
-                        {t('Save')}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="save-file-actions">
-            <button className="primary-outline" onClick={() => downloadSave(state)}>
-              <ArrowDownToLine size={16} />
-              {t('Export campaign')}
-            </button>
-            <button
-              className="primary-outline"
-              disabled={!ready}
-              onClick={() => fileInput.current?.click()}
-            >
-              <Upload size={16} />
-              {t('Import file')}
-            </button>
-          </div>
-          <p className="subtle">
-            {t(
-              'Export a backup before clearing browser data. Saves include ongoing battles and the exact state of your campaign.',
-            )}
-          </p>
-        </Dialog>
-      )}
-
-      {modal === 'march' && (
-        <Dialog
-          title={t('March from {city}', { city: city.name })}
-          eyebrow={t('MILITARY DISPATCH')}
-          onClose={() => setModal(null)}
-        >
-          <MarchDialog
-            state={state}
-            city={city}
-            available={available}
-            target={marchTarget}
-            setTarget={setMarchTarget}
-            officers={marchOfficers}
-            setOfficers={setMarchOfficers}
-            intent={marchIntent}
-            setIntent={setMarchIntent}
-            supplyDays={marchSupply}
-            setSupplyDays={setMarchSupply}
-            onIssue={(command) => {
-              if (execute(command)) setModal(null);
-            }}
-          />
-        </Dialog>
-      )}
-
-      {modal === 'summary' && state.lastBattle && (
-        <Dialog
-          title={t(playerWon(state.lastBattle, state.playerFactionId) ? 'Victory' : 'Defeat')}
-          eyebrow={t('BATTLE REPORT')}
-          onClose={() => setModal(null)}
-        >
-          <BattleSummary
-            state={state}
-            summary={state.lastBattle}
-            onFocusCity={focusCity}
+        {modal === 'march' && (
+          <Dialog
+            title={t('March from {city}', { city: city.name })}
+            eyebrow={t('MILITARY DISPATCH')}
             onClose={() => setModal(null)}
-          />
-        </Dialog>
-      )}
+          >
+            <MarchDialog
+              state={state}
+              city={city}
+              available={available}
+              target={marchTarget}
+              setTarget={setMarchTarget}
+              officers={marchOfficers}
+              setOfficers={setMarchOfficers}
+              intent={marchIntent}
+              setIntent={setMarchIntent}
+              supplyDays={marchSupply}
+              setSupplyDays={setMarchSupply}
+              onIssue={(command) => {
+                if (execute(command)) setModal(null);
+              }}
+            />
+          </Dialog>
+        )}
 
-      {modal === 'muster' && officer && (
-        <Dialog
-          title={t('Muster for {name}', { name: officer.name })}
-          eyebrow={t('TROOP ASSIGNMENT')}
-          onClose={() => setModal(null)}
-        >
-          <div className="muster-officer">
-            <OfficerMark officer={officer} size="large" />
-            <div>
-              <h3>{tx(officer.name)}</h3>
-              <p>
-                <TroopIcon type={officer.troopType} /> {tx(TROOP_LABELS[officer.troopType])} ·{' '}
-                {number(officer.troops)} {t('currently assigned')}
-              </p>
+        {modal === 'summary' && state.lastBattle && (
+          <Dialog
+            title={t(playerWon(state.lastBattle, state.playerFactionId) ? 'Victory' : 'Defeat')}
+            eyebrow={t('BATTLE REPORT')}
+            onClose={() => setModal(null)}
+          >
+            <BattleSummary
+              state={state}
+              summary={state.lastBattle}
+              onFocusCity={focusCity}
+              onClose={() => setModal(null)}
+            />
+          </Dialog>
+        )}
+
+        {modal === 'muster' && officer && (
+          <Dialog
+            title={t('Muster for {name}', { name: officer.name })}
+            eyebrow={t('TROOP ASSIGNMENT')}
+            onClose={() => setModal(null)}
+          >
+            <div className="muster-officer">
+              <OfficerMark officer={officer} size="large" />
+              <div>
+                <h3>{tx(officer.name)}</h3>
+                <p>
+                  <TroopIcon type={officer.troopType} /> {tx(TROOP_LABELS[officer.troopType])} ·{' '}
+                  {number(officer.troops)} {t('currently assigned')}
+                </p>
+              </div>
             </div>
-          </div>
-          <label className="field-label">
-            {t('Assigned troops')}
-            <strong className="muster-count">{number(muster)}</strong>
-            <input
-              type="range"
-              min="0"
-              max={Math.min(5000, officer.troops + city.reserve)}
-              step="1"
-              value={muster}
-              onChange={(e) => setMuster(Number(e.target.value))}
-            />
-          </label>
-          <div className="number-field">
-            <input
-              aria-label={t('Assigned troop count')}
-              type="number"
-              min="0"
-              max={Math.min(5000, officer.troops + city.reserve)}
-              value={muster}
-              onChange={(e) => setMuster(Number(e.target.value))}
-            />
-            <button onClick={() => setMuster(Math.min(5000, officer.troops + city.reserve))}>
-              {t('Assign maximum')}
-            </button>
-          </div>
-          <p className="subtle">
-            {t(
-              '{count} reserves available in {city}. Reducing an army returns troops to the reserves.',
-              { count: number(city.reserve), city: city.name },
-            )}
-          </p>
-          <button
-            className="primary-button full"
-            onClick={() => {
-              if (
-                execute({
-                  type: 'assignTroops',
-                  cityId: city.id,
-                  officerId: officer.id,
-                  amount: muster,
-                })
-              )
-                setModal(null);
-            }}
-          >
-            {t('Confirm assignment')}
-            <Check size={17} />
-          </button>
-        </Dialog>
-      )}
-
-      {modal === 'transfer' && officer && (
-        <Dialog
-          title={t('Move people and provisions')}
-          eyebrow={t('LOGISTICS')}
-          onClose={() => setModal(null)}
-        >
-          <p className="dialog-copy">
-            {t(
-              'Transfer {name} and their troops to a neighboring city under your banner, along with additional supplies.',
-              { name: officer.name },
-            )}
-          </p>
-          <label className="field-label">
-            {t('Destination')}
-            <select value={transferTarget} onChange={(e) => setTransferTarget(e.target.value)}>
-              <option value="">{t('Select a friendly city')}</option>
-              {city.neighbors
-                .filter((id) => state.cities.find((c) => c.id === id)?.factionId === player.id)
-                .map((id) => (
-                  <option key={id} value={id}>
-                    {tx(state.cities.find((c) => c.id === id)?.name)}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <div className="transfer-fields">
-            {[
-              { label: 'Gold', value: transferGold, max: city.gold, set: setTransferGold },
-              { label: 'Food', value: transferFood, max: city.food, set: setTransferFood },
-              {
-                label: 'Reserves',
-                value: transferTroops,
-                max: city.reserve,
-                set: setTransferTroops,
-              },
-            ].map((field) => (
-              <label key={field.label} className="field-label">
-                {tx(field.label)}
-                <input
-                  type="number"
-                  min="0"
-                  max={field.max}
-                  value={field.value}
-                  onChange={(e) => field.set(Number(e.target.value))}
-                />
-                <small>
-                  {number(field.max)} {t('available')}
-                </small>
-              </label>
-            ))}
-          </div>
-          <button
-            className="primary-button full"
-            disabled={!transferTarget}
-            onClick={() => {
-              if (
-                execute({
-                  type: 'transfer',
-                  sourceId: city.id,
-                  targetId: transferTarget,
-                  officerId: officer.id,
-                  gold: transferGold,
-                  food: transferFood,
-                  troops: transferTroops,
-                })
-              )
-                setModal(null);
-            }}
-          >
-            {t('Dispatch convoy')}
-            <Truck size={17} />
-          </button>
-        </Dialog>
-      )}
-
-      {state.phase === 'finished' && modal === null && (
-        <Dialog
-          title={tx(
-            state.winner === player.id
-              ? owned.length === state.cities.length
-                ? 'A realm united.'
-                : 'The Hegemon of the realm.'
-              : owned.length
-                ? 'A rival is crowned Hegemon.'
-                : 'Your banner falls.',
-          )}
-          eyebrow={tx(state.winner === player.id ? 'THE MANDATE IS YOURS' : 'THE END OF A DYNASTY')}
-          onClose={() => setModal('start')}
-        >
-          <div className="ending">
-            <Crown size={54} />
-            <p>
-              {tx(
-                state.winner === player.id
-                  ? owned.length === state.cities.length
-                    ? `${player.name} has brought the divided realm under one banner. A new chapter begins.`
-                    : `${player.name} has held the capital and sixteen cities for a year. The court proclaims a new Hegemon.`
-                  : owned.length
-                    ? `${factionById(state.winner)?.name ?? 'A rival'} has held the capital and sixteen cities for a year and is proclaimed Hegemon. Your banner still flies, but the realm has chosen.`
-                    : 'Your last stronghold has fallen, but history offers another path. Raise a new banner and try again.',
+            <label className="field-label">
+              {t('Assigned troops')}
+              <strong className="muster-count">{number(muster)}</strong>
+              <input
+                type="range"
+                min="0"
+                max={Math.min(5000, officer.troops + city.reserve)}
+                step="1"
+                value={muster}
+                onChange={(e) => setMuster(Number(e.target.value))}
+              />
+            </label>
+            <div className="number-field">
+              <input
+                aria-label={t('Assigned troop count')}
+                type="number"
+                min="0"
+                max={Math.min(5000, officer.troops + city.reserve)}
+                value={muster}
+                onChange={(e) => setMuster(Number(e.target.value))}
+              />
+              <button onClick={() => setMuster(Math.min(5000, officer.troops + city.reserve))}>
+                {t('Assign maximum')}
+              </button>
+            </div>
+            <p className="subtle">
+              {t(
+                '{count} reserves available in {city}. Reducing an army returns troops to the reserves.',
+                { count: number(city.reserve), city: city.name },
               )}
             </p>
-            <div className="ending-stats">
-              <Stat icon={Flag} label={t('Turns')} value={state.turn + 1} />
-              <Stat icon={Swords} label={t('Battles won')} value={state.stats.battlesWon} />
-            </div>
-            <button className="primary-button full" onClick={() => setModal('start')}>
-              {t('Begin a new history')}
-              <ArrowRight size={17} />
+            <button
+              className="primary-button full"
+              onClick={() => {
+                if (
+                  execute({
+                    type: 'assignTroops',
+                    cityId: city.id,
+                    officerId: officer.id,
+                    amount: muster,
+                  })
+                )
+                  setModal(null);
+              }}
+            >
+              {t('Confirm assignment')}
+              <Check size={17} />
             </button>
-          </div>
-        </Dialog>
-      )}
-    </div>
+          </Dialog>
+        )}
+
+        {modal === 'transfer' && officer && (
+          <Dialog
+            title={t('Move people and provisions')}
+            eyebrow={t('LOGISTICS')}
+            onClose={() => setModal(null)}
+          >
+            <p className="dialog-copy">
+              {t(
+                'Transfer {name} and their troops to a neighboring city under your banner, along with additional supplies.',
+                { name: officer.name },
+              )}
+            </p>
+            <label className="field-label">
+              {t('Destination')}
+              <select value={transferTarget} onChange={(e) => setTransferTarget(e.target.value)}>
+                <option value="">{t('Select a friendly city')}</option>
+                {city.neighbors
+                  .filter((id) => state.cities.find((c) => c.id === id)?.factionId === player.id)
+                  .map((id) => (
+                    <option key={id} value={id}>
+                      {tx(state.cities.find((c) => c.id === id)?.name)}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <div className="transfer-fields">
+              {[
+                { label: 'Gold', value: transferGold, max: city.gold, set: setTransferGold },
+                { label: 'Food', value: transferFood, max: city.food, set: setTransferFood },
+                {
+                  label: 'Reserves',
+                  value: transferTroops,
+                  max: city.reserve,
+                  set: setTransferTroops,
+                },
+              ].map((field) => (
+                <label key={field.label} className="field-label">
+                  {tx(field.label)}
+                  <input
+                    type="number"
+                    min="0"
+                    max={field.max}
+                    value={field.value}
+                    onChange={(e) => field.set(Number(e.target.value))}
+                  />
+                  <small>
+                    {number(field.max)} {t('available')}
+                  </small>
+                </label>
+              ))}
+            </div>
+            <button
+              className="primary-button full"
+              disabled={!transferTarget}
+              onClick={() => {
+                if (
+                  execute({
+                    type: 'transfer',
+                    sourceId: city.id,
+                    targetId: transferTarget,
+                    officerId: officer.id,
+                    gold: transferGold,
+                    food: transferFood,
+                    troops: transferTroops,
+                  })
+                )
+                  setModal(null);
+              }}
+            >
+              {t('Dispatch convoy')}
+              <Truck size={17} />
+            </button>
+          </Dialog>
+        )}
+
+        {state.phase === 'finished' && modal === null && (
+          <Dialog
+            title={tx(
+              state.winner === player.id
+                ? owned.length === state.cities.length
+                  ? 'A realm united.'
+                  : 'The Hegemon of the realm.'
+                : owned.length
+                  ? 'A rival is crowned Hegemon.'
+                  : 'Your banner falls.',
+            )}
+            eyebrow={tx(
+              state.winner === player.id ? 'THE MANDATE IS YOURS' : 'THE END OF A DYNASTY',
+            )}
+            onClose={() => setModal('start')}
+          >
+            <div className="ending">
+              <Crown size={54} />
+              <p>
+                {tx(
+                  state.winner === player.id
+                    ? owned.length === state.cities.length
+                      ? `${player.name} has brought the divided realm under one banner. A new chapter begins.`
+                      : `${player.name} has held the capital and sixteen cities for a year. The court proclaims a new Hegemon.`
+                    : owned.length
+                      ? `${factionOf(state, state.winner)?.name ?? 'A rival'} has held the capital and sixteen cities for a year and is proclaimed Hegemon. Your banner still flies, but the realm has chosen.`
+                      : 'Your last stronghold has fallen, but history offers another path. Raise a new banner and try again.',
+                )}
+              </p>
+              <div className="ending-stats">
+                <Stat icon={Flag} label={t('Turns')} value={state.turn + 1} />
+                <Stat icon={Swords} label={t('Battles won')} value={state.stats.battlesWon} />
+              </div>
+              <button className="primary-button full" onClick={() => setModal('start')}>
+                {t('Begin a new history')}
+                <ArrowRight size={17} />
+              </button>
+            </div>
+          </Dialog>
+        )}
+      </div>
+    </FactionsContext.Provider>
   );
 }

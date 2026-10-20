@@ -283,3 +283,20 @@ test('a battle keeps the map above 30 frames per second', async ({ page }) => {
   expect(median).toBeLessThanOrEqual(1000 / 30);
   expect(slow).toBeLessThan(0.1);
 });
+
+test('switching between scenarios redraws houses from the loaded game, without a reload', async ({
+  page,
+}) => {
+  await startCampaign(page);
+  const legend = page.locator('.map-legend');
+  await expect(legend).toContainText('Dong Zhuo');
+  await importState(page, createGame('ma', 4, 'balanced', { scenarioId: 'guandu-200' }));
+  await expect(page.locator('.scenario-title h1')).toContainText('The eve of Guandu');
+  await expect(legend).toContainText('Ma Teng');
+  await expect(legend).toContainText('Liu Zhang');
+  await expect(legend).not.toContainText('Dong Zhuo');
+  await importState(page, createGame('yan', 4));
+  await expect(page.locator('.scenario-title h1')).not.toContainText('The eve of Guandu');
+  await expect(legend).toContainText('Liu Yan');
+  await expect(legend).not.toContainText('Ma Teng');
+});

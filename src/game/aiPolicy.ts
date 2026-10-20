@@ -100,6 +100,11 @@ export function attackSafeguards(candidate: AiAttackCandidate) {
   };
 }
 
+/**
+ * Why a unit ended its turn without acting: routed, an enemy in range it chose not to hit,
+ * held back near its camp (camp guard or a weaker defender), no enemy within reach, or the player.
+ */
+export type WaitReason = 'routed' | 'targetInRange' | 'heldBack' | 'noTarget' | 'player';
 /** Battle-level diagnostics; the simulation never reads their results. */
 export interface BattleObserver {
   battleAction?(event: {
@@ -107,6 +112,10 @@ export interface BattleObserver {
     kind: 'attack' | 'counter' | 'tactic' | 'move' | 'wait';
     /** Which tactic was cast, for kind: 'tactic'. */
     skill?: BattleSkill;
+    /** The battle day the action happened on. */
+    day?: number;
+    /** For kind: 'wait' by the tactical AI v2 (or 'player'). */
+    waitReason?: WaitReason;
   }): void;
   battleEnded?(event: {
     reason: 'camp' | 'elimination' | 'timeout' | 'retreat' | 'rout';

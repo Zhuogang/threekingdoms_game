@@ -1,5 +1,5 @@
 import { ArrowRight, Coins, Flag, Shield, Swords, Wheat } from 'lucide-react';
-import { factionById } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import type { BattleSummary as Summary, GameState } from '../game/types';
 import { useI18n } from '../i18n';
 
@@ -26,8 +26,8 @@ export default function BattleSummary({
 }) {
   const { t, tx } = useI18n();
   const city = state.cities.find((c) => c.id === summary.targetId);
-  const attacker = factionById(summary.attackerId)?.name ?? 'The garrison';
-  const defender = factionById(summary.defenderId)?.name ?? 'The garrison';
+  const attacker = factionOf(state, summary.attackerId)?.name ?? 'The garrison';
+  const defender = factionOf(state, summary.defenderId)?.name ?? 'The garrison';
   const won = playerWon(summary, state.playerFactionId);
   const mine = summary.attackerId === state.playerFactionId ? 'attacker' : 'defender';
   const theirs = mine === 'attacker' ? 'defender' : 'attacker';
@@ -96,7 +96,7 @@ export default function BattleSummary({
           <ul>
             {prisoners.map((o) => (
               <li key={o!.id}>
-                {tx(o!.name)} · {tx(factionById(o!.factionId)?.name ?? '')}
+                {tx(o!.name)} · {tx(factionOf(state, o!.factionId)?.name ?? '')}
                 {o!.captive && o!.cityId ? (
                   <>
                     {' · '}

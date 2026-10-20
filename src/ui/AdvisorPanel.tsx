@@ -1,5 +1,5 @@
 import { Check, Circle, Crown, Flag, Handshake, Lightbulb } from 'lucide-react';
-import { factionById } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import { getAdvice, getGoals, type Advice, type GoalId } from '../game/advisor';
 import { HEGEMON_MONTHS, getObjectives } from '../game/campaign';
 import { getRivalHegemon } from '../game/world';
@@ -59,10 +59,10 @@ export default function AdvisorPanel({
           <Handshake size={16} />
           <p>
             {t('You are invited to join a coalition against {faction}.', {
-              faction: tx(factionById(invitation.targetId)?.name ?? 'the rising power'),
+              faction: tx(factionOf(state, invitation.targetId)?.name ?? 'the rising power'),
             })}
             <small>
-              {invitation.members.map((id) => tx(factionById(id)?.name ?? id)).join(' · ')}
+              {invitation.members.map((id) => tx(factionOf(state, id)?.name ?? id)).join(' · ')}
             </small>
           </p>
           <div>
@@ -115,7 +115,7 @@ export default function AdvisorPanel({
               {objective.done ? <Check size={14} /> : <Crown size={14} />}
               {t(OBJECTIVE_TEXT[objective.id]!, {
                 months: HEGEMON_MONTHS,
-                faction: tx(factionById(rival?.factionId)?.name ?? ''),
+                faction: tx(factionOf(state, rival?.factionId)?.name ?? ''),
               })}
               <small>
                 {Math.min(objective.progress, objective.goal)}/{objective.goal}

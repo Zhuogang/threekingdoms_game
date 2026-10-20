@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { ArrowRight, Shield, TriangleAlert, Wheat } from 'lucide-react';
-import { TROOP_LABELS, factionById } from '../content/scenario';
+import { TROOP_LABELS, factionOf } from '../content/scenario';
 import { hasTrait } from '../content/traits';
 import { raidMeetsNoResistance } from '../game/campaign';
 import { lootRange } from '../game/fog';
@@ -94,7 +94,7 @@ export default function MarchDialog(props: MarchDialogProps) {
               const place = state.cities.find((c) => c.id === id)!;
               return (
                 <option key={id} value={id}>
-                  {tx(place.name)} · {tx(factionById(place.factionId)?.name ?? 'Unclaimed')}
+                  {tx(place.name)} · {tx(factionOf(state, place.factionId)?.name ?? 'Unclaimed')}
                 </option>
               );
             })}

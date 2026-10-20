@@ -12,7 +12,7 @@ import type {
   GameCommand,
   GameState,
 } from '../src/game/types';
-import { botMonth, newBotStats } from './playerBot';
+import { botMonth, newBotStats, type BotMode } from './playerBot';
 
 /**
  * Bot-driven balance diagnostics (`npm run diagnostics:ai -- --bot`). A scripted
@@ -29,6 +29,11 @@ const presets = (process.env.DIAGNOSTIC_PRESETS ?? 'balanced').split(',') as (
 const scenarioIds = (process.env.DIAGNOSTIC_SCENARIOS ?? 'divided-realm-190').split(',');
 const tacticalAi = (process.env.DIAGNOSTIC_TACTICAL_AI ?? 'v2') as 'v1' | 'v2';
 const seeds = Array.from({ length: seedCount }, (_, index) => 2001 + index);
+/** DIAGNOSTIC_BOT=turtle plays a bot that never attacks (review R6). */
+const botMode = (process.env.DIAGNOSTIC_BOT ?? 'normal') as BotMode;
+if (!['normal', 'turtle'].includes(botMode)) throw new Error(`Unknown bot mode: ${botMode}`);
+/** Months at which the turtle check asks whether every starting city is still held. */
+const HOLD_CHECKS = [6, 12];
 /** Survival is also reported at this horizon, the one the H1 acceptance criterion uses. */
 const SURVIVAL_HORIZON = 48;
 /** Tactics whose use is divided by the situations in which they could be cast. */
@@ -45,6 +50,10 @@ interface BattleRecord {
   shortage: boolean;
   intent: string;
   actions: Record<string, number>;
+  /** First day either side attacked or cast a tactic (null if nobody ever did). */
+  contactDay: number | null;
+  /** Move-only turns of the tactical AI by why they waited. */
+  waits: Record<string, number>;
 }
 const median = (values: number[]) => {
   const sorted = [...values].sort((a, b) => a - b);
@@ -56,8 +65,27 @@ const percentile = (values: number[], p: number) => {
 };
 const pct = (n: number, d: number) => (d ? Math.round((n * 1000) / d) / 10 : null);
 
-const { battleConfig, getTacticTargets } = await import('../src/game/battle');
+const { battleConfig, battleTuning, getTacticTargets } = await import('../src/game/battle');
+const { ATTACK_MULTIPLIERS } = await import('../src/game/aiPolicy');
 battleConfig.tacticalAi = tacticalAi;
+/**
+ * Balance sweeps (review R1.2): DIAGNOSTIC_TUNING='{"normalDamageRate":0.2,
+ * "attackMultipliers":{"balanced":1.2}}' overrides levers for this run only.
+ */
+const tuning = JSON.parse(process.env.DIAGNOSTIC_TUNING ?? '{}') as Record<string, unknown>;
+for (const [key, value] of Object.entries(tuning)) {
+  if (key === 'attackMultipliers') {
+    for (const [aggression, multiplier] of Object.entries(value as Record<string, number>)) {
+      if (!(aggression in ATTACK_MULTIPLIERS)) throw new Error(`Unknown aggression: ${aggression}`);
+      ATTACK_MULTIPLIERS[aggression as keyof typeof ATTACK_MULTIPLIERS] = multiplier;
+    }
+  } else if (
+    key in battleTuning &&
+    typeof value === typeof battleTuning[key as keyof typeof battleTuning]
+  )
+    (battleTuning as Record<string, unknown>)[key] = value;
+  else throw new Error(`Unknown or mistyped tuning lever: ${key}`);
+}
 
 const battles: BattleRecord[] = [];
 const campaigns: Record<string, unknown>[] = [];
@@ -95,9 +123,10 @@ for (const scenarioId of scenarioIds) {
             preset === 'balanced' ? defaultTruceMonths('standard', faction.difficulty) : 0,
         });
         const stats = newBotStats();
-        let current: Partial<BattleRecord> & { actions: Record<string, number> } = {
-          actions: {},
-        };
+        let current: Partial<BattleRecord> & {
+          actions: Record<string, number>;
+          waits: Record<string, number>;
+        } = { actions: {}, waits: {} };
         let shortage = false;
         let captures = 0;
         let coalitions = 0;
@@ -119,8 +148,13 @@ for (const scenarioId of scenarioIds) {
             );
             for (const skill of eligibleNow) eligibility[skill].eligibleTurns++;
           },
-          battleAction: ({ kind, skill }) => {
+          battleAction: ({ kind, skill, day, waitReason }) => {
             current.actions[kind] = (current.actions[kind] ?? 0) + 1;
+            if ((kind === 'attack' || kind === 'tactic') && day !== undefined)
+              current.contactDay ??= day;
+            if (kind === 'wait')
+              current.waits[waitReason ?? 'other'] =
+                (current.waits[waitReason ?? 'other'] ?? 0) + 1;
             if (skill) tacticCasts[skill] = (tacticCasts[skill] ?? 0) + 1;
             if (skill && skill in eligibility) {
               eligibility[skill].castsTotal++;
@@ -153,8 +187,10 @@ for (const scenarioId of scenarioIds) {
               shortage,
               intent: event.intent ?? 'conquer',
               actions: current.actions,
+              contactDay: current.contactDay ?? null,
+              waits: current.waits,
             });
-            current = { actions: {} };
+            current = { actions: {}, waits: {} };
             shortage = false;
           },
           capture: ({ byFactionId }) => {
@@ -196,11 +232,17 @@ for (const scenarioId of scenarioIds) {
         let peakCities = 0;
         let maxAiCaptives = 0;
         const held = () => state.cities.filter((c) => c.factionId === faction.id).length;
+        const startingCities = state.cities
+          .filter((c) => c.factionId === faction.id)
+          .map((c) => c.id);
+        const heldAll: Record<number, boolean> = {};
+        let firstLoss: number | null = null;
         for (let month = 0; month < months && state.phase !== 'finished'; month++) {
           botMonth(
             () => state,
             (command) => apply(command),
             stats,
+            botMode,
           );
           apply({ type: 'endMonth' });
           for (let guard = 0; state.phase === 'battle'; guard++) {
@@ -208,6 +250,11 @@ for (const scenarioId of scenarioIds) {
             apply({ type: 'battleAuto' }, true);
           }
           if (eliminated === null && held() === 0) eliminated = state.turn;
+          const keepsAll = startingCities.every(
+            (id) => state.cities.find((c) => c.id === id)!.factionId === faction.id,
+          );
+          if (!keepsAll && firstLoss === null) firstLoss = state.turn;
+          if (HOLD_CHECKS.includes(state.turn)) heldAll[state.turn] = keepsAll;
           // Captives held by AI houses (the player's own prisoners are the player's to decide).
           const aiCaptives = state.officers.filter((o) => {
             if (!o.captive || o.fate !== 'active') return false;
@@ -241,6 +288,9 @@ for (const scenarioId of scenarioIds) {
           coalitions,
           peakCities,
           maxAiCaptives,
+          startingCities: startingCities.length,
+          heldAllStartingCities: heldAll,
+          firstLossMonth: firstLoss,
           plunders: rawPlunders,
           raids,
           bot,
@@ -288,6 +338,56 @@ const closeIn = (set: BattleRecord[]) =>
     const end = b.winner === 'attacker' ? b.attackerEnd : b.defenderEnd;
     return start > 0 && end / start < 0.5;
   }).length;
+/** Stronger side's starting troops over the weaker side's. */
+const forceRatio = (b: BattleRecord) =>
+  Math.max(b.attackerStart, b.defenderStart) /
+  Math.max(1, Math.min(b.attackerStart, b.defenderStart));
+const RATIO_BUCKETS: [string, number, number][] = [
+  ['contested (< 1.6x)', 0, 1.6],
+  ['uneven (1.6-3x)', 1.6, 3],
+  ['lopsided (> 3x)', 3, Infinity],
+];
+const mixOf = (set: BattleRecord[]) => {
+  const totals: Record<string, number> = {};
+  for (const b of set)
+    for (const [kind, n] of Object.entries(b.actions)) totals[kind] = (totals[kind] ?? 0) + n;
+  const all = (totals.attack ?? 0) + (totals.tactic ?? 0) + (totals.wait ?? 0);
+  return {
+    moveOnlyPercent: pct(totals.wait ?? 0, all),
+    attackPercent: pct(totals.attack ?? 0, all),
+  };
+};
+const waitTotals: Record<string, number> = {};
+for (const b of decisive)
+  for (const [reason, n] of Object.entries(b.waits))
+    waitTotals[reason] = (waitTotals[reason] ?? 0) + n;
+const waitSum = Object.values(waitTotals).reduce((a, b) => a + b, 0);
+// Where the time goes (review R1.1): every target split by how uneven the fight was at the start.
+const byForceRatio = Object.fromEntries(
+  RATIO_BUCKETS.map(([label, low, high]) => {
+    const set = decisive.filter((b) => forceRatio(b) >= low && forceRatio(b) < high);
+    const engaged = set.filter((b) => b.contactDay !== null);
+    return [
+      label,
+      {
+        battles: set.length,
+        sharePercent: pct(set.length, decisive.length),
+        medianBattleDays: median(set.map((b) => b.days)),
+        medianContactDay: median(engaged.map((b) => b.contactDay!)),
+        medianDaysAfterContact: median(engaged.map((b) => b.days - b.contactDay! + 1)),
+        closeBattlePercent: pct(closeIn(set), set.length),
+        timeoutPercent: pct(set.filter((b) => b.reason === 'timeout').length, set.length),
+        ...mixOf(set),
+        endedBy: Object.fromEntries(
+          ['elimination', 'camp', 'rout', 'timeout'].map((r) => [
+            r,
+            pct(set.filter((b) => b.reason === r).length, set.length),
+          ]),
+        ),
+      },
+    ];
+  }),
+);
 const marchTotal = botSum('marches');
 const nonDefault = Object.entries(
   campaigns.reduce(
@@ -333,8 +433,33 @@ const groupBy = (key: (c: Campaign) => string) => {
 const raidResolved = raidTotals.battles + raidTotals.unopposed;
 const botRaid = (key: 'battles' | 'battlesWon' | 'unopposed') =>
   sum((c) => (c.raids as Record<string, number>)[key]!);
+// Review R6: for each house, in how many seeds every starting city was still held.
+const holdsStartingCities = Object.fromEntries(
+  HOLD_CHECKS.map((month) => [
+    `month${month}`,
+    Object.fromEntries(
+      Object.entries(
+        campaigns.reduce(
+          (acc, c) => {
+            const key = `${c.scenario}/${c.faction}`;
+            const held = (c.heldAllStartingCities as Record<number, boolean>)[month];
+            acc[key] ??= { kept: 0, runs: 0 };
+            acc[key].runs++;
+            if (held) acc[key].kept++;
+            return acc;
+          },
+          {} as Record<string, { kept: number; runs: number }>,
+        ),
+      ).map(([key, { kept, runs }]) => [key, `${kept}/${runs}`]),
+    ),
+  ]),
+);
 const summary = {
   tacticalAi,
+  botMode,
+  holdsStartingCities,
+  // The levers in force for this run (defaults unless DIAGNOSTIC_TUNING overrode them).
+  tuning: { ...battleTuning, attackMultipliers: { ...ATTACK_MULTIPLIERS } },
   scenarios: scenarioIds,
   campaigns: campaigns.length,
   survival: {
@@ -366,6 +491,11 @@ const summary = {
     upsetPercent: pct(upsetIn(contested), contested.length),
     closeBattlePercent: pct(closeIn(contested), contested.length),
   },
+  byForceRatio,
+  // Share of tactical-AI move-only turns by why the unit waited.
+  waitReasonsPercent: Object.fromEntries(
+    Object.entries(waitTotals).map(([reason, n]) => [reason, pct(n, waitSum)]),
+  ),
   upsetPercent: pct(upsets.length, decisive.length),
   closeBattlePercent: pct(close.length, decisive.length),
   supplyRunOutPercent: pct(decisive.filter((b) => b.shortage).length, decisive.length),
