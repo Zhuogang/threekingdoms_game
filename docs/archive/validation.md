@@ -1,5 +1,7 @@
 # Hegemony of the Three Kingdoms v0.1 — validation
 
+> **Archived:** v0.1 release validation. Current checks are in [v0.2-summary.md](../v0.2-summary.md). This file is not updated. See the [documentation index](../README.md).
+
 October 19, 2026. The v0.1 improvements passed **170 unit tests, 41 development browser tests, six production browser tests, strict compilation, formatting, and portrait validation**. The final 12-case display matrix was repeated after formatting and adding explicit campaign-font assertions. All 52 named officers have distinct local headshots, plus a separate garrison image. Existing pre-change saves retain exact gameplay/RNG continuation. These results apply to the authored `baye-atlas-1` ruleset and the tested browser; independent player enjoyment and representative human balance acceptance remain unverified.
 
 ## October 19 improvement checks
@@ -52,7 +54,7 @@ or deployment paths.
 
 See the [58-criterion acceptance record](v0.1-improvement-acceptance.md),
 [browser evidence](validation-browser-2026-10-19.md),
-[portrait credits](assets/portrait-credits.md), and
+[portrait credits](../assets/portrait-credits.md), and
 [pre-change baseline](validation-baseline-2026-10-19.md).
 
 The hosted GitHub Actions workflow has not been run from this local task. Firefox/Safari,

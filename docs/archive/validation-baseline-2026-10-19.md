@@ -1,5 +1,7 @@
 # Pre-improvement v0.1 baseline
 
+> **Archived:** v0.1 measurements taken before its improvements. This file is not updated. See the [documentation index](../README.md).
+
 Captured October 19, 2026 (local date), before application changes for the improvement plan.
 
 | Item                          | Recorded value                                     |
@@ -61,12 +63,12 @@ comparisons include all fields.
 
 ## Before screenshots
 
-| Scene                 | 1366 × 768                                    | 1920 × 1080                                   |
-| --------------------- | --------------------------------------------- | --------------------------------------------- |
-| Campaign, English     | [Image](images/baseline/campaign-1366-en.png) | [Image](images/baseline/campaign-1920-en.png) |
-| Campaign, Chinese     | [Image](images/baseline/campaign-1366-zh.png) | [Image](images/baseline/campaign-1920-zh.png) |
-| Dense battle, English | [Image](images/baseline/battle-1366-en.png)   | [Image](images/baseline/battle-1920-en.png)   |
-| Dense battle, Chinese | [Image](images/baseline/battle-1366-zh.png)   | [Image](images/baseline/battle-1920-zh.png)   |
+| Scene                 | 1366 × 768                                       | 1920 × 1080                                      |
+| --------------------- | ------------------------------------------------ | ------------------------------------------------ |
+| Campaign, English     | [Image](../images/baseline/campaign-1366-en.png) | [Image](../images/baseline/campaign-1920-en.png) |
+| Campaign, Chinese     | [Image](../images/baseline/campaign-1366-zh.png) | [Image](../images/baseline/campaign-1920-zh.png) |
+| Dense battle, English | [Image](../images/baseline/battle-1366-en.png)   | [Image](../images/baseline/battle-1920-en.png)   |
+| Dense battle, Chinese | [Image](../images/baseline/battle-1366-zh.png)   | [Image](../images/baseline/battle-1920-zh.png)   |
 
 No deleted reference files were recreated or required. AI diagnostic comparisons are recorded
 with the final policy measurements rather than inferred from these browser captures.

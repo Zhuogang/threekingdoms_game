@@ -29,7 +29,7 @@ Choose a ruler and select **Raise your banner**. The **How to play** button expl
 - **More ways to play:** a second scenario (**The eve of Guandu**, 200 AD), Story / Standard / Warlord difficulty, an opening truce, optional aging, fog of war on rival cities, a Hegemon victory, and an adviser with first-campaign goals.
 - **Old saves still load.** Version 1 saves migrate to version 2 without drawing any randomness.
 
-See the [v0.2 rules](docs/v0.2-rules.md) and the [v0.2 notes](docs/v0.2-notes.md), which list deviations and the balance targets that were not met. Difficulty never gives rivals extra resources or combat bonuses.
+Start with the [v0.2 summary](docs/v0.2-summary.md). The [v0.2 rules](docs/v0.2-rules.md) list every rule with its constants, and the [v0.2 notes](docs/v0.2-notes.md) list deviations and the balance evidence. What is still open is in [next steps](docs/next-steps.md). Difficulty never gives rivals extra resources or combat bonuses.
 
 ## What was in v0.1?
 
@@ -78,7 +78,7 @@ Use **Save and load** for three manual snapshots and JSON backups. An invalid im
 
 Saves belong to the current browser profile and website address. Export a JSON backup before clearing browser data or changing browsers, ports, or hosting addresses. Use one active campaign tab at a time; concurrent-tab conflict resolution and cloud synchronization are not implemented.
 
-The rename preserves the original remake's `baye-atlas` database, `baye.*` preferences, `baye.save` version 1 format, and `baye-atlas-1` ruleset. Existing saves and their `baye-*.json` downloads remain compatible. Binary saves from the legacy game are not supported.
+The rename preserves the original remake's `baye-atlas` database and `baye.*` preferences. v0.2 saves use the `baye.save` format version 2 and the `baye-atlas-2` ruleset; version 1 saves and their `baye-*.json` downloads still load and are migrated automatically. Binary saves from the legacy game are not supported.
 
 ## Develop and test
 
@@ -88,16 +88,19 @@ npm test                 # Simulation, save validation, and translation regressi
 npm run test:e2e         # Full game, language, and storage browser journeys
 npm run build            # Strict TypeScript check and production dist/
 npm run test:production  # Test dist/ under /hegemony/, including reload and battle continuation
+npm run test:perf        # Auto-resolve benchmark: 10-versus-10 battles under 50 ms
+npm run test:fps         # Opt-in frame-rate check, also with a slowed CPU and software graphics
 npm run preview          # Preview the production build
 npm run format:check     # Source and documentation formatting
 npm run validate:portraits # Coverage, provenance, dimensions, checksums, and payload budget
 npm run diagnostics:ai   # Fixed 180-campaign rival-policy comparison (writes .artifacts/)
+npm run diagnostics:ai -- --bot  # 36 bot campaigns measuring every v0.2 balance target
 npm audit                # Known dependency advisories
 ```
 
 Run `npm run build` before `npm run test:production`. Local browser tests use installed **Google Chrome**. GitHub Actions uses Playwright Chromium on Linux. To use Chromium locally instead, run `npx playwright install chromium` and set `CI=1` in your shell before the browser commands.
 
-The [validation record](docs/validation.md) records the release checks, bug fixes, and remaining coverage limits. Passing tests are evidence of the tested behavior, not a guarantee of zero bugs or perfectly balanced campaigns.
+The [v0.2 summary](docs/v0.2-summary.md) lists the current checks and results; the v0.1 [validation record](docs/archive/validation.md) is kept for history. Passing tests are evidence of the tested behavior, not a guarantee of zero bugs or perfectly balanced campaigns.
 
 ## Architecture you can learn from
 
@@ -120,18 +123,16 @@ React controls / PixiJS map
 - **Language is presentation.** English canonical messages stay compatible with existing saves; Chinese catalogs translate the interface and history at display time.
 - **The browser is the platform layer.** Storage, file downloads, and audio are separate from the simulation. React manages accessible controls; PixiJS draws the atlas and battlefield.
 
-| Read next                                              | Purpose                                                                 |
-| ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| [Implementation and rules](docs/implementation.md)     | Command costs, economy, AI, tactical formulas, and a guided source tour |
-| [v0.2 rules](docs/v0.2-rules.md)                       | Every rule added or changed in v0.2, with constants                     |
-| [v0.2 notes](docs/v0.2-notes.md)                       | Deviations from the plan, balance evidence, and open gaps               |
-| [Architecture](docs/architecture.md)                   | Original design decisions and tradeoffs                                 |
-| [Roadmap](docs/roadmap.md)                             | Milestones and future quality goals                                     |
-| [Reference baseline](docs/reference-baseline.md)       | Findings from the original source                                       |
-| [Validation](docs/validation.md)                       | Reproducible tests and release limitations                              |
-| [v0.1 improvement plan](docs/v0.1-improvement-plan.md) | Scope, measurements, and implementation acceptance criteria             |
-| [Rival policy measurements](docs/ai-balance.md)        | Baseline comparison and aggression tuning evidence                      |
-| [Portrait credits](docs/assets/portrait-credits.md)    | Original artwork provenance and officer identity mapping                |
+| Read next                                           | Purpose                                                                 |
+| --------------------------------------------------- | ----------------------------------------------------------------------- |
+| [Documentation index](docs/README.md)               | Every document, sorted into current, reference and history              |
+| [v0.2 summary](docs/v0.2-summary.md)                | What v0.2 is, how it was built, and how well it is tested               |
+| [Next steps](docs/next-steps.md)                    | To-do list, design decisions, and what comes next                       |
+| [v0.2 rules](docs/v0.2-rules.md)                    | Every rule added or changed in v0.2, with constants                     |
+| [v0.2 notes](docs/v0.2-notes.md)                    | Deviations from the plan and balance evidence                           |
+| [Implementation and rules](docs/implementation.md)  | Command costs, economy, AI, tactical formulas, and a guided source tour |
+| [Architecture](docs/architecture.md)                | Original design decisions and tradeoffs                                 |
+| [Portrait credits](docs/assets/portrait-credits.md) | Original artwork provenance and officer identity mapping                |
 
 ## Static hosting
 
@@ -149,7 +150,7 @@ The headshots are original imagined historical illustrations created for this pr
 
 The reference repository is not required to build or play this standalone remake. Installed dependencies, build output, browser reports, and local QA artifacts are ignored by Git.
 
-Future work includes longer human balance testing, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. Multiplayer, mobile-first controls, cloud saves, and mod support are outside v0.1.
+Future work is tracked in [next steps](docs/next-steps.md): battle tuning, a human playtest, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. Multiplayer, mobile-first controls, cloud saves, and mod support are out of scope.
 
 ## 中文快速开始
 

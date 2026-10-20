@@ -1,6 +1,8 @@
 # Rival policy and monthly report validation — v0.1
 
-> **v0.2:** house personalities (`FACTION_POLICY`), tactical AI v2, AI transport, joint attacks and statecraft were added after this document was written. The measurements below are the v0.1 comparison. v0.2 bot-based balance results and the targets that were missed are in [v0.2-notes.md](v0.2-notes.md).
+> **Archived:** v0.1 rival-policy measurements. v0.2 balance evidence is in [v0.2-notes.md](../v0.2-notes.md). This file is not updated. See the [documentation index](../README.md).
+
+> **v0.2:** house personalities (`FACTION_POLICY`), tactical AI v2, AI transport, joint attacks and statecraft were added after this document was written. The measurements below are the v0.1 comparison. v0.2 bot-based balance results and the targets that were missed are in [v0.2-notes.md](../v0.2-notes.md).
 
 Updated October 19, 2026. The comparison uses the preserved pre-change engine and the final
 v0.1 campaign policy. It does not use the deleted Baye reference folder.
@@ -69,9 +71,9 @@ only its original Balanced policy.
 
 Durable raw per-run evidence:
 
-- [Pre-change baseline: 60 runs](ai-diagnostics/baseline.json)
-- [Initial proposed presets: 180 runs](ai-diagnostics/initial-presets.json)
-- [Final tuned presets: 180 runs](ai-diagnostics/final-presets.json)
+- [Pre-change baseline: 60 runs](../ai-diagnostics/baseline.json)
+- [Initial proposed presets: 180 runs](../ai-diagnostics/initial-presets.json)
+- [Final tuned presets: 180 runs](../ai-diagnostics/final-presets.json)
 
 ## Tuning decision
 

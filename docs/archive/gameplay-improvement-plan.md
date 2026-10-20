@@ -1,5 +1,7 @@
 # Hegemony of the Three Kingdoms — gameplay improvement plan
 
+> **Archived:** the v0.2 plan, implemented on branch `v0.2`. Its open items, decisions and backlog now live in [next-steps.md](../next-steps.md). This file is not updated. See the [documentation index](../README.md).
+
 **Branch analyzed:** `hegemony_of_the_three_kindoms_v0.1` (October 20, 2026).
 **Status:** **ready for implementation.** Designer decisions are recorded in §7. No game code has
 been changed yet.
