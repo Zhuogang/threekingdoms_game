@@ -4,6 +4,7 @@ import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const baseline = process.argv.includes('--baseline');
+const bot = process.argv.includes('--bot');
 const artifactDir = resolve('.artifacts/ai-diagnostics');
 mkdirSync(artifactDir, { recursive: true });
 const plugins = [];
@@ -81,9 +82,15 @@ if (baseline) {
     },
   });
 }
-const outfile = join(artifactDir, baseline ? 'baseline-runner.mjs' : 'current-runner.mjs');
+const outfile = join(
+  artifactDir,
+  bot ? 'bot-runner.mjs' : baseline ? 'baseline-runner.mjs' : 'current-runner.mjs',
+);
 await build({
-  entryPoints: ['tools/aiDiagnostics.ts'],
+  // `--bot` plays a scripted competent player and writes the gameplay-plan metrics.
+  entryPoints: [bot ? 'tools/botDiagnostics.ts' : 'tools/aiDiagnostics.ts'],
+  // Top-level await in the bot runner needs a modern target.
+  target: 'node22',
   outfile,
   platform: 'node',
   format: 'esm',

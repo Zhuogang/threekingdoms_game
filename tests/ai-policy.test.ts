@@ -141,7 +141,9 @@ describe('rival willingness and common departure safeguards', () => {
       expect(result.ok).toBe(true);
       expect(validateState(result.state)).toBeNull();
     }
-    expect(marched).toEqual({ cautious: [], balanced: [], aggressive: ['chenliu'] });
+    // Dong Zhuo's personality (-0.2 aggression) makes his lords bolder than the shared slider:
+    // 1.15x on Balanced clears the 1,600-power army, while Cautious (1.8x) still refuses.
+    expect(marched).toEqual({ cautious: [], balanced: ['chenliu'], aggressive: ['chenliu'] });
   });
 });
 

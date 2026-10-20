@@ -125,6 +125,10 @@ describe('structured monthly report lifecycle', () => {
     city.loyalty = 100;
     city.food = 100000;
     city.gold = 1000;
+    // Keep the rival adviser free to recruit: no dissent target at the border, and the city
+    // is not in the recently-plundered state that would also stop it from being stripped.
+    state.cities.find((item) => item.id === 'chenliu')!.loyalty = 40;
+    city.plunderCooldownUntil = 3;
     const next = finish(advance(state, 'endMonth'));
     expect(next.reports.latest!.events).toContainEqual(
       expect.objectContaining({

@@ -152,11 +152,13 @@ export const GAME_ZH: Record<string, string> = {
     '任命此武将为太守。太守的智力有助于每月维持民心。',
   'Unknown order': '未知命令',
   'Plunder the city': '掠夺城池',
+  'Tactic points are exhausted.': '计策点已耗尽。',
   'Seize gold and food from the people. Halves public support, farming and commerce.':
     '搜刮百姓，夺取金钱与粮草。民心、农业与商业各减半。',
   'The people have nothing left to take.': '百姓已一无所有，无物可掠。',
   'A faction’s ruler cannot be persuaded.': '势力君主无法被招揽。',
   'Choose conquer, sack or raid.': '请选择攻占、洗劫或袭掠。',
+  'You have no active alliance with that ruler.': '你与该君主之间没有有效的盟约。',
   'Choose 10, 20 or 30 days of supplies.': '请选择 10、20 或 30 日的补给。',
   'Choose a prisoner held in this city.': '请选择关押在本城的俘虏。',
   'Choose to release or execute the prisoner.': '请选择释放或处决俘虏。',
@@ -397,6 +399,18 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
     '{faction}洗劫{city}，夺得 {gold} 金和 {food} 粮草。',
   ],
   ['{officer} is taken prisoner by {faction}.', '{officer}被{faction}俘虏。'],
+  ['The people of {city} rise up and cast out {faction}.', '{city}百姓起义，驱逐了{faction}。'],
+  [
+    'Unrest in {city}: a revolt scatters part of the garrison and treasury.',
+    '{city}发生民变，部分守军与府库散失。',
+  ],
+  [
+    '{officer} abandons {faction} and defects to {target}.',
+    '{officer}离开{faction}，投奔{target}。',
+  ],
+  ['{officer} abandons {faction} and wanders the land.', '{officer}离开{faction}，流落四方。'],
+  ['The neighbouring lords unite against {faction}.', '周边诸侯联合对抗{faction}。'],
+  ['{faction} breaks the alliance with {target}.', '{faction}撕毁了与{target}的盟约。'],
   [
     'The raid on {city} is called off: the city was plundered recently.',
     '对{city}的袭掠已取消：该城近期刚遭掠夺。',
@@ -492,6 +506,7 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ['{city} garrison', '{city}守军'],
   ['{officer} seized the enemy camp.', '{officer}夺取了敌军营寨。'],
   ['{side} army wins the battle.', '{side}军赢得了战斗。'],
+  ['{side} army breaks and flees the field.', '{side}军溃败，逃离战场。'],
   ["{officer}'s unit was defeated.", '{officer}的部队已被击败。'],
   [
     '{officer} attacked {target}: {amount} casualties.',

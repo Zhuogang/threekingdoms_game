@@ -1,4 +1,9 @@
-import { FACTIONS, INITIAL_CITIES, INITIAL_OFFICERS } from '../content/scenario';
+import {
+  FACTIONS,
+  INITIAL_CITIES,
+  INITIAL_OFFICERS,
+  battlefieldProfile,
+} from '../content/scenario';
 import {
   autoResolveBattle,
   createBattle,
@@ -12,8 +17,10 @@ import {
   attackSafeguards,
   attackWilling,
   isRivalAggression,
+  policyOf,
   type AiAttackCandidate,
   type CampaignObserver,
+  type FactionPolicy,
   type RivalAggression,
 } from './aiPolicy';
 import {
@@ -351,6 +358,181 @@ export function getPlunderPreview(
   return city && officer ? plunderOutcome(city, officer) : null;
 }
 
+export type PreviewStat =
+  | 'farming'
+  | 'commerce'
+  | 'support'
+  | 'defense'
+  | 'population'
+  | 'reserve'
+  | 'gold'
+  | 'food'
+  | 'loyalty'
+  | 'experience'
+  | 'force'
+  | 'stamina';
+export interface PreviewEffect {
+  stat: PreviewStat;
+  min: number;
+  max: number;
+  /** Whose stat changes: the order's city, the acting officer, all officers here, or the target. */
+  scope: 'city' | 'officer' | 'officers' | 'target';
+}
+export interface ActionPreview {
+  effects: PreviewEffect[];
+  /** Success chance in percent for chance-based orders (search, persuade, alliance). */
+  chance: number | null;
+}
+
+/**
+ * Pure min–max preview of an order, mirroring the formulas in `cityAction`. It never
+ * consumes RNG; execution always lands inside the previewed range.
+ */
+export function getActionPreview(
+  state: GameState,
+  action: Action,
+  cityId: string,
+  officerId: string,
+  targetId?: string,
+): ActionPreview | null {
+  const city = state.cities.find((c) => c.id === cityId);
+  const officer = state.officers.find((o) => o.id === officerId);
+  if (!city || !officer) return null;
+  const effects: PreviewEffect[] = [];
+  let chance: number | null = null;
+  const add = (stat: PreviewStat, min: number, max: number, scope: PreviewEffect['scope']) => {
+    if (min !== 0 || max !== 0) effects.push({ stat, min, max, scope });
+  };
+  const int = officer.intellect;
+  switch (action) {
+    case 'farm': {
+      const room = 999 - city.farming;
+      const base = (int >> 1) + 0;
+      add(
+        'farming',
+        Math.min(room, Math.floor(int / 10) * 2 + base),
+        Math.min(room, Math.floor(int / 10) * 5 + base),
+        'city',
+      );
+      break;
+    }
+    case 'commerce': {
+      const room = 999 - city.commerce;
+      const base = Math.floor(int / 3);
+      add(
+        'commerce',
+        Math.min(room, Math.floor(int / 10) * 2 + base),
+        Math.min(room, Math.floor(int / 10) * 5 + base),
+        'city',
+      );
+      break;
+    }
+    case 'govern': {
+      const support = bounded(city.loyalty + 8 + int / 20, 100) - city.loyalty;
+      const defense = bounded(city.defense + 5 + int / 25, 100) - city.defense;
+      add('support', support, support, 'city');
+      add('defense', defense, defense, 'city');
+      break;
+    }
+    case 'search':
+      chance = state.officers.some(
+        (o) => o.cityId === city.id && !o.factionId && !o.captive && isActiveOfficer(o),
+      )
+        ? 40 + Math.floor(int / 2)
+        : 0;
+      break;
+    case 'recruit': {
+      const gain = Math.max(0, Math.min(city.population - 1000, 300 + officer.force * 5));
+      add('reserve', gain, gain, 'city');
+      add('population', -gain, -gain, 'city');
+      add('support', -Math.min(2, city.loyalty), -Math.min(2, city.loyalty), 'city');
+      break;
+    }
+    case 'train':
+      add('experience', Math.min(25, 10000 - officer.experience), 25, 'officer');
+      add('force', 0, officer.force < (officer.equipment ? 105 : 100) ? 1 : 0, 'officer');
+      break;
+    case 'reward': {
+      const gain = bounded(officer.loyalty + 15, 100) - officer.loyalty;
+      add('loyalty', gain, gain, 'officer');
+      break;
+    }
+    case 'feast':
+      add('loyalty', 0, 8, 'officers');
+      add('stamina', 0, 10, 'officers');
+      break;
+    case 'buyFood':
+      add('food', 800, 800, 'city');
+      break;
+    case 'sellFood':
+      add('food', -800, -800, 'city');
+      add('gold', 80, 80, 'city');
+      break;
+    case 'relieve':
+      add('food', -600, -600, 'city');
+      add('support', Math.min(15, 100 - city.loyalty), Math.min(15, 100 - city.loyalty), 'city');
+      add('population', 300, 300, 'city');
+      break;
+    case 'persuade':
+      chance = targetId ? getPersuadeChance(state, officer.id, targetId) : null;
+      break;
+    case 'subvert': {
+      const loss = 6 + Math.floor(int / 8);
+      const victim = state.cities.find((c) => c.id === targetId);
+      const drop = victim ? Math.min(loss, victim.loyalty) : loss;
+      add('support', -drop, -drop, 'target');
+      break;
+    }
+    case 'alliance': {
+      const faction = FACTIONS.find((f) => f.id === targetId)?.id ?? null;
+      chance = faction ? getAllianceChance(state, officer.factionId ?? '', faction, int) : null;
+      break;
+    }
+    case 'equip':
+      add('force', Math.min(5, 105 - officer.force), Math.min(5, 105 - officer.force), 'officer');
+      break;
+    case 'confiscate':
+      add('gold', 100, 100, 'city');
+      add('force', -Math.min(5, officer.force - 1), -Math.min(5, officer.force - 1), 'officer');
+      add('loyalty', -Math.min(12, officer.loyalty), -Math.min(12, officer.loyalty), 'officer');
+      break;
+    case 'plunder': {
+      const outcome = plunderOutcome(city, officer);
+      add('gold', outcome.gold, outcome.gold, 'city');
+      add('food', outcome.food, outcome.food, 'city');
+      add(
+        'support',
+        outcome.after.loyalty - city.loyalty,
+        outcome.after.loyalty - city.loyalty,
+        'city',
+      );
+      add(
+        'farming',
+        outcome.after.farming - city.farming,
+        outcome.after.farming - city.farming,
+        'city',
+      );
+      add(
+        'commerce',
+        outcome.after.commerce - city.commerce,
+        outcome.after.commerce - city.commerce,
+        'city',
+      );
+      add(
+        'population',
+        outcome.after.population - city.population,
+        outcome.after.population - city.population,
+        'city',
+      );
+      add('loyalty', -PLUNDER_OFFICER_LOYALTY_LOSS, -PLUNDER_OFFICER_LOYALTY_LOSS, 'officers');
+      break;
+    }
+    default:
+      break;
+  }
+  return { effects, chance };
+}
+
 /** Sworn-officer odds for one persuasion; pure so the UI can list them. */
 export function getPersuadeChance(
   state: GameState,
@@ -574,7 +756,9 @@ function cityAction(
     }
     case 'alliance': {
       targetFaction = targetFaction!;
-      if (random(state, 100) < 40 + Math.floor(officer.intellect / 2)) {
+      if (
+        random(state, 100) < getAllianceChance(state, factionId, targetFaction, officer.intellect)
+      ) {
         state.alliances.push({ a: factionId, b: targetFaction, untilTurn: state.turn + 6 });
         announce(`${factionName(targetFaction)} agrees to six months of peace.`, 'diplomacy');
       } else announce(`${factionName(targetFaction)} declines the alliance.`, 'diplomacy');
@@ -754,6 +938,30 @@ function march(
   return null;
 }
 
+/** Ending a treaty early is free but costs reputation: later proposals are harder. */
+function breakAlliance(
+  state: GameState,
+  command: Extract<GameCommand, { type: 'breakAlliance' }>,
+  factionId: string,
+): string | null {
+  const index = state.alliances.findIndex(
+    (p) =>
+      p.untilTurn > state.turn &&
+      ((p.a === factionId && p.b === command.factionId) ||
+        (p.b === factionId && p.a === command.factionId)),
+  );
+  if (index < 0) return 'You have no active alliance with that ruler.';
+  state.alliances.splice(index, 1);
+  state.reputation[factionId] = { brokeAllianceTurn: state.turn };
+  addLog(
+    state,
+    `${factionName(factionId)} breaks the alliance with ${factionName(command.factionId)}.`,
+    'diplomacy',
+  );
+  state.stats.commandsIssued += factionId === state.playerFactionId ? 1 : 0;
+  return null;
+}
+
 /** A ruler's decision about a prisoner held in one of their cities (needs no officer action). */
 function prisonerDecision(
   state: GameState,
@@ -841,82 +1049,558 @@ function transfer(
   return null;
 }
 
-/** AI gets no free resources: it uses exactly the same action, muster and march rules. */
+// ---------------------------------------------------------------------------
+// Campaign AI. It never receives free resources (D8): every step below is an
+// ordinary command (assignTroops, transfer, march, city action) with the same
+// costs and validation the player faces.
+// ---------------------------------------------------------------------------
+const AI_RAID_POWER_MARGIN = 1.2;
+const AI_PLUNDER_THREAT = 1.8;
+const AI_PERSUADE_CHANCE = 45;
+const AI_PERSUADE_MIN_TROOPS = 1000;
+const AI_SUBVERT_SUPPORT = 60;
+const AI_JOINT_COMMIT = 0.6;
+const AI_TRANSPORT_RESERVE = 500;
+const MUSTER_STRONG = 2200;
+const MUSTER_STANDARD = 1500;
+
+const weightedPower = (army: Officer[]) =>
+  army.reduce((sum, o) => sum + o.troops * (0.6 + o.force / 100), 0);
+const bordersFaction = (state: GameState, a: string, b: string): boolean =>
+  state.cities.some(
+    (city) =>
+      city.factionId === a &&
+      city.neighbors.some((id) => state.cities.find((c) => c.id === id)?.factionId === b),
+  );
+/** The faction with the most cities (ties break by id), or null when nothing is held. */
+export function strongestFaction(state: GameState): string | null {
+  const counts = FACTIONS.map((f) => ({
+    id: f.id,
+    cities: state.cities.filter((c) => c.factionId === f.id).length,
+  })).sort((a, b) => b.cities - a.cities || a.id.localeCompare(b.id));
+  return counts[0] && counts[0].cities > 0 ? counts[0].id : null;
+}
+
+/** Pure alliance odds shown before proposing; execution uses the same number. */
+export function getAllianceChance(
+  state: GameState,
+  proposerId: string,
+  targetId: string,
+  intellect: number,
+): number {
+  const strongest = strongestFaction(state);
+  let chance = 40 + Math.floor(intellect / 2) + policyOf(targetId).diplomacyBias;
+  if (
+    strongest &&
+    proposerId !== strongest &&
+    targetId !== strongest &&
+    bordersFaction(state, proposerId, strongest) &&
+    bordersFaction(state, targetId, strongest)
+  )
+    chance += 20;
+  if (targetId === strongest) chance -= 30;
+  const broke = state.reputation[proposerId]?.brokeAllianceTurn;
+  if (broke !== undefined && state.turn - broke < 12) chance -= 20;
+  return bounded(chance, 90, 5);
+}
+
+/** Distance (in map links) from each of a faction's cities to its nearest front-line city. */
+function frontDepth(state: GameState, factionId: string): Map<string, number> {
+  const depth = new Map<string, number>();
+  const isFront = (city: City) =>
+    city.neighbors.some((id) => {
+      const other = state.cities.find((c) => c.id === id)!;
+      return other.factionId !== factionId && !allied(state, factionId, other.factionId);
+    });
+  let frontier = state.cities.filter((c) => c.factionId === factionId && isFront(c));
+  frontier.forEach((c) => depth.set(c.id, 0));
+  for (let step = 1; frontier.length; step++) {
+    const next: City[] = [];
+    for (const city of frontier)
+      for (const id of city.neighbors) {
+        const neighbor = state.cities.find((c) => c.id === id)!;
+        if (neighbor.factionId !== factionId || depth.has(neighbor.id)) continue;
+        depth.set(neighbor.id, step);
+        next.push(neighbor);
+      }
+    frontier = next;
+  }
+  return depth;
+}
+
+function availableOfficers(state: GameState, city: City): Officer[] {
+  return serving(state, city)
+    .filter((o) => !o.busy)
+    .sort((a, b) => b.force - a.force || a.id.localeCompare(b.id));
+}
+
+/** Largest group of officers whose troops fit `share` of the city's strength. */
+function commitArmy(state: GameState, city: City, officers: Officer[], share: number): Officer[] {
+  const limit = strength(state, city) * share;
+  const army: Officer[] = [];
+  let troops = 0;
+  for (const o of officers) {
+    if (o.troops <= 0 || o.stamina < 15 || army.length >= 10) continue;
+    if (troops + o.troops > limit) continue;
+    army.push(o);
+    troops += o.troops;
+  }
+  return army;
+}
+
+function candidateFor(
+  state: GameState,
+  city: City,
+  target: City,
+  army: Officer[],
+  power: number,
+  coalitionTarget: boolean,
+): AiAttackCandidate {
+  return {
+    turn: state.turn,
+    factionId: city.factionId!,
+    sourceId: city.id,
+    targetId: target.id,
+    attackingPower: power,
+    defendingTroops: strength(state, target),
+    defense: target.defense,
+    attackingTroops: army.reduce((sum, officer) => sum + officer.troops, 0),
+    sourceTroops: strength(state, city),
+    reserve: city.reserve,
+    food: city.food,
+    coalitionTarget,
+  };
+}
+
+function aiMuster(state: GameState, factionId: string, cities: City[]): void {
+  const policy = policyOf(factionId);
+  for (const city of cities) {
+    for (const officer of availableOfficers(state, city)) {
+      const standard = officer.force > 80 ? MUSTER_STRONG : MUSTER_STANDARD;
+      const desired = Math.min(
+        MAX_TROOPS,
+        officer.troops + Math.max(0, city.reserve - 500),
+        Math.floor(standard * policy.musterBonus),
+      );
+      if (desired > officer.troops)
+        assignTroops(
+          state,
+          { type: 'assignTroops', cityId: city.id, officerId: officer.id, amount: desired },
+          factionId,
+        );
+    }
+  }
+}
+
+/** Interior cities send surplus reserves, supplies and one officer toward the front. */
+function aiTransport(
+  state: GameState,
+  factionId: string,
+  cities: City[],
+  observer?: CampaignObserver,
+): void {
+  const depth = frontDepth(state, factionId);
+  for (const city of cities) {
+    const here = depth.get(city.id);
+    if (here === undefined || here === 0) continue;
+    const forward = city.neighbors
+      .map((id) => state.cities.find((c) => c.id === id)!)
+      .filter((c) => c.factionId === factionId && (depth.get(c.id) ?? Infinity) < here)
+      .sort((a, b) => depth.get(a.id)! - depth.get(b.id)! || a.id.localeCompare(b.id))[0];
+    const officers = availableOfficers(state, city);
+    // Never strip a city of its last officer.
+    if (!forward || officers.length < 2) continue;
+    const convoy = officers.filter((o) => o.stamina >= 15)[0];
+    if (!convoy) continue;
+    const troops = Math.max(0, city.reserve - AI_TRANSPORT_RESERVE);
+    const upkeep = Math.ceil(strength(state, city) * 0.12);
+    const food = Math.max(0, Math.floor((city.food - upkeep * 4 - 1500) / 2));
+    const gold = Math.max(0, Math.floor((city.gold - 600) / 2));
+    const error = transfer(
+      state,
+      {
+        type: 'transfer',
+        sourceId: city.id,
+        targetId: forward.id,
+        officerId: convoy.id,
+        gold,
+        food,
+        troops,
+      },
+      factionId,
+    );
+    if (!error) observer?.aiStatecraft?.({ factionId, kind: 'transport' });
+  }
+}
+
+/** Two cities bordering one target may attack together when neither is strong enough alone. */
+function aiJointAttacks(
+  state: GameState,
+  factionId: string,
+  cities: City[],
+  committed: Set<string>,
+  coalitionLeader: string | null,
+  observer?: CampaignObserver,
+): void {
+  if (state.turn === 0 || state.turn < state.truceUntilTurn) return;
+  const policy = policyOf(factionId);
+  const targets = state.cities
+    .filter((c) => c.factionId !== factionId && !allied(state, factionId, c.factionId))
+    .sort((a, b) => a.id.localeCompare(b.id));
+  for (const target of targets) {
+    const sources = cities.filter((c) => c.neighbors.includes(target.id) && !committed.has(c.id));
+    if (sources.length < 2) continue;
+    const parts = sources.map((city) => {
+      const army = commitArmy(state, city, availableOfficers(state, city), AI_JOINT_COMMIT);
+      return { city, army, power: weightedPower(army) };
+    });
+    if (parts.some((part) => !part.army.length)) continue;
+    const combined = candidateFor(
+      state,
+      parts[0]!.city,
+      target,
+      parts.flatMap((part) => part.army),
+      parts.reduce((sum, part) => sum + part.power, 0),
+      target.factionId === coalitionLeader,
+    );
+    // Cities that can win alone are left to the ordinary single-city logic.
+    const aloneWilling = parts.some((part) =>
+      attackWilling(
+        candidateFor(state, part.city, target, part.army, part.power, false),
+        state.rivalAggression,
+        policy,
+      ),
+    );
+    if (aloneWilling || !attackWilling(combined, state.rivalAggression, policy)) continue;
+    const safe = parts.every((part) => {
+      const guards = attackSafeguards(
+        candidateFor(state, part.city, target, part.army, part.power, false),
+      );
+      return guards.reserves && guards.food;
+    });
+    if (!safe) continue;
+    for (const part of parts) {
+      const error = march(
+        state,
+        {
+          type: 'march',
+          sourceId: part.city.id,
+          targetId: target.id,
+          officerIds: part.army.map((o) => o.id),
+        },
+        factionId,
+      );
+      if (!error) {
+        committed.add(part.city.id);
+        observer?.aiMarch?.(state.orders[state.orders.length - 1]!);
+      }
+    }
+    observer?.aiStatecraft?.({ factionId, kind: 'joint' });
+  }
+}
+
+/** Pick which willing target to hit, honouring the faction's personality. */
+function chooseTarget(
+  state: GameState,
+  candidates: AiAttackCandidate[],
+  preference: FactionPolicy['targetPreference'],
+): AiAttackCandidate | undefined {
+  const willing = candidates.filter((candidate) =>
+    attackWilling(candidate, state.rivalAggression, policyOf(candidate.factionId)),
+  );
+  if (preference === 'weakest' || willing.length < 2) return willing[0];
+  const city = (candidate: AiAttackCandidate) =>
+    state.cities.find((c) => c.id === candidate.targetId)!;
+  if (preference === 'lowSupport')
+    return [...willing].sort((a, b) => city(a).loyalty - city(b).loyalty)[0];
+  const watery = (c: AiAttackCandidate) => (battlefieldProfile(c.targetId) === 'river' ? 0 : 1);
+  return [...willing].sort((a, b) => watery(a) - watery(b))[0];
+}
+
+function aiStatecraft(
+  state: GameState,
+  faction: string,
+  city: City,
+  attackedThisMonth: boolean,
+  observer?: CampaignObserver,
+  persuadedAlready = false,
+): boolean {
+  let persuaded = persuadedAlready;
+  const officers = availableOfficers(state, city);
+  const adviser = [...officers].sort((a, b) => b.intellect - a.intellect)[0];
+  if (!adviser) return persuaded;
+  // Persuade a big-army officer in a neighbouring enemy city when the odds are good.
+  if (!persuaded) {
+    const targets = state.officers
+      .filter((o) => {
+        const home = state.cities.find((c) => c.id === o.cityId)!;
+        return (
+          isActiveOfficer(o) &&
+          !o.captive &&
+          o.factionId !== null &&
+          o.factionId !== faction &&
+          !isRuler(o) &&
+          !o.busy &&
+          o.troops >= AI_PERSUADE_MIN_TROOPS &&
+          city.neighbors.includes(home.id) &&
+          !allied(state, faction, o.factionId)
+        );
+      })
+      .sort((a, b) => b.troops - a.troops || a.id.localeCompare(b.id));
+    const target = targets.find(
+      (o) => (getPersuadeChance(state, adviser.id, o.id) ?? 0) >= AI_PERSUADE_CHANCE,
+    );
+    if (target) {
+      const error = cityAction(
+        state,
+        {
+          type: 'action',
+          action: 'persuade',
+          cityId: city.id,
+          officerId: adviser.id,
+          targetId: target.id,
+        },
+        faction,
+      );
+      if (!error) {
+        persuaded = true;
+        observer?.aiStatecraft?.({ factionId: faction, kind: 'persuade' });
+        return persuaded;
+      }
+    }
+  }
+  // Sow dissent in a well-governed city of the player's that borders us.
+  if (!attackedThisMonth) {
+    const victim = city.neighbors
+      .map((id) => state.cities.find((c) => c.id === id)!)
+      .find(
+        (c) =>
+          c.factionId === state.playerFactionId &&
+          c.loyalty >= AI_SUBVERT_SUPPORT &&
+          !allied(state, faction, c.factionId),
+      );
+    if (victim) {
+      const error = cityAction(
+        state,
+        {
+          type: 'action',
+          action: 'subvert',
+          cityId: city.id,
+          officerId: adviser.id,
+          targetId: victim.id,
+        },
+        faction,
+      );
+      if (!error) observer?.aiStatecraft?.({ factionId: faction, kind: 'subvert' });
+    }
+  }
+  return persuaded;
+}
+
+/** AI factions occasionally offer each other peace against the strongest power. */
+function aiDiplomacy(state: GameState, observer?: CampaignObserver): void {
+  const strongest = strongestFaction(state);
+  if (!strongest) return;
+  FACTIONS.forEach((faction, index) => {
+    if (faction.id === state.playerFactionId || faction.id === strongest) return;
+    // At most one proposal per faction every three months.
+    if ((state.turn + index) % 3 !== 0) return;
+    if (!state.cities.some((c) => c.factionId === faction.id)) return;
+    if (!bordersFaction(state, faction.id, strongest)) return;
+    const partner = FACTIONS.find(
+      (other) =>
+        other.id !== faction.id &&
+        other.id !== strongest &&
+        other.id !== state.playerFactionId &&
+        state.cities.some((c) => c.factionId === other.id) &&
+        bordersFaction(state, other.id, strongest) &&
+        !allied(state, faction.id, other.id),
+    );
+    if (!partner) return;
+    const strategist = state.officers
+      .filter((o) => o.factionId === faction.id && !o.captive && isActiveOfficer(o))
+      .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id))[0];
+    if (!strategist) return;
+    const chance = getAllianceChance(state, faction.id, partner.id, strategist.intellect);
+    if (random(state, 100) < chance) {
+      state.alliances.push({ a: faction.id, b: partner.id, untilTurn: state.turn + 6 });
+      addLog(state, `${factionName(partner.id)} agrees to six months of peace.`, 'diplomacy');
+      observer?.aiStatecraft?.({ factionId: faction.id, kind: 'alliance' });
+    }
+  });
+}
+
+/** Runaway leader: neighbouring AI factions ally against it (never auto-enrolling the player). */
+const COALITION_CITIES = 10;
+function updateCoalition(state: GameState, observer?: CampaignObserver): string | null {
+  const counts = FACTIONS.map((f) => ({
+    id: f.id,
+    cities: state.cities.filter((c) => c.factionId === f.id).length,
+  })).sort((a, b) => b.cities - a.cities || a.id.localeCompare(b.id));
+  const leader = counts[0];
+  if (!leader || leader.cities < COALITION_CITIES) return null;
+  const members = FACTIONS.map((f) => f.id).filter(
+    (id) =>
+      id !== leader.id &&
+      id !== state.playerFactionId &&
+      bordersFaction(state, id, leader.id) &&
+      state.cities.some((c) => c.factionId === id),
+  );
+  let formed = false;
+  for (let i = 0; i < members.length; i++)
+    for (let j = i + 1; j < members.length; j++) {
+      const a = members[i]!;
+      const b = members[j]!;
+      const existing = state.alliances.find(
+        (p) => (p.a === a && p.b === b) || (p.a === b && p.b === a),
+      );
+      if (existing) {
+        // Renew while the condition holds.
+        existing.untilTurn = state.turn + 6;
+        continue;
+      }
+      state.alliances.push({ a, b, untilTurn: state.turn + 6 });
+      formed = true;
+    }
+  if (formed) {
+    addLog(
+      state,
+      `The neighbouring lords unite against ${factionName(leader.id)}.`,
+      leader.id === state.playerFactionId ? 'bad' : 'diplomacy',
+    );
+    recordMonthlyEvent(state, {
+      kind: 'coalition',
+      leaderId: leader.id,
+      involvesPlayer: leader.id === state.playerFactionId,
+    });
+    observer?.coalition?.({ leaderId: leader.id });
+  }
+  return leader.id;
+}
+
 function planAi(state: GameState, observer?: CampaignObserver): void {
+  aiDiplomacy(state, observer);
+  const coalitionLeader = updateCoalition(state, observer);
   for (const faction of FACTIONS) {
     if (faction.id === state.playerFactionId) continue;
+    const policy = policyOf(faction.id);
     const cities = state.cities
       .filter((c) => c.factionId === faction.id)
       .sort((a, b) => a.id.localeCompare(b.id));
     if (cities.length) observer?.aiFactionMonth?.(faction.id);
+    aiMuster(state, faction.id, cities);
+    aiTransport(state, faction.id, cities, observer);
+    const committed = new Set<string>();
+    aiJointAttacks(state, faction.id, cities, committed, coalitionLeader, observer);
+    let persuaded = false;
     for (const city of cities) {
-      const officers = serving(state, city)
-        .filter((o) => !o.busy)
-        .sort((a, b) => b.force - a.force || a.id.localeCompare(b.id));
+      const officers = availableOfficers(state, city);
       if (!officers.length) continue;
-      for (const officer of officers) {
-        const desired = Math.min(
-          MAX_TROOPS,
-          officer.troops + Math.max(0, city.reserve - 500),
-          officer.force > 80 ? 2200 : 1500,
+      let attacked = committed.has(city.id);
+      if (!attacked) {
+        const enemies = state.cities
+          .filter(
+            (c) =>
+              city.neighbors.includes(c.id) &&
+              c.factionId !== faction.id &&
+              !allied(state, faction.id, c.factionId),
+          )
+          .sort((a, b) => strength(state, a) - strength(state, b) || a.id.localeCompare(b.id));
+        const army = officers.filter((o) => o.troops > 0 && o.stamina >= 15).slice(0, 10);
+        const power = weightedPower(army);
+        const candidates = enemies.map((target) =>
+          candidateFor(state, city, target, army, power, target.factionId === coalitionLeader),
         );
-        if (desired > officer.troops)
-          assignTroops(
+        if (army.length && state.turn > 0)
+          candidates.forEach((candidate) => observer?.aiCandidate?.(candidate));
+        const target = chooseTarget(state, candidates, policy.targetPreference);
+        if (target && army.length && state.turn > 0) observer?.aiDecision?.(target);
+        const open = army.length > 0 && state.turn > 0 && state.turn >= state.truceUntilTurn;
+        if (target && open && attackSafeguards(target).reserves && attackSafeguards(target).food) {
+          const error = march(
             state,
-            { type: 'assignTroops', cityId: city.id, officerId: officer.id, amount: desired },
+            {
+              type: 'march',
+              sourceId: city.id,
+              targetId: target.targetId,
+              officerIds: army.map((o) => o.id),
+            },
             faction.id,
           );
+          if (!error) {
+            attacked = true;
+            observer?.aiMarch?.(state.orders[state.orders.length - 1]!);
+          }
+        } else if (open && !target) {
+          // No conquest is within reach: raid the richest neighbour if the army clearly beats it.
+          const richest = [...enemies].sort(
+            (a, b) => b.commerce + b.farming - (a.commerce + a.farming) || a.id.localeCompare(b.id),
+          )[0];
+          const raidFood = supplyFood(
+            army.reduce((sum, o) => sum + o.troops, 0),
+            RAID_SUPPLY_DAYS,
+          );
+          if (
+            richest &&
+            state.turn >= richest.plunderCooldownUntil &&
+            power * policy.raidBias > AI_RAID_POWER_MARGIN * strength(state, richest) &&
+            city.food - raidFood >= Math.ceil(strength(state, city) * 0.12)
+          ) {
+            const error = march(
+              state,
+              {
+                type: 'march',
+                sourceId: city.id,
+                targetId: richest.id,
+                officerIds: army.map((o) => o.id),
+                intent: 'raid',
+              },
+              faction.id,
+            );
+            if (!error) {
+              attacked = true;
+              observer?.aiMarch?.(state.orders[state.orders.length - 1]!);
+              observer?.aiStatecraft?.({ factionId: faction.id, kind: 'raid' });
+            }
+          }
+        }
       }
-      const enemies = state.cities
-        .filter(
-          (c) =>
-            city.neighbors.includes(c.id) &&
-            c.factionId !== faction.id &&
-            !allied(state, faction.id, c.factionId),
-        )
-        .sort((a, b) => strength(state, a) - strength(state, b) || a.id.localeCompare(b.id));
-      const army = officers.filter((o) => o.troops > 0 && o.stamina >= 15).slice(0, 10);
-      const power = army.reduce((sum, o) => sum + o.troops * (0.6 + o.force / 100), 0);
-      const candidates: AiAttackCandidate[] = enemies.map((target) => ({
-        turn: state.turn,
-        factionId: faction.id,
-        sourceId: city.id,
-        targetId: target.id,
-        attackingPower: power,
-        defendingTroops: strength(state, target),
-        defense: target.defense,
-        attackingTroops: army.reduce((sum, officer) => sum + officer.troops, 0),
-        sourceTroops: strength(state, city),
-        reserve: city.reserve,
-        food: city.food,
-      }));
-      if (army.length && state.turn > 0)
-        candidates.forEach((candidate) => observer?.aiCandidate?.(candidate));
-      const target = candidates.find((candidate) =>
-        attackWilling(candidate, state.rivalAggression),
-      );
-      if (target && army.length && state.turn > 0) observer?.aiDecision?.(target);
-      if (
-        target &&
-        army.length &&
-        state.turn > 0 &&
-        state.turn >= state.truceUntilTurn &&
-        attackSafeguards(target).reserves &&
-        attackSafeguards(target).food
-      ) {
-        const error = march(
-          state,
-          {
-            type: 'march',
-            sourceId: city.id,
-            targetId: target.targetId,
-            officerIds: army.map((o) => o.id),
-          },
-          faction.id,
+      persuaded = aiStatecraft(state, faction.id, city, attacked, observer, persuaded);
+      // A city about to fall is stripped of what it can still give.
+      if (policy.plunderAllowed && state.turn >= city.plunderCooldownUntil) {
+        const threat = Math.max(
+          0,
+          ...state.cities
+            .filter(
+              (c) =>
+                city.neighbors.includes(c.id) &&
+                c.factionId !== null &&
+                c.factionId !== faction.id &&
+                !allied(state, faction.id, c.factionId),
+            )
+            .map((c) => strength(state, c)),
         );
-        if (!error) observer?.aiMarch?.(state.orders[state.orders.length - 1]!);
+        if (
+          threat > AI_PLUNDER_THREAT * strength(state, city) &&
+          city.loyalty >= PLUNDER_MIN_SUPPORT
+        ) {
+          const looter = availableOfficers(state, city).sort(
+            (a, b) => b.intellect + b.force - (a.intellect + a.force) || a.id.localeCompare(b.id),
+          )[0];
+          if (looter) {
+            const error = cityAction(
+              state,
+              { type: 'action', action: 'plunder', cityId: city.id, officerId: looter.id },
+              faction.id,
+            );
+            if (!error) {
+              observer?.plunder?.({ cityId: city.id, form: 'own', factionId: faction.id });
+              observer?.aiStatecraft?.({ factionId: faction.id, kind: 'plunder' });
+            }
+          }
+        }
       }
-      for (const officer of officers.filter((o) => !o.busy)) {
+      for (const officer of availableOfficers(state, city)) {
         let action: Action;
         if (officer.loyalty < 55 && city.gold >= 100) action = 'reward';
         else if (city.loyalty < 60) action = city.food > 1500 ? 'relieve' : 'govern';
@@ -1037,7 +1721,12 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
     const loot = home ?? ({ gold: 0, food: 0 } as City);
     const gains = applyPlunder(state, target, loot, leader);
     if (home) home.food = bounded(home.food + battle.attackerFood, RESOURCE_CAP);
-    observer?.plunder?.({ cityId: target.id, form: 'raid', factionId: battle.attackerId });
+    observer?.plunder?.({
+      cityId: target.id,
+      form: 'raid',
+      factionId: battle.attackerId,
+      fought: true,
+    });
     if (battle.attackerId === player) state.stats.battlesWon++;
     addLog(
       state,
@@ -1230,7 +1919,12 @@ function resolveUndefendedRaid(
   const leader = plunderLeader(commanders)!;
   const gains = applyPlunder(state, target, source, leader);
   source.food = bounded(source.food + order.food, RESOURCE_CAP);
-  observer?.plunder?.({ cityId: target.id, form: 'raid', factionId: order.factionId });
+  observer?.plunder?.({
+    cityId: target.id,
+    form: 'raid',
+    factionId: order.factionId,
+    fought: false,
+  });
   const player = state.playerFactionId;
   addLog(
     state,
@@ -1259,6 +1953,108 @@ function resolveUndefendedRaid(
     casualties: { attacker: 0, defender: 0 },
     captured: [],
   };
+}
+
+const UNREST_SUPPORT = 30;
+const REVOLT_INDEPENDENT_SUPPORT = 10;
+const DEPARTURE_LOYALTY = 30;
+const AT_RISK_LOYALTY = 40;
+
+/**
+ * Low public support breeds revolts. RNG is drawn only for cities below the unrest
+ * line so the stream stays stable for healthy realms.
+ */
+function applyUnrest(state: GameState): void {
+  for (const city of state.cities) {
+    if (!city.factionId || city.loyalty >= UNREST_SUPPORT) continue;
+    if (random(state, 100) >= (UNREST_SUPPORT - city.loyalty) * 2) continue;
+    city.reserve = Math.floor(city.reserve * 0.8);
+    city.gold = Math.floor(city.gold * 0.7);
+    const independent =
+      city.loyalty < REVOLT_INDEPENDENT_SUPPORT && serving(state, city).length === 0;
+    const owner = city.factionId;
+    if (independent) {
+      city.factionId = null;
+      city.governorId = null;
+    }
+    addLog(
+      state,
+      independent
+        ? `The people of ${city.name} rise up and cast out ${factionName(owner)}.`
+        : `Unrest in ${city.name}: a revolt scatters part of the garrison and treasury.`,
+      owner === state.playerFactionId ? 'bad' : 'event',
+    );
+    if (owner === state.playerFactionId)
+      recordMonthlyEvent(state, { kind: 'revolt', cityId: city.id, independent });
+  }
+}
+
+/** In January and July the disloyal may walk away, defecting to the strongest neighbour. */
+function applyDepartures(state: GameState): void {
+  for (const officer of state.officers) {
+    if (
+      !officer.factionId ||
+      officer.captive ||
+      !isActiveOfficer(officer) ||
+      isRuler(officer) ||
+      officer.loyalty >= DEPARTURE_LOYALTY
+    )
+      continue;
+    if (random(state, 100) >= DEPARTURE_LOYALTY - officer.loyalty) continue;
+    const city = state.cities.find((c) => c.id === officer.cityId)!;
+    const from = officer.factionId;
+    city.reserve = bounded(city.reserve + officer.troops, RESOURCE_CAP);
+    officer.troops = 0;
+    // The adjacent enemy faction holding the most cities, if any.
+    const neighbors = city.neighbors
+      .map((id) => state.cities.find((c) => c.id === id)!)
+      .filter((c) => c.factionId !== null && c.factionId !== from);
+    const holdings = (factionId: string) =>
+      state.cities.filter((c) => c.factionId === factionId).length;
+    const destination = [...neighbors].sort(
+      (a, b) => holdings(b.factionId!) - holdings(a.factionId!) || a.id.localeCompare(b.id),
+    )[0];
+    if (destination) {
+      officer.factionId = destination.factionId;
+      officer.cityId = destination.id;
+      officer.loyalty = 60;
+    } else {
+      officer.factionId = null;
+      officer.loyalty = 35;
+    }
+    officer.busy = true;
+    addLog(
+      state,
+      destination
+        ? `${officer.name} abandons ${factionName(from)} and defects to ${factionName(destination.factionId)}.`
+        : `${officer.name} abandons ${factionName(from)} and wanders the land.`,
+      from === state.playerFactionId ? 'bad' : 'event',
+    );
+    if (from === state.playerFactionId || destination?.factionId === state.playerFactionId)
+      recordMonthlyEvent(state, {
+        kind: 'departure',
+        officerId: officer.id,
+        fromFactionId: from,
+        toFactionId: destination?.factionId ?? null,
+      });
+    state.cities.forEach((c) => chooseGovernor(state, c));
+  }
+}
+
+/** The monthly report warns about the player's officers who might leave. */
+function updateAtRisk(state: GameState): void {
+  const atRisk = state.officers
+    .filter(
+      (o) =>
+        o.factionId === state.playerFactionId &&
+        !o.captive &&
+        isActiveOfficer(o) &&
+        !isRuler(o) &&
+        o.loyalty < AT_RISK_LOYALTY,
+    )
+    .map((o) => o.id)
+    .slice(0, 20);
+  if (atRisk.length) recordMonthlyEvent(state, { kind: 'atRisk', officerIds: atRisk });
 }
 
 function finishMonth(state: GameState, observer?: CampaignObserver): void {
@@ -1355,6 +2151,9 @@ function finishMonth(state: GameState, observer?: CampaignObserver): void {
       addLog(state, `Five hundred refugees settle peacefully in ${city.name}.`, 'event');
     }
   }
+  applyUnrest(state);
+  if (state.month === 1 || state.month === 7) applyDepartures(state);
+  updateAtRisk(state);
   for (const officer of state.officers) {
     officer.busy = false;
     officer.stamina = bounded(officer.stamina + 35, 100);
@@ -1541,6 +2340,9 @@ function dispatchCommand(
         break;
       case 'prisoner':
         error = prisonerDecision(draft, command, draft.playerFactionId);
+        break;
+      case 'breakAlliance':
+        error = breakAlliance(draft, command, draft.playerFactionId);
         break;
       case 'endMonth':
         beginMonthlyReport(draft);

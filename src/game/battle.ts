@@ -374,7 +374,7 @@ function addThreat(battle: BattleState, enemy: BattleUnit, into: Set<number>): v
 // ---------------------------------------------------------------------------
 // Outcome
 // ---------------------------------------------------------------------------
-type EndReason = 'camp' | 'elimination' | 'timeout' | 'retreat';
+type EndReason = 'camp' | 'elimination' | 'timeout' | 'retreat' | 'rout';
 function endBattle(battle: BattleState, winner: Side, reason: EndReason): void {
   battle.outcome = winner;
   observer?.battleEnded?.({
@@ -982,6 +982,10 @@ function attack(
 }
 
 function spendTacticPoints(battle: BattleState, source: BattleUnit, skill: BattleSkill): void {
+  // Player commands are validated and the AI only plans affordable tactics, so this
+  // is an invariant: tactic points can never go negative.
+  if (battle.tacticPoints[source.side] < TACTIC_COST[skill])
+    throw new Error('Tactic points are exhausted.');
   battle.tacticPoints[source.side] -= TACTIC_COST[skill];
 }
 
@@ -1240,7 +1244,7 @@ function threatAt(battle: BattleState, context: AiContext, unit: BattleUnit, til
 // Scores are in casualty-equivalents so tactics, attacks and positioning compare directly.
 const APPROACH_WEIGHT = 120;
 const ATTACK_THREAT_WEIGHT = 0.5;
-const POSITION_THREAT_WEIGHT = 0.15;
+const POSITION_THREAT_WEIGHT = 0.04;
 const COUNTER_WEIGHT = 0.8;
 const TACTIC_PRICE = 20;
 const TACTIC_POINT_RESERVE = 2;
@@ -1503,6 +1507,21 @@ function finishDay(draft: GameState, battle: BattleState): void {
   }
   checkOutcome(battle);
   if (battle.outcome) return;
+  // An army whose every surviving unit has routed breaks and abandons the field.
+  const broken = (side: Side) => {
+    const units = alive(battle, side);
+    return units.length > 0 && units.every(isRouted);
+  };
+  if (broken('attacker') || broken('defender')) {
+    const loser: Side = broken('attacker') ? 'attacker' : 'defender';
+    log(
+      battle,
+      `${loser === 'attacker' ? 'Attacking' : 'Defending'} army breaks and flees the field.`,
+    );
+    log(battle, `${other(loser) === 'attacker' ? 'Attacking' : 'Defending'} army wins the battle.`);
+    endBattle(battle, other(loser), 'rout');
+    return;
+  }
   if (battle.day >= battle.dayLimit) {
     log(battle, `The ${battle.dayLimit}-day siege limit was reached. The defenders hold the city.`);
     endBattle(battle, 'defender', 'timeout');
