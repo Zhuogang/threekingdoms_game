@@ -169,6 +169,8 @@ export type Difficulty = 'story' | 'standard' | 'warlord';
 export interface Invitation {
   id: string;
   eventId: string;
+  /** The house the coalition forms against. */
+  targetId: string;
   members: string[];
   untilTurn: number;
 }

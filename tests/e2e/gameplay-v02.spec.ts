@@ -103,7 +103,8 @@ test('the march planner offers conquest, sack and raid with real supply choices'
     'aria-checked',
     'true',
   );
-  await expect(page.getByTestId('loot-preview')).toContainText('Expected loot');
+  // Xiapi has not been scouted, so the loot is an estimated range, not an exact figure.
+  await expect(page.getByTestId('loot-preview')).toContainText('Estimated loot');
   await dialog.getByRole('button', { name: 'Issue march order' }).click();
   const queued = await savedCampaign(page);
   const troops = queued.officers
@@ -254,4 +255,31 @@ test('officer traits are shown with a tooltip and persuasion lists its odds', as
   await expect(
     page.getByLabel('Diplomatic target').locator('option', { hasText: '%' }).first(),
   ).toBeAttached();
+});
+
+test('a battle keeps the map above 30 frames per second', async ({ page }) => {
+  await startCampaign(page);
+  await importState(page, engagedBattle());
+  await expect(page.getByTestId('weather-forecast')).toContainText('Tomorrow');
+  await expect(page.locator('canvas').first()).toBeVisible();
+  // Let the first paint and the lazy chunks settle, then sample three seconds of frames.
+  await page.waitForTimeout(1000);
+  const intervals = await page.evaluate(
+    () =>
+      new Promise<number[]>((resolve) => {
+        const times: number[] = [];
+        const tick = (now: number) => {
+          times.push(now);
+          if (now - times[0]! < 3000) requestAnimationFrame(tick);
+          else resolve(times.slice(1).map((t, i) => t - times[i]!));
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
+  intervals.sort((a, b) => a - b);
+  const median = intervals[Math.floor(intervals.length / 2)]!;
+  const slow = intervals.filter((ms) => ms > 1000 / 30 + 5).length / intervals.length;
+  console.info(`battle frame median ${median.toFixed(1)} ms, ${(slow * 100).toFixed(1)}% slow`);
+  expect(median).toBeLessThanOrEqual(1000 / 30);
+  expect(slow).toBeLessThan(0.1);
 });

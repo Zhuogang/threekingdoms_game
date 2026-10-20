@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { FACTIONS } from '../src/content/scenario';
-import { createGame, dispatch, getActionInfo, validateState } from '../src/game/campaign';
+import {
+  chooseAlliancePartner,
+  createGame,
+  dispatch,
+  getActionInfo,
+  validateState,
+} from '../src/game/campaign';
 import type { Action, GameCommand, GameState } from '../src/game/types';
+import { decodeSave, encodeSave } from '../src/platform/saves';
 
 function apply(state: GameState, command: GameCommand): GameState {
   const result = dispatch(state, command);
@@ -447,5 +454,100 @@ describe('semantic save validation', () => {
     overlap.battle!.units[1]!.x = overlap.battle!.units[0]!.x;
     overlap.battle!.units[1]!.y = overlap.battle!.units[0]!.y;
     expect(validateState(overlap)).toContain('overlap');
+  });
+});
+
+describe('AI alliance partners', () => {
+  it('are neighbours of the proposer, with the longest shared border first', () => {
+    const state = createGame('cao', 11);
+    const border = (a: string, b: string) =>
+      state.cities
+        .filter((c) => c.factionId === a)
+        .reduce(
+          (sum, c) =>
+            sum +
+            c.neighbors.filter((id) => state.cities.find((n) => n.id === id)!.factionId === b)
+              .length,
+          0,
+        );
+    let checked = 0;
+    for (const proposer of FACTIONS) {
+      for (const strongest of FACTIONS) {
+        if (strongest.id === proposer.id) continue;
+        const before = structuredClone(state);
+        const partner = chooseAlliancePartner(state, proposer.id, strongest.id);
+        expect(state).toEqual(before);
+        if (!partner) continue;
+        checked++;
+        const shared = border(proposer.id, partner.id);
+        expect(shared).toBeGreaterThan(0);
+        // No other eligible neighbour of the proposer has a longer shared border.
+        for (const other of FACTIONS)
+          if (
+            border(proposer.id, other.id) > shared &&
+            ![proposer.id, strongest.id, state.playerFactionId].includes(other.id)
+          )
+            expect(border(other.id, strongest.id)).toBe(0);
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+});
+
+describe('AI prisoner policy', () => {
+  /** Cao captives held in an AI city whose officers are too dim to win anyone over. */
+  const jail = (cityId: string, ids: string[], loyalty: number, judgeIntellect: number) => {
+    const state = createGame('cao', 21);
+    for (const o of state.officers.filter((x) => x.cityId === cityId && x.factionId))
+      o.intellect = judgeIntellect;
+    for (const id of ids) {
+      const o = state.officers.find((x) => x.id === id)!;
+      o.captive = true;
+      o.cityId = cityId;
+      o.troops = 0;
+      o.loyalty = loyalty;
+    }
+    return state;
+  };
+  const prisonerEvents = (state: GameState) =>
+    state.reports.latest!.events.filter((event) => event.kind === 'prisoner');
+
+  it('releases hopeless captives and tells the player, unless the house executes', () => {
+    const released = completeMonth(jail('ye', ['xiahoudun'], 100, 20));
+    const freed = released.officers.find((o) => o.id === 'xiahoudun')!;
+    expect(freed.captive).toBe(false);
+    expect(freed.factionId).toBe('cao');
+    expect(prisonerEvents(released)).toMatchObject([{ officerId: 'xiahoudun', fate: 'released' }]);
+
+    const executed = completeMonth(jail('luoyang', ['xiahoudun'], 100, 20));
+    const dead = executed.officers.find((o) => o.id === 'xiahoudun')!;
+    expect(dead.fate).toBe('executed');
+    expect(prisonerEvents(executed)).toMatchObject([{ officerId: 'xiahoudun', fate: 'executed' }]);
+    expect(validateState(executed)).toBeNull();
+    expect(decodeSave(encodeSave(executed))).toEqual(executed);
+  });
+
+  it('keeps at most two captives per city and never executes where the policy forbids it', () => {
+    const state = jail('ye', ['xiahoudun', 'xunyu', 'caoren', 'xiahouyuan'], 85, 70);
+    const next = completeMonth(state);
+    const held = next.officers.filter(
+      (o) => o.captive && o.cityId === 'ye' && o.factionId === 'cao',
+    );
+    expect(held.length).toBeLessThanOrEqual(2);
+    expect(next.officers.filter((o) => o.fate === 'executed')).toHaveLength(0);
+  });
+
+  it('wins over a promising captive through the ordinary persuade rules', () => {
+    let recruited = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const state = jail('ye', ['chengyu'], 5, 90);
+      state.rng = seed * 101;
+      const next = completeMonth(state);
+      if (next.officers.find((o) => o.id === 'chengyu')!.factionId === 'yuan') {
+        recruited++;
+        expect(prisonerEvents(next)).toMatchObject([{ fate: 'recruited' }]);
+      }
+    }
+    expect(recruited).toBeGreaterThan(0);
   });
 });

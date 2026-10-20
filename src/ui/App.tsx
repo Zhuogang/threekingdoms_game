@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import {
   ArrowDownToLine,
   ArrowRight,
@@ -71,10 +79,9 @@ import type {
   GameCommand,
   SupplyDays,
 } from '../game/types';
-import GameMap from '../rendering/GameMap';
 import { decodeSave, downloadSave, listSlots, saveSlot, type SaveRecord } from '../platform/saves';
 import { cueForBattleLog, playCue } from '../platform/audio';
-import { DIFFICULTIES, DIFFICULTY_PRESETS } from '../game/difficulty';
+import { DIFFICULTIES, DIFFICULTY_PRESETS, defaultTruceMonths } from '../game/difficulty';
 import { autosave } from '../platform/autosave';
 import { useI18n } from '../i18n';
 import LanguageSwitch from '../i18n/LanguageSwitch';
@@ -88,7 +95,6 @@ import Portrait from './Portrait';
 import TroopIcon from './TroopIcon';
 import MonthlyReport from './MonthlyReport';
 import AdvisorPanel from './AdvisorPanel';
-import BattlePanel from './BattlePanel';
 import BattleSummary, { playerWon } from './BattleSummary';
 import MarchDialog from './MarchDialog';
 import OfficerMark from './OfficerMark';
@@ -254,6 +260,9 @@ function randomSeed(): string {
 }
 const AGGRESSION_OPTIONS: RivalAggression[] = ['cautious', 'balanced', 'aggressive'];
 const TRUCE_MONTHS = 2;
+// The map (Pixi) and the battle panel load on demand, keeping them out of the first chunk.
+const GameMap = lazy(() => import('../rendering/GameMap'));
+const BattlePanel = lazy(() => import('./BattlePanel'));
 const AGGRESSION_LABELS = { cautious: 'Cautious', balanced: 'Balanced', aggressive: 'Aggressive' };
 function readPreference(key: string, fallback: boolean): boolean {
   try {
@@ -564,9 +573,12 @@ export default function App() {
     setBattleDestination('');
   }, [battle?.id, battle?.day, unit?.id]);
 
+  // The truce box follows the ruler, scenario, difficulty and aggression until the player toggles it.
   useEffect(() => {
-    if (!truceTouched) setTruce(newAggression === 'cautious');
-  }, [newAggression, truceTouched]);
+    if (truceTouched) return;
+    const rating = pickerFactions.find((f) => f.id === ruler)?.difficulty;
+    setTruce(newAggression === 'cautious' || defaultTruceMonths(newDifficulty, rating) > 0);
+  }, [newAggression, newDifficulty, ruler, pickerFactions, truceTouched]);
   function execute(command: GameCommand): boolean {
     const before = session.getSnapshot();
     const result = session.execute(command);
@@ -970,19 +982,21 @@ export default function App() {
                 : tx('山河万里 · A THOUSAND LEAGUES')}
             </span>
           </div>
-          <GameMap
-            state={state}
-            locale={locale}
-            selectedCityId={city.id}
-            onSelectCity={chooseCity}
-            selectedUnitId={unit?.id ?? null}
-            onSelectUnit={selectBattleUnit}
-            onBattleTile={moveBattleUnit}
-            reducedMotion={reducedMotion}
-            displayPreset={displayPreset}
-            cameraFocus={cameraFocus ?? undefined}
-            showThreat={showThreat && isBattle}
-          />
+          <Suspense fallback={<div className="map-loading" aria-busy="true" />}>
+            <GameMap
+              state={state}
+              locale={locale}
+              selectedCityId={city.id}
+              onSelectCity={chooseCity}
+              selectedUnitId={unit?.id ?? null}
+              onSelectUnit={selectBattleUnit}
+              onBattleTile={moveBattleUnit}
+              reducedMotion={reducedMotion}
+              displayPreset={displayPreset}
+              cameraFocus={cameraFocus ?? undefined}
+              showThreat={showThreat && isBattle}
+            />
+          </Suspense>
           {!isBattle && (
             <>
               <div className="map-legend">
@@ -1050,30 +1064,32 @@ export default function App() {
           )}
           ﻿{' '}
           {isBattle && battle ? (
-            <BattlePanel
-              battle={battle}
-              unit={unit}
-              canAct={canBattleAct}
-              skill={skill}
-              setSkill={setSkill}
-              reachableTiles={reachableTiles}
-              destination={battleDestination}
-              setDestination={setBattleDestination}
-              moveUnit={moveBattleUnit}
-              selectUnit={(id) => {
-                setSelectedUnitId(id);
-                setSkill(null);
-                setBattleDestination('');
-              }}
-              chooseSkill={chooseBattleSkill}
-              performTarget={performBattleTarget}
-              execute={execute}
-              nextCommander={nextCommander}
-              showThreat={showThreat}
-              setShowThreat={setShowThreat}
-              advanceToContact={advanceToContact}
-              advancing={advancing}
-            />
+            <Suspense fallback={null}>
+              <BattlePanel
+                battle={battle}
+                unit={unit}
+                canAct={canBattleAct}
+                skill={skill}
+                setSkill={setSkill}
+                reachableTiles={reachableTiles}
+                destination={battleDestination}
+                setDestination={setBattleDestination}
+                moveUnit={moveBattleUnit}
+                selectUnit={(id) => {
+                  setSelectedUnitId(id);
+                  setSkill(null);
+                  setBattleDestination('');
+                }}
+                chooseSkill={chooseBattleSkill}
+                performTarget={performBattleTarget}
+                execute={execute}
+                nextCommander={nextCommander}
+                showThreat={showThreat}
+                setShowThreat={setShowThreat}
+                advanceToContact={advanceToContact}
+                advancing={advancing}
+              />
+            </Suspense>
           ) : section === 'officers' ? (
             <>
               <div className="inspector-title">
@@ -1137,6 +1153,36 @@ export default function App() {
                     </button>
                   ))}
               </div>
+              {(() => {
+                const captured = state.officers.filter(
+                  (o) => o.factionId === player.id && o.captive && o.fate === 'active',
+                );
+                if (!captured.length) return null;
+                return (
+                  <div className="roster roster-captives" data-testid="captured-officers">
+                    <span className="eyebrow">{t('CAPTURED OFFICERS')}</span>
+                    {captured.map((o) => {
+                      const holding = state.cities.find((c) => c.id === o.cityId);
+                      return (
+                        <div className="roster-row" key={o.id}>
+                          <OfficerMark officer={o} />
+                          <span className="roster-info">
+                            <strong>{tx(o.name)}</strong>
+                            <small>
+                              {t('Held by {faction} in {city}', {
+                                faction: tx(
+                                  factionById(holding?.factionId)?.name ?? 'The garrison',
+                                ),
+                                city: tx(holding?.name ?? o.cityId),
+                              })}
+                            </small>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </>
           ) : section === 'chronicle' ? (
             <>
@@ -1812,8 +1858,6 @@ export default function App() {
                     const next = event.target.value as Difficulty;
                     setNewDifficulty(next);
                     setNewAggression(DIFFICULTY_PRESETS[next].aggression);
-                    setTruce(DIFFICULTY_PRESETS[next].truceMonths > 0);
-                    setTruceTouched(true);
                   }}
                 >
                   {DIFFICULTIES.map((value) => (

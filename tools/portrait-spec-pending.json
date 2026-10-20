@@ -1,0 +1,14 @@
+{
+  "note": "Portraits still to be generated with the image tool. When one arrives, run tools/prepare-portraits.mjs, add its entry to tools/portrait-spec.json and src/content/officerIdentity.ts, and update the credits and the 52 -> 53 counts listed in docs/v0.2-review.md (T4.1). Until then the officer shows the garrison portrait.",
+  "officers": [
+    [
+      "machao",
+      "Ma Chao",
+      "马超",
+      "Ma",
+      "马",
+      24,
+      "Ma Chao young western cavalry champion, son of Ma Teng; lean athletic face, sharp bright eyes, fine straight brows, light moustache, silver-grey scale armor with a crimson sash and a plumed frontier helmet, fearless confident gaze"
+    ]
+  ]
+}

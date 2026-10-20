@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DEPLOY_ROWS,
   autoResolveBattle,
+  battleConfig,
   campTile,
   createBattle,
   fireDamage,
@@ -475,7 +476,8 @@ describe('zone of control', () => {
     expect(getZocStopTiles(battle, 'a')).toContainEqual({ x: 2, y: 2 });
     // Starting inside the zone, a unit may move away normally.
     find(battle, 'a').x = 2;
-    expect(getReachableTiles(battle, 'a')).toContainEqual({ x: 0, y: 2 });
+    // (0, 2) is this unit's own camp, where it may no longer stop; (1, 2) is just as far back.
+    expect(getReachableTiles(battle, 'a')).toContainEqual({ x: 1, y: 2 });
   });
 
   it('lets cavalry slip through exactly one zone tile per move', () => {
@@ -488,6 +490,44 @@ describe('zone of control', () => {
     battle.units.push(unit('c', 'defender', 5, 1));
     // (4,1) is now also in a second enemy's zone, so the path must end there.
     expect(getReachableTiles(battle, 'a').some((tile) => tile.x >= 5 && tile.y === 0)).toBe(false);
+  });
+
+  it('the AI drops rocks from a hill instead of walking into a melee', () => {
+    const state = gameWithBattle();
+    const battle = state.battle!;
+    const a = find(battle, 'a');
+    const b = find(battle, 'b');
+    a.x = 4;
+    a.y = 4;
+    a.morale = 45;
+    b.x = 6;
+    b.y = 4;
+    // A strategist: weak in melee, strong with rocks.
+    b.intellect = 90;
+    b.force = 35;
+    b.troops = b.initialTroops = 1500;
+    battle.terrain[at(battle, 6, 4)] = 'hill';
+    battle.weather = 'rain'; // fire is dampened, so the rocks are the best tactic
+    expect(processBattleCommand(state, { type: 'battleEndDay' })).toBeNull();
+    expect(battle.log.join('\n')).toContain('dropped rocks');
+    expect(b.x).toBe(6);
+  });
+
+  it('marks a cavalry zone tile as a stop only when its path must end there', () => {
+    const battle = battlefield(10, 5);
+    battle.units = [unit('a', 'attacker', 0, 2), unit('b', 'defender', 3, 2)];
+    battle.units[0]!.troopType = 'cavalry';
+    const key = (tile: { x: number; y: number }) => `${tile.x},${tile.y}`;
+    const reach = new Set(getReachableTiles(battle, 'a').map(key));
+    const stops = new Set(getZocStopTiles(battle, 'a').map(key));
+    // (3,1) is a zone tile the rider can pass, since (4,1) beyond it is reachable.
+    expect(reach.has('3,1')).toBe(true);
+    expect(reach.has('4,1')).toBe(true);
+    expect(stops.has('3,1')).toBe(false);
+    expect(stops.has('2,2')).toBe(false);
+    // Infantry have no such exception, so a zone tile is always a stop for them.
+    battle.units[0]!.troopType = 'infantry';
+    expect(new Set(getZocStopTiles(battle, 'a').map(key)).has('2,2')).toBe(true);
   });
 
   it('keeps AI routes legal when ZOC truncates a long march', () => {
@@ -587,6 +627,45 @@ describe('morale, flanking and rout', () => {
       }),
     ).toBeNull();
     expect(steady.battle.outcome).toBe('attacker');
+  });
+
+  it('never lets a unit stop on its own camp, for the player or the AI', () => {
+    const battle = battlefield();
+    const own = campTile(battle, 'attacker');
+    const a = find(battle, 'a');
+    a.x = own.x + 1;
+    a.y = own.y;
+    find(battle, 'b').x = 9;
+    find(battle, 'b').y = 1;
+    const state = gameWithBattle(battle);
+    expect(getReachableTiles(battle, 'a').some((t) => t.x === own.x && t.y === own.y)).toBe(false);
+    const before = structuredClone(state);
+    expect(
+      processBattleCommand(state, { type: 'battleMove', unitId: 'a', x: own.x, y: own.y }),
+    ).toBe('A unit cannot stop on its own camp.');
+    expect(state).toEqual(before);
+
+    for (let seed = 1; seed <= 12; seed++) {
+      const game6 = game();
+      game6.rng = seed * 17;
+      game6.officers = Array.from({ length: 6 }, (_, i) => [
+        officer(`a-${i}`, 'home', 'blue'),
+        officer(`b-${i}`, 'target', 'red'),
+      ]).flat();
+      game6.battle = createBattle(game6, {
+        ...order,
+        officerIds: game6.officers.filter((o) => o.factionId === 'blue').map((o) => o.id),
+      });
+      const field = game6.battle;
+      for (let day = 0; day < 12 && !field.outcome; day++) {
+        processBattleCommand(game6, { type: 'battleEndDay' });
+        for (const u of field.units) {
+          if (u.troops <= 0) continue;
+          const camp = campTile(field, u.side);
+          if (u.moved) expect(u.x === camp.x && u.y === camp.y).toBe(false);
+        }
+      }
+    }
   });
 
   it('adds 10% per adjacent friendly flanker up to 30% and shows it in the forecast', () => {
@@ -743,35 +822,40 @@ describe('supply days, terrain profiles and walls', () => {
   it('keeps both camps connected for every profile across many seeds', () => {
     for (const cityId of ['jiangxia', 'hanzhong', 'chengdu', 'luoyang']) {
       expect(['river', 'mountain', 'forest', 'plains']).toContain(battlefieldProfile(cityId));
-      for (let seed = 1; seed <= 250; seed++) {
-        const state = game();
-        state.rng = seed * 2654435761;
-        state.cities[1]!.id = cityId;
-        const battle = createBattle(state, { ...order, targetId: cityId });
-        const seen = new Set<number>([at(battle, 0, 5)]);
-        const queue = [at(battle, 0, 5)];
-        while (queue.length) {
-          const index = queue.shift()!;
-          const x = index % battle.width;
-          const y = Math.floor(index / battle.width);
-          for (const [dx, dy] of [
-            [1, 0],
-            [-1, 0],
-            [0, 1],
-            [0, -1],
-          ] as const) {
-            const nx = x + dx;
-            const ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= battle.width || ny >= battle.height) continue;
-            const next = at(battle, nx, ny);
-            const terrain: Terrain = battle.terrain[next]!;
-            if (seen.has(next) || terrain === 'water' || terrain === 'wall') continue;
-            seen.add(next);
-            queue.push(next);
+      // Both the open field (defense 20) and the walled city (defense 80, a wall with a gate).
+      for (const defense of [20, 80])
+        for (let seed = 1; seed <= 1000; seed++) {
+          const state = game();
+          state.rng = seed * 2654435761;
+          state.cities[1]!.id = cityId;
+          state.cities[1]!.defense = defense;
+          const battle = createBattle(state, { ...order, targetId: cityId });
+          const seen = new Set<number>([at(battle, 0, 5)]);
+          const queue = [at(battle, 0, 5)];
+          while (queue.length) {
+            const index = queue.shift()!;
+            const x = index % battle.width;
+            const y = Math.floor(index / battle.width);
+            for (const [dx, dy] of [
+              [1, 0],
+              [-1, 0],
+              [0, 1],
+              [0, -1],
+            ] as const) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx < 0 || ny < 0 || nx >= battle.width || ny >= battle.height) continue;
+              const next = at(battle, nx, ny);
+              const terrain: Terrain = battle.terrain[next]!;
+              if (seen.has(next) || terrain === 'water' || terrain === 'wall') continue;
+              seen.add(next);
+              queue.push(next);
+            }
           }
+          expect(seen.has(at(battle, 11, 5)), `${cityId} defense ${defense} seed ${seed}`).toBe(
+            true,
+          );
         }
-        expect(seen.has(at(battle, 11, 5)), `${cityId} seed ${seed}`).toBe(true);
-      }
     }
   });
 
@@ -907,5 +991,38 @@ describe('tactical AI v2', () => {
     }
     expect(finished).toBeGreaterThanOrEqual(trials * 0.8);
     expect(totalDays / trials).toBeLessThan(18);
+  });
+
+  it('beats the legacy AI in at least 60% of decisive mirrored battles', () => {
+    let v2Wins = 0;
+    let decisive = 0;
+    try {
+      for (let seed = 1; seed <= 20; seed++)
+        for (const v2Side of ['attacker', 'defender'] as const) {
+          battleConfig.tacticalAi = {
+            attacker: v2Side === 'attacker' ? 'v2' : 'v1',
+            defender: v2Side === 'defender' ? 'v2' : 'v1',
+          };
+          const state = game();
+          state.rng = seed * 131;
+          state.cities[1]!.defense = 20;
+          state.officers = Array.from({ length: 6 }, (_, i) => [
+            officer(`a-${i}`, 'home', 'blue'),
+            officer(`b-${i}`, 'target', 'red'),
+          ]).flat();
+          state.battle = createBattle(state, {
+            ...order,
+            officerIds: state.officers.filter((o) => o.factionId === 'blue').map((o) => o.id),
+          });
+          autoResolveBattle(state);
+          if (state.battle!.log.some((line) => line.includes('siege limit'))) continue;
+          decisive++;
+          if (state.battle!.outcome === v2Side) v2Wins++;
+        }
+    } finally {
+      battleConfig.tacticalAi = 'v2';
+    }
+    expect(decisive).toBeGreaterThanOrEqual(20);
+    expect(v2Wins / decisive).toBeGreaterThanOrEqual(0.6);
   });
 });

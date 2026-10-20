@@ -45,6 +45,10 @@ const RAID_POWER_RATIO = 1.3;
 const PERSUADE_THRESHOLD = 50;
 /** Share of a city's strength that must stay home (the same rule as AI_JOINT_COMMIT). */
 const GARRISON_SHARE = 0.4;
+/** Late in the game, or when far ahead of every neighbour, the bot keeps a thinner garrison. */
+const OFFENSIVE_GARRISON_SHARE = 0.25;
+const OFFENSIVE_FROM_TURN = 24;
+const OFFENSIVE_LEAD = 2;
 /** Sack only when support stays at least this high after it is halved. */
 const SACK_MIN_SUPPORT_AFTER = 30;
 const OWN_PLUNDER_INTERVAL = 12;
@@ -173,6 +177,10 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     // bordering a stronger enemy does not march at all.
     const threatened = hostile.some((c) => strengthOf(state(), c.id) > home);
     if (threatened) stats.heldByThreat++;
+    const strongestNeighbour = Math.max(0, ...hostile.map((c) => strengthOf(state(), c.id)));
+    const offensive =
+      state().turn >= OFFENSIVE_FROM_TURN || home > OFFENSIVE_LEAD * strongestNeighbour;
+    const garrisonShare = offensive ? OFFENSIVE_GARRISON_SHARE : GARRISON_SHARE;
     const army: Officer[] = [];
     if (!threatened) {
       const ready = serving(state(), id)
@@ -182,7 +190,7 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
       let committed = 0;
       for (const o of ready.slice(0, 10)) {
         if (army.length + 1 >= officers) break;
-        if (committed + o.troops > home * (1 - GARRISON_SHARE)) continue;
+        if (committed + o.troops > home * (1 - garrisonShare)) continue;
         army.push(o);
         committed += o.troops;
       }

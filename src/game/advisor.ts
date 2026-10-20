@@ -1,13 +1,23 @@
 import { INITIAL_OFFICERS, activateScenario } from '../content/scenario';
+import { hasTrait } from '../content/traits';
 import { isActiveOfficer, isRuler } from './officers';
 import type { GameState } from './types';
-import { allied, serving, strength } from './world';
+import {
+  HEGEMON_CAPITAL,
+  allied,
+  factionName,
+  getRivalHegemon,
+  monthlyHarvest,
+  serving,
+  strength,
+} from './world';
 
 /**
  * A pure, RNG-free monthly adviser: it only reads the state, so asking never changes a game.
  * Suggestions are ranked by urgency and capped at three.
  */
-export type AdviceKind = 'food' | 'atRisk' | 'weakBorder' | 'idle';
+export type AdviceKind =
+  'rivalHegemon' | 'openingBorder' | 'food' | 'atRisk' | 'weakBorder' | 'idle';
 export interface Advice {
   kind: AdviceKind;
   cityId: string;
@@ -22,15 +32,29 @@ const FOOD_MONTHS = 2;
 const ATRISK_LOYALTY = 40;
 const BORDER_RATIO = 1.5;
 const IDLE_RESERVE = 300;
+/** Beats every other advice: a rival is about to end the campaign. */
+const RIVAL_HEGEMON_URGENCY = 5;
+/** In the first month a neighbour that can already beat a city is the most urgent thing to know. */
+const OPENING_BORDER_URGENCY = 5;
 export const GOAL_MONTHS = 6;
 
 export function getAdvice(state: GameState): Advice[] {
   activateScenario(state.scenarioId);
   const advice: Advice[] = [];
+  const rival = getRivalHegemon(state);
+  if (rival)
+    advice.push({
+      kind: 'rivalHegemon',
+      cityId: HEGEMON_CAPITAL,
+      urgency: RIVAL_HEGEMON_URGENCY,
+      params: { faction: factionName(rival.factionId), months: rival.monthsLeft },
+    });
   const mine = state.cities.filter((c) => c.factionId === state.playerFactionId);
+  // The harvest due when this month ends counts: a city about to be fed is not in want.
+  const nextMonth = (state.month % 12) + 1;
   for (const city of mine) {
     const upkeep = Math.ceil(strength(state, city) * 0.12);
-    if (city.food < upkeep * FOOD_MONTHS)
+    if (city.food + monthlyHarvest(city, nextMonth) < upkeep * FOOD_MONTHS)
       advice.push({
         kind: 'food',
         cityId: city.id,
@@ -49,10 +73,16 @@ export function getAdvice(state: GameState): Advice[] {
       .sort((a, b) => strength(state, b) - strength(state, a) || a.id.localeCompare(b.id))[0];
     if (threat && strength(state, threat) > BORDER_RATIO * Math.max(1, own))
       advice.push({
-        kind: 'weakBorder',
+        kind: state.turn === 0 ? 'openingBorder' : 'weakBorder',
         cityId: city.id,
-        urgency: 2,
-        params: { city: city.name, enemy: threat.name, troops: strength(state, threat) },
+        urgency: state.turn === 0 ? OPENING_BORDER_URGENCY : 2,
+        params: {
+          city: city.name,
+          enemy: threat.name,
+          troops: strength(state, threat),
+          // Rivals march from month 2, or from the month after the opening truce ends.
+          month: Math.max(1, state.truceUntilTurn) + 1,
+        },
       });
     const idle = serving(state, city)
       .filter((o) => !o.busy && o.troops === 0)
@@ -72,6 +102,7 @@ export function getAdvice(state: GameState): Advice[] {
       officer.captive ||
       !isActiveOfficer(officer) ||
       isRuler(officer) ||
+      hasTrait(officer.id, 'loyal') ||
       officer.loyalty >= ATRISK_LOYALTY
     )
       continue;
@@ -88,16 +119,16 @@ export function getAdvice(state: GameState): Advice[] {
     .slice(0, ADVICE_LIMIT);
 }
 
-export type GoalId = 'develop' | 'muster' | 'recruit' | 'capture' | 'supply';
+export const GOAL_IDS = ['develop', 'muster', 'recruit', 'capture', 'supply'] as const;
+export type GoalId = (typeof GOAL_IDS)[number];
 export interface Goal {
   id: GoalId;
   done: boolean;
 }
 
-/** Optional first-campaign goals: tracked for the first six months only (otherwise null). */
-export function getGoals(state: GameState): Goal[] | null {
+/** Which first-campaign goals are done right now, whatever the month (pure; no RNG). */
+export function goalStatus(state: GameState): Goal[] {
   activateScenario(state.scenarioId);
-  if (state.turn >= GOAL_MONTHS) return null;
   const mine = state.cities.filter((c) => c.factionId === state.playerFactionId);
   const officers = state.officers.filter(
     (o) => o.factionId === state.playerFactionId && !o.captive && isActiveOfficer(o),
@@ -113,4 +144,9 @@ export function getGoals(state: GameState): Goal[] | null {
     { id: 'capture', done: state.stats.citiesCaptured >= 1 },
     { id: 'supply', done: supplied },
   ];
+}
+
+/** Optional first-campaign goals: tracked for the first six months only (otherwise null). */
+export function getGoals(state: GameState): Goal[] | null {
+  return state.turn >= GOAL_MONTHS ? null : goalStatus(state);
 }

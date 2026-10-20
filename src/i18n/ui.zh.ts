@@ -381,6 +381,7 @@ export const UI_ZH: Record<string, string> = {
   '≈ {casualties} casualties · −10 morale': '约 {casualties} 人伤亡 · 士气 −10',
   '≈ {casualties} casualties': '约 {casualties} 人伤亡',
   '+{count} morale': '士气 +{count}',
+  '+{count} morale · ends confusion': '士气 +{count} · 解除混乱',
   '{count}% chance': '成功率 {count}%',
   '{count} food seized': '劫得粮草 {count}',
   'Raid supplies': '劫粮',
@@ -455,6 +456,12 @@ export const UI_ZH: Record<string, string> = {
     '军粮耗尽后，士兵会逃散。围城越久，所需补给越多。',
   'Expected loot: about {gold} gold and {food} food. The city falls to half its support, farming and commerce.':
     '预计掠得约 {gold} 金和 {food} 粮草；该城民心、农业与商业将减半。',
+  'Estimated loot (the city is not scouted): {gold} gold and {food} food. The city falls to half its support, farming and commerce.':
+    '预计掠得（该城未经侦察）：{gold} 金和 {food} 粮草；该城民心、农业与商业将减半。',
+  'The garrison is too weak to sortie and would stay behind its walls: the raid meets no resistance.':
+    '守军兵力太弱，不敢出城，将闭城不出：此次袭掠不会遇到抵抗。',
+  'Benevolent commanders take plundering to heart: {names} would lose 8 loyalty.':
+    '仁德的将领不忍劫掠：{names}将损失 8 点忠诚。',
   '{city} cannot supply {count} food.': '{city}无法提供 {count} 粮草。',
   'Warning: {city} would be left with less than a month of provisions.':
     '警告：出征后{city}的存粮将不足一个月的军需。',
@@ -519,6 +526,11 @@ export const UI_ZH: Record<string, string> = {
     '{city}发生民变，部分守军与府库散失。',
   '{officer} left {from} and joined {to}.': '{officer}离开{from}，投奔{to}。',
   '{officer} left {from} and wandered off.': '{officer}离开{from}，流落四方。',
+  'CAPTURED OFFICERS': '被俘武将',
+  'Held by {faction} in {city}': '被{faction}关押于{city}',
+  '{faction} released your captured officer {officer}.': '{faction}释放了被俘的{officer}。',
+  '{faction} executed your captured officer {officer}.': '{faction}处决了被俘的{officer}。',
+  '{faction} won over your captured officer {officer}.': '{faction}说服了被俘的{officer}归降。',
   'Officers close to leaving (loyalty under 40): {names}.':
     '即将离去的武将（忠诚低于 40）：{names}。',
   'The neighboring lords have united against you.': '周边诸侯已联合起来对付你。',
@@ -537,6 +549,16 @@ export const UI_ZH: Record<string, string> = {
     '{officer}没有统兵，而{city}尚有 {reserve} 预备兵。请为其编兵。',
   '{officer} is close to leaving (loyalty {loyalty}). Reward or feast them.':
     '{officer}即将离去（忠诚 {loyalty}）。请赏赐或设宴挽留。',
+  '{faction} holds Luoyang and 16 cities and will be proclaimed Hegemon in {months} months unless you stop them.':
+    '{faction}已占据洛阳与 16 座城池，若不加阻止，{months}个月后将被尊为霸主。',
+  '{faction} is closing in on the Hegemon title': '{faction}正逼近霸主之位',
+  '{faction} now holds Luoyang and 16 cities. In {left} months they will be proclaimed Hegemon.':
+    '{faction}已占据洛阳与 16 座城池，{left}个月后将被尊为霸主。',
+  '{faction} has held Luoyang and 16 cities for {months} months. {left} months remain before they are proclaimed Hegemon.':
+    '{faction}已占据洛阳与 16 座城池{months}个月，还有{left}个月便将被尊为霸主。',
+  'First-campaign goals: {done} of {total} complete.': '初战目标：已完成 {done}/{total} 项。',
+  '{enemy} masses {troops} troops beside {city} and may march as early as month {month}. Reinforce it, or seek peace.':
+    '{enemy}在{city}旁集结了 {troops} 兵力，最早第 {month} 个月就可能出兵。请增兵固守，或谋求议和。',
   'FIRST-CAMPAIGN GOALS': '初战目标',
   OBJECTIVES: '战略目标',
   'Issue three city orders': '下达三道城池命令',
@@ -558,8 +580,8 @@ export const UI_ZH: Record<string, string> = {
   Warlord: '枭雄',
   'Cautious rivals, a two-month opening truce and no house personalities. Time to learn.':
     '对手谨慎，开局停战两个月，诸侯无个性。适合熟悉玩法。',
-  'Balanced rivals with their own personalities. The intended experience.':
-    '均衡的对手，各有个性。推荐的标准体验。',
+  'Balanced rivals with their own personalities. Challenging houses start with a two-month truce. The intended experience.':
+    '均衡的对手，各有个性。挑战型势力开局有两个月停战。推荐的标准体验。',
   'Aggressive rivals with sharp personalities and no truce. Expect war in month one.':
     '激进的对手，个性鲜明，无停战期。第一个月就会有战事。',
   'Natural aging': '自然衰老',

@@ -227,7 +227,8 @@ test('legacy multi-battle campaign retains aggression, monthly report, export, s
   const report = page.getByRole('region', { name: 'Monthly report', exact: true });
   await expect(report).toContainText('January 190');
   await report.getByRole('button', { name: 'View report', exact: true }).click();
-  await expect(report.locator('.report-events li')).toHaveCount(2);
+  // Two battles, plus the first-campaign goal tally every early report carries.
+  await expect(report.locator('.report-events li')).toHaveCount(3);
   await report.locator('.report-events button').first().click();
   expect(await savedCampaign(page)).toEqual(completed);
   await switchLanguage(page, 'zh');

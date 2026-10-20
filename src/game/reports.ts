@@ -1,3 +1,4 @@
+import { GOAL_IDS, type GoalId } from './advisor';
 import type { GameState } from './types';
 import { FACTIONS, SCENARIO } from '../content/scenario';
 
@@ -37,7 +38,13 @@ export type MonthlyReportEvent = EventBase &
     | { kind: 'atRisk'; officerIds: string[] }
     | { kind: 'death'; officerId: string; factionId: string }
     | { kind: 'coalition'; leaderId: string; involvesPlayer: boolean }
+    | { kind: 'prisoner'; officerId: string; byFactionId: string; fate: PrisonerFate }
+    | { kind: 'rivalHegemon'; factionId: string; months: number }
+    | { kind: 'goals'; done: GoalId[] }
   );
+/** What a rival ruler did with one of the player's captured officers. */
+export const PRISONER_FATES = ['released', 'executed', 'recruited'] as const;
+export type PrisonerFate = (typeof PRISONER_FATES)[number];
 
 export interface MonthlyReport {
   turn: number;
@@ -68,8 +75,17 @@ export function reportPriority(event: MonthlyReportEvent): number {
     if (event.outcome === 'captured') return event.bordersPlayer ? 1 : 3;
   }
   if (event.kind === 'raid') return event.involvesPlayer ? 0 : event.bordersPlayer ? 1 : 3;
-  if (event.kind === 'revolt' || event.kind === 'departure' || event.kind === 'death') return 1;
+  if (
+    event.kind === 'revolt' ||
+    event.kind === 'departure' ||
+    event.kind === 'death' ||
+    event.kind === 'prisoner'
+  )
+    return 1;
   if (event.kind === 'coalition') return event.involvesPlayer ? 1 : 2;
+  if (event.kind === 'rivalHegemon') return 0;
+  // The goal tally is a courtesy: it only shows when little else happened.
+  if (event.kind === 'goals') return 5;
   if (event.kind === 'atRisk') return 2;
   if (event.kind === 'allianceExpired' && event.involvesPlayer) return 2;
   if (event.kind === 'borderRecruitment') return 4;
@@ -111,6 +127,12 @@ export function reportEventKey(event: NewMonthlyReportEvent): string {
       return `death:${event.officerId}`;
     case 'coalition':
       return `coalition:${event.leaderId}`;
+    case 'prisoner':
+      return `prisoner:${event.officerId}`;
+    case 'rivalHegemon':
+      return `hegemon:${event.factionId}:${event.months}`;
+    case 'goals':
+      return 'goals';
   }
 }
 
@@ -210,25 +232,27 @@ export function validateReports(state: GameState): string | null {
             !integer(Number(orderNumber), 1, state.nextId - 1)
           : kind === 'revolt'
             ? second !== undefined || !first || !cityIds.has(first)
-            : kind === 'leave' || kind === 'death'
+            : kind === 'leave' || kind === 'death' || kind === 'prisoner'
               ? second !== undefined || !first || !officerIds.has(first)
-              : kind === 'risk'
+              : kind === 'risk' || kind === 'goals'
                 ? first !== undefined
                 : kind === 'coalition'
                   ? second !== undefined || !first || !factions.has(first)
-                  : kind === 'alliance'
-                    ? !first ||
-                      !second ||
-                      !factions.has(first) ||
-                      !factions.has(second) ||
-                      first >= second
-                    : kind === 'recruit'
+                  : kind === 'hegemon'
+                    ? !first || !factions.has(first) || !/^[1-9]\d?$/.test(second ?? '')
+                    : kind === 'alliance'
                       ? !first ||
                         !second ||
                         !factions.has(first) ||
-                        first === state.playerFactionId ||
-                        !cityIds.has(second)
-                      : true)
+                        !factions.has(second) ||
+                        first >= second
+                      : kind === 'recruit'
+                        ? !first ||
+                          !second ||
+                          !factions.has(first) ||
+                          first === state.playerFactionId ||
+                          !cityIds.has(second)
+                        : true)
       )
         return 'Invalid or duplicate monthly report event.';
       if (slot === 'pending' && ordered) {
@@ -255,6 +279,9 @@ export function validateReports(state: GameState): string | null {
           'atRisk',
           'coalition',
           'death',
+          'prisoner',
+          'rivalHegemon',
+          'goals',
         ].includes(event.kind) ||
         reportEventKey(event) !== event.key
       )
@@ -340,6 +367,23 @@ export function validateReports(state: GameState): string | null {
           event.involvesPlayer !== (event.leaderId === state.playerFactionId)
         )
           return 'Invalid monthly coalition report.';
+      } else if (event.kind === 'rivalHegemon') {
+        if (!factions.has(event.factionId) || !integer(event.months, 1, 12))
+          return 'Invalid monthly Hegemon report.';
+      } else if (event.kind === 'goals') {
+        if (
+          !Array.isArray(event.done) ||
+          new Set(event.done).size !== event.done.length ||
+          event.done.some((id: GoalId) => !GOAL_IDS.includes(id))
+        )
+          return 'Invalid monthly goals report.';
+      } else if (event.kind === 'prisoner') {
+        if (
+          !officerIds.has(event.officerId) ||
+          !factions.has(event.byFactionId) ||
+          !PRISONER_FATES.includes(event.fate)
+        )
+          return 'Invalid monthly prisoner report.';
       } else if (
         !cityIds.has(event.cityId) ||
         !factions.has(event.factionId) ||

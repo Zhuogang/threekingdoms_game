@@ -5,6 +5,7 @@ import {
   getAttackTargets,
   getBattleUnitMove,
   getBattleUnitRange,
+  forecastSkill,
   getReachableTiles,
   processBattleCommand,
 } from '../src/game/battle';
@@ -242,6 +243,21 @@ describe('combat and tactics', () => {
     expect(ally.morale).toBeGreaterThan(30);
     expect(ally.status).toBe('inspired');
     expect(state.battle!.units[0]!.acted).toBe(true);
+  });
+
+  it('the rally forecast says when it ends confusion, without changing state', () => {
+    const state = gameWithBattle();
+    state.battle!.units.push(unit('c', 'attacker', 2, 1));
+    const ally = state.battle!.units[2]!;
+    ally.morale = 30;
+    const before = structuredClone(state);
+    expect(forecastSkill(state.battle!, 'a', 'rally', 'c')!.endsConfusion).toBe(false);
+    ally.status = 'confused';
+    const forecast = forecastSkill(state.battle!, 'a', 'rally', 'c')!;
+    expect(forecast.endsConfusion).toBe(true);
+    expect(forecast.moraleGain).toBeGreaterThan(0);
+    ally.status = 'normal';
+    expect(state).toEqual(before);
   });
 
   it('a confused unit loses its turn and recovers on the next day', () => {

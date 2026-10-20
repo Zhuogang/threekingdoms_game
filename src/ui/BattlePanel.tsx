@@ -163,7 +163,10 @@ export default function BattlePanel(props: BattlePanelProps) {
     }
     const f = forecastSkill(battle, unit.id, skill, target.id);
     if (!f) return '';
-    if (skill === 'rally') return t('+{count} morale', { count: f.moraleGain });
+    if (skill === 'rally')
+      return f.endsConfusion
+        ? t('+{count} morale · ends confusion', { count: f.moraleGain })
+        : t('+{count} morale', { count: f.moraleGain });
     if (skill === 'confuse') return t('{count}% chance', { count: f.chance });
     if (skill === 'raidSupply') return t('{count} food seized', { count: number(f.foodTaken) });
     if (skill === 'rockfall')

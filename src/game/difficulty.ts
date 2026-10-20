@@ -23,7 +23,8 @@ export const DIFFICULTY_PRESETS: Record<Difficulty, DifficultyPreset> = {
   },
   standard: {
     label: 'Standard',
-    description: 'Balanced rivals with their own personalities. The intended experience.',
+    description:
+      'Balanced rivals with their own personalities. Challenging houses start with a two-month truce. The intended experience.',
     aggression: 'balanced',
     truceMonths: 0,
     personalities: true,
@@ -37,6 +38,15 @@ export const DIFFICULTY_PRESETS: Record<Difficulty, DifficultyPreset> = {
     personalities: true,
   },
 };
+/** Standard gives houses rated Challenging this many months of opening truce. */
+export const CHALLENGING_TRUCE_MONTHS = 2;
+
+/** The opening truce a new campaign starts with (months), before the player adjusts it. */
+export function defaultTruceMonths(difficulty: Difficulty, rating: string | undefined): number {
+  const preset = DIFFICULTY_PRESETS[difficulty].truceMonths;
+  if (preset > 0) return preset;
+  return difficulty === 'standard' && rating === 'Challenging' ? CHALLENGING_TRUCE_MONTHS : 0;
+}
 export const DIFFICULTIES = Object.keys(DIFFICULTY_PRESETS) as Difficulty[];
 export const isDifficulty = (value: unknown): value is Difficulty =>
   DIFFICULTIES.includes(value as Difficulty);

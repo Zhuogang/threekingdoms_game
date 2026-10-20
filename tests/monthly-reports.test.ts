@@ -166,8 +166,12 @@ describe('structured monthly report lifecycle', () => {
     });
     const next = advance(state, 'endMonth');
     expect(next).toMatchObject({ phase: 'finished', turn: 1 });
-    expect(next.reports.latest).toMatchObject({ turn: 0, events: [], omitted: 0 });
-    expect(reports.reportHighlights(next.reports.latest!)).toEqual([]);
+    // Nothing happened but the first-campaign goal tally, which is a courtesy line.
+    expect(next.reports.latest).toMatchObject({ turn: 0, omitted: 0 });
+    expect(next.reports.latest!.events.map((event) => event.kind)).toEqual(['goals']);
+    expect(reports.reportHighlights(next.reports.latest!).map((event) => event.kind)).toEqual([
+      'goals',
+    ]);
     expect(validateState(next)).toBeNull();
   });
 

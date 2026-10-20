@@ -13,9 +13,10 @@ import {
   getPersuadeChance,
   validateState,
 } from '../src/game/campaign';
-import { DIFFICULTY_PRESETS } from '../src/game/difficulty';
+import { DIFFICULTY_PRESETS, defaultTruceMonths } from '../src/game/difficulty';
+import { isRuler } from '../src/game/officers';
 import { EVENTS, eventIsEligible } from '../src/game/events';
-import { fogRange, isScouted } from '../src/game/fog';
+import { fogRange, isScouted, lootRange } from '../src/game/fog';
 import { plunderOutcome } from '../src/game/plunder';
 import type { GameCommand, GameState } from '../src/game/types';
 import { decodeSave, encodeSave } from '../src/platform/saves';
@@ -47,7 +48,12 @@ describe('second scenario: the eve of Guandu', () => {
     const [divided, guandu] = SCENARIOS;
     expect(guandu!.id).toBe('guandu-200');
     expect(guandu!.cities.map((c) => c.id)).toEqual(divided!.cities.map((c) => c.id));
-    expect(guandu!.officers.map((o) => o.id)).toEqual(divided!.officers.map((o) => o.id));
+    // The 200 CE roster is the 190 CE roster plus Ma Chao, who exists only here.
+    expect(guandu!.officers.map((o) => o.id)).toEqual([
+      ...divided!.officers.map((o) => o.id),
+      'machao',
+    ]);
+    expect(divided!.officers.some((o) => o.id === 'machao')).toBe(false);
     for (const faction of guandu!.factions) {
       const state = createGame(faction.id, 7, 'balanced', { scenarioId: 'guandu-200' });
       expect(validateState(state), faction.id).toBeNull();
@@ -60,6 +66,19 @@ describe('second scenario: the eve of Guandu', () => {
       roundTrip(state);
     }
     activateScenario('divided-realm-190');
+  });
+
+  it('stations Ma Chao in Chang’an, so Ma Teng no longer stands alone', () => {
+    const state = createGame('ma', 3, 'balanced', { scenarioId: 'guandu-200' });
+    const chao = officer(state, 'machao');
+    expect(chao).toMatchObject({ factionId: 'ma', cityId: 'changan', fate: 'active', age: 24 });
+    expect(chao.troops).toBeGreaterThan(0);
+    expect(city(state, 'changan').governorId).toBe('machao');
+    expect(hasTrait('machao', 'fierce')).toBe(true);
+    expect(validateState(state)).toBeNull();
+    expect(translateText('Ma Chao', 'zh')).toBe('马超');
+    activateScenario('divided-realm-190');
+    expect(createGame('cao', 3).officers.some((o) => o.id === 'machao')).toBe(false);
   });
 
   it('keeps the dead off the field and out of every search', () => {
@@ -224,6 +243,39 @@ describe('hegemon victory', () => {
     expect(validateState(next)).toBeNull();
   });
 
+  it('warns the player of a rival Hegemon in the adviser, the objectives and the report', () => {
+    let state = dominate('yuan');
+    state = endMonth(state);
+    expect(state.hegemon).toEqual({ factionId: 'yuan', months: 1 });
+    const start = state.reports.latest!.events.filter((e) => e.kind === 'rivalHegemon');
+    expect(start).toMatchObject([{ factionId: 'yuan', months: 1 }]);
+    const before = structuredClone(state);
+    const first = getAdvice(state)[0]!;
+    expect(first).toMatchObject({ kind: 'rivalHegemon', params: { months: HEGEMON_MONTHS - 1 } });
+    expect(state).toEqual(before);
+    expect(getObjectives(state).find((o) => o.id === 'rivalHegemon')).toMatchObject({
+      progress: 1,
+      goal: HEGEMON_MONTHS,
+      done: false,
+    });
+    // Six months in, six remain; the second warning arrives with three months left.
+    state.hegemon = { factionId: 'yuan', months: 6 };
+    expect(getAdvice(state)[0]!.params.months).toBe(6);
+    state.hegemon = { factionId: 'yuan', months: HEGEMON_MONTHS - 4 };
+    state = endMonth(state);
+    expect(state.hegemon.months).toBe(HEGEMON_MONTHS - 3);
+    expect(state.reports.latest!.events.filter((e) => e.kind === 'rivalHegemon')).toMatchObject([
+      { factionId: 'yuan', months: HEGEMON_MONTHS - 3 },
+    ]);
+    state = endMonth(state);
+    expect(state.reports.latest!.events.some((e) => e.kind === 'rivalHegemon')).toBe(false);
+    expect(validateState(state)).toBeNull();
+    roundTrip(state);
+    // The player's own claim is not a rival warning.
+    const own = endMonth(dominate('cao'));
+    expect(getAdvice(own).some((a) => a.kind === 'rivalHegemon')).toBe(false);
+    expect(getObjectives(own).some((o) => o.id === 'rivalHegemon')).toBe(false);
+  });
   it('rejects a finished campaign with an unearned winner', () => {
     const state = createGame('cao', 3);
     state.phase = 'finished';
@@ -303,6 +355,37 @@ describe('fog of war and scouting', () => {
   });
 });
 
+describe('departures never go to an ally', () => {
+  it('a departing officer wanders instead of joining a house allied with their own', () => {
+    let departures = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      let state = createGame('dong', seed);
+      while (state.month !== 6) state = endMonth(state);
+      state.alliances = FACTIONS.filter((f) => f.id !== 'dong').map((f) => ({
+        a: 'dong',
+        b: f.id,
+        untilTurn: state.turn + 3,
+      }));
+      // Free officers at home only: captives in rival cities can be won over by their captors.
+      const unhappy = state.officers.filter(
+        (o) =>
+          o.factionId === 'dong' &&
+          !isRuler(o) &&
+          !o.captive &&
+          city(state, o.cityId).factionId === 'dong',
+      );
+      for (const o of unhappy) o.loyalty = 0;
+      state = endMonth(state);
+      for (const o of unhappy) {
+        const now = officer(state, o.id);
+        if (now.factionId !== 'dong') departures++;
+        expect(['dong', null]).toContain(now.factionId);
+      }
+    }
+    expect(departures).toBeGreaterThan(0);
+  });
+});
+
 describe('troop reorganization', () => {
   it('costs 150 gold and 20% of the troops and rejects a no-op', () => {
     const state = createGame('cao', 6);
@@ -344,6 +427,23 @@ describe('troop reorganization', () => {
     }
     expect(getActionInfo(state, 'reorganize', 'chenliu', 'xiahoudun').gold).toBe(150);
     roundTrip(next);
+  });
+
+  it('needs an officer who leads troops, and rejects atomically otherwise', () => {
+    const state = createGame('cao', 6);
+    officer(state, 'xiahoudun').troops = 0;
+    const before = structuredClone(state);
+    const result = dispatch(state, {
+      type: 'action',
+      action: 'reorganize',
+      cityId: 'chenliu',
+      officerId: 'xiahoudun',
+      targetId: 'archer',
+    });
+    expect(result.error).toBe('Only an officer who leads troops can reorganize them.');
+    expect(state).toEqual(before);
+    expect(getActionInfo(state, 'reorganize', 'chenliu', 'xiahoudun').reason).toBe(result.error);
+    expect(translateText(result.error!, 'zh')).toBe('只有统率士兵的武将才能整编部队。');
   });
 });
 
@@ -463,18 +563,25 @@ describe('adviser and first-campaign goals', () => {
     expect(getAdvice(state)).toEqual(getAdvice(state));
     expect(state).toEqual(before);
     const hungry = structuredClone(state);
-    city(hungry, 'chenliu').food = 100;
-    city(hungry, 'puyang').food = 100;
-    city(hungry, 'xuchang').food = 100;
-    officer(hungry, 'yujin').loyalty = 10;
+    // From month two on; in month one a border warning (below) ranks first by design.
+    hungry.turn = 1;
+    hungry.month = 2;
+    // No fields and no people: next month's harvest cannot save these cities.
+    for (const id of ['chenliu', 'puyang', 'xuchang']) {
+      Object.assign(city(hungry, id), { food: 100, farming: 0, population: 0 });
+    }
+    officer(hungry, 'xiahouyuan').loyalty = 10;
     const advice = getAdvice(hungry);
     expect(advice.length).toBeLessThanOrEqual(3);
     expect(advice[0]!.kind).toBe('food');
     expect(advice.every((a, i) => i === 0 || advice[i - 1]!.urgency >= a.urgency)).toBe(true);
     expect(new Set(getAdvice(hungry).map((a) => a.kind)).size).toBeGreaterThan(0);
     const risky = structuredClone(state);
-    officer(risky, 'yujin').loyalty = 10;
-    expect(getAdvice(risky).some((a) => a.kind === 'atRisk' && a.officerId === 'yujin')).toBe(true);
+    officer(risky, 'xiahouyuan').loyalty = 10;
+    officer(risky, 'yujin').loyalty = 10; // loyal: can never leave, so never flagged
+    const flagged = getAdvice(risky).filter((a) => a.kind === 'atRisk');
+    expect(flagged.some((a) => a.officerId === 'xiahouyuan')).toBe(true);
+    expect(flagged.some((a) => a.officerId === 'yujin')).toBe(false);
   });
 
   it('tracks goals for six months and then goes quiet', () => {
@@ -527,6 +634,11 @@ describe('events', () => {
     for (const pair of fired.alliances) expect([pair.a, pair.b]).not.toContain('cao');
     expect(validateState(fired)).toBeNull();
     roundTrip(fired);
+    // The invitation names the house it is aimed at, and older saves default to Dong Zhuo.
+    expect(fired.invitations[0]!.targetId).toBe('dong');
+    const legacy = JSON.parse(encodeSave(fired));
+    for (const invitation of legacy.state.invitations) delete invitation.targetId;
+    expect(decodeSave(JSON.stringify(legacy)).invitations[0]!.targetId).toBe('dong');
     // A one-shot event never fires twice.
     const again = endMonth(fired);
     expect(again.firedEvents.filter((id) => id === 'anti-dong-coalition')).toHaveLength(1);
@@ -624,5 +736,90 @@ describe('events', () => {
       'anti-dong-coalition',
       'dong-burns-luoyang',
     ]);
+  });
+});
+
+describe('adviser food advice and the first-campaign goal report', () => {
+  it('counts next month’s harvest before calling a city hungry', () => {
+    const state = createGame('cao', 11);
+    const target = city(state, 'chenliu');
+    Object.assign(target, { food: 100, farming: 0, population: 0 });
+    expect(getAdvice(state).some((a) => a.kind === 'food' && a.cityId === 'chenliu')).toBe(true);
+    Object.assign(target, { farming: 400, population: 20000 });
+    expect(getAdvice(state).some((a) => a.kind === 'food' && a.cityId === 'chenliu')).toBe(false);
+  });
+
+  it('records the goal tally in each of the first six monthly reports and then stops', () => {
+    let state = createGame('cao', 11);
+    for (let month = 1; month <= 7; month++) {
+      state = endMonth(state);
+      const goals = state.reports.latest!.events.filter((e) => e.kind === 'goals');
+      if (month <= 6) {
+        expect(goals).toHaveLength(1);
+        const done = getGoals(structuredClone({ ...state, turn: 0 }))!
+          .filter((g) => g.done)
+          .map((g) => g.id);
+        expect(goals[0]).toMatchObject({ kind: 'goals', done });
+      } else expect(goals).toHaveLength(0);
+      expect(validateState(state)).toBeNull();
+    }
+    roundTrip(state);
+  });
+});
+
+describe('loot estimates under fog', () => {
+  it('are ranges for an unscouted city and exact once scouted, without touching state', () => {
+    const state = createGame('cao', 4);
+    const target = state.cities.find((c) => c.factionId === 'yuan')!;
+    const leader = { intellect: 90, force: 80 };
+    const exactLoot = plunderOutcome(target, leader);
+    const before = structuredClone(state);
+    const hidden = lootRange(state, target, leader);
+    expect(hidden.exact).toBe(false);
+    expect(hidden.gold[0]).toBeLessThan(exactLoot.gold);
+    expect(hidden.gold[1]).toBeGreaterThan(exactLoot.gold);
+    expect(hidden.food[0]).toBeLessThanOrEqual(exactLoot.food);
+    expect(hidden.food[1]).toBeGreaterThanOrEqual(exactLoot.food);
+    state.scouted[target.id] = state.turn;
+    const seen = lootRange(state, target, leader);
+    expect(seen).toEqual({
+      exact: true,
+      gold: [exactLoot.gold, exactLoot.gold],
+      food: [exactLoot.food, exactLoot.food],
+    });
+    delete state.scouted[target.id];
+    expect(state).toEqual(before);
+  });
+});
+
+describe('protection for small houses', () => {
+  it('gives Challenging houses a two-month truce on Standard, and leaves the presets alone', () => {
+    expect(defaultTruceMonths('standard', 'Challenging')).toBe(2);
+    expect(defaultTruceMonths('standard', 'Balanced')).toBe(0);
+    expect(defaultTruceMonths('standard', 'Approachable')).toBe(0);
+    expect(defaultTruceMonths('story', 'Approachable')).toBe(2);
+    expect(defaultTruceMonths('story', undefined)).toBe(2);
+    expect(defaultTruceMonths('warlord', 'Challenging')).toBe(0);
+  });
+
+  it('warns in month one which neighbour can already beat a city, and when it may march', () => {
+    for (const [scenarioId, ruler] of [
+      ['divided-realm-190', 'cao'],
+      ['guandu-200', 'ma'],
+    ] as const) {
+      const state = createGame(ruler, 6, 'balanced', { scenarioId });
+      const before = structuredClone(state);
+      const advice = getAdvice(state);
+      expect(state).toEqual(before);
+      const first = advice[0]!;
+      expect(first.kind, scenarioId).toBe('openingBorder');
+      expect(first.params.month).toBe(2);
+      const truce = createGame(ruler, 6, 'balanced', { scenarioId, truceMonths: 2 });
+      expect(getAdvice(truce)[0]!.params.month).toBe(3);
+      // From month two on it is the ordinary, quieter border warning.
+      const later = endMonth(state);
+      expect(getAdvice(later).some((a) => a.kind === 'openingBorder')).toBe(false);
+    }
+    activateScenario('divided-realm-190');
   });
 });

@@ -12,6 +12,8 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { factionById } from '../content/scenario';
+import { GOAL_IDS } from '../game/advisor';
+import { HEGEMON_MONTHS } from '../game/world';
 import type { GameState, MonthlyReportEvent } from '../game/types';
 import { reportEventCity, reportHighlights } from '../game/reports';
 import { useI18n } from '../i18n';
@@ -107,6 +109,31 @@ export default function MonthlyReport({
           officer: officerName(event.officerId),
           faction: factionName(event.factionId),
         });
+      case 'rivalHegemon':
+        return t(
+          event.months === 1
+            ? '{faction} now holds Luoyang and 16 cities. In {left} months they will be proclaimed Hegemon.'
+            : '{faction} has held Luoyang and 16 cities for {months} months. {left} months remain before they are proclaimed Hegemon.',
+          {
+            faction: factionName(event.factionId),
+            months: event.months,
+            left: HEGEMON_MONTHS - event.months,
+          },
+        );
+      case 'goals':
+        return t('First-campaign goals: {done} of {total} complete.', {
+          done: event.done.length,
+          total: GOAL_IDS.length,
+        });
+      case 'prisoner':
+        return t(
+          event.fate === 'released'
+            ? '{faction} released your captured officer {officer}.'
+            : event.fate === 'executed'
+              ? '{faction} executed your captured officer {officer}.'
+              : '{faction} won over your captured officer {officer}.',
+          { faction: factionName(event.byFactionId), officer: officerName(event.officerId) },
+        );
       case 'atRisk':
         return t('Officers close to leaving (loyalty under 40): {names}.', {
           names: event.officerIds.map(officerName).join(', '),

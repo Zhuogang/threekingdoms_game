@@ -2,13 +2,15 @@ import type { City, Faction, Officer } from '../game/types';
 
 /**
  * 200 CE, the eve of Guandu: Cao Cao holds the emperor and the central plains, Yuan Shao the
- * whole north. It reuses the same atlas and the same fifty-two officers as the 190 scenario;
- * only who owns what — and who has already died — changes. (This file must not import
+ * whole north. It reuses the same atlas and the same fifty-two officers as the 190 scenario, plus
+ * Ma Chao; otherwise only who owns what — and who has already died — changes. (This file must not import
  * `scenario.ts`: the registry there calls `buildGuandu` while it is being built.)
  */
 export interface GuanduBase {
   cities: City[];
   officers: Officer[];
+  /** Officers who exist only in this scenario, appended after the shared roster. */
+  extraOfficers: Officer[];
   factions: Faction[];
 }
 
@@ -73,6 +75,7 @@ const PLACEMENT: Record<string, [string | null, string]> = {
   lusu: ['sun', 'chaisang'],
   zuzhao: ['sun', 'shouchun'],
   maliang: ['ma', 'tianshui'],
+  machao: ['ma', 'changan'],
   liuzhang: ['yan', 'chengdu'],
   fazheng: ['yan', 'chengdu'],
   zhangren: ['yan', 'zitong'],
@@ -183,7 +186,7 @@ export function buildGuandu(base: GuanduBase) {
       governorId: null,
     };
   });
-  const officers: Officer[] = base.officers.map((officer, index) => {
+  const officers: Officer[] = [...base.officers, ...base.extraOfficers].map((officer, index) => {
     const dead = DECEASED.has(officer.id);
     const [factionId, cityId] = dead
       ? [null, officer.cityId]

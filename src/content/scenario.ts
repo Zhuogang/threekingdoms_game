@@ -343,28 +343,34 @@ const officerSeeds: OfficerSeed[] = [
   ['chenqun', 'Chen Qun', '陈群', null, 'xiapi', 30, 91, 'archer', 20],
   ['maliang', 'Ma Teng', '马腾', null, 'tianshui', 87, 66, 'cavalry', 34],
 ];
-const DIVIDED_OFFICERS: Officer[] = officerSeeds.map(
-  ([id, name, chinese, factionId, cityId, force, intellect, troopType, age = 30], index) => ({
-    id,
-    name,
-    chinese,
-    factionId,
-    cityId,
-    force,
-    intellect,
-    troopType,
-    age,
-    loyalty: id === 'lubu' ? 58 : factionId === 'dong' ? 70 : 88,
-    stamina: 100,
-    troops: factionId ? 700 + (index % 4) * 100 : 0,
-    busy: false,
-    captive: false,
-    experience: 0,
-    level: 0,
-    equipment: null,
-    fate: 'active' as const,
-  }),
-);
+const officerFromSeed = (
+  [id, name, chinese, factionId, cityId, force, intellect, troopType, age = 30]: OfficerSeed,
+  index: number,
+): Officer => ({
+  id,
+  name,
+  chinese,
+  factionId,
+  cityId,
+  force,
+  intellect,
+  troopType,
+  age,
+  loyalty: id === 'lubu' ? 58 : factionId === 'dong' ? 70 : 88,
+  stamina: 100,
+  troops: factionId ? 700 + (index % 4) * 100 : 0,
+  busy: false,
+  captive: false,
+  experience: 0,
+  level: 0,
+  equipment: null,
+  fate: 'active' as const,
+});
+const DIVIDED_OFFICERS: Officer[] = officerSeeds.map(officerFromSeed);
+/** Officers who exist only in the 200 CE world: it adds to the roster of the 190 CE one. */
+const GUANDU_ONLY_SEEDS: OfficerSeed[] = [
+  ['machao', 'Ma Chao', '马超', null, 'changan', 97, 44, 'cavalry', 14],
+];
 /** Each city starts under the most senior serving officer of its owner. */
 export function assignGovernors(cities: City[], officers: Officer[]): void {
   for (const city of cities)
@@ -396,7 +402,14 @@ export const SCENARIOS: readonly ScenarioDefinition[] = [
     cities: DIVIDED_CITIES,
     officers: DIVIDED_OFFICERS,
   },
-  buildGuandu({ cities: DIVIDED_CITIES, officers: DIVIDED_OFFICERS, factions: DIVIDED_FACTIONS }),
+  buildGuandu({
+    cities: DIVIDED_CITIES,
+    officers: DIVIDED_OFFICERS,
+    extraOfficers: GUANDU_ONLY_SEEDS.map((seed, index) =>
+      officerFromSeed(seed, officerSeeds.length + index),
+    ),
+    factions: DIVIDED_FACTIONS,
+  }),
 ];
 export const DEFAULT_SCENARIO_ID = DIVIDED_REALM_META.id;
 export const scenarioById = (id: string): ScenarioDefinition | undefined =>

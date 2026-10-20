@@ -5,6 +5,7 @@ import {
   dispatch,
   getActionInfo,
   getActionPreview,
+  raidMeetsNoResistance,
   getAllianceChance,
   getPersuadeChance,
   getPlunderPreview,
@@ -237,6 +238,8 @@ describe('supply days and marching', () => {
 });
 
 describe('raids and sacks', () => {
+  // Raiders field 2,500 troops; a garrison at least as strong sorties instead of hiding.
+  const MILITIA_THAT_FIGHTS = 2500;
   const raidSetup = (reserve: number, seed = 5) => {
     const state = createGame('cao', seed);
     const o = officer(state, 'xiahouyuan');
@@ -279,7 +282,7 @@ describe('raids and sacks', () => {
   });
 
   it('fights a militia battle with a 10-day limit when only reserves defend, and never captures the city', () => {
-    const state = raidSetup(400);
+    const state = raidSetup(MILITIA_THAT_FIGHTS);
     const started = apply(apply(state, raidCommand()), { type: 'endMonth' });
     expect(started.phase).toBe('battle');
     expect(started.battle!.dayLimit).toBe(10);
@@ -295,7 +298,7 @@ describe('raids and sacks', () => {
   });
 
   it('applies the loot exactly once even when the raid battle is interrupted and reloaded', () => {
-    const state = raidSetup(400);
+    const state = raidSetup(MILITIA_THAT_FIGHTS);
     const started = apply(apply(state, raidCommand()), { type: 'endMonth' });
     const resumed = roundTrip(started);
     const a = apply(started, { type: 'battleAuto' });
@@ -303,6 +306,31 @@ describe('raids and sacks', () => {
     expect(b).toEqual(a);
     const gold = city(started, 'puyang').gold;
     expect(city(a, 'puyang').gold - gold).toBeLessThan(5000);
+  });
+
+  it('lets a thin garrison stay inside: no battle, the same loot as an undefended city', () => {
+    const state = raidSetup(2499);
+    const target = city(state, 'xiapi');
+    const expected = plunderOutcome(target, officer(state, 'xiahouyuan'));
+    const done = apply(apply(state, raidCommand()), { type: 'endMonth' });
+    expect(done.phase).toBe('planning');
+    expect(done.reports.latest!.events.some((e) => e.kind === 'raid' && !e.fought)).toBe(true);
+    expect(done.log.some((entry) => entry.text.includes('stays behind its walls'))).toBe(true);
+    expect(city(done, 'xiapi').commerce).toBe(expected.after.commerce);
+    expect(city(done, 'xiapi').plunderCooldownUntil).toBeGreaterThan(0);
+    expect(city(done, 'xiapi').factionId).toBe(target.factionId);
+    expect(done.lastBattle).toMatchObject({ outcome: 'raided', days: 0 });
+    expect(validateState(done)).toBeNull();
+  });
+
+  it('a garrison as strong as the raiders fights', () => {
+    const state = raidSetup(2500);
+    const started = apply(apply(state, raidCommand()), { type: 'endMonth' });
+    expect(started.phase).toBe('battle');
+    expect(raidMeetsNoResistance(state, city(state, 'xiapi'), 2500)).toBe(false);
+    expect(raidMeetsNoResistance(state, { ...city(state, 'xiapi'), reserve: 2499 }, 2500)).toBe(
+      true,
+    );
   });
 
   it('a lost raid ends with the normal retreat and no plunder', () => {
@@ -328,6 +356,58 @@ describe('raids and sacks', () => {
     expect(done.lastBattle).toMatchObject({ outcome: 'captured', intent: 'sack' });
     expect(done.log.some((entry) => entry.text.includes('sacks Xiapi'))).toBe(true);
     expect(validateState(done)).toBeNull();
+  });
+
+  describe('benevolent officers grieve for the plundering they lead', () => {
+    const liuSetup = () => {
+      const state = createGame('liu', 5);
+      const target = city(
+        state,
+        city(state, 'pingyuan').neighbors.find((id) => city(state, id).factionId !== 'liu')!,
+      );
+      target.reserve = 0;
+      // Below the plunder floor, so its own AI doesn't strip it before the raid arrives.
+      target.loyalty = 5;
+      for (const o of state.officers.filter((x) => x.cityId === target.id)) o.troops = 0;
+      officer(state, 'liubei').troops = 2500;
+      const command = (intent: 'raid' | 'sack'): GameCommand => ({
+        type: 'march',
+        sourceId: 'pingyuan',
+        targetId: target.id,
+        officerIds: ['liubei'],
+        intent,
+      });
+      return { state, target, command };
+    };
+
+    it('the raid commander loses 8 loyalty, and the victims lose none', () => {
+      const { state, target, command } = liuSetup();
+      const victims = state.officers.filter((o) => o.cityId === target.id && o.factionId);
+      const quiet = finishMonth(state);
+      const done = finishMonth(apply(state, command('raid')));
+      expect(done.log.some((entry) => entry.text.includes('raids'))).toBe(true);
+      // A quiet month already costs the ruler some loyalty; the raid adds the 8-point grief.
+      expect(officer(done, 'liubei').loyalty).toBe(officer(quiet, 'liubei').loyalty - 8);
+      for (const o of victims)
+        expect(officer(done, o.id).loyalty).toBe(officer(quiet, o.id).loyalty);
+    });
+
+    it('a sack grieves its commander too', () => {
+      const { state, command } = liuSetup();
+      const quiet = finishMonth(state);
+      const done = finishMonth(apply(state, command('sack')));
+      expect(done.log.some((entry) => entry.text.includes('sacks'))).toBe(true);
+      expect(officer(done, 'liubei').loyalty).toBe(officer(quiet, 'liubei').loyalty - 8);
+    });
+
+    it('a plain conquest grieves nobody', () => {
+      const { state, command } = liuSetup();
+      const quiet = finishMonth(state);
+      const done = finishMonth(
+        apply(state, { ...command('raid'), intent: 'conquer' } as GameCommand),
+      );
+      expect(officer(done, 'liubei').loyalty).toBe(officer(quiet, 'liubei').loyalty);
+    });
   });
 });
 
@@ -709,4 +789,48 @@ describe('real campaigns exercise the new rules and stay valid', () => {
     ).toBe(true);
     expect(events.has('battle')).toBe(true);
   }, 120_000);
+});
+
+describe('plunder preview loyalty loss', () => {
+  it('shows a range when benevolent officers serve in the city, and matches the result', () => {
+    const state = createGame('liu', 3);
+    const loyalty = (s: GameState, id: string) => officer(s, id).loyalty;
+    const effect = getActionPreview(state, 'plunder', 'pingyuan', 'liubei')!.effects.find(
+      (e) => e.stat === 'loyalty',
+    )!;
+    expect([effect.min, effect.max]).toEqual([-8, -3]);
+    const next = apply(state, {
+      type: 'action',
+      action: 'plunder',
+      cityId: 'pingyuan',
+      officerId: 'liubei',
+    });
+    for (const id of ['liubei', 'zhangfei', 'jianyong']) {
+      const change = loyalty(next, id) - loyalty(state, id);
+      expect(change).toBeGreaterThanOrEqual(effect.min);
+      expect(change).toBeLessThanOrEqual(effect.max);
+    }
+    const plain = createGame('cao', 3);
+    const exact = getActionPreview(plain, 'plunder', 'chenliu', 'caocao')!.effects.find(
+      (e) => e.stat === 'loyalty',
+    )!;
+    expect(exact.min).toBe(exact.max);
+  });
+});
+
+describe('the battle recap belongs to the player', () => {
+  it('never records a fight between two rival houses', () => {
+    let seen = 0;
+    for (const seed of [2, 5, 9]) {
+      let state = createGame('liu', seed);
+      for (let month = 0; month < 18 && state.phase !== 'finished'; month++) {
+        state = finishMonth(state);
+        const last = state.lastBattle;
+        if (!last) continue;
+        seen++;
+        expect([last.attackerId, last.defenderId]).toContain('liu');
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
 });

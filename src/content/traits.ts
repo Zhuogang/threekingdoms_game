@@ -84,6 +84,7 @@ export const OFFICER_TRAITS: Record<string, Trait[]> = {
   zhangsong: ['cunning', 'greedy'],
   chenqun: ['benevolent'],
   maliang: ['fierce'],
+  machao: ['fierce'],
 };
 
 export const traitsOf = (officerId: string): readonly Trait[] => OFFICER_TRAITS[officerId] ?? [];

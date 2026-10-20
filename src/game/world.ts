@@ -19,6 +19,24 @@ export const serving = (state: GameState, city: City) =>
   );
 export const strength = (state: GameState, city: City) =>
   serving(state, city).reduce((total, o) => total + o.troops, city.reserve);
+/** Holding the capital plus this many cities for this many months proclaims a Hegemon. */
+export const HEGEMON_CITIES = 16;
+export const HEGEMON_MONTHS = 12;
+export const HEGEMON_CAPITAL = 'luoyang';
+/** A rival house closing in on the Hegemon title, with the months it still needs. */
+export interface RivalHegemon {
+  factionId: string;
+  months: number;
+  monthsLeft: number;
+}
+export function getRivalHegemon(state: GameState): RivalHegemon | null {
+  const { factionId, months } = state.hegemon;
+  if (!factionId || factionId === state.playerFactionId || state.phase === 'finished') return null;
+  return { factionId, months, monthsLeft: Math.max(0, HEGEMON_MONTHS - months) };
+}
+/** Food a city gathers when the calendar reaches `month` (September's harvest is the big one). */
+export const monthlyHarvest = (city: Pick<City, 'farming' | 'population'>, month: number) =>
+  Math.floor(city.farming * (month === 9 ? 4 : 2.2) + city.population / 80);
 export const allied = (state: GameState, a: string, b: string | null) =>
   b !== null &&
   state.alliances.some(

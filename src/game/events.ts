@@ -330,6 +330,7 @@ function formCoalition(state: GameState, against: string, observer?: CampaignObs
     state.invitations.push({
       id: `invitation-${state.nextId++}`,
       eventId: 'anti-dong-coalition',
+      targetId: against,
       members,
       untilTurn: state.turn + INVITATION_MONTHS,
     });

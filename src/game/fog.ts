@@ -1,6 +1,7 @@
 import { activateScenario } from '../content/scenario';
+import { plunderOutcome } from './plunder';
 import { allied } from './world';
-import type { GameState } from './types';
+import type { City, GameState, Officer } from './types';
 
 /**
  * Fog of war is presentation only: the simulation and the AI always see exact numbers.
@@ -41,4 +42,40 @@ export function fogRange(value: number, cityId: string, stat: string): [number, 
     Math.max(0, Math.floor((value * low) / step) * step),
     Math.ceil((value * high) / step) * step,
   ];
+}
+
+/** An unscouted city's farming and commerce are only known to within this fraction. */
+export const FOG_LOOT_SPREAD = 0.25;
+export interface LootRange {
+  gold: [number, number];
+  food: [number, number];
+  /** True when the city is scouted, so the figures are exact. */
+  exact: boolean;
+}
+
+/** Expected raid or sack loot; a range when the target's economy is hidden by fog. Pure. */
+export function lootRange(
+  state: GameState,
+  target: City,
+  leader: Pick<Officer, 'intellect' | 'force'>,
+): LootRange {
+  const mid = plunderOutcome(target, leader);
+  if (isScouted(state, target.id))
+    return { gold: [mid.gold, mid.gold], food: [mid.food, mid.food], exact: true };
+  const at = (scale: number) =>
+    plunderOutcome(
+      {
+        ...target,
+        commerce: Math.floor(target.commerce * scale),
+        farming: Math.floor(target.farming * scale),
+      },
+      leader,
+    );
+  const low = at(1 - FOG_LOOT_SPREAD);
+  const high = at(1 + FOG_LOOT_SPREAD);
+  return {
+    gold: [Math.min(low.gold, mid.gold), Math.max(high.gold, mid.gold)],
+    food: [Math.min(low.food, mid.food), Math.max(high.food, mid.food)],
+    exact: false,
+  };
 }

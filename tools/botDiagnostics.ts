@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { deepStrictEqual } from 'node:assert';
 import { scenarioById } from '../src/content/scenario';
 import { createGame, dispatch, validateState } from '../src/game/campaign';
+import { defaultTruceMonths } from '../src/game/difficulty';
 import type { CampaignObserver } from '../src/game/aiPolicy';
 import type {
   BattleSkill,
@@ -87,7 +88,12 @@ for (const scenarioId of scenarioIds) {
   for (const faction of scenario.factions) {
     for (const preset of presets) {
       for (const seed of seeds) {
-        let state: GameState = createGame(faction.id, seed, preset, { scenarioId });
+        let state: GameState = createGame(faction.id, seed, preset, {
+          scenarioId,
+          // Standard difficulty protects Challenging houses with a short opening truce.
+          truceMonths:
+            preset === 'balanced' ? defaultTruceMonths('standard', faction.difficulty) : 0,
+        });
         const stats = newBotStats();
         let current: Partial<BattleRecord> & { actions: Record<string, number> } = {
           actions: {},
@@ -188,6 +194,7 @@ for (const scenarioId of scenarioIds) {
         let unified: number | null = null;
         let eliminated: number | null = null;
         let peakCities = 0;
+        let maxAiCaptives = 0;
         const held = () => state.cities.filter((c) => c.factionId === faction.id).length;
         for (let month = 0; month < months && state.phase !== 'finished'; month++) {
           botMonth(
@@ -201,6 +208,13 @@ for (const scenarioId of scenarioIds) {
             apply({ type: 'battleAuto' }, true);
           }
           if (eliminated === null && held() === 0) eliminated = state.turn;
+          // Captives held by AI houses (the player's own prisoners are the player's to decide).
+          const aiCaptives = state.officers.filter((o) => {
+            if (!o.captive || o.fate !== 'active') return false;
+            const holder = state.cities.find((c) => c.id === o.cityId)?.factionId;
+            return holder !== null && holder !== undefined && holder !== faction.id;
+          }).length;
+          maxAiCaptives = Math.max(maxAiCaptives, aiCaptives);
           for (const rival of scenario.factions)
             peakCities = Math.max(
               peakCities,
@@ -226,6 +240,7 @@ for (const scenarioId of scenarioIds) {
           captures,
           coalitions,
           peakCities,
+          maxAiCaptives,
           plunders: rawPlunders,
           raids,
           bot,
@@ -408,6 +423,8 @@ const summary = {
     campaigns.filter((c) => Number(c.peakCities) >= 10 && Number(c.coalitions) > 0).length,
     campaigns.filter((c) => Number(c.peakCities) >= 10).length,
   ),
+  // The highest number of prisoners any AI house held at a month end (bounded by the AI policy).
+  maxAiCaptives: Math.max(0, ...campaigns.map((c) => Number(c.maxAiCaptives))),
   playerCapturesPerCampaign:
     Math.round((sum((c) => Number(c.captures)) * 10) / campaigns.length) / 10,
   autoResolveMs: { median: median(autoResolveMs), p95: percentile(autoResolveMs, 0.95) },

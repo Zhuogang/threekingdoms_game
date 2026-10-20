@@ -2,11 +2,16 @@ import { Check, Circle, Crown, Flag, Handshake, Lightbulb } from 'lucide-react';
 import { factionById } from '../content/scenario';
 import { getAdvice, getGoals, type Advice, type GoalId } from '../game/advisor';
 import { HEGEMON_MONTHS, getObjectives } from '../game/campaign';
+import { getRivalHegemon } from '../game/world';
 import type { GameCommand, GameState } from '../game/types';
 import { useI18n } from '../i18n';
 
 const ADVICE_TEXT: Record<Advice['kind'], string> = {
+  rivalHegemon:
+    '{faction} holds Luoyang and 16 cities and will be proclaimed Hegemon in {months} months unless you stop them.',
   food: '{city} holds {food} food but needs about {upkeep} each month. Buy provisions or develop farms.',
+  openingBorder:
+    '{enemy} masses {troops} troops beside {city} and may march as early as month {month}. Reinforce it, or seek peace.',
   weakBorder: '{enemy} masses {troops} troops beside {city}. Reinforce it, or seek peace.',
   idle: '{officer} commands no soldiers while {city} keeps {reserve} in reserve. Muster them.',
   atRisk: '{officer} is close to leaving (loyalty {loyalty}). Reward or feast them.',
@@ -22,6 +27,7 @@ const OBJECTIVE_TEXT: Record<string, string> = {
   hegemon: 'Be proclaimed Hegemon: hold Luoyang and 16 cities for {months} months',
   capital: 'Hold the capital, Luoyang',
   cities: 'Hold 16 cities',
+  rivalHegemon: '{faction} is closing in on the Hegemon title',
 };
 
 /** The monthly adviser, first-campaign goals, standing objectives and open invitations. */
@@ -38,8 +44,7 @@ export default function AdvisorPanel({
   const advice = getAdvice(state);
   const goals = getGoals(state);
   const objectives = getObjectives(state);
-  if (!advice.length && !goals && !state.invitations.length && state.turn > 0 && !objectives.length)
-    return null;
+  const rival = getRivalHegemon(state);
   return (
     <section className="advisor" aria-label={t('Adviser')}>
       <div className="report-heading">
@@ -54,7 +59,7 @@ export default function AdvisorPanel({
           <Handshake size={16} />
           <p>
             {t('You are invited to join a coalition against {faction}.', {
-              faction: factionById('dong')?.name ?? 'the rising power',
+              faction: tx(factionById(invitation.targetId)?.name ?? 'the rising power'),
             })}
             <small>
               {invitation.members.map((id) => tx(factionById(id)?.name ?? id)).join(' · ')}
@@ -108,7 +113,10 @@ export default function AdvisorPanel({
           {objectives.map((objective) => (
             <li key={objective.id} className={objective.done ? 'done' : ''}>
               {objective.done ? <Check size={14} /> : <Crown size={14} />}
-              {t(OBJECTIVE_TEXT[objective.id]!, { months: HEGEMON_MONTHS })}
+              {t(OBJECTIVE_TEXT[objective.id]!, {
+                months: HEGEMON_MONTHS,
+                faction: tx(factionById(rival?.factionId)?.name ?? ''),
+              })}
               <small>
                 {Math.min(objective.progress, objective.goal)}/{objective.goal}
               </small>

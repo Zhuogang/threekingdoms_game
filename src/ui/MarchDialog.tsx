@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { ArrowRight, Shield, TriangleAlert, Wheat } from 'lucide-react';
 import { TROOP_LABELS, factionById } from '../content/scenario';
-import { plunderLeader, plunderOutcome } from '../game/plunder';
+import { hasTrait } from '../content/traits';
+import { raidMeetsNoResistance } from '../game/campaign';
+import { lootRange } from '../game/fog';
+import { plunderLeader } from '../game/plunder';
 import { RAID_SUPPLY_DAYS, SUPPLY_DAY_OPTIONS, supplyFood } from '../game/supply';
 import type {
   AttackIntent,
@@ -67,7 +70,7 @@ export default function MarchDialog(props: MarchDialogProps) {
       .reduce((sum, o) => sum + o.troops, 0);
   const monthlyUpkeep = Math.ceil(strength * 0.12);
   const leader = plunderLeader(chosen);
-  const loot = target && leader ? plunderOutcome(target, leader) : null;
+  const loot = target && leader ? lootRange(state, target, leader) : null;
   const short = city.food < food;
   const thin = !short && city.food - food < monthlyUpkeep;
   const { intent: currentIntent, setIntent } = props;
@@ -192,10 +195,38 @@ export default function MarchDialog(props: MarchDialogProps) {
       </div>
       {loot && intent !== 'conquer' && (
         <p className="inline-notice" role="note" data-testid="loot-preview">
-          {t(
-            'Expected loot: about {gold} gold and {food} food. The city falls to half its support, farming and commerce.',
-            { gold: number(loot.gold), food: number(loot.food) },
-          )}
+          {loot.exact
+            ? t(
+                'Expected loot: about {gold} gold and {food} food. The city falls to half its support, farming and commerce.',
+                { gold: number(loot.gold[0]), food: number(loot.food[0]) },
+              )
+            : t(
+                'Estimated loot (the city is not scouted): {gold} gold and {food} food. The city falls to half its support, farming and commerce.',
+                {
+                  gold: `${number(loot.gold[0])}–${number(loot.gold[1])}`,
+                  food: `${number(loot.food[0])}–${number(loot.food[1])}`,
+                },
+              )}
+        </p>
+      )}
+      {intent === 'raid' &&
+        target &&
+        troops > 0 &&
+        raidMeetsNoResistance(state, target, troops) && (
+          <p className="inline-notice" role="note" data-testid="raid-unopposed">
+            {t(
+              'The garrison is too weak to sortie and would stay behind its walls: the raid meets no resistance.',
+            )}
+          </p>
+        )}
+      {intent !== 'conquer' && chosen.some((o) => hasTrait(o.id, 'benevolent')) && (
+        <p className="inline-notice warning" role="note" data-testid="plunder-grief">
+          {t('Benevolent commanders take plundering to heart: {names} would lose 8 loyalty.', {
+            names: chosen
+              .filter((o) => hasTrait(o.id, 'benevolent'))
+              .map((o) => tx(o.name))
+              .join(', '),
+          })}
         </p>
       )}
       {(short || thin) && (

@@ -237,6 +237,24 @@ const coalitionEvent = z.object({
   leaderId: id,
   involvesPlayer: z.boolean(),
 });
+const prisonerEvent = z.object({
+  ...eventBase,
+  kind: z.literal('prisoner'),
+  officerId: id,
+  byFactionId: id,
+  fate: z.enum(['released', 'executed', 'recruited']),
+});
+const rivalHegemonEvent = z.object({
+  ...eventBase,
+  kind: z.literal('rivalHegemon'),
+  factionId: id,
+  months: integer.min(1).max(12),
+});
+const goalsEvent = z.object({
+  ...eventBase,
+  kind: z.literal('goals'),
+  done: z.array(z.enum(['develop', 'muster', 'recruit', 'capture', 'supply'])).max(5),
+});
 const reportV2 = reportV1.extend({
   events: z
     .array(
@@ -250,6 +268,9 @@ const reportV2 = reportV1.extend({
         atRiskEvent,
         coalitionEvent,
         deathEvent,
+        prisonerEvent,
+        rivalHegemonEvent,
+        goalsEvent,
       ]),
     )
     .max(128),
@@ -297,6 +318,8 @@ const stateV2 = stateV1.extend({
       z.object({
         id,
         eventId: z.string().min(1).max(60),
+        // Saves from before the field existed: only the anti-Dong coalition makes invitations.
+        targetId: id.default('dong'),
         members: z.array(id).max(10),
         untilTurn: nonnegative,
       }),

@@ -238,6 +238,7 @@ export const GAME_ZH: Record<string, string> = {
   'Public support and defense are already at their maximum.': '民心和城防均已达上限。',
   'The city needs at least 1,500 people before recruitment.': '征兵前，本城人口须至少达到 1,500。',
   'Assign troops to this officer before drilling.': '请先为此武将配备士兵，再进行操练。',
+  'Only an officer who leads troops can reorganize them.': '只有统率士兵的武将才能整编部队。',
   'This officer is already completely loyal.': '此武将忠诚已满。',
   'This officer already has fine arms.': '此武将已配备精良兵器。',
   'This officer has no equipment to confiscate.': '此武将没有可没收的装备。',
@@ -295,6 +296,7 @@ export const GAME_ZH: Record<string, string> = {
     '此部队陷入混乱，须等到本日结束后恢复。',
   'This unit has already moved today.': '此部队今日已移动。',
   'Choose a valid battlefield tile.': '请选择有效的战场格。',
+  'A unit cannot stop on its own camp.': '部队不能停留在己方营寨上。',
   'That tile is blocked or beyond this unit’s movement range.':
     '该格被阻挡，或超出此部队的移动范围。',
   'Select an enemy unit.': '请选择一支敌方部队。',
@@ -425,13 +427,14 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ['{officer} is released and returns to {home}.', '{officer}获释，返回{home}。'],
   ['{officer} is released and wanders the land.', '{officer}获释，流落四方。'],
   ['{officer} is executed. The officers are uneasy.', '{officer}被处决，众将不安。'],
-  [
-    '{faction} raids {city}, seizing {gold} gold and {food} food.',
-    '{faction}袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
-  ],
+  // The more specific pattern must come first, or {city} would swallow "unopposed".
   [
     '{faction} raids {city} unopposed, seizing {gold} gold and {food} food.',
     '{faction}兵不血刃袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    '{faction} raids {city}, seizing {gold} gold and {food} food.',
+    '{faction}袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
   ],
   [
     '{faction} sacks {city}, seizing {gold} gold and {food} food.',
@@ -450,6 +453,10 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ['{officer} abandons {faction} and wanders the land.', '{officer}离开{faction}，流落四方。'],
   ['The neighbouring lords unite against {faction}.', '周边诸侯联合对抗{faction}。'],
   ['{faction} breaks the alliance with {target}.', '{faction}撕毁了与{target}的盟约。'],
+  [
+    "{city}'s garrison stays behind its walls as {faction} raids.",
+    '{faction}来袭时，{city}守军闭城不出。',
+  ],
   [
     'The raid on {city} is called off: the city was plundered recently.',
     '对{city}的袭掠已取消：该城近期刚遭掠夺。',

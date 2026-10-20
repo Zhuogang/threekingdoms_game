@@ -88,7 +88,13 @@ export const DEFAULT_DAY_LIMIT = 30;
 export const DEPLOY_ROWS = [5, 4, 6, 3, 7, 2, 8, 1, 9, 0];
 /** Tactical AI v2 is the default; v1 is kept for mirrored comparisons. */
 export type TacticalAi = 'v1' | 'v2';
-export const battleConfig: { tacticalAi: TacticalAi } = { tacticalAi: 'v2' };
+export const battleConfig: { tacticalAi: TacticalAi | Record<Side, TacticalAi> } = {
+  tacticalAi: 'v2',
+};
+const aiVersionFor = (side: Side): TacticalAi => {
+  const config = battleConfig.tacticalAi;
+  return typeof config === 'string' ? config : config[side];
+};
 
 // ---------------------------------------------------------------------------
 // Observer: diagnostic only, never read by the simulation.
@@ -181,6 +187,8 @@ function stepCost(unit: Pick<BattleUnit, 'troopType' | 'side'>, terrain: Terrain
 interface Paths {
   /** Cheapest cost to each reachable tile (including the start). */
   costs: Map<number, number>;
+  /** Tiles reached by some path that could still keep moving (no ZOC stop yet). */
+  open: Set<number>;
   /** The tiles from the start to `index`, inclusive, or [] if unreachable. */
   routeTo(index: number): number[];
 }
@@ -246,10 +254,12 @@ function paths(battle: BattleState, unit: BattleUnit, budget = Infinity, zoc = f
   }
   const costs = new Map<number, number>();
   const bestState = new Map<number, number>();
+  const open = new Set<number>();
   for (let state = 0; state < states; state++) {
     const value = best[state]!;
     if (!Number.isFinite(value)) continue;
     const index = Math.floor(state / 3);
+    if (state % 3 < limit) open.add(index);
     if (value < (costs.get(index) ?? Infinity)) {
       costs.set(index, value);
       bestState.set(index, state);
@@ -257,6 +267,7 @@ function paths(battle: BattleState, unit: BattleUnit, budget = Infinity, zoc = f
   }
   return {
     costs,
+    open,
     routeTo(index: number): number[] {
       let state = bestState.get(index);
       if (state === undefined) return [];
@@ -323,11 +334,18 @@ export function getReachableTiles(battle: BattleState, unitId: string): Tile[] {
     battle.outcome
   )
     return [];
-  // A routed unit may flee but cannot seize the enemy camp.
-  const enemyCamp = isRouted(unit) ? cell(battle, camp(battle, other(unit.side))) : -1;
   return [...paths(battle, unit, getBattleUnitMove(unit), true).costs.keys()]
-    .filter((index) => index !== cell(battle, unit) && index !== enemyCamp)
+    .filter((index) => index !== cell(battle, unit) && canStopOn(battle, unit, index))
     .map((index) => tileOf(battle, index));
+}
+
+/**
+ * Where a move may end. A unit can pass through its own camp but never park on it (that
+ * would make the camp impossible to capture), and a routed unit cannot seize the enemy camp.
+ */
+function canStopOn(battle: BattleState, unit: BattleUnit, index: number): boolean {
+  if (index === cell(battle, camp(battle, unit.side))) return false;
+  return !(isRouted(unit) && index === cell(battle, camp(battle, other(unit.side))));
 }
 
 /** Tiles where a move ends because an enemy is adjacent (shown as ZOC stops). */
@@ -335,7 +353,12 @@ export function getZocStopTiles(battle: BattleState, unitId: string): Tile[] {
   const unit = battle.units.find((candidate) => candidate.id === unitId);
   if (!unit) return [];
   const zone = zocTiles(battle, unit);
-  return getReachableTiles(battle, unitId).filter((tile) => zone.has(cell(battle, tile)));
+  const { open } = paths(battle, unit, getBattleUnitMove(unit), true);
+  // A cavalry unit can ride through its first zone tile, so only mark tiles where it must end.
+  return getReachableTiles(battle, unitId).filter((tile) => {
+    const index = cell(battle, tile);
+    return zone.has(index) && !open.has(index);
+  });
 }
 
 export function getAttackTargets(battle: BattleState, unitId: string): string[] {
@@ -369,6 +392,7 @@ function addThreat(battle: BattleState, enemy: BattleUnit, into: Set<number>): v
   const range = getBattleUnitRange(enemy);
   const reach = paths(battle, enemy, getBattleUnitMove(enemy), true).costs;
   for (const index of reach.keys()) {
+    if (!canStopOn(battle, enemy, index) && index !== cell(battle, enemy)) continue;
     const from = tileOf(battle, index);
     for (let dy = -range; dy <= range; dy++)
       for (let dx = -range; dx <= range; dx++) {
@@ -812,6 +836,8 @@ export interface TacticForecast {
   /** Success chance in percent (Confuse), else 100. */
   chance: number;
   moraleGain: number;
+  /** Rally on a confused unit ends its confusion, so it can act today. */
+  endsConfusion: boolean;
   /** Provisions removed from the enemy (Raid supplies). */
   foodTaken: number;
 }
@@ -1187,7 +1213,7 @@ function aiMoveToward(battle: BattleState, unit: BattleUnit): void {
   const reach = paths(battle, unit, getBattleUnitMove(unit), true);
   const enemyCamp = camp(battle, other(unit.side));
   const campIndex = cell(battle, enemyCamp);
-  if (reach.costs.has(campIndex)) {
+  if (reach.costs.has(campIndex) && canStopOn(battle, unit, campIndex)) {
     move(battle, unit, enemyCamp);
     return;
   }
@@ -1216,7 +1242,7 @@ function aiMoveToward(battle: BattleState, unit: BattleUnit): void {
   const path = route.routeTo(bestCell);
   for (let i = path.length - 1; i >= 0; i--) {
     const step = path[i]!;
-    if (reach.costs.has(step)) {
+    if (reach.costs.has(step) && canStopOn(battle, unit, step)) {
       move(battle, unit, tileOf(battle, step));
       return;
     }
@@ -1287,6 +1313,9 @@ const ATTACK_THREAT_WEIGHT = 0.5;
 const POSITION_THREAT_WEIGHT = 0.04;
 const COUNTER_WEIGHT = 0.8;
 const TACTIC_PRICE = 20;
+/** Casualty-equivalent worth of one morale point, and of pushing a unit past a morale threshold. */
+const MORALE_POINT_VALUE = 10;
+const MORALE_BREAK_BONUS = 60;
 const TACTIC_POINT_RESERVE = 2;
 
 /** Score every reachable tile × action pair and pick the best (deterministic). */
@@ -1300,7 +1329,9 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
   const here: Tile = { x: unit.x, y: unit.y };
   const weak = unit.troops < unit.initialTroops * 0.25;
   const routed = isRouted(unit);
-  const tiles = [...reach.entries()].sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+  const tiles = [...reach.entries()]
+    .filter(([index]) => index === start || canStopOn(battle, unit, index))
+    .sort((a, b) => a[1] - b[1] || a[0] - b[0]);
   const enemyCamp = context.enemyCamp;
 
   // Seizing the enemy camp ends the battle.
@@ -1465,7 +1496,13 @@ function aiTacticValue(
     return forecast.foodTaken * (days <= 12 ? 0.6 : 0.15);
   }
   const mid = (forecast.min + forecast.max) / 2;
-  return skill === 'rockfall' ? mid + 40 : mid;
+  if (skill !== 'rockfall') return mid;
+  // The morale shock is worth casualties, more so when it makes the target waver or rout.
+  const after = target.morale - ROCKFALL_MORALE;
+  const breaks =
+    (target.morale >= WAVERING_MORALE && after < WAVERING_MORALE ? 1 : 0) +
+    (target.morale >= ROUTED_MORALE && after < ROUTED_MORALE ? 1 : 0);
+  return mid + ROCKFALL_MORALE * MORALE_POINT_VALUE + breaks * MORALE_BREAK_BONUS;
 }
 
 function forecastSkillFor(
@@ -1474,7 +1511,14 @@ function forecastSkillFor(
   skill: BattleSkill,
   target: BattleUnit,
 ): TacticForecast {
-  const result: TacticForecast = { min: 0, max: 0, chance: 100, moraleGain: 0, foodTaken: 0 };
+  const result: TacticForecast = {
+    min: 0,
+    max: 0,
+    chance: 100,
+    moraleGain: 0,
+    endsConfusion: false,
+    foodTaken: 0,
+  };
   if (skill === 'fire') {
     result.min = casualtyCount(target, fireDamage(battle, source, target, 0.9));
     result.max = casualtyCount(target, fireDamage(battle, source, target, 1.1));
@@ -1487,6 +1531,7 @@ function forecastSkillFor(
     result.moraleGain = -ROCKFALL_MORALE;
   } else if (skill === 'rally') {
     result.moraleGain = Math.min(100, target.morale + rallyGain(source)) - target.morale;
+    result.endsConfusion = target.status === 'confused';
   } else {
     const food = target.side === 'attacker' ? battle.attackerFood : battle.defenderFood;
     result.foodTaken = Math.min(food, raidSupplyAmount(target));
@@ -1519,7 +1564,7 @@ function aiTurnV2(draft: GameState, battle: BattleState, side: Side): void {
 }
 
 function aiTurn(draft: GameState, battle: BattleState, side: Side): void {
-  if (battleConfig.tacticalAi === 'v1') aiTurnV1(draft, battle, side);
+  if (aiVersionFor(side) === 'v1') aiTurnV1(draft, battle, side);
   else aiTurnV2(draft, battle, side);
 }
 
@@ -1646,12 +1691,15 @@ export function processBattleCommand(draft: GameState, command: GameCommand): st
     if (unit.moved) return 'This unit has already moved today.';
     if (!Number.isInteger(command.x) || !Number.isInteger(command.y))
       return 'Choose a valid battlefield tile.';
+    const ownCamp = camp(battle, unit.side);
     if (
       !getReachableTiles(battle, unit.id).some(
         (tile) => tile.x === command.x && tile.y === command.y,
       )
     )
-      return 'That tile is blocked or beyond this unit’s movement range.';
+      return command.x === ownCamp.x && command.y === ownCamp.y
+        ? 'A unit cannot stop on its own camp.'
+        : 'That tile is blocked or beyond this unit’s movement range.';
     move(battle, unit, command);
     return null;
   }

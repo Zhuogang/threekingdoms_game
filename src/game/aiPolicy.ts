@@ -44,6 +44,8 @@ export interface FactionPolicy {
   /** Multiplies the troop target the faction musters its officers to. */
   musterBonus: number;
   targetPreference: 'weakest' | 'water' | 'lowSupport';
+  /** Executes captives it cannot win over, instead of releasing them. */
+  executesPrisoners: boolean;
 }
 export const DEFAULT_POLICY: FactionPolicy = {
   aggressionOffset: 0,
@@ -53,9 +55,10 @@ export const DEFAULT_POLICY: FactionPolicy = {
   diplomacyBias: 0,
   musterBonus: 1,
   targetPreference: 'weakest',
+  executesPrisoners: false,
 };
 export const FACTION_POLICY: Record<string, FactionPolicy> = {
-  dong: { ...DEFAULT_POLICY, aggressionOffset: -0.2, raidBias: 1.5 },
+  dong: { ...DEFAULT_POLICY, aggressionOffset: -0.2, raidBias: 1.5, executesPrisoners: true },
   liu: { ...DEFAULT_POLICY, plunderAllowed: false, diplomacyBias: 15 },
   sun: { ...DEFAULT_POLICY, targetPreference: 'water' },
   yuan: { ...DEFAULT_POLICY, musterBonus: 1.2, thresholdScale: 1.2 },
@@ -146,7 +149,17 @@ export interface CampaignObserver extends BattleObserver {
   capture?(event: { officerId: string; byFactionId: string }): void;
   aiStatecraft?(event: {
     factionId: string;
-    kind: 'persuade' | 'subvert' | 'raid' | 'plunder' | 'transport' | 'joint' | 'alliance';
+    kind:
+      | 'persuade'
+      | 'subvert'
+      | 'raid'
+      | 'plunder'
+      | 'transport'
+      | 'joint'
+      | 'alliance'
+      | 'captivePersuade'
+      | 'captiveRelease'
+      | 'captiveExecute';
   }): void;
   coalition?(event: { leaderId: string }): void;
 }
