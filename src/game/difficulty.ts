@@ -16,9 +16,9 @@ export const DIFFICULTY_PRESETS: Record<Difficulty, DifficultyPreset> = {
   story: {
     label: 'Story',
     description:
-      'Cautious rivals, a three-month opening truce and no house personalities. Time to learn.',
+      'Cautious rivals, a two-month opening truce and no house personalities. Time to learn.',
     aggression: 'cautious',
-    truceMonths: 3,
+    truceMonths: 2,
     personalities: false,
   },
   standard: {

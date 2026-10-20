@@ -288,7 +288,7 @@ export function createGame(
     state,
     scenario.year === 190
       ? `190 CE. The Han court falters. ${factionName(factionId)} must unite the realm.`
-      : ` CE. The armies gather along the Yellow River. ${factionName(factionId)} must unite the realm.`,
+      : `${scenario.year} CE. The armies gather along the Yellow River. ${factionName(factionId)} must unite the realm.`,
     'event',
   );
   addLog(
@@ -2604,8 +2604,8 @@ export function validateState(state: GameState): string | null {
       !['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'].includes(officer.troopType) ||
       typeof officer.busy !== 'boolean' ||
       typeof officer.captive !== 'boolean' ||
-      !['active', 'executed'].includes(officer.fate) ||
-      (officer.fate === 'executed' &&
+      !['active', 'executed', 'deceased'].includes(officer.fate) ||
+      (officer.fate !== 'active' &&
         (officer.captive || officer.factionId !== null || officer.troops !== 0)) ||
       (officer.equipment !== null && officer.equipment !== 'Fine arms')
     )

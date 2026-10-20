@@ -524,6 +524,22 @@ export const UI_ZH: Record<string, string> = {
   'The neighboring lords have united against you.': '周边诸侯已联合起来对付你。',
   'The neighboring lords have united against {faction}.': '周边诸侯已联合对抗{faction}。',
 
+  // v0.2 — officer traits.
+  Benevolent: '仁德',
+  Fierce: '勇猛',
+  Cunning: '智谋',
+  Loyal: '忠义',
+  Greedy: '贪婪',
+  'Persuades with +8% odds, but loses 8 loyalty when a city they serve in is plundered.':
+    '劝降成功率 +8%，但所在城池被掠夺时忠诚 −8。',
+  'Counterattacks hit 10% harder.': '反击伤害提高 10%。',
+  'Every tactic they cast costs 1 less tactic point (never below 1).':
+    '施展任何计策都少耗 1 点计策点（最低为 1）。',
+  'Persuasion against them is half as likely, and they never leave in January or July.':
+    '对其劝降的成功率减半，且一月、七月不会离队。',
+  'When they lead a plunder, raid or sack, the gold taken rises by 20%.':
+    '由其主持掠夺、袭掠或洗劫时，所得金钱增加 20%。',
+
   // v0.2 — help, settings and version labels.
   'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.':
     '选择己方部队，移动到高亮格子，再点击射程内的敌军。弓兵射程更远，骑兵移动更快。受袭者会反击，请先查看战果预估。计策消耗计策点，溃败的部队无法作战。夺取敌营或歼灭敌军即可获胜；守军坚守到日数上限即告获胜。',

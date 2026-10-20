@@ -13,7 +13,10 @@ export function isScouted(state: GameState, cityId: string): boolean {
   activateScenario(state.scenarioId);
   const city = state.cities.find((c) => c.id === cityId);
   if (!city) return false;
-  if (city.factionId === state.playerFactionId || allied(state, state.playerFactionId, city.factionId))
+  if (
+    city.factionId === state.playerFactionId ||
+    allied(state, state.playerFactionId, city.factionId)
+  )
     return true;
   const seen = state.scouted[cityId];
   return seen !== undefined && state.turn - seen < SCOUT_MONTHS;
