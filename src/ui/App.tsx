@@ -41,6 +41,7 @@ import {
   Wine,
   UserPlus,
   Minus,
+  Axe,
   type LucideIcon,
 } from 'lucide-react';
 import { session } from '../app/session';
@@ -107,6 +108,7 @@ const ACTIONS: Record<Action, LucideIcon> = {
   confiscate: Package,
   banish: Minus,
   appoint: Crown,
+  plunder: Axe,
 };
 const GROUPS: { name: string; actions: Action[] }[] = [
   { name: 'Develop', actions: ['farm', 'commerce', 'govern', 'relieve', 'buyFood', 'sellFood'] },
@@ -125,6 +127,7 @@ const GROUPS: { name: string; actions: Action[] }[] = [
     ],
   },
   { name: 'Diplomacy', actions: ['scout', 'persuade', 'subvert', 'alliance'] },
+  { name: 'Harsh measures', actions: ['plunder'] },
 ];
 type ModalKind =
   'start' | 'help' | 'settings' | 'saves' | 'march' | 'transfer' | 'muster' | 'credits' | null;

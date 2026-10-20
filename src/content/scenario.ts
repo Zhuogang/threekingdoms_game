@@ -1,4 +1,4 @@
-import type { City, Faction, Officer, TroopType } from '../game/types';
+import type { BattlefieldProfile, City, Faction, Officer, TroopType } from '../game/types';
 
 export const SCENARIO = {
   id: 'divided-realm-190',
@@ -255,8 +255,28 @@ export const INITIAL_CITIES: City[] = citySeeds.map(
     food: factionId ? 14000 : 6000,
     reserve: factionId ? 1200 : 600,
     governorId: null,
+    plunderCooldownUntil: 0,
   }),
 );
+/** Terrain profile used to generate each city's battlefield (content, not save state). */
+const BATTLEFIELD_BY_CITY: Record<string, BattlefieldProfile> = {
+  jiangxia: 'river',
+  chaisang: 'river',
+  jianye: 'river',
+  wu: 'river',
+  shouchun: 'river',
+  jiangling: 'river',
+  hanzhong: 'mountain',
+  zitong: 'mountain',
+  tianshui: 'mountain',
+  jiangzhou: 'mountain',
+  chengdu: 'forest',
+  xiangyang: 'forest',
+  wancheng: 'forest',
+};
+export function battlefieldProfile(cityId: string): BattlefieldProfile {
+  return BATTLEFIELD_BY_CITY[cityId] ?? 'plains';
+}
 type OfficerSeed = [
   string,
   string,
@@ -339,7 +359,9 @@ export const INITIAL_OFFICERS: Officer[] = officerSeeds.map(
     busy: false,
     captive: false,
     experience: 0,
+    level: 0,
     equipment: null,
+    fate: 'active' as const,
   }),
 );
 for (const city of INITIAL_CITIES)

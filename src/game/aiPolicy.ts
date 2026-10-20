@@ -1,3 +1,4 @@
+import { DEFAULT_SUPPLY_DAYS, supplyFood } from './supply';
 import type { AttackOrder } from './types';
 
 export const RIVAL_AGGRESSIONS = ['cautious', 'balanced', 'aggressive'] as const;
@@ -36,7 +37,8 @@ export function attackWilling(candidate: AiAttackCandidate, aggression: RivalAgg
 }
 
 export function attackSafeguards(candidate: AiAttackCandidate) {
-  const marchFood = Math.ceil(candidate.attackingTroops * 0.65) + 200;
+  // Conquest marches always carry the default supply (D8: same costs as the player).
+  const marchFood = supplyFood(candidate.attackingTroops, DEFAULT_SUPPLY_DAYS);
   const upkeep = Math.ceil(candidate.sourceTroops * 0.12);
   return {
     reserves: candidate.reserve >= 500,
@@ -46,12 +48,48 @@ export function attackSafeguards(candidate: AiAttackCandidate) {
   };
 }
 
+/** Battle-level diagnostics; the simulation never reads their results. */
+export interface BattleObserver {
+  battleAction?(event: {
+    side: 'attacker' | 'defender';
+    kind: 'attack' | 'counter' | 'tactic' | 'move' | 'wait';
+  }): void;
+  battleEnded?(event: {
+    reason: 'camp' | 'elimination' | 'timeout' | 'retreat';
+    day: number;
+    winner: 'attacker' | 'defender';
+    attackerTroops: number;
+    defenderTroops: number;
+  }): void;
+  battleShortage?(event: { side: 'attacker' | 'defender' }): void;
+}
+
 /** Optional observers are diagnostic only; the simulation never reads their results. */
-export interface CampaignObserver {
+export interface CampaignObserver extends BattleObserver {
   aiFactionMonth?(factionId: string): void;
   aiCandidate?(candidate: AiAttackCandidate): void;
   aiDecision?(candidate: AiAttackCandidate): void;
   aiMarch?(order: AttackOrder): void;
   aiUpkeep?(event: { cityId: string; factionId: string; shortage: boolean }): void;
-  battleResult?(event: { attackerId: string; defenderId: string | null; captured: boolean }): void;
+  battleResult?(event: {
+    attackerId: string;
+    defenderId: string | null;
+    captured: boolean;
+    intent?: AttackOrder['intent'];
+    days?: number;
+    attackerStart?: number;
+    defenderStart?: number;
+    attackerEnd?: number;
+    defenderEnd?: number;
+  }): void;
+  /** A march chosen by the player (or the bot), for supply-day statistics. */
+  march?(event: { factionId: string; supplyDays: number; intent: AttackOrder['intent'] }): void;
+  /** Plunder, raid or sack applied to a city. */
+  plunder?(event: { cityId: string; form: 'own' | 'raid' | 'sack'; factionId: string }): void;
+  capture?(event: { officerId: string; byFactionId: string }): void;
+  aiStatecraft?(event: {
+    factionId: string;
+    kind: 'persuade' | 'subvert' | 'raid' | 'plunder' | 'transport' | 'joint' | 'alliance';
+  }): void;
+  coalition?(event: { leaderId: string }): void;
 }

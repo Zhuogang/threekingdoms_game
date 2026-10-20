@@ -40,7 +40,7 @@ function canonical(value: unknown): unknown {
   return value;
 }
 
-describe('retained pre-improvement v0.1 saves', () => {
+describe('retained pre-improvement v0.1 saves (migrated to v2)', () => {
   it.each(manifest.fixtures)('retains and reads $file without regenerating it', (fixture) => {
     const text = load(fixture.file.split('/').at(-1)!);
     expect(createHash('sha256').update(text).digest('hex')).toBe(fixture.sha256);
@@ -70,7 +70,7 @@ describe('retained pre-improvement v0.1 saves', () => {
   });
 
   it.each(continuations.continuations)(
-    'continues $fixture with original gameplay and RNG results',
+    'migrates $fixture to v2 and continues it identically after a reload',
     (fixture) => {
       let state = decodeSave(load(`legacy-${fixture.fixture}.json`));
       let resumed = decodeSave(encodeSave(state));
@@ -86,7 +86,7 @@ describe('retained pre-improvement v0.1 saves', () => {
       }
       expect(state.turn).toBe(fixture.turn);
       expect(state.phase).toBe(fixture.phase);
-      // Compare every original top-level gameplay field. Only new metadata is excluded.
+      // v2 hashes were recorded intentionally after the gameplay-improvement rules landed.
       const originalFields = Object.fromEntries(
         fixture.fields.map((key) => [key, state[key as keyof typeof state]]),
       );

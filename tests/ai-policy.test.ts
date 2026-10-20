@@ -187,13 +187,25 @@ describe('aggression commands and persistence', () => {
     }
   });
 
-  it('normalizes only absent new metadata in a legacy battle', () => {
+  it('migrates a legacy battle to v2 with deterministic defaults and no other change', () => {
     const state = decodeSave(JSON.stringify(queuedLegacy));
-    expect(state).toEqual({
-      ...queuedLegacy.state,
-      rivalAggression: 'balanced',
-      reports: { pending: null, latest: null },
-    });
+    const legacy = queuedLegacy.state;
+    expect(state.version).toBe(2);
+    expect(state.ruleset).toBe('baye-atlas-2');
+    // Gameplay state and the RNG stream are untouched by migration.
+    expect(state.rng).toBe(legacy.rng);
+    expect(state.rivalAggression).toBe('balanced');
+    expect(state.reports).toEqual({ pending: null, latest: null });
+    expect(state.battle!.dayLimit).toBe(30);
+    expect(state.battle!.nextWeather).toBe(legacy.battle!.weather);
+    expect(state.battle!.units.every((unit) => unit.hurt === false)).toBe(true);
+    expect(state.truceUntilTurn).toBe(0);
+    expect(state.lastBattle).toBeNull();
+    expect(state.cities.every((city) => city.plunderCooldownUntil === 0)).toBe(true);
+    expect(
+      state.orders.concat(state.resolution?.queue ?? []).every((o) => o.intent === 'conquer'),
+    ).toBe(true);
+    expect(decodeSave(JSON.stringify(queuedLegacy))).toEqual(state);
     const malformed = structuredClone(queuedLegacy) as Record<string, any>;
     malformed.state.rivalAggression = 'reckless';
     expect(() => decodeSave(JSON.stringify(malformed))).toThrow();

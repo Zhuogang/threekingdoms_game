@@ -1,5 +1,12 @@
 import { FACTIONS, INITIAL_CITIES, INITIAL_OFFICERS } from '../content/scenario';
-import { autoResolveBattle, createBattle, processBattleCommand } from './battle';
+import {
+  autoResolveBattle,
+  createBattle,
+  processBattleCommand,
+  withBattleObserver,
+  DEFAULT_DAY_LIMIT,
+  TACTIC_POINT_CAP,
+} from './battle';
 import { addLog, random } from './random';
 import {
   attackSafeguards,
@@ -16,10 +23,22 @@ import {
   recordMonthlyEvent,
   validateReports,
 } from './reports';
+import { DEFAULT_SUPPLY_DAYS, RAID_SUPPLY_DAYS, isSupplyDays, supplyFood } from './supply';
+import { isActiveOfficer, isRuler, levelForExperience } from './officers';
+import {
+  PLUNDER_COOLDOWN_MONTHS,
+  PLUNDER_MIN_SUPPORT,
+  PLUNDER_OFFICER_LOYALTY_LOSS,
+  plunderLeader,
+  plunderOutcome,
+  type PlunderOutcome,
+} from './plunder';
 import type {
   Action,
   ActionInfo,
+  AttackIntent,
   AttackOrder,
+  BattleSummary,
   City,
   CommandResult,
   GameCommand,
@@ -152,6 +171,13 @@ const ACTIONS: Record<Action, Omit<ActionInfo, 'reason'>> = {
     gold: 0,
     stamina: 5,
   },
+  plunder: {
+    label: 'Plunder the city',
+    description:
+      'Seize gold and food from the people. Halves public support, farming and commerce.',
+    gold: 0,
+    stamina: 20,
+  },
 };
 const MAX_TROOPS = 5000;
 const RESOURCE_CAP = 9999999;
@@ -162,7 +188,8 @@ const owns = (city: City | undefined, factionId: string): city is City =>
   !!city && city.factionId === factionId;
 const serving = (state: GameState, city: City) =>
   state.officers.filter(
-    (o) => o.cityId === city.id && o.factionId === city.factionId && !o.captive,
+    (o) =>
+      o.cityId === city.id && o.factionId === city.factionId && !o.captive && isActiveOfficer(o),
   );
 const strength = (state: GameState, city: City) =>
   serving(state, city).reduce((total, o) => total + o.troops, city.reserve);
@@ -189,17 +216,26 @@ function chooseGovernor(state: GameState, city: City): void {
   }
 }
 
+export interface NewGameOptions {
+  /** Months of opening truce during which the AI makes no marches (default 0). */
+  truceMonths?: number;
+}
+
 export function createGame(
   factionId: string,
   seed = 190,
   rivalAggression: RivalAggression = 'balanced',
+  options: NewGameOptions = {},
 ): GameState {
   if (!FACTIONS.some((f) => f.id === factionId))
     throw new Error('Choose a ruler from this scenario.');
   if (!isRivalAggression(rivalAggression)) throw new Error('Choose a valid rival aggression.');
+  const truceMonths = options.truceMonths ?? 0;
+  if (!Number.isInteger(truceMonths) || truceMonths < 0 || truceMonths > 12)
+    throw new Error('Choose an opening truce of 0–12 months.');
   const state: GameState = {
-    version: 1,
-    ruleset: 'baye-atlas-1',
+    version: 2,
+    ruleset: 'baye-atlas-2',
     revision: 0,
     playerFactionId: factionId,
     rivalAggression,
@@ -219,6 +255,9 @@ export function createGame(
     log: [],
     winner: null,
     stats: { battlesWon: 0, commandsIssued: 0, citiesCaptured: 0 },
+    truceUntilTurn: truceMonths,
+    lastBattle: null,
+    reputation: {},
   };
   state.cities.forEach((city) => chooseGovernor(state, city));
   addLog(
@@ -292,7 +331,42 @@ function actionInfoFor(
     reason = 'This officer has no equipment to confiscate.';
   else if (action === 'appoint' && city.governorId === officer.id)
     reason = 'This officer is already governor.';
+  else if (action === 'plunder' && city.loyalty < PLUNDER_MIN_SUPPORT)
+    reason = 'The people have nothing left to take.';
+  else if (action === 'plunder' && state.turn < city.plunderCooldownUntil) {
+    const months = city.plunderCooldownUntil - state.turn;
+    reason = `This city was plundered recently. It can be plundered again in ${months} month${months === 1 ? '' : 's'}.`;
+  }
   return { ...definition, reason };
+}
+
+/** Pure preview of a plunder order: exactly what execution will apply. */
+export function getPlunderPreview(
+  state: GameState,
+  cityId: string,
+  officerId: string,
+): PlunderOutcome | null {
+  const city = state.cities.find((c) => c.id === cityId);
+  const officer = state.officers.find((o) => o.id === officerId);
+  return city && officer ? plunderOutcome(city, officer) : null;
+}
+
+/** Sworn-officer odds for one persuasion; pure so the UI can list them. */
+export function getPersuadeChance(
+  state: GameState,
+  persuaderId: string,
+  targetId: string,
+): number | null {
+  const persuader = state.officers.find((o) => o.id === persuaderId);
+  const target = state.officers.find((o) => o.id === targetId);
+  if (!persuader || !target) return null;
+  if (target.factionId === null) return 50 + Math.floor(persuader.intellect / 3);
+  if (isRuler(target)) return null;
+  return bounded(
+    Math.floor(30 + 0.5 * persuader.intellect - 0.7 * target.loyalty + (target.captive ? 20 : 0)),
+    75,
+    5,
+  );
 }
 
 function cityAction(
@@ -329,9 +403,11 @@ function cityAction(
     if (
       !targetOfficer ||
       targetOfficer.id === officer.id ||
+      !isActiveOfficer(targetOfficer) ||
       (targetOfficer.factionId === factionId && !targetOfficer.captive)
     )
       return 'Choose a free, captive, or enemy officer.';
+    if (isRuler(targetOfficer)) return 'A faction’s ruler cannot be persuaded.';
     const local = targetOfficer.cityId === city.id;
     if (
       !local &&
@@ -375,7 +451,7 @@ function cityAction(
       break;
     case 'search': {
       const candidates = state.officers
-        .filter((o) => o.cityId === city.id && !o.factionId && !o.captive)
+        .filter((o) => o.cityId === city.id && !o.factionId && !o.captive && isActiveOfficer(o))
         .sort((a, b) => a.id.localeCompare(b.id));
       const candidate = candidates.length
         ? candidates[random(state, candidates.length)]
@@ -420,6 +496,7 @@ function cityAction(
     case 'train':
       officer.experience = bounded(officer.experience + 25, 10000);
       officer.force = bounded(officer.force + 1, officer.equipment ? 105 : 100);
+      levelUp(officer);
       announce(
         `${officer.name} drills ${officer.troops} soldiers: +25 experience, +1 force.`,
         'military',
@@ -462,18 +539,13 @@ function cityAction(
       break;
     case 'persuade': {
       const target = targetOfficer!;
-      const chance =
-        target.factionId === null
-          ? 50 + Math.floor(officer.intellect / 3)
-          : bounded(
-              35 + officer.intellect * 0.6 - target.loyalty * 0.55 + (target.captive ? 20 : 0),
-              90,
-              10,
-            );
+      const chance = getPersuadeChance(state, officer.id, target.id)!;
       if (random(state, 100) < chance) {
         const oldCity = state.cities.find((c) => c.id === target.cityId)!;
-        // Soldiers who defect join the receiving reserve; prisoners have no troops.
-        city.reserve = bounded(city.reserve + target.troops, RESOURCE_CAP);
+        // Half the soldiers follow their officer; the rest stay with the old city.
+        const followers = Math.floor(target.troops / 2);
+        city.reserve = bounded(city.reserve + followers, RESOURCE_CAP);
+        oldCity.reserve = bounded(oldCity.reserve + target.troops - followers, RESOURCE_CAP);
         target.troops = 0;
         target.cityId = city.id;
         target.factionId = factionId;
@@ -533,8 +605,49 @@ function cityAction(
       city.governorId = officer.id;
       announce(`${officer.name} becomes governor.`, 'diplomacy');
       break;
+    case 'plunder': {
+      const gains = applyPlunder(state, city, city, officer);
+      serving(state, city).forEach((o) => {
+        o.loyalty = bounded(o.loyalty - PLUNDER_OFFICER_LOYALTY_LOSS, 100);
+      });
+      announce(
+        `${officer.name} plunders the city, seizing ${num(gains.gold)} gold and ${num(gains.food)} food.`,
+        'bad',
+      );
+      break;
+    }
   }
   return null;
+}
+
+const num = (n: number) => n.toLocaleString('en-US');
+
+/** Raise `officer.level` to match experience, granting +2 stats once per level gained. */
+function levelUp(officer: Officer): void {
+  const target = levelForExperience(officer.experience);
+  while (officer.level < target) {
+    officer.level++;
+    if (officer.troopType === 'archer') officer.intellect = bounded(officer.intellect + 2, 100);
+    else officer.force = bounded(officer.force + 2, officer.equipment ? 105 : 100);
+  }
+}
+
+/**
+ * Ruin `target` and deliver the loot to `destination` (the same city for plunder
+ * and sack; the raiders' home for a raid). Sets the target's plunder cooldown.
+ */
+function applyPlunder(
+  state: GameState,
+  target: City,
+  destination: City,
+  leader: Pick<Officer, 'intellect' | 'force'>,
+): PlunderOutcome {
+  const outcome = plunderOutcome(target, leader);
+  destination.gold = bounded(destination.gold + outcome.gold, RESOURCE_CAP);
+  destination.food = bounded(destination.food + outcome.food, RESOURCE_CAP);
+  Object.assign(target, outcome.after);
+  target.plunderCooldownUntil = state.turn + PLUNDER_COOLDOWN_MONTHS;
+  return outcome;
 }
 
 function assignTroops(
@@ -568,6 +681,7 @@ function march(
   state: GameState,
   command: Extract<GameCommand, { type: 'march' }>,
   factionId: string,
+  observer?: CampaignObserver,
 ): string | null {
   const source = state.cities.find((c) => c.id === command.sourceId);
   const target = state.cities.find((c) => c.id === command.targetId);
@@ -576,6 +690,14 @@ function march(
   if (target.factionId === factionId)
     return 'Use transport to move troops between your own cities.';
   if (allied(state, factionId, target.factionId)) return 'An active alliance prevents this attack.';
+  const intent: AttackIntent = command.intent ?? 'conquer';
+  if (!['conquer', 'raid', 'sack'].includes(intent)) return 'Choose conquer, sack or raid.';
+  if (intent !== 'conquer' && state.turn < target.plunderCooldownUntil) {
+    const months = target.plunderCooldownUntil - state.turn;
+    return `This city was plundered recently. It can be plundered again in ${months} month${months === 1 ? '' : 's'}.`;
+  }
+  if (command.supplyDays !== undefined && !isSupplyDays(command.supplyDays))
+    return 'Choose 10, 20 or 30 days of supplies.';
   if (
     !Array.isArray(command.officerIds) ||
     command.officerIds.length < 1 ||
@@ -598,7 +720,13 @@ function march(
     return 'Every commander must be available here and lead soldiers.';
   if (officers.some((o) => o!.stamina < 15))
     return 'Every commander needs at least 15 stamina to march.';
-  const food = Math.ceil(officers.reduce((total, o) => total + o!.troops, 0) * 0.65) + 200;
+  // Raids are quick strikes with fixed rations; other marches choose their supply days.
+  const supplyDays =
+    intent === 'raid' ? RAID_SUPPLY_DAYS : (command.supplyDays ?? DEFAULT_SUPPLY_DAYS);
+  const food = supplyFood(
+    officers.reduce((total, o) => total + o!.troops, 0),
+    supplyDays,
+  );
   if (source.food < food) return `This army needs ${food} food for the campaign.`;
   source.food -= food;
   officers.forEach((o) => {
@@ -612,12 +740,60 @@ function march(
     targetId: target.id,
     officerIds: [...command.officerIds],
     food,
+    intent,
   });
+  observer?.march?.({ factionId, supplyDays, intent });
   addLog(
     state,
-    `${factionName(factionId)} prepares to march from ${source.name} to ${target.name}. The army departs at month end.`,
+    intent === 'raid'
+      ? `${factionName(factionId)} prepares to raid ${target.name} from ${source.name}. The army departs at month end.`
+      : `${factionName(factionId)} prepares to march from ${source.name} to ${target.name}. The army departs at month end.`,
     'military',
   );
+  state.stats.commandsIssued += factionId === state.playerFactionId ? 1 : 0;
+  return null;
+}
+
+/** A ruler's decision about a prisoner held in one of their cities (needs no officer action). */
+function prisonerDecision(
+  state: GameState,
+  command: Extract<GameCommand, { type: 'prisoner' }>,
+  factionId: string,
+): string | null {
+  const city = state.cities.find((c) => c.id === command.cityId);
+  const prisoner = state.officers.find((o) => o.id === command.prisonerId);
+  if (!owns(city, factionId)) return 'Select a city under your control.';
+  if (!prisoner || !prisoner.captive || prisoner.cityId !== city.id || !isActiveOfficer(prisoner))
+    return 'Choose a prisoner held in this city.';
+  if (command.decision !== 'release' && command.decision !== 'execute')
+    return 'Choose to release or execute the prisoner.';
+  if (command.decision === 'release') {
+    const home = nearestCityOf(state, city, prisoner.factionId!);
+    prisoner.captive = false;
+    if (home) prisoner.cityId = home.id;
+    else {
+      prisoner.factionId = null;
+      prisoner.loyalty = 35;
+    }
+    serving(state, city).forEach((o) => {
+      o.loyalty = bounded(o.loyalty + 2, 100);
+    });
+    addLog(
+      state,
+      `${city.name}: ${prisoner.name} is released${home ? ` and returns to ${home.name}` : ' and wanders the land'}.`,
+      'diplomacy',
+    );
+  } else {
+    prisoner.fate = 'executed';
+    prisoner.captive = false;
+    prisoner.factionId = null;
+    prisoner.troops = 0;
+    prisoner.busy = true;
+    serving(state, city).forEach((o) => {
+      o.loyalty = bounded(o.loyalty - 2, 100);
+    });
+    addLog(state, `${city.name}: ${prisoner.name} is executed. The officers are uneasy.`, 'bad');
+  }
   state.stats.commandsIssued += factionId === state.playerFactionId ? 1 : 0;
   return null;
 }
@@ -724,6 +900,7 @@ function planAi(state: GameState, observer?: CampaignObserver): void {
         target &&
         army.length &&
         state.turn > 0 &&
+        state.turn >= state.truceUntilTurn &&
         attackSafeguards(target).reserves &&
         attackSafeguards(target).food
       ) {
@@ -762,15 +939,67 @@ function planAi(state: GameState, observer?: CampaignObserver): void {
   }
 }
 
+const RAID_DAY_LIMIT = 10;
+const bordersPlayer = (state: GameState, city: City): boolean =>
+  city.neighbors.some(
+    (id) => state.cities.find((c) => c.id === id)?.factionId === state.playerFactionId,
+  );
+
+/** Nearest city (by map links from `from`) belonging to `factionId`, excluding `exclude`. */
+function nearestCityOf(
+  state: GameState,
+  from: City,
+  factionId: string,
+  exclude?: string,
+): City | undefined {
+  const seen = new Set<string>([from.id]);
+  let frontier = [from];
+  while (frontier.length) {
+    const next: City[] = [];
+    for (const city of frontier)
+      for (const id of [...city.neighbors].sort()) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const neighbor = state.cities.find((c) => c.id === id)!;
+        if (neighbor.factionId === factionId && neighbor.id !== exclude) return neighbor;
+        next.push(neighbor);
+      }
+    frontier = next;
+  }
+  return undefined;
+}
+
+/** A target with no soldiers at all can be raided without a battle. */
+function hasSoldiers(state: GameState, city: City): boolean {
+  return city.reserve > 0 || serving(state, city).some((o) => o.troops > 0);
+}
+
+function commandersOf(state: GameState, order: AttackOrder): Officer[] {
+  return order.officerIds
+    .map((id) => state.officers.find((o) => o.id === id))
+    .filter(
+      (o): o is Officer =>
+        !!o && !o.captive && isActiveOfficer(o) && o.factionId === order.factionId,
+    );
+}
+
 /** Resolve city ownership and all casualties once, before advancing the cursor. */
 function applyBattleAftermath(state: GameState, observer?: CampaignObserver): void {
   const battle = state.battle;
   if (!battle?.outcome) return;
-  const target = state.cities.find((c) => c.id === battle.order.targetId)!;
-  const source = state.cities.find((c) => c.id === battle.order.sourceId)!;
+  const order = battle.order;
+  const target = state.cities.find((c) => c.id === order.targetId)!;
+  const source = state.cities.find((c) => c.id === order.sourceId)!;
   const attackerWon = battle.outcome === 'attacker';
+  const raidWon = order.intent === 'raid' && attackerWon;
   const formerOwner = target.factionId;
+  const casualties = { attacker: 0, defender: 0 };
+  const start = { attacker: 0, defender: 0 };
+  const end = { attacker: 0, defender: 0 };
   for (const unit of battle.units) {
+    casualties[unit.side] += Math.max(0, unit.initialTroops - unit.troops);
+    start[unit.side] += unit.initialTroops;
+    end[unit.side] += unit.troops;
     if (unit.officerId.startsWith('militia-')) {
       target.reserve = Math.max(0, target.reserve - Math.max(0, unit.initialTroops - unit.troops));
       continue;
@@ -782,11 +1011,51 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
       officer.experience + (unit.side === battle.outcome ? 20 : 8),
       10000,
     );
+    levelUp(officer);
     officer.stamina = bounded(officer.stamina - battle.day * 2, 100);
     officer.busy = true;
+    // Provisionally imprison battlefield captives so later steps leave them alone.
+    if (unit.capturedBy) {
+      officer.captive = true;
+      officer.troops = 0;
+    }
   }
   target.food = Math.max(0, Math.floor(battle.defenderFood));
-  if (attackerWon) {
+  const player = state.playerFactionId;
+  if (raidWon) {
+    // A raid wins loot, not land: nobody changes hands and the army goes home.
+    const home =
+      source.factionId === battle.attackerId
+        ? source
+        : state.cities.find((c) => c.factionId === battle.attackerId);
+    const commanders = commandersOf(state, order);
+    const leader = plunderLeader(commanders) ?? { intellect: 0, force: 0 };
+    for (const officer of commanders) {
+      if (home) officer.cityId = home.id;
+      officer.busy = true;
+    }
+    const loot = home ?? ({ gold: 0, food: 0 } as City);
+    const gains = applyPlunder(state, target, loot, leader);
+    if (home) home.food = bounded(home.food + battle.attackerFood, RESOURCE_CAP);
+    observer?.plunder?.({ cityId: target.id, form: 'raid', factionId: battle.attackerId });
+    if (battle.attackerId === player) state.stats.battlesWon++;
+    addLog(
+      state,
+      `${factionName(battle.attackerId)} raids ${target.name}, seizing ${num(gains.gold)} gold and ${num(gains.food)} food.`,
+      battle.attackerId === player ? 'good' : battle.defenderId === player ? 'bad' : 'military',
+    );
+    recordMonthlyEvent(state, {
+      kind: 'raid',
+      orderId: order.id,
+      cityId: target.id,
+      attackerId: battle.attackerId,
+      gold: gains.gold,
+      food: gains.food,
+      fought: true,
+      involvesPlayer: [battle.attackerId, formerOwner].includes(player),
+      bordersPlayer: bordersPlayer(state, target),
+    });
+  } else if (attackerWon) {
     target.factionId = battle.attackerId;
     target.defense = Math.floor(target.defense * 0.65);
     target.loyalty = Math.max(35, target.loyalty - 15);
@@ -801,7 +1070,11 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
     }
     for (const officer of state.officers.filter(
       (o) =>
-        o.cityId === target.id && o.factionId === formerOwner && formerOwner !== null && !o.captive,
+        o.cityId === target.id &&
+        o.factionId === formerOwner &&
+        formerOwner !== null &&
+        !o.captive &&
+        isActiveOfficer(o),
     )) {
       const refuge = state.cities
         .filter((c) => c.factionId === formerOwner && c.id !== target.id)
@@ -820,30 +1093,42 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
       }
       officer.busy = true;
     }
-    for (const id of battle.order.officerIds) {
+    for (const id of order.officerIds) {
       const officer = state.officers.find((o) => o.id === id);
       if (officer && officer.factionId === battle.attackerId && !officer.captive)
         officer.cityId = target.id;
     }
     target.food = bounded(target.food + battle.attackerFood, RESOURCE_CAP);
     target.governorId = null;
-    if (battle.attackerId === state.playerFactionId) {
+    if (battle.attackerId === player) {
       state.stats.battlesWon++;
       state.stats.citiesCaptured++;
     }
     addLog(
       state,
       `${factionName(battle.attackerId)} captures ${target.name} after ${battle.day} day${battle.day === 1 ? '' : 's'} of battle.`,
-      battle.attackerId === state.playerFactionId ? 'good' : 'military',
+      battle.attackerId === player ? 'good' : 'military',
     );
+    if (order.intent === 'sack' && state.turn >= target.plunderCooldownUntil) {
+      const leader = plunderLeader(commandersOf(state, order));
+      if (leader) {
+        const gains = applyPlunder(state, target, target, leader);
+        observer?.plunder?.({ cityId: target.id, form: 'sack', factionId: battle.attackerId });
+        addLog(
+          state,
+          `${factionName(battle.attackerId)} sacks ${target.name}, seizing ${num(gains.gold)} gold and ${num(gains.food)} food.`,
+          battle.attackerId === player ? 'good' : 'bad',
+        );
+      }
+    }
   } else {
     const refuge =
       source.factionId === battle.attackerId
         ? source
         : state.cities.find((c) => c.factionId === battle.attackerId);
-    for (const id of battle.order.officerIds) {
+    for (const id of order.officerIds) {
       const officer = state.officers.find((o) => o.id === id);
-      if (!officer || officer.factionId !== battle.attackerId) continue;
+      if (!officer || officer.factionId !== battle.attackerId || officer.captive) continue;
       if (refuge) officer.cityId = refuge.id;
       else {
         officer.cityId = target.id;
@@ -853,37 +1138,127 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
       officer.busy = true;
     }
     if (refuge) refuge.food = bounded(refuge.food + battle.attackerFood, RESOURCE_CAP);
-    if (battle.defenderId === state.playerFactionId) state.stats.battlesWon++;
+    if (battle.defenderId === player) state.stats.battlesWon++;
     addLog(
       state,
       `${target.name} holds. ${factionName(battle.attackerId)}'s army withdraws.`,
-      battle.defenderId === state.playerFactionId ? 'good' : 'military',
+      battle.defenderId === player ? 'good' : 'military',
+    );
+  }
+  // Battlefield captives are held by whoever now controls the ground, else by their captor's home.
+  const captured: string[] = [];
+  for (const unit of battle.units) {
+    if (!unit.capturedBy) continue;
+    const officer = state.officers.find((o) => o.id === unit.officerId);
+    if (!officer) continue;
+    const captor = unit.capturedBy === 'attacker' ? battle.attackerId : formerOwner;
+    const holding =
+      !captor || captor === officer.factionId
+        ? undefined
+        : target.factionId === captor
+          ? target
+          : source.factionId === captor
+            ? source
+            : nearestCityOf(state, target, captor);
+    if (!holding) {
+      // Nobody can hold the prisoner: the officer slips away, defeated but free.
+      officer.captive = false;
+      continue;
+    }
+    officer.captive = true;
+    officer.troops = 0;
+    officer.cityId = holding.id;
+    officer.busy = true;
+    captured.push(officer.id);
+    observer?.capture?.({ officerId: officer.id, byFactionId: captor! });
+    addLog(
+      state,
+      `${officer.name} is taken prisoner by ${factionName(captor!)}.`,
+      captor === player ? 'good' : officer.factionId === player ? 'bad' : 'military',
     );
   }
   state.cities.forEach((city) => chooseGovernor(state, city));
-  recordMonthlyEvent(state, {
-    kind: 'battle',
-    orderId: battle.order.id,
-    sourceId: source.id,
+  const summary: BattleSummary = {
+    orderId: order.id,
     targetId: target.id,
     attackerId: battle.attackerId,
     defenderId: formerOwner,
-    outcome: target.factionId !== formerOwner ? 'captured' : 'held',
+    outcome: raidWon ? 'raided' : target.factionId !== formerOwner ? 'captured' : 'held',
     days: battle.day,
-    involvesPlayer: [battle.attackerId, formerOwner].includes(state.playerFactionId),
-    bordersPlayer:
-      target.factionId !== formerOwner &&
-      target.neighbors.some(
-        (id) => state.cities.find((city) => city.id === id)?.factionId === state.playerFactionId,
-      ),
-  });
+    intent: order.intent,
+    casualties,
+    captured,
+  };
+  state.lastBattle = summary;
+  if (!raidWon)
+    recordMonthlyEvent(state, {
+      kind: 'battle',
+      orderId: order.id,
+      sourceId: source.id,
+      targetId: target.id,
+      attackerId: battle.attackerId,
+      defenderId: formerOwner,
+      outcome: target.factionId !== formerOwner ? 'captured' : 'held',
+      days: battle.day,
+      involvesPlayer: [battle.attackerId, formerOwner].includes(player),
+      bordersPlayer: target.factionId !== formerOwner && bordersPlayer(state, target),
+    });
   observer?.battleResult?.({
     attackerId: battle.attackerId,
     defenderId: formerOwner,
     captured: target.factionId !== formerOwner,
+    intent: order.intent,
+    days: battle.day,
+    attackerStart: start.attacker,
+    defenderStart: start.defender,
+    attackerEnd: end.attacker,
+    defenderEnd: end.defender,
   });
   state.battle = null;
   if (state.resolution) state.resolution.index++;
+}
+
+/** A raid on a city with no soldiers needs no battle: the raiders simply loot it. */
+function resolveUndefendedRaid(
+  state: GameState,
+  order: AttackOrder,
+  source: City,
+  target: City,
+  observer?: CampaignObserver,
+): void {
+  const commanders = commandersOf(state, order);
+  const leader = plunderLeader(commanders)!;
+  const gains = applyPlunder(state, target, source, leader);
+  source.food = bounded(source.food + order.food, RESOURCE_CAP);
+  observer?.plunder?.({ cityId: target.id, form: 'raid', factionId: order.factionId });
+  const player = state.playerFactionId;
+  addLog(
+    state,
+    `${factionName(order.factionId)} raids ${target.name} unopposed, seizing ${num(gains.gold)} gold and ${num(gains.food)} food.`,
+    order.factionId === player ? 'good' : target.factionId === player ? 'bad' : 'military',
+  );
+  recordMonthlyEvent(state, {
+    kind: 'raid',
+    orderId: order.id,
+    cityId: target.id,
+    attackerId: order.factionId,
+    gold: gains.gold,
+    food: gains.food,
+    fought: false,
+    involvesPlayer: [order.factionId, target.factionId].includes(player),
+    bordersPlayer: bordersPlayer(state, target),
+  });
+  state.lastBattle = {
+    orderId: order.id,
+    targetId: target.id,
+    attackerId: order.factionId,
+    defenderId: target.factionId,
+    outcome: 'raided',
+    days: 0,
+    intent: 'raid',
+    casualties: { attacker: 0, defender: 0 },
+    captured: [],
+  };
 }
 
 function finishMonth(state: GameState, observer?: CampaignObserver): void {
@@ -1066,9 +1441,31 @@ function resolveOrders(state: GameState, observer?: CampaignObserver): void {
       resolution.index++;
       continue;
     }
+    if (order.intent !== 'conquer' && state.turn < target.plunderCooldownUntil) {
+      // Another army plundered this city first; march as a plain conquest if it was a sack.
+      if (order.intent === 'raid') {
+        source.food = bounded(source.food + order.food, RESOURCE_CAP);
+        addLog(
+          state,
+          `The raid on ${target.name} is called off: the city was plundered recently.`,
+          'military',
+        );
+        resolution.index++;
+        continue;
+      }
+    }
     // Earlier fighting may remove officers from this committed army.
     order.officerIds = commanders.filter((o) => o.troops > 0).map((o) => o.id);
-    state.battle = createBattle(state, order);
+    if (order.intent === 'raid' && !hasSoldiers(state, target)) {
+      resolveUndefendedRaid(state, order, source, target, observer);
+      resolution.index++;
+      continue;
+    }
+    state.battle = createBattle(
+      state,
+      order,
+      order.intent === 'raid' ? { dayLimit: RAID_DAY_LIMIT } : {},
+    );
     state.phase = 'battle';
     if (state.battle.outcome) {
       applyBattleAftermath(state, observer);
@@ -1091,6 +1488,14 @@ function resolveOrders(state: GameState, observer?: CampaignObserver): void {
 
 /** Public reducer: invalid commands return the original object and never consume RNG. */
 export function dispatch(
+  state: GameState,
+  command: GameCommand,
+  observer?: CampaignObserver,
+): CommandResult {
+  return withBattleObserver(observer, () => dispatchCommand(state, command, observer));
+}
+
+function dispatchCommand(
   state: GameState,
   command: GameCommand,
   observer?: CampaignObserver,
@@ -1132,7 +1537,10 @@ export function dispatch(
         error = transfer(draft, command, draft.playerFactionId);
         break;
       case 'march':
-        error = march(draft, command, draft.playerFactionId);
+        error = march(draft, command, draft.playerFactionId, observer);
+        break;
+      case 'prisoner':
+        error = prisonerDecision(draft, command, draft.playerFactionId);
         break;
       case 'endMonth':
         beginMonthlyReport(draft);
@@ -1152,7 +1560,7 @@ export function dispatch(
 
 /** Semantic import checks complement the save boundary's runtime shape schema. */
 export function validateState(state: GameState): string | null {
-  if (!state || state.version !== 1 || state.ruleset !== 'baye-atlas-1')
+  if (!state || state.version !== 2 || state.ruleset !== 'baye-atlas-2')
     return 'This save uses an unsupported ruleset.';
   const integral = (value: number, low: number, high: number) =>
     Number.isSafeInteger(value) && value >= low && value <= high;
@@ -1217,7 +1625,8 @@ export function validateState(state: GameState): string | null {
       !integral(city.farming, 0, 999) ||
       !integral(city.commerce, 0, 999) ||
       !integral(city.loyalty, 0, 100) ||
-      !integral(city.defense, 0, 100)
+      !integral(city.defense, 0, 100) ||
+      !integral(city.plunderCooldownUntil, 0, state.turn + PLUNDER_COOLDOWN_MONTHS)
     )
       return `Invalid resources in ${city.name}.`;
     if (city.governorId !== null) {
@@ -1244,13 +1653,17 @@ export function validateState(state: GameState): string | null {
       !integral(officer.stamina, 0, 100) ||
       !integral(officer.troops, 0, MAX_TROOPS) ||
       !integral(officer.experience, 0, 10000) ||
-      !integral(officer.age, 1, 9999)
+      !integral(officer.age, 1, 9999) ||
+      officer.level !== levelForExperience(officer.experience)
     )
       return `Invalid attributes for ${officer.name}.`;
     if (
       !['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'].includes(officer.troopType) ||
       typeof officer.busy !== 'boolean' ||
       typeof officer.captive !== 'boolean' ||
+      !['active', 'executed'].includes(officer.fate) ||
+      (officer.fate === 'executed' &&
+        (officer.captive || officer.factionId !== null || officer.troops !== 0)) ||
       (officer.equipment !== null && officer.equipment !== 'Fine arms')
     )
       return `Invalid status for ${officer.name}.`;
@@ -1286,6 +1699,7 @@ export function validateState(state: GameState): string | null {
       !target ||
       !source.neighbors.includes(target.id) ||
       !integral(order.food, 0, RESOURCE_CAP) ||
+      !['conquer', 'raid', 'sack'].includes(order.intent) ||
       !Array.isArray(order.officerIds) ||
       order.officerIds.length < 1 ||
       order.officerIds.length > 10 ||
@@ -1351,10 +1765,15 @@ export function validateState(state: GameState): string | null {
       b.height !== 10 ||
       !Array.isArray(b.terrain) ||
       b.terrain.length !== b.width * b.height ||
-      b.terrain.some((t) => !['plain', 'forest', 'hill', 'water', 'fort'].includes(t)) ||
-      !integral(b.day, 1, 30) ||
+      b.terrain.some(
+        (t) => !['plain', 'forest', 'hill', 'water', 'fort', 'wall', 'gate'].includes(t),
+      ) ||
+      !integral(b.dayLimit, 1, 60) ||
+      b.dayLimit !== (b.order.intent === 'raid' ? RAID_DAY_LIMIT : DEFAULT_DAY_LIMIT) ||
+      !integral(b.day, 1, b.dayLimit) ||
       b.outcome !== null ||
-      !['clear', 'rain', 'wind'].includes(b.weather)
+      !['clear', 'rain', 'wind'].includes(b.weather) ||
+      !['clear', 'rain', 'wind'].includes(b.nextWeather)
     )
       return 'Invalid battlefield conditions.';
     if (
@@ -1362,11 +1781,17 @@ export function validateState(state: GameState): string | null {
       !Array.isArray(b.units) ||
       b.units.length > 20 ||
       !Array.isArray(b.log) ||
-      b.log.length > 200
+      b.log.length > 200 ||
+      !integral(b.tacticPoints.attacker, 0, TACTIC_POINT_CAP) ||
+      !integral(b.tacticPoints.defender, 0, TACTIC_POINT_CAP)
     )
       return 'Invalid battle resources or roster.';
     const destination = state.cities.find((c) => c.id === b.order.targetId)!;
-    if (b.attackerFood > b.order.food || b.defenderFood > destination.food)
+    // Raid-supplies tactics move food between the armies, so allow the combined stores.
+    if (
+      b.attackerFood > b.order.food + destination.food ||
+      b.defenderFood > destination.food + b.order.food
+    )
       return 'Battle provisions exceed the supplies committed.';
     // Battles retain defeated units, so the entire original roster must remain
     // in a save. Respect the ten-unit deployment limit, including the militia.
@@ -1407,8 +1832,15 @@ export function validateState(state: GameState): string | null {
         !integral(unit.force, 1, 150) ||
         !integral(unit.intellect, 1, 100) ||
         !['normal', 'confused', 'inspired'].includes(unit.status) ||
+        !integral(unit.level, 0, 5) ||
         typeof unit.moved !== 'boolean' ||
-        typeof unit.acted !== 'boolean'
+        typeof unit.acted !== 'boolean' ||
+        typeof unit.hurt !== 'boolean' ||
+        (unit.capturedBy !== undefined &&
+          (militia ||
+            unit.troops !== 0 ||
+            !['attacker', 'defender'].includes(unit.capturedBy) ||
+            unit.capturedBy === unit.side))
       )
         return 'Invalid battle unit attributes.';
       if (unit.side === 'attacker' && !b.order.officerIds.includes(unit.officerId))
@@ -1425,7 +1857,8 @@ export function validateState(state: GameState): string | null {
           unit.initialTroops !== o.troops ||
           unit.force !== o.force ||
           unit.intellect !== o.intellect ||
-          unit.troopType !== o.troopType
+          unit.troopType !== o.troopType ||
+          unit.level !== o.level
         )
           return 'Battle attributes differ from their committed officer.';
       } else if (
@@ -1504,6 +1937,30 @@ export function validateState(state: GameState): string | null {
     )
   )
     return 'Invalid chronicle entries.';
+  if (!integral(state.truceUntilTurn, 0, 12)) return 'Invalid opening truce.';
+  if (state.lastBattle !== null) {
+    const last = state.lastBattle;
+    if (
+      !/^army-[1-9]\d*$/.test(last.orderId) ||
+      !cityIds.has(last.targetId) ||
+      !factions.has(last.attackerId) ||
+      (last.defenderId !== null && !factions.has(last.defenderId)) ||
+      !['captured', 'held', 'raided'].includes(last.outcome) ||
+      !['conquer', 'raid', 'sack'].includes(last.intent) ||
+      !integral(last.days, 0, 60) ||
+      !integral(last.casualties.attacker, 0, Number.MAX_SAFE_INTEGER) ||
+      !integral(last.casualties.defender, 0, Number.MAX_SAFE_INTEGER) ||
+      last.captured.some((id) => !officerIds.has(id))
+    )
+      return 'Invalid battle summary.';
+  }
+  if (
+    !state.reputation ||
+    Object.entries(state.reputation).some(
+      ([id, value]) => !factions.has(id) || !integral(value.brokeAllianceTurn, 0, state.turn),
+    )
+  )
+    return 'Invalid diplomatic reputation.';
   const reportError = validateReports(state);
   if (reportError) return reportError;
   return null;

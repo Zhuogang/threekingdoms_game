@@ -1,11 +1,18 @@
 import { z } from 'zod';
 import type { GameState } from '../game/types';
 import { validateState } from '../game/campaign';
+import { migrateV1toV2 } from '../game/migrate';
 const integer = z.number().int().safe();
 const nonnegative = integer.nonnegative();
 const id = z.string().min(1).max(100);
 const troop = z.enum(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard']);
-const order = z.object({
+const side = z.enum(['attacker', 'defender']);
+
+// ---------------------------------------------------------------------------
+// Version 1 (original release). Kept verbatim so old saves still validate
+// before being migrated deterministically to version 2.
+// ---------------------------------------------------------------------------
+const orderV1 = z.object({
   id,
   factionId: id,
   sourceId: id,
@@ -13,7 +20,7 @@ const order = z.object({
   officerIds: z.array(id).max(10),
   food: nonnegative,
 });
-const city = z.object({
+const cityV1 = z.object({
   id,
   name: z.string().max(100),
   chinese: z.string().max(30),
@@ -32,7 +39,7 @@ const city = z.object({
   reserve: nonnegative,
   governorId: id.nullable(),
 });
-const officer = z.object({
+const officerV1 = z.object({
   id,
   name: z.string().max(100),
   chinese: z.string().max(30),
@@ -50,11 +57,11 @@ const officer = z.object({
   experience: nonnegative,
   equipment: z.string().max(100).nullable(),
 });
-const unit = z.object({
+const unitV1 = z.object({
   id,
   officerId: id,
   name: z.string().max(100),
-  side: z.enum(['attacker', 'defender']),
+  side,
   x: nonnegative,
   y: nonnegative,
   troops: nonnegative,
@@ -67,99 +74,96 @@ const unit = z.object({
   morale: nonnegative,
   status: z.enum(['normal', 'confused', 'inspired']),
 });
-const battle = z.object({
+const battleV1 = z.object({
   id,
-  order,
+  order: orderV1,
   attackerId: id,
   defenderId: id.nullable(),
-  playerSide: z.enum(['attacker', 'defender']),
+  playerSide: side,
   width: integer.min(1).max(30),
   height: integer.min(1).max(30),
   terrain: z.array(z.enum(['plain', 'forest', 'hill', 'water', 'fort'])).max(900),
-  units: z.array(unit).max(21),
+  units: z.array(unitV1).max(21),
   day: nonnegative,
   weather: z.enum(['clear', 'rain', 'wind']),
   attackerFood: nonnegative,
   defenderFood: nonnegative,
   log: z.array(z.string().max(1000)).max(500),
-  outcome: z.enum(['attacker', 'defender']).nullable(),
+  outcome: side.nullable(),
 });
 const eventBase = { key: z.string().min(1).max(220), sequence: nonnegative };
-const reportEvent = z.discriminatedUnion('kind', [
-  z.object({
-    ...eventBase,
-    kind: z.literal('battle'),
-    orderId: id,
-    sourceId: id,
-    targetId: id,
-    attackerId: id,
-    defenderId: id.nullable(),
-    outcome: z.enum(['captured', 'held']),
-    days: nonnegative,
-    involvesPlayer: z.boolean(),
-    bordersPlayer: z.boolean(),
-  }),
-  z.object({
-    ...eventBase,
-    kind: z.literal('allianceExpired'),
-    a: id,
-    b: id,
-    involvesPlayer: z.boolean(),
-  }),
-  z.object({
-    ...eventBase,
-    kind: z.literal('borderRecruitment'),
-    cityId: id,
-    factionId: id,
-    troops: nonnegative,
-  }),
-]);
-const report = z.object({
+const battleEvent = z.object({
+  ...eventBase,
+  kind: z.literal('battle'),
+  orderId: id,
+  sourceId: id,
+  targetId: id,
+  attackerId: id,
+  defenderId: id.nullable(),
+  outcome: z.enum(['captured', 'held']),
+  days: nonnegative,
+  involvesPlayer: z.boolean(),
+  bordersPlayer: z.boolean(),
+});
+const allianceEvent = z.object({
+  ...eventBase,
+  kind: z.literal('allianceExpired'),
+  a: id,
+  b: id,
+  involvesPlayer: z.boolean(),
+});
+const recruitmentEvent = z.object({
+  ...eventBase,
+  kind: z.literal('borderRecruitment'),
+  cityId: id,
+  factionId: id,
+  troops: nonnegative,
+});
+const reportV1 = z.object({
   turn: nonnegative,
   year: integer.min(190).max(9999),
   month: integer.min(1).max(12),
   partial: z.boolean(),
-  events: z.array(reportEvent).max(128),
+  events: z
+    .array(z.discriminatedUnion('kind', [battleEvent, allianceEvent, recruitmentEvent]))
+    .max(128),
   omitted: nonnegative,
   seenKeys: z.array(z.string().min(1).max(220)).max(256),
 });
-const stateSchema = z.object({
+const logEntry = z.object({
+  id: nonnegative,
+  turn: nonnegative,
+  text: z.string().max(2000),
+  kind: z.enum(['economy', 'military', 'diplomacy', 'event', 'good', 'bad']),
+});
+const stateV1 = z.object({
   version: z.literal(1),
   ruleset: z.literal('baye-atlas-1'),
   revision: nonnegative,
   playerFactionId: id,
   rivalAggression: z.enum(['cautious', 'balanced', 'aggressive']).default('balanced'),
   reports: z
-    .object({ pending: report.nullable(), latest: report.nullable() })
+    .object({ pending: reportV1.nullable(), latest: reportV1.nullable() })
     .default({ pending: null, latest: null }),
   year: integer.min(190).max(9999),
   month: integer.min(1).max(12),
   turn: nonnegative,
   rng: integer.min(0).max(4294967295),
   nextId: nonnegative,
-  cities: z.array(city).min(1).max(100),
-  officers: z.array(officer).min(1).max(1000),
+  cities: z.array(cityV1).min(1).max(100),
+  officers: z.array(officerV1).min(1).max(1000),
   alliances: z.array(z.object({ a: id, b: id, untilTurn: nonnegative })).max(100),
   phase: z.enum(['planning', 'battle', 'finished']),
-  battle: battle.nullable(),
-  orders: z.array(order).max(100),
+  battle: battleV1.nullable(),
+  orders: z.array(orderV1).max(100),
   resolution: z
     .object({
-      queue: z.array(order).max(100),
+      queue: z.array(orderV1).max(100),
       index: nonnegative,
       stage: z.enum(['orders', 'upkeep']),
     })
     .nullable(),
-  log: z
-    .array(
-      z.object({
-        id: nonnegative,
-        turn: nonnegative,
-        text: z.string().max(2000),
-        kind: z.enum(['economy', 'military', 'diplomacy', 'event', 'good', 'bad']),
-      }),
-    )
-    .max(150),
+  log: z.array(logEntry).max(150),
   winner: id.nullable(),
   stats: z.object({
     battlesWon: nonnegative,
@@ -167,22 +171,130 @@ const stateSchema = z.object({
     citiesCaptured: nonnegative,
   }),
 });
-const envelope = z.object({
+
+// ---------------------------------------------------------------------------
+// Version 2 (gameplay improvement release).
+// ---------------------------------------------------------------------------
+const orderV2 = orderV1.extend({ intent: z.enum(['conquer', 'raid', 'sack']) });
+const cityV2 = cityV1.extend({ plunderCooldownUntil: nonnegative });
+const officerV2 = officerV1.extend({
+  level: integer.min(0).max(5),
+  fate: z.enum(['active', 'executed']),
+});
+const unitV2 = unitV1.extend({
+  level: integer.min(0).max(5),
+  hurt: z.boolean(),
+  capturedBy: side.optional(),
+});
+const weather = z.enum(['clear', 'rain', 'wind']);
+const battleV2 = battleV1.extend({
+  order: orderV2,
+  terrain: z.array(z.enum(['plain', 'forest', 'hill', 'water', 'fort', 'wall', 'gate'])).max(900),
+  units: z.array(unitV2).max(21),
+  dayLimit: integer.min(1).max(60),
+  nextWeather: weather,
+  tacticPoints: z.object({ attacker: nonnegative, defender: nonnegative }),
+});
+const raidEvent = z.object({
+  ...eventBase,
+  kind: z.literal('raid'),
+  orderId: id,
+  cityId: id,
+  attackerId: id,
+  gold: nonnegative,
+  food: nonnegative,
+  fought: z.boolean(),
+  involvesPlayer: z.boolean(),
+  bordersPlayer: z.boolean(),
+});
+const revoltEvent = z.object({
+  ...eventBase,
+  kind: z.literal('revolt'),
+  cityId: id,
+  independent: z.boolean(),
+});
+const departureEvent = z.object({
+  ...eventBase,
+  kind: z.literal('departure'),
+  officerId: id,
+  fromFactionId: id,
+  toFactionId: id.nullable(),
+});
+const atRiskEvent = z.object({
+  ...eventBase,
+  kind: z.literal('atRisk'),
+  officerIds: z.array(id).max(60),
+});
+const coalitionEvent = z.object({
+  ...eventBase,
+  kind: z.literal('coalition'),
+  leaderId: id,
+  involvesPlayer: z.boolean(),
+});
+const reportV2 = reportV1.extend({
+  events: z
+    .array(
+      z.discriminatedUnion('kind', [
+        battleEvent,
+        allianceEvent,
+        recruitmentEvent,
+        raidEvent,
+        revoltEvent,
+        departureEvent,
+        atRiskEvent,
+        coalitionEvent,
+      ]),
+    )
+    .max(128),
+});
+const lastBattle = z.object({
+  orderId: id,
+  targetId: id,
+  attackerId: id,
+  defenderId: id.nullable(),
+  outcome: z.enum(['captured', 'held', 'raided']),
+  days: nonnegative,
+  intent: z.enum(['conquer', 'raid', 'sack']),
+  casualties: z.object({ attacker: nonnegative, defender: nonnegative }),
+  captured: z.array(id).max(20),
+});
+const stateV2 = stateV1.extend({
+  version: z.literal(2),
+  ruleset: z.literal('baye-atlas-2'),
+  reports: z.object({ pending: reportV2.nullable(), latest: reportV2.nullable() }),
+  rivalAggression: z.enum(['cautious', 'balanced', 'aggressive']),
+  cities: z.array(cityV2).min(1).max(100),
+  officers: z.array(officerV2).min(1).max(1000),
+  battle: battleV2.nullable(),
+  orders: z.array(orderV2).max(100),
+  resolution: z
+    .object({
+      queue: z.array(orderV2).max(100),
+      index: nonnegative,
+      stage: z.enum(['orders', 'upkeep']),
+    })
+    .nullable(),
+  truceUntilTurn: nonnegative,
+  lastBattle: lastBattle.nullable(),
+  reputation: z.record(id, z.object({ brokeAllianceTurn: nonnegative })),
+});
+const envelopeBase = {
   format: z.literal('baye.save'),
-  formatVersion: z.literal(1),
   scenario: z.literal('divided-realm-190'),
   savedAt: z.string().max(50),
-  state: stateSchema,
-});
+};
+const envelopeV1 = z.object({ ...envelopeBase, formatVersion: z.literal(1), state: stateV1 });
+const envelopeV2 = z.object({ ...envelopeBase, formatVersion: z.literal(2), state: stateV2 });
 export function encodeSave(state: GameState): string {
   return JSON.stringify({
     format: 'baye.save',
-    formatVersion: 1,
+    formatVersion: 2,
     scenario: 'divided-realm-190',
     savedAt: new Date().toISOString(),
     state,
   });
 }
+/** Accepts v1 and v2 saves; a v1 save is migrated deterministically (no RNG). */
 export function decodeSave(text: string): GameState {
   if (text.length > 5_000_000)
     throw new Error('This save is too large. Campaign saves must be smaller than 5 MB.');
@@ -192,12 +304,21 @@ export function decodeSave(text: string): GameState {
   } catch {
     throw new Error('This file is not valid JSON. Choose a campaign save file.');
   }
-  const result = envelope.safeParse(raw);
-  if (!result.success)
-    throw new Error(
-      'This save is damaged or uses an unsupported game version. Your current campaign is unchanged.',
-    );
-  const state = result.data.state as GameState;
+  const damaged =
+    'This save is damaged or uses an unsupported game version. Your current campaign is unchanged.';
+  const version = (raw as { formatVersion?: unknown } | null)?.formatVersion;
+  let state: GameState;
+  if (version === 1) {
+    const result = envelopeV1.safeParse(raw);
+    if (!result.success) throw new Error(damaged);
+    const migrated = stateV2.safeParse(migrateV1toV2(result.data.state));
+    if (!migrated.success) throw new Error(damaged);
+    state = migrated.data as GameState;
+  } else {
+    const result = envelopeV2.safeParse(raw);
+    if (!result.success) throw new Error(damaged);
+    state = result.data.state as GameState;
+  }
   const error = validateState(state);
   if (error) throw new Error(`This save contains inconsistent game data: ${error}`);
   return state;

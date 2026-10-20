@@ -21,6 +21,21 @@ export type MonthlyReportEvent = EventBase &
       }
     | { kind: 'allianceExpired'; a: string; b: string; involvesPlayer: boolean }
     | { kind: 'borderRecruitment'; cityId: string; factionId: string; troops: number }
+    | {
+        kind: 'raid';
+        orderId: string;
+        cityId: string;
+        attackerId: string;
+        gold: number;
+        food: number;
+        fought: boolean;
+        involvesPlayer: boolean;
+        bordersPlayer: boolean;
+      }
+    | { kind: 'revolt'; cityId: string; independent: boolean }
+    | { kind: 'departure'; officerId: string; fromFactionId: string; toFactionId: string | null }
+    | { kind: 'atRisk'; officerIds: string[] }
+    | { kind: 'coalition'; leaderId: string; involvesPlayer: boolean }
   );
 
 export interface MonthlyReport {
@@ -51,6 +66,10 @@ export function reportPriority(event: MonthlyReportEvent): number {
     if (event.involvesPlayer) return 0;
     if (event.outcome === 'captured') return event.bordersPlayer ? 1 : 3;
   }
+  if (event.kind === 'raid') return event.involvesPlayer ? 0 : event.bordersPlayer ? 1 : 3;
+  if (event.kind === 'revolt' || event.kind === 'departure') return 1;
+  if (event.kind === 'coalition') return event.involvesPlayer ? 1 : 2;
+  if (event.kind === 'atRisk') return 2;
   if (event.kind === 'allianceExpired' && event.involvesPlayer) return 2;
   if (event.kind === 'borderRecruitment') return 4;
   return 99;
@@ -66,7 +85,7 @@ export function reportHighlights(report: MonthlyReport): MonthlyReportEvent[] {
 export function reportEventCity(event: MonthlyReportEvent): string | null {
   return event.kind === 'battle'
     ? event.targetId
-    : event.kind === 'borderRecruitment'
+    : event.kind === 'borderRecruitment' || event.kind === 'raid' || event.kind === 'revolt'
       ? event.cityId
       : null;
 }
@@ -79,6 +98,16 @@ export function reportEventKey(event: NewMonthlyReportEvent): string {
       return `alliance:${[event.a, event.b].sort().join(':')}`;
     case 'borderRecruitment':
       return `recruit:${event.factionId}:${event.cityId}`;
+    case 'raid':
+      return `raid:${event.orderId}`;
+    case 'revolt':
+      return `revolt:${event.cityId}`;
+    case 'departure':
+      return `leave:${event.officerId}`;
+    case 'atRisk':
+      return 'risk';
+    case 'coalition':
+      return `coalition:${event.leaderId}`;
   }
 }
 
@@ -138,6 +167,7 @@ export function validateReports(state: GameState): string | null {
     Number.isSafeInteger(value) && value >= low && value <= high;
   const cityIds = new Set(state.cities.map((city) => city.id));
   const factions = new Set(FACTIONS.map((faction) => faction.id));
+  const officerIds = new Set(state.officers.map((officer) => officer.id));
   for (const [slot, report] of Object.entries(state.reports)) {
     if (!['pending', 'latest'].includes(slot)) return 'Invalid monthly report data.';
     if (report === null) continue;
@@ -167,25 +197,38 @@ export function validateReports(state: GameState): string | null {
       return 'The monthly report date is inconsistent.';
     for (const key of report.seenKeys) {
       const [kind, first, second, ...extra] = key.split(':');
-      const orderNumber = kind === 'battle' ? /^army-([1-9]\d*)$/.exec(first ?? '')?.[1] : null;
+      const ordered = kind === 'battle' || kind === 'raid';
+      const orderNumber = ordered ? /^army-([1-9]\d*)$/.exec(first ?? '')?.[1] : null;
       if (
         extra.length ||
-        (kind === 'battle'
+        (ordered
           ? second !== undefined ||
             !orderNumber ||
             !integer(Number(orderNumber), 1, state.nextId - 1)
-          : kind === 'alliance'
-            ? !first || !second || !factions.has(first) || !factions.has(second) || first >= second
-            : kind === 'recruit'
-              ? !first ||
-                !second ||
-                !factions.has(first) ||
-                first === state.playerFactionId ||
-                !cityIds.has(second)
-              : true)
+          : kind === 'revolt'
+            ? second !== undefined || !first || !cityIds.has(first)
+            : kind === 'leave'
+              ? second !== undefined || !first || !officerIds.has(first)
+              : kind === 'risk'
+                ? first !== undefined
+                : kind === 'coalition'
+                  ? second !== undefined || !first || !factions.has(first)
+                  : kind === 'alliance'
+                    ? !first ||
+                      !second ||
+                      !factions.has(first) ||
+                      !factions.has(second) ||
+                      first >= second
+                    : kind === 'recruit'
+                      ? !first ||
+                        !second ||
+                        !factions.has(first) ||
+                        first === state.playerFactionId ||
+                        !cityIds.has(second)
+                      : true)
       )
         return 'Invalid or duplicate monthly report event.';
-      if (slot === 'pending' && kind === 'battle') {
+      if (slot === 'pending' && ordered) {
         const index = state.resolution!.queue.findIndex((order) => order.id === first);
         if (index < 0 || index >= state.resolution!.index) return 'Invalid monthly battle report.';
       }
@@ -199,7 +242,16 @@ export function validateReports(state: GameState): string | null {
         event.sequence <= lastSequence ||
         keys.has(event.key) ||
         report.seenKeys[event.sequence] !== event.key ||
-        !['battle', 'allianceExpired', 'borderRecruitment'].includes(event.kind) ||
+        ![
+          'battle',
+          'allianceExpired',
+          'borderRecruitment',
+          'raid',
+          'revolt',
+          'departure',
+          'atRisk',
+          'coalition',
+        ].includes(event.kind) ||
         reportEventKey(event) !== event.key
       )
         return 'Invalid or duplicate monthly report event.';
@@ -242,6 +294,45 @@ export function validateReports(state: GameState): string | null {
           event.involvesPlayer !== [event.a, event.b].includes(state.playerFactionId)
         )
           return 'Invalid monthly alliance report.';
+      } else if (event.kind === 'raid') {
+        if (
+          !cityIds.has(event.cityId) ||
+          !factions.has(event.attackerId) ||
+          !integer(event.gold, 0) ||
+          !integer(event.food, 0) ||
+          typeof event.fought !== 'boolean' ||
+          typeof event.involvesPlayer !== 'boolean' ||
+          typeof event.bordersPlayer !== 'boolean'
+        )
+          return 'Invalid monthly raid report.';
+        if (slot === 'pending') {
+          const order = state.resolution!.queue.find((order) => order.id === event.orderId)!;
+          if (order.targetId !== event.cityId || order.factionId !== event.attackerId)
+            return 'Invalid monthly raid report.';
+        }
+      } else if (event.kind === 'revolt') {
+        if (!cityIds.has(event.cityId) || typeof event.independent !== 'boolean')
+          return 'Invalid monthly unrest report.';
+      } else if (event.kind === 'departure') {
+        if (
+          !officerIds.has(event.officerId) ||
+          !factions.has(event.fromFactionId) ||
+          (event.toFactionId !== null && !factions.has(event.toFactionId))
+        )
+          return 'Invalid monthly departure report.';
+      } else if (event.kind === 'atRisk') {
+        if (
+          !Array.isArray(event.officerIds) ||
+          event.officerIds.length > 60 ||
+          event.officerIds.some((id: string) => !officerIds.has(id))
+        )
+          return 'Invalid monthly loyalty report.';
+      } else if (event.kind === 'coalition') {
+        if (
+          !factions.has(event.leaderId) ||
+          event.involvesPlayer !== (event.leaderId === state.playerFactionId)
+        )
+          return 'Invalid monthly coalition report.';
       } else if (
         !cityIds.has(event.cityId) ||
         !factions.has(event.factionId) ||

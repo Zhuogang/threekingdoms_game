@@ -268,7 +268,7 @@ describe('month resolution and campaign continuation', () => {
       officerIds: ['xiahouyuan'],
     });
     expect(state.cities.find((c) => c.id === 'puyang')!.food).toBe(
-      food - (Math.ceil(troops * 0.65) + 200),
+      food - 20 * Math.ceil(troops / 25),
     );
     expect(state.orders).toHaveLength(1);
     expect(validateState(state)).toBeNull();

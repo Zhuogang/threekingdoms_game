@@ -51,6 +51,8 @@ const TERRAIN: Record<Terrain, number> = {
   hill: 0xc5c0a4,
   water: 0xa5bdb7,
   fort: 0xc5bba1,
+  wall: 0x8f8a78,
+  gate: 0xb9a57b,
 };
 
 interface Viewport {

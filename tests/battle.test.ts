@@ -36,6 +36,7 @@ function city(id: string, factionId: string): City {
     food: 5000,
     reserve: 400,
     governorId: null,
+    plunderCooldownUntil: 0,
   };
 }
 
@@ -56,7 +57,9 @@ function officer(id: string, cityId: string, factionId: string): Officer {
     busy: false,
     captive: false,
     experience: 0,
+    level: 0,
     equipment: null,
+    fate: 'active',
   };
 }
 
@@ -67,12 +70,13 @@ const order: AttackOrder = {
   targetId: 'target',
   officerIds: ['a'],
   food: 4000,
+  intent: 'conquer',
 };
 
 function game(): GameState {
   return {
-    version: 1,
-    ruleset: 'baye-atlas-1',
+    version: 2,
+    ruleset: 'baye-atlas-2',
     revision: 0,
     playerFactionId: 'blue',
     rivalAggression: 'balanced',
@@ -92,6 +96,9 @@ function game(): GameState {
     log: [],
     winner: null,
     stats: { battlesWon: 0, commandsIssued: 0, citiesCaptured: 0 },
+    truceUntilTurn: 0,
+    lastBattle: null,
+    reputation: {},
   };
 }
 
@@ -108,8 +115,10 @@ function unit(id: string, side: BattleUnit['side'], x: number, y: number): Battl
     force: 70,
     intellect: 70,
     troopType: 'infantry',
+    level: 0,
     moved: false,
     acted: false,
+    hurt: false,
     morale: 80,
     status: 'normal',
   };
@@ -127,9 +136,12 @@ function battlefield(width = 12, height = 10): BattleState {
     terrain: Array.from({ length: width * height }, () => 'plain'),
     units: [unit('a', 'attacker', 1, 1), unit('b', 'defender', width - 2, height - 2)],
     day: 1,
+    dayLimit: 30,
     weather: 'clear',
+    nextWeather: 'clear',
     attackerFood: 3000,
     defenderFood: 3000,
+    tacticPoints: { attacker: 20, defender: 20 },
     log: [],
     outcome: null,
   };
@@ -438,6 +450,8 @@ describe('combat and tactics', () => {
     normal.battle!.units[1]!.y = 1;
     normal.battle!.units.push(unit('ally', 'attacker', 2, 1));
     normal.battle!.units[2]!.morale = 100;
+    // Keep the AI from casting tactics on the ally so only inspiration is under test.
+    normal.battle!.tacticPoints.defender = 0;
     const rallied = structuredClone(normal);
     expect(
       processBattleCommand(rallied, {
@@ -467,13 +481,13 @@ describe('battle completion', () => {
     expect(state.battle!.attackerFood).toBe(0);
     expect(state.battle!.units[0]!.troops).toBe(880);
     expect(state.battle!.units[1]!.troops).toBe(1000);
-    expect(state.battle!.defenderFood).toBe(defenderFood - 16);
+    expect(state.battle!.defenderFood).toBe(defenderFood - 40);
     expect(state.battle!.day).toBe(2);
   });
 
   it('does not starve soldiers when the last provisions exactly cover the day', () => {
     const state = gameWithBattle(stalemate());
-    state.battle!.attackerFood = 16;
+    state.battle!.attackerFood = 40;
     expect(processBattleCommand(state, { type: 'battleEndDay' })).toBeNull();
     expect(state.battle!.attackerFood).toBe(0);
     expect(state.battle!.units[0]!.troops).toBe(1000);

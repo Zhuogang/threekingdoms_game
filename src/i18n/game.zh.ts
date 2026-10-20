@@ -151,6 +151,31 @@ export const GAME_ZH: Record<string, string> = {
   'Appoint this officer governor. Intelligence helps maintain public support every month.':
     '任命此武将为太守。太守的智力有助于每月维持民心。',
   'Unknown order': '未知命令',
+  'Plunder the city': '掠夺城池',
+  'Seize gold and food from the people. Halves public support, farming and commerce.':
+    '搜刮百姓，夺取金钱与粮草。民心、农业与商业各减半。',
+  'The people have nothing left to take.': '百姓已一无所有，无物可掠。',
+  'A faction’s ruler cannot be persuaded.': '势力君主无法被招揽。',
+  'Choose conquer, sack or raid.': '请选择攻占、洗劫或袭掠。',
+  'Choose 10, 20 or 30 days of supplies.': '请选择 10、20 或 30 日的补给。',
+  'Choose a prisoner held in this city.': '请选择关押在本城的俘虏。',
+  'Choose to release or execute the prisoner.': '请选择释放或处决俘虏。',
+  'Choose an opening truce of 0–12 months.': '请选择 0 至 12 个月的开局停战期。',
+  'Invalid battle summary.': '战报摘要无效。',
+  'Invalid opening truce.': '开局停战期无效。',
+  'Invalid diplomatic reputation.': '外交声望数据无效。',
+  'Invalid monthly raid report.': '月度袭掠报告无效。',
+  'Invalid monthly unrest report.': '月度民变报告无效。',
+  'Invalid monthly departure report.': '月度离队报告无效。',
+  'Invalid monthly loyalty report.': '月度忠诚报告无效。',
+  'Invalid monthly coalition report.': '月度联盟报告无效。',
+  'Garrison troops cannot use tactics.': '守军部队无法施展计策。',
+  'Routed units can only move or hold.': '溃败的部队只能移动或固守。',
+  'Wavering units cannot use tactics.': '动摇的部队无法施展计策。',
+  'Ambush requires standing in a forest.': '伏兵须身处森林。',
+  'Ambush requires a unit that has not moved today.': '伏兵须由今日尚未移动的部队施展。',
+  'Rockfall requires standing on a hill.': '落石须身处丘陵。',
+  'Rockfall cannot strike a unit standing on a hill.': '落石无法打击位于丘陵的部队。',
 
   // Command validation: these are shown in tooltips and notifications as well.
   'Choose a ruler from this scenario.': '请选择本剧本中的一位君主。',
@@ -340,6 +365,75 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ],
   ['{officer} is dismissed from service.', '{officer}被罢免，成为在野武将。'],
   ['{officer} becomes governor.', '{officer}获任太守。'],
+  [
+    '{officer} plunders the city, seizing {gold} gold and {food} food.',
+    '{officer}掠夺城池，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    'This city was plundered recently. It can be plundered again in {months} months.',
+    '此城近期遭到掠夺，{months} 个月后方可再次掠夺。',
+  ],
+  [
+    'This city was plundered recently. It can be plundered again in {months} month.',
+    '此城近期遭到掠夺，{months} 个月后方可再次掠夺。',
+  ],
+  [
+    '{faction} prepares to raid {target} from {source}. The army departs at month end.',
+    '{faction}准备从{source}出兵袭掠{target}。军队将于月末出发。',
+  ],
+  ['{officer} is released and returns to {home}.', '{officer}获释，返回{home}。'],
+  ['{officer} is released and wanders the land.', '{officer}获释，流落四方。'],
+  ['{officer} is executed. The officers are uneasy.', '{officer}被处决，众将不安。'],
+  [
+    '{faction} raids {city}, seizing {gold} gold and {food} food.',
+    '{faction}袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    '{faction} raids {city} unopposed, seizing {gold} gold and {food} food.',
+    '{faction}兵不血刃袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    '{faction} sacks {city}, seizing {gold} gold and {food} food.',
+    '{faction}洗劫{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  ['{officer} is taken prisoner by {faction}.', '{officer}被{faction}俘虏。'],
+  [
+    'The raid on {city} is called off: the city was plundered recently.',
+    '对{city}的袭掠已取消：该城近期刚遭掠夺。',
+  ],
+  [
+    'Defenders hold the city if the siege lasts {days} days.',
+    '围城持续 {days} 日后，守方即告守城成功。',
+  ],
+  [
+    'The {days}-day siege limit was reached. The defenders hold the city.',
+    '围城已达 {days} 日上限，守方成功守住城池。',
+  ],
+  ['Fire requires intellect {amount}.', '火计需要智力 {amount}。'],
+  ['Confuse requires intellect {amount}.', '扰乱需要智力 {amount}。'],
+  ['Rally requires intellect {amount} or force 85.', '鼓舞需要智力 {amount} 或武力 85。'],
+  [
+    'Raid supplies requires intellect {amount} or cavalry.',
+    '劫粮需要智力 {amount}，或由骑兵施展。',
+  ],
+  ['Ambush requires intellect {amount}.', '伏兵需要智力 {amount}。'],
+  ['Rockfall requires intellect {amount}.', '落石需要智力 {amount}。'],
+  ['Requires {amount} tactic points.', '需要 {amount} 点计策点。'],
+  ['This tactic has a range of {amount} tiles.', '此计策的施放范围为 {amount} 格。'],
+  ['{officer} was captured.', '{officer}被俘。'],
+  [
+    '{officer} ambushed {target}: {amount} casualties.',
+    '{officer}伏击{target}，造成 {amount} 人伤亡。',
+  ],
+  ['{officer} counterattacks: {amount} casualties.', '{officer}发起反击，造成 {amount} 人伤亡。'],
+  [
+    "{officer} raided {target}'s supplies: {amount} food seized.",
+    '{officer}劫掠{target}的粮草，夺得 {amount} 粮草。',
+  ],
+  [
+    '{officer} dropped rocks on {target}: {amount} casualties.',
+    '{officer}对{target}落石，造成 {amount} 人伤亡。',
+  ],
   [
     '{faction} prepares to march from {source} to {target}. The army departs at month end.',
     '{faction}准备从{source}向{target}出征。军队将于月末出发。',
