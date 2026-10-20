@@ -1,5 +1,7 @@
 # Rival policy and monthly report validation — v0.1
 
+> **v0.2:** house personalities (`FACTION_POLICY`), tactical AI v2, AI transport, joint attacks and statecraft were added after this document was written. The measurements below are the v0.1 comparison. v0.2 bot-based balance results and the targets that were missed are in [v0.2-notes.md](v0.2-notes.md).
+
 Updated October 19, 2026. The comparison uses the preserved pre-change engine and the final
 v0.1 campaign policy. It does not use the deleted Baye reference folder.
 

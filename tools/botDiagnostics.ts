@@ -277,7 +277,10 @@ const summary = {
   tacticMixPercent: Object.fromEntries(
     Object.entries(tacticCasts).map(([skill, count]) => [
       skill,
-      pct(count, Object.values(tacticCasts).reduce((a, b) => a + b, 0)),
+      pct(
+        count,
+        Object.values(tacticCasts).reduce((a, b) => a + b, 0),
+      ),
     ]),
   ),
   unifiedRuns: campaigns.filter((c) => c.unified !== null).length,

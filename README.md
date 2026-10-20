@@ -1,6 +1,6 @@
 # Hegemony of the Three Kingdoms
 
-### 三国霸业重制 · v0.1
+### 三国霸业重制 · v0.2
 
 **Build a kingdom. Command its officers. Unite a divided realm.**
 
@@ -21,7 +21,17 @@ Open the local address printed in the terminal, normally **http://127.0.0.1:5173
 
 Choose a ruler and select **Raise your banner**. The **How to play** button explains the commands. Use **Eng / 中文** in the top bar or any dialog to change language immediately, even in battle. Your browser remembers the choice.
 
-## What is in v0.1?
+## What is new in v0.2?
+
+- **Deeper battles:** counterattacks, tactic points with Raid supplies, Ambush and Rockfall, zone of control, morale states, flanking, officer capture, supply days, weather forecasts, walls and gates, a threat overlay, and a post-battle recap. A stronger tactical AI drives rivals and auto-resolve.
+- **Plunder:** squeeze your own city, raid an enemy city, or sack one you conquer, with exact previews of the cost and loot.
+- **Living campaign:** persuasion odds, prisoner release or execution, officer levels and traits, unrest and departures, alliance odds and coalitions, rival personalities, and historical and everyday events.
+- **More ways to play:** a second scenario (**The eve of Guandu**, 200 AD), Story / Standard / Warlord difficulty, an opening truce, optional aging, fog of war on rival cities, a Hegemon victory, and an adviser with first-campaign goals.
+- **Old saves still load.** Version 1 saves migrate to version 2 without drawing any randomness.
+
+See the [v0.2 rules](docs/v0.2-rules.md) and the [v0.2 notes](docs/v0.2-notes.md), which list deviations and the balance targets that were not met. Difficulty never gives rivals extra resources or combat bonuses.
+
+## What was in v0.1?
 
 | System          | Playable features                                                                                                               |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,6 +123,8 @@ React controls / PixiJS map
 | Read next                                              | Purpose                                                                 |
 | ------------------------------------------------------ | ----------------------------------------------------------------------- |
 | [Implementation and rules](docs/implementation.md)     | Command costs, economy, AI, tactical formulas, and a guided source tour |
+| [v0.2 rules](docs/v0.2-rules.md)                       | Every rule added or changed in v0.2, with constants                     |
+| [v0.2 notes](docs/v0.2-notes.md)                       | Deviations from the plan, balance evidence, and open gaps               |
 | [Architecture](docs/architecture.md)                   | Original design decisions and tradeoffs                                 |
 | [Roadmap](docs/roadmap.md)                             | Milestones and future quality goals                                     |
 | [Reference baseline](docs/reference-baseline.md)       | Findings from the original source                                       |
@@ -141,7 +153,7 @@ Future work includes longer human balance testing, Firefox/Safari coverage, full
 
 ## 中文快速开始
 
-本项目是以《三国霸业》为灵感的学习型网页重制作品，英文名为 **Hegemony of the Three Kingdoms**，当前版本 **v0.1**。
+本项目是以《三国霸业》为灵感的学习型网页重制作品，英文名为 **Hegemony of the Three Kingdoms**，当前版本 **v0.2**。v0.2 新增反击、战术点与更多战术、掠夺、第二剧本“官渡前夜”、难度预设、霸主胜利、迷雾、武将特性与随机事件；旧版本存档仍可读取。详见 [v0.2 规则](docs/v0.2-rules.md)。
 
 - 安装 Node.js，运行 `npm ci`，再运行 `npm run dev`，打开终端显示的网址。
 - Windows 用户安装依赖后，也可双击 `Start-Hegemony.cmd`。

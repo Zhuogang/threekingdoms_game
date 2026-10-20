@@ -4,6 +4,8 @@ Status: October 19, 2026. The repository contains a runnable, single-player web 
 
 This is an original adaptation of Baye's campaign/battle structure. It is **not a verified recreation of a particular legacy data library, mod, or every original formula**. The original [architecture](architecture.md) and [roadmap](roadmap.md) remain useful design targets; their fidelity, accessibility, performance, and browser-release gates are not all complete.
 
+> **v0.2 update.** The ruleset is now `baye-atlas-2` (state and save version 2) and many rules below changed: counterattacks, tactic points, zone of control, morale states, supply days, plunder, new persuasion odds, prisoner decisions, unrest, scenarios, and more. Tables in the sections below that mention "no automatic counterattack", "no fog-of-war", "natural death is not implemented", a 24-city-only ending, or the old persuasion formula describe v0.1. The current rules are in [v0.2-rules.md](v0.2-rules.md); [v0.2-notes.md](v0.2-notes.md) lists deviations and balance evidence.
+
 ## How the code fits together
 
 ```text

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { OFFICER_IDENTITIES } from '../../src/content/officerIdentity';
 import {
+  dismissBattleSummary,
   expectPortraitsLoaded,
   importLegacy,
   savedCampaign,
@@ -83,11 +84,13 @@ test('built campaign retains display and aggression and continues a legacy queue
   page.on('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Auto-resolve', exact: true }).click();
   await expect.poll(async () => (await savedCampaign(page)).resolution?.index).toBe(1);
+  await dismissBattleSummary(page);
   const middle = await savedCampaign(page);
   await switchLanguage(page, 'zh');
   await page.reload();
   expect(await savedCampaign(page)).toEqual(middle);
   await page.getByRole('button', { name: '自动结算', exact: true }).click();
+  await dismissBattleSummary(page);
   await expect(page.getByRole('button', { name: '推进月份' })).toBeVisible();
   const completed = await savedCampaign(page);
   expect(completed.reports.latest!.events.filter((event) => event.kind === 'battle')).toHaveLength(
