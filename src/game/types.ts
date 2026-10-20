@@ -156,6 +156,8 @@ export interface BattleSummary {
   intent: AttackIntent;
   casualties: { attacker: number; defender: number };
   captured: string[];
+  /** Gold and food seized by a raid or sack, if any. */
+  loot: { gold: number; food: number } | null;
 }
 export interface Reputation {
   brokeAllianceTurn: number;

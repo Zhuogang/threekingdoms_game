@@ -887,6 +887,34 @@ function skillRange(unit: BattleUnit, skill: BattleSkill): number {
     : getTacticRange(unit);
 }
 
+/** Valid targets for a tactic from the unit's current tile (empty if the tactic is unavailable). */
+export function getTacticTargets(
+  battle: BattleState,
+  unitId: string,
+  skill: BattleSkill,
+): string[] {
+  const unit = battle.units.find((candidate) => candidate.id === unitId);
+  if (
+    !unit ||
+    unit.troops <= 0 ||
+    unit.acted ||
+    unit.status === 'confused' ||
+    battle.outcome ||
+    tacticReason(battle, unit, skill)
+  )
+    return [];
+  const range = skillRange(unit, skill);
+  return battle.units
+    .filter(
+      (target) =>
+        target.troops > 0 &&
+        (skill === 'rally' ? target.side === unit.side : target.side !== unit.side) &&
+        distance(unit, target) <= range &&
+        !(skill === 'rockfall' && terrainAt(battle, target) === 'hill'),
+    )
+    .map((target) => target.id);
+}
+
 export function getAvailableTactics(battle: BattleState, unitId: string): TacticAvailability[] {
   const unit = battle.units.find((candidate) => candidate.id === unitId);
   return TACTIC_SKILLS.map((skill) => {

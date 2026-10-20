@@ -3344,3 +3344,227 @@ html[lang='zh-CN'] .help-grid p {
     padding: 5px 0;
   }
 }
+
+/* ---- v0.2 gameplay additions ------------------------------------------------ */
+.battle-conditions {
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  justify-content: flex-start;
+}
+.tactic-points {
+  margin: 10px 0 0;
+  font-size: var(--text-secondary, 14px);
+  color: #5d5877;
+}
+.tactic-points > span {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.tactic-points .meter-track {
+  height: 6px;
+  background: #e5e1ee;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.tactic-points .meter-track i {
+  display: block;
+  height: 100%;
+}
+.battle-toolbar {
+  display: grid;
+  gap: 8px;
+}
+.battle-toolbar .primary-outline.selected {
+  background: #f2dcd6;
+  border-color: #8c2a22;
+  color: #6f221b;
+}
+.tactic-actions button small {
+  font-size: calc(var(--text-secondary, 14px) - 2px);
+  color: #6a5d8c;
+}
+.tactic-actions button:disabled {
+  opacity: 0.55;
+}
+.attack-targets button .forecast {
+  color: #8c2a22;
+  font-weight: 600;
+}
+.morale-badge {
+  color: #8c5a12;
+  font-style: normal;
+  font-weight: 600;
+}
+.command-tabs button.warning,
+.command-grid button.warning {
+  border-color: #c9a79a;
+  color: #7b3a2c;
+}
+.command-tabs button.warning.active {
+  background: #f2dcd6;
+}
+.action-preview {
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: #f1f3e6;
+  border: 1px solid #dfe5d0;
+  border-radius: 4px;
+  font-size: var(--text-secondary, 14px);
+}
+.action-preview.warning {
+  background: #f6e6e0;
+  border-color: #dcb8aa;
+}
+.action-preview ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.alliance-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: var(--text-secondary, 14px);
+}
+.alliance-row span {
+  flex: 1;
+}
+.text-button.danger,
+.prisoner-actions .danger {
+  color: #8c2a22;
+}
+.prisoner-panel {
+  margin: 14px 0;
+}
+.prisoner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e6e9da;
+}
+.prisoner > span {
+  flex: 1;
+}
+.prisoner > span small {
+  display: block;
+  color: #667158;
+}
+.prisoner-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.prisoner-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #fafaf2;
+  border: 1px solid #dce3ce;
+  border-radius: 4px;
+  font-size: var(--text-secondary, 14px);
+}
+.march-intent {
+  border: 1px solid #dde5ce;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 14px 0 0;
+}
+.march-intent legend {
+  padding: 0 6px;
+  font-size: var(--text-secondary, 14px);
+  color: #667158;
+}
+.march-intent label {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.march-intent label small {
+  display: block;
+  color: #666f5b;
+  font-size: var(--text-secondary, 14px);
+  margin-top: 3px;
+}
+.supply-choice > div {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+.supply-choice button {
+  flex: 1;
+  padding: 10px 6px;
+  background: #fafaf2;
+  border: 1px solid #dce3ce;
+  border-radius: 4px;
+  display: grid;
+  gap: 3px;
+}
+.supply-choice button.selected {
+  background: #e2e9d5;
+  border-color: #61734f;
+}
+.supply-choice button:disabled {
+  opacity: 0.45;
+}
+.inline-notice.warning {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #f6ead9;
+  border-color: #dcc39a;
+  color: #6b4a14;
+}
+.check-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 14px 0 0;
+  cursor: pointer;
+}
+.check-row small {
+  display: block;
+  color: #667158;
+  font-size: var(--text-secondary, 14px);
+}
+.advanced-setup {
+  margin: 14px 0 0;
+}
+.advanced-setup summary {
+  cursor: pointer;
+  color: #5f7050;
+  font-size: var(--text-secondary, 14px);
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+.summary-grid > div {
+  background: #f1f3e6;
+  border: 1px solid #dfe5d0;
+  border-radius: 4px;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+.summary-loot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.summary-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+}

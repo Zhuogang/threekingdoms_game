@@ -257,6 +257,7 @@ const lastBattle = z.object({
   intent: z.enum(['conquer', 'raid', 'sack']),
   casualties: z.object({ attacker: nonnegative, defender: nonnegative }),
   captured: z.array(id).max(20),
+  loot: z.object({ gold: nonnegative, food: nonnegative }).nullable(),
 });
 const stateV2 = stateV1.extend({
   version: z.literal(2),

@@ -1678,6 +1678,7 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
   const raidWon = order.intent === 'raid' && attackerWon;
   const formerOwner = target.factionId;
   const casualties = { attacker: 0, defender: 0 };
+  let loot: BattleSummary['loot'] = null;
   const start = { attacker: 0, defender: 0 };
   const end = { attacker: 0, defender: 0 };
   for (const unit of battle.units) {
@@ -1718,8 +1719,8 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
       if (home) officer.cityId = home.id;
       officer.busy = true;
     }
-    const loot = home ?? ({ gold: 0, food: 0 } as City);
-    const gains = applyPlunder(state, target, loot, leader);
+    const gains = applyPlunder(state, target, home ?? ({ gold: 0, food: 0 } as City), leader);
+    loot = { gold: gains.gold, food: gains.food };
     if (home) home.food = bounded(home.food + battle.attackerFood, RESOURCE_CAP);
     observer?.plunder?.({
       cityId: target.id,
@@ -1802,6 +1803,7 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
       const leader = plunderLeader(commandersOf(state, order));
       if (leader) {
         const gains = applyPlunder(state, target, target, leader);
+        loot = { gold: gains.gold, food: gains.food };
         observer?.plunder?.({ cityId: target.id, form: 'sack', factionId: battle.attackerId });
         addLog(
           state,
@@ -1877,8 +1879,11 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
     intent: order.intent,
     casualties,
     captured,
+    loot,
   };
-  state.lastBattle = summary;
+  // The recap is for the player: rival-versus-rival fights never replace it.
+  if (state.lastBattle === null || [battle.attackerId, formerOwner].includes(player))
+    state.lastBattle = summary;
   if (!raidWon)
     recordMonthlyEvent(state, {
       kind: 'battle',
@@ -1942,17 +1947,19 @@ function resolveUndefendedRaid(
     involvesPlayer: [order.factionId, target.factionId].includes(player),
     bordersPlayer: bordersPlayer(state, target),
   });
-  state.lastBattle = {
-    orderId: order.id,
-    targetId: target.id,
-    attackerId: order.factionId,
-    defenderId: target.factionId,
-    outcome: 'raided',
-    days: 0,
-    intent: 'raid',
-    casualties: { attacker: 0, defender: 0 },
-    captured: [],
-  };
+  if (state.lastBattle === null || [order.factionId, target.factionId].includes(player))
+    state.lastBattle = {
+      orderId: order.id,
+      targetId: target.id,
+      attackerId: order.factionId,
+      defenderId: target.factionId,
+      outcome: 'raided',
+      days: 0,
+      intent: 'raid',
+      casualties: { attacker: 0, defender: 0 },
+      captured: [],
+      loot: { gold: gains.gold, food: gains.food },
+    };
 }
 
 const UNREST_SUPPORT = 30;
@@ -2752,7 +2759,10 @@ export function validateState(state: GameState): string | null {
       !integral(last.days, 0, 60) ||
       !integral(last.casualties.attacker, 0, Number.MAX_SAFE_INTEGER) ||
       !integral(last.casualties.defender, 0, Number.MAX_SAFE_INTEGER) ||
-      last.captured.some((id) => !officerIds.has(id))
+      last.captured.some((id) => !officerIds.has(id)) ||
+      (last.loot !== null &&
+        (!integral(last.loot.gold, 0, Number.MAX_SAFE_INTEGER) ||
+          !integral(last.loot.food, 0, Number.MAX_SAFE_INTEGER)))
     )
       return 'Invalid battle summary.';
   }

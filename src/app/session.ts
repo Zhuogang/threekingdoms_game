@@ -1,4 +1,4 @@
-import { createGame, dispatch, validateState } from '../game/campaign';
+import { createGame, dispatch, validateState, type NewGameOptions } from '../game/campaign';
 import type { GameCommand, GameState, RivalAggression } from '../game/types';
 import { autosave } from '../platform/autosave';
 let current: GameState;
@@ -18,8 +18,13 @@ export const session = {
     }
     return result;
   },
-  start: (faction: string, seed: number, aggression: RivalAggression = 'balanced') => {
-    current = createGame(faction, seed, aggression);
+  start: (
+    faction: string,
+    seed: number,
+    aggression: RivalAggression = 'balanced',
+    options: NewGameOptions = {},
+  ) => {
+    current = createGame(faction, seed, aggression, options);
     void autosave.save(current);
     listeners.forEach((fn) => fn());
   },

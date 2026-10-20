@@ -1,5 +1,16 @@
 import { useState } from 'react';
-import { ChevronDown, Flag, Handshake, ScrollText, Shield, UserPlus } from 'lucide-react';
+import {
+  Axe,
+  ChevronDown,
+  Flag,
+  Flame,
+  Handshake,
+  ScrollText,
+  Shield,
+  TriangleAlert,
+  UserMinus,
+  UserPlus,
+} from 'lucide-react';
 import { factionById } from '../content/scenario';
 import type { GameState, MonthlyReportEvent } from '../game/types';
 import { reportEventCity, reportHighlights } from '../game/reports';
@@ -34,6 +45,7 @@ export default function MonthlyReport({
   const highlights = reportHighlights(report);
   const events = expanded ? report.events : highlights;
   const cityName = (id: string) => state.cities.find((city) => city.id === id)?.name ?? id;
+  const officerName = (id: string) => state.officers.find((o) => o.id === id)?.name ?? id;
   const factionName = (id: string | null) => factionById(id)?.name ?? 'The garrison';
   function description(event: MonthlyReportEvent) {
     switch (event.kind) {
@@ -60,6 +72,47 @@ export default function MonthlyReport({
           count: new Intl.NumberFormat().format(event.troops),
           city: cityName(event.cityId),
         });
+      case 'raid':
+        return t(
+          event.fought
+            ? '{faction} raided {city} after a fight, seizing {gold} gold and {food} food.'
+            : '{faction} raided {city} unopposed, seizing {gold} gold and {food} food.',
+          {
+            faction: factionName(event.attackerId),
+            city: cityName(event.cityId),
+            gold: new Intl.NumberFormat().format(event.gold),
+            food: new Intl.NumberFormat().format(event.food),
+          },
+        );
+      case 'revolt':
+        return t(
+          event.independent
+            ? 'The people of {city} threw off your rule and the city is now independent.'
+            : 'Unrest in {city}: a revolt scattered part of the garrison and treasury.',
+          { city: cityName(event.cityId) },
+        );
+      case 'departure':
+        return t(
+          event.toFactionId
+            ? '{officer} left {from} and joined {to}.'
+            : '{officer} left {from} and wandered off.',
+          {
+            officer: officerName(event.officerId),
+            from: factionName(event.fromFactionId),
+            to: factionName(event.toFactionId),
+          },
+        );
+      case 'atRisk':
+        return t('Officers close to leaving (loyalty under 40): {names}.', {
+          names: event.officerIds.map(officerName).join(', '),
+        });
+      case 'coalition':
+        return t(
+          event.involvesPlayer
+            ? 'The neighboring lords have united against you.'
+            : 'The neighboring lords have united against {faction}.',
+          { faction: factionName(event.leaderId) },
+        );
     }
   }
   return (
@@ -95,9 +148,17 @@ export default function MonthlyReport({
                 ? event.outcome === 'captured'
                   ? Flag
                   : Shield
-                : event.kind === 'allianceExpired'
+                : event.kind === 'allianceExpired' || event.kind === 'coalition'
                   ? Handshake
-                  : UserPlus;
+                  : event.kind === 'raid'
+                    ? Axe
+                    : event.kind === 'revolt'
+                      ? Flame
+                      : event.kind === 'departure'
+                        ? UserMinus
+                        : event.kind === 'atRisk'
+                          ? TriangleAlert
+                          : UserPlus;
             const body = (
               <>
                 <Icon size={17} />

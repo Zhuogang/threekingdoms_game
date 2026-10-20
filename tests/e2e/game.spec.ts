@@ -54,6 +54,7 @@ test('campaign actions, editable dialogs, manual slots, export and reload', asyn
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
+  await page.getByText('Advanced', { exact: true }).click();
   const seed = page.getByLabel('World seed');
   await seed.fill('');
   await seed.pressSequentially('190', { delay: 60 });

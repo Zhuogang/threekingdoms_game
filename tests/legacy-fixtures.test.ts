@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { dispatch, validateState } from '../src/game/campaign';
 import type { GameCommand } from '../src/game/types';
@@ -97,4 +97,26 @@ describe('retained pre-improvement v0.1 saves (migrated to v2)', () => {
       ).toBe(fixture.sha256);
     },
   );
+
+  // Maintainer tool: after an intentional rules change, `REGENERATE_LEGACY=1 npx vitest run
+  // tests/legacy-fixtures.test.ts` rewrites the recorded v2 hashes. State why in the commit.
+  it.runIf(process.env.REGENERATE_LEGACY === '1')('regenerates the v2 continuation hashes', () => {
+    const file = new URL('./fixtures/legacy-continuations.json', import.meta.url);
+    const data = JSON.parse(readFileSync(file, 'utf8')) as typeof continuations;
+    for (const fixture of data.continuations) {
+      let state = decodeSave(load(`legacy-${fixture.fixture}.json`));
+      for (const command of fixture.commands) {
+        const result = dispatch(state, command);
+        if (!result.ok) throw new Error(result.error);
+        state = result.state;
+      }
+      const fields = Object.fromEntries(
+        fixture.fields.map((key) => [key, state[key as keyof typeof state]]),
+      );
+      fixture.sha256 = createHash('sha256')
+        .update(JSON.stringify(canonical(fields)))
+        .digest('hex');
+    }
+    writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+  });
 });

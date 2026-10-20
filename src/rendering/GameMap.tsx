@@ -12,7 +12,13 @@ import {
   BATTLE_INSETS,
   CAMPAIGN_INSETS,
 } from './cameraGeometry';
-import { getAttackTargets, getReachableTiles } from '../game/battle';
+import {
+  getAttackTargets,
+  getReachableTiles,
+  getThreatTiles,
+  getZocStopTiles,
+  moraleState,
+} from '../game/battle';
 import type { BattleState, BattleUnit, City, GameState, Terrain } from '../game/types';
 import { translateText, type Locale } from '../i18n/core';
 import {
@@ -38,6 +44,8 @@ export interface GameMapProps {
   locale: Locale;
   displayPreset?: DisplayPreset;
   cameraFocus?: { kind: 'city' | 'unit'; id: string; serial: number };
+  /** Shade every tile an enemy can strike next turn. */
+  showThreat?: boolean;
 }
 
 const INK = 0x3c4540;
@@ -453,8 +461,13 @@ function boardGeometry(battle: BattleState): BoardGeometry {
   return battleBoard(battle.width, battle.height);
 }
 
+interface DrawnUnit {
+  ring: Graphics | null;
+  node: Container;
+}
+
 function drawBattleUnit(
-  parent: Container,
+  layer: Container,
   unit: BattleUnit,
   battle: BattleState,
   board: BoardGeometry,
@@ -462,7 +475,10 @@ function drawBattleUnit(
   target: boolean,
   scale: number,
   props: GameMapProps,
-): Graphics | null {
+): DrawnUnit {
+  // Each unit lives in its own container so the renderer can tween and flash it.
+  const parent = new Container();
+  layer.addChild(parent);
   const tokens = DISPLAY_PRESETS[props.displayPreset ?? 'comfortable'];
   const factionId = unit.side === 'attacker' ? battle.attackerId : battle.defenderId;
   const faction = FACTIONS.find((item) => item.id === factionId);
@@ -543,6 +559,32 @@ function drawBattleUnit(
       fontSize: badgeFont / scale,
       fill: 0x294a33,
     });
+  // Morale states are redundant-coded: a glyph plus a colored stripe, never color alone.
+  const morale = moraleState(unit);
+  if (morale !== 'steady') {
+    const routed = morale === 'routed';
+    g.rect(x + inset + 3 / scale, y + inset, board.tile - inset * 2 - 3 / scale, 2.5 / scale).fill(
+      routed ? 0x922f28 : 0xc2832b,
+    );
+    label(parent, routed ? '✕' : '~', x + board.tile * 0.89, y + board.tile * 0.34, {
+      fontFamily: SANS,
+      fontSize: badgeFont / scale,
+      fontWeight: '800',
+      fill: routed ? 0x922f28 : 0x8c5a12,
+    });
+  }
+  if (unit.level > 0)
+    label(
+      parent,
+      '★'.repeat(Math.min(3, Math.ceil(unit.level / 2))),
+      x + board.tile * 0.2,
+      y + board.tile * 0.62,
+      {
+        fontFamily: SANS,
+        fontSize: (badgeFont * 0.8) / scale,
+        fill: 0x8a6a1f,
+      },
+    );
   if (target)
     g.roundRect(
       x + 1 / scale,
@@ -551,7 +593,7 @@ function drawBattleUnit(
       board.tile - 2 / scale,
       4 / scale,
     ).stroke({ color: 0x922f28, width: 2.5 / scale });
-  if (!selected) return null;
+  if (!selected) return { ring: null, node: parent };
   const ring = new Graphics();
   parent.addChild(ring);
   ring.position.set(x + board.tile / 2, y + board.tile / 2);
@@ -573,10 +615,15 @@ function drawBattleUnit(
       4 / scale,
     )
     .stroke({ color: 0xf2c268, width: 2 / scale });
-  return ring;
+  return { ring, node: parent };
 }
 
-function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphics | null {
+function drawBattle(
+  parent: Container,
+  props: GameMapProps,
+  fit: number,
+  nodes: Map<string, Container>,
+): Graphics | null {
   const battle = props.state.battle;
   if (!battle) return null;
   const board = boardGeometry(battle);
@@ -619,6 +666,30 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
             .stroke({ color: 0x7b896c, width: 0.6, alpha: 0.19 });
         }
       }
+      if (terrain === 'wall' || terrain === 'gate') {
+        // Brickwork reads as a wall; the gate is an arched opening in it.
+        g.rect(tx + 3, ty + 3, board.tile - 6, board.tile - 6).fill({
+          color: terrain === 'wall' ? 0x7d7967 : 0xa08f68,
+          alpha: 0.85,
+        });
+        for (let row = 1; row < 4; row++)
+          g.moveTo(tx + 3, ty + 3 + (row * (board.tile - 6)) / 4)
+            .lineTo(tx + board.tile - 3, ty + 3 + (row * (board.tile - 6)) / 4)
+            .stroke({ color: 0x4f4c40, width: 0.8, alpha: 0.55 });
+        for (let c = 0; c < 4; c++)
+          g.rect(tx + 4 + c * ((board.tile - 8) / 4), ty + 1, (board.tile - 8) / 8, 6).fill({
+            color: 0x5d5a4b,
+            alpha: 0.7,
+          });
+        if (terrain === 'gate') {
+          const cx = tx + board.tile / 2;
+          g.moveTo(cx - 9, ty + board.tile - 4)
+            .lineTo(cx - 9, ty + board.tile * 0.45)
+            .quadraticCurveTo(cx, ty + board.tile * 0.2, cx + 9, ty + board.tile * 0.45)
+            .lineTo(cx + 9, ty + board.tile - 4)
+            .fill({ color: 0x3f3a2c, alpha: 0.65 });
+        }
+      }
       if (terrain === 'fort') {
         const cx = tx + board.tile / 2;
         const cy = ty + board.tile / 2;
@@ -636,14 +707,49 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
     (unit) =>
       unit.id === props.selectedUnitId && unit.side === battle.playerSide && unit.troops > 0,
   );
+  if (props.showThreat) {
+    // Diagonal hatching plus a red wash: the threat zone is never conveyed by color alone.
+    for (const point of getThreatTiles(battle, battle.playerSide)) {
+      const x = board.left + point.x * board.tile;
+      const y = board.top + point.y * board.tile;
+      g.rect(x + 1, y + 1, board.tile - 2, board.tile - 2).fill({ color: 0xb23a2f, alpha: 0.16 });
+      for (let k = 1; k < 4; k++) {
+        const o = (k * board.tile) / 4;
+        g.moveTo(x + o, y + 1)
+          .lineTo(x + 1, y + o)
+          .stroke({ color: 0x8c2a22, width: 1 / fit, alpha: 0.5 });
+        g.moveTo(x + board.tile - 1, y + o)
+          .lineTo(x + o, y + board.tile - 1)
+          .stroke({ color: 0x8c2a22, width: 1 / fit, alpha: 0.5 });
+      }
+    }
+  }
   if (active) {
+    const stops = new Set(
+      getZocStopTiles(battle, active.id).map((tile) => tile.y * battle.width + tile.x),
+    );
     for (const point of getReachableTiles(battle, active.id)) {
       const x = board.left + point.x * board.tile;
       const y = board.top + point.y * board.tile;
+      const stop = stops.has(point.y * battle.width + point.x);
       g.rect(x + 2, y + 2, board.tile - 4, board.tile - 4)
         .fill({ color: 0xf9f4d7, alpha: 0.24 })
-        .stroke({ color: 0x2f5739, width: 2 / fit, alpha: 0.9 });
-      g.circle(x + board.tile / 2, y + board.tile / 2, 2.3).fill({ color: 0x738367, alpha: 0.55 });
+        .stroke({
+          color: stop ? 0x9a5b16 : 0x2f5739,
+          width: (stop ? 3 : 2) / fit,
+          alpha: 0.9,
+        });
+      // A square mark flags a zone-of-control stop: the move ends here.
+      if (stop)
+        g.rect(x + board.tile / 2 - 3, y + board.tile / 2 - 3, 6, 6).fill({
+          color: 0x9a5b16,
+          alpha: 0.8,
+        });
+      else
+        g.circle(x + board.tile / 2, y + board.tile / 2, 2.3).fill({
+          color: 0x738367,
+          alpha: 0.55,
+        });
     }
   }
   for (let x = 0; x < battle.width; x++) {
@@ -665,7 +771,7 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
   const targets = active ? getAttackTargets(battle, active.id) : [];
   let selectionRing: Graphics | null = null;
   for (const unit of battle.units.filter((item) => item.troops > 0)) {
-    const ring = drawBattleUnit(
+    const drawn = drawBattleUnit(
       parent,
       unit,
       battle,
@@ -675,7 +781,8 @@ function drawBattle(parent: Container, props: GameMapProps, fit: number): Graphi
       fit,
       props,
     );
-    if (ring) selectionRing = ring;
+    nodes.set(unit.id, drawn.node);
+    if (drawn.ring) selectionRing = drawn.ring;
   }
   return selectionRing;
 }
@@ -744,7 +851,23 @@ export default function GameMap(props: GameMapProps) {
         const world = new Container();
         const background = new Container();
         const foreground = new Container();
-        world.addChild(background, foreground);
+        // Combat feedback lives above the board and survives redraws.
+        const fx = new Container();
+        world.addChild(background, foreground, fx);
+        const unitNodes = new Map<string, Container>();
+        let previousBattle: {
+          id: string;
+          units: Map<string, { x: number; y: number; troops: number }>;
+        } | null = null;
+        const tweens: { id: string; dx: number; dy: number; start: number; duration: number }[] =
+          [];
+        const floaters: {
+          node: Container;
+          start: number;
+          duration: number;
+          y: number;
+          rise: number;
+        }[] = [];
         app.stage.addChild(world);
         drawAtlasBackground(background, propsRef.current.locale);
         let drawnLocale = propsRef.current.locale;
@@ -967,10 +1090,80 @@ export default function GameMap(props: GameMapProps) {
           selectionRing = null;
           clearContainer(foreground);
           cityLabelHitAreas.clear();
+          unitNodes.clear();
           selectionRing = isBattle
-            ? drawBattle(foreground, current, view.fit * view.zoom)
+            ? drawBattle(foreground, current, view.fit * view.zoom, unitNodes)
             : drawCampaign(foreground, current, view.fit * view.zoom, cityLabelHitAreas);
           wasBattle = isBattle;
+          announceCombat(current);
+        };
+        /** Compare snapshots and add tweens, hit flashes and floating casualty numbers. */
+        const announceCombat = (current: GameMapProps) => {
+          const battle = current.state.phase === 'battle' ? current.state.battle : null;
+          if (!battle) {
+            previousBattle = null;
+            clearContainer(fx);
+            floaters.length = 0;
+            tweens.length = 0;
+            return;
+          }
+          const snapshot = new Map(
+            battle.units.map((unit) => [unit.id, { x: unit.x, y: unit.y, troops: unit.troops }]),
+          );
+          const before = previousBattle;
+          previousBattle = { id: battle.id, units: snapshot };
+          if (!before || before.id !== battle.id) return;
+          const board = boardGeometry(battle);
+          const scale = view.fit * view.zoom;
+          const now = performance.now();
+          const still = !!current.reducedMotion;
+          for (const unit of battle.units) {
+            const old = before.units.get(unit.id);
+            if (!old) continue;
+            const centerX = board.left + (old.x + 0.5) * board.tile;
+            const centerY = board.top + (old.y + 0.5) * board.tile;
+            if (!still && unit.troops > 0 && (old.x !== unit.x || old.y !== unit.y))
+              tweens.push({
+                id: unit.id,
+                dx: (old.x - unit.x) * board.tile,
+                dy: (old.y - unit.y) * board.tile,
+                start: now,
+                duration: 300,
+              });
+            const lost = old.troops - unit.troops;
+            if (lost <= 0) continue;
+            const node = new Container();
+            if (!still) {
+              const flash = new Graphics();
+              flash.roundRect(
+                board.left + unit.x * board.tile + 2,
+                board.top + unit.y * board.tile + 2,
+                board.tile - 4,
+                board.tile - 4,
+                4,
+              );
+              flash.fill({ color: unit.troops > 0 ? 0xb23a2f : 0x3b3b3b, alpha: 0.5 });
+              fx.addChild(flash);
+              floaters.push({ node: flash, start: now, duration: 380, y: 0, rise: 0 });
+            }
+            const text = label(node, '−' + lost.toLocaleString('en'), centerX, 0, {
+              fontFamily: SANS,
+              fontSize: 15 / scale,
+              fontWeight: '800',
+              fill: 0x922f28,
+              stroke: { color: 0xfffbea, width: 3 / scale, join: 'round' },
+            });
+            text.y = 0;
+            node.position.set(0, centerY - board.tile * 0.2);
+            fx.addChild(node);
+            floaters.push({
+              node,
+              start: now,
+              duration: 1000,
+              y: centerY - board.tile * 0.2,
+              rise: still ? 0 : board.tile * 0.55,
+            });
+          }
         };
         redrawRef.current = redraw;
         resize();
@@ -1090,6 +1283,29 @@ export default function GameMap(props: GameMapProps) {
         let elapsed = 0;
         app.ticker.maxFPS = 30;
         app.ticker.add((ticker) => {
+          const now = performance.now();
+          for (let i = tweens.length - 1; i >= 0; i--) {
+            const tween = tweens[i]!;
+            const progress = Math.min(1, (now - tween.start) / tween.duration);
+            const node = unitNodes.get(tween.id);
+            if (node && !node.destroyed) {
+              const left = 1 - (1 - (1 - progress) * (1 - progress));
+              node.position.set(tween.dx * left, tween.dy * left);
+            }
+            if (progress >= 1) tweens.splice(i, 1);
+          }
+          for (let i = floaters.length - 1; i >= 0; i--) {
+            const item = floaters[i]!;
+            const progress = Math.min(1, (now - item.start) / item.duration);
+            if (!item.node.destroyed) {
+              item.node.alpha = 1 - progress * progress;
+              if (item.rise) item.node.y = item.y - item.rise * progress;
+            }
+            if (progress >= 1) {
+              if (!item.node.destroyed) item.node.destroy({ children: true });
+              floaters.splice(i, 1);
+            }
+          }
           if (selectionRing && !selectionRing.destroyed) {
             elapsed += ticker.deltaMS;
             const pulse = propsRef.current.reducedMotion ? 1 : 1 + Math.sin(elapsed / 650) * 0.035;
@@ -1132,6 +1348,7 @@ export default function GameMap(props: GameMapProps) {
     props.locale,
     props.displayPreset,
     props.cameraFocus,
+    props.showThreat,
   ]);
 
   return (

@@ -3,6 +3,7 @@ import { chromium, expect, test } from '@playwright/test';
 import { decodeSave, encodeSave } from '../../src/platform/saves';
 import { createGame, dispatch, validateState } from '../../src/game/campaign';
 import {
+  dismissBattleSummary,
   expectPortraitsLoaded,
   importLegacy,
   importState,
@@ -198,6 +199,7 @@ test('legacy multi-battle campaign retains aggression, monthly report, export, s
   expect(played.battle!.units.some((unit) => unit.acted)).toBe(true);
   page.on('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Auto-resolve', exact: true }).click();
+  await dismissBattleSummary(page);
   await expect.poll(async () => (await savedCampaign(page)).resolution?.index).toBe(1);
   const secondBattle = await savedCampaign(page);
   const uninterruptedSecond = dispatch(uninterruptedPlayed.state, { type: 'battleAuto' });
@@ -209,6 +211,7 @@ test('legacy multi-battle campaign retains aggression, monthly report, export, s
   await page.reload();
   expect(await savedCampaign(page)).toEqual(secondBattle);
   await page.getByRole('button', { name: 'Auto-resolve', exact: true }).click();
+  await dismissBattleSummary(page);
   await expect(page.getByRole('button', { name: 'Advance month' })).toBeVisible();
   const completed = await savedCampaign(page);
   const uninterruptedCompleted = dispatch(uninterruptedSecond.state, { type: 'battleAuto' });
@@ -403,6 +406,7 @@ for (const language of ['en', 'zh'] as const) {
       await page
         .getByRole('button', { name: language === 'en' ? 'Auto-resolve' : '自动结算', exact: true })
         .click();
+      await dismissBattleSummary(page);
       await savedCampaign(page);
     }
     await expect(

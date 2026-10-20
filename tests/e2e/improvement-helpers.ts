@@ -136,3 +136,11 @@ export async function mapMetrics(page: Page) {
     };
   });
 }
+
+/** A finished battle opens a recap; close it before issuing further orders. */
+export async function dismissBattleSummary(page: Page) {
+  const summary = page.getByTestId('battle-summary');
+  await expect(summary).toBeVisible();
+  await summary.getByRole('button', { name: /^(Continue|继续)$/ }).click();
+  await expect(summary).toHaveCount(0);
+}

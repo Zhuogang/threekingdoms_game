@@ -31,12 +31,8 @@ import {
   Save,
   Upload,
   RotateCcw,
-  Wind,
-  CloudRain,
-  Sun,
   Heart,
   Package,
-  Target,
   Eye,
   Wine,
   UserPlus,
@@ -46,21 +42,29 @@ import {
 } from 'lucide-react';
 import { session } from '../app/session';
 import { FACTIONS, SCENARIO, TROOP_LABELS, factionById } from '../content/scenario';
-import { getActionInfo } from '../game/campaign';
 import {
-  getAttackTargets,
-  getReachableTiles,
-  getBattleUnitMove,
-  getBattleUnitRange,
-} from '../game/battle';
-import type { Action, GameCommand, Officer } from '../game/types';
+  getActionInfo,
+  getActionPreview,
+  getAllianceChance,
+  getPersuadeChance,
+  type PreviewStat,
+} from '../game/campaign';
+import { getReachableTiles } from '../game/battle';
+import { isActiveOfficer } from '../game/officers';
+import type {
+  Action,
+  AttackIntent,
+  BattleSkill,
+  City,
+  GameCommand,
+  SupplyDays,
+} from '../game/types';
 import GameMap from '../rendering/GameMap';
 import { decodeSave, downloadSave, listSlots, saveSlot, type SaveRecord } from '../platform/saves';
-import { playCue } from '../platform/audio';
+import { cueForBattleLog, playCue } from '../platform/audio';
 import { autosave } from '../platform/autosave';
 import { useI18n } from '../i18n';
 import LanguageSwitch from '../i18n/LanguageSwitch';
-import { getOfficerIdentity } from '../content/officerIdentity';
 import {
   DISPLAY_PRESETS,
   readDisplayPreset,
@@ -70,8 +74,14 @@ import {
 import Portrait from './Portrait';
 import TroopIcon from './TroopIcon';
 import MonthlyReport from './MonthlyReport';
-import { nextReadyUnit, unitReadiness } from './battlePresentation';
-import type { RivalAggression, TroopType } from '../game/types';
+import BattlePanel from './BattlePanel';
+import BattleSummary, { playerWon } from './BattleSummary';
+import MarchDialog from './MarchDialog';
+import OfficerMark from './OfficerMark';
+import PrisonerPanel from './PrisonerPanel';
+import TroopLegend from './TroopLegend';
+import { appendedLines, contactMade, nextReadyUnit } from './battlePresentation';
+import type { RivalAggression } from '../game/types';
 
 const number = (n: number) => new Intl.NumberFormat('en').format(n);
 const MONTHS = [
@@ -110,7 +120,7 @@ const ACTIONS: Record<Action, LucideIcon> = {
   appoint: Crown,
   plunder: Axe,
 };
-const GROUPS: { name: string; actions: Action[] }[] = [
+const GROUPS: { name: string; actions: Action[]; warning?: boolean }[] = [
   { name: 'Develop', actions: ['farm', 'commerce', 'govern', 'relieve', 'buyFood', 'sellFood'] },
   {
     name: 'Officers',
@@ -127,11 +137,105 @@ const GROUPS: { name: string; actions: Action[] }[] = [
     ],
   },
   { name: 'Diplomacy', actions: ['scout', 'persuade', 'subvert', 'alliance'] },
-  { name: 'Harsh measures', actions: ['plunder'] },
+  { name: 'Harsh measures', actions: ['plunder'], warning: true },
 ];
+const STAT_LABELS: Record<PreviewStat, string> = {
+  farming: 'Agriculture',
+  commerce: 'Commerce',
+  support: 'Public loyalty',
+  defense: 'Fortifications',
+  population: 'Population',
+  reserve: 'Reserves',
+  gold: 'Gold',
+  food: 'Food',
+  loyalty: 'Loyalty',
+  experience: 'Experience',
+  force: 'Might',
+  stamina: 'Stamina',
+};
+const signed = (n: number) => (n > 0 ? `+${number(n)}` : number(n));
+
+/** What an order will do, from the pure preview query: ranges, or exact before → after. */
+function ActionPreviewBox({
+  action,
+  preview,
+  city,
+  label,
+}: {
+  action: Action;
+  preview: NonNullable<ReturnType<typeof getActionPreview>>;
+  city: City;
+  label: string;
+}) {
+  const { t, tx } = useI18n();
+  const current: Partial<Record<PreviewStat, number>> = {
+    farming: city.farming,
+    commerce: city.commerce,
+    support: city.loyalty,
+    defense: city.defense,
+    population: city.population,
+    reserve: city.reserve,
+    gold: city.gold,
+    food: city.food,
+  };
+  return (
+    <div className={`action-preview ${action === 'plunder' ? 'warning' : ''}`} aria-live="polite">
+      <span className="eyebrow">{t('EXPECTED RESULT · {order}', { order: tx(label) })}</span>
+      <ul>
+        {preview.effects.map((effect) => {
+          const before = effect.scope === 'city' ? current[effect.stat] : undefined;
+          const exact = effect.min === effect.max;
+          return (
+            <li key={`${effect.stat}-${effect.scope}`}>
+              <strong>{t(STAT_LABELS[effect.stat])}</strong>{' '}
+              {effect.scope === 'officers'
+                ? `(${t('all officers here')}) `
+                : effect.scope === 'target'
+                  ? `(${t('target city')}) `
+                  : effect.scope === 'officer'
+                    ? `(${t('this officer')}) `
+                    : ''}
+              {exact && before !== undefined
+                ? `${number(before)} → ${number(before + effect.min)} (${signed(effect.min)})`
+                : exact
+                  ? signed(effect.min)
+                  : `${signed(effect.min)} … ${signed(effect.max)}`}
+            </li>
+          );
+        })}
+        {preview.chance !== null && (
+          <li>
+            <strong>{t('Success chance')}</strong> {preview.chance}%
+          </li>
+        )}
+        {!preview.effects.length && preview.chance === null && (
+          <li>{t('No direct change to the numbers.')}</li>
+        )}
+      </ul>
+    </div>
+  );
+}
 type ModalKind =
-  'start' | 'help' | 'settings' | 'saves' | 'march' | 'transfer' | 'muster' | 'credits' | null;
+  | 'start'
+  | 'help'
+  | 'settings'
+  | 'saves'
+  | 'march'
+  | 'transfer'
+  | 'muster'
+  | 'credits'
+  | 'summary'
+  | null;
+/** A fresh 32-bit world seed; random values live in the UI, never in the simulation core. */
+function randomSeed(): string {
+  try {
+    return String(crypto.getRandomValues(new Uint32Array(1))[0] ?? 190);
+  } catch {
+    return String(Date.now() >>> 0);
+  }
+}
 const AGGRESSION_OPTIONS: RivalAggression[] = ['cautious', 'balanced', 'aggressive'];
+const TRUCE_MONTHS = 2;
 const AGGRESSION_LABELS = { cautious: 'Cautious', balanced: 'Balanced', aggressive: 'Aggressive' };
 function readPreference(key: string, fallback: boolean): boolean {
   try {
@@ -227,51 +331,6 @@ function Dialog({
   );
 }
 
-function OfficerMark({
-  officer,
-  size = 'normal',
-}: {
-  officer: Officer;
-  size?: 'normal' | 'small' | 'large';
-}) {
-  const identity = getOfficerIdentity(officer.id);
-  const faction = factionById(officer.factionId);
-  return (
-    <div
-      className={`officer-mark ${size}`}
-      style={{ '--officer-color': faction?.color ?? '#827766' } as React.CSSProperties}
-    >
-      <Portrait officerId={officer.id} large={size === 'large'} />
-      <span className="officer-surname">{identity?.surnameZh ?? '军'}</span>
-      <span className="officer-troop">
-        <TroopIcon type={officer.troopType} />
-      </span>
-    </div>
-  );
-}
-function TroopLegend() {
-  const { t, tx } = useI18n();
-  return (
-    <section className="troop-legend" aria-label={t('Troop and banner meanings')}>
-      <p>{t('Banner color and crest show allegiance. The surname identifies the commander.')}</p>
-      <div className="troop-legend-grid">
-        {(Object.keys(TROOP_LABELS) as TroopType[]).map((type) => (
-          <span key={type}>
-            <TroopIcon type={type} size={24} />
-            {tx(TROOP_LABELS[type])}
-          </span>
-        ))}
-      </div>
-      <div className="readiness-legend">
-        <span>○ {t('Ready')}</span>
-        <span>→ {t('Moved · action ready')}</span>
-        <span>✓ {t('Finished for today')}</span>
-        <span>? {t('Confused · unavailable')}</span>
-      </div>
-      <p>{t('Inspired is an extra status. It does not restore an action.')}</p>
-    </section>
-  );
-}
 function Stat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: ReactNode }) {
   return (
     <div className="stat">
@@ -328,10 +387,18 @@ export default function App() {
   const [started, setStarted] = useState(false),
     [ready, setReady] = useState(false);
   const [ruler, setRuler] = useState('cao'),
-    [seed, setSeed] = useState('190');
+    [seed, setSeed] = useState(randomSeed);
   const [newAggression, setNewAggression] = useState<RivalAggression>('balanced');
+  // The opening truce defaults on for Cautious rivals and stays where the player puts it.
+  const [truce, setTruce] = useState(false),
+    [truceTouched, setTruceTouched] = useState(false);
   const [displayPreset, setDisplayPreset] = useState<DisplayPreset>(readDisplayPreset);
-  const [legendOpen, setLegendOpen] = useState(false);
+  const [showThreat, setShowThreat] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const [previewAction, setPreviewAction] = useState<Action | null>(null);
+  const [marchIntent, setMarchIntent] = useState<AttackIntent>('conquer'),
+    [marchSupply, setMarchSupply] = useState<SupplyDays>(20);
   const [cameraFocus, setCameraFocus] = useState<{
     kind: 'city' | 'unit';
     id: string;
@@ -364,7 +431,7 @@ export default function App() {
     [transferFood, setTransferFood] = useState(0),
     [transferTroops, setTransferTroops] = useState(0);
   const [muster, setMuster] = useState(0),
-    [skill, setSkill] = useState<'fire' | 'rally' | 'confuse' | null>(null);
+    [skill, setSkill] = useState<BattleSkill | null>(null);
   const [battleDestination, setBattleDestination] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
   const player = factionById(state.playerFactionId)!;
@@ -372,7 +439,8 @@ export default function App() {
   const city = state.cities.find((c) => c.id === selectedCityId) ?? owned[0] ?? state.cities[0]!;
   const friendly = city.factionId === state.playerFactionId;
   const cityOfficers = state.officers.filter(
-    (o) => o.cityId === city.id && o.factionId === city.factionId && !o.captive,
+    (o) =>
+      o.cityId === city.id && o.factionId === city.factionId && !o.captive && isActiveOfficer(o),
   );
   const available = cityOfficers.filter((o) => !o.busy);
   const officer =
@@ -392,20 +460,6 @@ export default function App() {
   const canBattleAct = !!unit && !unit.acted && unit.status !== 'confused' && !busy;
   const reachableTiles =
     battle && unit ? getReachableTiles(battle, unit.id).sort((a, b) => a.y - b.y || a.x - b.x) : [];
-  const moveDestination = reachableTiles.find(
-    (tile) => `${tile.x},${tile.y}` === battleDestination,
-  );
-  const battleTargets =
-    battle && unit && canBattleAct
-      ? skill
-        ? battle.units.filter(
-            (target) =>
-              target.troops > 0 &&
-              (skill === 'rally' ? target.side === unit.side : target.side !== unit.side) &&
-              Math.abs(unit.x - target.x) + Math.abs(unit.y - target.y) <= 3,
-          )
-        : battle.units.filter((target) => getAttackTargets(battle, unit.id).includes(target.id))
-      : [];
   const enemies = state.cities.filter((c) => c.factionId && c.factionId !== state.playerFactionId);
   const activeAlliances = state.alliances.filter(
     (a) => (a.a === player.id || a.b === player.id) && a.untilTurn > state.turn,
@@ -473,16 +527,32 @@ export default function App() {
     setBattleDestination('');
   }, [battle?.id, battle?.day, unit?.id]);
 
+  useEffect(() => {
+    if (!truceTouched) setTruce(newAggression === 'cautious');
+  }, [newAggression, truceTouched]);
   function execute(command: GameCommand): boolean {
+    const before = session.getSnapshot();
     const result = session.execute(command);
     if (!result.ok) {
       notify(result.error ?? 'This command is unavailable.', true);
       return false;
     }
-    playCue(
-      command.type === 'endMonth' ? 'turn' : command.type.startsWith('battle') ? 'battle' : 'click',
-      sound,
-    );
+    // A finished battle (or an unopposed raid) involving the player opens its recap.
+    const recap = result.state.lastBattle;
+    if (
+      recap &&
+      recap.orderId !== before.lastBattle?.orderId &&
+      [recap.attackerId, recap.defenderId].includes(result.state.playerFactionId)
+    )
+      setModal('summary');
+    if (command.type.startsWith('battle')) {
+      // Choose a cue from what the command actually did: a hit, a counter, a tactic or the end.
+      const fresh = appendedLines(before.battle?.log ?? [], result.state.battle?.log ?? []);
+      const last = result.state.lastBattle;
+      const finished = before.battle !== null && result.state.battle === null && last;
+      const won = finished && last ? playerWon(last, result.state.playerFactionId) : null;
+      playCue(cueForBattleLog(fresh, finished ? (won ? 'win' : 'loss') : null), sound);
+    } else playCue(command.type === 'endMonth' ? 'turn' : 'click', sound);
     if (command.type === 'assignTroops')
       notify(`Troop assignment updated to ${number(command.amount)}.`);
     else if (command.type === 'action' || command.type === 'march' || command.type === 'transfer')
@@ -511,7 +581,9 @@ export default function App() {
   }
   function startCampaign() {
     const parsed = Number(seed);
-    session.start(ruler, Number.isFinite(parsed) ? parsed >>> 0 : 190, newAggression);
+    session.start(ruler, Number.isFinite(parsed) ? parsed >>> 0 : 190, newAggression, {
+      truceMonths: truce ? TRUCE_MONTHS : 0,
+    });
     const next = session.getSnapshot();
     const leader = next.officers.find((o) => o.name === factionById(ruler)?.leader);
     focusCity(
@@ -534,6 +606,8 @@ export default function App() {
         .slice(0, 3)
         .map((o) => o.id),
     );
+    setMarchIntent('conquer');
+    setMarchSupply(20);
     setModal('march');
   }
   function openTransfer() {
@@ -591,11 +665,26 @@ export default function App() {
     }
     if (unit && execute({ type: 'battleMove', unitId: unit.id, x, y })) setBattleDestination('');
   }
-  function chooseBattleSkill(next: 'fire' | 'rally' | 'confuse') {
+  function chooseBattleSkill(next: BattleSkill) {
     if (!unit || !canBattleAct) return;
     setSelectedUnitId(unit.id);
     setBattleDestination('');
     setSkill(skill === next ? null : next);
+  }
+  /** End days automatically (each one validated and autosaved) until the armies are in reach. */
+  async function advanceToContact() {
+    if (advancing || !battle || busy) return;
+    setAdvancing(true);
+    try {
+      for (let day = 0; day < 10; day++) {
+        const current = session.getSnapshot();
+        if (!current.battle || current.battle.outcome || contactMade(current.battle)) break;
+        if (!execute({ type: 'battleEndDay' })) break;
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      }
+    } finally {
+      setAdvancing(false);
+    }
   }
   async function openSaves() {
     const request = ++slotRequest.current;
@@ -820,7 +909,11 @@ export default function App() {
                   })
                 : t('THE HAN REALM')}
             </span>
-            <span>{tx(isBattle ? `DAY ${battle.day} / 30` : '山河万里 · A THOUSAND LEAGUES')}</span>
+            <span>
+              {isBattle
+                ? t('DAY {day} / {limit}', { day: battle.day, limit: battle.dayLimit })
+                : tx('山河万里 · A THOUSAND LEAGUES')}
+            </span>
           </div>
           <GameMap
             state={state}
@@ -833,6 +926,7 @@ export default function App() {
             reducedMotion={reducedMotion}
             displayPreset={displayPreset}
             cameraFocus={cameraFocus ?? undefined}
+            showThreat={showThreat && isBattle}
           />
           {!isBattle && (
             <>
@@ -895,433 +989,32 @@ export default function App() {
         </section>
 
         <aside className="inspector">
-          {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}
+          {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}﻿{' '}
           {isBattle && battle ? (
-            <>
-              <div className="inspector-title">
-                <span className="eyebrow">{t('TACTICAL COMMAND')}</span>
-                <h2>{t('Hold your ground.')}</h2>
-                <p>{t('Capture the enemy camp or break their army.')}</p>
-              </div>
-              <div className="battle-conditions">
-                <span>
-                  {battle.weather === 'clear' ? (
-                    <Sun size={16} />
-                  ) : battle.weather === 'rain' ? (
-                    <CloudRain size={16} />
-                  ) : (
-                    <Wind size={16} />
-                  )}{' '}
-                  {tx(battle.weather)}
-                </span>
-                <span>
-                  <Wheat size={16} />
-                  {number(
-                    battle.playerSide === 'attacker' ? battle.attackerFood : battle.defenderFood,
-                  )}{' '}
-                  {t('supplies')}
-                </span>
-              </div>
-              <div className="army-balance">
-                <span>
-                  {t('Your army')}
-                  <strong>
-                    {number(
-                      battle.units
-                        .filter((u) => u.side === battle.playerSide)
-                        .reduce((s, u) => s + u.troops, 0),
-                    )}
-                  </strong>
-                </span>
-                <Swords size={18} />
-                <span>
-                  {t('Enemy army')}
-                  <strong>
-                    {number(
-                      battle.units
-                        .filter((u) => u.side !== battle.playerSide)
-                        .reduce((s, u) => s + u.troops, 0),
-                    )}
-                  </strong>
-                </span>
-              </div>
-              <div className="battle-toolbar">
-                <button
-                  className="primary-outline next-commander"
-                  onClick={nextCommander}
-                  disabled={!nextUnit}
-                >
-                  <ArrowRight size={17} />
-                  {t('Next ready commander')}
-                </button>
-                {!nextUnit && (
-                  <p className="subtle">
-                    {t('No ready commanders remain. End the day to continue.')}
-                  </p>
-                )}
-              </div>
-              <button
-                className="legend-toggle"
-                onClick={() => setLegendOpen(!legendOpen)}
-                aria-expanded={legendOpen}
-              >
-                <CircleHelp size={17} />
-                {t('Troops & banners legend')}
-                <ChevronDown size={16} />
-              </button>
-              {legendOpen && <TroopLegend />}
-              {isBattle && (
-                <div className="battle-map-hint">
-                  <Target size={16} />
-                  <span>
-                    {tx(
-                      skill
-                        ? `Choose ${skill === 'rally' ? 'a friendly unit' : 'an enemy'} within 3 tiles for ${skill}.`
-                        : unit?.status === 'confused'
-                          ? `${unit.name} is confused. Rally them with an ally, or end the day.`
-                          : unit?.acted
-                            ? `${unit.name} has acted. Select another commander or end the day.`
-                            : unit
-                              ? `${unit.name}: select a highlighted tile to move, or an enemy to attack.`
-                              : 'Select a unit to give orders.',
-                    )}
-                  </span>
-                  {skill && (
-                    <button
-                      onClick={() => setSkill(null)}
-                      aria-label={t('Cancel tactic targeting')}
-                    >
-                      {t('Cancel')}
-                    </button>
-                  )}
-                </div>
-              )}
-              {unit && (
-                <div className="unit-card">
-                  <span className="eyebrow">{t('SELECTED COMMANDER')}</span>
-                  <div className="selected-identity">
-                    <Portrait officerId={unit.officerId} large />
-                    <div className="identity-details">
-                      <h3>{tx(unit.name)}</h3>
-                      <div className="identity-faction">
-                        <Flag size={17} />
-                        {tx(
-                          factionById(
-                            unit.side === 'attacker' ? battle.attackerId : battle.defenderId,
-                          )?.name ?? 'The garrison',
-                        )}
-                      </div>
-                      <span className="subtle troop-description">
-                        <TroopIcon type={unit.troopType} />
-                        {tx(TROOP_LABELS[unit.troopType])} · {number(unit.troops)} {t('troops')}
-                      </span>
-                      <p
-                        className={`readiness ${unit.status === 'confused' ? 'unavailable' : unit.acted ? 'finished' : 'ready'}`}
-                      >
-                        <span aria-hidden="true">
-                          {unit.status === 'confused'
-                            ? '?'
-                            : unit.acted
-                              ? '✓'
-                              : unit.moved
-                                ? '→'
-                                : '○'}
-                        </span>
-                        {t(unitReadiness(unit))}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="unit-facts">
-                    <span>
-                      {t('Move')} <b>{getBattleUnitMove(unit)}</b>
-                    </span>
-                    <span>
-                      {t('Range')} <b>{getBattleUnitRange(unit)}</b>
-                    </span>
-                    <span>
-                      {t('Morale')} <b>{unit.morale}</b>
-                    </span>
-                  </div>
-                  <div className="unit-status">
-                    <span
-                      className={
-                        unit.moved || unit.acted || unit.status === 'confused' ? 'used' : ''
-                      }
-                    >
-                      {tx(
-                        unit.status === 'confused'
-                          ? 'Movement blocked'
-                          : unit.moved || unit.acted
-                            ? 'Movement used'
-                            : 'Movement ready',
-                      )}
-                    </span>
-                    <span className={unit.acted || unit.status === 'confused' ? 'used' : ''}>
-                      {tx(
-                        unit.status === 'confused'
-                          ? 'Action blocked'
-                          : unit.acted
-                            ? 'Action used'
-                            : 'Action ready',
-                      )}
-                    </span>
-                  </div>
-                  {unit.status === 'confused' && (
-                    <p className="inline-notice" role="status">
-                      {t(
-                        'Confused: this commander loses the current turn. Another commander can Rally them within three tiles, or end the day to recover.',
-                      )}
-                    </p>
-                  )}
-                  {unit.status === 'inspired' && (
-                    <p className="subtle">{t('Inspired: attacks deal 20% more damage today.')}</p>
-                  )}
-                  <div className="battle-movement">
-                    <label className="field-label" htmlFor="battle-destination">
-                      {t('Move to tile')}
-                      <select
-                        id="battle-destination"
-                        value={moveDestination ? battleDestination : ''}
-                        onChange={(event) => setBattleDestination(event.target.value)}
-                        disabled={!canBattleAct || !reachableTiles.length || !!skill}
-                      >
-                        <option value="">
-                          {tx(
-                            unit.status === 'confused'
-                              ? 'Movement blocked'
-                              : unit.moved || unit.acted
-                                ? 'Movement used'
-                                : reachableTiles.length
-                                  ? 'Choose a reachable tile'
-                                  : 'No reachable tiles',
-                          )}
-                        </option>
-                        {reachableTiles.map((tile) => (
-                          <option key={`${tile.x},${tile.y}`} value={`${tile.x},${tile.y}`}>
-                            {String.fromCharCode(65 + tile.x)}
-                            {tile.y + 1} · {tx(battle.terrain[tile.y * battle.width + tile.x])}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <button
-                      className="primary-outline"
-                      disabled={!canBattleAct || !moveDestination || !!skill}
-                      onClick={() => {
-                        if (moveDestination) moveBattleUnit(moveDestination.x, moveDestination.y);
-                      }}
-                    >
-                      {t('Move unit')}
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                  <div className="tactic-actions">
-                    <button
-                      disabled={!canBattleAct}
-                      onClick={() => chooseBattleSkill('fire')}
-                      aria-pressed={skill === 'fire'}
-                      className={skill === 'fire' ? 'selected' : ''}
-                    >
-                      <Flame size={16} />
-                      {t('Fire')}
-                    </button>
-                    <button
-                      disabled={!canBattleAct}
-                      onClick={() => chooseBattleSkill('rally')}
-                      aria-pressed={skill === 'rally'}
-                      className={skill === 'rally' ? 'selected' : ''}
-                    >
-                      <Flag size={16} />
-                      {t('Rally')}
-                    </button>
-                    <button
-                      disabled={!canBattleAct}
-                      onClick={() => chooseBattleSkill('confuse')}
-                      aria-pressed={skill === 'confuse'}
-                      className={skill === 'confuse' ? 'selected' : ''}
-                    >
-                      <Sparkles size={16} />
-                      {t('Confuse')}
-                    </button>
-                  </div>
-                  {skill && (
-                    <div className="battle-tactic-note">
-                      <p className="subtle">
-                        {tx(
-                          skill === 'rally'
-                            ? 'Rally restores allied morale and removes confusion. Choose yourself or an ally within three tiles.'
-                            : skill === 'fire'
-                              ? 'Fire reaches three tiles. Rain weakens it; wind and forests strengthen it.'
-                              : 'Confuse reaches three tiles. Success depends on both commanders’ intellect and makes the target lose a turn.',
-                        )}
-                      </p>
-                      <button className="text-button" onClick={() => setSkill(null)}>
-                        <X size={13} />
-                        {t('Cancel')} {tx(skill)}
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    className="text-button"
-                    disabled={!canBattleAct}
-                    onClick={() => {
-                      if (execute({ type: 'battleWait', unitId: unit.id })) setSkill(null);
-                    }}
-                  >
-                    {t('Hold position')} <ArrowRight size={14} />
-                  </button>
-                  {canBattleAct && (skill || battleTargets.length > 0) && (
-                    <div className={`attack-targets ${skill === 'rally' ? 'rally-targets' : ''}`}>
-                      <span className="eyebrow">
-                        {tx(skill ? `${skill.toUpperCase()} TARGETS · RANGE 3` : 'IN ATTACK RANGE')}
-                      </span>
-                      {battleTargets.length ? (
-                        battleTargets.map((target) => (
-                          <button
-                            key={target.id}
-                            onClick={() => performBattleTarget(target.id)}
-                            aria-label={t(
-                              skill === 'fire'
-                                ? 'fire {name}'
-                                : skill === 'rally'
-                                  ? 'rally {name}'
-                                  : skill === 'confuse'
-                                    ? 'confuse {name}'
-                                    : 'Attack {name}',
-                              { name: target.name },
-                            )}
-                          >
-                            {skill === 'rally' ? (
-                              <Flag size={13} />
-                            ) : skill === 'fire' ? (
-                              <Flame size={13} />
-                            ) : skill === 'confuse' ? (
-                              <Sparkles size={13} />
-                            ) : (
-                              <Swords size={13} />
-                            )}
-                            <span>
-                              {tx(target.name)}
-                              {tx(target.id === unit.id ? ' (self)' : '')}
-                              <small>
-                                {tx(
-                                  skill === 'rally'
-                                    ? `${target.morale} morale${target.status === 'confused' ? ' · Confused' : ''}`
-                                    : `${number(target.troops)} troops`,
-                                )}
-                              </small>
-                            </span>
-                            <ArrowRight size={13} />
-                          </button>
-                        ))
-                      ) : (
-                        <p className="subtle">
-                          {t(
-                            'No valid targets within three tiles. Cancel to move or choose another commander.',
-                          )}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              <div className="section-heading">
-                <h3>{t('Your commanders')}</h3>
-                <span>
-                  {battle.units.filter((u) => u.side === battle.playerSide && u.troops > 0).length}{' '}
-                  {t('standing')}
-                </span>
-              </div>
-              <div className="battle-unit-list">
-                {battle.units
-                  .filter((u) => u.side === battle.playerSide && u.troops > 0)
-                  .map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => {
-                        setSelectedUnitId(u.id);
-                        setSkill(null);
-                        setBattleDestination('');
-                      }}
-                      className={u.id === unit?.id ? 'selected' : ''}
-                    >
-                      <Portrait officerId={u.officerId} />
-                      <span>
-                        {tx(u.name)}
-                        <small>
-                          <TroopIcon type={u.troopType} />
-                          {tx(TROOP_LABELS[u.troopType])} · {t(unitReadiness(u))}
-                          {u.status === 'inspired' && <> · {t('Inspired')}</>}
-                        </small>
-                      </span>
-                      <strong>{number(u.troops)}</strong>
-                      <i className={u.acted || u.status === 'confused' ? 'spent' : 'ready'} />
-                    </button>
-                  ))}
-              </div>
-              <div className="section-heading">
-                <h3>{t('Enemy commanders')}</h3>
-                <span>
-                  {battle.units.filter((u) => u.side !== battle.playerSide && u.troops > 0).length}
-                </span>
-              </div>
-              <div className="enemy-commander-list" role="list" aria-label={t('Enemy commanders')}>
-                {battle.units
-                  .filter((u) => u.side !== battle.playerSide && u.troops > 0)
-                  .map((enemy) => (
-                    <div className="enemy-unit" role="listitem" tabIndex={0} key={enemy.id}>
-                      <Portrait officerId={enemy.officerId} />
-                      <span>
-                        <strong>{tx(enemy.name)}</strong>
-                        <small>
-                          <TroopIcon type={enemy.troopType} />
-                          {tx(TROOP_LABELS[enemy.troopType])} ·{' '}
-                          {tx(
-                            factionById(
-                              enemy.side === 'attacker' ? battle.attackerId : battle.defenderId,
-                            )?.name ?? 'The garrison',
-                          )}
-                        </small>
-                      </span>
-                      <strong>{number(enemy.troops)}</strong>
-                    </div>
-                  ))}
-              </div>
-              <div className="battle-report">
-                {battle.log
-                  .slice(-5)
-                  .reverse()
-                  .map((log, i) => (
-                    <p key={`${i}-${log}`}>{tx(log)}</p>
-                  ))}
-              </div>
-              <div className="battle-secondary">
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        t('Withdraw from this battle? Your surviving troops will retreat.'),
-                      )
-                    )
-                      execute({ type: 'battleRetreat' });
-                  }}
-                >
-                  {t('Retreat')}
-                </button>
-                <button
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        t('Let your commanders resolve the rest of this battle automatically?'),
-                      )
-                    )
-                      execute({ type: 'battleAuto' });
-                  }}
-                >
-                  {t('Auto-resolve')}
-                </button>
-              </div>
-            </>
+            <BattlePanel
+              battle={battle}
+              unit={unit}
+              canAct={canBattleAct}
+              skill={skill}
+              setSkill={setSkill}
+              reachableTiles={reachableTiles}
+              destination={battleDestination}
+              setDestination={setBattleDestination}
+              moveUnit={moveBattleUnit}
+              selectUnit={(id) => {
+                setSelectedUnitId(id);
+                setSkill(null);
+                setBattleDestination('');
+              }}
+              chooseSkill={chooseBattleSkill}
+              performTarget={performBattleTarget}
+              execute={execute}
+              nextCommander={nextCommander}
+              showThreat={showThreat}
+              setShowThreat={setShowThreat}
+              advanceToContact={advanceToContact}
+              advancing={advancing}
+            />
           ) : section === 'officers' ? (
             <>
               <div className="inspector-title">
@@ -1520,7 +1213,7 @@ export default function App() {
                         role="tab"
                         aria-selected={group === index}
                         key={g.name}
-                        className={group === index ? 'active' : ''}
+                        className={`${group === index ? 'active' : ''} ${g.warning ? 'warning' : ''}`}
                         onClick={() => {
                           setGroup(index);
                           setTargetId('');
@@ -1553,7 +1246,15 @@ export default function App() {
                             (f) => f.id !== player.id && enemies.some((c) => c.factionId === f.id),
                           ).map((f) => (
                             <option key={f.id} value={f.id}>
-                              {tx(f.name)}
+                              {tx(f.name)} ·{' '}
+                              {t('{count}% chance', {
+                                count: getAllianceChance(
+                                  state,
+                                  player.id,
+                                  f.id,
+                                  officer?.intellect ?? 0,
+                                ),
+                              })}
                             </option>
                           ))}
                         </optgroup>
@@ -1561,7 +1262,11 @@ export default function App() {
                           {state.officers
                             .filter(
                               (o) =>
+                                isActiveOfficer(o) &&
                                 (o.factionId !== player.id || o.captive) &&
+                                (officer
+                                  ? getPersuadeChance(state, officer.id, o.id) !== null
+                                  : true) &&
                                 (o.cityId === city.id ||
                                   (city.neighbors.includes(o.cityId) && o.factionId && !o.captive)),
                             )
@@ -1569,10 +1274,45 @@ export default function App() {
                               <option value={o.id} key={o.id}>
                                 {tx(o.name)} ·{' '}
                                 {tx(state.cities.find((c) => c.id === o.cityId)?.name)}
+                                {officer
+                                  ? ` · ${t('{count}% chance', {
+                                      count: getPersuadeChance(state, officer.id, o.id) ?? 0,
+                                    })}`
+                                  : ''}
                               </option>
                             ))}
                         </optgroup>
                       </select>
+                      {activeAlliances.map((alliance) => {
+                        const other = alliance.a === player.id ? alliance.b : alliance.a;
+                        return (
+                          <div className="alliance-row" key={`${alliance.a}-${alliance.b}`}>
+                            <Handshake size={14} />
+                            <span>
+                              {t('Allied with {faction} for {count} more months', {
+                                faction: factionById(other)?.name ?? other,
+                                count: alliance.untilTurn - state.turn,
+                              })}
+                            </span>
+                            <button
+                              className="text-button danger"
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    t(
+                                      'Break the alliance with {faction}? Rulers remember: future treaties will be harder to win.',
+                                      { faction: factionById(other)?.name ?? other },
+                                    ),
+                                  )
+                                )
+                                  execute({ type: 'breakAlliance', factionId: other });
+                              }}
+                            >
+                              {t('Break alliance')}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {officer?.busy && (
@@ -1590,7 +1330,10 @@ export default function App() {
                         <button
                           key={action}
                           disabled={!!info.reason}
+                          className={GROUPS[group]!.warning ? 'warning' : ''}
                           onClick={() => performAction(action)}
+                          onMouseEnter={() => setPreviewAction(action)}
+                          onFocus={() => setPreviewAction(action)}
                           title={tx(info.reason ?? info.description)}
                         >
                           <Icon size={18} />
@@ -1616,6 +1359,29 @@ export default function App() {
                       );
                     })}
                   </div>
+                  {officer &&
+                    (() => {
+                      const shown =
+                        previewAction && GROUPS[group]!.actions.includes(previewAction)
+                          ? previewAction
+                          : GROUPS[group]!.actions[0]!;
+                      const preview = getActionPreview(
+                        state,
+                        shown,
+                        city.id,
+                        officer.id,
+                        targetId || undefined,
+                      );
+                      return preview ? (
+                        <ActionPreviewBox
+                          action={shown}
+                          preview={preview}
+                          city={city}
+                          label={getActionInfo(state, shown, city.id, officer.id).label}
+                        />
+                      ) : null;
+                    })()}
+                  <PrisonerPanel state={state} city={city} execute={execute} />
                   <div className="military-orders">
                     <button
                       className="primary-outline"
@@ -1834,8 +1600,22 @@ export default function App() {
                 <p>{tx(factionById(ruler)?.description)}</p>
               </div>
               <div className="begin-campaign">
-                <label>
-                  {t('World seed')}{' '}
+                <button className="primary-button" onClick={startCampaign} disabled={!ready}>
+                  {t('Raise your banner')}
+                  <ArrowRight size={18} />
+                </button>
+              </div>
+              <details className="advanced-setup" open={advancedOpen}>
+                <summary
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setAdvancedOpen(!advancedOpen);
+                  }}
+                >
+                  {t('Advanced')}
+                </summary>
+                <label className="field-label">
+                  {t('World seed')}
                   <input
                     aria-label={t('World seed')}
                     value={seed}
@@ -1844,11 +1624,28 @@ export default function App() {
                     maxLength={10}
                   />
                 </label>
-                <button className="primary-button" onClick={startCampaign} disabled={!ready}>
-                  {t('Raise your banner')}
-                  <ArrowRight size={18} />
-                </button>
-              </div>
+                <p className="subtle">
+                  {t(
+                    'A random seed is chosen for every new campaign. Enter one to replay a world.',
+                  )}
+                </p>
+              </details>
+              <label className="check-row">
+                <input
+                  type="checkbox"
+                  checked={truce}
+                  onChange={(event) => {
+                    setTruce(event.target.checked);
+                    setTruceTouched(true);
+                  }}
+                />
+                <span>
+                  <strong>{t('Opening truce (2 months)')}</strong>
+                  <small>
+                    {t('Rival houses will not march against anyone for the first two months.')}
+                  </small>
+                </span>
+              </label>
               <label className="field-label aggression-setup">
                 {t('Rival aggression')}
                 <select
@@ -1911,7 +1708,7 @@ export default function App() {
               <h3>{t('Command the battlefield')}</h3>
               <p>
                 {t(
-                  'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Fire, Rally, and Confuse use your action. Capture the enemy camp or defeat their troops. Defenders win after 30 days.',
+                  'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.',
                 )}
               </p>
             </article>
@@ -1920,7 +1717,7 @@ export default function App() {
               <h3>{t('Shape the realm')}</h3>
               <p>
                 {t(
-                  'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Transfer officers and resources between neighboring cities. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.',
+                  'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Raid, sack or plunder when you must, but a ruined city breeds unrest. Captured officers may be recruited, released or executed. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.',
                 )}
               </p>
             </article>
@@ -2025,7 +1822,7 @@ export default function App() {
             </label>
           </div>
           <div className="settings-footer">
-            <span className="eyebrow">{t('HEGEMONY OF THE THREE KINGDOMS · v0.1')}</span>
+            <span className="eyebrow">{t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}</span>
             <p>
               {t(
                 'A web remake inspired by 三国霸业 (Baye). One realm, six houses, and a history that belongs to you.',
@@ -2050,7 +1847,7 @@ export default function App() {
       {modal === 'credits' && (
         <Dialog
           title={t('Artwork & reference credits')}
-          eyebrow={t('HEGEMONY OF THE THREE KINGDOMS · v0.1')}
+          eyebrow={t('HEGEMONY OF THE THREE KINGDOMS · v0.2')}
           onClose={() => setModal('settings')}
         >
           <div className="credits-copy">
@@ -2174,91 +1971,37 @@ export default function App() {
           eyebrow={t('MILITARY DISPATCH')}
           onClose={() => setModal(null)}
         >
-          <p className="dialog-copy">
-            {t('Choose your destination and commanders. Armies depart at the end of the month.')}
-          </p>
-          <label className="field-label">
-            {t('Destination')}
-            <select value={marchTarget} onChange={(e) => setMarchTarget(e.target.value)}>
-              {city.neighbors
-                .filter((id) => state.cities.find((c) => c.id === id)?.factionId !== player.id)
-                .map((id) => {
-                  const target = state.cities.find((c) => c.id === id)!;
-                  return (
-                    <option key={id} value={id}>
-                      {tx(target.name)} · {tx(factionById(target.factionId)?.name ?? 'Unclaimed')}
-                    </option>
-                  );
-                })}
-            </select>
-          </label>
-          <div className="march-roster">
-            {available
-              .filter((o) => o.troops > 0)
-              .map((o) => (
-                <label key={o.id}>
-                  <input
-                    type="checkbox"
-                    checked={marchOfficers.includes(o.id)}
-                    onChange={(e) =>
-                      setMarchOfficers(
-                        e.target.checked
-                          ? [...marchOfficers, o.id]
-                          : marchOfficers.filter((id) => id !== o.id),
-                      )
-                    }
-                  />
-                  <OfficerMark officer={o} size="small" />
-                  <span>
-                    <strong>{tx(o.name)}</strong>
-                    <small>
-                      {tx(TROOP_LABELS[o.troopType])} · {o.stamina} {t('stamina')}
-                    </small>
-                  </span>
-                  <b>{number(o.troops)}</b>
-                </label>
-              ))}
-          </div>
-          <div className="dispatch-summary">
-            <span>
-              <Shield size={16} />
-              {number(
-                state.officers
-                  .filter((o) => marchOfficers.includes(o.id))
-                  .reduce((s, o) => s + o.troops, 0),
-              )}{' '}
-              {t('troops')}
-            </span>
-            <span>
-              <Wheat size={16} />
-              {number(
-                Math.ceil(
-                  state.officers
-                    .filter((o) => marchOfficers.includes(o.id))
-                    .reduce((s, o) => s + o.troops, 0) * 0.65,
-                ) + 200,
-              )}{' '}
-              {t('food')}
-            </span>
-          </div>
-          <button
-            className="primary-button full"
-            disabled={!marchTarget || !marchOfficers.length}
-            onClick={() => {
-              if (
-                execute({
-                  type: 'march',
-                  sourceId: city.id,
-                  targetId: marchTarget,
-                  officerIds: marchOfficers,
-                })
-              )
-                setModal(null);
+          <MarchDialog
+            state={state}
+            city={city}
+            available={available}
+            target={marchTarget}
+            setTarget={setMarchTarget}
+            officers={marchOfficers}
+            setOfficers={setMarchOfficers}
+            intent={marchIntent}
+            setIntent={setMarchIntent}
+            supplyDays={marchSupply}
+            setSupplyDays={setMarchSupply}
+            onIssue={(command) => {
+              if (execute(command)) setModal(null);
             }}
-          >
-            {t('Issue march order')}
-            <ArrowRight size={17} />
-          </button>
+          />
+        </Dialog>
+      )}
+
+      {modal === 'summary' && state.lastBattle && (
+        <Dialog
+          title={t(playerWon(state.lastBattle, state.playerFactionId) ? 'Victory' : 'Defeat')}
+          eyebrow={t('BATTLE REPORT')}
+          onClose={() => setModal(null)}
+        >
+          <BattleSummary
+            state={state}
+            summary={state.lastBattle}
+            onFocusCity={focusCity}
+            onClose={() => setModal(null)}
+          />
         </Dialog>
       )}
 
