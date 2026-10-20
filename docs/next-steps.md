@@ -1,6 +1,6 @@
 # To-do, design decisions and next steps
 
-Status on October 20, 2026, branch `v0.2` at `8e93b10`. This is the working list for finishing v0.2 and planning v0.3. It replaces the plan sections of [the v0.2 review](archive/v0.2-review.md); that review keeps the full history and the detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) says what v0.2 already is.
+Status on October 20, 2026, branch `hegemony_of_the_three_kindoms_v0.2` (named `v0.2` until then), after commit `0b863bf`. This is the working list for finishing v0.2 and planning v0.3. It replaces the plan sections of [the v0.2 review](archive/v0.2-review.md); that review keeps the full history and the detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) says what v0.2 already is.
 
 ## Release gate for v0.2
 
@@ -14,7 +14,7 @@ v0.2 merges to `main` when every box is ticked.
 - [ ] Ma Chao has a portrait, or it is deferred with the garrison fallback (T5).
 - [ ] A human playtest is done, with its findings fixed or deferred (T6).
 - [ ] The frame rate holds 30 fps with the CPU slowed 4× (already met) and on one real low-end machine (T7).
-- [ ] Fresh diagnostics are in [v0.2-notes.md](v0.2-notes.md), and a pull request from `v0.2` to `main` is opened.
+- [ ] Fresh diagnostics are in [v0.2-notes.md](v0.2-notes.md), and a pull request from `hegemony_of_the_three_kindoms_v0.2` to `main` is opened.
 
 ## To-do
 
@@ -30,7 +30,7 @@ Ordered. "Who" is a coding session unless it says you.
 | T6  | **Human playtest.** Each scenario on Standard, with one Challenging and one Balanced house: at least 12 months and 3 hand-fought battles each. Use the checklist in plan §6, and record results in a new `docs/v0.2-playtest.md`.                                          | you                       | Every checklist item ticked or explained; issues fixed or deferred.                                                                     | [R7](archive/v0.2-review.md#r7-human-playtest-release-gate-user-step)      |
 | T7  | **Weak-GPU frame rate.** The map runs at about 10 fps under software graphics, because Pixi redraws the whole stage up to 30 times a second. Draw only when the state or camera changes, cache text, and cap the pixel ratio. Then do one manual run on a low-end machine. | session, then you         | ≥ 30 fps under SwiftShader in `npm run test:fps`, if reachable; the manual run is recorded.                                             | [R8](archive/v0.2-review.md#r8-frame-rate-on-slower-hardware)              |
 | T8  | **Review Yuan Shao's rating.** He is rated Approachable, yet loses Pingyuan in month 2 in every turtle run.                                                                                                                                                                | session, with T2          | The ratings match the measured survival.                                                                                                | —                                                                          |
-| T9  | **Release.** Re-run all checks and the diagnostics, update the notes, push `v0.2`, and open the pull request to `main`.                                                                                                                                                    | session, on your go-ahead | The pull request is open with green CI.                                                                                                 | —                                                                          |
+| T9  | **Release.** Re-run all checks and the diagnostics, update the notes, push `hegemony_of_the_three_kindoms_v0.2`, and open the pull request to `main`.                                                                                                                      | session, on your go-ahead | The pull request is open with green CI.                                                                                                 | —                                                                          |
 
 ### What the measurements say for T1
 
