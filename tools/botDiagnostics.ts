@@ -1,10 +1,16 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deepStrictEqual } from 'node:assert';
-import { FACTIONS } from '../src/content/scenario';
+import { scenarioById } from '../src/content/scenario';
 import { createGame, dispatch, validateState } from '../src/game/campaign';
 import type { CampaignObserver } from '../src/game/aiPolicy';
-import type { GameCommand, GameState } from '../src/game/types';
+import type {
+  BattleSkill,
+  BattleState,
+  BattleUnit,
+  GameCommand,
+  GameState,
+} from '../src/game/types';
 import { botMonth, newBotStats } from './playerBot';
 
 /**
@@ -19,8 +25,13 @@ const seedCount = Number(process.env.DIAGNOSTIC_SEEDS ?? 3);
 const presets = (process.env.DIAGNOSTIC_PRESETS ?? 'balanced').split(',') as (
   'cautious' | 'balanced' | 'aggressive'
 )[];
+const scenarioIds = (process.env.DIAGNOSTIC_SCENARIOS ?? 'divided-realm-190').split(',');
 const tacticalAi = (process.env.DIAGNOSTIC_TACTICAL_AI ?? 'v2') as 'v1' | 'v2';
 const seeds = Array.from({ length: seedCount }, (_, index) => 2001 + index);
+/** Survival is also reported at this horizon, the one the H1 acceptance criterion uses. */
+const SURVIVAL_HORIZON = 48;
+/** Tactics whose use is divided by the situations in which they could be cast. */
+const SITUATIONAL: BattleSkill[] = ['ambush', 'rockfall'];
 
 interface BattleRecord {
   days: number;
@@ -44,7 +55,7 @@ const percentile = (values: number[], p: number) => {
 };
 const pct = (n: number, d: number) => (d ? Math.round((n * 1000) / d) / 10 : null);
 
-const { battleConfig } = await import('../src/game/battle');
+const { battleConfig, getTacticTargets } = await import('../src/game/battle');
 battleConfig.tacticalAi = tacticalAi;
 
 const battles: BattleRecord[] = [];
@@ -55,122 +66,171 @@ let aiShortages = 0;
 const aiActions: Record<string, number> = {};
 const tacticCasts: Record<string, number> = {};
 let aiMarches = 0;
+// Tactical-AI unit turns that began able to cast a situational tactic in place, and
+// how many of those turns cast it. Rockfall cast after moving onto a hill is not eligible
+// in place, so castsTotal can exceed castsWhenEligible.
+const eligibility = Object.fromEntries(
+  SITUATIONAL.map((skill) => [skill, { eligibleTurns: 0, castsWhenEligible: 0, castsTotal: 0 }]),
+) as Record<BattleSkill, { eligibleTurns: number; castsWhenEligible: number; castsTotal: number }>;
+let eligibleNow = new Set<BattleSkill>();
+// Raids by every faction: a raid either finds no soldiers (unopposed) or becomes a battle.
+const raidTotals = { battles: 0, battlesWon: 0, unopposed: 0 };
 
-for (const faction of FACTIONS) {
-  for (const preset of presets) {
-    for (const seed of seeds) {
-      let state: GameState = createGame(faction.id, seed, preset);
-      const stats = newBotStats();
-      let current: Partial<BattleRecord> & { actions: Record<string, number> } = { actions: {} };
-      let shortage = false;
-      let captures = 0;
-      let coalitions = 0;
-      let rawPlunders = 0;
-      let raidBattles = 0;
-      let fought = 0;
-      let unopposed = 0;
-      const observer: CampaignObserver = {
-        aiMarch: () => aiMarches++,
-        aiUpkeep: ({ shortage: s }) => {
-          aiUpkeeps++;
-          if (s) aiShortages++;
-        },
-        aiStatecraft: ({ kind }) => {
-          aiActions[kind] = (aiActions[kind] ?? 0) + 1;
-        },
-        battleAction: ({ kind, skill }) => {
-          current.actions[kind] = (current.actions[kind] ?? 0) + 1;
-          if (skill) tacticCasts[skill] = (tacticCasts[skill] ?? 0) + 1;
-        },
-        battleShortage: () => {
-          shortage = true;
-        },
-        battleEnded: (event) => {
-          current.days = event.day;
-          current.reason = event.reason;
-          current.winner = event.winner;
-        },
-        battleResult: (event) => {
-          if (event.intent === 'raid') raidBattles++;
-          battles.push({
-            days: current.days ?? event.days ?? 0,
-            reason: current.reason ?? 'unknown',
-            winner: current.winner ?? (event.captured ? 'attacker' : 'defender'),
-            attackerStart: event.attackerStart ?? 0,
-            defenderStart: event.defenderStart ?? 0,
-            attackerEnd: event.attackerEnd ?? 0,
-            defenderEnd: event.defenderEnd ?? 0,
-            shortage,
-            intent: event.intent ?? 'conquer',
-            actions: current.actions,
-          });
-          current = { actions: {} };
-          shortage = false;
-        },
-        capture: ({ byFactionId }) => {
-          if (byFactionId === faction.id) captures++;
-        },
-        plunder: (event) => {
-          rawPlunders++;
-          if (event.form === 'raid') {
-            if (event.fought) fought++;
-            else unopposed++;
-          }
-        },
-        coalition: () => {
-          coalitions++;
-        },
-      };
-      const apply = (command: GameCommand, record = false): boolean => {
-        const unobserved = dispatch(state, command);
-        const started = performance.now();
-        const result = dispatch(state, command, observer);
-        if (record) autoResolveMs.push(performance.now() - started);
-        deepStrictEqual(result, unobserved, 'Diagnostic observation changed gameplay.');
-        if (!result.ok) return false;
-        state = result.state;
-        const error = validateState(state);
-        if (error) throw new Error(`${faction.id}/${preset}/${seed}, turn ${state.turn}: ${error}`);
-        return true;
-      };
-      let unified: number | null = null;
-      let peakCities = 0;
-      for (let month = 0; month < months && state.phase !== 'finished'; month++) {
-        botMonth(
-          () => state,
-          (command) => apply(command),
-          stats,
-        );
-        apply({ type: 'endMonth' });
-        for (let guard = 0; state.phase === 'battle'; guard++) {
-          if (guard >= 60) throw new Error('Unbounded monthly battle resolution.');
-          apply({ type: 'battleAuto' }, true);
-        }
-        for (const rival of FACTIONS)
-          peakCities = Math.max(
-            peakCities,
-            state.cities.filter((c) => c.factionId === rival.id).length,
+/** The `observer?.aiUnitTurn` hook added by tools/ai-diagnostics.mjs in `--bot` mode. */
+type DiagnosticObserver = CampaignObserver & {
+  aiUnitTurn?(battle: BattleState, unit: BattleUnit): void;
+};
+
+for (const scenarioId of scenarioIds) {
+  const scenario = scenarioById(scenarioId);
+  if (!scenario) throw new Error(`Unknown scenario: ${scenarioId}`);
+  for (const faction of scenario.factions) {
+    for (const preset of presets) {
+      for (const seed of seeds) {
+        let state: GameState = createGame(faction.id, seed, preset, { scenarioId });
+        const stats = newBotStats();
+        let current: Partial<BattleRecord> & { actions: Record<string, number> } = {
+          actions: {},
+        };
+        let shortage = false;
+        let captures = 0;
+        let coalitions = 0;
+        let rawPlunders = 0;
+        // The bot's own raids, by how they resolved.
+        const raids = { battles: 0, battlesWon: 0, unopposed: 0 };
+        const observer: DiagnosticObserver = {
+          aiMarch: () => aiMarches++,
+          aiUpkeep: ({ shortage: s }) => {
+            aiUpkeeps++;
+            if (s) aiShortages++;
+          },
+          aiStatecraft: ({ kind }) => {
+            aiActions[kind] = (aiActions[kind] ?? 0) + 1;
+          },
+          aiUnitTurn: (battle, unit) => {
+            eligibleNow = new Set(
+              SITUATIONAL.filter((skill) => getTacticTargets(battle, unit.id, skill).length > 0),
+            );
+            for (const skill of eligibleNow) eligibility[skill].eligibleTurns++;
+          },
+          battleAction: ({ kind, skill }) => {
+            current.actions[kind] = (current.actions[kind] ?? 0) + 1;
+            if (skill) tacticCasts[skill] = (tacticCasts[skill] ?? 0) + 1;
+            if (skill && skill in eligibility) {
+              eligibility[skill].castsTotal++;
+              if (eligibleNow.has(skill)) eligibility[skill].castsWhenEligible++;
+            }
+            // A unit's turn ends with its action; moving first keeps its eligibility.
+            if (kind !== 'move') eligibleNow = new Set();
+          },
+          battleShortage: () => {
+            shortage = true;
+          },
+          battleEnded: (event) => {
+            current.days = event.day;
+            current.reason = event.reason;
+            current.winner = event.winner;
+          },
+          battleResult: (event) => {
+            if (event.intent === 'raid') {
+              if (event.attackerId === faction.id) raids.battles++;
+              raidTotals.battles++;
+            }
+            battles.push({
+              days: current.days ?? event.days ?? 0,
+              reason: current.reason ?? 'unknown',
+              winner: current.winner ?? (event.captured ? 'attacker' : 'defender'),
+              attackerStart: event.attackerStart ?? 0,
+              defenderStart: event.defenderStart ?? 0,
+              attackerEnd: event.attackerEnd ?? 0,
+              defenderEnd: event.defenderEnd ?? 0,
+              shortage,
+              intent: event.intent ?? 'conquer',
+              actions: current.actions,
+            });
+            current = { actions: {} };
+            shortage = false;
+          },
+          capture: ({ byFactionId }) => {
+            if (byFactionId === faction.id) captures++;
+          },
+          plunder: (event) => {
+            rawPlunders++;
+            // A raid that fought and still plundered is a raid battle the raiders won.
+            const mine = event.factionId === faction.id;
+            if (event.form === 'raid' && event.fought) {
+              if (mine) raids.battlesWon++;
+              raidTotals.battlesWon++;
+            } else if (event.form === 'raid') {
+              if (mine) raids.unopposed++;
+              raidTotals.unopposed++;
+            }
+          },
+          coalition: () => {
+            coalitions++;
+          },
+        };
+        const apply = (command: GameCommand, record = false): boolean => {
+          const unobserved = dispatch(state, command);
+          const started = performance.now();
+          const result = dispatch(state, command, observer);
+          if (record) autoResolveMs.push(performance.now() - started);
+          deepStrictEqual(result, unobserved, 'Diagnostic observation changed gameplay.');
+          if (!result.ok) return false;
+          state = result.state;
+          const error = validateState(state);
+          if (error)
+            throw new Error(
+              `${scenarioId}/${faction.id}/${preset}/${seed}, turn ${state.turn}: ${error}`,
+            );
+          return true;
+        };
+        let unified: number | null = null;
+        let eliminated: number | null = null;
+        let peakCities = 0;
+        const held = () => state.cities.filter((c) => c.factionId === faction.id).length;
+        for (let month = 0; month < months && state.phase !== 'finished'; month++) {
+          botMonth(
+            () => state,
+            (command) => apply(command),
+            stats,
           );
+          apply({ type: 'endMonth' });
+          for (let guard = 0; state.phase === 'battle'; guard++) {
+            if (guard >= 60) throw new Error('Unbounded monthly battle resolution.');
+            apply({ type: 'battleAuto' }, true);
+          }
+          if (eliminated === null && held() === 0) eliminated = state.turn;
+          for (const rival of scenario.factions)
+            peakCities = Math.max(
+              peakCities,
+              state.cities.filter((c) => c.factionId === rival.id).length,
+            );
+        }
+        if (state.phase === 'finished' && state.winner === faction.id) unified = state.turn;
+        const { lastOwnPlunder: _memory, ...bot } = stats;
+        campaigns.push({
+          scenario: scenarioId,
+          faction: faction.id,
+          rating: faction.difficulty,
+          preset,
+          seed,
+          months: state.turn,
+          finished: state.phase === 'finished',
+          won: state.winner === faction.id,
+          // Another house won (unification or Hegemon) while the player still held cities.
+          lostToRival: state.phase === 'finished' && state.winner !== faction.id && held() > 0,
+          unified,
+          eliminated,
+          cities: held(),
+          captures,
+          coalitions,
+          peakCities,
+          plunders: rawPlunders,
+          raids,
+          bot,
+        });
       }
-      if (state.phase === 'finished' && state.winner === faction.id) unified = state.turn;
-      campaigns.push({
-        faction: faction.id,
-        preset,
-        seed,
-        months: state.turn,
-        finished: state.phase === 'finished',
-        won: state.winner === faction.id,
-        unified,
-        cities: state.cities.filter((c) => c.factionId === faction.id).length,
-        captures,
-        coalitions,
-        peakCities,
-        plunders: rawPlunders,
-        raidBattles,
-        unopposedRaids: unopposed,
-        winningRaids: fought,
-        bot: stats,
-      });
     }
   }
 }
@@ -227,9 +287,46 @@ const nonDefault = Object.entries(
   ),
 ).reduce((total, [days, n]) => total + (days === '20' ? 0 : n), 0);
 const raids = botSum('raids');
+type Campaign = Record<string, unknown>;
+/** Survival, elimination and unification for one group of campaigns. */
+const outcomes = (group: Campaign[]) => {
+  const eliminatedBy = (turn: number) =>
+    group.filter((c) => c.eliminated !== null && Number(c.eliminated) <= turn).length;
+  const unifiedTurns = group.filter((c) => c.unified !== null).map((c) => Number(c.unified));
+  return {
+    runs: group.length,
+    [`survival${SURVIVAL_HORIZON}Percent`]: pct(
+      group.length - eliminatedBy(SURVIVAL_HORIZON),
+      group.length,
+    ),
+    survivalPercent: pct(group.length - eliminatedBy(months), group.length),
+    medianEliminationTurn: median(
+      group.filter((c) => c.eliminated !== null).map((c) => Number(c.eliminated)),
+    ),
+    lostToRival: group.filter((c) => c.lostToRival).length,
+    medianFinalCities: median(group.map((c) => Number(c.cities))),
+    unifiedRuns: unifiedTurns.length,
+    // Over winners only, so always read it beside unifiedRuns.
+    monthsToUnifyMedian: median(unifiedTurns),
+  };
+};
+const groupBy = (key: (c: Campaign) => string) => {
+  const groups: Record<string, Campaign[]> = {};
+  for (const c of campaigns) (groups[key(c)] ??= []).push(c);
+  return Object.fromEntries(Object.entries(groups).map(([k, group]) => [k, outcomes(group)]));
+};
+const raidResolved = raidTotals.battles + raidTotals.unopposed;
+const botRaid = (key: 'battles' | 'battlesWon' | 'unopposed') =>
+  sum((c) => (c.raids as Record<string, number>)[key]!);
 const summary = {
   tacticalAi,
+  scenarios: scenarioIds,
   campaigns: campaigns.length,
+  survival: {
+    overall: outcomes(campaigns),
+    byRating: groupBy((c) => `${c.scenario}/${c.rating}`),
+    byFaction: groupBy((c) => `${c.scenario}/${c.faction}`),
+  },
   battles: battles.length,
   medianBattleDays: median(decisive.map((b) => b.days)),
   timeoutPercent: pct(decisive.filter((b) => b.reason === 'timeout').length, decisive.length),
@@ -266,9 +363,31 @@ const summary = {
     raids + botSum('sacks') + botSum('ownPlunders'),
     botSum('eligibleCityMonths'),
   ),
-  raidsThatFought: pct(
-    sum((c) => Number(c.raidBattles)),
-    sum((c) => Number(c.raidBattles)) + sum((c) => Number(c.unopposedRaids)),
+  // Raids by every faction. A raid on a city with soldiers becomes a battle (raidBattles);
+  // one on an empty city is plundered unopposed. Raid battles the raiders won also plunder.
+  raids: {
+    resolved: raidResolved,
+    raidBattles: raidTotals.battles,
+    raidBattlesWon: raidTotals.battlesWon,
+    unopposed: raidTotals.unopposed,
+    raidBattlePercent: pct(raidTotals.battles, raidResolved),
+    raidBattleWinPercent: pct(raidTotals.battlesWon, raidTotals.battles),
+    botRaidBattles: botRaid('battles'),
+    botRaidBattlesWon: botRaid('battlesWon'),
+    botUnopposed: botRaid('unopposed'),
+  },
+  // Per tactical-AI unit turn that could cast the tactic where it stood.
+  situationalTactics: Object.fromEntries(
+    SITUATIONAL.map((skill) => [
+      skill,
+      {
+        ...eligibility[skill],
+        usedWhenEligiblePercent: pct(
+          eligibility[skill].castsWhenEligible,
+          eligibility[skill].eligibleTurns,
+        ),
+      },
+    ]),
   ),
   aiProvisionShortagePercent: pct(aiShortages, aiUpkeeps),
   aiMarches,
@@ -282,10 +401,6 @@ const summary = {
         Object.values(tacticCasts).reduce((a, b) => a + b, 0),
       ),
     ]),
-  ),
-  unifiedRuns: campaigns.filter((c) => c.unified !== null).length,
-  monthsToUnifyMedian: median(
-    campaigns.filter((c) => c.unified !== null).map((c) => Number(c.unified)),
   ),
   coalitionRuns: pct(campaigns.filter((c) => Number(c.coalitions) > 0).length, campaigns.length),
   // Runs in which someone actually reached the coalition threshold of ten cities.
@@ -301,7 +416,8 @@ mkdirSync(outputDir, { recursive: true });
 const output = join(outputDir, process.env.DIAGNOSTIC_FILE ?? 'bot.json');
 writeFileSync(
   output,
-  JSON.stringify({ months, seeds, presets, summary, campaigns }, null, 2) + '\n',
+  JSON.stringify({ months, seeds, presets, scenarios: scenarioIds, summary, campaigns }, null, 2) +
+    '\n',
 );
 if (process.env.DIAGNOSTIC_BATTLES === '1')
   writeFileSync(join(outputDir, 'bot-battles.json'), JSON.stringify(battles) + '\n');

@@ -1,6 +1,9 @@
-﻿import { getPersuadeChance } from '../src/game/campaign';
+﻿import { attackThreshold, policyOf } from '../src/game/aiPolicy';
+import { getPersuadeChance } from '../src/game/campaign';
+import { PLUNDER_MIN_SUPPORT } from '../src/game/plunder';
 import { supplyFood } from '../src/game/supply';
-import type { Action, GameCommand, GameState, Officer, SupplyDays } from '../src/game/types';
+import type { Action, City, GameCommand, GameState, Officer, SupplyDays } from '../src/game/types';
+import { allied } from '../src/game/world';
 
 /**
  * A scripted, competent player used to measure balance the way a human experiences it.
@@ -16,6 +19,10 @@ export interface BotStats {
   persuasions: number;
   prisonersReleased: number;
   prisonersExecuted: number;
+  /** Months in which a city stayed home because a stronger enemy borders it. */
+  heldByThreat: number;
+  /** The bot's memory: turn of each city's last own-city plunder. */
+  lastOwnPlunder: Record<string, number>;
 }
 export const newBotStats = (): BotStats => ({
   marches: 0,
@@ -27,6 +34,8 @@ export const newBotStats = (): BotStats => ({
   persuasions: 0,
   prisonersReleased: 0,
   prisonersExecuted: 0,
+  heldByThreat: 0,
+  lastOwnPlunder: {},
 });
 
 type Apply = (command: GameCommand) => boolean;
@@ -34,6 +43,13 @@ type Apply = (command: GameCommand) => boolean;
 const MARCH_POWER_RATIO = 1.2;
 const RAID_POWER_RATIO = 1.3;
 const PERSUADE_THRESHOLD = 50;
+/** Share of a city's strength that must stay home (the same rule as AI_JOINT_COMMIT). */
+const GARRISON_SHARE = 0.4;
+/** Sack only when support stays at least this high after it is halved. */
+const SACK_MIN_SUPPORT_AFTER = 30;
+const OWN_PLUNDER_INTERVAL = 12;
+/** Treat a rival as able to strike once it has this share of the power it needs. */
+const SAFETY = 0.75;
 
 const serving = (state: GameState, cityId: string, free = false): Officer[] =>
   state.officers.filter(
@@ -54,6 +70,19 @@ const strengthOf = (state: GameState, cityId: string): number => {
 };
 const power = (army: Officer[]) =>
   army.reduce((sum, o) => sum + o.troops * (0.6 + o.force / 100), 0);
+/** Share of each city's army an AI joint attack commits (AI_JOINT_COMMIT). */
+const JOINT_COMMIT = 0.6;
+/** Attacking power the owner of `cityId` could field from it once it musters its reserve. */
+const enemyPower = (state: GameState, cityId: string): number => {
+  const city = state.cities.find((c) => c.id === cityId)!;
+  const officers = state.officers.filter(
+    (o) =>
+      o.cityId === cityId && o.factionId === city.factionId && !o.captive && o.fate === 'active',
+  );
+  if (!officers.length) return 0;
+  const bestForce = Math.max(...officers.map((o) => o.force));
+  return power(officers) + Math.max(0, city.reserve - 500) * (0.6 + bestForce / 100);
+};
 
 export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): void {
   const me = get().playerFactionId;
@@ -103,20 +132,72 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     }
     // March when the odds are good; otherwise raid a rich neighbour or fall back to development.
     const city = state().cities.find((c) => c.id === id)!;
-    const army = serving(state(), id)
-      .filter((o) => !o.busy && o.troops > 0 && o.stamina >= 15)
-      .sort((a, b) => b.force - a.force)
-      .slice(0, 10);
-    const myPower = power(army);
+    const home = strengthOf(state(), id);
     const enemies = city.neighbors
       .map((n) => state().cities.find((c) => c.id === n)!)
-      .filter((c) => c.factionId !== me)
+      .filter((c) => c.factionId !== me && !allied(state(), me, c.factionId))
       .sort((a, b) => strengthOf(state(), a.id) - strengthOf(state(), b.id));
-    const upkeep = Math.ceil(strengthOf(state(), id) * 0.12);
+    const hostile = enemies.filter((c) => c.factionId !== null);
+    // How far each bordering rival's best single or joint attack exceeds the AI's attack
+    // threshold against `defenders` soldiers (above 1: it can march on this city).
+    // `ignore` leaves out the city the bot is about to attack.
+    const pressure = (defenders: number, ignore?: string): number => {
+      let worst = 0;
+      for (const factionId of new Set(hostile.map((c) => c.factionId!))) {
+        const powers = hostile
+          .filter((c) => c.factionId === factionId && c.id !== ignore)
+          .map((c) => enemyPower(state(), c.id));
+        const attack = Math.max(0, ...powers, JOINT_COMMIT * powers.reduce((a, b) => a + b, 0));
+        const threshold = attackThreshold(
+          {
+            turn: state().turn,
+            factionId,
+            sourceId: '',
+            targetId: id,
+            attackingPower: attack,
+            defendingTroops: defenders,
+            defense: city.defense,
+            attackingTroops: 0,
+            sourceTroops: 0,
+            reserve: 0,
+            food: 0,
+          },
+          state().rivalAggression,
+          policyOf(factionId),
+        );
+        worst = Math.max(worst, attack / threshold);
+      }
+      return worst;
+    };
+    // Keep a garrison: one officer and 40% of the city's strength stay home, and a city
+    // bordering a stronger enemy does not march at all.
+    const threatened = hostile.some((c) => strengthOf(state(), c.id) > home);
+    if (threatened) stats.heldByThreat++;
+    const army: Officer[] = [];
+    if (!threatened) {
+      const ready = serving(state(), id)
+        .filter((o) => !o.busy && o.troops > 0 && o.stamina >= 15)
+        .sort((a, b) => b.force - a.force || a.id.localeCompare(b.id));
+      const officers = serving(state(), id).length;
+      let committed = 0;
+      for (const o of ready.slice(0, 10)) {
+        if (army.length + 1 >= officers) break;
+        if (committed + o.troops > home * (1 - GARRISON_SHARE)) continue;
+        army.push(o);
+        committed += o.troops;
+      }
+    }
+    const garrison = home - army.reduce((sum, o) => sum + o.troops, 0);
+    // The garrison left behind must not invite an attack from any other neighbour.
+    const exposed = (target: City) => pressure(garrison, target.id) > SAFETY;
+    const myPower = power(army);
+    const upkeep = Math.ceil(home * 0.12);
     let attacked = false;
     if (army.length && state().turn > 0) {
       const target = enemies.find(
-        (c) => myPower > strengthOf(state(), c.id) * MARCH_POWER_RATIO + c.defense * 7 + 300,
+        (c) =>
+          myPower > strengthOf(state(), c.id) * MARCH_POWER_RATIO + c.defense * 7 + 300 &&
+          !exposed(c),
       );
       const troops = army.reduce((sum, o) => sum + o.troops, 0);
       if (target) {
@@ -124,8 +205,14 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
         // Short sieges save food; stubborn defenders deserve a longer supply line.
         const supplyDays: SupplyDays =
           myPower > defenders * 3 ? 10 : myPower < defenders * 1.8 ? 30 : 20;
+        // Sacking halves support; only sack a rich city that stays governable afterwards.
         const intent =
-          target.commerce + target.farming > 700 && target.factionId !== null ? 'sack' : 'conquer';
+          target.commerce + target.farming > 700 &&
+          target.factionId !== null &&
+          Math.floor(target.loyalty / 2) >= SACK_MIN_SUPPORT_AFTER &&
+          state().turn >= target.plunderCooldownUntil
+            ? 'sack'
+            : 'conquer';
         if (
           city.food - supplyFood(troops, supplyDays) >= upkeep &&
           apply({
@@ -148,6 +235,7 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
         )[0];
         if (
           richest &&
+          !exposed(richest) &&
           state().turn >= richest.plunderCooldownUntil &&
           myPower > strengthOf(state(), richest.id) * RAID_POWER_RATIO &&
           city.food - supplyFood(troops, 10) >= upkeep &&
@@ -182,27 +270,46 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
         .sort((a, b) => b.troops - a.troops)[0];
       if (target && free('persuade', adviser.id, target.id)) stats.persuasions++;
     }
-    // Plunder a city that is about to fall rather than hand it over intact.
-    const threat = Math.max(0, ...enemies.map((c) => strengthOf(state(), c.id)));
+    // Plunder a city only when it would otherwise fall this month: a rival can strike with
+    // twice the power it needs. At most once per city per year.
     stats.eligibleCityMonths++;
+    const doomed = pressure(strengthOf(state(), id)) > 2;
+    const last = stats.lastOwnPlunder[id];
     if (
-      threat > 2.8 * strengthOf(state(), id) &&
-      city.loyalty >= 10 &&
-      state().turn >= city.plunderCooldownUntil
+      doomed &&
+      !attacked &&
+      city.loyalty >= PLUNDER_MIN_SUPPORT &&
+      state().turn >= city.plunderCooldownUntil &&
+      (last === undefined || state().turn - last >= OWN_PLUNDER_INTERVAL)
     ) {
       const looter = available().sort((a, b) => b.intellect + b.force - (a.intellect + a.force))[0];
-      if (looter && free('plunder', looter.id)) stats.ownPlunders++;
+      if (looter && free('plunder', looter.id)) {
+        stats.ownPlunders++;
+        stats.lastOwnPlunder[id] = state().turn;
+      }
     }
-    // Everyone else develops the city.
+    // Everyone else develops the city. A border city that a neighbour could take first
+    // recruits until no neighbour can strike it.
+    let searched = false;
     for (const o of available()) {
       const c = state().cities.find((x) => x.id === id)!;
+      const atRisk = threatened || pressure(strengthOf(state(), id)) > SAFETY;
+      const canRecruit = c.population > 2500 && c.gold >= 150;
       let action: Action;
-      if (serving(state(), id, true).length && o.intellect >= 60) action = 'search';
-      else if (o.loyalty < 55 && c.gold >= 100) action = 'reward';
-      else if (c.loyalty < 60) action = c.food > 1500 ? 'relieve' : 'govern';
+      if (!searched && serving(state(), id, true).length && o.intellect >= 60) {
+        action = 'search';
+        searched = true;
+      } else if (o.loyalty < 55 && c.gold >= 100) action = 'reward';
+      // Unrest starts below 30 support; keep a margin above it.
+      else if (c.loyalty < 40) action = c.food > 1500 ? 'relieve' : 'govern';
       else if (c.food < strengthOf(state(), id) * 0.8 + 800)
         action = c.gold >= 200 ? 'buyFood' : 'farm';
-      else if (c.reserve < 700 && c.population > 2500 && c.gold > 250) action = 'recruit';
+      else if (atRisk && canRecruit) action = 'recruit';
+      else if (hostile.length && c.reserve < 1500 && canRecruit) action = 'recruit';
+      else if (c.loyalty < 60) action = c.food > 1500 ? 'relieve' : 'govern';
+      else if (c.reserve < 700 && canRecruit) action = 'recruit';
+      // Surplus gold is worth more as soldiers than in the treasury.
+      else if (c.gold >= 2000 && c.reserve < 3000 && canRecruit) action = 'recruit';
       else if (c.commerce < 300 || (state().turn + o.force) % 3 === 0) action = 'commerce';
       else if (c.farming < 450 || state().turn % 3 === 1) action = 'farm';
       else if (o.troops > 0) action = 'train';

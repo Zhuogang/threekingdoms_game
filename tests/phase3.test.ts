@@ -125,6 +125,27 @@ describe('difficulty presets', () => {
     expect(() => createGame('cao', 1, 'balanced', { difficulty: 'impossible' as never })).toThrow();
   });
 
+  it('the opening truce binds the player too, atomically', () => {
+    const start = createGame('cao', 4, 'cautious', { truceMonths: 2 });
+    const before = JSON.stringify(start);
+    const march: GameCommand = {
+      type: 'march',
+      sourceId: 'puyang',
+      targetId: 'xiapi',
+      officerIds: ['xiahouyuan'],
+    };
+    const result = dispatch(start, march);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe('The opening truce forbids attacks until it ends.');
+    expect(JSON.stringify(start)).toBe(before);
+    expect(translateText('The opening truce forbids attacks until it ends.', 'zh')).toBe(
+      '开局停战期间不得出兵进攻。',
+    );
+    const ended = createGame('cao', 4, 'cautious', { truceMonths: 2 });
+    ended.turn = 2;
+    expect(dispatch(ended, march).ok).toBe(true);
+  });
+
   it('house personalities switch off in Story difficulty', () => {
     const prepare = (personalities: boolean) => {
       const start = createGame('cao');

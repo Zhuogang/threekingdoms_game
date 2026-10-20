@@ -323,8 +323,10 @@ export function getReachableTiles(battle: BattleState, unitId: string): Tile[] {
     battle.outcome
   )
     return [];
+  // A routed unit may flee but cannot seize the enemy camp.
+  const enemyCamp = isRouted(unit) ? cell(battle, camp(battle, other(unit.side))) : -1;
   return [...paths(battle, unit, getBattleUnitMove(unit), true).costs.keys()]
-    .filter((index) => index !== cell(battle, unit))
+    .filter((index) => index !== cell(battle, unit) && index !== enemyCamp)
     .map((index) => tileOf(battle, index));
 }
 
@@ -400,7 +402,7 @@ function checkOutcome(battle: BattleState): void {
   else if (!alive(battle, 'defender').length) winner = 'attacker';
   else {
     for (const unit of alive(battle)) {
-      if (distance(unit, camp(battle, other(unit.side))) === 0) {
+      if (!isRouted(unit) && distance(unit, camp(battle, other(unit.side))) === 0) {
         winner = unit.side;
         reason = 'camp';
         log(battle, `${unit.name} seized the enemy camp.`);
@@ -751,6 +753,7 @@ function counterDamage(
 const canCounter = (target: BattleUnit, source: BattleUnit): boolean =>
   target.troops > 0 &&
   target.status !== 'confused' &&
+  !isRouted(target) &&
   distance(target, source) <= getBattleUnitRange(target);
 
 export interface AttackForecast {
@@ -1365,6 +1368,7 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
 
   const range = getBattleUnitRange(unit);
   const canAct = !unit.acted && !routed;
+  const starving = supplyDaysLeft(battle, unit.side) <= 0;
   const reserveOk = (skill: BattleSkill) =>
     battle.tacticPoints[unit.side] - tacticCost(unit, skill) >= TACTIC_POINT_RESERVE;
   for (const [index, cost] of candidates) {
@@ -1421,8 +1425,9 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
         );
       }
     }
-    // Rally a shaken or confused ally before it acts.
-    if (!tacticReason(battle, ghost, 'rally', moving)) {
+    // Rally a shaken or confused ally before it acts. A starving side fights instead:
+    // hunger erodes morale every day, so rallying would only stall until the day limit.
+    if (!starving && !tacticReason(battle, ghost, 'rally', moving)) {
       for (const ally of allies) {
         if (ally.acted || distance(tile, ally) > skillRange(unit, 'rally')) continue;
         if (ally.morale >= 60 && ally.status !== 'confused') continue;

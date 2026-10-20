@@ -915,6 +915,7 @@ function march(
   if (target.factionId === factionId)
     return 'Use transport to move troops between your own cities.';
   if (allied(state, factionId, target.factionId)) return 'An active alliance prevents this attack.';
+  if (state.turn < state.truceUntilTurn) return 'The opening truce forbids attacks until it ends.';
   const intent: AttackIntent = command.intent ?? 'conquer';
   if (!['conquer', 'raid', 'sack'].includes(intent)) return 'Choose conquer, sack or raid.';
   if (intent !== 'conquer' && state.turn < target.plunderCooldownUntil) {

@@ -59,7 +59,7 @@ import {
   getPersuadeChance,
   type PreviewStat,
 } from '../game/campaign';
-import { getReachableTiles } from '../game/battle';
+import { getReachableTiles, getTacticRange } from '../game/battle';
 import { isActiveOfficer } from '../game/officers';
 import { fogRange, isScouted } from '../game/fog';
 import type {
@@ -710,7 +710,7 @@ export default function App() {
         setBattleDestination('');
       }
     } else if (skill === 'rally')
-      notify('Rally requires a friendly unit within three tiles.', true);
+      notify(`Rally requires a friendly unit within ${getTacticRange(unit)} tiles.`, true);
     else performBattleTarget(id);
   }
   function moveBattleUnit(x: number, y: number) {

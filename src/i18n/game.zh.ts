@@ -203,6 +203,7 @@ export const GAME_ZH: Record<string, string> = {
   'Choose an opening truce of 0–12 months.': '请选择 0 至 12 个月的开局停战期。',
   'Invalid battle summary.': '战报摘要无效。',
   'Invalid opening truce.': '开局停战期无效。',
+  'The opening truce forbids attacks until it ends.': '开局停战期间不得出兵进攻。',
   'Invalid diplomatic reputation.': '外交声望数据无效。',
   'Invalid monthly raid report.': '月度袭掠报告无效。',
   'Invalid monthly unrest report.': '月度民变报告无效。',

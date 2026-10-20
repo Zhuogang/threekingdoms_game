@@ -1,13 +1,40 @@
 import { build } from 'esbuild';
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const baseline = process.argv.includes('--baseline');
 const bot = process.argv.includes('--bot');
+// `--scenario=divided-realm-190,guandu-200` picks the scenarios the bot plays.
+const scenarioArg = process.argv.find((arg) => arg.startsWith('--scenario='));
+if (scenarioArg) process.env.DIAGNOSTIC_SCENARIOS = scenarioArg.slice('--scenario='.length);
 const artifactDir = resolve('.artifacts/ai-diagnostics');
 mkdirSync(artifactDir, { recursive: true });
 const plugins = [];
+if (bot) {
+  // Observe each tactical-AI unit turn so tactic use can be divided by eligible
+  // situations. The hook only reads the battle; the runner asserts it changes nothing.
+  const battlePath = resolve('src/game/battle.ts');
+  plugins.push({
+    name: 'observe-ai-unit-turns',
+    setup(builder) {
+      builder.onLoad({ filter: /[\\/]src[\\/]game[\\/]battle\.ts$/ }, (args) => {
+        if (resolve(args.path) !== battlePath) return undefined;
+        let code = readFileSync(args.path, 'utf8');
+        for (const anchor of [
+          '    const plan = planUnitV2(battle, unit, context);',
+          '    aiMoveToward(battle, unit);',
+        ]) {
+          const count = code.split(anchor).length - 1;
+          if (count !== 1)
+            throw new Error(`Battle instrumentation expected 1 match, got ${count}: ${anchor}`);
+          code = code.replace(anchor, `    observer?.aiUnitTurn?.(battle, unit);\n${anchor}`);
+        }
+        return { contents: code, loader: 'ts', resolveDir: dirname(args.path) };
+      });
+    },
+  });
+}
 if (baseline) {
   // Instrument the preserved M0 source observationally. Every replacement is
   // asserted and retains the original policy, resource use, and execution order.

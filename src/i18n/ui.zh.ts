@@ -354,7 +354,7 @@ export const UI_ZH: Record<string, string> = {
   'Your banner rises. Select an officer and give your first orders.':
     '旌旗已起。请选择武将，下达第一道命令。',
   'Choose a diplomatic target first.': '请先选择外交目标。',
-  'Rally requires a friendly unit within three tiles.': '鼓舞需要选择三格内的友军。',
+  'Rally requires a friendly unit within {count} tiles.': '鼓舞需要选择 {count} 格内的友军。',
   'Choose a tactic target, or cancel the tactic before moving.':
     '请选择计策目标，或取消计策后再移动。',
   'Campaign saved.': '战役已保存。',

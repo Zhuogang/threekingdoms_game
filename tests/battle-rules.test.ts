@@ -221,6 +221,19 @@ describe('counterattacks', () => {
     expect(battle.log.some((line) => line.includes('counterattacks'))).toBe(false);
   });
 
+  it('does not answer from a routed defender, and the forecast shows no counter', () => {
+    const { state, battle } = adjacent();
+    find(battle, 'b').morale = 15;
+    const forecast = forecastAttack(battle, 'a', 'b')!;
+    expect(forecast.counterMin).toBe(0);
+    expect(forecast.counterMax).toBe(0);
+    expect(
+      processBattleCommand(state, { type: 'battleAttack', unitId: 'a', targetId: 'b' }),
+    ).toBeNull();
+    expect(find(battle, 'a').troops).toBe(1000);
+    expect(battle.log.some((line) => line.includes('counterattacks'))).toBe(false);
+  });
+
   it('ends the battle when a counter destroys the attacker', () => {
     const { state, battle } = adjacent();
     find(battle, 'a').troops = 5;
@@ -534,6 +547,46 @@ describe('morale, flanking and rout', () => {
     );
     a.morale = 15;
     expect(getReachableTiles(battle, 'a').length).toBeGreaterThan(0);
+  });
+
+  it('a routed unit next to the enemy camp cannot seize it; a steady unit can', () => {
+    const setup = (morale: number) => {
+      const battle = battlefield();
+      const target = campTile(battle, 'defender');
+      const a = find(battle, 'a');
+      a.x = target.x - 1;
+      a.y = target.y;
+      a.morale = morale;
+      const b = find(battle, 'b');
+      b.x = 1;
+      b.y = 1;
+      return { state: gameWithBattle(battle), battle, target };
+    };
+    const routed = setup(15);
+    const onCamp = (tile: { x: number; y: number }) =>
+      tile.x === routed.target.x && tile.y === routed.target.y;
+    expect(getReachableTiles(routed.battle, 'a').some(onCamp)).toBe(false);
+    expect(
+      processBattleCommand(routed.state, {
+        type: 'battleMove',
+        unitId: 'a',
+        x: routed.target.x,
+        y: routed.target.y,
+      }),
+    ).not.toBeNull();
+    expect(routed.battle.outcome).toBeNull();
+
+    const steady = setup(80);
+    expect(getReachableTiles(steady.battle, 'a').some(onCamp)).toBe(true);
+    expect(
+      processBattleCommand(steady.state, {
+        type: 'battleMove',
+        unitId: 'a',
+        x: steady.target.x,
+        y: steady.target.y,
+      }),
+    ).toBeNull();
+    expect(steady.battle.outcome).toBe('attacker');
   });
 
   it('adds 10% per adjacent friendly flanker up to 30% and shows it in the forecast', () => {
