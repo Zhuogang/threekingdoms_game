@@ -102,6 +102,11 @@ export default function MonthlyReport({
             to: factionName(event.toFactionId),
           },
         );
+      case 'death':
+        return t('{officer} of {faction} passed away of old age.', {
+          officer: officerName(event.officerId),
+          faction: factionName(event.factionId),
+        });
       case 'atRisk':
         return t('Officers close to leaving (loyalty under 40): {names}.', {
           names: event.officerIds.map(officerName).join(', '),
@@ -154,7 +159,7 @@ export default function MonthlyReport({
                     ? Axe
                     : event.kind === 'revolt'
                       ? Flame
-                      : event.kind === 'departure'
+                      : event.kind === 'departure' || event.kind === 'death'
                         ? UserMinus
                         : event.kind === 'atRisk'
                           ? TriangleAlert

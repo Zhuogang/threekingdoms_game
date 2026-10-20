@@ -39,10 +39,18 @@ import {
   Minus,
   Axe,
   Repeat2,
+  Hourglass,
   type LucideIcon,
 } from 'lucide-react';
 import { session } from '../app/session';
-import { FACTIONS, SCENARIO, TROOP_LABELS, factionById } from '../content/scenario';
+import {
+  DEFAULT_SCENARIO_ID,
+  FACTIONS,
+  SCENARIO,
+  SCENARIOS,
+  TROOP_LABELS,
+  factionById,
+} from '../content/scenario';
 import {
   getActionInfo,
   getActionPreview,
@@ -52,17 +60,20 @@ import {
 } from '../game/campaign';
 import { getReachableTiles } from '../game/battle';
 import { isActiveOfficer } from '../game/officers';
+import { fogRange, isScouted } from '../game/fog';
 import type {
   Action,
   AttackIntent,
   BattleSkill,
   City,
+  Difficulty,
   GameCommand,
   SupplyDays,
 } from '../game/types';
 import GameMap from '../rendering/GameMap';
 import { decodeSave, downloadSave, listSlots, saveSlot, type SaveRecord } from '../platform/saves';
 import { cueForBattleLog, playCue } from '../platform/audio';
+import { DIFFICULTIES, DIFFICULTY_PRESETS } from '../game/difficulty';
 import { autosave } from '../platform/autosave';
 import { useI18n } from '../i18n';
 import LanguageSwitch from '../i18n/LanguageSwitch';
@@ -75,14 +86,16 @@ import {
 import Portrait from './Portrait';
 import TroopIcon from './TroopIcon';
 import MonthlyReport from './MonthlyReport';
+import AdvisorPanel from './AdvisorPanel';
 import BattlePanel from './BattlePanel';
 import BattleSummary, { playerWon } from './BattleSummary';
 import MarchDialog from './MarchDialog';
 import OfficerMark from './OfficerMark';
 import PrisonerPanel from './PrisonerPanel';
+import TraitChips from './TraitChips';
 import TroopLegend from './TroopLegend';
 import { appendedLines, contactMade, nextReadyUnit } from './battlePresentation';
-import type { RivalAggression } from '../game/types';
+import type { RivalAggression, TroopType } from '../game/types';
 
 const number = (n: number) => new Intl.NumberFormat('en').format(n);
 const MONTHS = [
@@ -135,6 +148,7 @@ const GROUPS: { name: string; actions: Action[]; warning?: boolean }[] = [
       'equip',
       'confiscate',
       'appoint',
+      'reorganize',
       'banish',
     ],
   },
@@ -350,23 +364,29 @@ function Meter({
   value,
   max = 100,
   color,
+  fog = false,
 }: {
   label: string;
   value: number;
   max?: number;
   color?: string;
+  /** Under fog of war the value is rounded and shown as an estimate. */
+  fog?: boolean;
 }) {
+  const step = max > 100 ? 50 : 10;
+  const shown = fog ? Math.min(max, Math.round(value / step) * step) : value;
   return (
     <div className="meter">
       <div>
         <span>{label}</span>
         <strong>
-          {number(value)}
+          {fog ? '≈ ' : ''}
+          {number(shown)}
           <small> / {number(max)}</small>
         </strong>
       </div>
       <div className="meter-track">
-        <i style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }} />
+        <i style={{ width: `${Math.min(100, (shown / max) * 100)}%`, background: color }} />
       </div>
     </div>
   );
@@ -398,6 +418,10 @@ export default function App() {
   const [displayPreset, setDisplayPreset] = useState<DisplayPreset>(readDisplayPreset);
   const [showThreat, setShowThreat] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [reorganizeType, setReorganizeType] = useState<TroopType | ''>('');
+  const [newScenario, setNewScenario] = useState(DEFAULT_SCENARIO_ID),
+    [newDifficulty, setNewDifficulty] = useState<Difficulty>('standard'),
+    [newAging, setNewAging] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const [previewAction, setPreviewAction] = useState<Action | null>(null);
   const [marchIntent, setMarchIntent] = useState<AttackIntent>('conquer'),
@@ -463,7 +487,16 @@ export default function App() {
   const canBattleAct = !!unit && !unit.acted && unit.status !== 'confused' && !busy;
   const reachableTiles =
     battle && unit ? getReachableTiles(battle, unit.id).sort((a, b) => a.y - b.y || a.x - b.x) : [];
+  const pickerFactions = (SCENARIOS.find((entry) => entry.id === newScenario) ?? SCENARIOS[0]!)
+    .factions;
   const enemies = state.cities.filter((c) => c.factionId && c.factionId !== state.playerFactionId);
+  // Fog of war: unscouted rival cities show ranges, never exact figures.
+  const fogged = !friendly && !isScouted(state, city.id);
+  const approx = (value: number, stat: string): string => {
+    if (!fogged) return number(value);
+    const [low, high] = fogRange(value, city.id, stat);
+    return `${number(low)}–${number(high)}`;
+  };
   const activeAlliances = state.alliances.filter(
     (a) => (a.a === player.id || a.b === player.id) && a.untilTurn > state.turn,
   );
@@ -586,6 +619,9 @@ export default function App() {
     const parsed = Number(seed);
     session.start(ruler, Number.isFinite(parsed) ? parsed >>> 0 : 190, newAggression, {
       truceMonths: truce ? TRUCE_MONTHS : 0,
+      scenarioId: newScenario,
+      difficulty: newDifficulty,
+      aging: newAging,
     });
     const next = session.getSnapshot();
     const leader = next.officers.find((o) => o.name === factionById(ruler)?.leader);
@@ -627,6 +663,21 @@ export default function App() {
     if (!officer) return;
     if (['scout', 'persuade', 'subvert', 'alliance'].includes(action) && !targetId) {
       notify('Choose a diplomatic target first.', true);
+      return;
+    }
+    if (action === 'reorganize') {
+      if (!reorganizeType) {
+        notify('Choose a troop type first.', true);
+        return;
+      }
+      execute({
+        type: 'action',
+        action,
+        cityId: city.id,
+        officerId: officer.id,
+        targetId: reorganizeType,
+      });
+      setReorganizeType('');
       return;
     }
     execute({
@@ -992,7 +1043,11 @@ export default function App() {
         </section>
 
         <aside className="inspector">
-          {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}﻿{' '}
+          {!isBattle && <MonthlyReport state={state} onFocusCity={focusCity} />}
+          {!isBattle && section === 'realm' && started && (
+            <AdvisorPanel state={state} onFocusCity={focusCity} execute={execute} />
+          )}
+          ﻿{' '}
           {isBattle && battle ? (
             <BattlePanel
               battle={battle}
@@ -1130,17 +1185,43 @@ export default function App() {
                 </span>
               </div>
               <div className="city-resources">
-                <Stat icon={Users} label={t('Population')} value={compact(city.population)} />
-                <Stat icon={Coins} label={t('Gold')} value={number(city.gold)} />
-                <Stat icon={Wheat} label={t('Food')} value={compact(city.food)} />
-                <Stat icon={Shield} label={t('Reserves')} value={number(city.reserve)} />
+                <Stat
+                  icon={Users}
+                  label={t('Population')}
+                  value={fogged ? approx(city.population, 'population') : compact(city.population)}
+                />
+                <Stat icon={Coins} label={t('Gold')} value={approx(city.gold, 'gold')} />
+                <Stat
+                  icon={Wheat}
+                  label={t('Food')}
+                  value={fogged ? approx(city.food, 'food') : compact(city.food)}
+                />
+                <Stat icon={Shield} label={t('Reserves')} value={approx(city.reserve, 'reserve')} />
               </div>
+              {fogged && (
+                <p className="inline-notice" role="note" data-testid="fog-notice">
+                  {t(
+                    'Fog of war: these figures are estimates. Scout this city from a neighboring city of yours to see exact numbers for two months.',
+                  )}
+                </p>
+              )}
               <div className="city-meters">
-                <Meter label={t('Agriculture')} value={city.farming} max={999} />
-                <Meter label={t('Commerce')} value={city.commerce} max={999} color="#b28b50" />
+                <Meter label={t('Agriculture')} value={city.farming} max={999} fog={fogged} />
+                <Meter
+                  label={t('Commerce')}
+                  value={city.commerce}
+                  max={999}
+                  color="#b28b50"
+                  fog={fogged}
+                />
                 <div className="split-meters">
-                  <Meter label={t('Public loyalty')} value={city.loyalty} />
-                  <Meter label={t('Fortifications')} value={city.defense} color="#82909b" />
+                  <Meter label={t('Public loyalty')} value={city.loyalty} fog={fogged} />
+                  <Meter
+                    label={t('Fortifications')}
+                    value={city.defense}
+                    color="#82909b"
+                    fog={fogged}
+                  />
                 </div>
               </div>
               <div className="section-heading">
@@ -1183,8 +1264,11 @@ export default function App() {
                     <strong>{tx(officer.name)}</strong>
                     <span className="troop-description">
                       <TroopIcon type={officer.troopType} />
-                      {tx(TROOP_LABELS[officer.troopType])} · {number(officer.troops)} {t('troops')}
+                      {tx(TROOP_LABELS[officer.troopType])} ·{' '}
+                      {fogged ? approx(officer.troops, officer.id) : number(officer.troops)}{' '}
+                      {t('troops')}
                     </span>
+                    <TraitChips officerId={officer.id} />
                   </div>
                   <div className="officer-attributes">
                     <span title={t('Might')}>
@@ -1226,6 +1310,25 @@ export default function App() {
                       </button>
                     ))}
                   </div>
+                  {group === 1 && officer && (
+                    <div className="diplomacy-target">
+                      <label htmlFor="reorganize-type">{t('Reorganize as')}</label>
+                      <select
+                        id="reorganize-type"
+                        value={reorganizeType}
+                        onChange={(e) => setReorganizeType(e.target.value as TroopType | '')}
+                      >
+                        <option value="">{t('Choose a troop type')}</option>
+                        {(Object.keys(TROOP_LABELS) as TroopType[])
+                          .filter((type) => type !== officer.troopType)
+                          .map((type) => (
+                            <option key={type} value={type}>
+                              {tx(TROOP_LABELS[type])}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  )}
                   {group === 2 && (
                     <div className="diplomacy-target">
                       <label htmlFor="diplomatic-target">{t('Diplomatic target')}</label>
@@ -1570,8 +1673,31 @@ export default function App() {
               </button>
             </div>
             <div className="ruler-selection">
+              <div className="scenario-picker" role="radiogroup" aria-label={t('Scenario')}>
+                {SCENARIOS.map((entry) => (
+                  <button
+                    key={entry.id}
+                    role="radio"
+                    aria-checked={newScenario === entry.id}
+                    className={newScenario === entry.id ? 'selected' : ''}
+                    onClick={() => {
+                      setNewScenario(entry.id);
+                      if (!entry.factions.some((f) => f.id === ruler))
+                        setRuler(entry.factions[0]!.id);
+                    }}
+                  >
+                    <strong>{tx(entry.title)}</strong>
+                    <small>
+                      {entry.year} {t('AD')}
+                    </small>
+                  </button>
+                ))}
+              </div>
+              <p className="subtle">
+                {tx(SCENARIOS.find((entry) => entry.id === newScenario)?.description)}
+              </p>
               <div className="faction-grid">
-                {FACTIONS.map((f) => (
+                {pickerFactions.map((f) => (
                   <button
                     key={f.id}
                     className={`faction-card ${ruler === f.id ? 'selected' : ''}`}
@@ -1600,7 +1726,7 @@ export default function App() {
               </div>
               <div className="ruler-description">
                 <span className="eyebrow">{t('YOUR CAMPAIGN')}</span>
-                <p>{tx(factionById(ruler)?.description)}</p>
+                <p>{tx(pickerFactions.find((f) => f.id === ruler)?.description)}</p>
               </div>
               <div className="begin-campaign">
                 <button className="primary-button" onClick={startCampaign} disabled={!ready}>
@@ -1632,6 +1758,21 @@ export default function App() {
                     'A random seed is chosen for every new campaign. Enter one to replay a world.',
                   )}
                 </p>
+                <label className="check-row">
+                  <input
+                    type="checkbox"
+                    checked={newAging}
+                    onChange={(event) => setNewAging(event.target.checked)}
+                  />
+                  <span>
+                    <strong>{t('Natural aging')}</strong>
+                    <small>
+                      {t(
+                        'Veteran officers past sixty may die of old age each January. Off by default.',
+                      )}
+                    </small>
+                  </span>
+                </label>
               </details>
               <label className="check-row">
                 <input
@@ -1648,6 +1789,27 @@ export default function App() {
                     {t('Rival houses will not march against anyone for the first two months.')}
                   </small>
                 </span>
+              </label>
+              <label className="field-label">
+                {t('Difficulty')}
+                <select
+                  aria-label={t('Difficulty')}
+                  value={newDifficulty}
+                  onChange={(event) => {
+                    const next = event.target.value as Difficulty;
+                    setNewDifficulty(next);
+                    setNewAggression(DIFFICULTY_PRESETS[next].aggression);
+                    setTruce(DIFFICULTY_PRESETS[next].truceMonths > 0);
+                    setTruceTouched(true);
+                  }}
+                >
+                  {DIFFICULTIES.map((value) => (
+                    <option value={value} key={value}>
+                      {t(DIFFICULTY_PRESETS[value].label)}
+                    </option>
+                  ))}
+                </select>
+                <small>{t(DIFFICULTY_PRESETS[newDifficulty].description)}</small>
               </label>
               <label className="field-label aggression-setup">
                 {t('Rival aggression')}
@@ -1803,6 +1965,23 @@ export default function App() {
                   : 'Rival aggression can be changed during campaign planning after the current month resolves.',
               )}
             </p>
+            <label>
+              <span>
+                <Hourglass size={18} />
+                <strong>{t('Natural aging')}</strong>
+                <small>
+                  {t(
+                    'Veteran officers past sixty may die of old age each January. Off by default.',
+                  )}
+                </small>
+              </span>
+              <input
+                type="checkbox"
+                checked={state.aging}
+                disabled={!started || busy || state.phase !== 'planning' || !!state.resolution}
+                onChange={(event) => execute({ type: 'setAging', value: event.target.checked })}
+              />
+            </label>
             <label>
               <span>
                 <Volume2 size={18} />
@@ -2152,7 +2331,15 @@ export default function App() {
 
       {state.phase === 'finished' && modal === null && (
         <Dialog
-          title={tx(state.winner === player.id ? 'A realm united.' : 'Your banner falls.')}
+          title={tx(
+            state.winner === player.id
+              ? owned.length === state.cities.length
+                ? 'A realm united.'
+                : 'The Hegemon of the realm.'
+              : owned.length
+                ? 'A rival is crowned Hegemon.'
+                : 'Your banner falls.',
+          )}
           eyebrow={tx(state.winner === player.id ? 'THE MANDATE IS YOURS' : 'THE END OF A DYNASTY')}
           onClose={() => setModal('start')}
         >
@@ -2161,8 +2348,12 @@ export default function App() {
             <p>
               {tx(
                 state.winner === player.id
-                  ? `${player.name} has brought the divided realm under one banner. A new chapter begins.`
-                  : 'Your last stronghold has fallen, but history offers another path. Raise a new banner and try again.',
+                  ? owned.length === state.cities.length
+                    ? `${player.name} has brought the divided realm under one banner. A new chapter begins.`
+                    : `${player.name} has held the capital and sixteen cities for a year. The court proclaims a new Hegemon.`
+                  : owned.length
+                    ? `${factionById(state.winner)?.name ?? 'A rival'} has held the capital and sixteen cities for a year and is proclaimed Hegemon. Your banner still flies, but the realm has chosen.`
+                    : 'Your last stronghold has fallen, but history offers another path. Raise a new banner and try again.',
               )}
             </p>
             <div className="ending-stats">

@@ -3568,3 +3568,113 @@ html[lang='zh-CN'] .help-grid p {
   align-items: center;
   margin-top: 18px;
 }
+
+/* ---- Phase 3: scenarios, adviser, traits and fog ---------------------------- */
+.scenario-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.scenario-picker button {
+  padding: 10px 12px;
+  background: #fafaf2;
+  border: 1px solid #dce3ce;
+  border-radius: 4px;
+  text-align: left;
+  display: grid;
+  gap: 3px;
+}
+.scenario-picker button.selected {
+  background: #e2e9d5;
+  border-color: #61734f;
+}
+.advisor {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  background: #f4f2e4;
+  border: 1px solid #e3e0cb;
+  border-radius: 5px;
+}
+.advice-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.advice-list button {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  text-align: left;
+  font-size: var(--text-secondary, 14px);
+  color: #55603f;
+  cursor: pointer;
+}
+.goal-list {
+  margin-top: 12px;
+}
+.goal-list ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: var(--text-secondary, 14px);
+}
+.goal-list li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.goal-list li.done {
+  color: #4d6b3a;
+  text-decoration: line-through;
+}
+.goal-list li small {
+  margin-left: auto;
+  color: #667158;
+}
+.invitation {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 10px 0;
+  padding: 10px 12px;
+  background: #ece9f2;
+  border: 1px solid #d3cde0;
+  border-radius: 4px;
+  font-size: var(--text-secondary, 14px);
+}
+.invitation p {
+  flex: 1;
+  margin: 0;
+}
+.invitation small {
+  display: block;
+  color: #5d5877;
+}
+.invitation > div {
+  display: grid;
+  gap: 4px;
+}
+.trait-chips {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.trait-chip {
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: #ece9d8;
+  border: 1px solid #d8d3b8;
+  color: #5b5535;
+  font-size: calc(var(--text-secondary, 14px) - 1px);
+  cursor: help;
+}

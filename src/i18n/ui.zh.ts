@@ -524,6 +524,62 @@ export const UI_ZH: Record<string, string> = {
   'The neighboring lords have united against you.': '周边诸侯已联合起来对付你。',
   'The neighboring lords have united against {faction}.': '周边诸侯已联合对抗{faction}。',
 
+  // v0.2 — adviser, scenarios, difficulty and fog of war.
+  Adviser: '军师',
+  'Your adviser': '你的军师',
+  'Suggestions for this month': '本月建议',
+  'Nothing urgent. Your officers have the realm in hand.': '暂无急务，诸将已将天下打理妥当。',
+  '{city} holds {food} food but needs about {upkeep} each month. Buy provisions or develop farms.':
+    '{city}存粮 {food}，每月约需 {upkeep}。请购买粮草或发展农业。',
+  '{enemy} masses {troops} troops beside {city}. Reinforce it, or seek peace.':
+    '{enemy}在{city}旁集结了 {troops} 兵力。请增兵，或设法求和。',
+  '{officer} commands no soldiers while {city} keeps {reserve} in reserve. Muster them.':
+    '{officer}没有统兵，而{city}尚有 {reserve} 预备兵。请为其编兵。',
+  '{officer} is close to leaving (loyalty {loyalty}). Reward or feast them.':
+    '{officer}即将离去（忠诚 {loyalty}）。请赏赐或设宴挽留。',
+  'FIRST-CAMPAIGN GOALS': '初战目标',
+  OBJECTIVES: '战略目标',
+  'Issue three city orders': '下达三道城池命令',
+  'Muster an officer to 1,500 soldiers': '为一位武将编兵至 1,500 人',
+  'Recruit a new officer': '招揽一位新武将',
+  'Capture your first city': '攻取第一座城池',
+  'Keep every city stocked with two months of food': '让每座城池都储备两个月的粮草',
+  'Be proclaimed Hegemon: hold Luoyang and 16 cities for {months} months':
+    '登临霸主：据守洛阳与 16 座城池满 {months} 个月',
+  'Hold the capital, Luoyang': '据守都城洛阳',
+  'Hold 16 cities': '占据 16 座城池',
+  'You are invited to join a coalition against {faction}.': '你受邀加入讨伐{faction}的联盟。',
+  Accept: '接受',
+  Decline: '谢绝',
+  Scenario: '剧本',
+  Difficulty: '难度',
+  Story: '剧情',
+  Standard: '标准',
+  Warlord: '枭雄',
+  'Cautious rivals, a two-month opening truce and no house personalities. Time to learn.':
+    '对手谨慎，开局停战两个月，诸侯无个性。适合熟悉玩法。',
+  'Balanced rivals with their own personalities. The intended experience.':
+    '均衡的对手，各有个性。推荐的标准体验。',
+  'Aggressive rivals with sharp personalities and no truce. Expect war in month one.':
+    '激进的对手，个性鲜明，无停战期。第一个月就会有战事。',
+  'Natural aging': '自然衰老',
+  'Veteran officers past sixty may die of old age each January. Off by default.':
+    '年过六十的老将每年一月可能病逝。默认关闭。',
+  'Fog of war: these figures are estimates. Scout this city from a neighboring city of yours to see exact numbers for two months.':
+    '战争迷雾：这些数字只是估计。从相邻己方城池侦察此城，可在两个月内看到准确数值。',
+  'Reorganize as': '改编为',
+  'Choose a troop type': '选择兵种',
+  'Choose a troop type first.': '请先选择兵种。',
+  Troops: '兵力',
+  Traits: '特质',
+  '{officer} of {faction} passed away of old age.': '{faction}的{officer}寿终正寝。',
+  'The Hegemon of the realm.': '天下霸主。',
+  'A rival is crowned Hegemon.': '对手登临霸主之位。',
+  '{ruler} has held the capital and sixteen cities for a year. The court proclaims a new Hegemon.':
+    '{ruler}据守都城与十六座城池满一年，朝廷拥立其为新的霸主。',
+  '{ruler} has held the capital and sixteen cities for a year and is proclaimed Hegemon. Your banner still flies, but the realm has chosen.':
+    '{ruler}据守都城与十六座城池满一年，被拥立为霸主。你的旗帜仍在，但天下已有归属。',
+
   // v0.2 — officer traits.
   Benevolent: '仁德',
   Fierce: '勇猛',

@@ -37,6 +37,7 @@ import type { BattleSkill, BattleState, BattleUnit, GameCommand } from '../game/
 import { useI18n } from '../i18n';
 import { nextReadyUnit, unitReadiness } from './battlePresentation';
 import Portrait from './Portrait';
+import TraitChips from './TraitChips';
 import TroopIcon from './TroopIcon';
 import TroopLegend from './TroopLegend';
 
@@ -308,6 +309,7 @@ export default function BattlePanel(props: BattlePanelProps) {
                 <TroopIcon type={unit.troopType} />
                 {tx(TROOP_LABELS[unit.troopType])} · {number(unit.troops)} {t('troops')}
               </span>
+              <TraitChips officerId={unit.officerId} />
               <p
                 className={`readiness ${unit.status === 'confused' ? 'unavailable' : unit.acted ? 'finished' : 'ready'}`}
               >
