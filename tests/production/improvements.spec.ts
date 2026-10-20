@@ -1,9 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { OFFICER_IDENTITIES } from '../../src/content/officerIdentity';
+import { SCENARIOS } from '../../src/content/scenario';
+import { createGame, dispatch } from '../../src/game/campaign';
 import {
   dismissBattleSummary,
   expectPortraitsLoaded,
   importLegacy,
+  importState,
+  mapMetrics,
   savedCampaign,
   selectDisplay,
   startCampaign,
@@ -27,7 +31,11 @@ test('all named and garrison portrait renditions decode beneath the production s
   await expectPortraitsLoaded(page);
   await expect(page.locator('.faction-card .portrait')).toHaveCount(6);
   const identities = Object.values(OFFICER_IDENTITIES);
-  expect(identities).toHaveLength(52);
+  const namedIds = [
+    ...new Set(SCENARIOS.flatMap((scenario) => scenario.officers.map((officer) => officer.id))),
+  ].sort();
+  expect(Object.keys(OFFICER_IDENTITIES).sort()).toEqual(namedIds);
+  expect(identities).toHaveLength(53);
   const keys = [...identities.map((identity) => identity.portraitKey), 'garrison'];
   const assets = await page.evaluate(async (portraitKeys) => {
     const result = [];
@@ -51,7 +59,8 @@ test('all named and garrison portrait renditions decode beneath the production s
     }
     return result;
   }, keys);
-  expect(assets).toHaveLength(106);
+  expect(assets).toHaveLength((namedIds.length + 1) * 2);
+  expect(assets).toHaveLength(108);
   for (const asset of assets) {
     expect(asset.url).toContain('/hegemony/assets/portraits/');
     expect(asset.width).toBeGreaterThanOrEqual(asset.small ? 128 : 256);
@@ -129,4 +138,63 @@ test('a missing named portrait falls back locally while identity and commands re
   await expect(page.locator('.officer-summary')).toContainText('Cao Cao');
   await page.getByRole('button', { name: /^Develop farms/ }).click();
   expect((await savedCampaign(page)).revision).toBeGreaterThan(0);
+});
+
+test('Ma Chao keeps his portrait and identity across Guandu roster, battle, reload and fallback', async ({
+  page,
+}) => {
+  await startCampaign(page, './');
+  const guandu = createGame('ma', 4, 'balanced', { scenarioId: 'guandu-200', truceMonths: 0 });
+  await importState(page, guandu);
+  await page.getByRole('navigation').getByRole('button', { name: 'Officers', exact: true }).click();
+  const roster = page.locator('.roster-row').filter({ hasText: 'Ma Chao' });
+  await expect(roster.locator('img')).toHaveAttribute(
+    'src',
+    /assets\/portraits\/machao-small\.webp$/,
+  );
+  await roster.click();
+  await expect(page.locator('.officer-summary')).toContainText('Ma Chao');
+  await expect(page.locator('.officer-summary .portrait img')).toHaveAttribute(
+    'src',
+    /assets\/portraits\/machao\.webp$/,
+  );
+  await expectPortraitsLoaded(page);
+  await switchLanguage(page, 'zh');
+  await expect(page.locator('.officer-summary')).toContainText('马超');
+  await switchLanguage(page, 'en');
+
+  const march = dispatch(guandu, {
+    type: 'march',
+    sourceId: 'changan',
+    targetId: 'luoyang',
+    officerIds: ['machao'],
+  });
+  expect(march.ok).toBe(true);
+  const begun = dispatch(march.state, { type: 'endMonth' });
+  expect(begun.ok).toBe(true);
+  expect(begun.state.phase).toBe('battle');
+  await importState(page, begun.state);
+  const commander = begun.state.battle!.units.find((unit) => unit.officerId === 'machao')!;
+  await page.getByRole('button', { name: 'Fit battlefield', exact: true }).click();
+  const metrics = await mapMetrics(page);
+  const box = (await page.locator('.game-map').boundingBox())!;
+  await page.mouse.click(
+    box.x + metrics.left + (commander.x + 0.5) * metrics.tile,
+    box.y + metrics.top + (commander.y + 0.5) * metrics.tile,
+  );
+  await expect(page.locator('.unit-card .portrait')).toHaveAttribute('data-officer-id', 'machao');
+  await expect(page.locator('.unit-card .portrait img')).toHaveAttribute(
+    'src',
+    /assets\/portraits\/machao\.webp$/,
+  );
+  await expectPortraitsLoaded(page);
+  expect(await savedCampaign(page)).toEqual(begun.state);
+
+  await page.route('**/assets/portraits/machao.webp', (route) => route.abort());
+  await page.reload();
+  await expect(page.locator('.unit-card')).toContainText('Ma Chao');
+  const fallback = page.locator('.unit-card .portrait[data-officer-id="machao"] img');
+  await expect(fallback).toHaveAttribute('src', /assets\/portraits\/garrison\.webp$/);
+  await expectPortraitsLoaded(page);
+  expect(await savedCampaign(page)).toEqual(begun.state);
 });

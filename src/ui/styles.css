@@ -1181,6 +1181,11 @@ input[type='range'] {
   background: #f0e6da;
   color: #81664f;
 }
+.battlefield-profile {
+  margin: 0 0 12px;
+  color: #677158;
+  font-size: var(--text-secondary, 14px);
+}
 .battle-conditions {
   display: flex;
   justify-content: space-between;
@@ -2765,6 +2770,20 @@ input[type='range'] {
   border: 1px solid #79866c;
   color: #203b29;
   background: #faf8e9;
+}
+.game-shell .officer-mark > .officer-level-pips {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  padding: 1px 2px;
+  border: 1px solid #d2c99d;
+  border-radius: 3px;
+  background: #20362a;
+  color: #f2d282;
+  font:
+    10px/1.2 'Segoe UI',
+    sans-serif;
+  letter-spacing: -1px;
 }
 .game-shell .officer-choice {
   border-radius: 8px;

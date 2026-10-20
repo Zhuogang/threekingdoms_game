@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Application, Container, Graphics, Text, type TextStyleOptions } from 'pixi.js';
-import { factionOf } from '../content/scenario';
+import { battlefieldProfile, factionOf } from '../content/scenario';
 import { getOfficerIdentity } from '../content/officerIdentity';
 import { TROOP_VISUALS } from '../content/troopVisuals';
 import { DISPLAY_PRESETS, type DisplayPreset } from '../ui/display';
+import { levelPips } from '../ui/battlePresentation';
 import {
   battleBoard,
   cameraFit,
@@ -19,7 +20,14 @@ import {
   getZocStopTiles,
   moraleState,
 } from '../game/battle';
-import type { BattleState, BattleUnit, City, GameState, Terrain } from '../game/types';
+import type {
+  BattlefieldProfile,
+  BattleState,
+  BattleUnit,
+  City,
+  GameState,
+  Terrain,
+} from '../game/types';
 import { translateText, type Locale } from '../i18n/core';
 import {
   ATLAS_HEIGHT,
@@ -62,6 +70,22 @@ const TERRAIN: Record<Terrain, number> = {
   wall: 0x8f8a78,
   gate: 0xb9a57b,
 };
+/** Profile colors remain beneath the shared hatching, walls, badges and selection marks. */
+const PROFILE_TINT: Record<BattlefieldProfile, Partial<Record<Terrain, number>>> = {
+  plains: { plain: 0xd9d2ad, hill: 0xc9bd9c },
+  river: { plain: 0xc3d2bc, water: 0x89b6c5, hill: 0xb2bdb0 },
+  mountain: { plain: 0xc9ccbc, hill: 0xadaeac, forest: 0xa8b4a7 },
+  forest: { plain: 0xc1cbb0, forest: 0x91ac93, hill: 0xb4b798 },
+};
+/** Bound both screen and cached-layer pixel work; readable labels remain sized in CSS pixels. */
+const MAX_RENDER_RESOLUTION = 2;
+const MAX_CACHE_RESOLUTION = 2;
+function cacheResolution(scale = 1): number {
+  return Math.min(
+    MAX_CACHE_RESOLUTION,
+    scale * Math.min(window.devicePixelRatio || 1, MAX_RENDER_RESOLUTION),
+  );
+}
 
 interface Viewport {
   x: number;
@@ -160,7 +184,7 @@ function drawAtlasBackground(parent: Container, locale: Locale): void {
   const tx = (text: string) => translateText(text, locale);
   const g = new Graphics();
   parent.addChild(g);
-  g.rect(-2000, -2000, 5000, 5000).fill(PAPER);
+  // The renderer supplies the surrounding paper. Keep this cached layer bounded to the atlas.
   g.rect(0, 0, ATLAS_WIDTH, ATLAS_HEIGHT).fill(0xd9e1d7);
   // Faint coastal contours make the sea feel like an etched atlas.
   const coastline = LAND_OUTLINE.slice(2, -1).flatMap((point) => [point.x, point.y]);
@@ -574,17 +598,11 @@ function drawBattleUnit(
     });
   }
   if (unit.level > 0)
-    label(
-      parent,
-      '★'.repeat(Math.min(3, Math.ceil(unit.level / 2))),
-      x + board.tile * 0.2,
-      y + board.tile * 0.62,
-      {
-        fontFamily: SANS,
-        fontSize: (badgeFont * 0.8) / scale,
-        fill: 0x8a6a1f,
-      },
-    );
+    label(parent, levelPips(unit.level), x + board.tile * 0.2, y + board.tile * 0.62, {
+      fontFamily: SANS,
+      fontSize: (badgeFont * 0.8) / scale,
+      fill: 0x8a6a1f,
+    });
   if (target)
     g.roundRect(
       x + 1 / scale,
@@ -618,20 +636,13 @@ function drawBattleUnit(
   return { ring, node: parent };
 }
 
-function drawBattle(
-  parent: Container,
-  props: GameMapProps,
-  fit: number,
-  nodes: Map<string, Container>,
-): Graphics | null {
+function drawBattleTerrain(parent: Container, props: GameMapProps, fit: number): void {
   const battle = props.state.battle;
-  if (!battle) return null;
+  if (!battle) return;
   const board = boardGeometry(battle);
-  // Preserve critical information when fitting a complete board on a laptop.
-  const textScale = 14 / (9 * fit);
+  const palette = { ...TERRAIN, ...PROFILE_TINT[battlefieldProfile(battle.order.targetId)] };
   const g = new Graphics();
   parent.addChild(g);
-  g.rect(-2000, -2000, 5000, 5000).fill(PAPER);
   g.roundRect(board.left - 10, board.top - 10, board.width + 20, board.height + 20, 3)
     .fill(0xb5b79e)
     .stroke({ color: 0x8a917b, width: 0.8, alpha: 0.7 });
@@ -642,7 +653,7 @@ function drawBattle(
       const tx = board.left + x * board.tile;
       const ty = board.top + y * board.tile;
       g.rect(tx + 0.5, ty + 0.5, board.tile - 1, board.tile - 1).fill({
-        color: TERRAIN[terrain],
+        color: palette[terrain],
         alpha: 0.96,
       });
       g.rect(tx, ty, board.tile, board.tile).stroke({
@@ -703,6 +714,20 @@ function drawBattle(
       }
     }
   }
+}
+
+function drawBattle(
+  parent: Container,
+  props: GameMapProps,
+  fit: number,
+  nodes: Map<string, Container>,
+): Graphics | null {
+  const battle = props.state.battle;
+  if (!battle) return null;
+  const board = boardGeometry(battle);
+  const textScale = 14 / (9 * fit);
+  const g = new Graphics();
+  parent.addChild(g);
   const active = battle.units.find(
     (unit) =>
       unit.id === props.selectedUnitId && unit.side === battle.playerSide && unit.troops > 0,
@@ -782,12 +807,17 @@ function drawBattle(
       props,
     );
     nodes.set(unit.id, drawn.node);
+    // Text and vector badges are rasterized once, then moved as one texture during combat.
+    drawn.node.cacheAsTexture({
+      resolution: cacheResolution(fit),
+    });
     if (drawn.ring) selectionRing = drawn.ring;
   }
   return selectionRing;
 }
 
 function clearContainer(container: Container): void {
+  container.cacheAsTexture(false);
   for (const child of container.removeChildren()) child.destroy({ children: true });
 }
 
@@ -827,9 +857,12 @@ export default function GameMap(props: GameMapProps) {
           width: Math.max(1, host.clientWidth),
           height: Math.max(1, host.clientHeight),
           background: PAPER,
-          antialias: true,
-          resolution: Math.min(window.devicePixelRatio || 1, 2),
+          // The settled scene is textured; avoid multisampling the entire screen on software GPUs.
+          antialias: false,
+          resolution: Math.min(window.devicePixelRatio || 1, MAX_RENDER_RESOLUTION),
           autoDensity: true,
+          autoStart: false,
+          sharedTicker: false,
           preference: 'webgl',
           powerPreference: 'low-power',
         });
@@ -850,10 +883,11 @@ export default function GameMap(props: GameMapProps) {
         host.appendChild(app.canvas);
         const world = new Container();
         const background = new Container();
+        const terrainLayer = new Container();
         const foreground = new Container();
         // Combat feedback lives above the board and survives redraws.
         const fx = new Container();
-        world.addChild(background, foreground, fx);
+        world.addChild(background, terrainLayer, foreground, fx);
         const unitNodes = new Map<string, Container>();
         let previousBattle: {
           id: string;
@@ -870,8 +904,23 @@ export default function GameMap(props: GameMapProps) {
         }[] = [];
         app.stage.addChild(world);
         drawAtlasBackground(background, propsRef.current.locale);
+        background.cacheAsTexture({ resolution: cacheResolution() });
         let drawnLocale = propsRef.current.locale;
-        let selectionRing: Graphics | null = null;
+        let terrainKey = '';
+        let frameRequest: number | null = null;
+        let pendingSince = 0;
+        let renderCount = 0;
+        let rebuildPending = false;
+        let rendering = false;
+        const invalidate = () => {
+          if (cancelled || destroyCalled || rendering || frameRequest !== null) return;
+          pendingSince = performance.now();
+          frameRequest = requestAnimationFrame(renderFrame);
+        };
+        const requestRedraw = () => {
+          rebuildPending = true;
+          invalidate();
+        };
         const cityLabelHitAreas = new Map<string, LabelHitArea>();
         let redrawOnResize: (() => void) | null = null;
         let wasBattle = false;
@@ -937,6 +986,7 @@ export default function GameMap(props: GameMapProps) {
               Math.min(tokens.mainText, Math.max(12, tile * 0.3)),
             );
           }
+          invalidate();
         };
         const focusSelected = (force = true, request?: GameMapProps['cameraFocus']) => {
           const current = propsRef.current,
@@ -1052,6 +1102,7 @@ export default function GameMap(props: GameMapProps) {
           if (drawnLocale !== current.locale) {
             clearContainer(background);
             drawAtlasBackground(background, current.locale);
+            background.cacheAsTexture({ resolution: cacheResolution() });
             drawnLocale = current.locale;
           }
           app.canvas.setAttribute(
@@ -1087,15 +1138,35 @@ export default function GameMap(props: GameMapProps) {
             if (current.cameraFocus) focusSelected(true, current.cameraFocus);
           }
           background.visible = !isBattle;
-          selectionRing = null;
+          terrainLayer.visible = isBattle;
+          const scale = view.fit * view.zoom;
+          const nextTerrainKey = isBattle
+            ? `${battleId}/${current.state.battle!.order.targetId}/${scale}/${current.state.battle!.terrain.join(',')}`
+            : '';
+          if (nextTerrainKey !== terrainKey) {
+            clearContainer(terrainLayer);
+            terrainKey = nextTerrainKey;
+            if (isBattle) {
+              drawBattleTerrain(terrainLayer, current, scale);
+              terrainLayer.cacheAsTexture({
+                resolution: cacheResolution(scale),
+              });
+            }
+          }
           clearContainer(foreground);
           cityLabelHitAreas.clear();
           unitNodes.clear();
-          selectionRing = isBattle
-            ? drawBattle(foreground, current, view.fit * view.zoom, unitNodes)
-            : drawCampaign(foreground, current, view.fit * view.zoom, cityLabelHitAreas);
+          if (isBattle) drawBattle(foreground, current, scale, unitNodes);
+          else {
+            drawCampaign(foreground, current, scale, cityLabelHitAreas);
+            foreground.cacheAsTexture({
+              resolution: cacheResolution(scale),
+            });
+          }
           wasBattle = isBattle;
           announceCombat(current);
+          if (isBattle && !tweens.length)
+            foreground.cacheAsTexture({ resolution: cacheResolution(scale) });
         };
         /** Compare snapshots and add tweens, hit flashes and floating casualty numbers. */
         const announceCombat = (current: GameMapProps) => {
@@ -1111,8 +1182,14 @@ export default function GameMap(props: GameMapProps) {
             battle.units.map((unit) => [unit.id, { x: unit.x, y: unit.y, troops: unit.troops }]),
           );
           const before = previousBattle;
-          previousBattle = { id: battle.id, units: snapshot };
-          if (!before || before.id !== battle.id) return;
+          const identity = `${battle.id}/${battle.order.targetId}`;
+          previousBattle = { id: identity, units: snapshot };
+          if (!before || before.id !== identity) {
+            clearContainer(fx);
+            floaters.length = 0;
+            tweens.length = 0;
+            return;
+          }
           const board = boardGeometry(battle);
           const scale = view.fit * view.zoom;
           const now = performance.now();
@@ -1165,10 +1242,10 @@ export default function GameMap(props: GameMapProps) {
             });
           }
         };
-        redrawRef.current = redraw;
+        redrawRef.current = requestRedraw;
         resize();
-        redraw();
-        redrawOnResize = redraw;
+        requestRedraw();
+        redrawOnResize = requestRedraw;
         const observer = new ResizeObserver(resize);
         observer.observe(host);
         const toWorld = (event: { clientX: number; clientY: number }) => {
@@ -1280,13 +1357,21 @@ export default function GameMap(props: GameMapProps) {
         app.canvas.addEventListener('pointercancel', pointerCancel);
         app.canvas.addEventListener('wheel', wheel, { passive: false });
         app.canvas.addEventListener('dblclick', reset);
-        let elapsed = 0;
-        app.ticker.maxFPS = 30;
-        app.ticker.add((ticker) => {
+        function renderFrame() {
+          frameRequest = null;
+          if (cancelled || destroyCalled) return;
+          rendering = true;
+          // Coalesce React, camera and resize invalidations into one scene rebuild/render.
+          if (rebuildPending) {
+            rebuildPending = false;
+            redraw();
+          }
           const now = performance.now();
           for (let i = tweens.length - 1; i >= 0; i--) {
             const tween = tweens[i]!;
-            const progress = Math.min(1, (now - tween.start) / tween.duration);
+            const progress = propsRef.current.reducedMotion
+              ? 1
+              : Math.min(1, (now - tween.start) / tween.duration);
             const node = unitNodes.get(tween.id);
             if (node && !node.destroyed) {
               const left = 1 - (1 - (1 - progress) * (1 - progress));
@@ -1299,23 +1384,50 @@ export default function GameMap(props: GameMapProps) {
             const progress = Math.min(1, (now - item.start) / item.duration);
             if (!item.node.destroyed) {
               item.node.alpha = 1 - progress * progress;
-              if (item.rise) item.node.y = item.y - item.rise * progress;
+              if (item.rise)
+                item.node.y = propsRef.current.reducedMotion
+                  ? item.y
+                  : item.y - item.rise * progress;
             }
             if (progress >= 1) {
               if (!item.node.destroyed) item.node.destroy({ children: true });
               floaters.splice(i, 1);
             }
           }
-          if (selectionRing && !selectionRing.destroyed) {
-            elapsed += ticker.deltaMS;
-            const pulse = propsRef.current.reducedMotion ? 1 : 1 + Math.sin(elapsed / 650) * 0.035;
-            selectionRing.scale.set(pulse);
-            selectionRing.alpha = propsRef.current.reducedMotion
-              ? 1
-              : 0.83 + Math.sin(elapsed / 650) * 0.17;
-          }
-        });
+          // Selection stays visible without a perpetual pulse that keeps an otherwise idle GPU busy.
+          if (!tweens.length && !foreground.isCachedAsTexture)
+            foreground.cacheAsTexture({ resolution: cacheResolution(view.fit * view.zoom) });
+          const started = performance.now();
+          app.render();
+          const completed = performance.now();
+          const current = propsRef.current;
+          const detail = {
+            frame: ++renderCount,
+            at: completed,
+            renderMs: completed - started,
+            latencyMs: completed - pendingSince,
+            mode: current.state.phase === 'battle' ? 'battle' : 'campaign',
+            revision: current.state.revision,
+            locale: current.locale,
+            scale: view.fit * view.zoom,
+          };
+          const map = host!.parentElement!;
+          map.dataset.renderCount = String(renderCount);
+          map.dataset.renderRevision = String(detail.revision);
+          map.dataset.renderLocale = current.locale;
+          map.dataset.renderScale = String(detail.scale);
+          map.dataset.renderMode = detail.mode;
+          map.dataset.renderThreat = String(!!current.showThreat);
+          map.dataset.renderSelectedUnit = current.selectedUnitId ?? '';
+          map.dataset.renderResolution = String(app.renderer.resolution);
+          // No retained frame history in production. The opt-in harness observes actual draws.
+          map.dispatchEvent(new CustomEvent('map-render', { detail, bubbles: true }));
+          rendering = false;
+          if (tweens.length || floaters.length || rebuildPending) invalidate();
+        }
         cleanup = () => {
+          if (frameRequest !== null) cancelAnimationFrame(frameRequest);
+          frameRequest = null;
           observer.disconnect();
           redrawOnResize = null;
           redrawRef.current = null;
@@ -1349,6 +1461,7 @@ export default function GameMap(props: GameMapProps) {
     props.displayPreset,
     props.cameraFocus,
     props.showThreat,
+    props.reducedMotion,
   ]);
 
   return (

@@ -51,8 +51,8 @@ export const UI_ZH: Record<string, string> = {
   'Reports describe committed events, not predictions.': '军报记载已发生事件，并非预测。',
   'Artwork & reference credits': '美术与参考来源',
   'Officer illustrations': '武将肖像',
-  '52 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.':
-    '本项目制作了52幅独立武将肖像及1幅守军肖像，均为艺术演绎，并非经过考证的历史真实容貌。',
+  '53 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.':
+    '本项目制作了53幅独立武将肖像及1幅守军肖像，均为艺术演绎，并非经过考证的历史真实容貌。',
   'Portraits are bundled locally. Identity stays with the officer when allegiance changes.':
     '肖像随游戏本地提供，武将变更所属势力时仍保持同一人物形象。',
   'View artwork provenance and rights records': '查看美术创作来源与权利记录',
@@ -170,6 +170,11 @@ export const UI_ZH: Record<string, string> = {
   '24 cities': '24 座城池',
   '6 rival houses': '6 方势力',
   '52 officers': '52 位武将',
+  '{count} officers': '{count} 位武将',
+  'Plains battlefield': '平原战场',
+  'River battlefield': '河流战场',
+  'Mountain battlefield': '山地战场',
+  'Forest battlefield': '森林战场',
   'Build your cities. Win their loyalty.': '经营城池，收服人心。',
   'Write the next chapter of the realm.': '由你书写天下的新篇章。',
   'Import a saved campaign': '导入战役存档',

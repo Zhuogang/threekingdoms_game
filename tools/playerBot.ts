@@ -4,6 +4,27 @@ import { PLUNDER_MIN_SUPPORT } from '../src/game/plunder';
 import { supplyFood } from '../src/game/supply';
 import type { Action, City, GameCommand, GameState, Officer, SupplyDays } from '../src/game/types';
 import { allied } from '../src/game/world';
+import { botTargetScore, prepareFrontierOrders } from './playerBotStrategy';
+
+export type BotPolicy = 'baseline' | 'frontier';
+export const BOT_POLICY_VERSION: Record<BotPolicy, string> = {
+  baseline: 'defensive-v1',
+  frontier: 'frontier-v2',
+};
+export const MARCH_OUTCOMES = [
+  'marched',
+  'noArmy',
+  'threatened',
+  'exposed',
+  'unfavorable',
+  'food',
+  'rejected',
+  'raid',
+  'truce',
+  'interior',
+  'turtle',
+] as const;
+export type MarchOutcome = (typeof MARCH_OUTCOMES)[number];
 
 /**
  * A scripted, competent player used to measure balance the way a human experiences it.
@@ -21,6 +42,10 @@ export interface BotStats {
   prisonersExecuted: number;
   /** Months in which a city stayed home because a stronger enemy borders it. */
   heldByThreat: number;
+  transfers: number;
+  jointAttacks: number;
+  /** Exactly one outcome for each eligible city-month, before economic orders. */
+  marchOutcomes: Record<MarchOutcome, number>;
   /** The bot's memory: turn of each city's last own-city plunder. */
   lastOwnPlunder: Record<string, number>;
 }
@@ -35,6 +60,12 @@ export const newBotStats = (): BotStats => ({
   prisonersReleased: 0,
   prisonersExecuted: 0,
   heldByThreat: 0,
+  transfers: 0,
+  jointAttacks: 0,
+  marchOutcomes: Object.fromEntries(MARCH_OUTCOMES.map((reason) => [reason, 0])) as Record<
+    MarchOutcome,
+    number
+  >,
   lastOwnPlunder: {},
 });
 
@@ -89,9 +120,8 @@ const enemyPower = (state: GameState, cityId: string): number => {
 };
 
 /**
- * 
-ormal plays to win; 	urtle (review R6) never marches, raids or sacks, but musters,
- * recruits, develops and decides prisoners like the normal bot.
+ * Normal mode plays to win. Turtle mode never marches, raids or sacks, but still
+ * musters, recruits, develops and decides prisoners like the original bot.
  */
 export type BotMode = 'normal' | 'turtle';
 
@@ -100,8 +130,12 @@ export function botMonth(
   apply: Apply,
   stats: BotStats,
   mode: BotMode = 'normal',
+  policy: BotPolicy = 'frontier',
 ): void {
   const me = get().playerFactionId;
+  // Preserve the defensive turtle and the historical policy for controlled comparisons.
+  const frontier = mode === 'normal' && policy === 'frontier';
+  const committed = frontier ? prepareFrontierOrders(get, apply, stats) : new Set<string>();
   for (const city0 of get().cities.filter((c) => c.factionId === me)) {
     const id = city0.id;
     // Decide the fate of prisoners first.
@@ -140,7 +174,7 @@ export function botMonth(
       const city = state().cities.find((c) => c.id === id)!;
       const desired = Math.min(
         5000,
-        o.troops + Math.max(0, city.reserve - 300),
+        o.troops + Math.max(0, city.reserve - (frontier ? 500 : 300)),
         o.force > 80 ? 2200 : 1500,
       );
       if (desired > o.troops)
@@ -152,7 +186,11 @@ export function botMonth(
     const enemies = city.neighbors
       .map((n) => state().cities.find((c) => c.id === n)!)
       .filter((c) => c.factionId !== me && !allied(state(), me, c.factionId))
-      .sort((a, b) => strengthOf(state(), a.id) - strengthOf(state(), b.id));
+      .sort((a, b) =>
+        frontier
+          ? botTargetScore(state(), b) - botTargetScore(state(), a) || a.id.localeCompare(b.id)
+          : strengthOf(state(), a.id) - strengthOf(state(), b.id),
+      );
     const hostile = enemies.filter((c) => c.factionId !== null);
     // How far each bordering rival's best single or joint attack exceeds the AI's attack
     // threshold against `defenders` soldiers (above 1: it can march on this city).
@@ -194,7 +232,7 @@ export function botMonth(
       state().turn >= OFFENSIVE_FROM_TURN || home > OFFENSIVE_LEAD * strongestNeighbour;
     const garrisonShare = offensive ? OFFENSIVE_GARRISON_SHARE : GARRISON_SHARE;
     const army: Officer[] = [];
-    if (!threatened) {
+    if (!threatened || frontier) {
       const ready = serving(state(), id)
         .filter((o) => !o.busy && o.troops > 0 && o.stamina >= 15)
         .sort((a, b) => b.force - a.force || a.id.localeCompare(b.id));
@@ -212,8 +250,25 @@ export function botMonth(
     const exposed = (target: City) => pressure(garrison, target.id) > SAFETY;
     const myPower = power(army);
     const upkeep = Math.ceil(home * 0.12);
-    let attacked = false;
-    if (army.length && state().turn > 0 && mode !== 'turtle') {
+    let attacked = committed.has(id);
+    let marchOutcome: MarchOutcome = attacked
+      ? 'marched'
+      : mode === 'turtle'
+        ? 'turtle'
+        : !enemies.length
+          ? 'interior'
+          : state().turn === 0 || state().turn < state().truceUntilTurn
+            ? 'truce'
+            : threatened && !frontier
+              ? 'threatened'
+              : !army.length
+                ? 'noArmy'
+                : 'unfavorable';
+    if (!attacked && army.length && state().turn > 0 && mode !== 'turtle') {
+      const favorable = enemies.filter(
+        (c) => myPower > strengthOf(state(), c.id) * MARCH_POWER_RATIO + c.defense * 7 + 300,
+      );
+      if (favorable.length && favorable.every(exposed)) marchOutcome = 'exposed';
       const target = enemies.find(
         (c) =>
           myPower > strengthOf(state(), c.id) * MARCH_POWER_RATIO + c.defense * 7 + 300 &&
@@ -233,6 +288,12 @@ export function botMonth(
           state().turn >= target.plunderCooldownUntil
             ? 'sack'
             : 'conquer';
+        marchOutcome =
+          city.food - supplyFood(troops, supplyDays) < upkeep
+            ? 'food'
+            : state().turn < state().truceUntilTurn
+              ? 'truce'
+              : 'rejected';
         if (
           city.food - supplyFood(troops, supplyDays) >= upkeep &&
           apply({
@@ -248,6 +309,7 @@ export function botMonth(
           stats.marchesBySupplyDays[supplyDays] = (stats.marchesBySupplyDays[supplyDays] ?? 0) + 1;
           if (intent === 'sack') stats.sacks++;
           attacked = true;
+          marchOutcome = 'marched';
         }
       } else {
         const richest = [...enemies].sort(
@@ -269,9 +331,11 @@ export function botMonth(
         ) {
           stats.raids++;
           attacked = true;
+          marchOutcome = 'raid';
         }
       }
     }
+    stats.marchOutcomes[marchOutcome]++;
     // Persuade a strong neighbouring officer when it is likely to work.
     const adviser = available()[0];
     if (adviser && !attacked) {

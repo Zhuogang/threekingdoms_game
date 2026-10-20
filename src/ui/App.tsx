@@ -54,6 +54,7 @@ import {
 import { session } from '../app/session';
 import {
   DEFAULT_SCENARIO_ID,
+  battlefieldProfile,
   SCENARIOS,
   TROOP_LABELS,
   factionOf,
@@ -102,7 +103,12 @@ import { FactionsContext } from './FactionsContext';
 import PrisonerPanel from './PrisonerPanel';
 import TraitChips from './TraitChips';
 import TroopLegend from './TroopLegend';
-import { appendedLines, contactMade, nextReadyUnit } from './battlePresentation';
+import {
+  appendedLines,
+  BATTLEFIELD_LABELS,
+  contactMade,
+  nextReadyUnit,
+} from './battlePresentation';
 import type { RivalAggression, TroopType } from '../game/types';
 
 const number = (n: number) => new Intl.NumberFormat('en').format(n);
@@ -1073,6 +1079,9 @@ export default function App() {
             ﻿{' '}
             {isBattle && battle ? (
               <Suspense fallback={null}>
+                <p className="battlefield-profile" data-testid="battlefield-profile">
+                  {tx(BATTLEFIELD_LABELS[battlefieldProfile(battle.order.targetId)])}
+                </p>
                 <BattlePanel
                   battle={battle}
                   unit={unit}
@@ -1744,7 +1753,10 @@ export default function App() {
                   </span>
                   <span>
                     <Users size={15} />
-                    {t('52 officers')}
+                    {t('{count} officers', {
+                      count: (SCENARIOS.find((entry) => entry.id === newScenario) ?? SCENARIOS[0]!)
+                        .officers.length,
+                    })}
                   </span>
                 </div>
                 <p className="intro-footnote">
@@ -2129,7 +2141,7 @@ export default function App() {
               <h3>{t('Officer illustrations')}</h3>
               <p>
                 {t(
-                  '52 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.',
+                  '53 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.',
                 )}
               </p>
               <p>

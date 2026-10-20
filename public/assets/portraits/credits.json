@@ -1671,6 +1671,61 @@
       ]
     },
     {
+      "id": "machao",
+      "name": "Ma Chao",
+      "chinese": "马超",
+      "surnameEn": "Ma",
+      "surnameZh": "马",
+      "scenarioAge": 24,
+      "scenarioYear": 200,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-20",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "machao-2026-10-20.png",
+      "sourceSha256": "f348c105c7c6ba798c22c27d13954e7f94f7e1dd7616dc696e8b246dcdc1fda6",
+      "projectSource": ".artifacts/portrait-sources/machao-2026-10-20.png",
+      "prompt": "Use case: historical-scene. Create one individual square officer portrait for Hegemony of the Three Kingdoms. Original imagined historical illustration of Ma Chao / 马超, age 24 in the 200 AD Guandu scenario. One Chinese man, centered full head and shoulders, slight three-quarter pose. Keep the entire helmet and plume inside the image with a little headroom; make the face readable at 48 pixels. Elegant hand-painted portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment background, soft even lighting, and individual facial anatomy. Young western cavalry champion: lean athletic face, sharp bright eyes, fine straight brows, light moustache, silver-gray scale armor, crimson sash, plumed frontier helmet, fearless confident expression. Match the existing collection's painting style while keeping his face distinct from Zhao Yun, Zhang He, and Ma Teng. Restrained Han-period clothing. No frame, text, watermark, scenery, extra people, or modern clothing. An original artistic interpretation, not a commercial game portrait copy.",
+      "references": [],
+      "editPrompts": [
+        "Edit only the framing of this Ma Chao portrait. Preserve the exact face, age, expression, armor, crimson sash, painting style, warm parchment background, square aspect ratio, and all colors. Pull the camera back slightly and move the bust down enough that the entire crimson helmet plume is visibly inside the square with approximately 5% empty parchment headroom above its highest point and comfortable clear margins at the sides. Keep the face large enough to read at 48 pixels. Do not crop or cut off the plume. No text, border, extra people, or new objects."
+      ],
+      "sourceHistory": [
+        {
+          "kind": "generate",
+          "tool": "built-in image_gen",
+          "sourceAsset": "exec-d5a57ef1-f34b-48e6-ab17-a4e84c4070c7.png",
+          "projectSource": ".artifacts/portrait-sources/machao-draft-2026-10-20.png",
+          "references": []
+        },
+        {
+          "kind": "framing-edit",
+          "tool": "built-in image_gen",
+          "sourceAsset": "exec-8c6ab1bf-d7cd-409b-86ee-084881bb2fac.png",
+          "editTarget": "exec-d5a57ef1-f34b-48e6-ab17-a4e84c4070c7.png",
+          "projectSource": ".artifacts/portrait-sources/machao-2026-10-20.png"
+        }
+      ],
+      "modifications": "Selected original includes any recorded image_gen edits. Delivery: square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution during delivery.",
+      "files": [
+        {
+          "file": "machao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4036,
+          "sha256": "e09bc83925a8a73ba57ccaae537a694a81a90903e658917efa4e5b873ed4151e"
+        },
+        {
+          "file": "machao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16818,
+          "sha256": "2d615df37ce27c42e567681d8034f01488eed5281e356b060c75761ba6681f19"
+        }
+      ]
+    },
+    {
       "id": "garrison",
       "name": "City garrison",
       "chinese": "城防守军",

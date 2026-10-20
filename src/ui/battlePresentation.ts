@@ -1,5 +1,17 @@
 import { getThreatTiles } from '../game/battle';
-import type { BattleState, BattleUnit } from '../game/types';
+import type { BattlefieldProfile, BattleState, BattleUnit } from '../game/types';
+
+/** Shared veteran badge; stars are decorative, while the details retain the exact level. */
+export function levelPips(level: number): string {
+  return '★'.repeat(Math.min(3, Math.max(0, Math.ceil(level / 2))));
+}
+
+export const BATTLEFIELD_LABELS: Record<BattlefieldProfile, string> = {
+  plains: 'Plains battlefield',
+  river: 'River battlefield',
+  mountain: 'Mountain battlefield',
+  forest: 'Forest battlefield',
+};
 
 export function unitReadiness(unit: BattleUnit): string {
   if (unit.status === 'confused') return 'Confused · unavailable';

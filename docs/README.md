@@ -7,6 +7,12 @@
 | [v0.2-summary.md](v0.2-summary.md) | What v0.2 is, how it was built, and how well it is tested              |
 | [next-steps.md](next-steps.md)     | The to-do list, open and settled design decisions, and what comes next |
 
+Implementation details and current evidence:
+
+- [v0.2 improvement plan](v0.2-improvement-plan.md): agent assignments, dependencies, acceptance criteria and Ma Chao's imagegen workflow.
+- [v0.2 validation record](v0.2-validation.md): implementation status, automated results and remaining release gates.
+- [v0.2 human playtest](v0.2-playtest.md): four-session checklist, findings, visual review and real low-end hardware evidence.
+
 ## Current reference
 
 | Document                                                 | What it is for                                                                                                                            |

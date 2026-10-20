@@ -2,26 +2,72 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { portraitRoster } from './portrait-roster.mjs';
 
 const require = createRequire(import.meta.url);
 const sharp = require(process.env.PORTRAIT_SHARP_PATH || 'sharp');
 const spec = JSON.parse(await fs.readFile('tools/portrait-spec.json', 'utf8'));
-const initial = JSON.parse(await fs.readFile('.artifacts/portrait-sources-initial.json', 'utf8'));
-const sources = new Map(initial.map((item) => [item.id, item.path]));
-for (const name of await fs.readdir('.artifacts')) {
-  if (/^portrait-source-.+\.json$/.test(name)) {
-    const item = JSON.parse(await fs.readFile(path.join('.artifacts', name), 'utf8'));
-    sources.set(item.id, item.path);
-  }
-}
 const output = 'public/assets/portraits';
+const retained = JSON.parse(await fs.readFile(path.join(output, 'credits.json'), 'utf8'));
+const existingEntries = new Map(retained.entries.map((entry) => [entry.id, entry]));
+const { officers } = await portraitRoster();
+const specIds = spec.officers.map((row) => row[0]);
+if (
+  new Set(specIds).size !== specIds.length ||
+  JSON.stringify([...specIds].sort()) !== JSON.stringify([...officers.keys(), 'garrison'].sort())
+)
+  throw new Error('Portrait specification must cover both scenario rosters and garrison exactly.');
+if (
+  existingEntries.size !== retained.entries.length ||
+  [...existingEntries.keys()].some((id) => !specIds.includes(id))
+)
+  throw new Error(
+    'Existing manifest has duplicate/unknown entries; refusing to discard provenance.',
+  );
 await fs.mkdir(output, { recursive: true });
 await fs.mkdir('docs/assets', { recursive: true });
 await fs.mkdir('docs/images', { recursive: true });
 const entries = [];
-for (const [id, name, chinese, surnameEn, surnameZh, age, brief] of spec.officers) {
-  const source = sources.get(id);
-  if (!source) continue;
+let added = 0;
+const pendingFiles = [];
+for (const [id, name, chinese, surnameEn, surnameZh, age] of spec.officers) {
+  const approved = existingEntries.get(id);
+  if (approved) {
+    if (approved.name !== name || approved.chinese !== chinese || approved.scenarioAge !== age)
+      throw new Error(`Specification changed approved identity: ${id}`);
+    for (const file of approved.files) {
+      const bytes = await fs.readFile(path.join(output, file.file));
+      if (
+        createHash('sha256').update(bytes).digest('hex') !== file.sha256 ||
+        bytes.length !== file.bytes
+      )
+        throw new Error(`Approved rendition changed: ${file.file}; refusing to overwrite it.`);
+    }
+    entries.push(approved);
+    continue;
+  }
+  // Only new assets need originals. Approved entries survive a clean checkout without
+  // the ignored initial source manifest or old files in the image tool's output folder.
+  const metadata = JSON.parse(
+    await fs.readFile(
+      path.join(process.env.PORTRAIT_SOURCE_DIR || '.artifacts', `portrait-source-${id}.json`),
+      'utf8',
+    ),
+  );
+  const scenarioYear = spec.scenarioYears?.[id] ?? spec.defaultScenarioYear ?? 190;
+  if (
+    metadata.id !== id ||
+    !metadata.path ||
+    !metadata.prompt ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(metadata.created ?? '') ||
+    metadata.scenarioYear !== scenarioYear ||
+    !Array.isArray(metadata.references)
+  )
+    throw new Error(
+      `New portrait needs actual prompt, date, scenario year and reference metadata: ${id}`,
+    );
+  const source = metadata.path;
+  const sourceBytes = await fs.readFile(source);
   const files = [];
   for (const [suffix, size, quality] of [
     ['-small', 128, 82],
@@ -29,20 +75,17 @@ for (const [id, name, chinese, surnameEn, surnameZh, age, brief] of spec.officer
   ]) {
     const filename = `${id}${suffix}.webp`;
     const dest = path.join(output, filename);
-    const inputStat = await fs.stat(source);
-    let existing = null;
     try {
-      existing = await fs.stat(dest);
-    } catch {
-      /* not prepared yet */
+      await fs.stat(dest);
+      throw new Error(`Unregistered rendition exists: ${filename}; refusing to overwrite it.`);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
     }
-    if (!existing || existing.mtimeMs < inputStat.mtimeMs) {
-      await sharp(source)
-        .resize(size, size, { fit: 'contain', background: '#e9e0ca' })
-        .webp({ quality, effort: 6 })
-        .toFile(dest);
-    }
-    const bytes = await fs.readFile(dest);
+    const bytes = await sharp(sourceBytes)
+      .resize(size, size, { fit: 'contain', background: '#e9e0ca' })
+      .webp({ quality, effort: 6 })
+      .toBuffer();
+    pendingFiles.push({ dest, bytes });
     files.push({
       file: filename,
       width: size,
@@ -58,21 +101,31 @@ for (const [id, name, chinese, surnameEn, surnameZh, age, brief] of spec.officer
     surnameEn,
     surnameZh,
     scenarioAge: age,
+    scenarioYear,
     kind: 'original-generated-illustration',
     creator: 'OpenAI built-in image_gen, directed for this project',
-    created: '2026-10-19',
-    model: 'Not exposed by the built-in tool',
+    created: metadata.created,
+    model: metadata.model ?? 'Not exposed by the built-in tool',
     rights:
       'Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.',
     sourceAsset: path.basename(source),
-    prompt: spec.artDirection + `${name} (${chinese}), age ${age} in 190 AD. ${brief}.`,
+    sourceSha256: createHash('sha256').update(sourceBytes).digest('hex'),
+    projectSource: source.replaceAll('\\', '/'),
+    prompt: metadata.prompt,
+    references: metadata.references,
+    editPrompts: metadata.editPrompts ?? [],
+    sourceHistory: metadata.sourceHistory ?? [],
     modifications:
-      'Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.',
+      'Selected original includes any recorded image_gen edits. Delivery: square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution during delivery.',
     files,
   });
+  added++;
 }
+// Finish validation and encoding before writing any new delivery files.
+for (const { dest, bytes } of pendingFiles) await fs.writeFile(dest, bytes, { flag: 'wx' });
 const credits = {
-  version: 1,
+  ...retained,
+  version: retained.version,
   title: 'Officer portrait provenance / 武将头像来源',
   description:
     'Original imagined historical depictions created for this project with the built-in image_gen tool. These are artistic interpretations, not authenticated contemporary likenesses. No commercial game portraits or third-party portrait scans were reused.',
@@ -86,11 +139,34 @@ const credits = {
 await fs.writeFile(path.join(output, 'credits.json'), JSON.stringify(credits, null, 2) + '\n');
 const rows = entries.map(
   (e) =>
-    `| \`${e.id}\` | ${e.name} / ${e.chinese} | ${e.scenarioAge} | Original generated illustration | \`${e.id}.webp\` |`,
+    `| \`${e.id}\` | ${e.name} / ${e.chinese} | ${e.scenarioAge} | ${e.scenarioYear ?? 190} | ${e.created} | \`${e.id}.webp\` |`,
 );
 await fs.writeFile(
   'docs/assets/portrait-credits.md',
-  `# Officer portrait credits / 武将头像来源\n\n${credits.description}\n\n${credits.descriptionZh}\n\nCreated October 19, 2026 with OpenAI's built-in image_gen tool; the tool did not expose a model identifier. All portraits were commissioned through original project prompts, with no reference image input. Names identify imagined depictions, not authenticated likenesses. No public-domain historical image or commercial game portrait is claimed as a source. Generated-output use is subject to the applicable creation-service terms; no third-party image license is invented here.\n\nThe complete art direction and per-person briefs are in [the prompt set](../../tools/portrait-spec.json). Runtime provenance, individual prompts, generated-source filenames, dimensions, byte counts, and SHA256 checksums are in [the bundled manifest](../../public/assets/portraits/credits.json). Only resize and WebP compression were applied to the generated originals. Original generated PNGs remain in the tool's output directory; the project contains the final local delivery renditions.\n\nProgress: **${entries.filter((x) => x.id !== 'garrison').length}/52 named officers**, plus ${entries.some((x) => x.id === 'garrison') ? 1 : 0}/1 garrison. Fallbacks do not count as portrait coverage.\n\n| Stable ID | Depicted person | Scenario age | Provenance | Inspector file |\n| --- | --- | ---: | --- | --- |\n${rows.join('\n')}\n\nStable-ID exceptions are intentional: \`maliang\` is Ma Teng / 马腾; \`zuzhao\` is Zu Mao / 祖茂. Never infer the depicted person from these slugs or rename save IDs.\n`,
+  `# Officer portrait credits / 武将头像来源
+
+${credits.description}
+
+${credits.descriptionZh}
+
+The original collection was created on October 19, 2026 using OpenAI's built-in image_gen tool with no reference image inputs. Ma Chao was created on October 20, 2026 with the same built-in tool, then received a framing edit using his first generated image as the edit target. No other portraits were supplied as image inputs. The tool did not expose a model identifier. Each entry preserves its actual date, prompts, source history and checksums. Names identify imagined depictions, not authenticated likenesses. Generated-output use is subject to the applicable creation-service terms; no third-party image license is invented here.
+
+The art direction and briefs are in [the prompt set](../../tools/portrait-spec.json). Individual provenance and rendition checksums are in [the bundled manifest](../../public/assets/portraits/credits.json). Only contain resizing and WebP compression are applied during delivery. Ma Chao's selected original and first draft are preserved in project-owned \`.artifacts/portrait-sources/\`; the original collection retains its historical tool-output source records. Runtime assets always use the bundled renditions.
+
+Progress: **${entries.filter((e) => e.id !== 'garrison').length}/${officers.size} named officers**, plus ${entries.some((e) => e.id === 'garrison') ? 1 : 0}/1 garrison; ${entries.length * 2} runtime renditions. Fallbacks do not count as portrait coverage. The 190 scenario has 52 officers; Guandu adds Ma Chao, age 24 in 200 AD.
+
+## Incremental preparation
+
+Use the repository's installed Node dependencies. The encoder also needs \`sharp\`: set \`PORTRAIT_SHARP_PATH\` to an installed sharp package directory from Codex's \`load_workspace_dependencies\`, or provide a locally installed package. Run \`node tools/prepare-portraits.mjs\`, then \`npm run validate:portraits\`. No image-service API key is used for preparation.
+
+For a new portrait, add its brief to the specification and a \`.artifacts/portrait-source-<id>.json\` record with \`id\`, \`path\`, actual \`created\` date, \`scenarioYear\`, exact \`prompt\`, \`references\`, and any \`editPrompts\`/\`sourceHistory\`. \`PORTRAIT_SOURCE_DIR\` can point to another source-record directory. Approved portraits retain their provenance and rendition bytes even if their originals are unavailable. Preparation checks their hashes and refuses silent replacement. Coverage is checked independently against both game scenarios.
+
+| Stable ID | Depicted person | Scenario age | Scenario year | Created | Inspector file |
+| --- | --- | ---: | ---: | --- | --- |
+${rows.join('\n')}
+
+Stable-ID exceptions are intentional: \`maliang\` is Ma Teng / 马腾; \`zuzhao\` is Zu Mao / 祖茂. Never infer the depicted person from these slugs or rename save IDs.
+`,
 );
 const escape = (value) =>
   String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -113,5 +189,5 @@ await sharp({ create: { width: 1200, height: sheetHeight, channels: 3, backgroun
   .jpeg({ quality: 90 })
   .toFile('docs/images/officer-headshots.jpg');
 console.log(
-  `Prepared ${entries.length}/53 portraits; ${entries.filter((x) => x.id !== 'garrison').length}/52 named officers.`,
+  `Prepared ${added} new portraits; preserved ${existingEntries.size} approved entries. ${entries.filter((x) => x.id !== 'garrison').length}/${officers.size} named officers, ${entries.length * 2} renditions.`,
 );

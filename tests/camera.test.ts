@@ -8,7 +8,7 @@ import {
   BATTLE_INSETS,
 } from '../src/rendering/cameraGeometry';
 import { getOfficerIdentity, OFFICER_IDENTITIES } from '../src/content/officerIdentity';
-import { INITIAL_OFFICERS } from '../src/content/scenario';
+import { SCENARIOS } from '../src/content/scenario';
 
 describe('battle camera coordinates and presentation identity', () => {
   it.each([
@@ -48,15 +48,26 @@ describe('battle camera coordinates and presentation identity', () => {
     }
   });
   it('covers the exact named roster without inferring identity from IDs', () => {
-    expect(Object.keys(OFFICER_IDENTITIES).sort()).toEqual(
-      INITIAL_OFFICERS.map((o) => o.id).sort(),
+    const officers = new Map(
+      SCENARIOS.flatMap((scenario) =>
+        scenario.officers.map((officer) => [officer.id, officer] as const),
+      ),
     );
-    for (const officer of INITIAL_OFFICERS)
+    expect(Object.keys(OFFICER_IDENTITIES).sort()).toEqual([...officers.keys()].sort());
+    expect(officers.size).toBe(53);
+    for (const officer of officers.values())
       expect(getOfficerIdentity(officer.id)).toMatchObject({
         name: officer.name,
         chinese: officer.chinese,
       });
     expect(getOfficerIdentity('maliang')?.name).toBe('Ma Teng');
+    expect(getOfficerIdentity('machao')).toMatchObject({
+      name: 'Ma Chao',
+      chinese: '马超',
+      surnameEn: 'Ma',
+      surnameZh: '马',
+      portraitKey: 'machao',
+    });
     expect(getOfficerIdentity('zuzhao')?.name).toBe('Zu Mao');
     expect(getOfficerIdentity('xiahoudun')?.surnameZh).toBe('夏侯');
     expect(getOfficerIdentity('taishici')?.surnameEn).toBe('Taishi');

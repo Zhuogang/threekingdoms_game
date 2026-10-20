@@ -1,13 +1,34 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { portraitRoster } from './portrait-roster.mjs';
 
 const spec = JSON.parse(await fs.readFile('tools/portrait-spec.json', 'utf8'));
 const root = 'public/assets/portraits';
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'credits.json'), 'utf8'));
 const ids = spec.officers.map((row) => row[0]).sort();
-if (JSON.stringify(manifest.entries.map((e) => e.id).sort()) !== JSON.stringify(ids))
-  throw new Error('Portrait coverage must be exactly 52 named officers plus garrison.');
+const { officers, identities } = await portraitRoster();
+const namedIds = [...officers.keys()].sort();
+const expectedIds = [...namedIds, 'garrison'].sort();
+if (JSON.stringify(ids) !== JSON.stringify(expectedIds))
+  throw new Error(
+    'Portrait specification must cover the union of both scenario rosters plus garrison.',
+  );
+if (JSON.stringify(Object.keys(identities).sort()) !== JSON.stringify(namedIds))
+  throw new Error('Portrait identities do not match the union of scenario rosters.');
+if (JSON.stringify(manifest.entries.map((e) => e.id).sort()) !== JSON.stringify(expectedIds))
+  throw new Error(
+    `Portrait coverage must be exactly ${officers.size} named officers plus garrison.`,
+  );
+for (const [id, officer] of officers) {
+  const identity = identities[id];
+  if (
+    identity.name !== officer.name ||
+    identity.chinese !== officer.chinese ||
+    identity.portraitKey !== id
+  )
+    throw new Error(`Scenario and portrait identity disagree: ${id}`);
+}
 let total = 0;
 const hashes = new Set();
 function dimensions(buffer) {
@@ -36,15 +57,40 @@ function dimensions(buffer) {
   throw new Error('No WebP dimensions');
 }
 for (const entry of manifest.entries) {
+  const [, name, chinese, surnameEn, surnameZh, age] = spec.officers.find(
+    (row) => row[0] === entry.id,
+  );
+  if (
+    entry.name !== name ||
+    entry.chinese !== chinese ||
+    entry.surnameEn !== surnameEn ||
+    entry.surnameZh !== surnameZh ||
+    entry.scenarioAge !== age
+  )
+    throw new Error(`Portrait brief and provenance disagree: ${entry.id}`);
+  if (
+    (entry.scenarioYear ?? 190) !==
+    (spec.scenarioYears?.[entry.id] ?? spec.defaultScenarioYear ?? 190)
+  )
+    throw new Error(`Wrong portrait scenario year: ${entry.id}`);
   if (!entry.prompt || !entry.creator || !entry.rights || !entry.created || !entry.sourceAsset)
     throw new Error(`Incomplete provenance: ${entry.id}`);
-  if (entry.files.length !== 2) throw new Error(`Missing rendition: ${entry.id}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.created))
+    throw new Error(`Invalid creation date: ${entry.id}`);
+  const expectedFiles = [`${entry.id}-small.webp`, `${entry.id}.webp`].sort();
+  if (JSON.stringify(entry.files.map((file) => file.file).sort()) !== JSON.stringify(expectedFiles))
+    throw new Error(`Missing or unexpected rendition: ${entry.id}`);
   for (const file of entry.files) {
     if (path.basename(file.file) !== file.file) throw new Error('Unsafe asset path');
     const bytes = await fs.readFile(path.join(root, file.file));
     const size = dimensions(bytes);
     const expected = file.file.endsWith('-small.webp') ? 128 : 256;
-    if (size.width !== expected || size.height !== expected)
+    if (
+      size.width !== expected ||
+      size.height !== expected ||
+      file.width !== expected ||
+      file.height !== expected
+    )
       throw new Error(`Wrong dimensions: ${file.file}`);
     const hash = createHash('sha256').update(bytes).digest('hex');
     if (hash !== file.sha256 || bytes.length !== file.bytes)
@@ -56,5 +102,5 @@ for (const entry of manifest.entries) {
 }
 if (total > 3.5 * 1024 * 1024) throw new Error(`Portrait payload over 3.5 MiB: ${total}`);
 console.log(
-  `PASS: 52 distinct named mappings + garrison, 106 valid WebP renditions, ${(total / 1024 / 1024).toFixed(2)} MiB; provenance/checksums complete. Human contact-sheet review additionally required.`,
+  `PASS: ${officers.size} distinct named mappings + garrison, ${hashes.size} valid WebP renditions, ${(total / 1024 / 1024).toFixed(2)} MiB; scenario coverage/provenance/checksums complete. Human contact-sheet review additionally required.`,
 );

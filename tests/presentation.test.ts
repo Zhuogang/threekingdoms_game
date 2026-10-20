@@ -1,7 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { nextReadyUnit, unitReadiness } from '../src/ui/battlePresentation';
+import {
+  BATTLEFIELD_LABELS,
+  levelPips,
+  nextReadyUnit,
+  unitReadiness,
+} from '../src/ui/battlePresentation';
+import { translateText } from '../src/i18n/core';
 import { readDisplayPreset, writeDisplayPreset, DISPLAY_PREFERENCE_KEY } from '../src/ui/display';
 import type { BattleState, BattleUnit } from '../src/game/types';
+import { validateState } from '../src/game/campaign';
+import { fullBattle } from './e2e/rendering-fixtures';
 
 const unit = (id: string, changes: Partial<BattleUnit> = {}): BattleUnit => ({
   id,
@@ -26,6 +34,43 @@ const unit = (id: string, changes: Partial<BattleUnit> = {}): BattleUnit => ({
 const battle = (units: BattleUnit[]) => ({ units, playerSide: 'attacker' }) as BattleState;
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe('veteran and battlefield presentation', () => {
+  it.each(['xiapi', 'shouchun', 'hanzhong', 'chengdu'])(
+    'uses a valid maximum-size rendering fixture at %s',
+    (target) => {
+      const state = fullBattle(target);
+      expect(validateState(state)).toBeNull();
+      for (const side of ['attacker', 'defender'])
+        expect(
+          state.battle!.units.filter((unit) => unit.side === side && unit.troops > 0),
+        ).toHaveLength(10);
+    },
+  );
+  it.each([
+    [0, ''],
+    [1, '★'],
+    [2, '★'],
+    [3, '★★'],
+    [4, '★★'],
+    [5, '★★★'],
+    [6, '★★★'],
+  ])('shows level %s consistently on badges and map tokens', (level, expected) => {
+    expect(levelPips(Number(level))).toBe(expected);
+  });
+  it('names every battlefield profile in both languages', () => {
+    expect(Object.keys(BATTLEFIELD_LABELS).sort()).toEqual([
+      'forest',
+      'mountain',
+      'plains',
+      'river',
+    ]);
+    for (const label of Object.values(BATTLEFIELD_LABELS)) {
+      expect(translateText(label, 'en')).toBe(label);
+      expect(translateText(label, 'zh')).toMatch(/[㐀-鿿]/u);
+    }
+  });
+});
 
 describe('presentation preferences tolerate browser storage failures', () => {
   it('defaults absent, corrupt, and inherited-property values to Comfortable', () => {

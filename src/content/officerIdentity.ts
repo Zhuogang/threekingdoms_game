@@ -371,6 +371,13 @@ export const OFFICER_IDENTITIES: Readonly<Record<string, OfficerIdentity>> = {
     name: 'Ma Teng',
     chinese: '马腾',
   },
+  machao: {
+    surnameEn: 'Ma',
+    surnameZh: '马',
+    portraitKey: 'machao',
+    name: 'Ma Chao',
+    chinese: '马超',
+  },
 };
 
 export function getOfficerIdentity(id: string): OfficerIdentity | undefined {

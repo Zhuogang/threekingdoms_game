@@ -285,11 +285,23 @@ describe('hegemon victory', () => {
 });
 
 describe('optional aging', () => {
-  it('is off by default and never ends a life', () => {
+  it('is off by default and keeps veterans alive across peaceful years', () => {
     let state = createGame('cao', 21, 'balanced', { truceMonths: 12 });
-    officer(state, 'dongzhuo').age = 90;
-    for (let month = 0; month < 30 && state.phase !== 'finished'; month++) state = endMonth(state);
-    expect(state.turn).toBeGreaterThan(12);
+    state.officers.forEach((o) => (o.age = 90));
+    for (let month = 0; month < 30; month++) {
+      // Isolate aging from legitimate prisoner executions after the opening truce.
+      // Renew legal six-month alliances so every non-ruler veteran faces each January.
+      state.alliances = FACTIONS.flatMap((a, index) =>
+        FACTIONS.slice(index + 1).map((b) => ({
+          a: a.id,
+          b: b.id,
+          untilTurn: state.turn + 6,
+        })),
+      );
+      expect(validateState(state)).toBeNull();
+      state = endMonth(state);
+    }
+    expect(state.turn).toBe(30);
     expect(state.officers.every((o) => o.fate === 'active')).toBe(true);
     expect(state.aging).toBe(false);
   });

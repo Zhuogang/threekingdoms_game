@@ -3,7 +3,8 @@ import { defineConfig } from '@playwright/test';
 /**
  * Frame-rate checks on deliberately slowed machines (review R8). Opt-in (`npm run test:fps`),
  * one worker, outside `npm run test:e2e`, so timing noise never fails the ordinary suite.
- * Each project's `metadata` says how the browser is slowed; only `cpu-4x` enforces the target.
+ * Each project's `metadata` says how the browser is slowed; baseline and CPU 4x enforce the target.
+ * FPS_DEVICE_SCALE=2 repeats the same fixture at HiDPI for renderer-resolution comparisons.
  */
 export default defineConfig({
   testDir: './tests/fps',
@@ -15,6 +16,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:5173',
     viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: Number(process.env.FPS_DEVICE_SCALE || 1),
     channel: process.env.CI ? undefined : 'chrome',
     trace: 'retain-on-failure',
   },

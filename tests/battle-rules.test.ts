@@ -998,13 +998,13 @@ describe('tactical AI v2', () => {
 
   it('routes the balance levers through battleTuning, whose defaults are the named constants', () => {
     expect(battleTuning).toEqual(DEFAULT_BATTLE_TUNING);
-    expect(DEFAULT_BATTLE_TUNING.normalDamageRate).toBe(0.25);
+    expect(DEFAULT_BATTLE_TUNING.normalDamageRate).toBe(0.18);
     const battle = battlefield();
     const a = find(battle, 'a');
     const b = find(battle, 'b');
     const base = normalDamage(battle, a, b, 1);
     try {
-      battleTuning.normalDamageRate = 0.2;
+      battleTuning.normalDamageRate = DEFAULT_BATTLE_TUNING.normalDamageRate * 0.8;
       expect(normalDamage(battle, a, b, 1)).toBeCloseTo(base * 0.8, 6);
       battleTuning.routedMorale = 30;
       expect(moraleState({ morale: 25 })).toBe('routed');

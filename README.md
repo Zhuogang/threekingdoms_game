@@ -64,7 +64,7 @@ Drag the map to pan, scroll to zoom, and double-click to reset. The city index p
 
 Open **Settings** to choose **Compact**, **Comfortable** (default), or **Large**. The preference applies immediately to text, controls, and map presentation and stays with your browser. In battle, use **Fit battlefield** for an overview, **Readable tiles** for larger units, and **Center selected unit** to find your commander. Larger tiles can require panning on a laptop.
 
-All **52 named officers have distinct illustrated headshots**. Banners show family names and current allegiance; six shared troop symbols identify Infantry, Cavalry, Archers, Marines, Vanguard, and Guard. The **Troops & banners legend** explains the symbols and action states. **Next ready commander** cycles through commanders who can still act. Enemy commander portraits and full names are available in the battle sidebar.
+All **53 named officers across the two scenarios have distinct illustrated headshots**, including Ma Chao in Guandu. Banners show family names and current allegiance; six shared troop symbols identify Infantry, Cavalry, Archers, Marines, Vanguard, and Guard. The **Troops & banners legend** explains the symbols and action states. **Next ready commander** cycles through commanders who can still act. Enemy commander portraits and full names are available in the battle sidebar.
 
 ![The officer portrait collection](docs/images/officer-headshots.jpg)
 
@@ -94,7 +94,8 @@ npm run preview          # Preview the production build
 npm run format:check     # Source and documentation formatting
 npm run validate:portraits # Coverage, provenance, dimensions, checksums, and payload budget
 npm run diagnostics:ai   # Fixed 180-campaign rival-policy comparison (writes .artifacts/)
-npm run diagnostics:ai -- --bot  # 36 bot campaigns measuring every v0.2 balance target
+npm run diagnostics:ai -- --bot --scenario=divided-realm-190,guandu-200 # 36 bot campaigns
+node tools/tuning-sweep.mjs # Controlled 48-month balance experiments
 npm audit                # Known dependency advisories
 ```
 
@@ -138,7 +139,7 @@ React controls / PixiJS map
 
 Run `npm run build` and serve **only `dist/`** from any static HTTP(S) host. Relative asset paths support deployment in a subdirectory. Opening `dist/index.html` directly through `file://` is unsupported. There is no service worker or offline-installation guarantee.
 
-The GitHub Actions workflow runs formatting, unit tests, compilation, gameplay browser tests, and production browser tests when this branch is pushed. No deployment is included in this release commit.
+The GitHub Actions workflow runs formatting, unit tests, portrait validation, compilation, the isolated auto-resolve performance benchmark, gameplay browser tests, and production browser tests when this branch is pushed. Frame-rate checks and balance diagnostics run separately. No deployment is included.
 
 ## Credits and relationship to 三国霸业
 
@@ -150,7 +151,7 @@ The headshots are original imagined historical illustrations created for this pr
 
 The reference repository is not required to build or play this standalone remake. Installed dependencies, build output, browser reports, and local QA artifacts are ignored by Git.
 
-Future work is tracked in [next steps](docs/next-steps.md): battle tuning, a human playtest, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. Multiplayer, mobile-first controls, cloud saves, and mod support are out of scope.
+Further work is tracked in [next steps](docs/next-steps.md): the human playtests and real low-end hardware check explicitly deferred for v0.2, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. The [validation record](docs/v0.2-validation.md) documents the completed implementation, measured balance exceptions and automated checks. Multiplayer, mobile-first controls, cloud saves, and mod support are out of scope.
 
 ## 中文快速开始
 
@@ -161,6 +162,6 @@ Future work is tracked in [next steps](docs/next-steps.md): battle tuning, a hum
 - 随时通过 **Eng / 中文** 切换语言；选择势力后发展城池、招募武将、编组军队，逐步统一天下。
 - 每次成功操作都会自动存档，战斗中也可续玩；请在“存档与读档”中导出 JSON 作为备份。
 - 在“设置”选择紧凑、舒适或大字显示。战斗中可使用“适应战场”“清晰格子”“居中所选部队”和“下一位可行动武将”。
-- 全部 52 位具名武将拥有独立头像；旗帜标明姓氏与当前势力，六种兵种图标和行动标记可在图例中查看。
+- 两个剧本的全部 53 位具名武将拥有独立头像，包括官渡剧本的马超；旗帜标明姓氏与当前势力，六种兵种图标和行动标记可在图例中查看。
 - 开局或战役规划阶段可选择谨慎、均衡、激进的对手。此设置影响开战意愿，不增加战斗属性或资源；“月度军报”展示已发生的战事、盟约到期与边境募兵。
 - 主要参考与致谢：[erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main)。感谢 erduoniba 及项目贡献者开源分享《三国霸业》源码。此版本采用自编场景和规则，并非对原版全部内容与公式的逐项复刻。

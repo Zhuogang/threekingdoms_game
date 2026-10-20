@@ -1,6 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deepStrictEqual } from 'node:assert';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { scenarioById } from '../src/content/scenario';
 import { createGame, dispatch, validateState } from '../src/game/campaign';
 import { defaultTruceMonths } from '../src/game/difficulty';
@@ -12,7 +15,24 @@ import type {
   GameCommand,
   GameState,
 } from '../src/game/types';
-import { botMonth, newBotStats, type BotMode } from './playerBot';
+import {
+  botMonth,
+  newBotStats,
+  BOT_POLICY_VERSION,
+  MARCH_OUTCOMES,
+  type BotMode,
+  type BotPolicy,
+} from './playerBot';
+import {
+  campaignOutcome,
+  cityCheckpoint,
+  forceBucket,
+  forceRatio,
+  horizonStatus,
+  parseTuningOverrides,
+  ratioStat,
+  retentionStatus,
+} from './diagnosticMetrics';
 
 /**
  * Bot-driven balance diagnostics (`npm run diagnostics:ai -- --bot`). A scripted
@@ -21,17 +41,37 @@ import { botMonth, newBotStats, type BotMode } from './playerBot';
  * without an observer and the results must be identical.
  */
 const outputDir = process.env.DIAGNOSTIC_OUTPUT ?? '.artifacts/ai-diagnostics';
+const startedAt = new Date().toISOString();
+const startedMs = performance.now();
+// The launcher captures exact transitive bundle inputs before simulations start.
+// An editor may change files during a long run; never hash current files at the end.
+if (!process.env.DIAGNOSTIC_SOURCES) throw new Error('Run diagnostics through ai-diagnostics.mjs.');
+const sourceSha256: Record<string, string> = JSON.parse(
+  readFileSync(process.env.DIAGNOSTIC_SOURCES, 'utf8'),
+);
+const runnerSha256 = process.env.DIAGNOSTIC_RUNNER
+  ? createHash('sha256').update(readFileSync(process.env.DIAGNOSTIC_RUNNER)).digest('hex')
+  : null;
 const months = Number(process.env.DIAGNOSTIC_MONTHS ?? 72);
 const seedCount = Number(process.env.DIAGNOSTIC_SEEDS ?? 3);
+const seedStart = Number(process.env.DIAGNOSTIC_SEED_START ?? 2001);
 const presets = (process.env.DIAGNOSTIC_PRESETS ?? 'balanced').split(',') as (
   'cautious' | 'balanced' | 'aggressive'
 )[];
 const scenarioIds = (process.env.DIAGNOSTIC_SCENARIOS ?? 'divided-realm-190').split(',');
 const tacticalAi = (process.env.DIAGNOSTIC_TACTICAL_AI ?? 'v2') as 'v1' | 'v2';
-const seeds = Array.from({ length: seedCount }, (_, index) => 2001 + index);
+if (![months, seedCount, seedStart].every((n) => Number.isSafeInteger(n) && n > 0))
+  throw new Error('Diagnostic months, seed count and first seed must be positive integers.');
+if (!presets.every((preset) => ['cautious', 'balanced', 'aggressive'].includes(preset)))
+  throw new Error('Unknown diagnostic rival preset.');
+if (!['v1', 'v2'].includes(tacticalAi)) throw new Error('Unknown tactical AI.');
+const seeds = Array.from({ length: seedCount }, (_, index) => seedStart + index);
 /** DIAGNOSTIC_BOT=turtle plays a bot that never attacks (review R6). */
 const botMode = (process.env.DIAGNOSTIC_BOT ?? 'normal') as BotMode;
 if (!['normal', 'turtle'].includes(botMode)) throw new Error(`Unknown bot mode: ${botMode}`);
+const botPolicy = (process.env.DIAGNOSTIC_BOT_POLICY ?? 'frontier') as BotPolicy;
+if (!['baseline', 'frontier'].includes(botPolicy))
+  throw new Error(`Unknown bot policy: ${botPolicy}`);
 /** Months at which the turtle check asks whether every starting city is still held. */
 const HOLD_CHECKS = [6, 12];
 /** Survival is also reported at this horizon, the one the H1 acceptance criterion uses. */
@@ -72,20 +112,11 @@ battleConfig.tacticalAi = tacticalAi;
  * Balance sweeps (review R1.2): DIAGNOSTIC_TUNING='{"normalDamageRate":0.2,
  * "attackMultipliers":{"balanced":1.2}}' overrides levers for this run only.
  */
-const tuning = JSON.parse(process.env.DIAGNOSTIC_TUNING ?? '{}') as Record<string, unknown>;
-for (const [key, value] of Object.entries(tuning)) {
-  if (key === 'attackMultipliers') {
-    for (const [aggression, multiplier] of Object.entries(value as Record<string, number>)) {
-      if (!(aggression in ATTACK_MULTIPLIERS)) throw new Error(`Unknown aggression: ${aggression}`);
-      ATTACK_MULTIPLIERS[aggression as keyof typeof ATTACK_MULTIPLIERS] = multiplier;
-    }
-  } else if (
-    key in battleTuning &&
-    typeof value === typeof battleTuning[key as keyof typeof battleTuning]
-  )
-    (battleTuning as Record<string, unknown>)[key] = value;
-  else throw new Error(`Unknown or mistyped tuning lever: ${key}`);
-}
+const { attackMultipliers, ...tuning } = parseTuningOverrides(
+  process.env.DIAGNOSTIC_TUNING ?? '{}',
+);
+Object.assign(battleTuning, tuning);
+Object.assign(ATTACK_MULTIPLIERS, attackMultipliers);
 
 const battles: BattleRecord[] = [];
 const campaigns: Record<string, unknown>[] = [];
@@ -227,7 +258,6 @@ for (const scenarioId of scenarioIds) {
             );
           return true;
         };
-        let unified: number | null = null;
         let eliminated: number | null = null;
         let peakCities = 0;
         let maxAiCaptives = 0;
@@ -236,6 +266,7 @@ for (const scenarioId of scenarioIds) {
           .filter((c) => c.factionId === faction.id)
           .map((c) => c.id);
         const heldAll: Record<number, boolean> = {};
+        const cityCounts: Record<number, number> = {};
         let firstLoss: number | null = null;
         for (let month = 0; month < months && state.phase !== 'finished'; month++) {
           botMonth(
@@ -243,6 +274,7 @@ for (const scenarioId of scenarioIds) {
             (command) => apply(command),
             stats,
             botMode,
+            botPolicy,
           );
           apply({ type: 'endMonth' });
           for (let guard = 0; state.phase === 'battle'; guard++) {
@@ -254,7 +286,8 @@ for (const scenarioId of scenarioIds) {
             (id) => state.cities.find((c) => c.id === id)!.factionId === faction.id,
           );
           if (!keepsAll && firstLoss === null) firstLoss = state.turn;
-          if (HOLD_CHECKS.includes(state.turn)) heldAll[state.turn] = keepsAll;
+          if (HOLD_CHECKS.includes(state.turn)) heldAll[state.turn] = firstLoss === null;
+          if ([48, 96].includes(state.turn)) cityCounts[state.turn] = held();
           // Captives held by AI houses (the player's own prisoners are the player's to decide).
           const aiCaptives = state.officers.filter((o) => {
             if (!o.captive || o.fate !== 'active') return false;
@@ -268,7 +301,8 @@ for (const scenarioId of scenarioIds) {
               state.cities.filter((c) => c.factionId === rival.id).length,
             );
         }
-        if (state.phase === 'finished' && state.winner === faction.id) unified = state.turn;
+        const outcome = campaignOutcome(state);
+        const unified = outcome.reason === 'unification' && outcome.playerWon ? state.turn : null;
         const { lastOwnPlunder: _memory, ...bot } = stats;
         campaigns.push({
           scenario: scenarioId,
@@ -278,6 +312,10 @@ for (const scenarioId of scenarioIds) {
           seed,
           months: state.turn,
           finished: state.phase === 'finished',
+          outcome,
+          checkpoints: Object.fromEntries(
+            [48, 96].map((month) => [month, cityCheckpoint(cityCounts, month, outcome.endedMonth)]),
+          ),
           won: state.winner === faction.id,
           // Another house won (unification or Hegemon) while the player still held cities.
           lostToRival: state.phase === 'finished' && state.winner !== faction.id && held() > 0,
@@ -294,6 +332,7 @@ for (const scenarioId of scenarioIds) {
           plunders: rawPlunders,
           raids,
           bot,
+          stateSha256: createHash('sha256').update(JSON.stringify(state)).digest('hex'),
         });
       }
     }
@@ -322,10 +361,7 @@ const close = decisive.filter((b) => {
   return start > 0 && end / start < 0.5;
 });
 // Contested fights (within 1.6x of each other) are where tactics decide the result.
-const contested = decisive.filter((b) => {
-  const ratio = b.attackerStart / Math.max(1, b.defenderStart);
-  return ratio >= 0.6 && ratio <= 1.6;
-});
+const contested = decisive.filter((b) => forceBucket(b) === 'contested');
 const upsetIn = (set: BattleRecord[]) =>
   set.filter((b) => {
     const winnerStart = b.winner === 'attacker' ? b.attackerStart : b.defenderStart;
@@ -338,14 +374,10 @@ const closeIn = (set: BattleRecord[]) =>
     const end = b.winner === 'attacker' ? b.attackerEnd : b.defenderEnd;
     return start > 0 && end / start < 0.5;
   }).length;
-/** Stronger side's starting troops over the weaker side's. */
-const forceRatio = (b: BattleRecord) =>
-  Math.max(b.attackerStart, b.defenderStart) /
-  Math.max(1, Math.min(b.attackerStart, b.defenderStart));
 const RATIO_BUCKETS: [string, number, number][] = [
   ['contested (< 1.6x)', 0, 1.6],
-  ['uneven (1.6-3x)', 1.6, 3],
-  ['lopsided (> 3x)', 3, Infinity],
+  ['uneven (1.6 <= ratio < 3)', 1.6, 3],
+  ['lopsided (>= 3x)', 3, Infinity],
 ];
 const mixOf = (set: BattleRecord[]) => {
   const totals: Record<string, number> = {};
@@ -355,6 +387,13 @@ const mixOf = (set: BattleRecord[]) => {
   return {
     moveOnlyPercent: pct(totals.wait ?? 0, all),
     attackPercent: pct(totals.attack ?? 0, all),
+    tacticPercent: pct(totals.tactic ?? 0, all),
+    actionCounts: {
+      attack: totals.attack ?? 0,
+      tactic: totals.tactic ?? 0,
+      moveOnly: totals.wait ?? 0,
+      total: all,
+    },
   };
 };
 const waitTotals: Record<string, number> = {};
@@ -376,6 +415,8 @@ const byForceRatio = Object.fromEntries(
         medianContactDay: median(engaged.map((b) => b.contactDay!)),
         medianDaysAfterContact: median(engaged.map((b) => b.days - b.contactDay! + 1)),
         closeBattlePercent: pct(closeIn(set), set.length),
+        closeBattles: ratioStat(closeIn(set), set.length),
+        upsetPercent: pct(upsetIn(set), set.length),
         timeoutPercent: pct(set.filter((b) => b.reason === 'timeout').length, set.length),
         ...mixOf(set),
         endedBy: Object.fromEntries(
@@ -408,12 +449,16 @@ const outcomes = (group: Campaign[]) => {
   const eliminatedBy = (turn: number) =>
     group.filter((c) => c.eliminated !== null && Number(c.eliminated) <= turn).length;
   const unifiedTurns = group.filter((c) => c.unified !== null).map((c) => Number(c.unified));
+  const endings = group.map((c) => c.outcome as ReturnType<typeof campaignOutcome>);
+  const hegemonTurns = endings
+    .filter((e) => e.reason === 'hegemon' && e.playerWon)
+    .map((e) => e.endedMonth!);
   return {
     runs: group.length,
-    [`survival${SURVIVAL_HORIZON}Percent`]: pct(
-      group.length - eliminatedBy(SURVIVAL_HORIZON),
-      group.length,
-    ),
+    [`survival${SURVIVAL_HORIZON}Percent`]:
+      months < SURVIVAL_HORIZON
+        ? null
+        : pct(group.length - eliminatedBy(SURVIVAL_HORIZON), group.length),
     survivalPercent: pct(group.length - eliminatedBy(months), group.length),
     medianEliminationTurn: median(
       group.filter((c) => c.eliminated !== null).map((c) => Number(c.eliminated)),
@@ -423,6 +468,50 @@ const outcomes = (group: Campaign[]) => {
     unifiedRuns: unifiedTurns.length,
     // Over winners only, so always read it beside unifiedRuns.
     monthsToUnifyMedian: median(unifiedTurns),
+    playerHegemonWins: hegemonTurns.length,
+    monthsToHegemonMedian: median(hegemonTurns),
+    rivalHegemonWins: endings.filter((e) => e.reason === 'hegemon' && e.rivalVictory).length,
+    rivalUnifications: endings.filter((e) => e.reason === 'unification' && e.rivalVictory).length,
+    terminalOutcomes: Object.fromEntries(
+      ['unification', 'hegemon', 'playerElimination', 'unfinished'].map((reason) => [
+        reason,
+        endings.filter((e) => e.reason === reason).length,
+      ]),
+    ),
+    horizons: Object.fromEntries(
+      [48, 96].map((horizon) => {
+        const checkpoints = group.map(
+          (c) => (c.checkpoints as Record<number, ReturnType<typeof cityCheckpoint>>)[horizon]!,
+        );
+        const observed = checkpoints.filter((c) => c.status === 'observed');
+        const statuses = group.map((c) =>
+          horizonStatus(
+            {
+              months: Number(c.months),
+              endedMonth: (c.outcome as ReturnType<typeof campaignOutcome>).endedMonth,
+              eliminated: c.eliminated as number | null,
+            },
+            horizon,
+          ),
+        );
+        const measured = statuses.filter((status) => status.observed);
+        return [
+          horizon,
+          {
+            historicalSurvival: ratioStat(
+              measured.filter((status) => status.survived).length,
+              measured.length,
+            ),
+            active: ratioStat(measured.filter((status) => status.active).length, measured.length),
+            censoredRuns: statuses.length - measured.length,
+            observedRuns: observed.length,
+            endedBeforeHorizon: checkpoints.filter((c) => c.status === 'endedBeforeHorizon').length,
+            notReached: checkpoints.filter((c) => c.status === 'notReached').length,
+            medianObservedCities: median(observed.map((c) => c.cities!)),
+          },
+        ];
+      }),
+    ),
   };
 };
 const groupBy = (key: (c: Campaign) => string) => {
@@ -434,7 +523,7 @@ const raidResolved = raidTotals.battles + raidTotals.unopposed;
 const botRaid = (key: 'battles' | 'battlesWon' | 'unopposed') =>
   sum((c) => (c.raids as Record<string, number>)[key]!);
 // Review R6: for each house, in how many seeds every starting city was still held.
-const holdsStartingCities = Object.fromEntries(
+const startingCityRetention = Object.fromEntries(
   HOLD_CHECKS.map((month) => [
     `month${month}`,
     Object.fromEntries(
@@ -442,22 +531,40 @@ const holdsStartingCities = Object.fromEntries(
         campaigns.reduce(
           (acc, c) => {
             const key = `${c.scenario}/${c.faction}`;
-            const held = (c.heldAllStartingCities as Record<number, boolean>)[month];
-            acc[key] ??= { kept: 0, runs: 0 };
-            acc[key].runs++;
-            if (held) acc[key].kept++;
+            const status = retentionStatus(
+              Number(c.months),
+              c.firstLossMonth as number | null,
+              month,
+            );
+            acc[key] ??= { kept: 0, observed: 0, censored: 0 };
+            if (status.observed) acc[key].observed++;
+            else acc[key].censored++;
+            if (status.kept) acc[key].kept++;
             return acc;
           },
-          {} as Record<string, { kept: number; runs: number }>,
+          {} as Record<string, { kept: number; observed: number; censored: number }>,
         ),
-      ).map(([key, { kept, runs }]) => [key, `${kept}/${runs}`]),
+      ).map(([key, result]) => [key, result]),
+    ),
+  ]),
+);
+const holdsStartingCities = Object.fromEntries(
+  Object.entries(startingCityRetention).map(([month, houses]) => [
+    month,
+    Object.fromEntries(
+      Object.entries(houses).map(([house, result]) => [
+        house,
+        result.observed ? `${result.kept}/${result.observed}` : null,
+      ]),
     ),
   ]),
 );
 const summary = {
   tacticalAi,
   botMode,
+  botPolicy,
   holdsStartingCities,
+  startingCityRetention,
   // The levers in force for this run (defaults unless DIAGNOSTIC_TUNING overrode them).
   tuning: { ...battleTuning, attackMultipliers: { ...ATTACK_MULTIPLIERS } },
   scenarios: scenarioIds,
@@ -498,8 +605,34 @@ const summary = {
   ),
   upsetPercent: pct(upsets.length, decisive.length),
   closeBattlePercent: pct(close.length, decisive.length),
+  rates: {
+    closeBattles: ratioStat(close.length, decisive.length),
+    contestedCloseBattles: ratioStat(closeIn(contested), contested.length),
+    contestedUpsets: ratioStat(upsetIn(contested), contested.length),
+    timeouts: ratioStat(decisive.filter((b) => b.reason === 'timeout').length, decisive.length),
+    earlyCampCaptures: ratioStat(
+      decisive.filter((b) => b.reason === 'camp' && b.days <= 3).length,
+      decisive.length,
+    ),
+    supplyRunOut: ratioStat(decisive.filter((b) => b.shortage).length, decisive.length),
+    raidsThatFight: ratioStat(raidTotals.battles, raidResolved),
+    attack: ratioStat(actionTotals.attack ?? 0, mixTotal),
+    tactic: ratioStat(actionTotals.tactic ?? 0, mixTotal),
+    moveOnly: ratioStat(actionTotals.wait ?? 0, mixTotal),
+  },
   supplyRunOutPercent: pct(decisive.filter((b) => b.shortage).length, decisive.length),
   botMarches: marchTotal,
+  botTransfers: botSum('transfers'),
+  botJointAttacks: botSum('jointAttacks'),
+  botMarchOutcomes: Object.fromEntries(
+    MARCH_OUTCOMES.map((reason) => [
+      reason,
+      ratioStat(
+        sum((c) => (c.bot as ReturnType<typeof newBotStats>).marchOutcomes[reason]),
+        botSum('eligibleCityMonths'),
+      ),
+    ]),
+  ),
   botNonDefaultSupplyPercent: pct(nonDefault, marchTotal),
   botRaids: raids,
   botSacks: botSum('sacks'),
@@ -561,11 +694,38 @@ const summary = {
 };
 mkdirSync(outputDir, { recursive: true });
 const output = join(outputDir, process.env.DIAGNOSTIC_FILE ?? 'bot.json');
+let revision = 'unavailable';
+try {
+  revision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+} catch {
+  /* Source fingerprints identify a run even without Git on PATH. */
+}
+const metadata = {
+  schemaVersion: 3,
+  revision,
+  sourceSha256,
+  runnerSha256,
+  requestedTuning: { ...tuning, ...(attackMultipliers ? { attackMultipliers } : {}) },
+  startedAt,
+  elapsedMs: Math.round(performance.now() - startedMs),
+  botPolicy: BOT_POLICY_VERSION[botPolicy],
+  definitions: {
+    contested: 'max(starting troops) / max(1, min(starting troops)) < 1.6',
+    close: 'winner remaining / starting troops < 0.5',
+    survival: 'not eliminated by horizon; early rival victory still counts as survived',
+    active: 'reached horizon without a terminal ending at or before it',
+    territory: 'observed at exact horizon; early endings are not carried forward',
+    firstLoss: 'first monthly ownership loss; retention requires no prior loss',
+  },
+};
 writeFileSync(
   output,
-  JSON.stringify({ months, seeds, presets, scenarios: scenarioIds, summary, campaigns }, null, 2) +
-    '\n',
+  JSON.stringify(
+    { metadata, months, seeds, presets, scenarios: scenarioIds, summary, campaigns },
+    null,
+    2,
+  ) + '\n',
 );
 if (process.env.DIAGNOSTIC_BATTLES === '1')
-  writeFileSync(join(outputDir, 'bot-battles.json'), JSON.stringify(battles) + '\n');
+  writeFileSync(output.replace(/\.json$/, '') + '-battles.json', JSON.stringify(battles) + '\n');
 console.log(JSON.stringify({ output, summary }, null, 2));

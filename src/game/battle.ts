@@ -87,11 +87,11 @@ export const DEFAULT_DAY_LIMIT = 30;
 /** Centre-out deployment keeps the camp lanes closed on day one. */
 export const DEPLOY_ROWS = [5, 4, 6, 3, 7, 2, 8, 1, 9, 0];
 /** Share of a unit's troops a normal hit, a fire tactic and rockfall convert into damage. */
-export const NORMAL_DAMAGE_RATE = 0.25;
-export const FIRE_DAMAGE_RATE = 0.22;
-export const ROCKFALL_DAMAGE_RATE = 0.18;
+export const NORMAL_DAMAGE_RATE = 0.18;
+export const FIRE_DAMAGE_RATE = 0.1584;
+export const ROCKFALL_DAMAGE_RATE = 0.1296;
 /** A weaker defender's units stay within this many tiles of their camp. */
-export const HOLD_NEAR_CAMP_RADIUS = 3;
+export const HOLD_NEAR_CAMP_RADIUS = 4;
 /**
  * The live values of the balance levers, read by the engine. They start at the constants
  * above, and only balance sweeps (DIAGNOSTIC_TUNING) change them; games never do.

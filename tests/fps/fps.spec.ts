@@ -1,115 +1,160 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
-import { createGame, dispatch } from '../../src/game/campaign';
-import type { GameCommand, GameState } from '../../src/game/types';
+import { createGame } from '../../src/game/campaign';
 import { importState, startCampaign } from '../e2e/improvement-helpers';
+import { fullBattle } from '../e2e/rendering-fixtures';
 
-/** The plan's P1-9 target: at least 30 frames per second. */
 const FRAME_BUDGET_MS = 1000 / 30;
-/** A frame this much over budget counts as slow; fewer than 10% may be slow. */
 const SLOW_MARGIN_MS = 5;
 const SLOW_SHARE = 0.1;
 const SAMPLE_MS = 3000;
 
-function apply(state: GameState, command: GameCommand): GameState {
-  const result = dispatch(state, command);
-  if (!result.ok) throw new Error(result.error);
-  return result.state;
-}
-
-/** Every Cao officer (7) marching on a Xiapi held by nine officers and a big garrison. */
-function fullBattle(): GameState {
-  let state = createGame('cao', 16);
-  const xiapi = state.cities.find((c) => c.id === 'xiapi')!;
-  xiapi.factionId = 'yuan';
-  xiapi.reserve = 6000;
-  const caoArmy = state.officers.filter((o) => o.factionId === 'cao');
-  for (const o of caoArmy) Object.assign(o, { cityId: 'puyang', troops: 2000, busy: false });
-  state.officers
-    .filter((o) => o.factionId && o.factionId !== 'cao' && o.fate === 'active' && !o.captive)
-    .slice(0, 9)
-    .forEach((o) => Object.assign(o, { factionId: 'yuan', cityId: 'xiapi', troops: 1500 }));
-  for (const city of state.cities) city.governorId = null;
-  state = apply(state, {
-    type: 'march',
-    sourceId: 'puyang',
-    targetId: 'xiapi',
-    officerIds: caoArmy.map((o) => o.id).slice(0, 10),
-  });
-  return apply(state, { type: 'endMonth' });
-}
-
-/** Frame intervals over `SAMPLE_MS`, while `during` runs (e.g. a map pan). */
-async function sampleFrames(page: Page, during?: () => Promise<void>): Promise<number[]> {
-  const sampling = page.evaluate(
-    (duration) =>
-      new Promise<number[]>((resolve) => {
-        const times: number[] = [];
-        const tick = (now: number) => {
-          times.push(now);
-          if (now - times[0]! < duration) requestAnimationFrame(tick);
-          else resolve(times.slice(1).map((t, i) => t - times[i]!));
-        };
-        requestAnimationFrame(tick);
-      }),
-    SAMPLE_MS,
-  );
-  if (during) await during();
-  return sampling;
+interface RenderSample {
+  at: number;
+  renderMs: number;
+  latencyMs: number;
 }
 
 function summarise(intervals: number[]) {
   const sorted = [...intervals].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)] ?? Infinity;
-  const slow = sorted.filter((ms) => ms > FRAME_BUDGET_MS + SLOW_MARGIN_MS).length / sorted.length;
-  return { frames: sorted.length, medianMs: Math.round(median * 10) / 10, slowShare: slow };
+  const median = sorted[Math.floor(sorted.length / 2)] ?? null;
+  return {
+    samples: sorted.length,
+    medianMs: median === null ? null : Math.round(median * 10) / 10,
+    p95Ms: sorted.length
+      ? Math.round(sorted[Math.floor((sorted.length - 1) * 0.95)]! * 10) / 10
+      : null,
+    slowShare: sorted.length
+      ? sorted.filter((ms) => ms > FRAME_BUDGET_MS + SLOW_MARGIN_MS).length / sorted.length
+      : null,
+  };
 }
 
-test('the battle map and the campaign map stay above 30 fps', async ({ page }, testInfo) => {
+/** RAF responsiveness and actual Pixi draws are separate measurements; idle has no render FPS. */
+async function sample(page: Page, pan: boolean, duration = SAMPLE_MS) {
+  const canvas = page.locator('canvas').first();
+  const box = (await canvas.boundingBox())!;
+  const origin = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  if (pan) {
+    await page.mouse.move(origin.x, origin.y);
+    await page.mouse.down();
+  }
+  const raw = await page.evaluate(
+    ({ duration, pan, origin, amplitude }) =>
+      new Promise<{
+        raf: number[];
+        renders: RenderSample[];
+      }>((resolve) => {
+        const times: number[] = [];
+        const renders: RenderSample[] = [];
+        const canvas = document.querySelector('canvas')!;
+        const observe = (event: Event) => renders.push((event as CustomEvent<RenderSample>).detail);
+        document.addEventListener('map-render', observe);
+        const tick = (now: number) => {
+          times.push(now);
+          const elapsed = now - times[0]!;
+          if (pan)
+            canvas.dispatchEvent(
+              new PointerEvent('pointermove', {
+                clientX: origin.x + Math.sin(elapsed / 350) * amplitude,
+                clientY: origin.y,
+                pointerId: 1,
+                buttons: 1,
+                bubbles: true,
+              }),
+            );
+          if (elapsed < duration) requestAnimationFrame(tick);
+          else {
+            document.removeEventListener('map-render', observe);
+            resolve({ raf: times.slice(1).map((time, index) => time - times[index]!), renders });
+          }
+        };
+        requestAnimationFrame(tick);
+      }),
+    { duration, pan, origin, amplitude: box.width * 0.18 },
+  );
+  if (pan) {
+    // Finish at a deliberate native pointer position: releasing a captured synthetic pan
+    // can otherwise restore the real pointer's unchanged starting position before the screenshot.
+    await page.mouse.move(origin.x - box.width * 0.18, origin.y);
+    await page.mouse.up();
+  }
+  return {
+    browserRaf: summarise(raw.raf),
+    actualRenders: raw.renders.length,
+    renderIntervals: summarise(
+      raw.renders.slice(1).map((frame, index) => frame.at - raw.renders[index]!.at),
+    ),
+    // app.render submission only; invalidation latency also includes any scene rebuilding.
+    drawSubmissionMs: summarise(raw.renders.map((frame) => frame.renderMs)),
+    invalidationToRenderMs: summarise(raw.renders.map((frame) => frame.latencyMs)),
+  };
+}
+
+test('idle maps stop rendering and active maximum battles and campaign pans remain responsive', async ({
+  page,
+}, testInfo) => {
   const { cpuThrottle, enforce } = testInfo.project.metadata as {
     cpuThrottle: number;
     enforce: boolean;
   };
   await startCampaign(page);
   const state = fullBattle();
-  expect(state.phase).toBe('battle');
-  expect(state.battle!.units.filter((u) => u.troops > 0).length).toBeGreaterThanOrEqual(14);
+  for (const side of ['attacker', 'defender'])
+    expect(
+      state.battle!.units.filter((unit) => unit.side === side && unit.troops > 0),
+    ).toHaveLength(10);
   await importState(page, state);
+  await page.getByRole('button', { name: 'Show enemy reach' }).click();
+  await expect(page.locator('.game-map')).toHaveAttribute('data-render-threat', 'true');
   const session = await page.context().newCDPSession(page);
   await session.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle });
-  await page.getByRole('button', { name: 'Show enemy reach' }).click();
-  await page.waitForTimeout(1000);
-  const battle = summarise(await sampleFrames(page));
+  await page.waitForTimeout(1200);
+  const idle = await sample(page, false, 600);
+  expect(idle.actualRenders).toBe(0);
+  const beforeBattle = await page.locator('canvas').screenshot();
+  const battlePan = await sample(page, true);
+  expect(battlePan.actualRenders).toBeGreaterThan(10);
+  expect((await page.locator('canvas').screenshot()).equals(beforeBattle)).toBe(false);
 
-  // The campaign map, panned by dragging across it while frames are sampled.
   await session.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   await importState(page, createGame('cao', 16));
+  await expect(page.locator('.game-map')).toHaveAttribute('data-render-mode', 'campaign');
   await session.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle });
-  const canvas = page.locator('canvas').first();
-  const box = (await canvas.boundingBox())!;
-  const pan = summarise(
-    await sampleFrames(page, async () => {
-      const y = box.y + box.height / 2;
-      for (let round = 0; round < 3; round++) {
-        await page.mouse.move(box.x + box.width * 0.7, y);
-        await page.mouse.down();
-        await page.mouse.move(box.x + box.width * 0.3, y, { steps: 20 });
-        await page.mouse.up();
-      }
-    }),
-  );
+  const beforeCampaign = await page.locator('canvas').screenshot();
+  const campaignPan = await sample(page, true);
+  expect(campaignPan.actualRenders).toBeGreaterThan(10);
+  expect((await page.locator('canvas').screenshot()).equals(beforeCampaign)).toBe(false);
   await session.send('Emulation.setCPUThrottlingRate', { rate: 1 });
 
-  const result = { project: testInfo.project.name, cpuThrottle, battle, pan };
+  const result = {
+    project: testInfo.project.name,
+    cpuThrottle,
+    userAgent: await page.evaluate(() => navigator.userAgent),
+    viewport: page.viewportSize(),
+    devicePixelRatio: await page.evaluate(() => devicePixelRatio),
+    renderResolution: Number(
+      await page.locator('.game-map').getAttribute('data-render-resolution'),
+    ),
+    unitsPerSide: 10,
+    idle,
+    battlePan,
+    campaignPan,
+  };
   await mkdir('.artifacts/perf', { recursive: true });
+  const suffix = (process.env.FPS_REPORT_SUFFIX || '').replace(/[^a-zA-Z0-9_-]/g, '');
   await writeFile(
-    `.artifacts/perf/fps-${testInfo.project.name}.json`,
+    `.artifacts/perf/fps-${testInfo.project.name}${suffix ? '-' + suffix : ''}.json`,
     JSON.stringify(result, null, 2) + '\n',
   );
   console.info(JSON.stringify(result));
   if (!enforce) return;
-  for (const sample of [battle, pan]) {
-    expect(sample.medianMs).toBeLessThanOrEqual(FRAME_BUDGET_MS);
-    expect(sample.slowShare).toBeLessThan(SLOW_SHARE);
+  for (const active of [battlePan, campaignPan]) {
+    for (const cadence of [active.browserRaf, active.renderIntervals]) {
+      expect(cadence.medianMs).not.toBeNull();
+      expect(cadence.medianMs!).toBeLessThanOrEqual(FRAME_BUDGET_MS);
+      expect(cadence.slowShare!).toBeLessThan(SLOW_SHARE);
+    }
+    expect(active.invalidationToRenderMs.p95Ms!).toBeLessThanOrEqual(100);
   }
 });

@@ -1,6 +1,8 @@
 # To-do, design decisions and next steps
 
-Status on October 20, 2026, branch `hegemony_of_the_three_kindoms_v0.2` (named `v0.2` until then), after commit `0b863bf`. This is the working list for finishing v0.2 and planning v0.3. It replaces the plan sections of [the v0.2 review](archive/v0.2-review.md); that review keeps the full history and the detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) says what v0.2 already is.
+Status on October 20, 2026, branch `hegemony_of_the_three_kindoms_v0.2` (formerly `v0.2`): implementation and design decisions are complete; integrated verification is recorded in [v0.2-validation.md](v0.2-validation.md). This checklist also tracks the release action and v0.3 proposals. It replaces the plan sections of [the v0.2 review](archive/v0.2-review.md); that review keeps the history and detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) describes the result.
+
+The [detailed v0.2 improvement plan](v0.2-improvement-plan.md), based on the read-only review at `077556c`, preserves the agent assignments, implementation steps, dependencies, acceptance criteria and Ma Chao imagegen workflow. The user subsequently authorized the full implementation. D8/D9 and the human gates now have explicit dispositions below.
 
 ## Release gate for v0.2
 
@@ -8,33 +10,55 @@ v0.2 merges to `main` when every box is ticked.
 
 - [x] Every review item (H1–H3, M1–M11, L1–L17) is fixed or explicitly deferred. The exceptions are L15 and the battle-tuning targets below.
 - [x] `npm test`, `npm run build`, `npm run format:check`, `npm run test:e2e`, `npm run test:perf` and `npm run test:production` pass.
-- [ ] Battle tuning meets its targets, or decision D8 is recorded (T1 below).
-- [ ] Bot unification is measured, and decision D9 is recorded if needed (T2).
-- [ ] The Guandu turtle check passes for Ma Teng, Liu Bei and Liu Zhang on the tuned rules (T3, review D10).
-- [ ] Ma Chao has a portrait, or it is deferred with the garrison fallback (T5).
-- [ ] A human playtest is done, with its findings fixed or deferred (T6).
-- [ ] The frame rate holds 30 fps with the CPU slowed 4× (already met) and on one real low-end machine (T7).
+- [x] Battle tuning is measured and D8 explicitly accepts the recorded target misses (T1 below).
+- [x] Bot victories and unification are measured, and D9 explicitly accepts partial success (T2).
+- [x] The final Guandu turtle check passes: Ma Teng 3/3, Liu Bei 3/3, Liu Zhang 2/3 retain all starting cities through month 6 (T3, review D10).
+- [x] Ma Chao's portrait is generated, integrated, validated and approved; production tests pass (T5).
+- [x] The four-session human playtest is explicitly deferred for v0.2 by the user (T6, review D11); no human gameplay observations are claimed.
+- [x] The final 10v10 rendering candidate holds about 60 fps with CPU slowed 4×, with zero idle draws (T7). The real low-end-machine gate is explicitly deferred by D11; the software-rendering limitation is recorded.
 - [ ] Fresh diagnostics are in [v0.2-notes.md](v0.2-notes.md), and a pull request from `hegemony_of_the_three_kindoms_v0.2` to `main` is opened.
 
 ## To-do
 
 Ordered. "Who" is a coding session unless it says you.
 
-| #   | Task                                                                                                                                                                                                                                                                       | Who                       | Done when                                                                                                                               | Detail                                                                     |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| T1  | **Battle tuning.** Sweep the levers with `DIAGNOSTIC_TUNING`, pick the best combination, confirm it at 96 months, and make it the default.                                                                                                                                 | session                   | Median battle length 5–12 days, close battles ≥ 30%, no action > 60%, every guardrail kept (or D8 recorded).                            | [R1](archive/v0.2-review.md#r1-battle-tuning-t44)                          |
-| T2  | **Bot unification.** Record why the bot holds back, then teach it to move troops to the front, attack jointly and pick better targets. Measure months to unify.                                                                                                            | session, after T1         | Balanced houses unify in 48–96 months, or D9 recorded.                                                                                  | [R2](archive/v0.2-review.md#r2-bot-unification)                            |
-| T3  | **Guandu turtle check.** Per review D10 it covers the small houses only. Re-run `DIAGNOSTIC_BOT=turtle` after T1.                                                                                                                                                          | session, after T1         | Ma Teng, Liu Bei and Liu Zhang each keep every starting city for 6 months in ≥ 2 of 3 seeds on the tuned rules. They pass 3 of 3 today. | [Wave A status](archive/v0.2-review.md#wave-a-status-october-20-2026)      |
-| T4  | **L15 art.** Level pips on officer badges, a colour palette per battlefield profile, and the profile named in the battle header.                                                                                                                                           | session                   | Readable in both themes; screenshots reviewed by a human.                                                                               | [R4](archive/v0.2-review.md#r4-l15-level-pips-and-distinct-battlefields)   |
-| T5  | **Ma Chao's portrait.** Generate the image from `tools/portrait-spec-pending.json`, then run the portrait pipeline and update the 52 → 53 counts.                                                                                                                          | you, then a session       | `validate:portraits` and `test:production` pass; contact sheet reviewed.                                                                | [R5](archive/v0.2-review.md#r5-ma-chaos-portrait-user-step-then-a-session) |
-| T6  | **Human playtest.** Each scenario on Standard, with one Challenging and one Balanced house: at least 12 months and 3 hand-fought battles each. Use the checklist in plan §6, and record results in a new `docs/v0.2-playtest.md`.                                          | you                       | Every checklist item ticked or explained; issues fixed or deferred.                                                                     | [R7](archive/v0.2-review.md#r7-human-playtest-release-gate-user-step)      |
-| T7  | **Weak-GPU frame rate.** The map runs at about 10 fps under software graphics, because Pixi redraws the whole stage up to 30 times a second. Draw only when the state or camera changes, cache text, and cap the pixel ratio. Then do one manual run on a low-end machine. | session, then you         | ≥ 30 fps under SwiftShader in `npm run test:fps`, if reachable; the manual run is recorded.                                             | [R8](archive/v0.2-review.md#r8-frame-rate-on-slower-hardware)              |
-| T8  | **Review Yuan Shao's rating.** He is rated Approachable, yet loses Pingyuan in month 2 in every turtle run.                                                                                                                                                                | session, with T2          | The ratings match the measured survival.                                                                                                | —                                                                          |
-| T9  | **Release.** Re-run all checks and the diagnostics, update the notes, push `hegemony_of_the_three_kindoms_v0.2`, and open the pull request to `main`.                                                                                                                      | session, on your go-ahead | The pull request is open with green CI.                                                                                                 | —                                                                          |
+Before T1, Agent A completes [T0: measurement correctness](v0.2-improvement-plan.md#3-t0--correct-measurement-before-tuning): distinguish Hegemon wins from unification, align contested-battle definitions, record actual horizon checkpoints and make diagnostic artifacts reproducible. Existing measurements are historical evidence; final checks must identify the release-candidate revision.
 
-### What the measurements say for T1
+### Agent assignments and detailed task cards
 
-R1.1 split every battle by its starting force ratio (48 months, 36 campaigns):
+These roles record implementation ownership. The detailed cards preserve owned files, ordered steps, acceptance criteria and required handoff evidence; the validation record tracks actual completion.
+
+| Agent                          | Assigned work                                                                                         | Detailed cards                                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A — Simulation and diagnostics | T0, then T1, T2, T3/T8 and final balance measurements                                                 | [Measurement](v0.2-improvement-plan.md#3-t0--correct-measurement-before-tuning), [battle tuning](v0.2-improvement-plan.md#4-t1--tune-battles-through-controlled-experiments), [bot](v0.2-improvement-plan.md#5-t2--improve-the-diagnostic-player-bot), [scenario checks](v0.2-improvement-plan.md#6-t3-and-t8--validate-the-final-scenario-experience) |
+| B — Renderer and presentation  | T7 foundations, then T4, followed by combined visual/performance checks                               | [Renderer](v0.2-improvement-plan.md#7-t7--improve-rendering-efficiency-and-measurement), [presentation](v0.2-improvement-plan.md#8-t4--finish-battlefield-and-officer-presentation)                                                                                                                                                                    |
+| C — Portrait production        | Pipeline fixes, Ma Chao imagegen, review and T5 integration                                           | [Imagegen prompt, asset contract and integration](v0.2-improvement-plan.md#9-t5--ma-chao-imagegen-and-portrait-integration)                                                                                                                                                                                                                            |
+| D — Integration and quality    | Prepare evidence, integrate results and complete T9 under the full-track implementation authorization | [Human playtest](v0.2-improvement-plan.md#10-t6--prepare-and-conduct-human-playtesting), [verification and release](v0.2-improvement-plan.md#11-t9--final-verification-and-release-package)                                                                                                                                                            |
+
+The user approved the portrait/contact sheet and four battlefield screenshots. Human gameplay sessions and the real low-end hardware check are explicitly deferred by D11. Follow the [shared-file and execution rules](v0.2-improvement-plan.md#shared-file-and-execution-rules) and [agent completion report](v0.2-improvement-plan.md#13-required-agent-completion-report) for future work.
+
+### Task checklist
+
+Original acceptance criteria remain in the detailed plan. The following dispositions record the implemented result.
+
+| #   | Owner     | Final disposition                       | Acceptance / evidence                                                                                                                                                                                  |
+| --- | --------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T0  | A         | Complete                                | Correct outcomes/cohorts/censoring, raw counts, transitive fingerprints, strict resume checks and 432-month baseline-policy proof.                                                                     |
+| T1  | A         | Complete with D8                        | Thirteen controlled configurations; selected radius 4 and damage 0.18/0.1584/0.1296; actual-default 96-month and held-out confirmation. Duration/close/upset/capture-event misses explicitly accepted. |
+| T2  | A         | Complete with D9                        | Legal convoys, rehearsed joint attacks and strategic targets. 6/36 development and 5/36 held-out player wins; original broad unification target still missed and explicitly accepted.                  |
+| T3  | A         | Pass                                    | Final six-month city retention: Ma Teng 3/3, Liu Bei 3/3, Liu Zhang 2/3, each meeting ≥2/3.                                                                                                            |
+| T4  | B         | Complete, approved                      | Shared level pips, four palettes and bilingual profile row. Display/language matrix and renderer tests pass; user approved the four screenshots.                                                       |
+| T5  | C         | Complete, approved                      | Ma Chao imagegen/provenance and safe pipeline; 53 named + garrison, 108 renditions, 0.97 MiB; validation and production tests pass; user approved the sheet.                                           |
+| T6  | Human / D | Explicitly deferred by D11              | Four sessions remain unobserved; repeatable procedures and disposition preserved in the playtest record.                                                                                               |
+| T7  | B / D     | Automated gates pass; hardware deferred | Actual baseline/4× rendering near 60 fps, zero idle draws; 6× measured. SwiftShader battle about 25 fps remains a limitation. Real-machine gate deferred by D11.                                       |
+| T8  | A         | Reviewed, rating retained               | Guandu Yuan Shao survives elimination in all six normal-bot samples despite early city loss; no rating/truce manipulation.                                                                             |
+| T9  | D         | Local checks complete; PR/CI next       | 353 unit, 53 gameplay-browser, 7 production tests; isolated performance/FPS and all diagnostics complete. Release status in validation record.                                                         |
+
+See [the validation ledger](v0.2-validation.md), [final balance notes](v0.2-notes.md) and [durable evidence](assets/v0.2-balance-evidence.json) for configurations, exact results and limitations.
+
+### Historical starting measurements for T1
+
+Before the October 20 implementation, R1.1 split every battle by its starting force ratio (48 months, 36 campaigns). This table and lever list describe that starting point, not the tuned candidate:
 
 | Battle type        | Share | Median length | Ended by camp capture | Move-only turns |
 | ------------------ | ----- | ------------- | --------------------- | --------------- |
@@ -44,10 +68,10 @@ R1.1 split every battle by its starting force ratio (48 months, 36 campaigns):
 
 Of all move-only AI turns, 45.6% are units held back near their camp and 44.2% have no enemy in reach. The likely levers, in order:
 
-1. the hold-near-camp radius (`holdNearCampRadius`, now 3);
+1. the hold-near-camp radius (`holdNearCampRadius`, then 3);
 2. the camp rush in contested battles;
-3. the AI attack margins (`attackMultipliers.balanced`, now 1.35);
-4. the damage rate (`normalDamageRate`, now 0.25);
+3. the AI attack margins (`attackMultipliers.balanced`, then 1.35);
+4. the damage rate (`normalDamageRate`, then 0.25);
 5. the counter rates.
 
 **Guardrails** (targets met today, which must stay met):
@@ -63,12 +87,11 @@ Of all move-only AI turns, 45.6% are units held back near their camp and 44.2% h
 
 ## Design decisions
 
-### Open
+### Resolved during final implementation (October 20, 2026)
 
-| ID  | Question                                                              | Options                                                                                                                      | Recommendation                                                                                            |
-| --- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| D8  | If no tuning meets all three battle targets, how should they be read? | (a) Measure them on contested battles only. (b) Accept and document the misses.                                              | Decide from the T1 sweep. (a) if contested battles meet them and the lopsided ones drag the totals down.  |
-| D9  | If the bot still cannot unify within 96 months?                       | (a) Measure Hegemon victories instead, and report unification beside them. (b) Extend the horizon to 144 months. (c) Accept. | (a). The Hegemon title is the game's main victory path, and coalitions resist a runaway leader by design. |
+**Review D8:** the user accepted and explicitly documented the remaining balance misses with the selected defaults (camp radius 4; normal/fire/rockfall rates 0.18/0.1584/0.1296). Development/held-out 96-month results: overall median 4/4 days, close battles 5.6%/5.2%, contested upsets 30.7%/30.3%, and capture events 18.3/18.7 per campaign. The respective targets remain 5–12 days, ≥30%, 15–30%, and 3–15. Contested-only close rates also miss (11.7%/11.9%); the targets were not redefined to manufacture a pass. Other measured guardrails pass. Capture events can include the same officer more than once.
+
+**Review D9:** the user accepted partial bot success for v0.2, retaining the broad original unification target as a documented miss. Hegemon and true unification remain separate outcomes. The improved bot achieved 3 unifications + 3 player Hegemon wins in development and 3 + 2 on held-out seeds. Balanced houses won 4/12 and 2/12 respectively; Guandu Sun Ce won 0/3 held-out runs. No 144-month extension or further bot iteration was requested. See [the validation record](v0.2-validation.md) and [balance evidence](v0.2-notes.md).
 
 ### Decided: gameplay plan (§7 of [the plan](archive/gameplay-improvement-plan.md))
 
@@ -99,12 +122,14 @@ Of all move-only AI turns, 45.6% are units held back near their camp and 44.2% h
 | Review D10 | The Guandu turtle check (M6) covers only the small houses: Ma Teng, Liu Bei and Liu Zhang. Cao Cao, Yuan Shao and Sun Ce losing a border city to each other early is the Guandu war itself. The check is re-run after the battle tuning (T3). |
 | Deferred   | P2-12 (AI alliance offers to the player) and P3-4 (scenarios as a JSON pipeline) move to v0.3.                                                                                                                                                |
 
+**Review D11 (October 20, 2026, user decision):** explicitly defer the four human playtest sessions and real low-end-machine check for v0.2. Keep their procedures and unobserved status in [the playtest record](v0.2-playtest.md); retain all automated gameplay/performance checks. The user separately approved Ma Chao's portrait/contact sheet and the final four battlefield profile screenshots on the same date; see the review scope in that record.
+
 ## Next steps
 
-1. **Wave B, one session:** T1, then T2 and T8. T1 changes every battle, so T2 and the T3 re-check run on the tuned rules.
-2. **In parallel with Wave B:** T4 (art) and T7 (renderer). Both touch `GameMap.tsx`, so run them one after the other, or in one session.
-3. **Whenever ready:** T5 (your portrait), then its session.
-4. **Last:** T6 (your playtest on the release candidate), then T9 (release).
+1. Complete T9's branch push, PR to `main` and CI verification; the validation record identifies the exact candidate and release status.
+2. Review the PR before any separately authorized merge. The accepted D8/D9 exceptions remain visible in the notes and PR.
+3. Perform the deferred human sessions and real low-end-machine check when resumed; retain the unobserved status until actual evidence exists.
+4. Choose v0.3 priorities below before expanding gameplay or changing another rule.
 
 ### v0.3 candidates
 

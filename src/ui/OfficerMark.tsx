@@ -4,6 +4,7 @@ import type { Officer } from '../game/types';
 import Portrait from './Portrait';
 import TroopIcon from './TroopIcon';
 import { useFaction } from './FactionsContext';
+import { levelPips } from './battlePresentation';
 
 export default function OfficerMark({
   officer,
@@ -20,6 +21,11 @@ export default function OfficerMark({
       style={{ '--officer-color': faction?.color ?? '#827766' } as CSSProperties}
     >
       <Portrait officerId={officer.id} large={size === 'large'} />
+      {officer.level > 0 && (
+        <span className="officer-level-pips" aria-hidden="true">
+          {levelPips(officer.level)}
+        </span>
+      )}
       <span className="officer-surname">{identity?.surnameZh ?? '军'}</span>
       <span className="officer-troop">
         <TroopIcon type={officer.troopType} />
