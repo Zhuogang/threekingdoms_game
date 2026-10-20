@@ -6,7 +6,7 @@ The [detailed v0.2 improvement plan](v0.2-improvement-plan.md), based on the rea
 
 ## Release gate for v0.2
 
-v0.2 merges to `main` when every box is ticked.
+This checklist records local completion and explicit deferrals. D12's publication and remote CI must be resumed and verified before a merge; a checked deferral records the decision, not performance of the deferred action.
 
 - [x] Every review item (H1–H3, M1–M11, L1–L17) is fixed or explicitly deferred. The exceptions are L15 and the battle-tuning targets below.
 - [x] `npm test`, `npm run build`, `npm run format:check`, `npm run test:e2e`, `npm run test:perf` and `npm run test:production` pass.
@@ -16,7 +16,7 @@ v0.2 merges to `main` when every box is ticked.
 - [x] Ma Chao's portrait is generated, integrated, validated and approved; production tests pass (T5).
 - [x] The four-session human playtest is explicitly deferred for v0.2 by the user (T6, review D11); no human gameplay observations are claimed.
 - [x] The final 10v10 rendering candidate holds about 60 fps with CPU slowed 4×, with zero idle draws (T7). The real low-end-machine gate is explicitly deferred by D11; the software-rendering limitation is recorded.
-- [ ] Fresh diagnostics are in [v0.2-notes.md](v0.2-notes.md), and a pull request from `hegemony_of_the_three_kindoms_v0.2` to `main` is opened.
+- [x] Fresh diagnostics are recorded in [v0.2-notes.md](v0.2-notes.md); push, PR creation and remote CI are explicitly deferred by the user (D12).
 
 ## To-do
 
@@ -41,18 +41,18 @@ The user approved the portrait/contact sheet and four battlefield screenshots. H
 
 Original acceptance criteria remain in the detailed plan. The following dispositions record the implemented result.
 
-| #   | Owner     | Final disposition                       | Acceptance / evidence                                                                                                                                                                                  |
-| --- | --------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| T0  | A         | Complete                                | Correct outcomes/cohorts/censoring, raw counts, transitive fingerprints, strict resume checks and 432-month baseline-policy proof.                                                                     |
-| T1  | A         | Complete with D8                        | Thirteen controlled configurations; selected radius 4 and damage 0.18/0.1584/0.1296; actual-default 96-month and held-out confirmation. Duration/close/upset/capture-event misses explicitly accepted. |
-| T2  | A         | Complete with D9                        | Legal convoys, rehearsed joint attacks and strategic targets. 6/36 development and 5/36 held-out player wins; original broad unification target still missed and explicitly accepted.                  |
-| T3  | A         | Pass                                    | Final six-month city retention: Ma Teng 3/3, Liu Bei 3/3, Liu Zhang 2/3, each meeting ≥2/3.                                                                                                            |
-| T4  | B         | Complete, approved                      | Shared level pips, four palettes and bilingual profile row. Display/language matrix and renderer tests pass; user approved the four screenshots.                                                       |
-| T5  | C         | Complete, approved                      | Ma Chao imagegen/provenance and safe pipeline; 53 named + garrison, 108 renditions, 0.97 MiB; validation and production tests pass; user approved the sheet.                                           |
-| T6  | Human / D | Explicitly deferred by D11              | Four sessions remain unobserved; repeatable procedures and disposition preserved in the playtest record.                                                                                               |
-| T7  | B / D     | Automated gates pass; hardware deferred | Actual baseline/4× rendering near 60 fps, zero idle draws; 6× measured. SwiftShader battle about 25 fps remains a limitation. Real-machine gate deferred by D11.                                       |
-| T8  | A         | Reviewed, rating retained               | Guandu Yuan Shao survives elimination in all six normal-bot samples despite early city loss; no rating/truce manipulation.                                                                             |
-| T9  | D         | Local checks complete; PR/CI next       | 353 unit, 53 gameplay-browser, 7 production tests; isolated performance/FPS and all diagnostics complete. Release status in validation record.                                                         |
+| #   | Owner     | Final disposition                                  | Acceptance / evidence                                                                                                                                                                                  |
+| --- | --------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T0  | A         | Complete                                           | Correct outcomes/cohorts/censoring, raw counts, transitive fingerprints, strict resume checks and 432-month baseline-policy proof.                                                                     |
+| T1  | A         | Complete with D8                                   | Thirteen controlled configurations; selected radius 4 and damage 0.18/0.1584/0.1296; actual-default 96-month and held-out confirmation. Duration/close/upset/capture-event misses explicitly accepted. |
+| T2  | A         | Complete with D9                                   | Legal convoys, rehearsed joint attacks and strategic targets. 6/36 development and 5/36 held-out player wins; original broad unification target still missed and explicitly accepted.                  |
+| T3  | A         | Pass                                               | Final six-month city retention: Ma Teng 3/3, Liu Bei 3/3, Liu Zhang 2/3, each meeting ≥2/3.                                                                                                            |
+| T4  | B         | Complete, approved                                 | Shared level pips, four palettes and bilingual profile row. Display/language matrix and renderer tests pass; user approved the four screenshots.                                                       |
+| T5  | C         | Complete, approved                                 | Ma Chao imagegen/provenance and safe pipeline; 53 named + garrison, 108 renditions, 0.97 MiB; validation and production tests pass; user approved the sheet.                                           |
+| T6  | Human / D | Explicitly deferred by D11                         | Four sessions remain unobserved; repeatable procedures and disposition preserved in the playtest record.                                                                                               |
+| T7  | B / D     | Automated gates pass; hardware deferred            | Actual baseline/4× rendering near 60 fps, zero idle draws; 6× measured. SwiftShader battle about 25 fps remains a limitation. Real-machine gate deferred by D11.                                       |
+| T8  | A         | Reviewed, rating retained                          | Guandu Yuan Shao survives elimination in all six normal-bot samples despite early city loss; no rating/truce manipulation.                                                                             |
+| T9  | D         | Local checks complete; publication deferred by D12 | 353 unit, 53 gameplay-browser, 7 production tests; isolated performance/FPS and all diagnostics complete. No PR/remote CI result claimed.                                                              |
 
 See [the validation ledger](v0.2-validation.md), [final balance notes](v0.2-notes.md) and [durable evidence](assets/v0.2-balance-evidence.json) for configurations, exact results and limitations.
 
@@ -124,9 +124,11 @@ Of all move-only AI turns, 45.6% are units held back near their camp and 44.2% h
 
 **Review D11 (October 20, 2026, user decision):** explicitly defer the four human playtest sessions and real low-end-machine check for v0.2. Keep their procedures and unobserved status in [the playtest record](v0.2-playtest.md); retain all automated gameplay/performance checks. The user separately approved Ma Chao's portrait/contact sheet and the final four battlefield profile screenshots on the same date; see the review scope in that record.
 
+**Review D12 (October 20, 2026, user decision):** defer push, PR creation and remote CI for now. The tested implementation is committed locally as `b773e91`; publication could not authenticate through local Git or the connected integration. All local suites and diagnostics pass. No PR or remote CI result is claimed.
+
 ## Next steps
 
-1. Complete T9's branch push, PR to `main` and CI verification; the validation record identifies the exact candidate and release status.
+1. Resume T9's branch push, PR to `main` and CI verification only when requested; these actions are explicitly deferred by D12. The validation record identifies the committed candidate and local results.
 2. Review the PR before any separately authorized merge. The accepted D8/D9 exceptions remain visible in the notes and PR.
 3. Perform the deferred human sessions and real low-end-machine check when resumed; retain the unobserved status until actual evidence exists.
 4. Choose v0.3 priorities below before expanding gameplay or changing another rule.
