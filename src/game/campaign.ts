@@ -1,9 +1,30 @@
 import {
+  DEFAULT_SCENARIO_ID,
   FACTIONS,
+  TROOP_LABELS,
+  scenarioById,
   INITIAL_CITIES,
   INITIAL_OFFICERS,
+  SCENARIO,
+  activateScenario,
   battlefieldProfile,
 } from '../content/scenario';
+import { DIFFICULTY_PRESETS } from './difficulty';
+import { EVENTS, answerInvitation, runEvents } from './events';
+import {
+  MAX_TROOPS,
+  RESOURCE_CAP,
+  allied,
+  applyPlunder,
+  bordersFaction,
+  bounded,
+  chooseGovernor,
+  factionName,
+  owns,
+  serving,
+  strength,
+  strongestFaction,
+} from './world';
 import {
   autoResolveBattle,
   createBattle,
@@ -17,6 +38,7 @@ import {
   attackSafeguards,
   attackWilling,
   isRivalAggression,
+  DEFAULT_POLICY,
   policyOf,
   type AiAttackCandidate,
   type CampaignObserver,
@@ -31,6 +53,7 @@ import {
   validateReports,
 } from './reports';
 import { DEFAULT_SUPPLY_DAYS, RAID_SUPPLY_DAYS, isSupplyDays, supplyFood } from './supply';
+import { hasTrait } from '../content/traits';
 import { isActiveOfficer, isRuler, levelForExperience } from './officers';
 import {
   PLUNDER_COOLDOWN_MONTHS,
@@ -48,9 +71,11 @@ import type {
   BattleSummary,
   City,
   CommandResult,
+  Difficulty,
   GameCommand,
   GameState,
   Officer,
+  TroopType,
 } from './types';
 
 /** The atlas rules preserve Baye's turn structure, with explicit modern balance. */
@@ -185,47 +210,26 @@ const ACTIONS: Record<Action, Omit<ActionInfo, 'reason'>> = {
     gold: 0,
     stamina: 20,
   },
+  reorganize: {
+    label: 'Reorganize troops',
+    description:
+      'Retrain this officer’s soldiers as another troop type. Costs 20% of their troops to retraining.',
+    gold: 150,
+    stamina: 15,
+  },
 };
-const MAX_TROOPS = 5000;
-const RESOURCE_CAP = 9999999;
-const bounded = (n: number, max: number, min = 0) => Math.max(min, Math.min(max, Math.floor(n)));
-const factionName = (id: string | null) =>
-  FACTIONS.find((f) => f.id === id)?.name ?? 'Independent cities';
-const owns = (city: City | undefined, factionId: string): city is City =>
-  !!city && city.factionId === factionId;
-const serving = (state: GameState, city: City) =>
-  state.officers.filter(
-    (o) =>
-      o.cityId === city.id && o.factionId === city.factionId && !o.captive && isActiveOfficer(o),
-  );
-const strength = (state: GameState, city: City) =>
-  serving(state, city).reduce((total, o) => total + o.troops, city.reserve);
-const allied = (state: GameState, a: string, b: string | null) =>
-  b !== null &&
-  state.alliances.some(
-    (p) => p.untilTurn > state.turn && ((p.a === a && p.b === b) || (p.b === a && p.a === b)),
-  );
-function chooseGovernor(state: GameState, city: City): void {
-  if (city.factionId === null) {
-    city.governorId = null;
-    return;
-  }
-  const current = state.officers.find((o) => o.id === city.governorId);
-  if (
-    !current ||
-    current.cityId !== city.id ||
-    current.factionId !== city.factionId ||
-    current.captive
-  ) {
-    city.governorId =
-      serving(state, city).sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id))[0]
-        ?.id ?? null;
-  }
-}
-
+const BENEVOLENT_PERSUASION = 8;
+const BENEVOLENT_PLUNDER_LOYALTY_LOSS = 8;
+const REORGANIZE_LOSS = 0.2;
+const TROOP_TYPES = ['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'] as const;
 export interface NewGameOptions {
   /** Months of opening truce during which the AI makes no marches (default 0). */
   truceMonths?: number;
+  /** Which starting situation to play (default: the 190 CE scenario). */
+  scenarioId?: string;
+  difficulty?: Difficulty;
+  /** Optional rule: veterans may die of old age. */
+  aging?: boolean;
 }
 
 export function createGame(
@@ -234,9 +238,14 @@ export function createGame(
   rivalAggression: RivalAggression = 'balanced',
   options: NewGameOptions = {},
 ): GameState {
+  const scenario = activateScenario(options.scenarioId ?? DEFAULT_SCENARIO_ID);
+  if (options.scenarioId && scenario.id !== options.scenarioId)
+    throw new Error('Choose a scenario from this game.');
   if (!FACTIONS.some((f) => f.id === factionId))
     throw new Error('Choose a ruler from this scenario.');
   if (!isRivalAggression(rivalAggression)) throw new Error('Choose a valid rival aggression.');
+  const difficulty = options.difficulty ?? 'standard';
+  if (!DIFFICULTY_PRESETS[difficulty]) throw new Error('Choose a valid difficulty.');
   const truceMonths = options.truceMonths ?? 0;
   if (!Number.isInteger(truceMonths) || truceMonths < 0 || truceMonths > 12)
     throw new Error('Choose an opening truce of 0–12 months.');
@@ -247,7 +256,7 @@ export function createGame(
     playerFactionId: factionId,
     rivalAggression,
     reports: { pending: null, latest: null },
-    year: 190,
+    year: scenario.year,
     month: 1,
     turn: 0,
     rng: seed >>> 0 || 190,
@@ -265,11 +274,21 @@ export function createGame(
     truceUntilTurn: truceMonths,
     lastBattle: null,
     reputation: {},
+    scenarioId: scenario.id,
+    difficulty,
+    aiPersonalities: DIFFICULTY_PRESETS[difficulty].personalities,
+    aging: options.aging ?? false,
+    hegemon: { factionId: null, months: 0 },
+    scouted: {},
+    firedEvents: [],
+    invitations: [],
   };
   state.cities.forEach((city) => chooseGovernor(state, city));
   addLog(
     state,
-    `190 CE. The Han court falters. ${factionName(factionId)} must unite the realm.`,
+    scenario.year === 190
+      ? `190 CE. The Han court falters. ${factionName(factionId)} must unite the realm.`
+      : ` CE. The armies gather along the Yellow River. ${factionName(factionId)} must unite the realm.`,
     'event',
   );
   addLog(
@@ -287,6 +306,7 @@ export function getActionInfo(
   cityId: string,
   officerId?: string,
 ): ActionInfo {
+  activateScenario(state.scenarioId);
   return actionInfoFor(state, action, cityId, officerId, state.playerFactionId);
 }
 function actionInfoFor(
@@ -353,6 +373,7 @@ export function getPlunderPreview(
   cityId: string,
   officerId: string,
 ): PlunderOutcome | null {
+  activateScenario(state.scenarioId);
   const city = state.cities.find((c) => c.id === cityId);
   const officer = state.officers.find((o) => o.id === officerId);
   return city && officer ? plunderOutcome(city, officer) : null;
@@ -370,7 +391,8 @@ export type PreviewStat =
   | 'loyalty'
   | 'experience'
   | 'force'
-  | 'stamina';
+  | 'stamina'
+  | 'troops';
 export interface PreviewEffect {
   stat: PreviewStat;
   min: number;
@@ -395,6 +417,7 @@ export function getActionPreview(
   officerId: string,
   targetId?: string,
 ): ActionPreview | null {
+  activateScenario(state.scenarioId);
   const city = state.cities.find((c) => c.id === cityId);
   const officer = state.officers.find((o) => o.id === officerId);
   if (!city || !officer) return null;
@@ -496,6 +519,11 @@ export function getActionPreview(
       add('force', -Math.min(5, officer.force - 1), -Math.min(5, officer.force - 1), 'officer');
       add('loyalty', -Math.min(12, officer.loyalty), -Math.min(12, officer.loyalty), 'officer');
       break;
+    case 'reorganize': {
+      const loss = Math.floor(officer.troops * REORGANIZE_LOSS);
+      add('troops', -loss, -loss, 'officer');
+      break;
+    }
     case 'plunder': {
       const outcome = plunderOutcome(city, officer);
       add('gold', outcome.gold, outcome.gold, 'city');
@@ -539,16 +567,22 @@ export function getPersuadeChance(
   persuaderId: string,
   targetId: string,
 ): number | null {
+  activateScenario(state.scenarioId);
   const persuader = state.officers.find((o) => o.id === persuaderId);
   const target = state.officers.find((o) => o.id === targetId);
   if (!persuader || !target) return null;
   if (target.factionId === null) return 50 + Math.floor(persuader.intellect / 3);
   if (isRuler(target)) return null;
-  return bounded(
-    Math.floor(30 + 0.5 * persuader.intellect - 0.7 * target.loyalty + (target.captive ? 20 : 0)),
+  const charm = hasTrait(persuader.id, 'benevolent') ? BENEVOLENT_PERSUASION : 0;
+  const chance = bounded(
+    Math.floor(
+      30 + 0.5 * persuader.intellect - 0.7 * target.loyalty + (target.captive ? 20 : 0) + charm,
+    ),
     75,
     5,
   );
+  // A loyal officer is far harder to turn.
+  return hasTrait(target.id, 'loyal') ? Math.max(2, Math.floor(chance / 2)) : chance;
 }
 
 function cityAction(
@@ -565,6 +599,13 @@ function cityAction(
   const neighbor = targetCity && city.neighbors.includes(targetCity.id);
   let targetFaction = FACTIONS.find((f) => f.id === command.targetId)?.id ?? targetCity?.factionId;
   // Validate every target before deducting a resource or consuming random numbers.
+  if (command.action === 'reorganize') {
+    if (
+      !TROOP_TYPES.includes(command.targetId as TroopType) ||
+      command.targetId === officer.troopType
+    )
+      return 'Choose a different troop type.';
+  }
   if (command.action === 'scout' && !neighbor) return 'Choose a neighboring city to scout.';
   if (
     command.action === 'subvert' &&
@@ -714,6 +755,8 @@ function cityAction(
       );
       break;
     case 'scout':
+      // The player's scouts lift the fog over that city for two months.
+      if (factionId === state.playerFactionId) state.scouted[targetCity!.id] = state.turn;
       announce(
         `${targetCity!.name} reports ${strength(state, targetCity!)} soldiers, ${targetCity!.defense} defense, ${targetCity!.food} food and ${targetCity!.loyalty} support.`,
         'military',
@@ -789,10 +832,26 @@ function cityAction(
       city.governorId = officer.id;
       announce(`${officer.name} becomes governor.`, 'diplomacy');
       break;
+    case 'reorganize': {
+      const loss = Math.floor(officer.troops * REORGANIZE_LOSS);
+      officer.troops -= loss;
+      officer.troopType = command.targetId as TroopType;
+      announce(
+        `${officer.name} reorganizes their troops as ${TROOP_LABELS[officer.troopType]}, losing ${num(loss)} soldiers.`,
+        'military',
+      );
+      break;
+    }
     case 'plunder': {
       const gains = applyPlunder(state, city, city, officer);
       serving(state, city).forEach((o) => {
-        o.loyalty = bounded(o.loyalty - PLUNDER_OFFICER_LOYALTY_LOSS, 100);
+        o.loyalty = bounded(
+          o.loyalty -
+            (hasTrait(o.id, 'benevolent')
+              ? BENEVOLENT_PLUNDER_LOYALTY_LOSS
+              : PLUNDER_OFFICER_LOYALTY_LOSS),
+          100,
+        );
       });
       announce(
         `${officer.name} plunders the city, seizing ${num(gains.gold)} gold and ${num(gains.food)} food.`,
@@ -814,24 +873,6 @@ function levelUp(officer: Officer): void {
     if (officer.troopType === 'archer') officer.intellect = bounded(officer.intellect + 2, 100);
     else officer.force = bounded(officer.force + 2, officer.equipment ? 105 : 100);
   }
-}
-
-/**
- * Ruin `target` and deliver the loot to `destination` (the same city for plunder
- * and sack; the raiders' home for a raid). Sets the target's plunder cooldown.
- */
-function applyPlunder(
-  state: GameState,
-  target: City,
-  destination: City,
-  leader: Pick<Officer, 'intellect' | 'force'>,
-): PlunderOutcome {
-  const outcome = plunderOutcome(target, leader);
-  destination.gold = bounded(destination.gold + outcome.gold, RESOURCE_CAP);
-  destination.food = bounded(destination.food + outcome.food, RESOURCE_CAP);
-  Object.assign(target, outcome.after);
-  target.plunderCooldownUntil = state.turn + PLUNDER_COOLDOWN_MONTHS;
-  return outcome;
 }
 
 function assignTroops(
@@ -1064,23 +1105,11 @@ const AI_TRANSPORT_RESERVE = 500;
 const MUSTER_STRONG = 2200;
 const MUSTER_STANDARD = 1500;
 
+/** Rival personalities apply only when the game's difficulty keeps them on. */
+const policyFor = (state: GameState, factionId: string): FactionPolicy =>
+  state.aiPersonalities ? policyOf(factionId) : DEFAULT_POLICY;
 const weightedPower = (army: Officer[]) =>
   army.reduce((sum, o) => sum + o.troops * (0.6 + o.force / 100), 0);
-const bordersFaction = (state: GameState, a: string, b: string): boolean =>
-  state.cities.some(
-    (city) =>
-      city.factionId === a &&
-      city.neighbors.some((id) => state.cities.find((c) => c.id === id)?.factionId === b),
-  );
-/** The faction with the most cities (ties break by id), or null when nothing is held. */
-export function strongestFaction(state: GameState): string | null {
-  const counts = FACTIONS.map((f) => ({
-    id: f.id,
-    cities: state.cities.filter((c) => c.factionId === f.id).length,
-  })).sort((a, b) => b.cities - a.cities || a.id.localeCompare(b.id));
-  return counts[0] && counts[0].cities > 0 ? counts[0].id : null;
-}
-
 /** Pure alliance odds shown before proposing; execution uses the same number. */
 export function getAllianceChance(
   state: GameState,
@@ -1088,8 +1117,9 @@ export function getAllianceChance(
   targetId: string,
   intellect: number,
 ): number {
+  activateScenario(state.scenarioId);
   const strongest = strongestFaction(state);
-  let chance = 40 + Math.floor(intellect / 2) + policyOf(targetId).diplomacyBias;
+  let chance = 40 + Math.floor(intellect / 2) + policyFor(state, targetId).diplomacyBias;
   if (
     strongest &&
     proposerId !== strongest &&
@@ -1173,7 +1203,7 @@ function candidateFor(
 }
 
 function aiMuster(state: GameState, factionId: string, cities: City[]): void {
-  const policy = policyOf(factionId);
+  const policy = policyFor(state, factionId);
   for (const city of cities) {
     for (const officer of availableOfficers(state, city)) {
       const standard = officer.force > 80 ? MUSTER_STRONG : MUSTER_STANDARD;
@@ -1243,7 +1273,7 @@ function aiJointAttacks(
   observer?: CampaignObserver,
 ): void {
   if (state.turn === 0 || state.turn < state.truceUntilTurn) return;
-  const policy = policyOf(factionId);
+  const policy = policyFor(state, factionId);
   const targets = state.cities
     .filter((c) => c.factionId !== factionId && !allied(state, factionId, c.factionId))
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -1306,7 +1336,7 @@ function chooseTarget(
   preference: FactionPolicy['targetPreference'],
 ): AiAttackCandidate | undefined {
   const willing = candidates.filter((candidate) =>
-    attackWilling(candidate, state.rivalAggression, policyOf(candidate.factionId)),
+    attackWilling(candidate, state.rivalAggression, policyFor(state, candidate.factionId)),
   );
   if (preference === 'weakest' || willing.length < 2) return willing[0];
   const city = (candidate: AiAttackCandidate) =>
@@ -1483,7 +1513,7 @@ function planAi(state: GameState, observer?: CampaignObserver): void {
   const coalitionLeader = updateCoalition(state, observer);
   for (const faction of FACTIONS) {
     if (faction.id === state.playerFactionId) continue;
-    const policy = policyOf(faction.id);
+    const policy = policyFor(state, faction.id);
     const cities = state.cities
       .filter((c) => c.factionId === faction.id)
       .sort((a, b) => a.id.localeCompare(b.id));
@@ -1624,6 +1654,13 @@ function planAi(state: GameState, observer?: CampaignObserver): void {
 }
 
 const RAID_DAY_LIMIT = 10;
+
+/** Benevolent officers take the plundering of the city they serve in to heart. */
+function shameBenevolent(state: GameState, city: City): void {
+  for (const officer of serving(state, city))
+    if (hasTrait(officer.id, 'benevolent'))
+      officer.loyalty = bounded(officer.loyalty - BENEVOLENT_PLUNDER_LOYALTY_LOSS, 100);
+}
 const bordersPlayer = (state: GameState, city: City): boolean =>
   city.neighbors.some(
     (id) => state.cities.find((c) => c.id === id)?.factionId === state.playerFactionId,
@@ -1721,6 +1758,7 @@ function applyBattleAftermath(state: GameState, observer?: CampaignObserver): vo
     }
     const gains = applyPlunder(state, target, home ?? ({ gold: 0, food: 0 } as City), leader);
     loot = { gold: gains.gold, food: gains.food };
+    shameBenevolent(state, target);
     if (home) home.food = bounded(home.food + battle.attackerFood, RESOURCE_CAP);
     observer?.plunder?.({
       cityId: target.id,
@@ -1923,6 +1961,7 @@ function resolveUndefendedRaid(
   const commanders = commandersOf(state, order);
   const leader = plunderLeader(commanders)!;
   const gains = applyPlunder(state, target, source, leader);
+  shameBenevolent(state, target);
   source.food = bounded(source.food + order.food, RESOURCE_CAP);
   observer?.plunder?.({
     cityId: target.id,
@@ -1960,6 +1999,86 @@ function resolveUndefendedRaid(
       captured: [],
       loot: { gold: gains.gold, food: gains.food },
     };
+}
+
+const OLD_AGE = 60;
+const HEGEMON_CITIES = 16;
+export const HEGEMON_MONTHS = 12;
+const HEGEMON_CAPITAL = 'luoyang';
+
+/**
+ * Optional rule: each January, officers past sixty may die of old age. Rulers are spared,
+ * and nothing about this touches battles (design decision D5). Draws RNG only while enabled.
+ */
+function applyAging(state: GameState): void {
+  for (const officer of state.officers) {
+    if (!isActiveOfficer(officer) || isRuler(officer) || officer.age < OLD_AGE) continue;
+    if (random(state, 100) >= Math.min(60, (officer.age - OLD_AGE + 1) * 3)) continue;
+    const city = state.cities.find((c) => c.id === officer.cityId)!;
+    const faction = officer.factionId;
+    if (faction && !officer.captive)
+      city.reserve = bounded(city.reserve + officer.troops, RESOURCE_CAP);
+    officer.troops = 0;
+    officer.fate = 'deceased';
+    officer.factionId = null;
+    officer.captive = false;
+    officer.busy = true;
+    addLog(
+      state,
+      `${officer.name} passes away at the age of ${officer.age}.`,
+      faction === state.playerFactionId ? 'bad' : 'event',
+    );
+    if (faction === state.playerFactionId)
+      recordMonthlyEvent(state, { kind: 'death', officerId: officer.id, factionId: faction });
+    state.cities.forEach((c) => chooseGovernor(state, c));
+  }
+}
+
+/** Holding Luoyang plus sixteen cities for twelve months proclaims a Hegemon. */
+function updateHegemon(state: GameState): void {
+  const capital = state.cities.find((c) => c.id === HEGEMON_CAPITAL)?.factionId ?? null;
+  const count = capital ? state.cities.filter((c) => c.factionId === capital).length : 0;
+  const claimant = capital && count >= HEGEMON_CITIES ? capital : null;
+  if (claimant && state.hegemon.factionId === claimant)
+    state.hegemon = { factionId: claimant, months: state.hegemon.months + 1 };
+  else state.hegemon = { factionId: claimant, months: claimant ? 1 : 0 };
+  if (claimant && state.hegemon.months >= HEGEMON_MONTHS && state.phase !== 'finished') {
+    state.phase = 'finished';
+    state.winner = claimant;
+    addLog(
+      state,
+      `${factionName(claimant)} has held the capital and sixteen cities for a year and is proclaimed Hegemon.`,
+      claimant === state.playerFactionId ? 'good' : 'bad',
+    );
+  }
+}
+
+/** Standing objective for each ruler, tracked in the advisor. */
+export interface Objective {
+  id: string;
+  progress: number;
+  goal: number;
+  done: boolean;
+}
+export function getObjectives(state: GameState): Objective[] {
+  activateScenario(state.scenarioId);
+  const mine = state.cities.filter((c) => c.factionId === state.playerFactionId).length;
+  const capital = state.cities.find((c) => c.id === HEGEMON_CAPITAL);
+  return [
+    {
+      id: 'hegemon',
+      progress: state.hegemon.factionId === state.playerFactionId ? state.hegemon.months : 0,
+      goal: HEGEMON_MONTHS,
+      done: state.winner === state.playerFactionId,
+    },
+    {
+      id: 'capital',
+      progress: capital?.factionId === state.playerFactionId ? 1 : 0,
+      goal: 1,
+      done: capital?.factionId === state.playerFactionId,
+    },
+    { id: 'cities', progress: mine, goal: HEGEMON_CITIES, done: mine >= HEGEMON_CITIES },
+  ];
 }
 
 const UNREST_SUPPORT = 30;
@@ -2004,6 +2123,7 @@ function applyDepartures(state: GameState): void {
       officer.captive ||
       !isActiveOfficer(officer) ||
       isRuler(officer) ||
+      hasTrait(officer.id, 'loyal') ||
       officer.loyalty >= DEPARTURE_LOYALTY
     )
       continue;
@@ -2160,6 +2280,9 @@ function finishMonth(state: GameState, observer?: CampaignObserver): void {
   }
   applyUnrest(state);
   if (state.month === 1 || state.month === 7) applyDepartures(state);
+  if (state.aging && state.month === 1) applyAging(state);
+  runEvents(state, observer);
+  state.invitations = state.invitations.filter((invitation) => invitation.untilTurn > state.turn);
   updateAtRisk(state);
   for (const officer of state.officers) {
     officer.busy = false;
@@ -2185,6 +2308,7 @@ function finishMonth(state: GameState, observer?: CampaignObserver): void {
     'economy',
   );
   checkVictory(state);
+  updateHegemon(state);
   publishMonthlyReport(state);
 }
 
@@ -2298,6 +2422,7 @@ export function dispatch(
   command: GameCommand,
   observer?: CampaignObserver,
 ): CommandResult {
+  activateScenario(state.scenarioId);
   return withBattleObserver(observer, () => dispatchCommand(state, command, observer));
 }
 
@@ -2351,6 +2476,13 @@ function dispatchCommand(
       case 'breakAlliance':
         error = breakAlliance(draft, command, draft.playerFactionId);
         break;
+      case 'invitation':
+        error = answerInvitation(draft, command.id, command.accept === true);
+        break;
+      case 'setAging':
+        if (typeof command.value !== 'boolean') error = 'Choose on or off.';
+        else draft.aging = command.value;
+        break;
       case 'endMonth':
         beginMonthlyReport(draft);
         planAi(draft, observer);
@@ -2371,16 +2503,18 @@ function dispatchCommand(
 export function validateState(state: GameState): string | null {
   if (!state || state.version !== 2 || state.ruleset !== 'baye-atlas-2')
     return 'This save uses an unsupported ruleset.';
+  if (!scenarioById(state.scenarioId)) return 'This save uses an unsupported scenario.';
+  activateScenario(state.scenarioId);
   const integral = (value: number, low: number, high: number) =>
     Number.isSafeInteger(value) && value >= low && value <= high;
   if (!FACTIONS.some((f) => f.id === state.playerFactionId))
     return 'The player faction is not part of this scenario.';
   if (!isRivalAggression(state.rivalAggression)) return 'Choose a valid rival aggression.';
   if (
-    !integral(state.year, 190, 9999) ||
+    !integral(state.year, SCENARIO.year, 9999) ||
     !integral(state.month, 1, 12) ||
     !integral(state.turn, 0, 117719) ||
-    state.year * 12 + state.month !== 190 * 12 + 1 + state.turn
+    state.year * 12 + state.month !== SCENARIO.year * 12 + 1 + state.turn
   )
     return 'The campaign calendar is inconsistent.';
   if (
@@ -2719,7 +2853,11 @@ export function validateState(state: GameState): string | null {
   }
   if (state.phase === 'finished') {
     const owned = state.cities.filter((c) => c.factionId === state.playerFactionId).length;
-    if (owned !== 0 && owned !== state.cities.length)
+    const hegemonWin =
+      state.hegemon.factionId !== null &&
+      state.hegemon.months >= HEGEMON_MONTHS &&
+      state.winner === state.hegemon.factionId;
+    if (owned !== 0 && owned !== state.cities.length && !hegemonWin)
       return 'The campaign is marked finished without victory or defeat.';
     if (
       !state.winner ||
@@ -2747,6 +2885,46 @@ export function validateState(state: GameState): string | null {
   )
     return 'Invalid chronicle entries.';
   if (!integral(state.truceUntilTurn, 0, 12)) return 'Invalid opening truce.';
+  if (
+    !DIFFICULTY_PRESETS[state.difficulty] ||
+    typeof state.aiPersonalities !== 'boolean' ||
+    typeof state.aging !== 'boolean'
+  )
+    return 'Invalid campaign settings.';
+  if (
+    !state.hegemon ||
+    (state.hegemon.factionId !== null && !factions.has(state.hegemon.factionId)) ||
+    !integral(state.hegemon.months, 0, HEGEMON_MONTHS) ||
+    (state.hegemon.factionId === null) !== (state.hegemon.months === 0)
+  )
+    return 'Invalid hegemon progress.';
+  if (
+    !state.scouted ||
+    Object.entries(state.scouted).some(
+      ([id, turn]) => !cityIds.has(id) || !integral(turn, 0, state.turn),
+    )
+  )
+    return 'Invalid scouting records.';
+  const knownEvents = new Set(EVENTS.filter((event) => event.once).map((event) => event.id));
+  if (
+    !Array.isArray(state.firedEvents) ||
+    new Set(state.firedEvents).size !== state.firedEvents.length ||
+    state.firedEvents.some((id) => !knownEvents.has(id))
+  )
+    return 'Invalid event history.';
+  if (
+    !Array.isArray(state.invitations) ||
+    state.invitations.some(
+      (invitation) =>
+        !invitation.id ||
+        !EVENTS.some((event) => event.id === invitation.eventId) ||
+        !Array.isArray(invitation.members) ||
+        invitation.members.some((member) => !factions.has(member)) ||
+        !integral(invitation.untilTurn, state.turn, state.turn + 3),
+    ) ||
+    new Set(state.invitations.map((invitation) => invitation.id)).size !== state.invitations.length
+  )
+    return 'Invalid invitations.';
   if (state.lastBattle !== null) {
     const last = state.lastBattle;
     if (

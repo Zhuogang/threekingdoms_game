@@ -24,7 +24,8 @@ export type Action =
   | 'confiscate'
   | 'banish'
   | 'appoint'
-  | 'plunder';
+  | 'plunder'
+  | 'reorganize';
 export interface Faction {
   id: string;
   name: string;
@@ -57,7 +58,8 @@ export interface City {
   /** Plunder, raid and sack are rejected while `turn < plunderCooldownUntil`. */
   plunderCooldownUntil: number;
 }
-export type OfficerFate = 'active' | 'executed';
+/** Executed and deceased officers stay in the roster (saves keep everyone) but are inert. */
+export type OfficerFate = 'active' | 'executed' | 'deceased';
 export interface Officer {
   id: string;
   name: string;
@@ -162,6 +164,18 @@ export interface BattleSummary {
 export interface Reputation {
   brokeAllianceTurn: number;
 }
+export type Difficulty = 'story' | 'standard' | 'warlord';
+/** A standing offer to the player, e.g. to join a coalition (accept = alliances with all members). */
+export interface Invitation {
+  id: string;
+  eventId: string;
+  members: string[];
+  untilTurn: number;
+}
+export interface Hegemon {
+  factionId: string | null;
+  months: number;
+}
 export interface GameState {
   version: 2;
   ruleset: 'baye-atlas-2';
@@ -189,6 +203,19 @@ export interface GameState {
   /** The most recent completed battle, for the summary modal. */
   lastBattle: BattleSummary | null;
   reputation: Record<string, Reputation>;
+  scenarioId: string;
+  difficulty: Difficulty;
+  /** Whether rival houses use their own personalities on top of the aggression slider. */
+  aiPersonalities: boolean;
+  /** Optional rule: veterans may die of old age. Off by default. */
+  aging: boolean;
+  /** Who has held Luoyang plus sixteen cities, and for how many consecutive months. */
+  hegemon: Hegemon;
+  /** Turn each enemy city was last scouted; exact numbers are shown for two months. */
+  scouted: Record<string, number>;
+  /** Ids of one-shot events that have fired. */
+  firedEvents: string[];
+  invitations: Invitation[];
 }
 export type SupplyDays = 10 | 20 | 30;
 export type PrisonerDecision = 'release' | 'execute';
@@ -215,6 +242,8 @@ export type GameCommand =
   | { type: 'assignTroops'; cityId: string; officerId: string; amount: number }
   | { type: 'prisoner'; cityId: string; prisonerId: string; decision: PrisonerDecision }
   | { type: 'breakAlliance'; factionId: string }
+  | { type: 'invitation'; id: string; accept: boolean }
+  | { type: 'setAging'; value: boolean }
   | { type: 'endMonth' }
   | { type: 'battleMove'; unitId: string; x: number; y: number }
   | { type: 'battleAttack'; unitId: string; targetId: string }

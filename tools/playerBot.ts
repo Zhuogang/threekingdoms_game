@@ -211,4 +211,3 @@ export function botMonth(get: () => GameState, apply: Apply, stats: BotStats): v
     }
   }
 }
-

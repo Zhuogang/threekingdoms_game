@@ -15,6 +15,10 @@ export const MIGRATION_DEFAULTS = {
   hurt: false,
   truceUntilTurn: 0,
   lastBattle: null,
+  scenarioId: 'divided-realm-190',
+  difficulty: 'standard' as const,
+  aiPersonalities: true,
+  aging: false,
 };
 
 type Legacy = Record<string, any>;
@@ -61,5 +65,13 @@ export function migrateV1toV2(v1: Legacy): GameState {
   state.truceUntilTurn = MIGRATION_DEFAULTS.truceUntilTurn;
   state.lastBattle = MIGRATION_DEFAULTS.lastBattle;
   state.reputation = {};
+  state.scenarioId = MIGRATION_DEFAULTS.scenarioId;
+  state.difficulty = MIGRATION_DEFAULTS.difficulty;
+  state.aiPersonalities = MIGRATION_DEFAULTS.aiPersonalities;
+  state.aging = MIGRATION_DEFAULTS.aging;
+  state.hegemon = { factionId: null, months: 0 };
+  state.scouted = {};
+  state.firedEvents = [];
+  state.invitations = [];
   return state as GameState;
 }

@@ -1,4 +1,5 @@
 import { battlefieldProfile } from '../content/scenario';
+import { hasTrait } from '../content/traits';
 import { random } from './random';
 import { SUPPLY_DIVISOR } from './supply';
 import type { BattleObserver } from './aiPolicy';
@@ -70,6 +71,11 @@ export const TACTIC_COST: Record<BattleSkill, number> = {
   rockfall: 4,
 };
 export const TACTIC_SKILLS = Object.keys(TACTIC_COST) as BattleSkill[];
+/** Cunning officers cast every tactic for one point less (never below one). */
+export function tacticCost(unit: Pick<BattleUnit, 'officerId'>, skill: BattleSkill): number {
+  return Math.max(1, TACTIC_COST[skill] - (hasTrait(unit.officerId, 'cunning') ? 1 : 0));
+}
+const FIERCE_COUNTER = 1.1;
 const AMBUSH_DAMAGE = 1.4;
 const ROCKFALL_MORALE = 10;
 const RAID_SUPPLY_MIN = 100;
@@ -551,7 +557,7 @@ export function createBattle(
       (officer): officer is Officer =>
         !!officer &&
         !officer.captive &&
-        officer.fate !== 'executed' &&
+        officer.fate === 'active' &&
         officer.factionId === order.factionId &&
         officer.troops > 0,
     )
@@ -563,7 +569,7 @@ export function createBattle(
         officer.cityId === target.id &&
         officer.factionId === target.factionId &&
         !officer.captive &&
-        officer.fate !== 'executed' &&
+        officer.fate === 'active' &&
         officer.troops > 0,
     )
     .slice(0, 10)
@@ -734,9 +740,12 @@ function counterDamage(
   victim: BattleUnit,
   variation: number,
 ): number {
+  const fierce = hasTrait(counterer.officerId, 'fierce') ? FIERCE_COUNTER : 1;
   return Math.max(
     COUNTER_MIN,
-    Math.floor(normalDamage(battle, counterer, victim, variation) * counterRate(counterer)),
+    Math.floor(
+      normalDamage(battle, counterer, victim, variation) * counterRate(counterer) * fierce,
+    ),
   );
 }
 const canCounter = (target: BattleUnit, source: BattleUnit): boolean =>
@@ -876,8 +885,8 @@ function tacticReason(
       return `Rockfall requires intellect ${intellectNeeded(unit, 65)}.`;
     if (terrainAt(battle, unit) !== 'hill') return 'Rockfall requires standing on a hill.';
   }
-  if (battle.tacticPoints[unit.side] < TACTIC_COST[skill])
-    return `Requires ${TACTIC_COST[skill]} tactic points.`;
+  if (battle.tacticPoints[unit.side] < tacticCost(unit, skill))
+    return `Requires ${tacticCost(unit, skill)} tactic points.`;
   return null;
 }
 
@@ -924,7 +933,7 @@ export function getAvailableTactics(battle: BattleState, unitId: string): Tactic
       allowed: reason === null,
       reason,
       range: unit ? skillRange(unit, skill) : 0,
-      cost: TACTIC_COST[skill],
+      cost: unit ? tacticCost(unit, skill) : TACTIC_COST[skill],
     };
   });
 }
@@ -1012,9 +1021,9 @@ function attack(
 function spendTacticPoints(battle: BattleState, source: BattleUnit, skill: BattleSkill): void {
   // Player commands are validated and the AI only plans affordable tactics, so this
   // is an invariant: tactic points can never go negative.
-  if (battle.tacticPoints[source.side] < TACTIC_COST[skill])
+  if (battle.tacticPoints[source.side] < tacticCost(source, skill))
     throw new Error('Tactic points are exhausted.');
-  battle.tacticPoints[source.side] -= TACTIC_COST[skill];
+  battle.tacticPoints[source.side] -= tacticCost(source, skill);
 }
 
 function castSkill(
@@ -1357,7 +1366,7 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
   const range = getBattleUnitRange(unit);
   const canAct = !unit.acted && !routed;
   const reserveOk = (skill: BattleSkill) =>
-    battle.tacticPoints[unit.side] - TACTIC_COST[skill] >= TACTIC_POINT_RESERVE;
+    battle.tacticPoints[unit.side] - tacticCost(unit, skill) >= TACTIC_POINT_RESERVE;
   for (const [index, cost] of candidates) {
     const tile = tileOf(battle, index);
     const ghost: BattleUnit = { ...unit, x: tile.x, y: tile.y };
@@ -1406,7 +1415,7 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
           {
             tile,
             action: { kind: 'skill', skill, target: enemy },
-            score: value - TACTIC_PRICE * TACTIC_COST[skill] - threat * attackThreat,
+            score: value - TACTIC_PRICE * tacticCost(unit, skill) - threat * attackThreat,
           },
           skill !== 'confuse' && skill !== 'raidSupply' && value >= enemy.troops * 2,
         );
@@ -1423,7 +1432,7 @@ function planUnitV2(battle: BattleState, unit: BattleUnit, context: AiContext): 
           {
             tile,
             action: { kind: 'skill', skill: 'rally', target: ally },
-            score: value - TACTIC_PRICE * TACTIC_COST.rally - threat * attackThreat,
+            score: value - TACTIC_PRICE * tacticCost(unit, 'rally') - threat * attackThreat,
           },
           false,
         );

@@ -1,9 +1,9 @@
 import { FACTIONS } from '../content/scenario';
 import type { Officer } from './types';
 
-/** Executed officers stay in the roster (saves keep every officer) but are inert. */
+/** Executed or deceased officers stay in the roster (saves keep every officer) but are inert. */
 export const isActiveOfficer = (officer: Pick<Officer, 'fate'>): boolean =>
-  officer.fate !== 'executed';
+  officer.fate === 'active';
 
 /** A faction's ruler cannot be persuaded or leave service. */
 export function isRuler(officer: Pick<Officer, 'name' | 'factionId'>): boolean {

@@ -38,6 +38,7 @@ import {
   UserPlus,
   Minus,
   Axe,
+  Repeat2,
   type LucideIcon,
 } from 'lucide-react';
 import { session } from '../app/session';
@@ -119,6 +120,7 @@ const ACTIONS: Record<Action, LucideIcon> = {
   banish: Minus,
   appoint: Crown,
   plunder: Axe,
+  reorganize: Repeat2,
 };
 const GROUPS: { name: string; actions: Action[]; warning?: boolean }[] = [
   { name: 'Develop', actions: ['farm', 'commerce', 'govern', 'relieve', 'buyFood', 'sellFood'] },
@@ -152,6 +154,7 @@ const STAT_LABELS: Record<PreviewStat, string> = {
   experience: 'Experience',
   force: 'Might',
   stamina: 'Stamina',
+  troops: 'Troops',
 };
 const signed = (n: number) => (n > 0 ? `+${number(n)}` : number(n));
 

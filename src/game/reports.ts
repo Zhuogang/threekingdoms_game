@@ -1,5 +1,5 @@
 import type { GameState } from './types';
-import { FACTIONS } from '../content/scenario';
+import { FACTIONS, SCENARIO } from '../content/scenario';
 
 interface EventBase {
   key: string;
@@ -35,6 +35,7 @@ export type MonthlyReportEvent = EventBase &
     | { kind: 'revolt'; cityId: string; independent: boolean }
     | { kind: 'departure'; officerId: string; fromFactionId: string; toFactionId: string | null }
     | { kind: 'atRisk'; officerIds: string[] }
+    | { kind: 'death'; officerId: string; factionId: string }
     | { kind: 'coalition'; leaderId: string; involvesPlayer: boolean }
   );
 
@@ -67,7 +68,7 @@ export function reportPriority(event: MonthlyReportEvent): number {
     if (event.outcome === 'captured') return event.bordersPlayer ? 1 : 3;
   }
   if (event.kind === 'raid') return event.involvesPlayer ? 0 : event.bordersPlayer ? 1 : 3;
-  if (event.kind === 'revolt' || event.kind === 'departure') return 1;
+  if (event.kind === 'revolt' || event.kind === 'departure' || event.kind === 'death') return 1;
   if (event.kind === 'coalition') return event.involvesPlayer ? 1 : 2;
   if (event.kind === 'atRisk') return 2;
   if (event.kind === 'allianceExpired' && event.involvesPlayer) return 2;
@@ -106,6 +107,8 @@ export function reportEventKey(event: NewMonthlyReportEvent): string {
       return `leave:${event.officerId}`;
     case 'atRisk':
       return 'risk';
+    case 'death':
+      return `death:${event.officerId}`;
     case 'coalition':
       return `coalition:${event.leaderId}`;
   }
@@ -174,9 +177,9 @@ export function validateReports(state: GameState): string | null {
     if (
       !report ||
       !integer(report.turn, 0, state.turn) ||
-      !integer(report.year, 190, 9999) ||
+      !integer(report.year, SCENARIO.year, 9999) ||
       !integer(report.month, 1, 12) ||
-      report.year * 12 + report.month !== 190 * 12 + 1 + report.turn ||
+      report.year * 12 + report.month !== SCENARIO.year * 12 + 1 + report.turn ||
       typeof report.partial !== 'boolean' ||
       !integer(report.omitted, 0, REPORT_KEY_LIMIT) ||
       !Array.isArray(report.events) ||
@@ -207,7 +210,7 @@ export function validateReports(state: GameState): string | null {
             !integer(Number(orderNumber), 1, state.nextId - 1)
           : kind === 'revolt'
             ? second !== undefined || !first || !cityIds.has(first)
-            : kind === 'leave'
+            : kind === 'leave' || kind === 'death'
               ? second !== undefined || !first || !officerIds.has(first)
               : kind === 'risk'
                 ? first !== undefined
@@ -251,6 +254,7 @@ export function validateReports(state: GameState): string | null {
           'departure',
           'atRisk',
           'coalition',
+          'death',
         ].includes(event.kind) ||
         reportEventKey(event) !== event.key
       )
@@ -320,6 +324,9 @@ export function validateReports(state: GameState): string | null {
           (event.toFactionId !== null && !factions.has(event.toFactionId))
         )
           return 'Invalid monthly departure report.';
+      } else if (event.kind === 'death') {
+        if (!officerIds.has(event.officerId) || !factions.has(event.factionId))
+          return 'Invalid monthly obituary report.';
       } else if (event.kind === 'atRisk') {
         if (
           !Array.isArray(event.officerIds) ||

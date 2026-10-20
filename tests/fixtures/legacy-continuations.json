@@ -29,7 +29,7 @@
         "winner",
         "year"
       ],
-      "sha256": "90dde22c2886391fa1dd01dce65f4d48ac12dab9d109d7b46d3166f1dd363b25",
+      "sha256": "a967a9715ca44141336bcbb413315f67e96f6ec38360aaf409a3d80cd0dfc032",
       "turn": 1,
       "phase": "planning"
     },
@@ -64,7 +64,7 @@
         "winner",
         "year"
       ],
-      "sha256": "0680986dc2771c0272f178a3d59d9388bf7078b84ebb7fd1df1e42b76169d075",
+      "sha256": "e6faac012f76e4c06826758c3919df453a292fa290cf473b1cc5e52b9559f789",
       "turn": 1,
       "phase": "planning"
     },
@@ -96,7 +96,7 @@
         "winner",
         "year"
       ],
-      "sha256": "4cde15f00d69666fde7cd136871e4336e972da9b209f6b9344f6bbbd04dd5e07",
+      "sha256": "c7683dc842d27f68b7aa5d75a1f9cfe717b6f39abd0cddfe3274fb70b9f68f4e",
       "turn": 1,
       "phase": "planning"
     }

@@ -183,8 +183,7 @@ for (const battle of decisive)
   for (const [kind, count] of Object.entries(battle.actions))
     actionTotals[kind] = (actionTotals[kind] ?? 0) + count;
 // Count unit-turns by outcome: a unit that only moves or holds ends its turn with wait.
-const mixTotal =
-  (actionTotals.attack ?? 0) + (actionTotals.tactic ?? 0) + (actionTotals.wait ?? 0);
+const mixTotal = (actionTotals.attack ?? 0) + (actionTotals.tactic ?? 0) + (actionTotals.wait ?? 0);
 const upsets = decisive.filter((b) => {
   const winnerStart = b.winner === 'attacker' ? b.attackerStart : b.defenderStart;
   const loserStart = b.winner === 'attacker' ? b.defenderStart : b.attackerStart;

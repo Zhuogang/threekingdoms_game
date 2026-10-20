@@ -179,7 +179,7 @@ const orderV2 = orderV1.extend({ intent: z.enum(['conquer', 'raid', 'sack']) });
 const cityV2 = cityV1.extend({ plunderCooldownUntil: nonnegative });
 const officerV2 = officerV1.extend({
   level: integer.min(0).max(5),
-  fate: z.enum(['active', 'executed']),
+  fate: z.enum(['active', 'executed', 'deceased']),
 });
 const unitV2 = unitV1.extend({
   level: integer.min(0).max(5),
@@ -225,6 +225,12 @@ const atRiskEvent = z.object({
   kind: z.literal('atRisk'),
   officerIds: z.array(id).max(60),
 });
+const deathEvent = z.object({
+  ...eventBase,
+  kind: z.literal('death'),
+  officerId: id,
+  factionId: id,
+});
 const coalitionEvent = z.object({
   ...eventBase,
   kind: z.literal('coalition'),
@@ -243,6 +249,7 @@ const reportV2 = reportV1.extend({
         departureEvent,
         atRiskEvent,
         coalitionEvent,
+        deathEvent,
       ]),
     )
     .max(128),
@@ -278,6 +285,23 @@ const stateV2 = stateV1.extend({
   truceUntilTurn: nonnegative,
   lastBattle: lastBattle.nullable(),
   reputation: z.record(id, z.object({ brokeAllianceTurn: nonnegative })),
+  scenarioId: z.enum(['divided-realm-190', 'guandu-200']),
+  difficulty: z.enum(['story', 'standard', 'warlord']),
+  aiPersonalities: z.boolean(),
+  aging: z.boolean(),
+  hegemon: z.object({ factionId: id.nullable(), months: nonnegative }),
+  scouted: z.record(id, nonnegative),
+  firedEvents: z.array(z.string().min(1).max(60)).max(40),
+  invitations: z
+    .array(
+      z.object({
+        id,
+        eventId: z.string().min(1).max(60),
+        members: z.array(id).max(10),
+        untilTurn: nonnegative,
+      }),
+    )
+    .max(10),
 });
 const envelopeBase = {
   format: z.literal('baye.save'),
@@ -285,12 +309,17 @@ const envelopeBase = {
   savedAt: z.string().max(50),
 };
 const envelopeV1 = z.object({ ...envelopeBase, formatVersion: z.literal(1), state: stateV1 });
-const envelopeV2 = z.object({ ...envelopeBase, formatVersion: z.literal(2), state: stateV2 });
+const envelopeV2 = z.object({
+  ...envelopeBase,
+  scenario: z.enum(['divided-realm-190', 'guandu-200']),
+  formatVersion: z.literal(2),
+  state: stateV2,
+});
 export function encodeSave(state: GameState): string {
   return JSON.stringify({
     format: 'baye.save',
     formatVersion: 2,
-    scenario: 'divided-realm-190',
+    scenario: state.scenarioId,
     savedAt: new Date().toISOString(),
     state,
   });
@@ -319,6 +348,7 @@ export function decodeSave(text: string): GameState {
     const result = envelopeV2.safeParse(raw);
     if (!result.success) throw new Error(damaged);
     state = result.data.state as GameState;
+    if (result.data.scenario !== state.scenarioId) throw new Error(damaged);
   }
   const error = validateState(state);
   if (error) throw new Error(`This save contains inconsistent game data: ${error}`);

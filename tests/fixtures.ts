@@ -90,6 +90,14 @@ export function game(): GameState {
     truceUntilTurn: 0,
     lastBattle: null,
     reputation: {},
+    scenarioId: 'divided-realm-190',
+    difficulty: 'standard',
+    aiPersonalities: true,
+    aging: false,
+    hegemon: { factionId: null, months: 0 },
+    scouted: {},
+    firedEvents: [],
+    invitations: [],
   };
 }
 
