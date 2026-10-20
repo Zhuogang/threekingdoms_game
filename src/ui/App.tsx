@@ -40,6 +40,7 @@ import {
   Axe,
   Repeat2,
   Hourglass,
+  Star,
   type LucideIcon,
 } from 'lucide-react';
 import { session } from '../app/session';
@@ -1124,6 +1125,12 @@ export default function App() {
                           {o.intellect}
                           <Heart size={11} />
                           {o.loyalty}
+                          {o.level > 0 && (
+                            <>
+                              <Star size={11} />
+                              {o.level}
+                            </>
+                          )}
                         </span>
                       </span>
                       <ChevronRight size={14} />
@@ -1283,6 +1290,12 @@ export default function App() {
                       <Heart size={13} />
                       {officer.stamina}
                     </span>
+                    {officer.level > 0 && (
+                      <span title={t('Veteran level')}>
+                        <Star size={13} />
+                        {officer.level}
+                      </span>
+                    )}
                   </div>
                   {officer.equipment && (
                     <small className="equipment-label">

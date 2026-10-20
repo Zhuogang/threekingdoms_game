@@ -1034,7 +1034,7 @@ function castSkill(
   target: BattleUnit,
 ): void {
   spendTacticPoints(battle, source, kind);
-  observer?.battleAction?.({ side: source.side, kind: 'tactic' });
+  observer?.battleAction?.({ side: source.side, kind: 'tactic', skill: kind });
   if (kind === 'ambush') {
     attack(draft, battle, source, target, 'ambush');
     return;

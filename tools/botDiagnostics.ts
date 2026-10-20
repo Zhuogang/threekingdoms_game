@@ -53,6 +53,7 @@ const autoResolveMs: number[] = [];
 let aiUpkeeps = 0;
 let aiShortages = 0;
 const aiActions: Record<string, number> = {};
+const tacticCasts: Record<string, number> = {};
 let aiMarches = 0;
 
 for (const faction of FACTIONS) {
@@ -77,8 +78,9 @@ for (const faction of FACTIONS) {
         aiStatecraft: ({ kind }) => {
           aiActions[kind] = (aiActions[kind] ?? 0) + 1;
         },
-        battleAction: ({ kind }) => {
+        battleAction: ({ kind, skill }) => {
           current.actions[kind] = (current.actions[kind] ?? 0) + 1;
+          if (skill) tacticCasts[skill] = (tacticCasts[skill] ?? 0) + 1;
         },
         battleShortage: () => {
           shortage = true;
@@ -271,6 +273,13 @@ const summary = {
   aiProvisionShortagePercent: pct(aiShortages, aiUpkeeps),
   aiMarches,
   aiStatecraft: aiActions,
+  // Share of all tactic casts per tactic, to confirm every tactic is actually used.
+  tacticMixPercent: Object.fromEntries(
+    Object.entries(tacticCasts).map(([skill, count]) => [
+      skill,
+      pct(count, Object.values(tacticCasts).reduce((a, b) => a + b, 0)),
+    ]),
+  ),
   unifiedRuns: campaigns.filter((c) => c.unified !== null).length,
   monthsToUnifyMedian: median(
     campaigns.filter((c) => c.unified !== null).map((c) => Number(c.unified)),

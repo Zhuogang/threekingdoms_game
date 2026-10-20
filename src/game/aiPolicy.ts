@@ -1,5 +1,5 @@
 import { DEFAULT_SUPPLY_DAYS, supplyFood } from './supply';
-import type { AttackOrder } from './types';
+import type { AttackOrder, BattleSkill } from './types';
 
 export const RIVAL_AGGRESSIONS = ['cautious', 'balanced', 'aggressive'] as const;
 export type RivalAggression = (typeof RIVAL_AGGRESSIONS)[number];
@@ -102,6 +102,8 @@ export interface BattleObserver {
   battleAction?(event: {
     side: 'attacker' | 'defender';
     kind: 'attack' | 'counter' | 'tactic' | 'move' | 'wait';
+    /** Which tactic was cast, for kind: 'tactic'. */
+    skill?: BattleSkill;
   }): void;
   battleEnded?(event: {
     reason: 'camp' | 'elimination' | 'timeout' | 'retreat' | 'rout';
