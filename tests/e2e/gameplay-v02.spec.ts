@@ -96,10 +96,10 @@ test('the march planner offers conquest, sack and raid with real supply choices'
       .getByRole('radio'),
   ).toBeChecked();
   await expect(dialog.getByRole('radio', { name: /^20 days / })).toBeVisible();
-  await dialog.getByRole('radio', { name: /30 days/ }).click();
+  await dialog.getByRole('radio', { name: /^30 days / }).click();
   await dialog.getByRole('radio', { name: /Raid/ }).check();
   // A raid carries a fixed ten days of rations.
-  await expect(dialog.getByRole('radio', { name: /10 days/ })).toHaveAttribute(
+  await expect(dialog.getByRole('radio', { name: /^10 days / })).toHaveAttribute(
     'aria-checked',
     'true',
   );
