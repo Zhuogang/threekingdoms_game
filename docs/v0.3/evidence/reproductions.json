@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-21",
+  "scope": "Read-only targeted diagnostics of the local v0.3 candidate; no production-source changes",
+  "results": {
+    "fractionalRations": {
+      "troops": 101,
+      "days": 10,
+      "expectedCharge": 8,
+      "expectedRemainderMicro": 80000,
+      "actualCharged": 0,
+      "actualRemainderMicro": 0,
+      "reportedShortfall": 8.08
+    },
+    "monthPause": {
+      "fromDay": 29,
+      "requestedDays": 10,
+      "expectedStopDay": 30,
+      "actualStopDay": 39,
+      "stoppedFor": "requested-days",
+      "monthEvents": [30]
+    },
+    "raidLoot": {
+      "goldBefore": 1600,
+      "goldImmediatelyAfter": 2442,
+      "lootGold": 842,
+      "returnCargoGold": 842,
+      "returnElapsedAtCreation": 1,
+      "expectedElapsedAtCreation": 0
+    },
+    "militiaIds": {
+      "infantryOfficerTroops": 1000,
+      "additionalMilitia": 100,
+      "error": "defender roster contains duplicate unit IDs."
+    },
+    "nonparticipantControl": {
+      "player": "sun",
+      "attacker": "cao",
+      "defender": null,
+      "commandAccepted": true
+    },
+    "fullWarehouse": {
+      "sentGold": 200,
+      "targetGold": 9999999,
+      "journeyStatus": "delivered",
+      "orderStatus": "delivered",
+      "deliveredCargo": {}
+    },
+    "pendingGovernorReference": {
+      "unknownOfficer": "does-not-exist",
+      "acceptedByValidator": true
+    }
+  }
+}

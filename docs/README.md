@@ -2,22 +2,28 @@
 
 ## Start here
 
-| Document                           | What it is for                                                         |
-| ---------------------------------- | ---------------------------------------------------------------------- |
-| [v0.2-summary.md](v0.2-summary.md) | What v0.2 is, how it was built, and how well it is tested              |
-| [next-steps.md](next-steps.md)     | The to-do list, open and settled design decisions, and what comes next |
+Current game: [v0.3 implementation tracks](v0.3/README.md), local branch `v0.3`. The October 21 audit identifies a playable candidate with remaining correctness defects and planned features, not a finished release. v0.3 excludes siege systems and old-save compatibility; its scope, code evidence and remaining tasks are linked below.
 
-Implementation details and current evidence:
+| Document                                                          | What it is for                                                                         |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [v0.3 implementation status](v0.3/implementation-status.md)       | Current track and E01–E15 status, checks and user decisions                            |
+| [v0.3 full implementation audit](v0.3/implementation-audit.md)    | Source-to-plan comparison, confirmed defects and reproducible evidence                 |
+| [v0.3 remaining implementation plan](v0.3/implementation-plan.md) | P01–P11, coding-agent ownership, parallel work, acceptance criteria and ImageGen steps |
+| [implementation.md](implementation.md)                            | Current v0.3 module tour followed by the historical v0.2 guide                         |
+| [next-steps.md](next-steps.md)                                    | The to-do list, open and settled design decisions, and what comes next                 |
+
+Historical v0.2 implementation and evidence (not current v0.3 acceptance):
 
 - [v0.2 improvement plan](v0.2-improvement-plan.md): agent assignments, dependencies, acceptance criteria and Ma Chao's imagegen workflow.
 - [v0.2 validation record](v0.2-validation.md): implementation status, automated results and remaining release gates.
 - [v0.2 human playtest](v0.2-playtest.md): four-session checklist, findings, visual review and real low-end hardware evidence.
 
-## Current reference
+## Historical rules and shared provenance
 
 | Document                                                 | What it is for                                                                                                                            |
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | [v0.2-rules.md](v0.2-rules.md)                           | Every rule v0.2 added or changed, with its constants                                                                                      |
+| [v0.2-summary.md](v0.2-summary.md)                       | The previous game's implementation and testing summary                                                                                    |
 | [v0.2-notes.md](v0.2-notes.md)                           | Deviations from the plan, and the balance evidence with targets                                                                           |
 | [implementation.md](implementation.md)                   | How the code fits together: commands, economy, AI, battle formulas, and a source tour                                                     |
 | [architecture.md](architecture.md)                       | The original design proposal and its tradeoffs                                                                                            |
@@ -44,4 +50,4 @@ Finished plans and records, kept for their reasoning and evidence. They are not 
 
 - `ai-diagnostics/` and `validation-evidence/` hold the v0.1 measurement files that the archived records cite.
 - `images/` holds the screenshots and portrait sheet used by the README and those records.
-- New diagnostics are written to `.artifacts/`, which Git ignores.
+- New diagnostics are written to `.artifacts/`, which Git ignores. The reproducible v0.3 audit script and selected output are preserved in [v0.3/evidence](v0.3/evidence/reproductions.json).

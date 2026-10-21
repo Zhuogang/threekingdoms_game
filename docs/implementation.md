@@ -1,5 +1,32 @@
 # Hegemony of the Three Kingdoms: implementation and learning guide
 
+## Current v0.3 implementation — October 21, 2026
+
+The active entry point is `src/main.tsx` → `src/v03/App.tsx`, on local branch `v0.3`. This is a new ruleset, `hegemony-3`, with a separate save format. It is a playable candidate with incomplete planned features and confirmed defects; read the [implementation audit](v0.3/implementation-audit.md), [status ledger](v0.3/implementation-status.md) and [remaining agent plan](v0.3/implementation-plan.md) first. The extensive v0.2 guide below is preserved as historical reference; its Pixi renderer, city-action set, tactics, diplomacy, Hegemon ending and IndexedDB save subsystem are not automatically present in v0.3.
+
+```text
+React V03App → executeV03Command → governance / strategic engine / tactical rules
+                                      ↓
+                      V03GameState + events + route snapshots
+                          ↙                       ↘
+             React SVG map/minimap        strict v3 envelope → localStorage
+```
+
+| Current source                                                                                                                | Responsibility and important limits                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [types.ts](../src/v03/types.ts), [commands.ts](../src/v03/commands.ts), [initial-state.ts](../src/v03/initial-state.ts)       | Shared new state/commands and scenario adaptation. Reuses the authored old scenario data and troop-type union, not the old campaign engine.                                                          |
+| [geography/index.ts](../src/v03/geography/index.ts)                                                                           | 24 historical regional anchors and 42 estimated roads. No measured historical road polylines; low-confidence locations are explicit.                                                                 |
+| [calendar/index.ts](../src/v03/calendar/index.ts), [day-resolution.ts](../src/v03/calendar/day-resolution.ts)                 | 30-day months, travel profiles/snapshots and a serializable daily cursor. Integrated event pauses and ration accumulation have audit findings.                                                       |
+| [engine.ts](../src/v03/engine.ts)                                                                                             | Daily integration, monthly economy, arrivals, field-battle creation/aftermath and rival dispatch. Shared file owned by I; conservation and multiple-battle fixes precede balance work.               |
+| [governance](../src/v03/governance/orders.ts), [strategic-ai.ts](../src/v03/strategic-ai.ts)                                  | Permissions, monthly appointments, order previews/confirmation and limited rival planning. Full autonomous city-work scheduling is still absent.                                                     |
+| [battle/engine.ts](../src/v03/battle/engine.ts), [rules.ts](../src/v03/battle/rules.ts), [maps.ts](../src/v03/battle/maps.ts) | 24×20 field maps, movement/attack/wait, universal water penalties and survivor-count timeout. Tactics/ZOC/retreat/forecast are planned work.                                                         |
+| [App.tsx](../src/v03/App.tsx), [rendering](../src/v03/rendering/index.ts), [wiki.ts](../src/v03/wiki.ts)                      | React application, SVG rendering/geometry and eight bilingual articles. Dynamic localization, actual camera controls, modal accessibility and plan displays remain partial.                          |
+| [storage.ts](../src/v03/platform/storage.ts)                                                                                  | `hegemony.save`, `version: 3`, `hegemony-3`; one localStorage autosave at `hegemony-v0.3:autosave`. Old saves rejected. Byte limits, deeper associations and long-session retention still need work. |
+
+Current studies should trace a resource request into a real journey, an advance command through the day cursor, and a field battle into its result. Compare those paths against the confirmed findings before extending them. The `[x]` foundations in the new plan are narrower than full feature acceptance; the mixed full test suite also contains old-engine tests.
+
+## Historical v0.2 guide
+
 Status: October 20, 2026 (v0.2). The repository contains a runnable, single-player web game using TypeScript, React, and PixiJS. The **Atlas ruleset (`baye-atlas-2`, state and save version 2)** supplies two scenarios (190 CE and 200 CE, 24 cities, six houses each, 52 officers plus Ma Chao in 200 CE), city management, plunder, diplomacy, logistics, tactical battles with tactic points, zone of control and morale, AI, campaign endings including the Hegemon victory, and local saves. English and Simplified Chinese are available throughout play. [v0.2-summary.md](v0.2-summary.md) lists the current checks; [v0.2-rules.md](v0.2-rules.md) is the full reference for everything v0.2 added; [v0.2-notes.md](v0.2-notes.md) lists deviations and balance evidence.
 
 This is an original adaptation of Baye's campaign/battle structure. It is **not a verified recreation of a particular legacy data library, mod, or every original formula**. The original [architecture](architecture.md) and the archived [roadmap](archive/roadmap.md) remain useful design targets; their fidelity, accessibility, performance, and browser-release gates are not all complete.

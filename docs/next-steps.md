@@ -1,5 +1,34 @@
 # To-do, design decisions and next steps
 
+**October 21, 2026 update:** v0.3 is the active game. Its confirmed decisions and shared contracts are in [docs/v0.3/00-decisions-and-contracts.md](v0.3/00-decisions-and-contracts.md); implementation tracks and evidence are in [docs/v0.3/README.md](v0.3/README.md) and the [implementation status ledger](v0.3/implementation-status.md). It defines an independent game with geographic travel baselines, daily simulation, governor autonomy, 24×20 high-oblique ink battlefields and universal water combat. Siege systems and old-save compatibility are excluded. The v0.2 completion/deferral records below remain historical evidence.
+
+## Active v0.3 update and to-do
+
+**Branch `v0.3`; local candidate, not complete.** The [full implementation audit](v0.3/implementation-audit.md) found eight reproducible defects and material gaps against the original plan. Passing the current tests does not close these gaps. The [updated implementation plan](v0.3/implementation-plan.md) provides exact steps, agent/file assignments, dependencies and acceptance criteria.
+
+| Order    | Work package / owner | Remaining outcome                                                                                                                      |
+| -------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1        | P01 · L/I            | Fix fractional food, raid double credit, full-store loss and daily/monthly troop accounting.                                           |
+| 2        | P02/P03 · L/B/I      | Correct event pauses/new returns, same-city arrival queues, militia IDs, player battle authority and multi-battle/campaign navigation. |
+| 3        | P10 · I/Q            | Validate all save relationships, input limits and long-campaign histories; recover failed saves.                                       |
+| 4        | P04/P05 · V/I        | Complete governor/capital work, appointment recovery, retained campaign rules and D8's bilingual plan/shortfall/date/choice UI.        |
+| 5        | P06 · B/Q            | Complete planned tactics, ZOC, retreat, forecasts, stronger water/path AI and rule matrices.                                           |
+| Parallel | P07/P08 · G/R/I      | Historical-route checks, friendly multi-leg travel, usable cameras/minimap, map journeys and keyboard/zoom/readability.                |
+| Parallel | P09 · A/R/G + player | Keep seven art assets draft; revise from player notes and shared geography/camera references, then obtain in-game approval.            |
+| Final    | P11 · Q/I + player   | v0.3 diagnostics, 48/96-month development/held-out runs, global/render performance, complete browser matrix and human feedback.        |
+
+- [x] Independent app, geography/time, authority/order/battle foundations, seven draft assets and initial automated checks are present.
+- [x] Full source-to-plan review and current/prioritized documentation completed on 2026-10-21.
+- [ ] Confirmed F01–F08 defects repaired and regression-tested.
+- [ ] All original G/L/V/B/R/A/I/Q requirements completed or explicitly adjusted by the player; no new scope exceptions are currently approved.
+- [ ] Four campaign/battle sessions and a real low-end-machine check: **player will run and report**, not deferred or passed.
+- [ ] Art finalization: **keep draft for revisions**, specific revision notes pending.
+- [ ] Push/PR/remote CI/publication: still outside this local branch-and-commit request. CI currently references removed `test:perf`; fix locally under P11 before relying on remote checks.
+
+Current verification: 100 v0.3 tests pass; whole-repo suite 467 passed/1 skipped; production build passes. Previous same-candidate browser evidence is 6 smoke tests and 1 production test. These counts do not cover all new findings. See the ledger for exact scope and timing.
+
+## Historical v0.2 disposition
+
 Status on October 20, 2026, branch `hegemony_of_the_three_kindoms_v0.2` (formerly `v0.2`): implementation and design decisions are complete; integrated verification is recorded in [v0.2-validation.md](v0.2-validation.md). This checklist also tracks the release action and v0.3 proposals. It replaces the plan sections of [the v0.2 review](archive/v0.2-review.md); that review keeps the history and detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) describes the result.
 
 The [detailed v0.2 improvement plan](v0.2-improvement-plan.md), based on the read-only review at `077556c`, preserves the agent assignments, implementation steps, dependencies, acceptance criteria and Ma Chao imagegen workflow. The user subsequently authorized the full implementation. D8/D9 and the human gates now have explicit dispositions below.
@@ -18,7 +47,7 @@ This checklist records local completion and explicit deferrals. D12's publicatio
 - [x] The final 10v10 rendering candidate holds about 60 fps with CPU slowed 4×, with zero idle draws (T7). The real low-end-machine gate is explicitly deferred by D11; the software-rendering limitation is recorded.
 - [x] Fresh diagnostics are recorded in [v0.2-notes.md](v0.2-notes.md); push, PR creation and remote CI are explicitly deferred by the user (D12).
 
-## To-do
+## Historical v0.2 task checklist
 
 Ordered. "Who" is a coding session unless it says you.
 
@@ -126,35 +155,37 @@ Of all move-only AI turns, 45.6% are units held back near their camp and 44.2% h
 
 **Review D12 (October 20, 2026, user decision):** defer push, PR creation and remote CI for now. The tested implementation is committed locally as `b773e91`; publication could not authenticate through local Git or the connected integration. All local suites and diagnostics pass. No PR or remote CI result is claimed.
 
-## Next steps
+## Historical v0.2 publication follow-up
 
 1. Resume T9's branch push, PR to `main` and CI verification only when requested; these actions are explicitly deferred by D12. The validation record identifies the committed candidate and local results.
 2. Review the PR before any separately authorized merge. The accepted D8/D9 exceptions remain visible in the notes and PR.
 3. Perform the deferred human sessions and real low-end-machine check when resumed; retain the unobserved status until actual evidence exists.
-4. Choose v0.3 priorities below before expanding gameplay or changing another rule.
+4. v0.3 implementation is already underway on `v0.3`; use the [current P01–P11 plan](v0.3/implementation-plan.md), not the old instruction to begin from shared-interface scaffolding.
 
-### v0.3 candidates
+### Other backlog outside the confirmed v0.3 scope
 
-Not started; each needs a decision before it becomes a task.
+These earlier candidates are not automatically part of the October 21 v0.3 plan. They remain unstarted backlog and need a separate scope decision.
 
 - **Deferred from v0.2:** AI alliance offers to the player (P2-12); scenarios as validated JSON (P3-4).
 - **Backlog from plan §8:** battle randomness (D3), duels 单挑 (D6), the camp as a structure with hit points or a one-day hold (D4), economy tightening (D7), and wounded soldiers who return after a battle. Officer death in battle stays excluded (D5).
 - **From the README:** Firefox and Safari coverage, fuller accessibility testing, and richer authored content.
 - **Engine clean-up:** the engine still swaps module-level scenario data through `activateScenario`; only the interface was moved off it (L10). Passing the scenario explicitly through the rules would remove the last hidden state.
 
-## Working notes for the next session
+## Working notes for the next v0.3 session
 
 - **Commands:**
-  - the checks: `npm test`, `npm run build`, `npm run format:check`, `npm run test:e2e` (run it alone; overlapping runs give false failures), `npm run test:perf`, `npm run test:production` (after a build) and `npm run test:fps` (opt-in);
-  - legacy hashes: `$env:REGENERATE_LEGACY=1; npx vitest run tests/legacy-fixtures.test.ts`, run twice, then run once more without the variable.
-- **Diagnostics:**
+  - current checks: `npx vitest run tests/v03`, `npm test`, `npm run build`, `npm run format:check`, `npm run test:e2e` (run alone), `npm run test:perf:v03`, `npm run test:production` (after a build);
+  - audit reproductions: `node docs/v0.3/evidence/reproduce-implementation-audit.mjs`; success means the diagnostic ran, not that reported defects are fixed;
+  - legacy-only performance: `npm run test:perf:v02`, `npm run test:fps:v02`, `npm run test:production:v02`;
+  - legacy hash regeneration is only for separately authorized old-engine changes; v0.3 does not require migration or legacy behavior parity.
+- **Historical v0.2 diagnostics (do not use as v0.3 balance evidence):**
   - `$env:DIAGNOSTIC_MONTHS=48; node tools/ai-diagnostics.mjs --bot --scenario=divided-realm-190,guandu-200` writes `.artifacts/ai-diagnostics/bot.json`;
   - `DIAGNOSTIC_TUNING='{"normalDamageRate":0.2,"attackMultipliers":{"balanced":1.2}}'` overrides levers for one run;
   - `DIAGNOSTIC_BOT=turtle` plays the defensive bot;
   - `DIAGNOSTIC_FILE` names the output file.
 - **Windows PowerShell 5.1 pitfalls:**
   - `Set-Content -Encoding utf8` writes a byte-order mark, so write files with `[IO.File]::WriteAllText` and `UTF8Encoding($false)`;
-  - `git` is not on PATH here, so use GitHub Desktop's bundled git;
+  - `git` is available on PATH in this session; if unavailable later, inspect the installed Git/GitHub Desktop runtime rather than assuming a fixed path;
   - here-strings expand `$` and backticks in double-quoted form.
 - **Rules of the codebase:**
   - queries never consume RNG;
@@ -162,4 +193,4 @@ Not started; each needs a decision before it becomes a task.
   - constants are named at the top of their file;
   - every new string is bilingual;
   - tests are never weakened;
-  - a rule change regenerates the legacy hashes, and a change that should not alter rules must pass without regenerating them.
+  - for maintenance of v0.2, a rule change regenerates the legacy hashes, and a change that should not alter rules must pass without regenerating them; v0.3 is a new ruleset without legacy-save or behavior-hash compatibility, and uses its own deterministic fixtures and regression tests.
