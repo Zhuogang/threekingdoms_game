@@ -52,6 +52,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { session } from '../app/session';
+import { battleGeography } from '../rendering/battleGeography';
 import {
   DEFAULT_SCENARIO_ID,
   battlefieldProfile,
@@ -1081,6 +1082,9 @@ export default function App() {
               <Suspense fallback={null}>
                 <p className="battlefield-profile" data-testid="battlefield-profile">
                   {tx(BATTLEFIELD_LABELS[battlefieldProfile(battle.order.targetId)])}
+                  <span className="battlefield-geography" data-testid="battlefield-geography">
+                    {battleGeography(battle.order.targetId)[locale]}
+                  </span>
                 </p>
                 <BattlePanel
                   battle={battle}

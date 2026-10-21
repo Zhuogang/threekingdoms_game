@@ -2,6 +2,7 @@ import { TROOP_LABELS } from '../content/scenario';
 import type { TroopType } from '../game/types';
 import { useI18n } from '../i18n';
 import TroopIcon from './TroopIcon';
+import TroopFigure from './TroopFigure';
 
 export default function TroopLegend() {
   const { t, tx } = useI18n();
@@ -11,8 +12,11 @@ export default function TroopLegend() {
       <div className="troop-legend-grid">
         {(Object.keys(TROOP_LABELS) as TroopType[]).map((type) => (
           <span key={type}>
-            <TroopIcon type={type} size={24} />
-            {tx(TROOP_LABELS[type])}
+            <TroopFigure type={type} />
+            <span className="troop-legend-label">
+              <TroopIcon type={type} size={18} />
+              {tx(TROOP_LABELS[type])}
+            </span>
           </span>
         ))}
       </div>

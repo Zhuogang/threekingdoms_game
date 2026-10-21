@@ -48,6 +48,9 @@ test('built release works beneath a subdirectory in both languages with persiste
   await expect(page.getByRole('dialog', { name: '选择你的势力' })).toBeVisible();
   await page.getByRole('button', { name: '举旗起兵' }).click();
   await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-atlas-background', 'ink');
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-terrain-art', 'ink');
+  await expect(page.locator('.map-canvas')).toHaveAttribute('data-unit-art', 'ink');
   const original = await savedState(page);
   await page.locator('.masthead').getByRole('button', { name: 'English', exact: true }).click();
   await page.getByRole('button', { name: /^Develop farms/ }).click();

@@ -8,12 +8,13 @@ function apply(state: GameState, command: GameCommand): GameState {
 }
 
 /** A legal maximum-size 10-versus-10 battle, using the target city's authored profile. */
-export function fullBattle(targetId = 'xiapi'): GameState {
+export function fullBattle(targetId = 'xiapi', defense?: number): GameState {
   let state = createGame('cao', 16);
   const target = state.cities.find((city) => city.id === targetId)!;
   const source = state.cities.find((city) => city.id === target.neighbors[0])!;
   Object.assign(source, { factionId: 'cao', food: 100_000, gold: 10_000 });
   Object.assign(target, { factionId: 'yuan', reserve: 0 });
+  if (defense !== undefined) target.defense = defense;
   const officers = state.officers.filter(
     (officer) => officer.fate === 'active' && !officer.captive,
   );

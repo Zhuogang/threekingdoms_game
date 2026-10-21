@@ -1186,6 +1186,13 @@ input[type='range'] {
   color: #677158;
   font-size: var(--text-secondary, 14px);
 }
+.battlefield-geography {
+  display: block;
+  margin-top: 4px;
+  color: #535e52;
+  font-size: var(--text-secondary, 14px);
+  line-height: 1.45;
+}
 .battle-conditions {
   display: flex;
   justify-content: space-between;
@@ -2695,6 +2702,28 @@ input[type='range'] {
   display: grid;
   gap: 6px;
   margin: 10px 0;
+}
+.troop-legend-grid > span {
+  flex-wrap: nowrap;
+}
+.troop-legend-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.troop-figure {
+  display: inline-flex;
+  width: 42px;
+  height: 58px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+}
+.troop-figure img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 .portrait {
   display: inline-block;
