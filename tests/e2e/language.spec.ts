@@ -100,7 +100,9 @@ test('language remains usable in all management dialogs without discarding form 
     await switchLanguage(page, 'en');
     if (label === 'Muster')
       await expect(page.getByLabel('Assigned troop count')).toHaveValue('1600');
-    await page.getByRole('button', { name: 'Close dialog' }).click();
+    await page
+      .getByRole('button', { name: label === 'How to play' ? 'Close Wiki' : 'Close dialog' })
+      .click();
   }
   expect(await record(page)).toBe(before);
 });

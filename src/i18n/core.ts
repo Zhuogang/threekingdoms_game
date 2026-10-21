@@ -3,6 +3,7 @@ import { GAME_PATTERNS, GAME_ZH } from './game.zh';
 import { UI_ZH } from './ui.zh';
 import { MAP_ZH } from './map.zh';
 import { PLATFORM_PATTERNS, PLATFORM_ZH } from './platform.zh';
+import { WIKI_ZH } from './wiki.zh';
 
 export type Locale = 'en' | 'zh';
 export type TranslationParams = Record<string, string | number>;
@@ -66,7 +67,7 @@ function translateCanonical(source: string, depth = 0): string {
   if (depth > 8 || !source || /^[-+\d\s.,%/]+$/.test(source)) return source;
   // Imported save text may contain any string, including Object prototype keys.
   // Only dictionary-owned entries are translations; unknown text stays text.
-  const dictionary = [UI_ZH, GAME_ZH, MAP_ZH, PLATFORM_ZH, names].find((catalog) =>
+  const dictionary = [WIKI_ZH, UI_ZH, GAME_ZH, MAP_ZH, PLATFORM_ZH, names].find((catalog) =>
     Object.hasOwn(catalog, source),
   );
   const exact = dictionary?.[source];

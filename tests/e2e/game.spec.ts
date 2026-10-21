@@ -240,7 +240,7 @@ test('desktop layouts, navigation, map controls and reduced motion remain usable
   await page.getByRole('button', { name: 'Chronicle', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'The chronicle' })).toBeVisible();
   await page.getByRole('button', { name: 'How to play' }).click();
-  await expect(page.getByRole('dialog', { name: 'The art of ruling' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Game Wiki' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: 'How to play' })).toBeFocused();
   expect(errors).toEqual([]);

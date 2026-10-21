@@ -120,6 +120,51 @@ test('built release reloads and completes a partially played battle', async ({
   expect(await savedState(page)).toEqual(expected.state);
 });
 
+test('built bilingual Wiki works beneath a subdirectory without changing the campaign', async ({
+  page,
+}) => {
+  const errors: string[] = [],
+    external: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.protocol.startsWith('http') && url.hostname !== '127.0.0.1') external.push(url.href);
+  });
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Raise your banner', exact: true }).click();
+  const before = await savedState(page);
+  await page.getByRole('button', { name: 'How to play', exact: true }).click();
+  const wiki = page.locator('dialog.wiki-dialog');
+  await expect(wiki).toBeVisible();
+  await wiki
+    .getByRole('navigation')
+    .getByRole('button', { name: 'Troop types', exact: true })
+    .click();
+  await expect(wiki.locator('tr[data-troop]')).toHaveCount(6);
+  await expect
+    .poll(() =>
+      wiki
+        .locator('.troop-figure img')
+        .evaluateAll(
+          (images) =>
+            images.length === 5 &&
+            images.every((img) => (img as HTMLImageElement).naturalWidth > 0),
+        ),
+    )
+    .toBe(true);
+  await wiki.getByRole('button', { name: '中文', exact: true }).click();
+  await wiki.getByRole('searchbox').fill('精良兵器');
+  await wiki
+    .getByRole('navigation')
+    .getByRole('button', { name: '装备与武器', exact: true })
+    .click();
+  await expect(wiki.getByRole('article')).toContainText('武力增加 5');
+  await page.keyboard.press('Escape');
+  expect(await savedState(page)).toEqual(before);
+  expect(errors).toEqual([]);
+  expect(external).toEqual([]);
+});
+
 test('WebGL unavailability falls back without losing campaign controls or saving', async ({
   page,
 }) => {

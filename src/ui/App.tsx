@@ -103,7 +103,8 @@ import OfficerMark from './OfficerMark';
 import { FactionsContext } from './FactionsContext';
 import PrisonerPanel from './PrisonerPanel';
 import TraitChips from './TraitChips';
-import TroopLegend from './TroopLegend';
+import GameWiki from './GameWiki';
+import { openWiki } from './wikiNavigation';
 import {
   appendedLines,
   BATTLEFIELD_LABELS,
@@ -248,16 +249,7 @@ function ActionPreviewBox({
   );
 }
 type ModalKind =
-  | 'start'
-  | 'help'
-  | 'settings'
-  | 'saves'
-  | 'march'
-  | 'transfer'
-  | 'muster'
-  | 'credits'
-  | 'summary'
-  | null;
+  'start' | 'settings' | 'saves' | 'march' | 'transfer' | 'muster' | 'credits' | 'summary' | null;
 /** A fresh 32-bit world seed; random values live in the UI, never in the simulation core. */
 function randomSeed(): string {
   try {
@@ -311,6 +303,8 @@ function Dialog({
     const first = root?.querySelector<HTMLElement>('button,input,select,[tabindex="0"]');
     first?.focus();
     const handler = (event: KeyboardEvent) => {
+      // The native Wiki modal owns focus and Escape while an order dialog stays mounted.
+      if (document.querySelector('dialog.wiki-dialog[open]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         closeRef.current();
@@ -358,6 +352,13 @@ function Dialog({
             <h2>{title}</h2>
           </div>
           <LanguageSwitch />
+          <button
+            className="wiki-header-button"
+            onClick={() => openWiki()}
+            title={t('Open the game Wiki (F1)')}
+          >
+            <BookOpen size={17} /> Wiki
+          </button>
           {canClose && (
             <button className="icon-button" onClick={onClose} aria-label={t('Close dialog')}>
               <X size={20} />
@@ -912,11 +913,12 @@ export default function App() {
               <Save size={18} />
             </button>
             <button
-              className="icon-button"
-              onClick={() => setModal('help')}
+              className="wiki-header-button"
+              onClick={() => openWiki()}
               aria-label={t('How to play')}
+              title={t('Open the game Wiki (F1)')}
             >
-              <CircleHelp size={18} />
+              <BookOpen size={18} /> Wiki
             </button>
             <button
               className="icon-button"
@@ -1945,75 +1947,6 @@ export default function App() {
           </Dialog>
         )}
 
-        {modal === 'help' && (
-          <Dialog
-            title={t('The art of ruling')}
-            eyebrow={t('A FIELD GUIDE TO HEGEMONY')}
-            onClose={() => setModal(null)}
-            wide
-          >
-            <div className="help-grid">
-              <article>
-                <span>01</span>
-                <h3>{t('Cultivate your cities')}</h3>
-                <p>
-                  {t(
-                    'Select a city you own, then an available officer. Develop agriculture for harvests, commerce for income, and governance for defenses. Each officer receives one assignment per month. Rewards raise loyalty; feasts restore stamina.',
-                  )}
-                </p>
-              </article>
-              <article>
-                <span>02</span>
-                <h3>{t('Prepare your army')}</h3>
-                <p>
-                  {t(
-                    'Recruit reserves, then use Muster to assign them to officers. Choose March, select an adjacent target and your commanders. Food is committed when the order is issued. Your army departs when you advance the month.',
-                  )}
-                </p>
-              </article>
-              <article>
-                <span>03</span>
-                <h3>{t('Command the battlefield')}</h3>
-                <p>
-                  {t(
-                    'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.',
-                  )}
-                </p>
-              </article>
-              <article>
-                <span>04</span>
-                <h3>{t('Shape the realm')}</h3>
-                <p>
-                  {t(
-                    'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Raid, sack or plunder when you must, but a ruined city breeds unrest. Captured officers may be recruited, released or executed. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.',
-                  )}
-                </p>
-              </article>
-            </div>
-            <TroopLegend />
-            <div className="help-bottom">
-              <div>
-                <strong>{t('Map controls')}</strong>
-                <p>
-                  {t('Drag to pan · Scroll to zoom · Double-click to reset')}
-                  <br />
-                  {t('Use City index to select cities with the keyboard.')}
-                </p>
-              </div>
-              <div>
-                <strong>{t('Your campaign is saved automatically')}</strong>
-                <p>
-                  {t('Use Save & load for manual slots and portable JSON backups.')}
-                  <br />
-                  {t(
-                    'Battle progress is saved too. Browser storage can be cleared; export a copy.',
-                  )}
-                </p>
-              </div>
-            </div>
-          </Dialog>
-        )}
-
         {modal === 'settings' && (
           <Dialog
             title={t('Your campaign, your pace')}
@@ -2123,7 +2056,7 @@ export default function App() {
                 <RotateCcw size={16} />
                 {t('Begin a new campaign')}
               </button>
-              <button className="text-button" onClick={() => setModal('help')}>
+              <button className="text-button" onClick={() => openWiki()}>
                 {t('Read the field guide')}
                 <ArrowRight size={14} />
               </button>
@@ -2478,6 +2411,7 @@ export default function App() {
             </div>
           </Dialog>
         )}
+        <GameWiki state={state} />
       </div>
     </FactionsContext.Provider>
   );

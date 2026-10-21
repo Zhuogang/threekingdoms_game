@@ -19,7 +19,7 @@ npm run dev
 
 Open the local address printed in the terminal, normally **http://127.0.0.1:5173/**. On Windows, after installing dependencies, double-click **`Start-Hegemony.cmd`**. Keep the terminal open while playing. The former `Start-Baye.cmd` launcher still works.
 
-Choose a ruler and select **Raise your banner**. The **How to play** button explains the commands. Use **Eng / 中文** in the top bar or any dialog to change language immediately, even in battle. Your browser remembers the choice.
+Choose a ruler and select **Raise your banner**. Open **Wiki** from the top bar or any dialog, or press **F1**, for the complete English/Chinese guide. Use **Eng / 中文** in the top bar or any dialog to change language immediately, even in battle. Your browser remembers the choice.
 
 ## What is new in v0.2?
 
@@ -27,6 +27,7 @@ Choose a ruler and select **Raise your banner**. The **How to play** button expl
 - **Plunder:** squeeze your own city, raid an enemy city, or sack one you conquer, with exact previews of the cost and loot.
 - **Living campaign:** persuasion odds, prisoner release or execution, officer levels and traits, unrest and departures, alliance odds and coalitions, rival personalities, and historical and everyday events.
 - **More ways to play:** a second scenario (**The eve of Guandu**, 200 AD), Story / Standard / Warlord difficulty, an opening truce, optional aging, fog of war on rival cities, a Hegemon victory, and an adviser with first-campaign goals.
+- **In-game Wiki:** 12 searchable English/Chinese chapters explain troop types, equipment, battles, city management and common questions. Open it from the top bar, any dialog or **F1**.
 - **Old saves still load.** Version 1 saves migrate to version 2 without drawing any randomness.
 
 Start with the [v0.2 summary](docs/v0.2-summary.md). The [v0.2 rules](docs/v0.2-rules.md) list every rule with its constants, and the [v0.2 notes](docs/v0.2-notes.md) list deviations and the balance evidence. What is still open is in [next steps](docs/next-steps.md). Difficulty never gives rivals extra resources or combat bonuses.
@@ -58,7 +59,37 @@ No account, server backend, API key, remote art service, or reference files are 
 5. **Plan a march to an adjacent city.** Orders resolve when you **Advance month**. Battles involving your forces open the tactical map.
 6. **Move, attack, or use a tactic.** You can click the map or use the side-panel controls. Capture the enemy camp, defeat their army, or hold out as defender for 30 days.
 
-Drag the map to pan, scroll to zoom, and double-click to reset. The city index provides a text alternative for selecting cities. **How to play** contains further guidance.
+Drag the map to pan, scroll to zoom, and double-click to reset. The city index provides a text alternative for selecting cities. Open **Wiki** for step-by-step guidance.
+
+## In-game Wiki / 游戏百科
+
+Open **Wiki** from the top bar or any dialog header, or press **F1**, during setup, campaign planning or battle. Press **Esc** to return to the same screen or unfinished order form. Reading, searching and switching chapters do not issue game orders or advance the turn.
+
+- **Search in either language:** English and Chinese searches work regardless of the selected interface language; use **Eng / 中文** to switch while reading.
+- **Look up practical rules:** illustrated troop movement/range tables, tactic costs, equipment effects and city-order prices. The numeric tables read the current rules directly.
+- **Follow the beginner flow:** learn to recruit reserves, assign soldiers with Muster, leave commanders available for marching, move and attack, and manage monthly food and pay.
+- **Find blocked-command explanations:** check confusion, morale, action availability, terrain, local resources and peace agreements. Fine arms is a passive Might upgrade; weapons shown in troop illustrations identify the troop type.
+
+| English chapter                    | 中文章节           |
+| ---------------------------------- | ------------------ |
+| Getting started                    | 新手入门           |
+| Troop types                        | 兵种详解           |
+| Equipment and weapons              | 装备与武器         |
+| Battle controls                    | 战斗操作           |
+| Tactics and tactic points          | 计策与计策点       |
+| Terrain, weather and morale        | 地形、天气与士气   |
+| City management and economy        | 内政与经济         |
+| Officers, loyalty and training     | 武将、忠诚与训练   |
+| Marches, supplies and transfers    | 出征、军粮与运输   |
+| Diplomacy, scouting and prisoners  | 外交、侦察与俘虏   |
+| Saving, settings and accessibility | 存档、设置与易用性 |
+| Common questions                   | 常见问题           |
+
+Wiki text and illustrations are bundled with the game; no external Wiki service or account is needed. On narrow screens the chapter list scrolls, and tables can be swiped horizontally.
+
+**中文：** 点击顶栏或对话框内的 **Wiki**，或按 **F1**，即可查阅以上 12 个章节。可用中文或英文搜索，阅读时随时切换语言；按 **Esc** 返回原界面，尚未确认的表单输入会保留。说明包括操作步骤、兵种克制、装备效果、内政费用，以及按钮变灰或部队不能行动时的排查方法。
+
+![The in-game Chinese Wiki, showing troop types and movement/range](docs/images/wiki-zh.png)
 
 ## Readable maps, recognizable commanders
 
@@ -145,7 +176,7 @@ The GitHub Actions workflow runs formatting, unit tests, portrait validation, co
 
 **Main reference:** [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main). Thank you to **erduoniba and the project's contributors** for sharing the Baye source and making this learning remake possible.
 
-This is an unofficial learning remake of Baye's campaign-and-battle structure, with an authored scenario and ruleset. It does not claim exact legacy formulas, content, mod compatibility, or official affiliation. Maps, symbols, and sounds are generated in code; the new runtime includes no copied legacy sprites, portraits, libraries, music, or executables.
+This is an unofficial learning remake of Baye's campaign-and-battle structure, with an authored scenario and ruleset. It does not claim exact legacy formulas, content, mod compatibility, or official affiliation. Original ink-wash map, terrain and troop artwork is combined with code-drawn city symbols, tactical overlays and synthesized sounds; the new runtime includes no copied legacy sprites, portraits, libraries, music, or executables. See the [campaign-map](docs/assets/campaign-map-art.md), [battlefield](docs/assets/battlefield-art.md) and [combat-unit](docs/assets/combat-unit-art.md) artwork records for provenance and prompts.
 
 The headshots are original imagined historical illustrations created for this project using OpenAI's built-in image generation tool. They are artistic interpretations rather than authenticated contemporary likenesses. See the [portrait provenance and prompt records](docs/assets/portrait-credits.md).
 
@@ -160,6 +191,7 @@ Further work is tracked in [next steps](docs/next-steps.md): the human playtests
 - 安装 Node.js，运行 `npm ci`，再运行 `npm run dev`，打开终端显示的网址。
 - Windows 用户安装依赖后，也可双击 `Start-Hegemony.cmd`。
 - 随时通过 **Eng / 中文** 切换语言；选择势力后发展城池、招募武将、编组军队，逐步统一天下。
+- 顶栏和所有对话框均有 **Wiki** 入口，也可按 **F1** 打开完整中英百科。12 个章节涵盖新手流程、六类兵种、装备、战斗与计策、地形士气、内政收支、武将、后勤、外交俘虏、存档及常见问题；可用中文或英文搜索。按 **Esc** 返回原界面，尚未确认的表单会保留。
 - 每次成功操作都会自动存档，战斗中也可续玩；请在“存档与读档”中导出 JSON 作为备份。
 - 在“设置”选择紧凑、舒适或大字显示。战斗中可使用“适应战场”“清晰格子”“居中所选部队”和“下一位可行动武将”。
 - 两个剧本的全部 53 位具名武将拥有独立头像，包括官渡剧本的马超；旗帜标明姓氏与当前势力，六种兵种图标和行动标记可在图例中查看。
