@@ -1,0 +1,104 @@
+{
+  "sourceCommit": "dbc9302f1e7b5c9178e0cbd7a5000f1fd01c3aeb",
+  "continuations": [
+    {
+      "fixture": "battle",
+      "commands": [
+        {
+          "type": "battleAuto"
+        }
+      ],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "75fcbf6695f332223696d59c7bb43c34bc8d168122b5072b4fdfaf91a3e51786",
+      "turn": 1,
+      "phase": "planning"
+    },
+    {
+      "fixture": "queued-battle",
+      "commands": [
+        {
+          "type": "battleAuto"
+        },
+        {
+          "type": "battleAuto"
+        }
+      ],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "b8767c743b7fc275e611d954fd35b61e734915d5f7e16c49cb00f41d279c876d",
+      "turn": 1,
+      "phase": "planning"
+    },
+    {
+      "fixture": "dense-battle",
+      "commands": [
+        {
+          "type": "battleAuto"
+        }
+      ],
+      "fields": [
+        "alliances",
+        "battle",
+        "cities",
+        "log",
+        "month",
+        "nextId",
+        "officers",
+        "orders",
+        "phase",
+        "playerFactionId",
+        "resolution",
+        "revision",
+        "rng",
+        "ruleset",
+        "stats",
+        "turn",
+        "version",
+        "winner",
+        "year"
+      ],
+      "sha256": "0d05a69d66361e22a1abd4eb2a0337e53b14f00a1dfac638a830929a8e6876cc",
+      "turn": 1,
+      "phase": "planning"
+    }
+  ]
+}

@@ -1,0 +1,2297 @@
+{
+  "baseline": true,
+  "configuredMultipliers": {
+    "cautious": 2,
+    "balanced": 1.35,
+    "aggressive": 0.9
+  },
+  "months": 24,
+  "playerPolicy": "End Month; auto-resolve every player battle",
+  "seeds": [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010],
+  "summaries": [
+    {
+      "preset": "balanced",
+      "runs": 60,
+      "endedRuns": 14,
+      "attackRate": 161.95672984874594,
+      "firstYearAttackRate": 156.36123928806856,
+      "shortageRate": 0,
+      "firstWarMedian": 1,
+      "noAttackRuns": 0,
+      "captures": 7157,
+      "holds": 588,
+      "stoodDownOrCancelled": 714,
+      "factionMonths": 5223,
+      "cityUpkeeps": 25606,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 24116,
+      "frozenCautious": 12778,
+      "frozenBalanced": 14914,
+      "frozenAggressive": 17732,
+      "eliminations": [
+        {
+          "month": 6,
+          "observedRuns": 50,
+          "eliminated": 9,
+          "initiallyActiveRivals": 250
+        },
+        {
+          "month": 12,
+          "observedRuns": 46,
+          "eliminated": 26,
+          "initiallyActiveRivals": 230
+        },
+        {
+          "month": 24,
+          "observedRuns": 46,
+          "eliminated": 79,
+          "initiallyActiveRivals": 230
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 110,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 179,
+      "factionMonths": 114,
+      "captures": 154,
+      "holds": 12,
+      "cityUpkeeps": 542,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 481,
+      "frozenCautious": 267,
+      "frozenBalanced": 298,
+      "frozenAggressive": 336
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 16,
+      "attacks": 199,
+      "factionMonths": 117,
+      "captures": 158,
+      "holds": 25,
+      "cityUpkeeps": 542,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 564,
+      "frozenCautious": 302,
+      "frozenBalanced": 336,
+      "frozenAggressive": 410
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 88,
+      "firstYearFactionMonths": 59,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 10,
+      "attacks": 154,
+      "factionMonths": 102,
+      "captures": 128,
+      "holds": 16,
+      "cityUpkeeps": 499,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 431,
+      "frozenCautious": 217,
+      "frozenBalanced": 249,
+      "frozenAggressive": 282
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 87,
+      "firstYearFactionMonths": 59,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 11,
+      "attacks": 164,
+      "factionMonths": 107,
+      "captures": 141,
+      "holds": 12,
+      "cityUpkeeps": 499,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 453,
+      "frozenCautious": 247,
+      "frozenBalanced": 287,
+      "frozenAggressive": 336
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 104,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 6,
+      "attacks": 188,
+      "factionMonths": 108,
+      "captures": 172,
+      "holds": 10,
+      "cityUpkeeps": 542,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 499,
+      "frozenCautious": 312,
+      "frozenBalanced": 353,
+      "frozenAggressive": 397
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 96,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 9,
+      "attacks": 181,
+      "factionMonths": 111,
+      "captures": 157,
+      "holds": 15,
+      "cityUpkeeps": 542,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 500,
+      "frozenCautious": 281,
+      "frozenBalanced": 324,
+      "frozenAggressive": 373
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 88,
+      "firstYearFactionMonths": 54,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 20,
+      "attacks": 182,
+      "factionMonths": 100,
+      "captures": 151,
+      "holds": 11,
+      "cityUpkeeps": 499,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 535,
+      "frozenCautious": 238,
+      "frozenBalanced": 292,
+      "frozenAggressive": 345
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 78,
+      "firstYearFactionMonths": 57,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 11,
+      "attacks": 125,
+      "factionMonths": 97,
+      "captures": 106,
+      "holds": 8,
+      "cityUpkeeps": 520,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 314,
+      "frozenCautious": 172,
+      "frozenBalanced": 197,
+      "frozenAggressive": 231
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 96,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 14,
+      "attacks": 187,
+      "factionMonths": 115,
+      "captures": 159,
+      "holds": 14,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 512,
+      "frozenCautious": 253,
+      "frozenBalanced": 301,
+      "frozenAggressive": 354
+    },
+    {
+      "faction": "cao",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 14,
+      "attacks": 184,
+      "factionMonths": 112,
+      "captures": 156,
+      "holds": 14,
+      "cityUpkeeps": 514,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 494,
+      "frozenCautious": 268,
+      "frozenBalanced": 317,
+      "frozenAggressive": 373
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 5,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 39,
+      "firstYearFactionMonths": 25,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 39,
+      "factionMonths": 25,
+      "captures": 32,
+      "holds": 6,
+      "cityUpkeeps": 111,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 109,
+      "frozenCautious": 48,
+      "frozenBalanced": 61,
+      "frozenAggressive": 85
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 27,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 2,
+      "attacks": 27,
+      "factionMonths": 20,
+      "captures": 22,
+      "holds": 3,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 79,
+      "frozenCautious": 35,
+      "frozenBalanced": 42,
+      "frozenAggressive": 60
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 28,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 28,
+      "factionMonths": 20,
+      "captures": 24,
+      "holds": 3,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 83,
+      "frozenCautious": 35,
+      "frozenBalanced": 46,
+      "frozenAggressive": 65
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 29,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 2,
+      "attacks": 29,
+      "factionMonths": 20,
+      "captures": 24,
+      "holds": 3,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 80,
+      "frozenCautious": 36,
+      "frozenBalanced": 48,
+      "frozenAggressive": 63
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 27,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 27,
+      "factionMonths": 20,
+      "captures": 21,
+      "holds": 5,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 81,
+      "frozenCautious": 34,
+      "frozenBalanced": 44,
+      "frozenAggressive": 64
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 5,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 40,
+      "firstYearFactionMonths": 25,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 2,
+      "attacks": 40,
+      "factionMonths": 25,
+      "captures": 33,
+      "holds": 5,
+      "cityUpkeeps": 111,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 109,
+      "frozenCautious": 52,
+      "frozenBalanced": 67,
+      "frozenAggressive": 84
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 5,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 36,
+      "firstYearFactionMonths": 25,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 36,
+      "factionMonths": 25,
+      "captures": 33,
+      "holds": 2,
+      "cityUpkeeps": 111,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 103,
+      "frozenCautious": 51,
+      "frozenBalanced": 63,
+      "frozenAggressive": 79
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 28,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 28,
+      "factionMonths": 20,
+      "captures": 25,
+      "holds": 2,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 77,
+      "frozenCautious": 32,
+      "frozenBalanced": 44,
+      "frozenAggressive": 61
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 28,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 2,
+      "attacks": 28,
+      "factionMonths": 20,
+      "captures": 24,
+      "holds": 2,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 85,
+      "frozenCautious": 33,
+      "frozenBalanced": 46,
+      "frozenAggressive": 65
+    },
+    {
+      "faction": "liu",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 4,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 28,
+      "firstYearFactionMonths": 20,
+      "checkpoints": {},
+      "stoodDownOrCancelled": 1,
+      "attacks": 28,
+      "factionMonths": 20,
+      "captures": 25,
+      "holds": 2,
+      "cityUpkeeps": 88,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 83,
+      "frozenCautious": 36,
+      "frozenBalanced": 46,
+      "frozenAggressive": 63
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 59,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 17,
+      "attacks": 164,
+      "factionMonths": 96,
+      "captures": 139,
+      "holds": 8,
+      "cityUpkeeps": 520,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 433,
+      "frozenCautious": 252,
+      "frozenBalanced": 291,
+      "frozenAggressive": 324
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 17,
+      "attacks": 167,
+      "factionMonths": 117,
+      "captures": 140,
+      "holds": 10,
+      "cityUpkeeps": 520,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 445,
+      "frozenCautious": 263,
+      "frozenBalanced": 295,
+      "frozenAggressive": 350
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 91,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 16,
+      "attacks": 170,
+      "factionMonths": 117,
+      "captures": 141,
+      "holds": 13,
+      "cityUpkeeps": 520,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 485,
+      "frozenCautious": 282,
+      "frozenBalanced": 324,
+      "frozenAggressive": 376
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 8,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 55,
+      "firstYearFactionMonths": 39,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 3,
+      "attacks": 55,
+      "factionMonths": 39,
+      "captures": 40,
+      "holds": 12,
+      "cityUpkeeps": 174,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 168,
+      "frozenCautious": 60,
+      "frozenBalanced": 88,
+      "frozenAggressive": 137
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 88,
+      "firstYearFactionMonths": 55,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 19,
+      "attacks": 161,
+      "factionMonths": 103,
+      "captures": 127,
+      "holds": 15,
+      "cityUpkeeps": 541,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 485,
+      "frozenCautious": 237,
+      "frozenBalanced": 285,
+      "frozenAggressive": 360
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 94,
+      "firstYearFactionMonths": 55,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 21,
+      "attacks": 178,
+      "factionMonths": 94,
+      "captures": 152,
+      "holds": 5,
+      "cityUpkeeps": 520,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 483,
+      "frozenCautious": 264,
+      "frozenBalanced": 308,
+      "frozenAggressive": 368
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 7,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 44,
+      "firstYearFactionMonths": 35,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 3,
+      "attacks": 44,
+      "factionMonths": 35,
+      "captures": 36,
+      "holds": 5,
+      "cityUpkeeps": 151,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 147,
+      "frozenCautious": 55,
+      "frozenBalanced": 81,
+      "frozenAggressive": 124
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 80,
+      "firstYearFactionMonths": 55,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 152,
+      "factionMonths": 97,
+      "captures": 129,
+      "holds": 10,
+      "cityUpkeeps": 541,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 436,
+      "frozenCautious": 240,
+      "frozenBalanced": 273,
+      "frozenAggressive": 347
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 55,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 14,
+      "attacks": 168,
+      "factionMonths": 98,
+      "captures": 140,
+      "holds": 14,
+      "cityUpkeeps": 541,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 452,
+      "frozenCautious": 246,
+      "frozenBalanced": 286,
+      "frozenAggressive": 357
+    },
+    {
+      "faction": "sun",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 8,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 58,
+      "firstYearFactionMonths": 40,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 4,
+      "attacks": 58,
+      "factionMonths": 40,
+      "captures": 49,
+      "holds": 5,
+      "cityUpkeeps": 174,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 167,
+      "frozenCautious": 76,
+      "frozenBalanced": 93,
+      "frozenAggressive": 133
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 98,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 12,
+      "attacks": 170,
+      "factionMonths": 99,
+      "captures": 144,
+      "holds": 14,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 490,
+      "frozenCautious": 269,
+      "frozenBalanced": 297,
+      "frozenAggressive": 346
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 93,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 26,
+      "attacks": 191,
+      "factionMonths": 111,
+      "captures": 156,
+      "holds": 9,
+      "cityUpkeeps": 535,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 530,
+      "frozenCautious": 286,
+      "frozenBalanced": 339,
+      "frozenAggressive": 417
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 87,
+      "firstYearFactionMonths": 54,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 18,
+      "attacks": 174,
+      "factionMonths": 102,
+      "captures": 145,
+      "holds": 11,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 486,
+      "frozenCautious": 268,
+      "frozenBalanced": 309,
+      "frozenAggressive": 349
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 99,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 19,
+      "attacks": 185,
+      "factionMonths": 117,
+      "captures": 147,
+      "holds": 19,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 547,
+      "frozenCautious": 290,
+      "frozenBalanced": 335,
+      "frozenAggressive": 389
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 76,
+      "firstYearFactionMonths": 57,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 11,
+      "attacks": 123,
+      "factionMonths": 93,
+      "captures": 107,
+      "holds": 5,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 349,
+      "frozenCautious": 194,
+      "frozenBalanced": 229,
+      "frozenAggressive": 270
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 100,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 192,
+      "factionMonths": 109,
+      "captures": 165,
+      "holds": 14,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 548,
+      "frozenCautious": 291,
+      "frozenBalanced": 338,
+      "frozenAggressive": 405
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 83,
+      "firstYearFactionMonths": 54,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 162,
+      "factionMonths": 102,
+      "captures": 143,
+      "holds": 6,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 449,
+      "frozenCautious": 256,
+      "frozenBalanced": 298,
+      "frozenAggressive": 344
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 93,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 15,
+      "attacks": 166,
+      "factionMonths": 109,
+      "captures": 143,
+      "holds": 8,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 481,
+      "frozenCautious": 246,
+      "frozenBalanced": 282,
+      "frozenAggressive": 335
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 96,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 19,
+      "attacks": 215,
+      "factionMonths": 115,
+      "captures": 181,
+      "holds": 15,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 631,
+      "frozenCautious": 328,
+      "frozenBalanced": 385,
+      "frozenAggressive": 444
+    },
+    {
+      "faction": "yuan",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 84,
+      "firstYearFactionMonths": 55,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 21,
+      "attacks": 179,
+      "factionMonths": 103,
+      "captures": 144,
+      "holds": 14,
+      "cityUpkeeps": 521,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 494,
+      "frozenCautious": 283,
+      "frozenBalanced": 318,
+      "frozenAggressive": 358
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 81,
+      "firstYearFactionMonths": 58,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 9,
+      "attacks": 150,
+      "factionMonths": 106,
+      "captures": 132,
+      "holds": 9,
+      "cityUpkeeps": 519,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 441,
+      "frozenCautious": 246,
+      "frozenBalanced": 284,
+      "frozenAggressive": 338
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 87,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 12,
+      "attacks": 170,
+      "factionMonths": 108,
+      "captures": 144,
+      "holds": 14,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 597,
+      "frozenCautious": 264,
+      "frozenBalanced": 317,
+      "frozenAggressive": 401
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 86,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 17,
+      "attacks": 163,
+      "factionMonths": 117,
+      "captures": 131,
+      "holds": 15,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 478,
+      "frozenCautious": 249,
+      "frozenBalanced": 287,
+      "frozenAggressive": 340
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 85,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 10,
+      "attacks": 167,
+      "factionMonths": 115,
+      "captures": 143,
+      "holds": 14,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 469,
+      "frozenCautious": 262,
+      "frozenBalanced": 303,
+      "frozenAggressive": 344
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 78,
+      "firstYearFactionMonths": 54,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 15,
+      "attacks": 152,
+      "factionMonths": 101,
+      "captures": 128,
+      "holds": 9,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 422,
+      "frozenCautious": 234,
+      "frozenBalanced": 269,
+      "frozenAggressive": 335
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 89,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 12,
+      "attacks": 176,
+      "factionMonths": 112,
+      "captures": 154,
+      "holds": 10,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 518,
+      "frozenCautious": 260,
+      "frozenBalanced": 311,
+      "frozenAggressive": 360
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 80,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 9,
+      "attacks": 135,
+      "factionMonths": 119,
+      "captures": 107,
+      "holds": 19,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 416,
+      "frozenCautious": 202,
+      "frozenBalanced": 236,
+      "frozenAggressive": 284
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 86,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 27,
+      "attacks": 162,
+      "factionMonths": 98,
+      "captures": 126,
+      "holds": 9,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 510,
+      "frozenCautious": 199,
+      "frozenBalanced": 250,
+      "frozenAggressive": 332
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 81,
+      "firstYearFactionMonths": 49,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 2,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 3,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 15,
+      "attacks": 141,
+      "factionMonths": 78,
+      "captures": 119,
+      "holds": 7,
+      "cityUpkeeps": 517,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 339,
+      "frozenCautious": 202,
+      "frozenBalanced": 235,
+      "frozenAggressive": 272
+    },
+    {
+      "faction": "dong",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 76,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 12,
+      "attacks": 163,
+      "factionMonths": 114,
+      "captures": 141,
+      "holds": 10,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 530,
+      "frozenCautious": 248,
+      "frozenBalanced": 291,
+      "frozenAggressive": 345
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1001,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 101,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 194,
+      "factionMonths": 104,
+      "captures": 173,
+      "holds": 8,
+      "cityUpkeeps": 539,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 559,
+      "frozenCautious": 322,
+      "frozenBalanced": 363,
+      "frozenAggressive": 416
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1002,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 102,
+      "firstYearFactionMonths": 52,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 15,
+      "attacks": 179,
+      "factionMonths": 92,
+      "captures": 157,
+      "holds": 7,
+      "cityUpkeeps": 539,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 504,
+      "frozenCautious": 288,
+      "frozenBalanced": 329,
+      "frozenAggressive": 366
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1003,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 100,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 14,
+      "attacks": 196,
+      "factionMonths": 108,
+      "captures": 170,
+      "holds": 12,
+      "cityUpkeeps": 537,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 580,
+      "frozenCautious": 304,
+      "frozenBalanced": 361,
+      "frozenAggressive": 423
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1004,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 104,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 22,
+      "attacks": 200,
+      "factionMonths": 105,
+      "captures": 167,
+      "holds": 11,
+      "cityUpkeeps": 536,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 548,
+      "frozenCautious": 310,
+      "frozenBalanced": 366,
+      "frozenAggressive": 412
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1005,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 96,
+      "firstYearFactionMonths": 56,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 16,
+      "attacks": 189,
+      "factionMonths": 104,
+      "captures": 163,
+      "holds": 10,
+      "cityUpkeeps": 537,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 558,
+      "frozenCautious": 275,
+      "frozenBalanced": 330,
+      "frozenAggressive": 399
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1006,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 83,
+      "firstYearFactionMonths": 53,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 10,
+      "attacks": 142,
+      "factionMonths": 94,
+      "captures": 124,
+      "holds": 8,
+      "cityUpkeeps": 498,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 410,
+      "frozenCautious": 247,
+      "frozenBalanced": 281,
+      "frozenAggressive": 323
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1007,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 100,
+      "firstYearFactionMonths": 53,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 19,
+      "attacks": 189,
+      "factionMonths": 93,
+      "captures": 158,
+      "holds": 12,
+      "cityUpkeeps": 519,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 537,
+      "frozenCautious": 282,
+      "frozenBalanced": 334,
+      "frozenAggressive": 395
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1008,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 103,
+      "firstYearFactionMonths": 56,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 1,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 2,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 17,
+      "attacks": 198,
+      "factionMonths": 95,
+      "captures": 172,
+      "holds": 9,
+      "cityUpkeeps": 536,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 554,
+      "frozenCautious": 309,
+      "frozenBalanced": 355,
+      "frozenAggressive": 410
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1009,
+      "monthsObserved": 10,
+      "finished": true,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 80,
+      "firstYearFactionMonths": 46,
+      "checkpoints": {
+        "6": {
+          "eliminated": 1,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 5,
+      "attacks": 80,
+      "factionMonths": 46,
+      "captures": 71,
+      "holds": 4,
+      "cityUpkeeps": 212,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 220,
+      "frozenCautious": 121,
+      "frozenBalanced": 149,
+      "frozenAggressive": 172
+    },
+    {
+      "faction": "yan",
+      "preset": "balanced",
+      "seed": 1010,
+      "monthsObserved": 24,
+      "finished": false,
+      "firstWar": 1,
+      "initialRivals": 5,
+      "firstYearAttacks": 95,
+      "firstYearFactionMonths": 60,
+      "checkpoints": {
+        "6": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "12": {
+          "eliminated": 0,
+          "observed": true
+        },
+        "24": {
+          "eliminated": 0,
+          "observed": true
+        }
+      },
+      "stoodDownOrCancelled": 13,
+      "attacks": 186,
+      "factionMonths": 120,
+      "captures": 164,
+      "holds": 9,
+      "cityUpkeeps": 538,
+      "shortages": 0,
+      "willingDecisions": 0,
+      "reserveBlocks": 0,
+      "foodBlocks": 0,
+      "overlapBlocks": 0,
+      "frozenCandidates": 548,
+      "frozenCautious": 319,
+      "frozenBalanced": 348,
+      "frozenAggressive": 406
+    }
+  ]
+}

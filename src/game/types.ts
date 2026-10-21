@@ -1,5 +1,9 @@
+import type { RivalAggression } from './aiPolicy';
+import type { MonthlyReports } from './reports';
+export type { RivalAggression } from './aiPolicy';
+export type { MonthlyReport, MonthlyReportEvent, MonthlyReports } from './reports';
 export type TroopType = 'infantry' | 'cavalry' | 'archer' | 'naval' | 'elite' | 'guard';
-export type Terrain = 'plain' | 'forest' | 'hill' | 'water' | 'fort';
+export type Terrain = 'plain' | 'forest' | 'hill' | 'water' | 'fort' | 'wall' | 'gate';
 export type Action =
   | 'farm'
   | 'commerce'
@@ -19,7 +23,9 @@ export type Action =
   | 'equip'
   | 'confiscate'
   | 'banish'
-  | 'appoint';
+  | 'appoint'
+  | 'plunder'
+  | 'reorganize';
 export interface Faction {
   id: string;
   name: string;
@@ -30,6 +36,7 @@ export interface Faction {
   description: string;
   difficulty: string;
 }
+export type BattlefieldProfile = 'plains' | 'river' | 'mountain' | 'forest';
 export interface City {
   id: string;
   name: string;
@@ -48,7 +55,11 @@ export interface City {
   food: number;
   reserve: number;
   governorId: string | null;
+  /** Plunder, raid and sack are rejected while `turn < plunderCooldownUntil`. */
+  plunderCooldownUntil: number;
 }
+/** Executed and deceased officers stay in the roster (saves keep everyone) but are inert. */
+export type OfficerFate = 'active' | 'executed' | 'deceased';
 export interface Officer {
   id: string;
   name: string;
@@ -65,8 +76,12 @@ export interface Officer {
   busy: boolean;
   captive: boolean;
   experience: number;
+  /** min(5, floor(experience / 100)); rising levels grant stats once. */
+  level: number;
   equipment: string | null;
+  fate: OfficerFate;
 }
+export type AttackIntent = 'conquer' | 'raid' | 'sack';
 export interface AttackOrder {
   id: string;
   factionId: string;
@@ -74,12 +89,15 @@ export interface AttackOrder {
   targetId: string;
   officerIds: string[];
   food: number;
+  intent: AttackIntent;
 }
+export type BattleSide = 'attacker' | 'defender';
+export type BattleSkill = 'fire' | 'rally' | 'confuse' | 'raidSupply' | 'ambush' | 'rockfall';
 export interface BattleUnit {
   id: string;
   officerId: string;
   name: string;
-  side: 'attacker' | 'defender';
+  side: BattleSide;
   x: number;
   y: number;
   troops: number;
@@ -87,27 +105,37 @@ export interface BattleUnit {
   force: number;
   intellect: number;
   troopType: TroopType;
+  level: number;
   moved: boolean;
   acted: boolean;
+  /** True when the unit took damage today; undamaged units recover morale at day end. */
+  hurt: boolean;
   morale: number;
   status: 'normal' | 'confused' | 'inspired';
+  /** Set when the officer was captured by this side in the battle. */
+  capturedBy?: BattleSide;
 }
+export type Weather = 'clear' | 'rain' | 'wind';
 export interface BattleState {
   id: string;
   order: AttackOrder;
   attackerId: string;
   defenderId: string | null;
-  playerSide: 'attacker' | 'defender';
+  playerSide: BattleSide;
   width: number;
   height: number;
   terrain: Terrain[];
   units: BattleUnit[];
   day: number;
-  weather: 'clear' | 'rain' | 'wind';
+  /** The siege ends in a defender win once this many days have passed. */
+  dayLimit: number;
+  weather: Weather;
+  nextWeather: Weather;
   attackerFood: number;
   defenderFood: number;
+  tacticPoints: { attacker: number; defender: number };
   log: string[];
-  outcome: 'attacker' | 'defender' | null;
+  outcome: BattleSide | null;
 }
 export interface GameLog {
   id: number;
@@ -120,11 +148,43 @@ export interface Alliance {
   b: string;
   untilTurn: number;
 }
+export interface BattleSummary {
+  orderId: string;
+  targetId: string;
+  attackerId: string;
+  defenderId: string | null;
+  outcome: 'captured' | 'held' | 'raided';
+  days: number;
+  intent: AttackIntent;
+  casualties: { attacker: number; defender: number };
+  captured: string[];
+  /** Gold and food seized by a raid or sack, if any. */
+  loot: { gold: number; food: number } | null;
+}
+export interface Reputation {
+  brokeAllianceTurn: number;
+}
+export type Difficulty = 'story' | 'standard' | 'warlord';
+/** A standing offer to the player, e.g. to join a coalition (accept = alliances with all members). */
+export interface Invitation {
+  id: string;
+  eventId: string;
+  /** The house the coalition forms against. */
+  targetId: string;
+  members: string[];
+  untilTurn: number;
+}
+export interface Hegemon {
+  factionId: string | null;
+  months: number;
+}
 export interface GameState {
-  version: 1;
-  ruleset: 'baye-atlas-1';
+  version: 2;
+  ruleset: 'baye-atlas-2';
   revision: number;
   playerFactionId: string;
+  rivalAggression: RivalAggression;
+  reports: MonthlyReports;
   year: number;
   month: number;
   turn: number;
@@ -140,10 +200,38 @@ export interface GameState {
   log: GameLog[];
   winner: string | null;
   stats: { battlesWon: number; commandsIssued: number; citiesCaptured: number };
+  /** AI factions make no marches while `turn < truceUntilTurn`. */
+  truceUntilTurn: number;
+  /** The most recent completed battle, for the summary modal. */
+  lastBattle: BattleSummary | null;
+  reputation: Record<string, Reputation>;
+  scenarioId: string;
+  difficulty: Difficulty;
+  /** Whether rival houses use their own personalities on top of the aggression slider. */
+  aiPersonalities: boolean;
+  /** Optional rule: veterans may die of old age. Off by default. */
+  aging: boolean;
+  /** Who has held Luoyang plus sixteen cities, and for how many consecutive months. */
+  hegemon: Hegemon;
+  /** Turn each enemy city was last scouted; exact numbers are shown for two months. */
+  scouted: Record<string, number>;
+  /** Ids of one-shot events that have fired. */
+  firedEvents: string[];
+  invitations: Invitation[];
 }
+export type SupplyDays = 10 | 20 | 30;
+export type PrisonerDecision = 'release' | 'execute';
 export type GameCommand =
+  | { type: 'setRivalAggression'; value: RivalAggression }
   | { type: 'action'; action: Action; cityId: string; officerId: string; targetId?: string }
-  | { type: 'march'; sourceId: string; targetId: string; officerIds: string[] }
+  | {
+      type: 'march';
+      sourceId: string;
+      targetId: string;
+      officerIds: string[];
+      intent?: AttackIntent;
+      supplyDays?: SupplyDays;
+    }
   | {
       type: 'transfer';
       sourceId: string;
@@ -154,10 +242,14 @@ export type GameCommand =
       troops: number;
     }
   | { type: 'assignTroops'; cityId: string; officerId: string; amount: number }
+  | { type: 'prisoner'; cityId: string; prisonerId: string; decision: PrisonerDecision }
+  | { type: 'breakAlliance'; factionId: string }
+  | { type: 'invitation'; id: string; accept: boolean }
+  | { type: 'setAging'; value: boolean }
   | { type: 'endMonth' }
   | { type: 'battleMove'; unitId: string; x: number; y: number }
   | { type: 'battleAttack'; unitId: string; targetId: string }
-  | { type: 'battleSkill'; unitId: string; skill: 'fire' | 'rally' | 'confuse'; targetId?: string }
+  | { type: 'battleSkill'; unitId: string; skill: BattleSkill; targetId?: string }
   | { type: 'battleWait'; unitId: string }
   | { type: 'battleEndDay' }
   | { type: 'battleRetreat' }

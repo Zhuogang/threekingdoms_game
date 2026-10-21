@@ -5,148 +5,12 @@ import {
   getAttackTargets,
   getBattleUnitMove,
   getBattleUnitRange,
+  forecastSkill,
   getReachableTiles,
   processBattleCommand,
 } from '../src/game/battle';
-import type {
-  AttackOrder,
-  BattleState,
-  BattleUnit,
-  City,
-  GameState,
-  Officer,
-} from '../src/game/types';
-
-function city(id: string, factionId: string): City {
-  return {
-    id,
-    name: id,
-    chinese: '',
-    region: 'Central Plains',
-    x: 0,
-    y: 0,
-    neighbors: ['home', 'target'].filter((other) => other !== id),
-    factionId,
-    population: 100000,
-    farming: 60,
-    commerce: 60,
-    defense: 60,
-    loyalty: 80,
-    gold: 1000,
-    food: 5000,
-    reserve: 400,
-    governorId: null,
-  };
-}
-
-function officer(id: string, cityId: string, factionId: string): Officer {
-  return {
-    id,
-    name: id,
-    chinese: '',
-    factionId,
-    cityId,
-    force: 75,
-    intellect: 70,
-    loyalty: 90,
-    stamina: 100,
-    age: 30,
-    troops: 2500,
-    troopType: 'infantry',
-    busy: false,
-    captive: false,
-    experience: 0,
-    equipment: null,
-  };
-}
-
-const order: AttackOrder = {
-  id: 'attack-1',
-  factionId: 'blue',
-  sourceId: 'home',
-  targetId: 'target',
-  officerIds: ['a'],
-  food: 4000,
-};
-
-function game(): GameState {
-  return {
-    version: 1,
-    ruleset: 'baye-atlas-1',
-    revision: 0,
-    playerFactionId: 'blue',
-    year: 190,
-    month: 1,
-    turn: 0,
-    rng: 987654321,
-    nextId: 1,
-    cities: [city('home', 'blue'), city('target', 'red')],
-    officers: [officer('a', 'home', 'blue'), officer('b', 'target', 'red')],
-    alliances: [],
-    phase: 'battle',
-    battle: null,
-    orders: [],
-    resolution: null,
-    log: [],
-    winner: null,
-    stats: { battlesWon: 0, commandsIssued: 0, citiesCaptured: 0 },
-  };
-}
-
-function unit(id: string, side: BattleUnit['side'], x: number, y: number): BattleUnit {
-  return {
-    id,
-    officerId: id,
-    name: id,
-    side,
-    x,
-    y,
-    troops: 1000,
-    initialTroops: 1000,
-    force: 70,
-    intellect: 70,
-    troopType: 'infantry',
-    moved: false,
-    acted: false,
-    morale: 80,
-    status: 'normal',
-  };
-}
-
-function battlefield(width = 12, height = 10): BattleState {
-  return {
-    id: 'battle-1',
-    order,
-    attackerId: 'blue',
-    defenderId: 'red',
-    playerSide: 'attacker',
-    width,
-    height,
-    terrain: Array.from({ length: width * height }, () => 'plain'),
-    units: [unit('a', 'attacker', 1, 1), unit('b', 'defender', width - 2, height - 2)],
-    day: 1,
-    weather: 'clear',
-    attackerFood: 3000,
-    defenderFood: 3000,
-    log: [],
-    outcome: null,
-  };
-}
-
-function gameWithBattle(battle = battlefield()): GameState {
-  const state = game();
-  state.battle = battle;
-  return state;
-}
-
-function stalemate(): BattleState {
-  const battle = battlefield();
-  // Two isolated land tiles. Melee units cannot cross the river or attack at a distance.
-  battle.terrain.fill('water');
-  for (const candidate of battle.units)
-    battle.terrain[candidate.y * battle.width + candidate.x] = 'plain';
-  return battle;
-}
+import type { GameState } from '../src/game/types';
+import { battlefield, game, gameWithBattle, officer, order, stalemate, unit } from './fixtures';
 
 describe('battlefield creation', () => {
   it('is deterministic, preserves campaign resources, and represents the exact reserve garrison', () => {
@@ -381,6 +245,21 @@ describe('combat and tactics', () => {
     expect(state.battle!.units[0]!.acted).toBe(true);
   });
 
+  it('the rally forecast says when it ends confusion, without changing state', () => {
+    const state = gameWithBattle();
+    state.battle!.units.push(unit('c', 'attacker', 2, 1));
+    const ally = state.battle!.units[2]!;
+    ally.morale = 30;
+    const before = structuredClone(state);
+    expect(forecastSkill(state.battle!, 'a', 'rally', 'c')!.endsConfusion).toBe(false);
+    ally.status = 'confused';
+    const forecast = forecastSkill(state.battle!, 'a', 'rally', 'c')!;
+    expect(forecast.endsConfusion).toBe(true);
+    expect(forecast.moraleGain).toBeGreaterThan(0);
+    ally.status = 'normal';
+    expect(state).toEqual(before);
+  });
+
   it('a confused unit loses its turn and recovers on the next day', () => {
     const state = gameWithBattle(stalemate());
     state.battle!.units[0]!.status = 'confused';
@@ -436,6 +315,8 @@ describe('combat and tactics', () => {
     normal.battle!.units[1]!.y = 1;
     normal.battle!.units.push(unit('ally', 'attacker', 2, 1));
     normal.battle!.units[2]!.morale = 100;
+    // Keep the AI from casting tactics on the ally so only inspiration is under test.
+    normal.battle!.tacticPoints.defender = 0;
     const rallied = structuredClone(normal);
     expect(
       processBattleCommand(rallied, {
@@ -465,13 +346,13 @@ describe('battle completion', () => {
     expect(state.battle!.attackerFood).toBe(0);
     expect(state.battle!.units[0]!.troops).toBe(880);
     expect(state.battle!.units[1]!.troops).toBe(1000);
-    expect(state.battle!.defenderFood).toBe(defenderFood - 16);
+    expect(state.battle!.defenderFood).toBe(defenderFood - 40);
     expect(state.battle!.day).toBe(2);
   });
 
   it('does not starve soldiers when the last provisions exactly cover the day', () => {
     const state = gameWithBattle(stalemate());
-    state.battle!.attackerFood = 16;
+    state.battle!.attackerFood = 40;
     expect(processBattleCommand(state, { type: 'battleEndDay' })).toBeNull();
     expect(state.battle!.attackerFood).toBe(0);
     expect(state.battle!.units[0]!.troops).toBe(1000);

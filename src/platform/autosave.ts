@@ -1,4 +1,4 @@
-import { factionById } from '../content/scenario';
+import { factionOf } from '../content/scenario';
 import type { GameState } from '../game/types';
 import { saveSlot } from './saves';
 
@@ -44,7 +44,7 @@ export const autosave = {
     latestState = state;
     const token = ++generation;
     publish({ status: 'saving', error: null });
-    const name = `${factionById(state.playerFactionId)?.name ?? state.playerFactionId} · ${state.year}-${String(state.month).padStart(2, '0')}`;
+    const name = `${factionOf(state, state.playerFactionId)?.name ?? state.playerFactionId} · ${state.year}-${String(state.month).padStart(2, '0')}`;
     return saveSlot('auto', name, state).then(
       () => {
         if (token === generation) publish({ status: 'saved', error: null });

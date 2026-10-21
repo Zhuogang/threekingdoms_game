@@ -376,6 +376,9 @@ test('an unavailable database can recover without reloading the page', async ({ 
     };
   });
   await page.goto('/');
+  // New campaigns use a random seed; pin it so the stored state is predictable.
+  await page.getByText('Advanced', { exact: true }).click();
+  await page.getByLabel('World seed').fill('190');
   await page.getByRole('button', { name: 'Raise your banner' }).click();
   await expect(page.locator('.save-status')).toContainText('Save unavailable');
   await expect(page.getByRole('alert')).toContainText('Could not open browser storage');

@@ -1,13 +1,14 @@
-import type { City, Faction, Officer, TroopType } from '../game/types';
+import type { BattlefieldProfile, City, Faction, Officer, TroopType } from '../game/types';
+import { buildGuandu } from './guandu';
 
-export const SCENARIO = {
+const DIVIDED_REALM_META = {
   id: 'divided-realm-190',
   title: 'A divided realm',
   year: 190,
   description:
     'The Han court falters. Six ambitious houses raise their banners. From the northern plains to the rivers of the south, a new dynasty awaits its founder.',
 };
-export const FACTIONS: Faction[] = [
+const DIVIDED_FACTIONS: Faction[] = [
   {
     id: 'cao',
     name: 'Cao Cao',
@@ -236,7 +237,7 @@ const citySeeds: CitySeed[] = [
     ['xiangyang', 'jiangxia', 'chaisang', 'jiangzhou'],
   ],
 ];
-export const INITIAL_CITIES: City[] = citySeeds.map(
+const DIVIDED_CITIES: City[] = citySeeds.map(
   ([id, name, chinese, region, x, y, factionId, neighbors], index) => ({
     id,
     name,
@@ -255,8 +256,28 @@ export const INITIAL_CITIES: City[] = citySeeds.map(
     food: factionId ? 14000 : 6000,
     reserve: factionId ? 1200 : 600,
     governorId: null,
+    plunderCooldownUntil: 0,
   }),
 );
+/** Terrain profile used to generate each city's battlefield (content, not save state). */
+const BATTLEFIELD_BY_CITY: Record<string, BattlefieldProfile> = {
+  jiangxia: 'river',
+  chaisang: 'river',
+  jianye: 'river',
+  wu: 'river',
+  shouchun: 'river',
+  jiangling: 'river',
+  hanzhong: 'mountain',
+  zitong: 'mountain',
+  tianshui: 'mountain',
+  jiangzhou: 'mountain',
+  chengdu: 'forest',
+  xiangyang: 'forest',
+  wancheng: 'forest',
+};
+export function battlefieldProfile(cityId: string): BattlefieldProfile {
+  return BATTLEFIELD_BY_CITY[cityId] ?? 'plains';
+}
 type OfficerSeed = [
   string,
   string,
@@ -322,31 +343,109 @@ const officerSeeds: OfficerSeed[] = [
   ['chenqun', 'Chen Qun', '陈群', null, 'xiapi', 30, 91, 'archer', 20],
   ['maliang', 'Ma Teng', '马腾', null, 'tianshui', 87, 66, 'cavalry', 34],
 ];
-export const INITIAL_OFFICERS: Officer[] = officerSeeds.map(
-  ([id, name, chinese, factionId, cityId, force, intellect, troopType, age = 30], index) => ({
-    id,
-    name,
-    chinese,
-    factionId,
-    cityId,
-    force,
-    intellect,
-    troopType,
-    age,
-    loyalty: id === 'lubu' ? 58 : factionId === 'dong' ? 70 : 88,
-    stamina: 100,
-    troops: factionId ? 700 + (index % 4) * 100 : 0,
-    busy: false,
-    captive: false,
-    experience: 0,
-    equipment: null,
+const officerFromSeed = (
+  [id, name, chinese, factionId, cityId, force, intellect, troopType, age = 30]: OfficerSeed,
+  index: number,
+): Officer => ({
+  id,
+  name,
+  chinese,
+  factionId,
+  cityId,
+  force,
+  intellect,
+  troopType,
+  age,
+  loyalty: id === 'lubu' ? 58 : factionId === 'dong' ? 70 : 88,
+  stamina: 100,
+  troops: factionId ? 700 + (index % 4) * 100 : 0,
+  busy: false,
+  captive: false,
+  experience: 0,
+  level: 0,
+  equipment: null,
+  fate: 'active' as const,
+});
+const DIVIDED_OFFICERS: Officer[] = officerSeeds.map(officerFromSeed);
+/** Officers who exist only in the 200 CE world: it adds to the roster of the 190 CE one. */
+const GUANDU_ONLY_SEEDS: OfficerSeed[] = [
+  ['machao', 'Ma Chao', '马超', null, 'changan', 97, 44, 'cavalry', 14],
+];
+/** Each city starts under the most senior serving officer of its owner. */
+export function assignGovernors(cities: City[], officers: Officer[]): void {
+  for (const city of cities)
+    city.governorId =
+      officers.find(
+        (o) =>
+          o.cityId === city.id &&
+          o.factionId === city.factionId &&
+          o.factionId !== null &&
+          o.fate === 'active',
+      )?.id ?? null;
+}
+assignGovernors(DIVIDED_CITIES, DIVIDED_OFFICERS);
+
+/** Everything the simulation needs to know about a starting situation. */
+export interface ScenarioDefinition {
+  id: string;
+  title: string;
+  year: number;
+  description: string;
+  factions: Faction[];
+  cities: City[];
+  officers: Officer[];
+}
+export const SCENARIOS: readonly ScenarioDefinition[] = [
+  {
+    ...DIVIDED_REALM_META,
+    factions: DIVIDED_FACTIONS,
+    cities: DIVIDED_CITIES,
+    officers: DIVIDED_OFFICERS,
+  },
+  buildGuandu({
+    cities: DIVIDED_CITIES,
+    officers: DIVIDED_OFFICERS,
+    extraOfficers: GUANDU_ONLY_SEEDS.map((seed, index) =>
+      officerFromSeed(seed, officerSeeds.length + index),
+    ),
+    factions: DIVIDED_FACTIONS,
   }),
-);
-for (const city of INITIAL_CITIES)
-  city.governorId =
-    INITIAL_OFFICERS.find(
-      (o) => o.cityId === city.id && o.factionId === city.factionId && o.factionId !== null,
-    )?.id ?? null;
+];
+export const DEFAULT_SCENARIO_ID = DIVIDED_REALM_META.id;
+export const scenarioById = (id: string): ScenarioDefinition | undefined =>
+  SCENARIOS.find((scenario) => scenario.id === id);
+
+/**
+ * The scenario the engine and interface are currently looking at. These live bindings
+ * switch when a game is created or loaded (ctivateScenario), so every module that
+ * reads FACTIONS / INITIAL_* sees the roster that matches the state in front of it.
+ */
+export let SCENARIO: Pick<ScenarioDefinition, 'id' | 'title' | 'year' | 'description'> =
+  DIVIDED_REALM_META;
+export let FACTIONS: Faction[] = DIVIDED_FACTIONS;
+export let INITIAL_CITIES: City[] = DIVIDED_CITIES;
+export let INITIAL_OFFICERS: Officer[] = DIVIDED_OFFICERS;
+export function activateScenario(id: string): ScenarioDefinition {
+  const scenario = scenarioById(id) ?? SCENARIOS[0]!;
+  if (SCENARIO.id !== scenario.id) {
+    SCENARIO = scenario;
+    FACTIONS = scenario.factions;
+    INITIAL_CITIES = scenario.cities;
+    INITIAL_OFFICERS = scenario.officers;
+  }
+  return scenario;
+}
+/**
+ * The scenario a game belongs to, read from the game itself. The UI uses these instead of
+ * the live bindings above, so it never depends on which game last called activateScenario.
+ */
+export const scenarioOf = (state: { scenarioId: string }): ScenarioDefinition =>
+  scenarioById(state.scenarioId) ?? SCENARIOS[0]!;
+export const factionsOf = (state: { scenarioId: string }): Faction[] => scenarioOf(state).factions;
+export const factionOf = (
+  state: { scenarioId: string },
+  id: string | null | undefined,
+): Faction | undefined => factionsOf(state).find((f) => f.id === id);
 export function factionById(id: string | null | undefined): Faction | undefined {
   return FACTIONS.find((f) => f.id === id);
 }

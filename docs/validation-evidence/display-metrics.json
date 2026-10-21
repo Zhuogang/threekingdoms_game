@@ -1,0 +1,637 @@
+{
+  "description": "Final browser display matrix: 12 configurations, each with campaign and dense battle scenes. All lengths and rendered font targets use CSS pixels at 100% browser zoom.",
+  "capturedOn": "2026-10-19",
+  "environment": {
+    "os": "Windows x64 10.0.26300",
+    "node": "v24.15.0",
+    "browser": "Chrome 155.0.8059.80"
+  },
+  "fixture": "tests/fixtures/legacy-dense-battle.json",
+  "source": "Playwright map metrics after rendered camera transforms; assertions plus actual pointer tests and screenshots in tests/e2e/improvements.spec.ts.",
+  "cases": [
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "en",
+      "preset": "comfortable",
+      "campaign": {
+        "minimumCityLabelFont": 16,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 64,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 199,
+          "top": 144.24,
+          "right": 967,
+          "bottom": 784.24
+        },
+        "cameraScale": 1
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 14,
+        "surnameFont": 14.76,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "en",
+      "preset": "compact",
+      "campaign": {
+        "minimumCityLabelFont": 14,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 49.2,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "en",
+      "preset": "large",
+      "campaign": {
+        "minimumCityLabelFont": 18,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 80,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 127,
+          "top": 144.24,
+          "right": 1087,
+          "bottom": 944.24
+        },
+        "cameraScale": 1.25
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 16,
+        "surnameFont": 14.76,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "zh",
+      "preset": "comfortable",
+      "campaign": {
+        "minimumCityLabelFont": 16,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 64,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 199,
+          "top": 144.24,
+          "right": 967,
+          "bottom": 784.24
+        },
+        "cameraScale": 1
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 14,
+        "surnameFont": 14.76,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "zh",
+      "preset": "compact",
+      "campaign": {
+        "minimumCityLabelFont": 14,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 49.2,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "language": "zh",
+      "preset": "large",
+      "campaign": {
+        "minimumCityLabelFont": 18,
+        "canvas": {
+          "width": 966,
+          "height": 536
+        },
+        "cameraScale": 0.672
+      },
+      "battleReadable": {
+        "tileSide": 80,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 127,
+          "top": 144.24,
+          "right": 1087,
+          "bottom": 944.24
+        },
+        "cameraScale": 1.25
+      },
+      "battleFitted": {
+        "tileSide": 49.2,
+        "troopCountFont": 16,
+        "surnameFont": 14.76,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 966,
+          "height": 600
+        },
+        "board": {
+          "left": 191.8,
+          "top": 36,
+          "right": 782.2,
+          "bottom": 528
+        },
+        "cameraScale": 0.769
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "en",
+      "preset": "comfortable",
+      "campaign": {
+        "minimumCityLabelFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "en",
+      "preset": "compact",
+      "campaign": {
+        "minimumCityLabelFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "en",
+      "preset": "large",
+      "campaign": {
+        "minimumCityLabelFont": 18,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "zh",
+      "preset": "comfortable",
+      "campaign": {
+        "minimumCityLabelFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 14,
+        "surnameFont": 16,
+        "factionCrestFont": 14,
+        "readinessFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "zh",
+      "preset": "compact",
+      "campaign": {
+        "minimumCityLabelFont": 14,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 12,
+        "surnameFont": 14,
+        "factionCrestFont": 12,
+        "readinessFont": 12,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "language": "zh",
+      "preset": "large",
+      "campaign": {
+        "minimumCityLabelFont": 18,
+        "canvas": {
+          "width": 1480,
+          "height": 848
+        },
+        "cameraScale": 1.106
+      },
+      "battleReadable": {
+        "tileSide": 80.4,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      },
+      "battleFitted": {
+        "tileSide": 80.4,
+        "troopCountFont": 16,
+        "surnameFont": 18,
+        "factionCrestFont": 16,
+        "readinessFont": 16,
+        "canvas": {
+          "width": 1480,
+          "height": 912
+        },
+        "board": {
+          "left": 261.6,
+          "top": 36,
+          "right": 1226.4,
+          "bottom": 840
+        },
+        "cameraScale": 1.256
+      }
+    }
+  ]
+}

@@ -1,0 +1,1761 @@
+{
+  "version": 1,
+  "title": "Officer portrait provenance / 武将头像来源",
+  "description": "Original imagined historical depictions created for this project with the built-in image_gen tool. These are artistic interpretations, not authenticated contemporary likenesses. No commercial game portraits or third-party portrait scans were reused.",
+  "descriptionZh": "本项目使用内置 image_gen 工具创作的历史人物艺术想象，并非经考证的同时代真实肖像。未使用商业游戏头像或第三方肖像扫描图。",
+  "rightsStatement": "Original generated project assets; applicable creation-service terms govern the generated output. This manifest does not assert a historical public-domain source or invent a third-party license.",
+  "promptSet": "tools/portrait-spec.json",
+  "entries": [
+    {
+      "id": "caocao",
+      "name": "Cao Cao",
+      "chinese": "曹操",
+      "surnameEn": "Cao",
+      "surnameZh": "曹",
+      "scenarioAge": 35,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-d932b97d-c4eb-4b82-b5ff-ec72804b12af.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Cao Cao (曹操), age 35 in 190 AD. shrewd statesman-warrior; narrow perceptive eyes, neat black moustache, short pointed beard, formal black Han headcloth, blue-grey robe and armor collar.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "caocao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3390,
+          "sha256": "e7c7ffcaecb521442c06772c1c5fb39ada2d6104f933fe67d983e7cacb052c8c"
+        },
+        {
+          "file": "caocao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 14316,
+          "sha256": "523af3fd4f94211ba1b6ff4e398ce7433260d65970eb5519f200195d4ceb25f6"
+        }
+      ]
+    },
+    {
+      "id": "xiahoudun",
+      "name": "Xiahou Dun",
+      "chinese": "夏侯惇",
+      "surnameEn": "Xiahou",
+      "surnameZh": "夏侯",
+      "scenarioAge": 34,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-b241028e-9801-42ea-b94c-0f3c0425f12c.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Xiahou Dun (夏侯惇), age 34 in 190 AD. rugged square-jawed cavalry commander; both eyes intact in 190 AD, thick horizontal eyebrows, blunt short beard, iron helmet, dark blue armor, resolute gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "xiahoudun-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4300,
+          "sha256": "865db8753a69bc6bc398fa175755f7188545433a52972d40e45b0d02c6e8fe15"
+        },
+        {
+          "file": "xiahoudun.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17912,
+          "sha256": "d73f7a9090e80698553f8784051352ef33a3903d6423dbbdfef135140e260b5b"
+        }
+      ]
+    },
+    {
+      "id": "xunyu",
+      "name": "Xun Yu",
+      "chinese": "荀彧",
+      "surnameEn": "Xun",
+      "surnameZh": "荀",
+      "scenarioAge": 27,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-e746b0e5-0c8a-4d8b-9c75-6e92fb007515.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Xun Yu (荀彧), age 27 in 190 AD. refined young scholar; slender oval face, fine arched brows, tiny neat moustache, tall black scholar cap, ivory and pale slate robes, calm thoughtful gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "xunyu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3112,
+          "sha256": "fcbea32f24a5349aa74c194f7ca811b158838f07bfee5cf45c5f569ec3d467ef"
+        },
+        {
+          "file": "xunyu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11878,
+          "sha256": "9b263ae68c1f7f8ee39b58cdead3f0c3d80837d26353727b034570d62320ccc3"
+        }
+      ]
+    },
+    {
+      "id": "caoren",
+      "name": "Cao Ren",
+      "chinese": "曹仁",
+      "surnameEn": "Cao",
+      "surnameZh": "曹",
+      "scenarioAge": 22,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-88d9d033-142b-4769-96dc-ba6fb5625813.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Cao Ren (曹仁), age 22 in 190 AD. young steadfast defender; broad round face, clean-shaven, thick brows, tied topknot under low iron cap, blue-grey lamellar armor, alert serious eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "caoren-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3848,
+          "sha256": "5125f2b456cdddbaf77ca981d944ee5c847f63af9049c849eb975466ee38fab3"
+        },
+        {
+          "file": "caoren.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16220,
+          "sha256": "bdd1f199d71833266c00914c9f2cc27c638198ac435e3563ea3447bc51dc396c"
+        }
+      ]
+    },
+    {
+      "id": "xiahouyuan",
+      "name": "Xiahou Yuan",
+      "chinese": "夏侯渊",
+      "surnameEn": "Xiahou",
+      "surnameZh": "夏侯",
+      "scenarioAge": 27,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-9e32f9f2-103d-4794-902d-b32ff5fba69a.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Xiahou Yuan (夏侯渊), age 27 in 190 AD. lean swift cavalry commander distinct from Xiahou Dun; long angular face, narrow moustache, small chin beard, cloth-wrapped helmet, brown and slate armor, keen lively eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "xiahouyuan-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4330,
+          "sha256": "084f420e0fe92af127a39ebee43f949bb036e182b7ea5058863af2e78a782bbc"
+        },
+        {
+          "file": "xiahouyuan.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17944,
+          "sha256": "4e667629550c9c84ecf04fa7ffd8f484748a6eb4882c6f49e062bb8f489e2fcd"
+        }
+      ]
+    },
+    {
+      "id": "chengyu",
+      "name": "Cheng Yu",
+      "chinese": "程昱",
+      "surnameEn": "Cheng",
+      "surnameZh": "程",
+      "scenarioAge": 49,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-5a4cd5b7-5965-455e-aabc-ec6d0be4d627.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Cheng Yu (程昱), age 49 in 190 AD. tall austere strategist; long narrow face, high forehead, greying long forked beard, black rectangular scholar headdress, deep moss robe, penetrating eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "chengyu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2788,
+          "sha256": "2b1a84f8e54a0234831c1e635d6ae072f754aa71c4bee3f31aadc851be889942"
+        },
+        {
+          "file": "chengyu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11500,
+          "sha256": "9c39061e2628f0072e32b3b6e67494b715535e336d2e011c54ac2e820fa47223"
+        }
+      ]
+    },
+    {
+      "id": "yujin",
+      "name": "Yu Jin",
+      "chinese": "于禁",
+      "surnameEn": "Yu",
+      "surnameZh": "于",
+      "scenarioAge": 29,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-0910bbe4-b0e7-42b2-86c9-20ff3dac095f.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Yu Jin (于禁), age 29 in 190 AD. disciplined infantry commander; rectangular face, trimmed box beard, level brows, simple iron helmet with dark cloth neck guard, practical charcoal armor, restrained expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "yujin-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3676,
+          "sha256": "6dcc997bbd3a6d21fdd756d89eab52205ba3c5853f0e241cd8959b2acda483cf"
+        },
+        {
+          "file": "yujin.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 15130,
+          "sha256": "f5393d0662dbd92a093de2ba3f407a0c0e45bca35f802208771ecc1f809ca569"
+        }
+      ]
+    },
+    {
+      "id": "liubei",
+      "name": "Liu Bei",
+      "chinese": "刘备",
+      "surnameEn": "Liu",
+      "surnameZh": "刘",
+      "scenarioAge": 29,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-8c3c404f-ecbf-4408-a852-14bc4a104b3c.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Liu Bei (刘备), age 29 in 190 AD. benevolent aspiring ruler; long ears, gentle broad-set eyes, oval face, thin moustache and modest beard, simple green Han robe, black folded headcloth, warm dignified expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "liubei-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3004,
+          "sha256": "2d0b6f81bf8c9043a6e83b2ce3835fb33414b1ad994a58d3a6c44f2d1812efff"
+        },
+        {
+          "file": "liubei.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11606,
+          "sha256": "1d5c0901acbaee3f1fc8ba21d6653ef90f498c5ec7c8c817bdc594d398996da0"
+        }
+      ]
+    },
+    {
+      "id": "guanyu",
+      "name": "Guan Yu",
+      "chinese": "关羽",
+      "surnameEn": "Guan",
+      "surnameZh": "关",
+      "scenarioAge": 30,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-714cd786-23e1-4a18-a959-7a52e1ff4b22.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Guan Yu (关羽), age 30 in 190 AD. majestic warrior; naturally ruddy long face, magnificent long black beard, phoenix-shaped eyes, green headcloth and muted green robe over armor, composed heroic expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "guanyu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3322,
+          "sha256": "27736bbc09519e9943cd198c58605a572a66eb0e2a04f5ab0cc505357f3a775e"
+        },
+        {
+          "file": "guanyu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 14694,
+          "sha256": "71993719e3a238486b8288a53053ea9f4614a29966034f54f38d190531072105"
+        }
+      ]
+    },
+    {
+      "id": "zhangfei",
+      "name": "Zhang Fei",
+      "chinese": "张飞",
+      "surnameEn": "Zhang",
+      "surnameZh": "张",
+      "scenarioAge": 23,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-e3348049-685d-46a1-9858-c60b9322d778.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhang Fei (张飞), age 23 in 190 AD. powerful young warrior; broad dark sun-weathered face, large round fierce eyes, bristling short black beard and moustache, dark tied headcloth, heavy brown armor, energetic expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhangfei-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4344,
+          "sha256": "696f634b150eca288dff8d6c65cc51f2ced47bcc379918b91f5addefaf430051"
+        },
+        {
+          "file": "zhangfei.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 19518,
+          "sha256": "4402a9c157d8236721f15f1c4408a2ba0e3a17e2f5c3cd391cbf02791e11938c"
+        }
+      ]
+    },
+    {
+      "id": "jianyong",
+      "name": "Jian Yong",
+      "chinese": "简雍",
+      "surnameEn": "Jian",
+      "surnameZh": "简",
+      "scenarioAge": 29,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-bfab8fa3-0f51-463b-bd7a-571f29cd161a.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Jian Yong (简雍), age 29 in 190 AD. easygoing literate envoy; round friendly face, slightly smiling eyes, sparse moustache, casual dark headcloth, simple tan scholar robes, relaxed human warmth.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "jianyong-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2932,
+          "sha256": "9dd7850b0017864afed5badcc3a599ab061a19da91d8a7c0ff0ec81303cc9134"
+        },
+        {
+          "file": "jianyong.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11312,
+          "sha256": "eddc47fe213c04555af97122fac64abc5054942dd1cfb2c13f986fa3858bef9a"
+        }
+      ]
+    },
+    {
+      "id": "sunjian",
+      "name": "Sun Jian",
+      "chinese": "孙坚",
+      "surnameEn": "Sun",
+      "surnameZh": "孙",
+      "scenarioAge": 35,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-98303d4f-51e2-4822-8da8-2be0ca46ba36.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Sun Jian (孙坚), age 35 in 190 AD. formidable southern ruler; broad sun-tanned face, short thick black beard, tiger-like bright eyes, low bronze helmet with red cloth, weathered russet armor, bold assured expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "sunjian-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4404,
+          "sha256": "32abb9d4d3380984c0601ea2a27b3fe56cc174c71c5156e071dba594b22a30e4"
+        },
+        {
+          "file": "sunjian.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 18638,
+          "sha256": "39374b2b41ec6e82c3241c72acb7c154268a7ca4e968f5600200c39a2e90bdde"
+        }
+      ]
+    },
+    {
+      "id": "sunce",
+      "name": "Sun Ce",
+      "chinese": "孙策",
+      "surnameEn": "Sun",
+      "surnameZh": "孙",
+      "scenarioAge": 16,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-7ecd80b0-6775-4b9b-9234-1f4bba31d516.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Sun Ce (孙策), age 16 in 190 AD. youthful teenage noble warrior; clean-shaven handsome round-oval face, lively confident eyes, small tied topknot, light russet training armor and cream collar, visibly young rather than mature.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "sunce-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3952,
+          "sha256": "79f62e7d310e68918450ce983cb67ee73f20702928764f248fc93c7560ea5f87"
+        },
+        {
+          "file": "sunce.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16006,
+          "sha256": "b003174d3dfb01328f1172c9dc07d2a65a17d8224cf82c4583b7a0dfcc08763d"
+        }
+      ]
+    },
+    {
+      "id": "huanggai",
+      "name": "Huang Gai",
+      "chinese": "黄盖",
+      "surnameEn": "Huang",
+      "surnameZh": "黄",
+      "scenarioAge": 44,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-5854c41d-9b3f-44c4-8068-0f26d5e4a701.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Huang Gai (黄盖), age 44 in 190 AD. seasoned river commander; broad weathered face, strong nose, salt-and-pepper cropped beard, red-brown headscarf, practical bronze armor, steady loyal expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "huanggai-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4336,
+          "sha256": "b9ebd7b006b6802d612b6408ac9a8025f292b807430a5af82a48e4b8345c54e0"
+        },
+        {
+          "file": "huanggai.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 18432,
+          "sha256": "02911e31839fb276a405035a98f6a13752619e976b223f65e2c59f55eb7b0d2e"
+        }
+      ]
+    },
+    {
+      "id": "chengpu",
+      "name": "Cheng Pu",
+      "chinese": "程普",
+      "surnameEn": "Cheng",
+      "surnameZh": "程",
+      "scenarioAge": 36,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-1e767f45-418a-4ca2-b257-ef05fdd4f9e8.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Cheng Pu (程普), age 36 in 190 AD. experienced composed guard commander; long sturdy face, black moustache and tapered beard, low dark helmet, copper-brown lamellar armor, measured vigilant eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "chengpu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3778,
+          "sha256": "1abe4dfbf3576580b0e0608d70ffb8c80a3a846a9d1be66353e962347b4b0f10"
+        },
+        {
+          "file": "chengpu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16664,
+          "sha256": "8af0c7844e856758f1a247b21098917a3423762fd42c5ddd267e054a9da15acf"
+        }
+      ]
+    },
+    {
+      "id": "handang",
+      "name": "Han Dang",
+      "chinese": "韩当",
+      "surnameEn": "Han",
+      "surnameZh": "韩",
+      "scenarioAge": 34,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-d0f3f9ca-163f-48d0-9a29-f97dc193aac5.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Han Dang (韩当), age 34 in 190 AD. hardy river soldier; wide cheekbones, sun-tanned skin, short stubble beard, coarse dark red headwrap, leather and bronze shoulder armor, open direct gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "handang-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3874,
+          "sha256": "fd2481dc2efe87f6acb7e00c11b8baa0b8ed95b9e8d7660bca2a01dd6eb4d081"
+        },
+        {
+          "file": "handang.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16260,
+          "sha256": "50b3ffb266952bfceed24ddd10ad134f481bff60211980e56fdf7efe1e62e97c"
+        }
+      ]
+    },
+    {
+      "id": "zuzhao",
+      "name": "Zu Mao",
+      "chinese": "祖茂",
+      "surnameEn": "Zu",
+      "surnameZh": "祖",
+      "scenarioAge": 32,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-dcd95513-0407-46b9-baa7-659f7772cc95.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zu Mao (祖茂), age 32 in 190 AD. loyal southern infantry officer Zu Mao; square face, thick moustache and clean chin, red cloth headband with simple iron cap, russet armor, protective earnest expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zuzhao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4062,
+          "sha256": "03869bbe42ecd9c028d9081228696771d0fa99e949933a01721adb27bb20c49f"
+        },
+        {
+          "file": "zuzhao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16324,
+          "sha256": "163aa2ac2e5199214514726775c62cdbbae74f1f19eb9381f649424b6662b0ea"
+        }
+      ]
+    },
+    {
+      "id": "yuanshao",
+      "name": "Yuan Shao",
+      "chinese": "袁绍",
+      "surnameEn": "Yuan",
+      "surnameZh": "袁",
+      "scenarioAge": 36,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-1a013bf1-13d7-460e-8c35-0b9e89689b25.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Yuan Shao (袁绍), age 36 in 190 AD. aristocratic northern ruler; refined broad face, carefully shaped moustache and full tapered beard, elaborate black official cap with subtle gold trim, muted ochre brocade, proud stately gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "yuanshao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3540,
+          "sha256": "05d8deb491614b77ed24856849afd2c311723a7842e75dd176308e9f536fb781"
+        },
+        {
+          "file": "yuanshao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 14782,
+          "sha256": "d4901f3826498d3e4d512a1daf145e33a5c4f3bc8001709d60320df517a98e1a"
+        }
+      ]
+    },
+    {
+      "id": "yanliang",
+      "name": "Yan Liang",
+      "chinese": "颜良",
+      "surnameEn": "Yan",
+      "surnameZh": "颜",
+      "scenarioAge": 29,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-3114610d-6622-4757-a333-2e286d99f7a7.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Yan Liang (颜良), age 29 in 190 AD. imposing cavalry champion; wide heavy jaw, thick upward brows, short rough beard, tall iron helmet with restrained ochre tassel, heavy dark armor, fierce focused expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "yanliang-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4324,
+          "sha256": "2efe2ecbde2ca2867c6d45c5776997c034d69dcc6fe6acd84193a0bb8c117a59"
+        },
+        {
+          "file": "yanliang.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 19272,
+          "sha256": "c44bcc1e6c44b7c49893a0332737110e9da2712563e9004c770893a745b8dbc3"
+        }
+      ]
+    },
+    {
+      "id": "wenchou",
+      "name": "Wen Chou",
+      "chinese": "文丑",
+      "surnameEn": "Wen",
+      "surnameZh": "文",
+      "scenarioAge": 28,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-f74e7981-01f7-4924-b90a-c65b6b4a0596.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Wen Chou (文丑), age 28 in 190 AD. tough northern horseman; long craggy face, broad nose, curling moustache, stubbled chin, rounded iron helmet and rough brown cloak, intense deep-set eyes, distinct from Yan Liang.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "wenchou-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3946,
+          "sha256": "8a17a5336001f8e50a7a51a968677a7170a444937454fae025cfc3354e3ea80d"
+        },
+        {
+          "file": "wenchou.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17182,
+          "sha256": "532a7a1fac7af309e2226cea13c89e87d627240c5e991b06c0ddf5840cf499fb"
+        }
+      ]
+    },
+    {
+      "id": "zhanghe",
+      "name": "Zhang He",
+      "chinese": "张郃",
+      "surnameEn": "Zhang",
+      "surnameZh": "张",
+      "scenarioAge": 23,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-cad2f96a-ef10-46c8-b16c-a6050f5e9c70.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhang He (张郃), age 23 in 190 AD. agile young tactician-warrior; elegant angular face, clean chin and small moustache, tidy topknot under slim helmet, olive and steel armor, observant calculating eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhanghe-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3810,
+          "sha256": "515aa63d4da0cb54ca7d1e786c6f9359af10538f7ac46e0a0fa27748b4ba1ef9"
+        },
+        {
+          "file": "zhanghe.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16432,
+          "sha256": "3524a93318eccdbd7043204587c6ab6bca15e4f1f4f0e9e331fb82e337502d50"
+        }
+      ]
+    },
+    {
+      "id": "tianfeng",
+      "name": "Tian Feng",
+      "chinese": "田丰",
+      "surnameEn": "Tian",
+      "surnameZh": "田",
+      "scenarioAge": 46,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-703302bd-0983-4acb-90a1-2eb162d68e8b.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Tian Feng (田丰), age 46 in 190 AD. principled mature adviser; broad forehead, furrowed brow, slightly hooked nose, greying straight beard, tall plain scholar cap, dark ochre robe, stern honest expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "tianfeng-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2938,
+          "sha256": "6607d7745925696b9d252e35bfa0d0cfe8d923193f2c2c05b10889b4340c239c"
+        },
+        {
+          "file": "tianfeng.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11954,
+          "sha256": "6d36a8942ac80eac63b60bd5018cfc606899091557388712625d8ef2ddc40a1c"
+        }
+      ]
+    },
+    {
+      "id": "jushou",
+      "name": "Ju Shou",
+      "chinese": "沮授",
+      "surnameEn": "Ju",
+      "surnameZh": "沮",
+      "scenarioAge": 32,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-1e0e06c4-6acd-4c54-a784-30ea8b0bd089.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Ju Shou (沮授), age 32 in 190 AD. thoughtful northern strategist; narrow oval face, fine eyebrows, neat moustache and short split beard, folded black cap, pale olive robe, patient concerned eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "jushou-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2846,
+          "sha256": "a9a0bd22bd918052cc39d9a43f1673730ef8c4934c34d51ad6264a7590cd07ae"
+        },
+        {
+          "file": "jushou.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10720,
+          "sha256": "a086d8a85a5e32fb36f28aeaf0cd625891218cb3febd12cac330c96ea7406ab6"
+        }
+      ]
+    },
+    {
+      "id": "guotu",
+      "name": "Guo Tu",
+      "chinese": "郭图",
+      "surnameEn": "Guo",
+      "surnameZh": "郭",
+      "scenarioAge": 31,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-0303470b-f97b-43b4-9608-d8af2efedcb7.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Guo Tu (郭图), age 31 in 190 AD. ambitious court adviser; full rounded cheeks, thin alert eyes, delicate moustache, short beard, slightly ornate black cap, muted gold robe, self-assured reserved smile.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "guotu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3210,
+          "sha256": "1a8e1ddab86448aa0c360f0db4fb73d0ee6331a3ab4eb511170890b11463c9f2"
+        },
+        {
+          "file": "guotu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 13084,
+          "sha256": "98c82072ff57b6b900b1f469a219939ab21817c19fc75b73e7638f9f649ecbf0"
+        }
+      ]
+    },
+    {
+      "id": "dongzhuo",
+      "name": "Dong Zhuo",
+      "chinese": "董卓",
+      "surnameEn": "Dong",
+      "surnameZh": "董",
+      "scenarioAge": 50,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-4c89fc45-4da4-4f32-a79c-51f65afc16b0.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Dong Zhuo (董卓), age 50 in 190 AD. powerful intimidating warlord; heavy broad face and thick neck, fleshy cheeks, dense greying beard, ornate bronze official headpiece, dark plum robes over armor, imperious stare.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "dongzhuo-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3742,
+          "sha256": "7dd0c8e87df6f97ee14659cd94945293342e7ad903303f6d5a34cd500012cb8f"
+        },
+        {
+          "file": "dongzhuo.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 15908,
+          "sha256": "b8c156493805c7c942c09d76f571e8e863ad23d8489c81cef90354a23ba7293d"
+        }
+      ]
+    },
+    {
+      "id": "lubu",
+      "name": "Lü Bu",
+      "chinese": "吕布",
+      "surnameEn": "Lü",
+      "surnameZh": "吕",
+      "scenarioAge": 30,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-12669668-4644-4a2c-a2e6-9d643b9f08b1.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Lü Bu (吕布), age 30 in 190 AD. exceptionally athletic handsome cavalry champion; sharp cheekbones, clean-shaven strong jaw, intense eyes, compact bronze warrior crown with small red plume entirely visible, dark red lamellar armor, proud expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "lubu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3836,
+          "sha256": "944e647ba826d3fac678ac7fe0291ba2fd18606cb9457988a92ea9f9739af6d7"
+        },
+        {
+          "file": "lubu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16016,
+          "sha256": "310005be1213d53b89ec1ecfdec7b540e061c378a967a41abf5d4ae7e06da443"
+        }
+      ]
+    },
+    {
+      "id": "jiaxu",
+      "name": "Jia Xu",
+      "chinese": "贾诩",
+      "surnameEn": "Jia",
+      "surnameZh": "贾",
+      "scenarioAge": 43,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-4bc83171-8460-4c6c-ba01-785d5daf990e.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Jia Xu (贾诩), age 43 in 190 AD. quiet calculating adviser; thin long face, hooded calm eyes, narrow greying goatee, austere black scholar hat, charcoal-purple robe, discreet enigmatic expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "jiaxu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2750,
+          "sha256": "89b162a64366ae2b172f90a59a0f1f12423198a6e55ff62e9d952274f87bffc4"
+        },
+        {
+          "file": "jiaxu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10830,
+          "sha256": "52382119807709853e31428be18255c6ac0d848b0af5837963bd60e81438e454"
+        }
+      ]
+    },
+    {
+      "id": "liru",
+      "name": "Li Ru",
+      "chinese": "李儒",
+      "surnameEn": "Li",
+      "surnameZh": "李",
+      "scenarioAge": 38,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-f8874992-ba8d-42cd-9270-278ffc20ca54.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Li Ru (李儒), age 38 in 190 AD. severe court strategist; high narrow forehead, sharply arched brows, thin moustache and long thin beard, tall angular black cap, muted plum scholar robes, cool analytical gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "liru-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2564,
+          "sha256": "9482840bf5e52d5d9cd28b534f30010be18c068b30f6846780af68f4054499d8"
+        },
+        {
+          "file": "liru.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10460,
+          "sha256": "70ec6ff4b4b18eca05eb7b41b1c56fbf8d35c7a4a433c2ec87cfc2b4baa4eac6"
+        }
+      ]
+    },
+    {
+      "id": "lijue",
+      "name": "Li Jue",
+      "chinese": "李傕",
+      "surnameEn": "Li",
+      "surnameZh": "李",
+      "scenarioAge": 34,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-229f9d84-1dd5-4420-b213-219b6a71e57a.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Li Jue (李傕), age 34 in 190 AD. rough western cavalry officer; broad scar-weathered cheek, heavy black moustache, short irregular beard, iron helmet with leather flaps, worn brown armor, suspicious narrowed eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "lijue-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3800,
+          "sha256": "4f09f41aaee0c42877a0e6c5aee257562ebd73505b6c6d84ba41baaae3dd6291"
+        },
+        {
+          "file": "lijue.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16308,
+          "sha256": "8ff021503fc7bc9389094844d0fe80addc6551a4a7b9133ec9b4d72176207cf1"
+        }
+      ]
+    },
+    {
+      "id": "guosi",
+      "name": "Guo Si",
+      "chinese": "郭汜",
+      "surnameEn": "Guo",
+      "surnameZh": "郭",
+      "scenarioAge": 35,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-27a33c99-f261-4dcc-ae46-036359e3377b.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Guo Si (郭汜), age 35 in 190 AD. hard-bitten infantry commander; narrow sinewy face, uneven stubble, thick low eyebrows, tied leather headwrap, dark weathered armor, sharp impatient expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "guosi-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3988,
+          "sha256": "bcda0010eb0abfaa18477c6d88dedb887e7e753313b063e03f3f1d072060792d"
+        },
+        {
+          "file": "guosi.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16816,
+          "sha256": "c4b23b374e0b890508781fedd2f433867b62b1e41b53c0c5424dc4fcdb8f8379"
+        }
+      ]
+    },
+    {
+      "id": "huaxiong",
+      "name": "Hua Xiong",
+      "chinese": "华雄",
+      "surnameEn": "Hua",
+      "surnameZh": "华",
+      "scenarioAge": 31,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-108aa227-5cec-4b37-ae9c-e796d1ef43d8.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Hua Xiong (华雄), age 31 in 190 AD. massive frontier warrior; very broad square face, bushy moustache and thick beard, sturdy bronze helmet, heavy charcoal lamellar armor with fur-edged collar, fearless imposing gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "huaxiong-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4278,
+          "sha256": "031f81c95fd653cde4c2dd3aecbf099c57a58b04ce2bc4ea2eb2e53c46ddd667"
+        },
+        {
+          "file": "huaxiong.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 19382,
+          "sha256": "e4133ff063dcb3ac4806000aa416ea89c5bac038a31196b5f6d09debf7b98789"
+        }
+      ]
+    },
+    {
+      "id": "zhangliao",
+      "name": "Zhang Liao",
+      "chinese": "张辽",
+      "surnameEn": "Zhang",
+      "surnameZh": "张",
+      "scenarioAge": 21,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-cdaf6991-d24b-40e9-9dec-f39cf5ae34cb.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhang Liao (张辽), age 21 in 190 AD. promising young cavalry officer; clean-shaven lean face, straight dark eyebrows, simple narrow iron helmet, dark slate armor, composed clear-eyed courage.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhangliao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4002,
+          "sha256": "c1a55f1bc8c2e403a95870a723f191be321c7f647c86a2622a432a6b9b92a6ba"
+        },
+        {
+          "file": "zhangliao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16972,
+          "sha256": "9e45f1b5c44b7fcec99577e257e71b4f1dcf46296864aadecb1bc85c2821d609"
+        }
+      ]
+    },
+    {
+      "id": "liuyan",
+      "name": "Liu Yan",
+      "chinese": "刘焉",
+      "surnameEn": "Liu",
+      "surnameZh": "刘",
+      "scenarioAge": 55,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-c5c53fb5-801a-4091-922b-a9dd7a17bdff.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Liu Yan (刘焉), age 55 in 190 AD. elder western ruler; dignified long face, creased eyes, flowing grey moustache and beard, formal black governor cap, muted violet robe, measured authoritative expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "liuyan-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2990,
+          "sha256": "df0b0d3b64328db26ecffe33842193cc0baa341b89cd1076f08a2530ce91117f"
+        },
+        {
+          "file": "liuyan.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 13016,
+          "sha256": "a87813e5037541a55a12d0a8c56d84881caed582d9881298b6405219259c2e0c"
+        }
+      ]
+    },
+    {
+      "id": "liuzhang",
+      "name": "Liu Zhang",
+      "chinese": "刘璋",
+      "surnameEn": "Liu",
+      "surnameZh": "刘",
+      "scenarioAge": 24,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-4b2e3831-bce7-4027-a256-0a089537d509.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Liu Zhang (刘璋), age 24 in 190 AD. gentle young noble; soft round face, small moustache and clean chin, modest folded official cap, pale lavender robe, uncertain kind eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "liuzhang-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3048,
+          "sha256": "c7c2e27d55f2b541ea6f3cdcb9c4af137f5591a3eae824f29d4b8ed98c7a1926"
+        },
+        {
+          "file": "liuzhang.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 12268,
+          "sha256": "784b547b6ef71c2a39b25080eb2a7c68d346956c509e9cff8a045f290431f4f9"
+        }
+      ]
+    },
+    {
+      "id": "zhangren",
+      "name": "Zhang Ren",
+      "chinese": "张任",
+      "surnameEn": "Zhang",
+      "surnameZh": "张",
+      "scenarioAge": 30,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-537f6aa7-6134-4a67-9c72-410f7613178e.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhang Ren (张任), age 30 in 190 AD. steadfast western archer commander; lean angular face, short neat beard, dark cloth coif and simple helmet, subdued violet and brown armor, unwavering alert eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhangren-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3580,
+          "sha256": "dbdadc4de5575f0339f954a0100657e4b2f878f17a55cc0a21e404187d132724"
+        },
+        {
+          "file": "zhangren.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 14838,
+          "sha256": "7754be56f6d54339b705b74336894416e9c73122cdfc777216e9c07181535cf0"
+        }
+      ]
+    },
+    {
+      "id": "yanyan",
+      "name": "Yan Yan",
+      "chinese": "严颜",
+      "surnameEn": "Yan",
+      "surnameZh": "严",
+      "scenarioAge": 45,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-c43300e8-b2d8-43ee-b2ce-a3330447c6b0.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Yan Yan (严颜), age 45 in 190 AD. rugged veteran defender; sun-weathered broad face, heavy grey-flecked beard, scar along eyebrow, low iron helmet, worn olive armor, proud unyielding expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "yanyan-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3980,
+          "sha256": "a40400f67b44d0761de0a58ebd4d166f265908b276665b35a14655dc2389f6a3"
+        },
+        {
+          "file": "yanyan.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17856,
+          "sha256": "d88cbddf0bbc2c4718445b41cd43ba29967f93221c948a937a3f73b21f697060"
+        }
+      ]
+    },
+    {
+      "id": "wuyi",
+      "name": "Wu Yi",
+      "chinese": "吴懿",
+      "surnameEn": "Wu",
+      "surnameZh": "吴",
+      "scenarioAge": 29,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-444032df-c866-4ac9-9829-f92c900e392e.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Wu Yi (吴懿), age 29 in 190 AD. practical western infantry officer; long oval face, short moustache and rounded beard, cloth-wrapped cap, brown lamellar armor and purple sash collar, calm competent gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "wuyi-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3668,
+          "sha256": "f2f4a8cebf3d5c7210d0538f5f6f199fed8334245a7af543f7a1ade41d37318a"
+        },
+        {
+          "file": "wuyi.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 15890,
+          "sha256": "c5db2ce5a3c15a1d40f46958105ee925bf91b9a6cc48344337175b17567c4762"
+        }
+      ]
+    },
+    {
+      "id": "huangquan",
+      "name": "Huang Quan",
+      "chinese": "黄权",
+      "surnameEn": "Huang",
+      "surnameZh": "黄",
+      "scenarioAge": 21,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-ff87c758-72ab-4fe5-b3ab-c64cb073878a.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Huang Quan (黄权), age 21 in 190 AD. young meticulous scholar-officer; slender youthful face, clean-shaven, keen gentle eyes, compact black scholar cap, pale violet-grey robe, serious thoughtful expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "huangquan-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2916,
+          "sha256": "6aba7a1de31975e94537b1c26e2f92d89583065fc9dbb34ef7e02f3b4d8e1e2f"
+        },
+        {
+          "file": "huangquan.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11772,
+          "sha256": "ca358b4fd3e8bccd0037875c8d9d55d2fc7943dd19479304e901080f4d3ae2d1"
+        }
+      ]
+    },
+    {
+      "id": "zhaoyun",
+      "name": "Zhao Yun",
+      "chinese": "赵云",
+      "surnameEn": "Zhao",
+      "surnameZh": "赵",
+      "scenarioAge": 22,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-4efaee49-a2ad-4d8a-b538-2578f3fabbc1.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhao Yun (赵云), age 22 in 190 AD. young gallant cavalry warrior; handsome long oval face, clean-shaven, bright steady eyes, simple silver-grey helmet with compact pale plume, light steel armor, noble serene expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhaoyun-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4142,
+          "sha256": "3f05c2a6b3657efb82b671173f72cafc531be3b73f19024303276b2625116c05"
+        },
+        {
+          "file": "zhaoyun.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17718,
+          "sha256": "cbe3e224e549bf6ac9cfdb63305c3be2d7d747438cf3ee9d1b110b431a9e89f8"
+        }
+      ]
+    },
+    {
+      "id": "taishici",
+      "name": "Taishi Ci",
+      "chinese": "太史慈",
+      "surnameEn": "Taishi",
+      "surnameZh": "太史",
+      "scenarioAge": 24,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-f905b15f-8951-4044-9985-97783fbfd007.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Taishi Ci (太史慈), age 24 in 190 AD. vigorous young archer; sun-tanned angular face, short moustache and clean chin, dark blue headband beneath light helmet, light bronze armor, open fearless eyes.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "taishici-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4526,
+          "sha256": "694bc7a350ad66e563bf3670d8bf91657b4260e553d7dbe701d6794cad63ac61"
+        },
+        {
+          "file": "taishici.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 19564,
+          "sha256": "6bbe45742d2c054ec177a41c2ab96ede9695c7696e9527ac117d70c5f6184492"
+        }
+      ]
+    },
+    {
+      "id": "dianwei",
+      "name": "Dian Wei",
+      "chinese": "典韦",
+      "surnameEn": "Dian",
+      "surnameZh": "典",
+      "scenarioAge": 25,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-6f4340e3-fe60-4a2f-8624-4ff86b47bb0e.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Dian Wei (典韦), age 25 in 190 AD. enormously strong guard; broad round weathered face, thick neck, rough bristling black beard, simple black headwrap, heavy dark leather and iron armor, fierce protective expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "dianwei-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4114,
+          "sha256": "f8d2fdf950060a36eed6cea986f19a511b748bf0ec2e3ba1ecaadffbdcb35cf7"
+        },
+        {
+          "file": "dianwei.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16926,
+          "sha256": "37199ad29e9eb465b4cab2d70fb95c3f953c53f02598ec9e6c3e2cea84778003"
+        }
+      ]
+    },
+    {
+      "id": "xuchu",
+      "name": "Xu Chu",
+      "chinese": "许褚",
+      "surnameEn": "Xu",
+      "surnameZh": "许",
+      "scenarioAge": 22,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-1a535de0-8634-4379-9f94-48b45a154528.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Xu Chu (许褚), age 22 in 190 AD. powerful young warrior; massive square jaw, full cheeks, short stubble, tightly tied brown cloth cap, heavy coarse brown armor, direct earnest eyes, distinct from Dian Wei.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "xuchu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3776,
+          "sha256": "bdde51a17b0dd7a5c91b9416c9a7185e1ca6cf16c74ef4aadfe5edbfd9a0984c"
+        },
+        {
+          "file": "xuchu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 15590,
+          "sha256": "3c48a0b538438492512e7c3a7d8b899d35f27ac7aa14c6e236c3b4476e1c79f4"
+        }
+      ]
+    },
+    {
+      "id": "xuhuang",
+      "name": "Xu Huang",
+      "chinese": "徐晃",
+      "surnameEn": "Xu",
+      "surnameZh": "徐",
+      "scenarioAge": 23,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-fcf5e8e9-ae8b-4629-8888-55a0242bfd6b.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Xu Huang (徐晃), age 23 in 190 AD. disciplined young infantry officer; narrow rectangular face, neat small moustache, white headcloth under low iron cap, slate armor, calm restrained alertness.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "xuhuang-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3672,
+          "sha256": "0103ead858ddd61ab271347bdf22064ca3ccdcf736469ad540008206f3546dcf"
+        },
+        {
+          "file": "xuhuang.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 15822,
+          "sha256": "9d0d71f614feef665f344a3318d509c5632e7bbaa066b1e54b040acc4c770708"
+        }
+      ]
+    },
+    {
+      "id": "ganning",
+      "name": "Gan Ning",
+      "chinese": "甘宁",
+      "surnameEn": "Gan",
+      "surnameZh": "甘",
+      "scenarioAge": 22,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-e27924d9-6374-49b5-9099-38fca6eea981.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Gan Ning (甘宁), age 22 in 190 AD. bold young river adventurer; lean sun-tanned face, playful intense eyes, small moustache, crimson headscarf and dark tied hair, rough russet leather armor, confident half smile.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "ganning-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4628,
+          "sha256": "3b2a06d14f319f2813267dc2c2cc8401d3301a119e88894be2983bdcfabc76f3"
+        },
+        {
+          "file": "ganning.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 20082,
+          "sha256": "b9efb76f5057fecf6fd39dbdfebd05394ccc250a3d7956fba3e16e8ec7f8cd14"
+        }
+      ]
+    },
+    {
+      "id": "huangzhong",
+      "name": "Huang Zhong",
+      "chinese": "黄忠",
+      "surnameEn": "Huang",
+      "surnameZh": "黄",
+      "scenarioAge": 42,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-2dc50014-9c99-40df-87ef-0dc9bf3f0487.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Huang Zhong (黄忠), age 42 in 190 AD. experienced archer in his early forties, not an elderly man; weathered long face, black beard with a few silver strands, simple olive headcloth, bronze armor, patient sharp gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "huangzhong-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4040,
+          "sha256": "476e3e10bd043598a5cd8997308ddd0ece658c742d37dfa1d9488685bca155dd"
+        },
+        {
+          "file": "huangzhong.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16838,
+          "sha256": "196d957e5a9584e5ec707167734ea1d1c8f49a6f7bf809a0b7f124d30e8b3757"
+        }
+      ]
+    },
+    {
+      "id": "weiyan",
+      "name": "Wei Yan",
+      "chinese": "魏延",
+      "surnameEn": "Wei",
+      "surnameZh": "魏",
+      "scenarioAge": 20,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-490e5f27-9000-45f2-8c94-a040c1027aa1.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Wei Yan (魏延), age 20 in 190 AD. ambitious young infantry warrior; strong triangular face, clean chin, bold eyebrows, reddish-brown tied headcloth, dark green armor, intense proud youthful expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "weiyan-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4224,
+          "sha256": "3b23cdca6cb5cdbe9d09f1396ae1d650a3a65f42edcb9d00aed9d40011af1233"
+        },
+        {
+          "file": "weiyan.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 17402,
+          "sha256": "8ffb231ca3eff4397740710dca0a476e8d1c3b841936e9e044cfbc29b4ac623c"
+        }
+      ]
+    },
+    {
+      "id": "zhouyu",
+      "name": "Zhou Yu",
+      "chinese": "周瑜",
+      "surnameEn": "Zhou",
+      "surnameZh": "周",
+      "scenarioAge": 16,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-c707ec87-fa1a-41d3-8936-feaeea79d46d.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhou Yu (周瑜), age 16 in 190 AD. beautiful youthful teenage scholar-musician and future commander; clean-shaven delicate oval face, poised bright eyes, small scholar headcloth, pale russet and cream robes, clearly adolescent and refined.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhouyu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3146,
+          "sha256": "11ce5cf9ae27c7c3f9d431a2af96398472525af36ee26c998c2ff74db7212e60"
+        },
+        {
+          "file": "zhouyu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 12800,
+          "sha256": "44a459961b5d11bcca8898f54cb10cea7d065eec5f978951b79f57e084411f15"
+        }
+      ]
+    },
+    {
+      "id": "lusu",
+      "name": "Lu Su",
+      "chinese": "鲁肃",
+      "surnameEn": "Lu",
+      "surnameZh": "鲁",
+      "scenarioAge": 18,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-565c1957-9a98-46b2-9825-0a67032497bd.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Lu Su (鲁肃), age 18 in 190 AD. young broad-minded scholar; clean-shaven rounded long face, kind wide eyes, plain black scholar cap, muted green-grey robes, thoughtful gentle expression, visibly late teens.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "lusu-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2766,
+          "sha256": "4e586914d99441dcd880c143b1da3b7b37707f058e7f13b14f8aca9b7884b647"
+        },
+        {
+          "file": "lusu.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10828,
+          "sha256": "db1d492774ff91b792080461405bad4554a815c4d405b7f9b073e0d0cf34d38f"
+        }
+      ]
+    },
+    {
+      "id": "fazheng",
+      "name": "Fa Zheng",
+      "chinese": "法正",
+      "surnameEn": "Fa",
+      "surnameZh": "法",
+      "scenarioAge": 16,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-8e74dbd6-28c9-4538-9615-2ced08cbcfe6.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Fa Zheng (法正), age 16 in 190 AD. intelligent teenage scholar; narrow youthful face, clean-shaven, sharp curious eyes, small dark scholar headcloth, pale lilac robe, reserved perceptive expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "fazheng-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2924,
+          "sha256": "e0f2dcda6098ee082a867b85c20476742f3cf6f4f00ed5f9f802166c0ed43e8f"
+        },
+        {
+          "file": "fazheng.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11820,
+          "sha256": "2d309af8985db13b1710feacaf37c6cfd9da1d0679cb769959f9c829758e3fc5"
+        }
+      ]
+    },
+    {
+      "id": "zhangsong",
+      "name": "Zhang Song",
+      "chinese": "张松",
+      "surnameEn": "Zhang",
+      "surnameZh": "张",
+      "scenarioAge": 22,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-b94c522f-a7c2-4902-a552-06f2d84824c4.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Zhang Song (张松), age 22 in 190 AD. brilliant unconventional young scholar; short broad face, high forehead, distinctive strong nose, sparse thin moustache, simple low black cap, brown-violet robe, wry clever expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "zhangsong-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2868,
+          "sha256": "ec894f3c74fffd6b0c2c9b29cedcb6459ff995e17cd079d169ffab42d7cac9b4"
+        },
+        {
+          "file": "zhangsong.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 11906,
+          "sha256": "68f61438bf72102890f14d973659cc6b383aebc58205ae36696ffb9e800c4c62"
+        }
+      ]
+    },
+    {
+      "id": "chenqun",
+      "name": "Chen Qun",
+      "chinese": "陈群",
+      "surnameEn": "Chen",
+      "surnameZh": "陈",
+      "scenarioAge": 20,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-12c99fa0-8993-4531-a8cc-e0fa9cf45677.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Chen Qun (陈群), age 20 in 190 AD. serious young administrator; smooth oval face, clean-shaven, straight brows and thoughtful eyes, modest upright black cap, pale blue-grey robes, composed precise expression.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "chenqun-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 2876,
+          "sha256": "59895de9a5f5430fa99ba170820ae7b8c78fb38f27eb51a7669725d1fcec6a77"
+        },
+        {
+          "file": "chenqun.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 10666,
+          "sha256": "01d01e006fc13bb1807baae7186efb18bb2978d9c2cca6719b037266739c8f7a"
+        }
+      ]
+    },
+    {
+      "id": "maliang",
+      "name": "Ma Teng",
+      "chinese": "马腾",
+      "surnameEn": "Ma",
+      "surnameZh": "马",
+      "scenarioAge": 34,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-c7bf88cf-110a-45e7-9dfb-e32624dc0af0.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: Ma Teng (马腾), age 34 in 190 AD. Ma Teng western horse-lord, not Ma Liang; broad sun-weathered face, strong nose, thick moustache and short beard, frontier iron helmet with leather neck guard, ochre cloak and bronze armor, proud steady gaze.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "maliang-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4240,
+          "sha256": "cb2f916d1788180b1a23f8183e4d410b47dcb4d9c612bcb1adf239b258ff8683"
+        },
+        {
+          "file": "maliang.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 18422,
+          "sha256": "acbb1ddc878d7d6b8760f005fe59df5ef209d3a40085fe7f850c168bc3c9c410"
+        }
+      ]
+    },
+    {
+      "id": "machao",
+      "name": "Ma Chao",
+      "chinese": "马超",
+      "surnameEn": "Ma",
+      "surnameZh": "马",
+      "scenarioAge": 24,
+      "scenarioYear": 200,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-20",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "machao-2026-10-20.png",
+      "sourceSha256": "f348c105c7c6ba798c22c27d13954e7f94f7e1dd7616dc696e8b246dcdc1fda6",
+      "projectSource": ".artifacts/portrait-sources/machao-2026-10-20.png",
+      "prompt": "Use case: historical-scene. Create one individual square officer portrait for Hegemony of the Three Kingdoms. Original imagined historical illustration of Ma Chao / 马超, age 24 in the 200 AD Guandu scenario. One Chinese man, centered full head and shoulders, slight three-quarter pose. Keep the entire helmet and plume inside the image with a little headroom; make the face readable at 48 pixels. Elegant hand-painted portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment background, soft even lighting, and individual facial anatomy. Young western cavalry champion: lean athletic face, sharp bright eyes, fine straight brows, light moustache, silver-gray scale armor, crimson sash, plumed frontier helmet, fearless confident expression. Match the existing collection's painting style while keeping his face distinct from Zhao Yun, Zhang He, and Ma Teng. Restrained Han-period clothing. No frame, text, watermark, scenery, extra people, or modern clothing. An original artistic interpretation, not a commercial game portrait copy.",
+      "references": [],
+      "editPrompts": [
+        "Edit only the framing of this Ma Chao portrait. Preserve the exact face, age, expression, armor, crimson sash, painting style, warm parchment background, square aspect ratio, and all colors. Pull the camera back slightly and move the bust down enough that the entire crimson helmet plume is visibly inside the square with approximately 5% empty parchment headroom above its highest point and comfortable clear margins at the sides. Keep the face large enough to read at 48 pixels. Do not crop or cut off the plume. No text, border, extra people, or new objects."
+      ],
+      "sourceHistory": [
+        {
+          "kind": "generate",
+          "tool": "built-in image_gen",
+          "sourceAsset": "exec-d5a57ef1-f34b-48e6-ab17-a4e84c4070c7.png",
+          "projectSource": ".artifacts/portrait-sources/machao-draft-2026-10-20.png",
+          "references": []
+        },
+        {
+          "kind": "framing-edit",
+          "tool": "built-in image_gen",
+          "sourceAsset": "exec-8c6ab1bf-d7cd-409b-86ee-084881bb2fac.png",
+          "editTarget": "exec-d5a57ef1-f34b-48e6-ab17-a4e84c4070c7.png",
+          "projectSource": ".artifacts/portrait-sources/machao-2026-10-20.png"
+        }
+      ],
+      "modifications": "Selected original includes any recorded image_gen edits. Delivery: square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution during delivery.",
+      "files": [
+        {
+          "file": "machao-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 4036,
+          "sha256": "e09bc83925a8a73ba57ccaae537a694a81a90903e658917efa4e5b873ed4151e"
+        },
+        {
+          "file": "machao.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 16818,
+          "sha256": "2d615df37ce27c42e567681d8034f01488eed5281e356b060c75761ba6681f19"
+        }
+      ]
+    },
+    {
+      "id": "garrison",
+      "name": "City garrison",
+      "chinese": "城防守军",
+      "surnameEn": "Garrison",
+      "surnameZh": "守",
+      "scenarioAge": 30,
+      "kind": "original-generated-illustration",
+      "creator": "OpenAI built-in image_gen, directed for this project",
+      "created": "2026-10-19",
+      "model": "Not exposed by the built-in tool",
+      "rights": "Original AI-generated project artwork. No third-party portrait was reused; no public-domain or authenticated-likeness claim is made.",
+      "sourceAsset": "exec-862de218-c5d0-4e4a-904e-2334271bee44.png",
+      "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game. Original imagined historical character illustration, one Chinese man only, centered full head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose. Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained period Han clothing. No frame, no letters, no characters, no watermark, no scenery, no extra people, no modern clothing. An original artistic interpretation, not a commercial game portrait copy. Make this particular person clearly distinctive in facial structure, age, hair, expression and headwear. Subject: City garrison (城防守军), age 30 in 190 AD. anonymous ordinary city guard; approachable weathered face, small moustache, plain iron cap and simple brown quilted armor, neutral vigilant expression, modest equipment, distinct from named generals.",
+      "modifications": "Square contain resize to 256 and 128 pixels; WebP compression. No facial editing or substitution.",
+      "files": [
+        {
+          "file": "garrison-small.webp",
+          "width": 128,
+          "height": 128,
+          "bytes": 3156,
+          "sha256": "b2c7864d5c01e99241fb8403236a4574115642a1198c686903f94ea652f96ac1"
+        },
+        {
+          "file": "garrison.webp",
+          "width": 256,
+          "height": 256,
+          "bytes": 13072,
+          "sha256": "964c5b1da2843c5ffd2edeff11766e7575c271e90787df645c8d93e8e4ceecec"
+        }
+      ]
+    }
+  ]
+}

@@ -1,18 +1,22 @@
 {
   "name": "hegemony-of-the-three-kingdoms",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
+    "test:perf": "vitest run --config vitest.perf.config.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:production": "playwright test --config playwright.production.config.ts",
-    "format": "prettier --write src tests docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts .prettierrc.json",
-    "format:check": "prettier --check src tests docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts .prettierrc.json"
+    "test:fps": "playwright test --config playwright.fps.config.ts",
+    "validate:portraits": "node tools/validate-portraits.mjs",
+    "diagnostics:ai": "node tools/ai-diagnostics.mjs",
+    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json",
+    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json"
   },
   "engines": {
     "node": ">=22.12.0"

@@ -4,7 +4,7 @@
 
 Decision date: October 17, 2026. This is the proposed implementation design; the approved product direction is a substantial web-only rebuild using TypeScript, React, and PixiJS.
 
-V1 is a single-player, illustrated 2D strategy game for desktop browsers. It preserves Baye's core campaign and tactical battle rules while rebuilding the interface, state ownership, rendering, and persistence. One complete historical scenario is the proposed first release scope. The [roadmap](roadmap.md) defines the incremental delivery gates, and the [reference baseline](reference-baseline.md) explains what preserving the rules means.
+V1 is a single-player, illustrated 2D strategy game for desktop browsers. It preserves Baye's core campaign and tactical battle rules while rebuilding the interface, state ownership, rendering, and persistence. One complete historical scenario is the proposed first release scope. The [roadmap](archive/roadmap.md) defines the incremental delivery gates, and the [reference baseline](reference-baseline.md) explains what preserving the rules means.
 
 ## The central decision
 

@@ -1,21 +1,25 @@
-import { FACTIONS, INITIAL_CITIES, INITIAL_OFFICERS } from '../content/scenario';
+import { SCENARIOS } from '../content/scenario';
 import { GAME_PATTERNS, GAME_ZH } from './game.zh';
 import { UI_ZH } from './ui.zh';
 import { MAP_ZH } from './map.zh';
 import { PLATFORM_PATTERNS, PLATFORM_ZH } from './platform.zh';
+import { WIKI_ZH } from './wiki.zh';
 
 export type Locale = 'en' | 'zh';
 export type TranslationParams = Record<string, string | number>;
 
 // Canonical content stays unchanged in the simulation and in existing save files.
-const names: Record<string, string> = Object.fromEntries([
-  ...INITIAL_CITIES.map((city) => [city.name, city.chinese]),
-  ...INITIAL_OFFICERS.map((officer) => [officer.name, officer.chinese]),
-  ...FACTIONS.map((faction) => [
-    faction.name,
-    INITIAL_OFFICERS.find((officer) => officer.name === faction.leader)?.chinese ?? faction.chinese,
+const names: Record<string, string> = Object.fromEntries(
+  SCENARIOS.flatMap((scenario) => [
+    ...scenario.cities.map((city) => [city.name, city.chinese]),
+    ...scenario.officers.map((officer) => [officer.name, officer.chinese]),
+    ...scenario.factions.map((faction) => [
+      faction.name,
+      scenario.officers.find((officer) => officer.name === faction.leader)?.chinese ??
+        faction.chinese,
+    ]),
   ]),
-]);
+);
 
 interface Pattern {
   regex: RegExp;
@@ -63,7 +67,7 @@ function translateCanonical(source: string, depth = 0): string {
   if (depth > 8 || !source || /^[-+\d\s.,%/]+$/.test(source)) return source;
   // Imported save text may contain any string, including Object prototype keys.
   // Only dictionary-owned entries are translations; unknown text stays text.
-  const dictionary = [UI_ZH, GAME_ZH, MAP_ZH, PLATFORM_ZH, names].find((catalog) =>
+  const dictionary = [WIKI_ZH, UI_ZH, GAME_ZH, MAP_ZH, PLATFORM_ZH, names].find((catalog) =>
     Object.hasOwn(catalog, source),
   );
   const exact = dictionary?.[source];

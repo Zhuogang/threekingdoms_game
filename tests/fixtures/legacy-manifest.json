@@ -1,0 +1,50 @@
+{
+  "sourceCommit": "dbc9302f1e7b5c9178e0cbd7a5000f1fd01c3aeb",
+  "capturedAt": "2026-10-20T03:25:45.663Z",
+  "node": "v24.15.0",
+  "os": { "platform": "win32", "release": "10.0.26300", "arch": "x64" },
+  "fixtures": [
+    {
+      "file": "tests/fixtures/legacy-planning.json",
+      "sha256": "c85a0d3ebc37aa0da3ff501a8b2a3cf49e4d289319ff6a19fd595a8f679d9934",
+      "phase": "planning",
+      "queueLength": 0,
+      "battleUnits": 0
+    },
+    {
+      "file": "tests/fixtures/legacy-battle.json",
+      "sha256": "00f372e6db48b75a57ef573278a71df5eed1d1459765438a2547b5bf31233317",
+      "phase": "battle",
+      "queueLength": 1,
+      "battleUnits": 2
+    },
+    {
+      "file": "tests/fixtures/legacy-queued-battle.json",
+      "sha256": "7fadd54d7d924e8348b168c65ec1006f7f6229385e4a4a7b3a1688c76343fcab",
+      "phase": "battle",
+      "queueLength": 2,
+      "battleUnits": 2
+    },
+    {
+      "file": "tests/fixtures/legacy-finished.json",
+      "sha256": "386db4673a28a28ab3e22b324dca5925b4451149c2bb4dacd369168d4300e5e1",
+      "phase": "finished",
+      "queueLength": 0,
+      "battleUnits": 0
+    },
+    {
+      "file": "tests/fixtures/legacy-dense-battle.json",
+      "sha256": "1f22984bb1c738e711093e884c4672ceda2635202aa867d299951926ed14f5f5",
+      "phase": "battle",
+      "queueLength": 1,
+      "battleUnits": 17
+    },
+    {
+      "file": "tests/fixtures/legacy-multi-battle-planning.json",
+      "sha256": "0b0357f5b44131edf8e8e866d0f71b5a81318e5127670cd007865fc324539b6a",
+      "phase": "planning",
+      "queueLength": 2,
+      "battleUnits": 0
+    }
+  ]
+}

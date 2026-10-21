@@ -151,9 +151,83 @@ export const GAME_ZH: Record<string, string> = {
   'Appoint this officer governor. Intelligence helps maintain public support every month.':
     '任命此武将为太守。太守的智力有助于每月维持民心。',
   'Unknown order': '未知命令',
+  'Reorganize troops': '整编部队',
+  'Retrain this officer’s soldiers as another troop type. Costs 20% of their troops to retraining.':
+    '将此武将的士兵改编为另一兵种，改编损耗 20% 的兵力。',
+  'Choose a different troop type.': '请选择另一种兵种。',
+  'That invitation is no longer open.': '该邀请已失效。',
+  'You decline the invitation to join the coalition.': '你婉拒了加入联盟的邀请。',
+  'You join the coalition; its lords pledge six months of peace to you.':
+    '你加入了联盟，诸侯承诺与你停战六个月。',
+  'This save uses an unsupported scenario.': '此存档使用的剧本不受支持。',
+  'Choose a scenario from this game.': '请选择本游戏中的剧本。',
+  'Choose a valid difficulty.': '请选择有效的难度。',
+  'Invalid campaign settings.': '战役设置无效。',
+  'Invalid hegemon progress.': '霸主进度无效。',
+  'Invalid scouting records.': '侦察记录无效。',
+  'Invalid event history.': '事件记录无效。',
+  'Invalid invitations.': '邀请数据无效。',
+  'Choose on or off.': '请选择开启或关闭。',
+  'Invalid monthly obituary report.': '月度讣告报告无效。',
+  // The eve of Guandu (200 CE).
+  'The eve of Guandu': '官渡前夜',
+  'Cao Cao guards the emperor and the heartland; Yuan Shao commands the north and marches south. Between the giants, smaller banners wait for their chance.':
+    '曹操挟天子、据中原；袁绍雄踞北方，挥师南下。两大巨头之间，各路小旗都在等待机会。',
+  'Strike while the enemy is stretched': '趁敌兵力分散，出奇制胜',
+  'Master of the central plains with the emperor in his camp, facing the largest army in the realm along the Yellow River.':
+    '坐拥中原、挟天子于营中，在黄河沿岸迎战天下最庞大的军队。',
+  'Numbers win wars': '兵多者胜',
+  'Lord of the whole north with four provinces and a vast host. Press the advantage before Cao Cao can consolidate.':
+    '据有北方四州，拥兵百万。趁曹操尚未稳固，趁势压上。',
+  'A hunted guest with a single city, yet his oath brothers fight like armies. Survive the giants, and the realm may still turn.':
+    '寄人篱下、仅据一城，但桃园兄弟一人可当一军。熬过两大巨头，天下仍有转机。',
+  'The Little Conqueror': '小霸王',
+  'The young conqueror of Jiangdong, with his brilliant friend Zhou Yu at his side. The rivers are yours to command.':
+    '少年平定江东，挚友周瑜相伴左右。江河水道，任你驱策。',
+  'A gentle ruler behind the western mountains, surrounded by advisers who see further than he does.':
+    '偏安西川的仁厚之主，身边谋臣的眼光比他看得更远。',
+  'Riders of the west': '西凉铁骑',
+  'Cavalry lord of Liang, with Tianshui and Chang’an as his walls. A small realm, and a fast one.':
+    '西凉铁骑之主，以天水与长安为屏障。疆域虽小，行动迅疾。',
+  'Plunder the city': '掠夺城池',
+  'Tactic points are exhausted.': '计策点已耗尽。',
+  'Seize gold and food from the people. Halves public support, farming and commerce.':
+    '搜刮百姓，夺取金钱与粮草。民心、农业与商业各减半。',
+  'The people have nothing left to take.': '百姓已一无所有，无物可掠。',
+  'A faction’s ruler cannot be persuaded.': '势力君主无法被招揽。',
+  'Choose conquer, sack or raid.': '请选择攻占、洗劫或袭掠。',
+  'You have no active alliance with that ruler.': '你与该君主之间没有有效的盟约。',
+  'Choose 10, 20 or 30 days of supplies.': '请选择 10、20 或 30 日的补给。',
+  'Choose a prisoner held in this city.': '请选择关押在本城的俘虏。',
+  'Choose to release or execute the prisoner.': '请选择释放或处决俘虏。',
+  'Choose an opening truce of 0–12 months.': '请选择 0 至 12 个月的开局停战期。',
+  'Invalid battle summary.': '战报摘要无效。',
+  'Invalid opening truce.': '开局停战期无效。',
+  'The opening truce forbids attacks until it ends.': '开局停战期间不得出兵进攻。',
+  'Invalid diplomatic reputation.': '外交声望数据无效。',
+  'Invalid monthly raid report.': '月度袭掠报告无效。',
+  'Invalid monthly unrest report.': '月度民变报告无效。',
+  'Invalid monthly departure report.': '月度离队报告无效。',
+  'Invalid monthly loyalty report.': '月度忠诚报告无效。',
+  'Invalid monthly coalition report.': '月度联盟报告无效。',
+  'Garrison troops cannot use tactics.': '守军部队无法施展计策。',
+  'Routed units can only move or hold.': '溃败的部队只能移动或固守。',
+  'Wavering units cannot use tactics.': '动摇的部队无法施展计策。',
+  'Ambush requires standing in a forest.': '伏兵须身处森林。',
+  'Ambush requires a unit that has not moved today.': '伏兵须由今日尚未移动的部队施展。',
+  'Rockfall requires standing on a hill.': '落石须身处丘陵。',
+  'Rockfall cannot strike a unit standing on a hill.': '落石无法打击位于丘陵的部队。',
 
   // Command validation: these are shown in tooltips and notifications as well.
   'Choose a ruler from this scenario.': '请选择本剧本中的一位君主。',
+  'Choose a valid rival aggression.': '请选择有效的对手进攻倾向。',
+  'Monthly report event capacity exceeded.': '月度军报记录数量超出上限。',
+  'Invalid monthly report data.': '月度军报数据无效。',
+  'The monthly report date is inconsistent.': '月度军报的年月与回合数不一致。',
+  'Invalid or duplicate monthly report event.': '月度军报记录无效或重复。',
+  'Invalid monthly battle report.': '月度战斗报告无效。',
+  'Invalid monthly alliance report.': '月度盟约报告无效。',
+  'Invalid monthly recruitment report.': '月度征兵报告无效。',
   'This order is not supported.': '不支持此命令。',
   'Finish the current battle before issuing city orders.': '请先结束当前战斗，再下达城池命令。',
   'Select a city under your control.': '请选择己方控制的城池。',
@@ -164,6 +238,7 @@ export const GAME_ZH: Record<string, string> = {
   'Public support and defense are already at their maximum.': '民心和城防均已达上限。',
   'The city needs at least 1,500 people before recruitment.': '征兵前，本城人口须至少达到 1,500。',
   'Assign troops to this officer before drilling.': '请先为此武将配备士兵，再进行操练。',
+  'Only an officer who leads troops can reorganize them.': '只有统率士兵的武将才能整编部队。',
   'This officer is already completely loyal.': '此武将忠诚已满。',
   'This officer already has fine arms.': '此武将已配备精良兵器。',
   'This officer has no equipment to confiscate.': '此武将没有可没收的装备。',
@@ -221,6 +296,7 @@ export const GAME_ZH: Record<string, string> = {
     '此部队陷入混乱，须等到本日结束后恢复。',
   'This unit has already moved today.': '此部队今日已移动。',
   'Choose a valid battlefield tile.': '请选择有效的战场格。',
+  'A unit cannot stop on its own camp.': '部队不能停留在己方营寨上。',
   'That tile is blocked or beyond this unit’s movement range.':
     '该格被阻挡，或超出此部队的移动范围。',
   'Select an enemy unit.': '请选择一支敌方部队。',
@@ -333,6 +409,129 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ['{officer} is dismissed from service.', '{officer}被罢免，成为在野武将。'],
   ['{officer} becomes governor.', '{officer}获任太守。'],
   [
+    '{officer} plunders the city, seizing {gold} gold and {food} food.',
+    '{officer}掠夺城池，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    'This city was plundered recently. It can be plundered again in {months} months.',
+    '此城近期遭到掠夺，{months} 个月后方可再次掠夺。',
+  ],
+  [
+    'This city was plundered recently. It can be plundered again in {months} month.',
+    '此城近期遭到掠夺，{months} 个月后方可再次掠夺。',
+  ],
+  [
+    '{faction} prepares to raid {target} from {source}. The army departs at month end.',
+    '{faction}准备从{source}出兵袭掠{target}。军队将于月末出发。',
+  ],
+  ['{officer} is released and returns to {home}.', '{officer}获释，返回{home}。'],
+  ['{officer} is released and wanders the land.', '{officer}获释，流落四方。'],
+  ['{officer} is executed. The officers are uneasy.', '{officer}被处决，众将不安。'],
+  // The more specific pattern must come first, or {city} would swallow "unopposed".
+  [
+    '{faction} raids {city} unopposed, seizing {gold} gold and {food} food.',
+    '{faction}兵不血刃袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    '{faction} raids {city}, seizing {gold} gold and {food} food.',
+    '{faction}袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  [
+    '{faction} sacks {city}, seizing {gold} gold and {food} food.',
+    '{faction}洗劫{city}，夺得 {gold} 金和 {food} 粮草。',
+  ],
+  ['{officer} is taken prisoner by {faction}.', '{officer}被{faction}俘虏。'],
+  ['The people of {city} rise up and cast out {faction}.', '{city}百姓起义，驱逐了{faction}。'],
+  [
+    'Unrest in {city}: a revolt scatters part of the garrison and treasury.',
+    '{city}发生民变，部分守军与府库散失。',
+  ],
+  [
+    '{officer} abandons {faction} and defects to {target}.',
+    '{officer}离开{faction}，投奔{target}。',
+  ],
+  ['{officer} abandons {faction} and wanders the land.', '{officer}离开{faction}，流落四方。'],
+  ['The neighbouring lords unite against {faction}.', '周边诸侯联合对抗{faction}。'],
+  ['{faction} breaks the alliance with {target}.', '{faction}撕毁了与{target}的盟约。'],
+  [
+    "{city}'s garrison stays behind its walls as {faction} raids.",
+    '{faction}来袭时，{city}守军闭城不出。',
+  ],
+  [
+    'The raid on {city} is called off: the city was plundered recently.',
+    '对{city}的袭掠已取消：该城近期刚遭掠夺。',
+  ],
+  [
+    'Defenders hold the city if the siege lasts {days} days.',
+    '围城持续 {days} 日后，守方即告守城成功。',
+  ],
+  [
+    'The {days}-day siege limit was reached. The defenders hold the city.',
+    '围城已达 {days} 日上限，守方成功守住城池。',
+  ],
+  [
+    '{officer} reorganizes their troops as {type}, losing {amount} soldiers.',
+    '{officer}将部队改编为{type}，损失 {amount} 名士兵。',
+  ],
+  ['{officer} passes away at the age of {age}.', '{officer}病逝，享年 {age} 岁。'],
+  [
+    '{faction} has held the capital and sixteen cities for a year and is proclaimed Hegemon.',
+    '{faction}据守都城与十六座城池满一年，被拥立为霸主。',
+  ],
+  ['A plague sweeps through {city}: {amount} people perish.', '{city}瘟疫肆虐，{amount} 人死亡。'],
+  [
+    'A bumper harvest fills the granaries of {city} with {amount} extra food.',
+    '{city}五谷丰登，粮仓多收 {amount} 粮草。',
+  ],
+  ['Locusts devour {amount} food in {city}.', '蝗灾席卷{city}，损失 {amount} 粮草。'],
+  ['Bandits plunder {city}, carrying off {amount} gold.', '盗匪洗劫{city}，劫走 {amount} 金。'],
+  [
+    '{officer} wanders into {city}, looking for a lord worth serving.',
+    '{officer}流浪至{city}，寻求值得效力的明主。',
+  ],
+  ['{officer} comes of age: +3 force and +2 intellect.', '{officer}年满十八：武力 +3，智力 +2。'],
+  ["A festival in {city} lifts the people's spirits.", '{city}举办庙会，民心大振。'],
+  [
+    'Drought withers the fields of {city}: farming falls by 15.',
+    '{city}遭遇旱灾，农业下降 15 点。',
+  ],
+  ['A visiting scholar tutors {officer}: +1 intellect.', '一位游学名士指点了{officer}：智力 +1。'],
+  ['The lords of the realm raise a coalition against {faction}.', '天下诸侯结盟讨伐{faction}。'],
+  ['You are invited to join the coalition against {faction}.', '你受邀加入讨伐{faction}的联盟。'],
+  [
+    '{faction} burns {city} and withdraws to {refuge} with {gold} gold and {food} food.',
+    '{faction}焚毁{city}，携 {gold} 金和 {food} 粮草撤往{refuge}。',
+  ],
+  [
+    '{year} CE. The armies gather along the Yellow River. {faction} must unite the realm.',
+    '公元 {year} 年，大军云集黄河沿岸。{faction}须肩负一统天下之任。',
+  ],
+  ['Fire requires intellect {amount}.', '火计需要智力 {amount}。'],
+  ['Confuse requires intellect {amount}.', '扰乱需要智力 {amount}。'],
+  ['Rally requires intellect {amount} or force 85.', '鼓舞需要智力 {amount} 或武力 85。'],
+  [
+    'Raid supplies requires intellect {amount} or cavalry.',
+    '劫粮需要智力 {amount}，或由骑兵施展。',
+  ],
+  ['Ambush requires intellect {amount}.', '伏兵需要智力 {amount}。'],
+  ['Rockfall requires intellect {amount}.', '落石需要智力 {amount}。'],
+  ['Requires {amount} tactic points.', '需要 {amount} 点计策点。'],
+  ['This tactic has a range of {amount} tiles.', '此计策的施放范围为 {amount} 格。'],
+  ['{officer} was captured.', '{officer}被俘。'],
+  [
+    '{officer} ambushed {target}: {amount} casualties.',
+    '{officer}伏击{target}，造成 {amount} 人伤亡。',
+  ],
+  ['{officer} counterattacks: {amount} casualties.', '{officer}发起反击，造成 {amount} 人伤亡。'],
+  [
+    "{officer} raided {target}'s supplies: {amount} food seized.",
+    '{officer}劫掠{target}的粮草，夺得 {amount} 粮草。',
+  ],
+  [
+    '{officer} dropped rocks on {target}: {amount} casualties.',
+    '{officer}对{target}落石，造成 {amount} 人伤亡。',
+  ],
+  [
     '{faction} prepares to march from {source} to {target}. The army departs at month end.',
     '{faction}准备从{source}向{target}出征。军队将于月末出发。',
   ],
@@ -390,6 +589,7 @@ export const GAME_PATTERNS: readonly [englishTemplate: string, chineseTemplate: 
   ['{city} garrison', '{city}守军'],
   ['{officer} seized the enemy camp.', '{officer}夺取了敌军营寨。'],
   ['{side} army wins the battle.', '{side}军赢得了战斗。'],
+  ['{side} army breaks and flees the field.', '{side}军溃败，逃离战场。'],
   ["{officer}'s unit was defeated.", '{officer}的部队已被击败。'],
   [
     '{officer} attacked {target}: {amount} casualties.',

@@ -15,4 +15,7 @@ export const MAP_ZH: Record<string, string> = {
   'Zoom in': '放大',
   'Zoom out': '缩小',
   'Reset map view': '重置地图视角',
+  'Fit battlefield': '适应战场',
+  'Readable tiles': '清晰格子',
+  'Center selected unit': '居中所选部队',
 };

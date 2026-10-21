@@ -1,5 +1,64 @@
 /** UI copy uses canonical English keys so old save labels and notifications stay portable. */
 export const UI_ZH: Record<string, string> = {
+  'Enemy commanders': '敌方武将',
+  'Display size': '显示大小',
+  Compact: '紧凑',
+  Comfortable: '舒适',
+  Large: '大字',
+  'Applies to maps, text, and controls. Saved in this browser.':
+    '调整地图、文字与按钮大小，设置保存在此浏览器中。',
+  'Starting position': '开局形势',
+  'Rival aggression': '对手进攻倾向',
+  Cautious: '谨慎',
+  Balanced: '均衡',
+  Aggressive: '激进',
+  'Controls how readily rivals start wars against you and each other. It grants no combat or resource bonuses.':
+    '决定对手向你或其他势力开战的意愿，不提供战斗或资源加成。',
+  'Controls willingness to start wars; no combat or resource bonuses.':
+    '调整开战意愿，不提供战斗或资源加成。',
+  'Campaign setting: takes effect next month and is saved with your progress.':
+    '战役设置：下次月度结算时生效，并随进度存档。',
+  'Rival aggression can be changed during campaign planning after the current month resolves.':
+    '当前月份结算完毕后，可在战役筹划阶段修改对手进攻倾向。',
+  'Next ready commander': '下一位可行动武将',
+  'No ready commanders remain. End the day to continue.': '已无可行动武将，结束当日以继续。',
+  'Troops & banners legend': '兵种与旗帜图例',
+  'Troop and banner meanings': '兵种与旗帜含义',
+  'Banner color and crest show allegiance. The surname identifies the commander.':
+    '旗帜颜色与纹章表示所属势力，姓氏标识领军武将。',
+  'Moved · action ready': '已移动 · 仍可行动',
+  'Finished for today': '今日行动完毕',
+  'Confused · unavailable': '混乱 · 无法行动',
+  'Inspired is an extra status. It does not restore an action.':
+    '振奋是额外状态，不会恢复行动机会。',
+  'The garrison': '守军',
+  'Monthly report': '月度军报',
+  'View report': '查看军报',
+  Highlights: '要闻',
+  'Partial history: earlier events were not recorded in this older save.':
+    '记录不完整：此旧版存档未记录本月较早发生的事件。',
+  '{attacker} captured {city} from {defender} after {days} days.':
+    '{attacker}经过{days}日战斗，从{defender}手中攻占{city}。',
+  '{defender} held {city} against {attacker} after {days} days.':
+    '{defender}经过{days}日战斗，守住{city}，击退{attacker}。',
+  'The alliance between {first} and {second} expired.': '{first}与{second}的盟约到期。',
+  '{faction} recruited {count} reserves in {city}, near your borders.':
+    '{faction}在邻近你方边境的{city}招募了{count}名预备兵。',
+  'A quiet month: no major rival developments to report.': '本月平静，暂无重要对手动向。',
+  '{count} additional records were omitted from this report.':
+    '另有{count}条记录因军报容量限制未收录。',
+  '{count} more events in the full report.': '完整军报中另有{count}项事件。',
+  'Reports describe committed events, not predictions.': '军报记载已发生事件，并非预测。',
+  'Artwork & reference credits': '美术与参考来源',
+  'Officer illustrations': '武将肖像',
+  '53 distinct officer portraits and one garrison portrait were created for this project. These are artistic depictions, not verified historical likenesses.':
+    '本项目制作了53幅独立武将肖像及1幅守军肖像，均为艺术演绎，并非经过考证的历史真实容貌。',
+  'Portraits are bundled locally. Identity stays with the officer when allegiance changes.':
+    '肖像随游戏本地提供，武将变更所属势力时仍保持同一人物形象。',
+  'View artwork provenance and rights records': '查看美术创作来源与权利记录',
+  'Main game reference': '主要游戏参考',
+  'Baye / 三国霸业 inspired the core game. The web remake uses its own authored atlas and presentation.':
+    '游戏核心参考Baye《三国霸业》，网页版使用独立绘制的地图与界面。',
   'Close dialog': '关闭对话框',
   'Hegemony of the Three Kingdoms': '三国霸业',
   HEGEMONY: '三国霸业',
@@ -111,6 +170,11 @@ export const UI_ZH: Record<string, string> = {
   '24 cities': '24 座城池',
   '6 rival houses': '6 方势力',
   '52 officers': '52 位武将',
+  '{count} officers': '{count} 位武将',
+  'Plains battlefield': '平原战场',
+  'River battlefield': '河流战场',
+  'Mountain battlefield': '山地战场',
+  'Forest battlefield': '森林战场',
   'Build your cities. Win their loyalty.': '经营城池，收服人心。',
   'Write the next chapter of the realm.': '由你书写天下的新篇章。',
   'Import a saved campaign': '导入战役存档',
@@ -295,7 +359,7 @@ export const UI_ZH: Record<string, string> = {
   'Your banner rises. Select an officer and give your first orders.':
     '旌旗已起。请选择武将，下达第一道命令。',
   'Choose a diplomatic target first.': '请先选择外交目标。',
-  'Rally requires a friendly unit within three tiles.': '鼓舞需要选择三格内的友军。',
+  'Rally requires a friendly unit within {count} tiles.': '鼓舞需要选择 {count} 格内的友军。',
   'Choose a tactic target, or cancel the tactic before moving.':
     '请选择计策目标，或取消计策后再移动。',
   'Campaign saved.': '战役已保存。',
@@ -310,4 +374,259 @@ export const UI_ZH: Record<string, string> = {
     '将{name}及其部队调往相邻己方城池，同时可携带额外物资。',
   'Prepare in {city}': '在{city}备战',
   'March to {city}': '进军{city}',
+
+  // v0.2 — tactical battles.
+  'Wavering · no tactics': '动摇 · 无法施展计策',
+  'Routed · move or hold only': '溃败 · 只能移动或固守',
+  'Veteran level': '老兵等级',
+  'Zone-of-control stop': '控制区止步格',
+  lethal: '可歼灭',
+  '≈ {casualties} casualties · counter ≈ {counter}': '约 {casualties} 人伤亡 · 反击约 {counter}',
+  '≈ {casualties} casualties · no counter': '约 {casualties} 人伤亡 · 无反击',
+  '≈ {casualties} casualties · −10 morale': '约 {casualties} 人伤亡 · 士气 −10',
+  '≈ {casualties} casualties': '约 {casualties} 人伤亡',
+  '+{count} morale': '士气 +{count}',
+  '+{count} morale · ends confusion': '士气 +{count} · 解除混乱',
+  '{count}% chance': '成功率 {count}%',
+  '{count} food seized': '劫得粮草 {count}',
+  'Raid supplies': '劫粮',
+  Ambush: '伏兵',
+  Rockfall: '落石',
+  'raid supplies': '劫粮',
+  ambush: '伏兵',
+  rockfall: '落石',
+  'RAID SUPPLIES': '劫粮',
+  AMBUSH: '伏兵',
+  ROCKFALL: '落石',
+  '{skill} TARGETS': '{skill}目标',
+  'raid supplies from {name}': '劫夺{name}的粮草',
+  'ambush {name}': '伏击{name}',
+  'rockfall on {name}': '对{name}落石',
+  'Fire: rain weakens it; wind and forests strengthen it. Costs {cost} tactic points.':
+    '火攻：雨天削弱效果，风势与树林增强效果。消耗 {cost} 点计策点。',
+  'Rally restores allied morale and removes confusion. Choose yourself or an ally in range. Costs {cost} tactic points.':
+    '鼓舞恢复友军士气并解除混乱。请选择自身或射程内的友军。消耗 {cost} 点计策点。',
+  'Confuse: success depends on both commanders’ intellect, and the target loses a turn. Costs {cost} tactic points.':
+    '扰乱：成功率取决于双方主将的智力，成功后目标失去一回合行动。消耗 {cost} 点计策点。',
+  'Raid supplies: seize half of the target’s army rations and keep half of what is taken. Costs {cost} tactic points.':
+    '劫粮：夺取目标部队一半的军粮，其中一半归己方所有。消耗 {cost} 点计策点。',
+  'Ambush: from a forest, without moving, strike an enemy within two tiles for 40% more damage and no counterattack. Costs {cost} tactic points.':
+    '伏兵：在森林中不移动，攻击两格内的敌军，伤害提高 40% 且不会遭到反击。消耗 {cost} 点计策点。',
+  'Rockfall: from a hill, crush an enemy within two tiles (not on a hill), ignoring terrain defense and shaking morale. Costs {cost} tactic points.':
+    '落石：在丘陵上砸击两格内、不在丘陵上的敌军，无视地形防御并动摇其士气。消耗 {cost} 点计策点。',
+  'Tomorrow: {weather}': '明日：{weather}',
+  'Supplies: {count} days left': '粮草还可支撑 {count} 日',
+  'Enemy {count} days': '敌军 {count} 日',
+  'Tactic points': '计策点',
+  'Hide enemy reach': '隐藏敌军威胁范围',
+  'Show enemy reach': '显示敌军威胁范围',
+  'Advance to contact': '推进至接敌',
+  'End days automatically until the armies are in reach, up to ten days.':
+    '自动结束当日，直到两军进入攻击范围，最多十日。',
+  'Choose a target for {skill} within range.': '请选择射程内的{skill}目标。',
+  '{name} has routed and can only move or hold. Rally them, or end the day.':
+    '{name}已溃败，只能移动或固守。请鼓舞其士气，或结束当日。',
+  Wavering: '动摇',
+  Routed: '溃败',
+  Level: '等级',
+  'stops here': '在此止步',
+  'Confused: this commander loses the current turn. Another commander can Rally them, or end the day to recover.':
+    '混乱：此将本回合无法行动。可由友将施展鼓舞解除，或结束当日等待恢复。',
+  'No valid targets in range. Cancel to move or choose another commander.':
+    '射程内没有有效目标。取消后可移动部队或选择另一位主将。',
+  'DAY {day} / {limit}': '第 {day} 日 / {limit}',
+  'Mountain pass': '山间隘口',
+
+  // v0.2 — marching, supplies and plunder.
+  'Choose your destination, commanders and supplies. Armies depart at the end of the month.':
+    '选择目的地、主将与补给。军队将在月末出发。',
+  'Purpose of the march': '出征目的',
+  Conquer: '攻占',
+  Sack: '洗劫',
+  Raid: '袭掠',
+  'Take the city intact. Its people keep their livelihoods.': '完整占领城池，百姓生计不受影响。',
+  'Conquer the city, then plunder it for gold and food. Support, farming and commerce are halved.':
+    '攻占城池后再加以掠夺，夺取金钱与粮草；民心、农业与商业各减半。',
+  'Strike, loot and go home within 10 days. The city is not taken; any defenders must be beaten first.':
+    '十日内突袭、劫掠后撤回。不占领城池，但须先击败守军。',
+  'Plundered recently: available again in {count} months.':
+    '近期遭到掠夺：{count} 个月后方可再次选择。',
+  'Days of supplies': '补给日数',
+  'DAYS OF SUPPLIES': '补给日数',
+  '{count} days': '{count} 日',
+  '{count} day': '{count} 日',
+  'A raid carries 10 days of rations and must finish within 10 days.':
+    '袭掠固定携带 10 日军粮，须在 10 日内结束。',
+  'When the rations run out, your soldiers desert. A longer siege needs more.':
+    '军粮耗尽后，士兵会逃散。围城越久，所需补给越多。',
+  'Expected loot: about {gold} gold and {food} food. The city falls to half its support, farming and commerce.':
+    '预计掠得约 {gold} 金和 {food} 粮草；该城民心、农业与商业将减半。',
+  'Estimated loot (the city is not scouted): {gold} gold and {food} food. The city falls to half its support, farming and commerce.':
+    '预计掠得（该城未经侦察）：{gold} 金和 {food} 粮草；该城民心、农业与商业将减半。',
+  'The garrison is too weak to sortie and would stay behind its walls: the raid meets no resistance.':
+    '守军兵力太弱，不敢出城，将闭城不出：此次袭掠不会遇到抵抗。',
+  'Benevolent commanders take plundering to heart: {names} would lose 8 loyalty.':
+    '仁德的将领不忍劫掠：{names}将损失 8 点忠诚。',
+  '{city} cannot supply {count} food.': '{city}无法提供 {count} 粮草。',
+  'Warning: {city} would be left with less than a month of provisions.':
+    '警告：出征后{city}的存粮将不足一个月的军需。',
+  'Harsh measures': '严政',
+
+  // v0.2 — battle recap and prisoners.
+  Victory: '大捷',
+  Defeat: '战败',
+  'BATTLE REPORT': '战后军报',
+  'The raid on {city} succeeded.': '对{city}的袭掠大获成功。',
+  'The battle for {city} ended in a capture.': '{city}之战以攻陷告终。',
+  'The battle for {city} was held.': '{city}之战，守军守住了城池。',
+  'A victory for your banner.': '这是你军旗下的一场胜利。',
+  'A setback for your banner.': '这是你军旗下的一次挫折。',
+  ATTACKER: '攻方',
+  DEFENDER: '守方',
+  DURATION: '历时',
+  casualties: '人伤亡',
+  Conquest: '攻占',
+  'Your losses: {mine}. Enemy losses: {theirs}.': '我方损失 {mine}，敌方损失 {theirs}。',
+  gold: '金',
+  'OFFICERS CAPTURED': '被俘武将',
+  'Prisoners can be recruited, released or executed from the city that holds them.':
+    '可在关押俘虏的城池中招揽、释放或处决俘虏。',
+  'View {city}': '查看{city}',
+  Continue: '继续',
+  Prisoners: '俘虏',
+  Loyalty: '忠诚',
+  Recruit: '招揽',
+  Release: '释放',
+  Execute: '处决',
+  'Execute {name}? This cannot be undone, and your officers will be uneasy.':
+    '确定处决{name}吗？此事无法挽回，麾下诸将也会心生不安。',
+
+  // v0.2 — orders, previews and diplomacy.
+  Advanced: '高级选项',
+  'A random seed is chosen for every new campaign. Enter one to replay a world.':
+    '每次新战役都会随机选取种子。输入种子即可重现同一个世界。',
+  'Opening truce (2 months)': '开局停战（2 个月）',
+  'Rival houses will not march against anyone for the first two months.':
+    '前两个月内，各路诸侯不会发动任何进攻。',
+  'Allied with {faction} for {count} more months': '与{faction}结盟，还剩 {count} 个月',
+  'Break alliance': '撕毁盟约',
+  'Break the alliance with {faction}? Rulers remember: future treaties will be harder to win.':
+    '确定撕毁与{faction}的盟约吗？诸侯会记住此事，今后缔约将更加困难。',
+  'EXPECTED RESULT · {order}': '预计效果 · {order}',
+  'all officers here': '本城全体武将',
+  'target city': '目标城池',
+  'this officer': '此武将',
+  'Success chance': '成功率',
+  'No direct change to the numbers.': '不会直接改变数值。',
+  Experience: '经验',
+
+  // v0.2 — monthly report.
+  '{faction} raided {city} after a fight, seizing {gold} gold and {food} food.':
+    '{faction}经一番交战袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  '{faction} raided {city} unopposed, seizing {gold} gold and {food} food.':
+    '{faction}兵不血刃袭掠{city}，夺得 {gold} 金和 {food} 粮草。',
+  'The people of {city} threw off your rule and the city is now independent.':
+    '{city}百姓推翻了你的统治，该城已宣告独立。',
+  'Unrest in {city}: a revolt scattered part of the garrison and treasury.':
+    '{city}发生民变，部分守军与府库散失。',
+  '{officer} left {from} and joined {to}.': '{officer}离开{from}，投奔{to}。',
+  '{officer} left {from} and wandered off.': '{officer}离开{from}，流落四方。',
+  'CAPTURED OFFICERS': '被俘武将',
+  'Held by {faction} in {city}': '被{faction}关押于{city}',
+  '{faction} released your captured officer {officer}.': '{faction}释放了被俘的{officer}。',
+  '{faction} executed your captured officer {officer}.': '{faction}处决了被俘的{officer}。',
+  '{faction} won over your captured officer {officer}.': '{faction}说服了被俘的{officer}归降。',
+  'Officers close to leaving (loyalty under 40): {names}.':
+    '即将离去的武将（忠诚低于 40）：{names}。',
+  'The neighboring lords have united against you.': '周边诸侯已联合起来对付你。',
+  'The neighboring lords have united against {faction}.': '周边诸侯已联合对抗{faction}。',
+
+  // v0.2 — adviser, scenarios, difficulty and fog of war.
+  Adviser: '军师',
+  'Your adviser': '你的军师',
+  'Suggestions for this month': '本月建议',
+  'Nothing urgent. Your officers have the realm in hand.': '暂无急务，诸将已将天下打理妥当。',
+  '{city} holds {food} food but needs about {upkeep} each month. Buy provisions or develop farms.':
+    '{city}存粮 {food}，每月约需 {upkeep}。请购买粮草或发展农业。',
+  '{enemy} masses {troops} troops beside {city}. Reinforce it, or seek peace.':
+    '{enemy}在{city}旁集结了 {troops} 兵力。请增兵，或设法求和。',
+  '{officer} commands no soldiers while {city} keeps {reserve} in reserve. Muster them.':
+    '{officer}没有统兵，而{city}尚有 {reserve} 预备兵。请为其编兵。',
+  '{officer} is close to leaving (loyalty {loyalty}). Reward or feast them.':
+    '{officer}即将离去（忠诚 {loyalty}）。请赏赐或设宴挽留。',
+  '{faction} holds Luoyang and 16 cities and will be proclaimed Hegemon in {months} months unless you stop them.':
+    '{faction}已占据洛阳与 16 座城池，若不加阻止，{months}个月后将被尊为霸主。',
+  '{faction} is closing in on the Hegemon title': '{faction}正逼近霸主之位',
+  '{faction} now holds Luoyang and 16 cities. In {left} months they will be proclaimed Hegemon.':
+    '{faction}已占据洛阳与 16 座城池，{left}个月后将被尊为霸主。',
+  '{faction} has held Luoyang and 16 cities for {months} months. {left} months remain before they are proclaimed Hegemon.':
+    '{faction}已占据洛阳与 16 座城池{months}个月，还有{left}个月便将被尊为霸主。',
+  'First-campaign goals: {done} of {total} complete.': '初战目标：已完成 {done}/{total} 项。',
+  '{enemy} masses {troops} troops beside {city} and may march as early as month {month}. Reinforce it, or seek peace.':
+    '{enemy}在{city}旁集结了 {troops} 兵力，最早第 {month} 个月就可能出兵。请增兵固守，或谋求议和。',
+  'FIRST-CAMPAIGN GOALS': '初战目标',
+  OBJECTIVES: '战略目标',
+  'Issue three city orders': '下达三道城池命令',
+  'Muster an officer to 1,500 soldiers': '为一位武将编兵至 1,500 人',
+  'Recruit a new officer': '招揽一位新武将',
+  'Capture your first city': '攻取第一座城池',
+  'Keep every city stocked with two months of food': '让每座城池都储备两个月的粮草',
+  'Be proclaimed Hegemon: hold Luoyang and 16 cities for {months} months':
+    '登临霸主：据守洛阳与 16 座城池满 {months} 个月',
+  'Hold the capital, Luoyang': '据守都城洛阳',
+  'Hold 16 cities': '占据 16 座城池',
+  'You are invited to join a coalition against {faction}.': '你受邀加入讨伐{faction}的联盟。',
+  Accept: '接受',
+  Decline: '谢绝',
+  Scenario: '剧本',
+  Difficulty: '难度',
+  Story: '剧情',
+  Standard: '标准',
+  Warlord: '枭雄',
+  'Cautious rivals, a two-month opening truce and no house personalities. Time to learn.':
+    '对手谨慎，开局停战两个月，诸侯无个性。适合熟悉玩法。',
+  'Balanced rivals with their own personalities. Challenging houses start with a two-month truce. The intended experience.':
+    '均衡的对手，各有个性。挑战型势力开局有两个月停战。推荐的标准体验。',
+  'Aggressive rivals with sharp personalities and no truce. Expect war in month one.':
+    '激进的对手，个性鲜明，无停战期。第一个月就会有战事。',
+  'Natural aging': '自然衰老',
+  'Veteran officers past sixty may die of old age each January. Off by default.':
+    '年过六十的老将每年一月可能病逝。默认关闭。',
+  'Fog of war: these figures are estimates. Scout this city from a neighboring city of yours to see exact numbers for two months.':
+    '战争迷雾：这些数字只是估计。从相邻己方城池侦察此城，可在两个月内看到准确数值。',
+  'Reorganize as': '改编为',
+  'Choose a troop type': '选择兵种',
+  'Choose a troop type first.': '请先选择兵种。',
+  Troops: '兵力',
+  Traits: '特质',
+  '{officer} of {faction} passed away of old age.': '{faction}的{officer}寿终正寝。',
+  'The Hegemon of the realm.': '天下霸主。',
+  'A rival is crowned Hegemon.': '对手登临霸主之位。',
+  '{ruler} has held the capital and sixteen cities for a year. The court proclaims a new Hegemon.':
+    '{ruler}据守都城与十六座城池满一年，朝廷拥立其为新的霸主。',
+  '{ruler} has held the capital and sixteen cities for a year and is proclaimed Hegemon. Your banner still flies, but the realm has chosen.':
+    '{ruler}据守都城与十六座城池满一年，被拥立为霸主。你的旗帜仍在，但天下已有归属。',
+
+  // v0.2 — officer traits.
+  Benevolent: '仁德',
+  Fierce: '勇猛',
+  Cunning: '智谋',
+  Loyal: '忠义',
+  Greedy: '贪婪',
+  'Persuades with +8% odds, but loses 8 loyalty when a city they serve in is plundered.':
+    '劝降成功率 +8%，但所在城池被掠夺时忠诚 −8。',
+  'Counterattacks hit 10% harder.': '反击伤害提高 10%。',
+  'Every tactic they cast costs 1 less tactic point (never below 1).':
+    '施展任何计策都少耗 1 点计策点（最低为 1）。',
+  'Persuasion against them is half as likely, and they never leave in January or July.':
+    '对其劝降的成功率减半，且一月、七月不会离队。',
+  'When they lead a plunder, raid or sack, the gold taken rises by 20%.':
+    '由其主持掠夺、袭掠或洗劫时，所得金钱增加 20%。',
+
+  // v0.2 — help, settings and version labels.
+  'Select your unit, move to a highlighted tile, then click an enemy in range. Archers shoot farther; cavalry moves faster. Defenders strike back, so read each forecast first. Tactics cost tactic points; routed troops cannot fight. Capture the enemy camp or defeat their troops. Defenders win when the day limit passes.':
+    '选择己方部队，移动到高亮格子，再点击射程内的敌军。弓兵射程更远，骑兵移动更快。受袭者会反击，请先查看战果预估。计策消耗计策点，溃败的部队无法作战。夺取敌营或歼灭敌军即可获胜；守军坚守到日数上限即告获胜。',
+  'Search for hidden talent, persuade officers, undermine rival cities, or negotiate alliances. Raid, sack or plunder when you must, but a ruined city breeds unrest. Captured officers may be recruited, released or executed. Conquer all 24 cities to unite the realm. Losing your last city ends the campaign.':
+    '搜索在野人才、劝降武将、破坏敌城或缔结盟约。必要时可袭掠、洗劫或掠夺，但城池残破会滋生民变。俘获的武将可招揽、释放或处决。攻取全部 24 座城池即可一统天下；失去最后一座城池则战役结束。',
+  'HEGEMONY OF THE THREE KINGDOMS · v0.2': '三国霸业 · v0.2',
 };
