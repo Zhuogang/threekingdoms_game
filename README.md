@@ -6,7 +6,7 @@
 
 A single-player, turn-based strategy game for desktop web browsers, inspired by **《三国霸业》 (Baye)** and rebuilt with **TypeScript, React, and PixiJS**. This is a learning project: readable game rules, reproducible saves, and a modern bilingual interface are the foundation for future expansion.
 
-![The campaign atlas in Chinese](docs/images/campaign-zh.png)
+![Current v0.2 ink-wash campaign map with city architecture variants (Chinese)](docs/images/campaign-ink-zh.png)
 
 ## Play in a few minutes
 
@@ -28,9 +28,14 @@ Choose a ruler and select **Raise your banner**. Open **Wiki** from the top bar 
 - **Living campaign:** persuasion odds, prisoner release or execution, officer levels and traits, unrest and departures, alliance odds and coalitions, rival personalities, and historical and everyday events.
 - **More ways to play:** a second scenario (**The eve of Guandu**, 200 AD), Story / Standard / Warlord difficulty, an opening truce, optional aging, fog of war on rival cities, a Hegemon victory, and an adviser with first-campaign goals.
 - **In-game Wiki:** 12 searchable English/Chinese chapters explain troop types, equipment, battles, city management and common questions. Open it from the top bar, any dialog or **F1**.
+- **Chinese ink-wash visuals:** a painted campaign atlas with larger, varied city symbols; regional battlefield terrain, connected river banks, walls and gates; and illustrated infantry, cavalry and archers.
 - **Old saves still load.** Version 1 saves migrate to version 2 without drawing any randomness.
 
 Start with the [v0.2 summary](docs/v0.2-summary.md). The [v0.2 rules](docs/v0.2-rules.md) list every rule with its constants, and the [v0.2 notes](docs/v0.2-notes.md) list deviations and the balance evidence. What is still open is in [next steps](docs/next-steps.md). Difficulty never gives rivals extra resources or combat bonuses.
+
+![Current v0.2 Hanzhong battlefield with ink-painted Qinling–Daba ridges and combat-unit illustrations (English)](docs/images/battle-ink-en.png)
+
+The screenshots above show the current v0.2 campaign and tactical views. Battlefield scenery reflects each city's broad regional setting on the game's tactical grid.
 
 ## What was in v0.1?
 
@@ -47,8 +52,6 @@ Start with the [v0.2 summary](docs/v0.2-summary.md). The [v0.2 rules](docs/v0.2-
 | Campaign ending | Unify all 24 cities to win; losing your last city ends the campaign                                                             |
 
 No account, server backend, API key, remote art service, or reference files are required to play.
-
-![Tactical combat in English](docs/images/battle-en.png)
 
 ## Your first campaign
 
@@ -92,6 +95,8 @@ Wiki text and illustrations are bundled with the game; no external Wiki service 
 ![The in-game Chinese Wiki, showing troop types and movement/range](docs/images/wiki-zh.png)
 
 ## Readable maps, recognizable commanders
+
+The campaign map uses Chinese ink-wash landscape art with enlarged city symbols: Luoyang and Chang'an have imperial precincts, Ye has a larger compound, and Pingyuan uses modest houses. Battles combine regional ink-painted hills and groves with the saved terrain grid. Infantry, cavalry and archer miniatures have distinct silhouettes, while faction crests, strength counts and action marks remain visible.
 
 Open **Settings** to choose **Compact**, **Comfortable** (default), or **Large**. The preference applies immediately to text, controls, and map presentation and stays with your browser. In battle, use **Fit battlefield** for an overview, **Readable tiles** for larger units, and **Center selected unit** to find your commander. Larger tiles can require panning on a laptop.
 
