@@ -14,6 +14,11 @@ export interface V03CityActionResult {
   error?: string;
 }
 
+export interface V03CityActionAvailability {
+  ok: boolean;
+  reason: string | null;
+}
+
 export const CITY_MONTHLY_WORK_GOLD_COST = 80;
 export const CITY_MANUAL_WORK_MAX_POINTS = 3;
 export const GOVERNOR_REWARD_GOLD_COST = 100;
@@ -22,7 +27,7 @@ export const GOVERNOR_RELIEF_GOLD_COST = 80;
 export const GOVERNOR_RELIEF_FOOD_COST = 600;
 const RESOURCE_CAP = 9_999_999;
 
-function localOfficers(state: V03GameState, city: V03City): V03Officer[] {
+function localOfficers(state: Readonly<V03GameState>, city: V03City): V03Officer[] {
   return state.officers
     .filter(
       (officer) =>
@@ -96,7 +101,7 @@ export function applySharedCityWorkEffect(
 }
 
 function officerForAction(
-  state: V03GameState,
+  state: Readonly<V03GameState>,
   city: V03City,
   officerId?: string,
 ): V03Officer | undefined {
@@ -126,6 +131,166 @@ function useWorkPoint(state: V03GameState, city: V03City): void {
   city.workPointsUsed = previous + 1;
 }
 
+function committedCityStock(state: Readonly<V03GameState>, cityId: string) {
+  const reserved = { gold: 0, food: 0, troops: 0 };
+  const outstanding = (order: { sourceCityId: string; journeyId: string | null; status: string }) =>
+    order.sourceCityId === cityId &&
+    order.journeyId === null &&
+    ['accepted', 'reserved', 'dispatched'].includes(order.status);
+  for (const order of state.requisitions) {
+    if (!outstanding(order)) continue;
+    reserved.gold += order.proposed.gold;
+    reserved.food += order.proposed.food;
+    reserved.troops += order.proposed.troops;
+  }
+  for (const order of state.directives) {
+    if (outstanding(order)) reserved.troops += order.proposedTroops;
+  }
+  return reserved;
+}
+
+/** Read-only availability query; execution uses the same validation before changing state. */
+export function getV03CityActionAvailability(
+  state: Readonly<V03GameState>,
+  input: V03CityActionInput,
+): V03CityActionAvailability {
+  return inspectCityAction(state, input, false);
+}
+
+function inspectCityAction(
+  state: Readonly<V03GameState>,
+  input: V03CityActionInput,
+  governorExecution: boolean,
+): V03CityActionAvailability {
+  const city = state.cities.find((entry) => entry.id === input.cityId);
+  const fail = (reason: string): V03CityActionAvailability => ({ ok: false, reason });
+  const authorized = governorExecution
+    ? Boolean(
+        city &&
+        city.id !== state.playerCapitalCityId &&
+        city.factionId !== null &&
+        city.governanceMode !== 'ruler',
+      )
+    : Boolean(
+        city &&
+        city.id === state.playerCapitalCityId &&
+        city.factionId === state.playerFactionId &&
+        city.governanceMode === 'ruler',
+      );
+  if (!city || !authorized)
+    return fail(
+      governorExecution
+        ? 'Monthly governor work requires an owned city under autonomous governance.'
+        : 'Only your directly governed capital accepts city work orders.',
+    );
+  if (state.phase === 'finished') return fail('This campaign has ended.');
+  const governorMonthSettlement =
+    governorExecution && state.dayResolution?.phase === 'month-settlement';
+  if (state.phase !== 'planning' && !governorMonthSettlement)
+    return fail('City work is available during campaign planning.');
+  const actor = officerForAction(state, city, input.officerId);
+  if (!actor)
+    return fail('A living officer must be stationed in the capital to organize this work.');
+  const quota = cityWorkQuota(state, city);
+  if (cityWorkUsedThisMonth(state, city) >= quota)
+    return fail(`The capital has used its ${quota} monthly work point${quota === 1 ? '' : 's'}.`);
+
+  let goldCost = 0;
+  let foodCost = 0;
+  let garrisonDecrease = 0;
+  switch (input.action) {
+    case 'restore-loyalty':
+      if (city.loyalty >= 100 || city.gold < 80)
+        return fail('The city cannot afford or benefit from loyalty recovery.');
+      goldCost = 80;
+      break;
+    case 'develop-farming':
+    case 'develop-commerce':
+      if (city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= 100)
+        return fail('This improvement is already at its current limit.');
+      if (city.gold < 80) return fail('The capital needs 80 unreserved gold for this work.');
+      goldCost = 80;
+      break;
+    case 'search':
+    case 'security':
+    case 'feast':
+      break;
+    case 'recruit': {
+      const gain = Math.max(0, Math.min(city.population - 1000, 300 + actor.force * 5));
+      if (gain <= 0)
+        return fail('The city has no recruitable population beyond its protected 1,000 residents.');
+      if (city.reserve + gain > RESOURCE_CAP) return fail('The city reserve is at capacity.');
+      break;
+    }
+    case 'assign-troops': {
+      if (!input.officerId) return fail('Choose a living officer stationed in the capital.');
+      if (!Number.isSafeInteger(input.amount) || input.amount! < 0 || input.amount! > 10_000)
+        return fail('An officer can command 0–10,000 soldiers.');
+      const change = input.amount! - actor.troops;
+      if (change > city.reserve) return fail('There are not enough soldiers in the city reserve.');
+      if (city.garrisonTroops + change < 0)
+        return fail('The city garrison does not contain those soldiers.');
+      garrisonDecrease = Math.max(0, -change);
+      break;
+    }
+    case 'train':
+      if (!input.officerId || actor.troops <= 0)
+        return fail('Choose a living officer with troops stationed in the capital to train.');
+      if (
+        actor.experience >= 10_000 ||
+        actor.force >= (actor.equipment === 'Fine arms' ? 105 : 100)
+      )
+        return fail('This officer has reached the current training limit.');
+      break;
+    case 'reward':
+      if (city.gold < GOVERNOR_REWARD_GOLD_COST)
+        return fail(`The city needs ${GOVERNOR_REWARD_GOLD_COST} gold to reward an officer.`);
+      if (actor.loyalty >= 100) return fail('This officer is already completely loyal.');
+      goldCost = GOVERNOR_REWARD_GOLD_COST;
+      break;
+    case 'equip':
+      if (city.gold < GOVERNOR_EQUIPMENT_GOLD_COST)
+        return fail(`The city needs ${GOVERNOR_EQUIPMENT_GOLD_COST} gold to issue fine arms.`);
+      if (actor.equipment === 'Fine arms') return fail('This officer already has fine arms.');
+      if (actor.force >= 105) return fail('This officer has reached the fine-arms force limit.');
+      goldCost = GOVERNOR_EQUIPMENT_GOLD_COST;
+      break;
+    case 'relieve':
+      if (city.gold < GOVERNOR_RELIEF_GOLD_COST)
+        return fail(`The city needs ${GOVERNOR_RELIEF_GOLD_COST} gold to relieve the people.`);
+      if (city.food < GOVERNOR_RELIEF_FOOD_COST)
+        return fail(`The city needs ${GOVERNOR_RELIEF_FOOD_COST} food to relieve the people.`);
+      if (city.population >= RESOURCE_CAP)
+        return fail('The city population is already at capacity.');
+      goldCost = GOVERNOR_RELIEF_GOLD_COST;
+      foodCost = GOVERNOR_RELIEF_FOOD_COST;
+      break;
+    case 'buy-food':
+      if (city.gold < 80) return fail('The capital needs 80 gold to buy food.');
+      if (city.food + 800 > RESOURCE_CAP)
+        return fail('The granary has no room for another 800 food.');
+      goldCost = 80;
+      break;
+    case 'sell-food':
+      if (city.food < 800)
+        return fail('The capital needs 800 food before it can sell this amount.');
+      if (city.gold + 80 > RESOURCE_CAP)
+        return fail('The treasury has no room for the sale proceeds.');
+      foodCost = 800;
+      break;
+    default:
+      return fail('This city work action is not implemented.');
+  }
+  const reserved = committedCityStock(state, city.id);
+  if (goldCost > 0 && city.gold - goldCost < reserved.gold)
+    return fail('This action would spend gold reserved for an approved order.');
+  if (foodCost > 0 && city.food - foodCost < reserved.food)
+    return fail('This action would spend food reserved for an approved order.');
+  if (garrisonDecrease > 0 && city.garrisonTroops - garrisonDecrease < reserved.troops)
+    return fail('These soldiers are reserved for an approved order.');
+  return { ok: true, reason: null };
+}
+
 /** Execute one direct ruler-city action through a shared monthly staffing budget. */
 export function applyV03CityAction(
   state: V03GameState,
@@ -147,47 +312,10 @@ function applyCityAction(
   input: V03CityActionInput,
   governorExecution: boolean,
 ): V03CityActionResult {
-  const sourceCity = state.cities.find((city) => city.id === input.cityId);
-  const authorized = governorExecution
-    ? Boolean(
-        sourceCity &&
-        sourceCity.id !== state.playerCapitalCityId &&
-        sourceCity.factionId !== null &&
-        sourceCity.governanceMode !== 'ruler',
-      )
-    : Boolean(
-        sourceCity &&
-        sourceCity.id === state.playerCapitalCityId &&
-        sourceCity.factionId === state.playerFactionId &&
-        sourceCity.governanceMode === 'ruler',
-      );
-  if (!sourceCity || !authorized)
-    return {
-      ok: false,
-      state,
-      error: governorExecution
-        ? 'Monthly governor work requires an owned city under autonomous governance.'
-        : 'Only your directly governed capital accepts city work orders.',
-    };
-  const governorMonthSettlement =
-    governorExecution && state.dayResolution?.phase === 'month-settlement';
-  if (state.phase !== 'planning' && !governorMonthSettlement)
-    return { ok: false, state, error: 'City work is available during campaign planning.' };
-  const manager = officerForAction(state, sourceCity, input.officerId);
-  if (!manager)
-    return {
-      ok: false,
-      state,
-      error: 'A living officer must be stationed in the capital to organize this work.',
-    };
-  const used = cityWorkUsedThisMonth(state, sourceCity);
-  const quota = cityWorkQuota(state, sourceCity);
-  if (used >= quota)
-    return {
-      ok: false,
-      state,
-      error: `The capital has used its ${quota} monthly work point${quota === 1 ? '' : 's'}.`,
-    };
+  const availability = inspectCityAction(state, input, governorExecution);
+  if (!availability.ok) return { ok: false, state, error: availability.reason! };
+  const sourceCity = state.cities.find((city) => city.id === input.cityId)!;
+  const manager = officerForAction(state, sourceCity, input.officerId)!;
 
   const next = structuredClone(state);
   const city = next.cities.find((entry) => entry.id === input.cityId)!;

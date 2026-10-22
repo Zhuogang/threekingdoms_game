@@ -529,7 +529,10 @@ test('opens the wiki in English and Chinese while keeping the campaign available
 }) => {
   await startCampaign(page);
 
-  await page.getByRole('button', { name: 'Field guide / Wiki', exact: true }).click();
+  await page
+    .locator('.v03-top-actions')
+    .getByRole('button', { name: 'Field guide / Wiki', exact: true })
+    .click();
   const englishWiki = page.getByRole('dialog', { name: 'Field guide / Wiki' });
   await expect(englishWiki).toBeVisible();
   await expect(englishWiki.getByText('Your first campaign')).toBeVisible();
@@ -537,10 +540,14 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(englishWiki.getByText(/Six tactics are available/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Governors', exact: true }).click();
   await expect(englishWiki.getByText(/reward an officer for 100 gold/)).toBeVisible();
+  await expect(englishWiki.getByText(/Recruit → assign → march/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Close' }).click();
 
   await page.getByRole('button', { name: '中文', exact: true }).click();
-  await page.getByRole('button', { name: '游戏指南 / Wiki', exact: true }).click();
+  await page
+    .locator('.v03-top-actions')
+    .getByRole('button', { name: '游戏指南 / Wiki', exact: true })
+    .click();
   const chineseWiki = page.getByRole('dialog', { name: '游戏指南 / Wiki' });
   await expect(chineseWiki).toBeVisible();
   await chineseWiki.getByRole('button', { name: '兵种', exact: true }).click();
@@ -548,6 +555,7 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(chineseWiki.getByText(/步兵稳定守线/)).toBeVisible();
   await chineseWiki.getByRole('button', { name: '太守', exact: true }).click();
   await expect(chineseWiki.getByText(/君主本城每个驻城武将/)).toBeVisible();
+  await expect(chineseWiki.getByText(/征募 → 分配 → 出征/)).toBeVisible();
   await chineseWiki.getByRole('button', { name: '战斗操作', exact: true }).click();
   await expect(chineseWiki.getByText(/六种计策/)).toBeVisible();
   await expect(page.locator('.v03-campaign-main')).toBeVisible();
@@ -572,7 +580,7 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
           exact: true,
         })
         .first();
-      const wiki = page.getByRole('button', {
+      const wiki = page.locator('.v03-top-actions').getByRole('button', {
         name: locale === 'en' ? 'Field guide / Wiki' : '游戏指南 / Wiki',
         exact: true,
       });
@@ -655,7 +663,7 @@ test('keeps campaign and battlefield controls reachable with 200% browser zoom',
         exact: true,
       })
       .first();
-    const wiki = page.getByRole('button', {
+    const wiki = page.locator('.v03-top-actions').getByRole('button', {
       name: locale === 'en' ? 'Field guide / Wiki' : '游戏指南 / Wiki',
       exact: true,
     });

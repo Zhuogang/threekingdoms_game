@@ -2,7 +2,7 @@
 
 An independent, bilingual Three Kingdoms strategy game built around historically informed travel estimates, autonomous governor-run cities, daily campaign time, and large ink-wash field battles. v0.3 is a new game with its own rules and save format; v0.1/v0.2 saves are not compatible.
 
-**Local candidate · October 21, 2026 · branch `v0.3`.** The original eight audited defects are fixed and the core campaign, governor, battle, save and Wiki systems are integrated. Fresh automated checks pass, but a follow-up review found an NPC-only-battle clock lock, map framing defects and smaller usability gaps. The [scoped playability to-do list](docs/v0.3/playability-review-and-todo.md) records the reproduction evidence and repairs proposed for this version. Four player play sessions, a real low-end-machine check and art revision/approval also remain open. See the [implementation status](docs/v0.3/implementation-status.md). The initial [implementation audit](docs/v0.3/implementation-audit.md) is a historical pre-fix record.
+**Local candidate · October 21, 2026 · branch `v0.3`.** The original eight audited defects and all ten [follow-up playability tasks](docs/v0.3/playability-review-and-todo.md#rv-completion-ledger) are implemented. The campaign clock handles NPC-only battles, maps fit stable frames, and recovery, orders, governors, troop counts, bilingual help and tactical readouts are clearer. Four player play sessions, a real low-end-machine check and art revision/approval remain open. See the [implementation status](docs/v0.3/implementation-status.md) and [fresh validation](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md). The initial audit and pre-repair layout captures remain historical evidence.
 
 ## Run locally
 
@@ -14,6 +14,8 @@ Requires Node.js 22.12 or newer.
 4. Choose a scenario and house, then begin a campaign.
 
 Use the language toggle and open **Field guide / Wiki** (**游戏指南 / Wiki**) at any time. Autosaves stay in this browser profile; export a v0.3 save to keep a portable backup.
+
+Use **Campaign menu / 战役菜单** to resume or choose a new campaign. Starting over requires confirmation and offers export first. A failed import leaves your campaign and drafts intact; a successful import starts with clean controls. Export downloads a file independently of local saving; if browser storage fails, export remains available and **Retry save / 重试保存** retries the current state.
 
 ## Campaign and governance
 
@@ -31,7 +33,7 @@ All troop types can enter passable water. Units on water deal 25% less damage an
 
 ## Current browser captures
 
-These earlier v0.3 captures show the integrated interface. The follow-up review includes fresh [map layout failure evidence](docs/v0.3/playability-review-and-todo.md#validation-and-evidence); repair and recapture the framing before judging draft artwork or treating these images as visual acceptance.
+Fresh 1920×1080 captures after the playability repairs show the compact atlas minimap and fitted battlefield. [All four templates at Fit and working zoom](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md) are available for review. Battle captures use a controlled test save with shortened travel and substituted regional terrain; they illustrate rendering, not historical battle locations. Artwork remains draft pending player feedback.
 
 ![Current v0.3 campaign atlas and governor controls](docs/images/v03-campaign.png)
 
@@ -51,10 +53,10 @@ The game stores one automatic v0.3 save in local browser storage and supports v0
 
 Run these commands from the repository root:
 
-- `npm test -- --maxWorkers=1 --no-file-parallelism` — 594 passed, 1 skipped across 43 files.
+- `npm test -- --maxWorkers=1 --no-file-parallelism` — 668 passed, 1 skipped across 46 files.
 - `npx tsc --noEmit` and `npm run build` — type check and production build pass.
 - `npm run format:check` — formatting check passes.
-- `npm run test:e2e` — 15 Playwright browser tests pass, including all six tactics, four battlefield templates, both languages, 390/1366/1920 px widths and 200% zoom.
+- `npm run test:e2e` — 34 Playwright browser tests cover all six tactics, four templates, EN/ZH, 390/1366/1920 px and 200% zoom, plus the RV clock, geometry, recovery, inbox, governor, troop, economy and withdrawal regressions.
 - `npm run test:production` — production subpath and save-reload smoke test passes.
 - `npm run test:perf:v03` — tactical-day performance test passes.
 - `npm run validate:portraits` — 53 named mappings plus garrison and 108 WebP renditions pass validation; the contact sheet still needs human review.

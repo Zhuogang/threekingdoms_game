@@ -1,0 +1,224 @@
+import type { V03GameState } from '../types';
+import type { V03Locale } from '../wiki';
+import { troopName } from '../rendering/presentation';
+
+const ROUTINE_ZH: Readonly<Record<string, string>> = {
+  'Only your directly governed capital accepts city work orders.':
+    '只有君主直辖本城接受直接内政命令。',
+  'Monthly governor work requires an owned city under autonomous governance.':
+    '太守月度工作要求城市归本势力所有并实行自治。',
+  'City work is available during campaign planning.': '只能在战略筹划阶段安排内政。',
+  'A living officer must be stationed in the capital to organize this work.':
+    '需要一名驻守本城的在世武将组织此项工作。',
+  'The city cannot afford or benefit from loyalty recovery.': '城市金钱不足，或民心已无需恢复。',
+  'This improvement is already at its current limit.': '此项发展已达到当前上限。',
+  'The capital needs 80 unreserved gold for this work.': '此项工作需要 80 未预留的金钱。',
+  'The city has no recruitable population beyond its protected 1,000 residents.':
+    '城市须保留 1,000 居民，目前没有可征募人口。',
+  'The city reserve is at capacity.': '城市预备兵已达到容量上限。',
+  'The capital cannot complete recruitment with its current reserves.':
+    '当前预备兵状态无法完成征募。',
+  'Choose a living officer stationed in the capital.': '请选择一名驻守本城的在世武将。',
+  'An officer can command 0–10,000 soldiers.': '单名武将可统领 0–10,000 名士兵。',
+  'There are not enough soldiers in the city reserve.': '城市预备兵不足。',
+  'The city garrison does not contain those soldiers.': '城市驻军中没有足够的所部士兵。',
+  'Choose a living officer with troops stationed in the capital to train.':
+    '请选择一名驻守本城且拥有部队的在世武将训练。',
+  'This officer has reached the current training limit.': '该武将已达到当前训练上限。',
+  'The capital cannot complete this security action.': '本城当前无法完成治安行动。',
+  'This officer is already completely loyal.': '该武将的忠诚已满。',
+  'This officer already has fine arms.': '该武将已配备精良兵器。',
+  'This officer has reached the fine-arms force limit.': '该武将已达到精良兵器的武力上限。',
+  'The city population is already at capacity.': '城市人口已达到容量上限。',
+  'The capital needs 80 gold to buy food.': '购买粮食需要 80 金。',
+  'The granary has no room for another 800 food.': '粮仓没有容纳额外 800 粮的空间。',
+  'The capital cannot complete this market purchase.': '本城当前无法完成这笔粮食购买。',
+  'The capital needs 800 food before it can sell this amount.': '出售此数量需要至少 800 粮。',
+  'The treasury has no room for the sale proceeds.': '金库没有容纳售粮所得的空间。',
+  'Merchants delivered 800 food for 80 gold.': '商人以 80 金运来了 800 粮。',
+  'Merchants bought 800 food for 80 gold.': '商人以 80 金购走了 800 粮。',
+  'This action would spend gold reserved for an approved order.':
+    '该行动会动用已批准命令预留的金钱。',
+  'This action would spend food reserved for an approved order.':
+    '该行动会动用已批准命令预留的粮食。',
+  'These soldiers are reserved for an approved order.': '这些士兵已为获批命令预留。',
+  'This city is not under your faction’s authority.': '该城市不受你的势力管辖。',
+  'A governor or local steward handles this city’s internal administration.':
+    '该城市的内政由太守或地方班底自治管理。',
+  'Governor appointments can only be issued during campaign planning.':
+    '只能在战略筹划阶段下达太守任免。',
+  'You can appoint a governor only to one of your own cities.': '只能为己方城市任命太守。',
+  'The ruler’s capital remains directly governed.': '君主本城保持直辖。',
+  'Choose a living officer who serves your faction.': '请选择一名效力于己方势力的在世武将。',
+  'The officer must be available in a friendly city before taking office.':
+    '武将必须先驻于友方城市，才可接受任命。',
+  'An officer commanding troops cannot take office until relieved.':
+    '武将须先将所部归还预备兵，才能接受调任。',
+  'A route service is required to transfer an officer between cities.':
+    '跨城调任需要可用的行程路线。',
+  'No usable route connects the officer’s current city to the appointment city.':
+    '武将所在城市与任职城市间没有可用路线。',
+  'The officer’s travel plan could not be created; no appointment was changed.':
+    '无法创建调任行程，任免状态未改变。',
+  'Acknowledge the current report before completing the battle day.':
+    '请先确认当前待办报告，再结束战斗日。',
+  'Complete the day in every active player battle before advancing the world.':
+    '请先提交每一场己方战斗的本日指令，再推进战役。',
+  'Advance one day at a time while a player battle is active.':
+    '己方战斗进行期间，每次只能推进一日。',
+  'This battle day is already complete.': '本场战斗日已经提交。',
+  'This campaign has ended.': '本次战役已经结束。',
+  'Choose a valid target for this tactic.': '请选择此计策的合法目标。',
+  'Choose a living enemy unit.': '请选择一支存活的敌方部队。',
+  'Routed units can only move or hold.': '溃败部队只能移动或待命。',
+  'This save uses an unsupported newer version. Open it with a compatible game version; existing data was left unchanged.':
+    '该存档采用本程序不支持的更新版本。请用兼容版本打开；现有数据未更改。',
+};
+
+/** Current engine formation names retain their troop label and comma-separated leaders. */
+export function localizeV03PersonOrFormationName(
+  name: string,
+  locale: V03Locale,
+  state?: Readonly<V03GameState>,
+): string {
+  if (locale === 'en') return name;
+  const officerName = (value: string) =>
+    state?.officers.find((officer) => officer.name === value || officer.chinese === value)
+      ?.chinese ?? value;
+  const formationType = (value: string) => {
+    const key = value.toLowerCase();
+    if (key === 'militia') return '民兵';
+    if (key === 'archers') return troopName('archer', 'zh');
+    return troopName(key, 'zh') === key ? value : troopName(key, 'zh');
+  };
+  const separator = name.indexOf(' · ');
+  if (separator !== -1) {
+    const formation = formationType(name.slice(0, separator));
+    const leaders = name
+      .slice(separator + 3)
+      .split(', ')
+      .map(officerName)
+      .join('、');
+    return `${formation} · ${leaders}`;
+  }
+  return officerName(formationType(name));
+}
+
+/** Bounded adapter for current domain messages. Null lets the caller use its established fallback. */
+export function localizeRoutineFeedback(
+  message: string,
+  locale: V03Locale,
+  state?: Readonly<V03GameState>,
+): string | null {
+  if (locale === 'en') return message;
+  if (ROUTINE_ZH[message]) return ROUTINE_ZH[message]!;
+  const name = (value: string) => localizeV03PersonOrFormationName(value, locale, state);
+  let match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);
+  if (match) return `本城本月的 ${match[1]} 个工作点已用完。`;
+  match = message.match(/^(.+) improved city loyalty by 2 for 80 gold\.$/);
+  if (match) return `${name(match[1]!)}花费 80 金，使民心提高 2。`;
+  match = message.match(/^(Farming|Commerce) improved by 1 for 80 gold\.$/);
+  if (match) return `${match[1] === 'Farming' ? '农业' : '商业'}花费 80 金提高了 1。`;
+  match = message.match(/^(.+) found (.+), who joined your faction\.$/);
+  if (match) return `${name(match[1]!)}寻得${name(match[2]!)}，其已加入己方势力。`;
+  match = message.match(/^(.+) searched the countryside, but no officer joined this month\.$/);
+  if (match) return `${name(match[1]!)}搜访乡野，本月没有武将加入。`;
+  match = message.match(/^(.+) recruited (\d+) soldiers into the reserve\.$/);
+  if (match) return `${name(match[1]!)}征募了 ${match[2]} 名士兵，已编入预备兵。`;
+  match = message.match(/^(.+) now commands ([\d,]+) soldiers\.$/);
+  if (match) return `${name(match[1]!)}现统领 ${match[2]} 名士兵。`;
+  match = message.match(/^(.+) completed training: \+25 experience and \+1 force\.$/);
+  if (match) return `${name(match[1]!)}完成训练：经验 +25，武力 +1。`;
+  match = message.match(/^(.+) restored public order; city loyalty is now (\d+)%\.$/);
+  if (match) return `${name(match[1]!)}整顿治安，民心现为 ${match[2]}%。`;
+  match = message.match(/^(.+) hosted a feast; local officers gained up to 8 loyalty\.$/);
+  if (match) return `${name(match[1]!)}举办宴饮，驻城武将忠诚提高最多 8。`;
+  match = message.match(/^(.+) received a reward and gained up to 15 loyalty\.$/);
+  if (match) return `${name(match[1]!)}接受赏赐，忠诚提高最多 15。`;
+  match = message.match(/^(.+) distributed grain: up to 15 city loyalty and 300 population\.$/);
+  if (match) return `${name(match[1]!)}开仓赈济，民心提高最多 15，人口增加 300。`;
+  match = message.match(/^(.+) received fine arms and gained up to 5 force\.$/);
+  if (match) return `${name(match[1]!)}获配精良兵器，武力提高最多 5。`;
+  match = message.match(
+    /^The city needs (\d+) (gold|food) to (reward an officer|relieve the people|issue fine arms)\.$/,
+  );
+  if (match)
+    return `${match[3] === 'reward an officer' ? '赏赐武将' : match[3] === 'relieve the people' ? '赈济百姓' : '配发精良兵器'}需要 ${match[1]} ${match[2] === 'gold' ? '金' : '粮'}。`;
+  match = message.match(
+    /^(.+) (has already acted today|has already moved today|is confused and cannot act today|is confused and will lose the rest of today|is outside the normal attack range|is outside this tactic's range)\.$/,
+  );
+  if (match) {
+    const reasons: Record<string, string> = {
+      'has already acted today': '今日已经行动',
+      'has already moved today': '今日已经移动',
+      'is confused and cannot act today': '陷入混乱，今日无法行动',
+      'is confused and will lose the rest of today': '陷入混乱，今日无法继续行动',
+      'is outside the normal attack range': '不在普通攻击射程内',
+      "is outside this tactic's range": '不在此计策的射程内',
+    };
+    return `${name(match[1]!)}${reasons[match[2]!]!}。`;
+  }
+  return null;
+}
+
+/** Translate the existing tactical log vocabulary, including all six tactics and water suffixes. */
+export function localizeRoutineBattleLog(
+  line: string,
+  state: Readonly<V03GameState>,
+  locale: V03Locale,
+): string | null {
+  if (locale === 'en') return line;
+  const person = (value: string) => localizeV03PersonOrFormationName(value, locale, state);
+  const side = (value: string) =>
+    value === 'attacker' ? '攻方' : value === 'defender' ? '守方' : value;
+  const water = line.match(/ \(water ([\d.]+)× attack × ([\d.]+)× damage received\)\.$/);
+  const core = water ? `${line.slice(0, water.index)}.` : line;
+  const finish = (text: string) =>
+    `${text}${water ? `（水上修正：攻击 ×${water[1]}，承伤 ×${water[2]}）` : ''}。`;
+  let match = core.match(/^Battle (.+) begins on a (hanzhong|shouchun|xiapi|chengdu) field\.$/);
+  if (match) {
+    const regions: Record<string, string> = {
+      hanzhong: '汉中',
+      shouchun: '寿春',
+      xiapi: '下邳',
+      chengdu: '成都',
+    };
+    return finish(`战斗（${match[1]}）在${regions[match[2]!]!}战场开始`);
+  }
+  match = core.match(/^(.+)'s fire tactic strikes (.+): (\d+) casualties\.$/);
+  if (match) return finish(`${person(match[1]!)}对${person(match[2]!)}施展火计：伤亡 ${match[3]}`);
+  match = core.match(/^(.+) ambushes (.+): (\d+) casualties\.$/);
+  if (match) return finish(`${person(match[1]!)}伏击${person(match[2]!)}：伤亡 ${match[3]}`);
+  match = core.match(/^(.+) drops rocks on (.+): (\d+) casualties; morale −(\d+)\.$/);
+  if (match)
+    return finish(
+      `${person(match[1]!)}对${person(match[2]!)}施展落石：伤亡 ${match[3]}，士气 −${match[4]}`,
+    );
+  match = core.match(/^(.+) confuses (.+); the unit will lose its next turn \((\d+)% chance\)\.$/);
+  if (match)
+    return finish(
+      `${person(match[1]!)}使${person(match[2]!)}陷入混乱，下回合无法行动（成功率 ${match[3]}%）`,
+    );
+  match = core.match(/^(.+) resists (.+)'s confusion tactic \((\d+)% chance\)\.$/);
+  if (match)
+    return finish(
+      `${person(match[1]!)}抵抗了${person(match[2]!)}的混乱计策（成功率 ${match[3]}%）`,
+    );
+  match = core.match(
+    /^(.+) rallies (.+): morale \+(\d+); next attack \+20%(; confusion cleared)?\.$/,
+  );
+  if (match)
+    return finish(
+      `${person(match[1]!)}鼓舞${person(match[2]!)}：士气 +${match[3]}，下次攻击 +20%${match[4] ? '，混乱已解除' : ''}`,
+    );
+  match = core.match(/^(.+) raids (.+)'s supplies: (\d+) food seized\.$/);
+  if (match)
+    return finish(`${person(match[1]!)}劫掠${person(match[2]!)}的粮草：夺取 ${match[3]} 粮`);
+  match = core.match(
+    /^(attacker|defender) army breaks and retreats; (attacker|defender) holds the battlefield\.$/,
+  );
+  if (match) return finish(`${side(match[1]!)}溃败撤离，${side(match[2]!)}控制战场`);
+  match = core.match(/^(.+) loses its turn to confusion\.$/);
+  if (match) return finish(`${person(match[1]!)}因混乱失去本回合行动`);
+  return null;
+}

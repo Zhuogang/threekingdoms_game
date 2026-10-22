@@ -6,7 +6,7 @@ import {
   type Point,
 } from './geometry';
 import type { BattlefieldVisualMap } from './BattlefieldMapView';
-import type { BattleUnitVisual, CellMarker } from './presentation';
+import { isLivingBattleUnitVisual, type BattleUnitVisual, type CellMarker } from './presentation';
 import type { KeyboardEvent, PointerEvent } from 'react';
 
 export interface BattlefieldMinimapProps {
@@ -129,7 +129,7 @@ export function BattlefieldMinimap({
       style={{
         display: 'block',
         width: '100%',
-        height: '100%',
+        height: 'auto',
         cursor: onNavigate ? 'crosshair' : 'default',
         touchAction: onNavigate ? 'none' : 'manipulation',
       }}
@@ -175,11 +175,11 @@ export function BattlefieldMinimap({
           />
         );
       })}
-      {units.map((unit) => {
+      {units.filter(isLivingBattleUnitVisual).map((unit) => {
         const point = minimapPoint(unit.position, map.width, map.height, VIEWPORT);
         const player = unit.faction === 'player';
         return (
-          <g key={unit.id} aria-label={unit.label ?? unit.troopType}>
+          <g key={unit.id} data-unit-id={unit.id} aria-label={unit.label ?? unit.troopType}>
             <circle
               cx={point.x}
               cy={point.y}

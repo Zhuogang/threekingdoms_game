@@ -254,10 +254,17 @@ export function objectiveDefenseMultiplier(_map: BattleMap, _position: BattlePos
 
 /** Ordinary terrain defense only; the camp overlay never changes this value. */
 export function battleTerrainDefenseMultiplier(map: BattleMap, position: BattlePosition): number {
-  const terrain = battleTerrainAt(map, position);
-  if (terrain === 'hill') return 0.8;
-  if (terrain === 'forest') return 0.82;
-  return 1;
+  return terrainDefenseMultiplier(battleTerrainAt(map, position));
+}
+
+/** Existing normal-attack terrain modifier, also exposed to tactical inspection. */
+export function terrainDefenseMultiplier(terrain: BattleTerrain | null): number {
+  return terrain === 'hill' ? 0.8 : terrain === 'forest' ? 0.82 : 1;
+}
+
+/** Existing fire damage multiplier for the target tile. */
+export function fireTerrainMultiplier(terrain: BattleTerrain | null): number {
+  return terrain === 'forest' ? 1.4 : 1;
 }
 
 export function validateBattleMap(map: BattleMap): string[] {

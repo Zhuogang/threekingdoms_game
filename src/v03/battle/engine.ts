@@ -1,8 +1,15 @@
-import { battleTerrainAt, validateBattleMap, validateBattleUnits } from './maps';
+import {
+  battleTerrainAt,
+  fireTerrainMultiplier,
+  terrainDefenseMultiplier,
+  validateBattleMap,
+  validateBattleUnits,
+} from './maps';
 import {
   applyWaterDamageModifiers,
   battlePositionIndex,
   casualtyCountAfterWater,
+  fireWeatherMultiplier,
   getBattleRouteDistanceField,
   getReachableBattleTiles,
   isBattleAttackInRange,
@@ -347,7 +354,7 @@ function baseDamage(
   const routedTarget = isRouted(target) ? 1.2 : 1;
   const inspiration = source.status === 'inspired' ? INSPIRED_DAMAGE_MULTIPLIER : 1;
   const terrain = battleTerrainAt(map, target);
-  const terrainDefense = terrain === 'hill' ? 0.8 : terrain === 'forest' ? 0.82 : 1;
+  const terrainDefense = terrainDefenseMultiplier(terrain);
   // The existing 20-person normal-hit floor remains part of the base damage;
   // water modifiers are applied after it, then casualties are rounded once.
   return Math.max(
@@ -371,10 +378,10 @@ function fireBaseDamage(
   target: TacticalBattleUnit,
   variation: number,
 ): number {
-  const weather = state.weather === 'rain' ? 0.4 : state.weather === 'wind' ? 1.25 : 1;
+  const weather = fireWeatherMultiplier(state.weather);
   const ground = battleTerrainAt(state.map, target);
   // Water's legacy fire immunity is removed: water uses the shared attack/defense modifiers.
-  const forest = ground === 'forest' ? 1.4 : 1;
+  const forest = fireTerrainMultiplier(ground);
   const intellect = Math.max(0.35, (source.intellect + 30) / (target.intellect + 55));
   return Math.max(12, source.troops * 0.1584 * intellect * weather * forest * variation);
 }

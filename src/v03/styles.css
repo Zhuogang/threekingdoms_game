@@ -168,6 +168,12 @@ button:disabled {
     600 15px 'Noto Serif SC',
     serif;
 }
+.v03-rail > button:first-child {
+  padding: 2px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.1;
+}
 .v03-rail button:hover,
 .v03-rail button.active {
   border-color: #9e8c62;
@@ -241,7 +247,9 @@ button:disabled {
   background-position: center;
   box-shadow: inset 0 0 22px #28251e21;
 }
-.v03-map-frame > svg {
+.v03-map-frame > svg:not(.v03-campaign-minimap) {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
@@ -249,7 +257,7 @@ button:disabled {
   outline: 4px solid #285d73;
   outline-offset: -5px;
 }
-.v03-map-frame > svg:focus-visible,
+.v03-map-frame > svg:not(.v03-campaign-minimap):focus-visible,
 .v03-campaign-minimap:focus-visible {
   outline: 4px solid #285d73;
   outline-offset: -5px;
@@ -518,6 +526,11 @@ button:disabled {
   color: #6d634f;
   font-size: 11px;
 }
+.v03-direct-work > p,
+.v03-direct-work > ul,
+.v03-work-officer > ul {
+  grid-column: 1 / -1;
+}
 .v03-direct-work .v03-work-quota {
   grid-column: 1 / -1;
   color: #777264;
@@ -707,7 +720,9 @@ button:disabled {
   background: #e9e0cc;
   overflow: hidden;
 }
-.v03-battle-board svg {
+.v03-battle-board > .v03-battlefield-map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
@@ -766,6 +781,11 @@ button:disabled {
   gap: 12px;
 }
 .v03-battlefield-minimap {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  aspect-ratio: 6 / 5;
+  align-self: start;
   border-radius: 8px;
   box-shadow: 0 2px 6px #17161126;
 }
@@ -931,6 +951,8 @@ button:disabled {
   top: 82px;
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 24px);
   padding: 8px 12px;
   border: 1px solid #a69a80;
   border-radius: 6px;
@@ -939,8 +961,15 @@ button:disabled {
   box-shadow: 0 4px 20px #25211633;
   font-size: 12px;
 }
+.v03-toast {
+  top: auto;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .v03-toast button {
-  margin-left: 10px;
+  flex-shrink: 0;
   border: 0;
   background: none;
   font-size: 16px;
@@ -957,6 +986,85 @@ button:disabled {
   display: grid;
   place-items: center;
   background: #181812a8;
+}
+.v03-confirm-modal {
+  width: min(480px, 100%);
+  max-height: 90vh;
+  padding: 22px;
+  overflow-y: auto;
+  border: 1px solid #b9a980;
+  border-radius: 10px;
+  background: #f4efdf;
+  box-shadow: 0 16px 70px #09090799;
+}
+.v03-confirm-modal h2 {
+  margin: 0 0 12px;
+  font:
+    600 22px 'Noto Serif SC',
+    serif;
+}
+.v03-confirm-modal p {
+  line-height: 1.5;
+}
+.v03-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.v03-dialog-actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #a99d83;
+  border-radius: 6px;
+  background: #fffaf0;
+}
+.v03-dialog-actions .v03-primary {
+  background: #416b63;
+}
+.v03-dialog-actions .v03-retreat-action {
+  background: #f0ded4;
+}
+.v03-battle-inspection {
+  margin: 10px 0;
+  padding: 9px;
+  border: 1px solid #d0c4ad;
+  border-radius: 6px;
+  background: #f7f1e5;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.v03-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+  margin: 8px 0;
+}
+.v03-readout-grid > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v03-readout-grid small,
+.v03-readout-grid strong {
+  display: block;
+}
+.v03-readout-grid small {
+  color: #796c54;
+}
+.v03-backlog-list {
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.v03-report-blocker {
+  margin: 8px 0;
+  padding: 8px;
+  border-left: 3px solid #935747;
+  background: #f0e0d3;
+  color: #733e31;
+  font-size: 12px;
 }
 .v03-wiki-modal {
   width: min(900px, 100%);
@@ -1252,8 +1360,8 @@ button:disabled {
   .v03-battle-lower {
     grid-template-columns: 1fr;
   }
-  .v03-battle-lower > svg {
-    max-height: 130px;
+  .v03-battlefield-minimap {
+    max-width: 156px;
   }
   .v03-ruler-grid {
     grid-template-columns: repeat(2, 1fr);

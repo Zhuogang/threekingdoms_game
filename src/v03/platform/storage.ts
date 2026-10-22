@@ -888,12 +888,41 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
   }
   const parsed = envelopeSchema.safeParse(decoded);
   if (!parsed.success) {
-    const candidate = decoded as { version?: unknown; ruleset?: unknown; format?: unknown } | null;
-    if (candidate && typeof candidate === 'object' && candidate.version !== 3) {
+    const candidate = decoded as {
+      version?: unknown;
+      formatVersion?: unknown;
+      ruleset?: unknown;
+      format?: unknown;
+      state?: { version?: unknown; ruleset?: unknown };
+    } | null;
+    const recognizedEnvelope =
+      candidate &&
+      typeof candidate === 'object' &&
+      (candidate.format === 'baye.save' || candidate.format === 'hegemony.save') &&
+      typeof candidate.ruleset === 'string';
+    const oldBayeEnvelope =
+      candidate &&
+      candidate.format === 'baye.save' &&
+      (candidate.formatVersion === 1 || candidate.formatVersion === 2) &&
+      candidate.state?.version === candidate.formatVersion &&
+      candidate.state.ruleset === `baye-atlas-${candidate.formatVersion}`;
+    if (
+      oldBayeEnvelope ||
+      (recognizedEnvelope && (candidate.version === 1 || candidate.version === 2))
+    ) {
       throw new Error(
         'This save belongs to an older version. Start a new v0.3 campaign; existing data was left unchanged.',
       );
     }
+    if (
+      recognizedEnvelope &&
+      candidate.format === 'hegemony.save' &&
+      Number.isSafeInteger(candidate.version) &&
+      (candidate.version as number) > 3
+    )
+      throw new Error(
+        'This save uses an unsupported newer version. Open it with a compatible game version; existing data was left unchanged.',
+      );
     throw new Error('This file is not a valid hegemony.save v0.3 campaign.');
   }
   if (!validateV03State(parsed.data.state))

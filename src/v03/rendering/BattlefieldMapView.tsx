@@ -31,6 +31,8 @@ import {
 } from './battlefield-viewport';
 import {
   formatModifier,
+  formatTroopCount,
+  isLivingBattleUnitVisual,
   troopGlyph,
   troopName,
   unitIsOnWater,
@@ -243,6 +245,9 @@ function UnitSprite({
   const localeName = troopName(unit.troopType, locale);
   const attackText = formatModifier(onWater ? waterAttackMultiplier : undefined, locale);
   const damageText = formatModifier(onWater ? waterIncomingDamageMultiplier : undefined, locale);
+  const countLabel =
+    unit.strength === undefined ? undefined : formatTroopCount(unit.strength, locale);
+  const countWidth = countLabel ? countLabel.length * 6.4 + 14 : 0;
   const details = [
     localeName,
     unit.label,
@@ -262,6 +267,7 @@ function UnitSprite({
   return (
     <g
       className="v03-unit-token"
+      data-unit-id={unit.id}
       transform={`translate(${x} ${y})`}
       role="button"
       tabIndex={0}
@@ -335,9 +341,18 @@ function UnitSprite({
           </text>
         </g>
       ) : null}
-      {unit.strength !== undefined ? (
+      {countLabel !== undefined ? (
         <g transform="translate(24 -32)">
-          <circle r={13} fill="#f7efe0" stroke={factionStroke} strokeWidth={2} />
+          <rect
+            x={-countWidth / 2}
+            y={-12}
+            width={countWidth}
+            height={24}
+            rx={10}
+            fill="#f7efe0"
+            stroke={factionStroke}
+            strokeWidth={2}
+          />
           <text
             textAnchor="middle"
             dominantBaseline="central"
@@ -345,7 +360,7 @@ function UnitSprite({
             fontWeight="700"
             fill="#29251f"
           >
-            {Math.max(0, Math.min(99, Math.floor(unit.strength / 1000)))}
+            {countLabel}
           </text>
         </g>
       ) : null}
@@ -747,7 +762,7 @@ export function BattlefieldMapView({
           locale={locale}
         />
       ))}
-      {units.map((unit) => {
+      {units.filter(isLivingBattleUnitVisual).map((unit) => {
         const isWater = unitIsOnWater(unit, map);
         const imageReady =
           unit.troopType === 'infantry'

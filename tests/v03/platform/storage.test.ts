@@ -204,6 +204,36 @@ describe('v0.3 save format and namespace', () => {
     ).toThrow('This save belongs to an older version.');
   });
 
+  it.each([1, 2])('recognizes the actual Baye v%s envelope markers', (version) => {
+    expect(() =>
+      decodeV03Save({
+        format: 'baye.save',
+        formatVersion: version,
+        scenario: 'divided-realm-190',
+        state: { version, ruleset: `baye-atlas-${version}` },
+      }),
+    ).toThrow('older version');
+  });
+
+  it.each([
+    {},
+    { version: 2 },
+    { format: 'hegemony.save', version: '4', ruleset: 'hegemony-4' },
+    null,
+  ])('classifies malformed imports as invalid rather than older saves: %j', (payload) => {
+    expect(() => decodeV03Save(payload)).toThrow('not a valid hegemony.save');
+  });
+
+  it('distinguishes an unsupported future save and leaves the stored payload intact', () => {
+    const payload = JSON.stringify({ format: 'hegemony.save', version: 4, ruleset: 'hegemony-4' });
+    const storage = { getItem: () => payload };
+    expect(() => loadV03Autosave(storage)).toThrow('unsupported newer version');
+    expect(storage.getItem()).toBe(payload);
+    expect(() =>
+      decodeV03Save({ format: 'hegemony.save', version: 1, ruleset: 'hegemony-1' }),
+    ).toThrow('older version');
+  });
+
   it('rejects internally inconsistent references before returning state', () => {
     const state = sampleState();
     state.playerCapitalCityId = 'missing-city';

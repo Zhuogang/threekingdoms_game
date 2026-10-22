@@ -4,7 +4,7 @@
 
 ## Active v0.3 update and to-do
 
-**Branch `v0.3`; local candidate awaiting scoped repairs and human acceptance.** The original F01–F08 defects are repaired. A fresh read-only double-check of `01e65ef` found new interface and presentation gaps despite passing automated checks. Use the [playability review and scoped to-do list](v0.3/playability-review-and-todo.md) for the active priorities, reproduction evidence, agent assignments and acceptance criteria. The [implementation plan](v0.3/implementation-plan.md) retains the P01–P11 milestone record; the original audit is a historical pre-fix snapshot.
+**Branch `v0.3`; local candidate with RV01–RV10 implemented, awaiting human acceptance.** The original F01–F08 defects and follow-up interface/presentation repairs are complete. Use the [playability completion ledger](v0.3/playability-review-and-todo.md#rv-completion-ledger) for implemented outcomes, parallel agent assignments and acceptance evidence. The table below records the completed RV scope; art/player gates remain open. The [implementation plan](v0.3/implementation-plan.md) retains the P01–P11 milestone record; the original audit is a historical pre-fix snapshot.
 
 | Order  | Task / owner        | Current-version outcome                                                                             |
 | ------ | ------------------- | --------------------------------------------------------------------------------------------------- |
@@ -20,13 +20,13 @@
 
 - [x] Original F01–F08 defects repaired and regression-tested; planned core campaign/governor/battle/save/Wiki systems integrated.
 - [x] Strategic diagnostics and rejected tuning variants documented; the user accepted the measured miss and retained the conservative one-front rule.
-- [x] Read-only playability review and fresh automated validation completed on October 21, 2026. **No RV task was implemented in this documentation pass.**
-- [ ] RV01–RV06 progression/reachability/presentation repairs, then bounded RV07–RV10 usability polish.
+- [x] Original read-only playability review saved in `91c9623` on October 21, 2026; RV implementation followed in this patch.
+- [x] RV01–RV06 progression/reachability/presentation repairs and RV07–RV10 usability polish, including post-integration menu/observer/dismissal/formation-name fixes.
 - [ ] Four campaign/battle sessions and a real low-end-machine check: **player will run and report**; these are neither deferred nor passed.
 - [ ] Art finalization: **keep draft for revisions**, specific revision notes pending.
 - [ ] Push/PR/remote CI/publication remain deferred. The local CI configuration already uses `test:perf:v03`; no remote CI result is claimed.
 
-Fresh verification: **594 passed/1 skipped across 43 files; 15 browser tests; 1 production test; 1 tactical performance test; build/typecheck, formatting and portrait checks pass.** Additional browser validation reproduces the NPC-only-battle clock lock and a 924 px minimap in a 926 px map frame. Passing existing tests does not close those tasks. See the [review](v0.3/playability-review-and-todo.md) and [status ledger](v0.3/implementation-status.md).
+Fresh RV verification is recorded in the [validation and screenshot record](v0.3/evidence/rv-implementation-2026-10-21/README.md). New regressions cover the actual NPC-only clock lock, mixed/two-player battles, fitted maps and compact minimaps, recovery, inbox backlogs, governor transfers, living troop counts and bilingual tactical UI. The previous 594/15-test review is retained as historical evidence, not the current result.
 
 ## Historical v0.2 disposition
 

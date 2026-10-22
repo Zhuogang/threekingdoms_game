@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { scenarioById } from '../content/scenario';
 import {
   getUnitAttackTargets,
@@ -7,6 +7,13 @@ import {
   getAvailableBattleTactics,
   getBattleTacticTargets,
   predictBattleTactic,
+  battleTerrainAt,
+  movementBudget,
+  terrainMovementCost,
+  terrainDefenseMultiplier,
+  fireWeatherMultiplier,
+  fireTerrainMultiplier,
+  waterCombatModifiers,
   WATER_ATTACK_MULTIPLIER,
   WATER_INCOMING_DAMAGE_MULTIPLIER,
   type BattleTactic,
@@ -23,8 +30,12 @@ import {
 import { CAMPAIGN_MOUNTAIN_RANGES, CAMPAIGN_WATERWAYS } from './geography/illustration';
 import { executeV03Command } from './commands';
 import { v03CurrentDate } from './engine';
-import { getCityCapabilities } from './governance/authority';
-import { cityWorkQuota, cityWorkUsedThisMonth } from './governance/city-actions';
+import { canAppointGovernor, getCityCapabilities } from './governance/authority';
+import {
+  cityWorkQuota,
+  cityWorkUsedThisMonth,
+  getV03CityActionAvailability,
+} from './governance/city-actions';
 import { createV03OrderServices } from './governance/services';
 import type { GovernanceOrderReasonCode } from './governance/orders';
 import {
@@ -34,6 +45,11 @@ import {
   decodeV03Save,
   V03_MAX_SAVE_BYTES,
 } from './platform/storage';
+import {
+  localizeRoutineFeedback,
+  localizeRoutineBattleLog,
+  localizeV03PersonOrFormationName,
+} from './ui/feedback';
 import { getV03WikiArticles, type V03Locale, type V03WikiTopic } from './wiki';
 import { getV03AllianceChance } from './campaign/diplomacy';
 import { isV03AllianceActive } from './campaign/monthly-systems';
@@ -65,7 +81,13 @@ import {
 import { troopGlyph } from './rendering/presentation';
 import { V03_ASSETS, resolvePublicAsset } from './rendering/assets';
 import { createV03Game, availableV03Scenarios } from './initial-state';
-import type { V03BattleIntent, V03DomainEvent, V03GameState, V03JourneyCargo } from './types';
+import type {
+  V03BattleIntent,
+  V03CityAction,
+  V03DomainEvent,
+  V03GameState,
+  V03JourneyCargo,
+} from './types';
 import { gameDate } from './types';
 import './styles.css';
 
@@ -730,6 +752,8 @@ function localizeOrderMessage(message: string, locale: V03Locale): string {
 }
 
 function localizeSaveError(message: string, locale: V03Locale): string {
+  const routine = localizeRoutineFeedback(message, locale);
+  if (routine !== null) return routine;
   if (locale === 'en') return message;
   if (message.includes('not valid JSON')) return '该存档不是有效的 JSON 文件。';
   if (message.includes('older version'))
@@ -742,7 +766,9 @@ function localizeSaveError(message: string, locale: V03Locale): string {
   return message;
 }
 
-function localizeAppMessage(message: string, locale: V03Locale): string {
+function localizeAppMessage(message: string, locale: V03Locale, state?: V03GameState): string {
+  const routine = localizeRoutineFeedback(message, locale, state);
+  if (routine !== null) return routine;
   if (locale === 'en') return message;
   const orderMessage = localizeOrderMessage(message, locale);
   if (orderMessage !== message) return orderMessage;
@@ -793,7 +819,7 @@ function localizeAppMessage(message: string, locale: V03Locale): string {
   if (match) return `${match[1]}获配精良兵器，武力提高最多 5。`;
   const declinedAlliance = message.match(/^The alliance offer was declined \((\d+)% chance\)\.$/);
   if (declinedAlliance) return `同盟提議遭到拒絕（接受概率 ${declinedAlliance[1]}%）。`;
-  const tacticReason = localizeTacticReason(message, locale);
+  const tacticReason = localizeTacticReason(message, locale, state);
   if (tacticReason !== message) return tacticReason;
   return message;
 }
@@ -810,7 +836,7 @@ function tacticLabel(tactic: BattleTactic, locale: V03Locale): string {
   return labels[tactic][locale];
 }
 
-function localizeTacticReason(reason: string, locale: V03Locale): string {
+function localizeTacticReason(reason: string, locale: V03Locale, state?: V03GameState): string {
   if (locale === 'en') return reason;
   const exact: Record<string, string> = {
     'Militia cannot use tactics.': '民兵不能使用计策。',
@@ -838,19 +864,20 @@ function localizeTacticReason(reason: string, locale: V03Locale): string {
   match = reason.match(/^Requires (\d+) tactic points\.$/);
   if (match) return `需要 ${match[1]} 点计策点。`;
   match = reason.match(/^(.+) has already acted today\.$/);
-  if (match) return `${match[1]}今日已经行动。`;
+  if (match) return `${localizeV03PersonOrFormationName(match[1]!, locale, state)}今日已经行动。`;
   match = reason.match(/^(.+) is confused and will lose the rest of today\.$/);
-  if (match) return `${match[1]}陷入混乱，今日无法继续行动。`;
+  if (match)
+    return `${localizeV03PersonOrFormationName(match[1]!, locale, state)}陷入混乱，今日无法继续行动。`;
   return reason;
 }
 
 function localizeBattleLogLine(line: string, state: V03GameState, locale: V03Locale): string {
+  const routine = localizeRoutineBattleLog(line, state, locale);
+  if (routine !== null) return routine;
   if (locale === 'en') return line;
   const side = (value: string) =>
     value === 'attacker' ? '攻方' : value === 'defender' ? '守方' : value;
-  const person = (name: string) =>
-    state.officers.find((officer) => officer.name === name || officer.chinese === name)?.chinese ??
-    name;
+  const person = (name: string) => localizeV03PersonOrFormationName(name, locale, state);
   let match = line.match(/^Battle day (\d+) begins\.$/);
   if (match) return `战斗第 ${match[1]} 日开始。`;
   match = line.match(/^(attacker|defender) wins by elimination\.$/);
@@ -1187,9 +1214,89 @@ function journeyPosition(journey: V03GameState['journeys'][number]) {
   );
 }
 
+function ConfirmDialog({
+  title,
+  detail,
+  cancelLabel,
+  confirmLabel,
+  onCancel,
+  onConfirm,
+  children,
+}: {
+  title: string;
+  detail: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  children?: ReactNode;
+}) {
+  const dialog = useRef<HTMLElement>(null);
+  const submitted = useRef(false);
+  useEffect(() => {
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog.current?.querySelector<HTMLButtonElement>('[data-dialog-cancel]')?.focus();
+    return () => previous?.focus();
+  }, []);
+  return (
+    <div className="v03-modal-backdrop">
+      <section
+        ref={dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="v03-confirm-modal"
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            onCancel();
+          }
+          if (event.key !== 'Tab') return;
+          const controls =
+            dialog.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+          if (!controls?.length) return;
+          const first = controls[0]!;
+          const last = controls[controls.length - 1]!;
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }}
+      >
+        <h2>{title}</h2>
+        <p>{detail}</p>
+        <div className="v03-dialog-actions">
+          {children}
+          <button type="button" data-dialog-cancel onClick={onCancel}>
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            className="v03-primary"
+            onClick={() => {
+              if (!submitted.current) {
+                submitted.current = true;
+                onConfirm();
+              }
+            }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function V03App() {
   const [locale, setLocale] = useState<V03Locale>('en');
   const [state, setState] = useState<V03GameState | null>(null);
+  const [showCampaignMenu, setShowCampaignMenu] = useState(false);
+  const [confirmation, setConfirmation] = useState<'replace' | 'withdraw' | null>(null);
+  const [campaignSessionRevision, setCampaignSessionRevision] = useState(0);
   const [scenarioId, setScenarioId] = useState('divided-realm-190');
   const [factionId, setFactionId] = useState('cao');
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
@@ -1197,6 +1304,7 @@ export default function V03App() {
   const [viewMode, setViewMode] = useState<'campaign' | 'battle'>('campaign');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [selectedTactic, setSelectedTactic] = useState<BattleTactic | null>(null);
+  const [inspectedCell, setInspectedCell] = useState<{ x: number; y: number } | null>(null);
   const [showWiki, setShowWiki] = useState(false);
   const [wikiTopic, setWikiTopic] = useState<V03WikiTopic>('overview');
   const [wikiSearch, setWikiSearch] = useState('');
@@ -1263,7 +1371,7 @@ export default function V03App() {
     const observer = new ResizeObserver(updateViewportForFrame);
     observer.observe(frame);
     return () => observer.disconnect();
-  }, [Boolean(state)]);
+  }, [Boolean(state), showCampaignMenu, campaignSessionRevision, viewMode]);
 
   useEffect(() => {
     if (!showWiki) return;
@@ -1277,6 +1385,7 @@ export default function V03App() {
     const handleWikiShortcut = (event: KeyboardEvent) => {
       if (event.key === 'F1') {
         event.preventDefault();
+        if (!state || showCampaignMenu || confirmation) return;
         if (!showWiki) {
           wikiReturnFocus.current =
             document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -1289,7 +1398,7 @@ export default function V03App() {
     };
     window.addEventListener('keydown', handleWikiShortcut);
     return () => window.removeEventListener('keydown', handleWikiShortcut);
-  }, [showWiki]);
+  }, [showWiki, Boolean(state), showCampaignMenu, confirmation]);
 
   useEffect(() => {
     if (showWiki) return;
@@ -1341,41 +1450,34 @@ export default function V03App() {
       : 0;
   const governorCandidates =
     state && selectedCity
-      ? state.officers.filter((officer) => {
-          const location = officer.location;
-          if (
-            !officer.alive ||
-            officer.factionId !== state.playerFactionId ||
-            location.kind !== 'city' ||
-            officer.troops !== 0 ||
-            (officer.governorOfCityId !== null && officer.governorOfCityId !== selectedCity.id)
-          )
-            return false;
-          const currentCityId = location.cityId;
-          return (
-            state.cities.find((city) => city.id === currentCityId)?.factionId ===
-            state.playerFactionId
-          );
-        })
+      ? state.officers.filter(
+          (officer) => officer.alive && officer.factionId === state.playerFactionId,
+        )
       : [];
-  const pendingGovernor =
-    state && selectedCity?.pendingAppointment?.governorId
-      ? (state.officers.find(
-          (officer) => officer.id === selectedCity.pendingAppointment?.governorId,
-        ) ?? null)
-      : null;
-  const pendingGovernorAvailable = Boolean(
-    pendingGovernor && governorCandidates.some((officer) => officer.id === pendingGovernor.id),
+  const [governorDraft, setGovernorDraft] = useState<{ cityId: string; officerId: string } | null>(
+    null,
   );
-  const activeBattles = state?.battles.filter((battle) => battle.active) ?? [];
+  const governorSelection = selectedCity
+    ? governorDraft?.cityId === selectedCity.id
+      ? governorDraft.officerId
+      : selectedCity.pendingAppointment
+        ? (selectedCity.pendingAppointment.governorId ?? '')
+        : (selectedCity.governorId ?? '')
+    : '';
+  const activeBattles =
+    state?.battles.filter(
+      (battle) =>
+        battle.active &&
+        (battle.attackerFactionId === state.playerFactionId ||
+          battle.defenderFactionId === state.playerFactionId),
+    ) ?? [];
   const activeBattle =
     viewMode === 'battle'
-      ? (state?.battles.find((battle) => battle.id === selectedBattleId && battle.active) ??
-        activeBattles[0] ??
-        null)
+      ? (activeBattles.find((battle) => battle.id === selectedBattleId) ?? activeBattles[0] ?? null)
       : null;
   const battleState = activeBattle?.battleData ?? null;
-  const currentUnit = battleState?.units.find((unit) => unit.id === selectedUnitId) ?? null;
+  const currentUnit =
+    battleState?.units.find((unit) => unit.id === selectedUnitId && unit.troops > 0) ?? null;
   const reachableCells = useMemo(
     () => (battleState && currentUnit ? getUnitReachableTiles(battleState, currentUnit.id) : []),
     [battleState, currentUnit],
@@ -1461,6 +1563,8 @@ export default function V03App() {
     return () => observer.disconnect();
   }, [
     viewMode,
+    showCampaignMenu,
+    campaignSessionRevision,
     activeBattle?.id,
     battleState?.map.mapId,
     battleState?.map.width,
@@ -1469,6 +1573,7 @@ export default function V03App() {
 
   useEffect(() => {
     setSelectedTactic(null);
+    setInspectedCell(null);
   }, [selectedBattleId, selectedUnitId]);
 
   useEffect(() => {
@@ -1484,15 +1589,47 @@ export default function V03App() {
       );
       setSelectedUnitId(first?.id ?? null);
     }
-  }, [state, activeBattles, selectedBattleId, selectedCityId]);
+    const selected = activeBattles.find((battle) => battle.id === selectedBattleId);
+    if (
+      selected &&
+      !selected.battleData.units.some((unit) => unit.id === selectedUnitId && unit.troops > 0)
+    ) {
+      const first = selected.battleData.units.find(
+        (unit) => unit.side === selected.battleData.playerSide && unit.troops > 0,
+      );
+      setSelectedUnitId(first?.id ?? null);
+      setSelectedTactic(null);
+    }
+    if (!activeBattles.length && viewMode === 'battle') {
+      setSelectedBattleId(null);
+      setSelectedUnitId(null);
+      setViewMode('campaign');
+    }
+  }, [state, activeBattles, selectedBattleId, selectedCityId, selectedUnitId, viewMode]);
 
   const dispatch = (command: Parameters<typeof executeV03Command>[1]) => {
     if (!state) return;
+    if (command.type === 'advance' || command.type === 'completeBattleDay') {
+      const due = state.events.filter(
+        (event) => !event.acknowledged && event.absoluteDay <= state.absoluteDay,
+      );
+      if (due.length) {
+        setFeedback(
+          locale === 'zh'
+            ? `请先确认 ${due.length} 份到期报告；报告列表已显示全部待处理事项。`
+            : `Acknowledge ${due.length} due reports first; all outstanding reports are listed.`,
+        );
+        const reports = document.querySelector<HTMLElement>('.v03-events');
+        reports?.scrollIntoView({ block: 'nearest' });
+        reports?.focus();
+        return;
+      }
+    }
     const result = executeV03Command(state, command);
     if (!result.ok) {
       setFeedback(
         result.error
-          ? localizeAppMessage(result.error, locale)
+          ? localizeAppMessage(result.error, locale, state)
           : locale === 'zh'
             ? '命令未能执行。'
             : 'The command could not be completed.',
@@ -1508,16 +1645,49 @@ export default function V03App() {
           | import('./governance/orders').CampaignDirectivePreview,
       });
     }
-    if (result.message) setFeedback(localizeAppMessage(result.message, locale));
+    if (result.message) setFeedback(localizeAppMessage(result.message, locale, state));
   };
 
+  const replaceCampaign = (fresh: V03GameState) => {
+    setState(fresh);
+    setScenarioId(fresh.scenarioId);
+    setFactionId(fresh.playerFactionId);
+    setSelectedCityId(fresh.playerCapitalCityId);
+    setSelectedBattleId(null);
+    setSelectedUnitId(null);
+    setSelectedTactic(null);
+    setInspectedCell(null);
+    setViewMode('campaign');
+    setShowCampaignMenu(false);
+    setConfirmation(null);
+    setShowWiki(false);
+    setWikiTopic('overview');
+    setWikiSearch('');
+    setRequestKind('resource');
+    setTargetCityId('');
+    setRequestedTroops(2000);
+    setRequestedResourceTroops(0);
+    setRequestedByDay('');
+    setDiplomacyTargetId('');
+    setRequestedGold(300);
+    setRequestedFood(1000);
+    setTroopAssignments({});
+    setIntent('conquer');
+    setOrderPreview(null);
+    setReducedCargoByOrder({});
+    setReducedTroopsByOrder({});
+    setGovernorDraft(null);
+    setCampaignViewport(CAMPAIGN_BOUNDS);
+    campaignViewportInitialized.current = false;
+    setBattleViewport(null);
+    battleViewportIdentity.current = null;
+    setCampaignSessionRevision((value) => value + 1);
+    setAutosaveError(false);
+  };
   const startCampaign = () => {
     try {
       const fresh = createV03Game(factionId, Date.now(), scenarioId);
-      setState(fresh);
-      setSelectedCityId(fresh.playerCapitalCityId);
-      setSelectedBattleId(null);
-      setSelectedUnitId(null);
+      replaceCampaign(fresh);
       setFeedback('');
     } catch (error) {
       setFeedback(
@@ -1552,7 +1722,7 @@ export default function V03App() {
       link.href = url;
       link.download = `hegemony-v0.3-${state.scenarioId}-${state.absoluteDay}.save`;
       link.click();
-      setFeedback(t.saved);
+      setFeedback(locale === 'zh' ? '存档文件已导出。' : 'Save file exported.');
     } catch {
       setFeedback(t.exportFailed);
     } finally {
@@ -1568,10 +1738,7 @@ export default function V03App() {
         return;
       }
       const imported = decodeV03Save(await file.text());
-      setState(imported);
-      setSelectedCityId(imported.playerCapitalCityId);
-      setSelectedBattleId(null);
-      setSelectedUnitId(null);
+      replaceCampaign(imported);
       setFeedback(t.imported);
     } catch (error) {
       setFeedback(
@@ -1789,11 +1956,12 @@ export default function V03App() {
   const worldEvents =
     state?.events
       .filter((event) => !event.acknowledged)
-      .slice(-8)
-      .reverse() ?? [];
+      .sort((a, b) => a.absoluteDay - b.absoluteDay || a.id.localeCompare(b.id)) ?? [];
+  const dueReports = worldEvents.filter((event) => event.absoluteDay <= (state?.absoluteDay ?? 0));
   const activeOrders = state
     ? [
         ...state.requisitions
+          .filter((order) => order.factionId === state.playerFactionId)
           .filter((order) =>
             ['proposed', 'waiting', 'accepted', 'reserved', 'dispatched'].includes(order.status),
           )
@@ -1802,12 +1970,14 @@ export default function V03App() {
             kind: 'resource' as const,
             status: order.status,
             message: order.message,
-            source:
-              state.cities.find((city) => city.id === order.sourceCityId)?.name ??
-              order.sourceCityId,
-            target:
-              state.cities.find((city) => city.id === order.targetCityId)?.name ??
-              order.targetCityId,
+            source: (() => {
+              const city = state.cities.find((city) => city.id === order.sourceCityId);
+              return city ? displayName(city, locale) : order.sourceCityId;
+            })(),
+            target: (() => {
+              const city = state.cities.find((city) => city.id === order.targetCityId);
+              return city ? displayName(city, locale) : order.targetCityId;
+            })(),
             requested: order.requested,
             proposed: order.proposed,
             journeyId: order.journeyId,
@@ -1817,6 +1987,7 @@ export default function V03App() {
             ),
           })),
         ...state.directives
+          .filter((order) => order.factionId === state.playerFactionId)
           .filter((order) =>
             ['proposed', 'waiting', 'accepted', 'reserved', 'dispatched'].includes(order.status),
           )
@@ -1825,12 +1996,14 @@ export default function V03App() {
             kind: 'campaign' as const,
             status: order.status,
             message: order.message,
-            source:
-              state.cities.find((city) => city.id === order.sourceCityId)?.name ??
-              order.sourceCityId,
-            target:
-              state.cities.find((city) => city.id === order.targetCityId)?.name ??
-              order.targetCityId,
+            source: (() => {
+              const city = state.cities.find((city) => city.id === order.sourceCityId);
+              return city ? displayName(city, locale) : order.sourceCityId;
+            })(),
+            target: (() => {
+              const city = state.cities.find((city) => city.id === order.targetCityId);
+              return city ? displayName(city, locale) : order.targetCityId;
+            })(),
             requested: order.requestedTroops,
             proposed: order.proposedTroops,
             journeyId: order.journeyId,
@@ -1839,7 +2012,11 @@ export default function V03App() {
               state.journeys.find((journey) => journey.id === order.journeyId)?.returnRequested,
             ),
           })),
-      ]
+      ].sort((a, b) => {
+        const priority = (order: { status: string; journeyId: string | null }) =>
+          !order.journeyId && ['proposed', 'waiting'].includes(order.status) ? 0 : 1;
+        return priority(a) - priority(b) || a.id.localeCompare(b.id);
+      })
     : [];
   const orderPreviewOrder =
     state && orderPreview
@@ -1905,17 +2082,22 @@ export default function V03App() {
     setShowWiki(true);
   };
 
-  if (!state) {
-    const saved = (() => {
-      try {
-        return loadV03Autosave();
-      } catch {
-        return null;
-      }
-    })();
+  if (!state || showCampaignMenu) {
+    const saved =
+      state ??
+      (() => {
+        try {
+          return loadV03Autosave();
+        } catch {
+          return null;
+        }
+      })();
     return (
       <main className="v03-start">
-        <section className="v03-start-card">
+        <section
+          className="v03-start-card"
+          aria-label={locale === 'zh' ? '战役菜单' : 'Campaign menu'}
+        >
           <div className="v03-start-kicker">HEGEMONY · NEW RULESET</div>
           <button
             type="button"
@@ -1958,18 +2140,22 @@ export default function V03App() {
             ))}
           </div>
           <div className="v03-start-actions">
-            <button type="button" className="v03-primary" onClick={startCampaign}>
+            <button
+              type="button"
+              className="v03-primary"
+              onClick={() => (saved ? setConfirmation('replace') : startCampaign())}
+            >
               {t.newCampaign}
             </button>
             {saved ? (
               <button
                 type="button"
                 onClick={() => {
-                  setState(saved);
-                  setSelectedCityId(saved.playerCapitalCityId);
+                  if (!state) replaceCampaign(saved);
+                  else setShowCampaignMenu(false);
                 }}
               >
-                {t.resume}
+                {locale === 'zh' ? '继续战役' : 'Resume campaign'}
               </button>
             ) : null}
           </div>
@@ -1979,10 +2165,41 @@ export default function V03App() {
             </p>
           ) : null}
         </section>
+        {confirmation === 'replace' ? (
+          <ConfirmDialog
+            title={locale === 'zh' ? '替换当前战役？' : 'Replace current campaign?'}
+            detail={
+              locale === 'zh'
+                ? '开始新战役将替换此浏览器中唯一的自动存档。可先导出当前战役作为备份。'
+                : 'Starting a new campaign replaces this browser’s single autosave. Export the current campaign first to keep a backup.'
+            }
+            cancelLabel={locale === 'zh' ? '取消' : 'Cancel'}
+            confirmLabel={locale === 'zh' ? '替换并开始' : 'Replace and begin'}
+            onCancel={() => setConfirmation(null)}
+            onConfirm={startCampaign}
+          >
+            {state ? (
+              <button type="button" onClick={exportSave}>
+                {locale === 'zh' ? '导出当前战役' : 'Export current campaign'}
+              </button>
+            ) : null}
+          </ConfirmDialog>
+        ) : null}
       </main>
     );
   }
 
+  const capitalAvailability = (action: V03CityAction, officerId?: string, amount?: number) =>
+    getV03CityActionAvailability(state, {
+      cityId: selectedCity?.id ?? '',
+      action,
+      officerId,
+      amount,
+    });
+  const capitalReason = (action: V03CityAction, officerId?: string, amount?: number) => {
+    const result = capitalAvailability(action, officerId, amount);
+    return result.reason ? localizeAppMessage(result.reason, locale, state) : undefined;
+  };
   const selectedFaction = state.factions.find((faction) => faction.id === state.playerFactionId);
   const date = dateLabel(state, locale);
   const isBattleView = viewMode === 'battle' && Boolean(activeBattle && battleState);
@@ -1998,10 +2215,8 @@ export default function V03App() {
     const city = state.cities.find((entry) => entry.id === cityId);
     return city ? displayName(city, locale) : cityId;
   };
-  const localizedOfficerName = (name: string) => {
-    const officer = state.officers.find((entry) => entry.name === name || entry.chinese === name);
-    return locale === 'zh' ? (officer?.chinese ?? name) : (officer?.name ?? name);
-  };
+  const localizedOfficerName = (name: string) =>
+    localizeV03PersonOrFormationName(name, locale, state);
   const journeyDescription = (journey: V03GameState['journeys'][number]) => {
     const source = locationName(journey.sourceCityId);
     const target = locationName(journey.destinationCityId);
@@ -2049,16 +2264,18 @@ export default function V03App() {
     return [condition, unitActionStatus(unit)].filter(Boolean).join(' · ');
   };
   const troopVisuals =
-    battleState?.units.map((unit) => ({
-      id: unit.id,
-      troopType: unit.troopType,
-      position: { x: unit.x, y: unit.y },
-      faction: unit.side === battleState.playerSide ? 'player' : 'opponent',
-      strength: unit.troops,
-      label: localizedOfficerName(unit.name),
-      selected: unit.id === selectedUnitId,
-      status: `${unit.morale}% ${locale === 'zh' ? '士气' : 'morale'} · ${unitBattleStatus(unit)}`,
-    })) ?? [];
+    battleState?.units
+      .filter((unit) => unit.troops > 0)
+      .map((unit) => ({
+        id: unit.id,
+        troopType: unit.troopType,
+        position: { x: unit.x, y: unit.y },
+        faction: unit.side === battleState.playerSide ? 'player' : 'opponent',
+        strength: unit.troops,
+        label: localizedOfficerName(unit.name),
+        selected: unit.id === selectedUnitId,
+        status: `${unit.morale}% ${locale === 'zh' ? '士气' : 'morale'} · ${unitBattleStatus(unit)}`,
+      })) ?? [];
   const camps =
     battleState?.map.objectives.map((objective) => ({
       id: objective.id,
@@ -2068,12 +2285,36 @@ export default function V03App() {
           ? `${objective.owner === battleState.playerSide ? '己方' : '敌方'}营地`
           : `${objective.owner} field camp`,
     })) ?? [];
+  const inspectionPosition =
+    inspectedCell ?? (currentUnit ? { x: currentUnit.x, y: currentUnit.y } : null);
+  const inspectionTerrain =
+    battleState && inspectionPosition ? battleTerrainAt(battleState.map, inspectionPosition) : null;
+  const inspectionModifiers =
+    battleState && inspectionPosition
+      ? waterCombatModifiers(battleState.map, inspectionPosition, inspectionPosition)
+      : null;
+  const inspectionMovementCost =
+    currentUnit && inspectionTerrain
+      ? terrainMovementCost(currentUnit.troopType, inspectionTerrain)
+      : null;
+  const terrainName = (terrain: string) =>
+    locale === 'zh'
+      ? ({ plain: '平原', forest: '森林', hill: '丘陵', water: '水域', cliff: '悬崖' }[terrain] ??
+        terrain)
+      : terrain;
+  const weatherName = (weather: string) =>
+    locale === 'zh' ? ({ clear: '晴', rain: '雨', wind: '风' }[weather] ?? weather) : weather;
   const attackableCells = attackTargets.map((unit) => ({ x: unit.x, y: unit.y }));
   const playerUnit = (unitId: string) =>
     !activeBattle?.playerDayComplete &&
-    battleState?.units.find((unit) => unit.id === unitId)?.side === battleState?.playerSide;
+    battleState?.units.some(
+      (unit) => unit.id === unitId && unit.troops > 0 && unit.side === battleState.playerSide,
+    );
   const handleBattleUnitClick = (unitId: string) => {
     if (!battleState || !activeBattle) return;
+    const inspected = battleState.units.find((unit) => unit.id === unitId && unit.troops > 0);
+    if (!inspected) return;
+    setInspectedCell({ x: inspected.x, y: inspected.y });
     if (selectedTactic) {
       if (tacticTargets.some((target) => target.id === unitId) && currentUnit) {
         dispatch({
@@ -2179,7 +2420,8 @@ export default function V03App() {
           <div>
             <strong>{t.title}</strong>
             <small>
-              {selectedFaction?.name} · {t.territory} {friendlyCities.length}
+              {locale === 'zh' ? selectedFaction?.chinese : selectedFaction?.name} · {t.territory}{' '}
+              {friendlyCities.length}
             </small>
           </div>
         </div>
@@ -2226,6 +2468,16 @@ export default function V03App() {
           )}
           <button type="button" onClick={() => openWiki('overview')}>
             {t.wiki}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setScenarioId(state.scenarioId);
+              setFactionId(state.playerFactionId);
+              setShowCampaignMenu(true);
+            }}
+          >
+            {locale === 'zh' ? '战役菜单' : 'Campaign menu'}
           </button>
           <button type="button" onClick={saveGame}>
             {t.save}
@@ -2340,6 +2592,7 @@ export default function V03App() {
                   handleBattleUnitClick(unitId);
                 }}
                 onCellClick={(cell) => {
+                  setInspectedCell(cell);
                   if (selectedTactic) {
                     setFeedback(t.tacticChooseTarget);
                     return;
@@ -2405,7 +2658,9 @@ export default function V03App() {
                 onNavigate={navigateBattleMinimap}
               />
               <div className="v03-battle-help">
-                <strong>{currentUnit?.name ?? t.selectUnit}</strong>
+                <strong>
+                  {currentUnit ? localizedOfficerName(currentUnit.name) : t.selectUnit}
+                </strong>
                 <p>{t.moveHelp}</p>
                 <p>{t.attackHelp}</p>
                 <p>{t.waterRule}</p>
@@ -2559,80 +2814,185 @@ export default function V03App() {
                 </h2>
               </div>
               <p className="v03-muted">{t.moveHelp}</p>
-              <div className="v03-unit-list">
-                {battleState.units.map((unit) => (
-                  <button
-                    type="button"
-                    key={unit.id}
-                    className={`v03-unit-row ${unit.id === selectedUnitId ? 'selected' : ''} ${unit.side === battleState.playerSide ? '' : 'enemy'}`}
-                    onClick={() => handleBattleUnitClick(unit.id)}
-                  >
-                    <span className="v03-unit-glyph">{troopGlyph(unit.troopType)}</span>
-                    <span>
-                      <strong>{localizedOfficerName(unit.name)}</strong>
-                      <small>
-                        {unit.troops.toLocaleString()} · {unit.morale}% · {unitBattleStatus(unit)}
-                      </small>
-                      {unit.side !== battleState.playerSide && attackForecasts.has(unit.id) ? (
-                        <small className="v03-attack-forecast">
-                          {t.estimatedLosses}{' '}
-                          {attackForecasts.get(unit.id)?.estimatedCasualties?.toLocaleString() ??
-                            '—'}
-                          {' · '}
-                          {t.counterattackLabel}{' '}
-                          {attackForecasts
-                            .get(unit.id)
-                            ?.counterattack.estimatedCasualties?.toLocaleString() ?? '—'}
-                          {' · '}
-                          {attackForecasts.get(unit.id)?.targetOnWater
-                            ? t.waterTargetDamage
-                            : attackForecasts.get(unit.id)?.sourceOnWater
-                              ? t.waterAttackPenalty
-                              : t.landModifiers}
-                        </small>
-                      ) : null}
-                      {selectedTactic && tacticForecasts.has(unit.id) ? (
-                        <small className="v03-tactic-forecast">
-                          {tacticLabel(selectedTactic, locale)} · {t.tacticChance}{' '}
-                          {tacticForecasts.get(unit.id)?.chance ?? 0}%
-                          {(tacticForecasts.get(unit.id)?.maxCasualties ?? 0) > 0 ? (
-                            <>
-                              {' · '}
-                              {t.tacticCasualties}{' '}
-                              {tacticForecasts.get(unit.id)?.minCasualties.toLocaleString()}–
-                              {tacticForecasts.get(unit.id)?.maxCasualties.toLocaleString()}
-                            </>
-                          ) : null}
-                          {(tacticForecasts.get(unit.id)?.moraleChange ?? 0) !== 0 ? (
-                            <>
-                              {' · '}
-                              {t.tacticMorale}{' '}
-                              {tacticForecasts.get(unit.id)!.moraleChange > 0 ? '+' : ''}
-                              {tacticForecasts.get(unit.id)?.moraleChange}%
-                            </>
-                          ) : null}
-                          {(tacticForecasts.get(unit.id)?.suppliesTransferred ?? 0) > 0 ? (
-                            <>
-                              {' · '}
-                              {t.tacticSupplies}{' '}
-                              {tacticForecasts.get(unit.id)?.suppliesTransferred.toLocaleString()}
-                            </>
-                          ) : null}
-                          {tacticForecasts.get(unit.id)?.sourceOnWater ||
-                          tacticForecasts.get(unit.id)?.targetOnWater ? (
-                            <>
-                              {' · '}
-                              {tacticForecasts.get(unit.id)?.sourceOnWater
-                                ? t.waterAttackPenalty
-                                : t.waterTargetDamage}
-                            </>
-                          ) : null}
-                        </small>
-                      ) : null}
-                    </span>
-                    <i>{unit.side === battleState.playerSide ? '●' : '○'}</i>
+              <section
+                className="v03-battle-inspection"
+                aria-label={locale === 'zh' ? '战场状况' : 'Battle conditions'}
+              >
+                <div className="v03-section-title">
+                  <strong>{locale === 'zh' ? '战场状况' : 'Battle conditions'}</strong>
+                  <button type="button" className="text-button" onClick={() => openWiki('battle')}>
+                    ?
                   </button>
-                ))}
+                </div>
+                <div className="v03-readout-grid">
+                  <div>
+                    <small>{locale === 'zh' ? '天气 / 下日预报' : 'Weather / next day'}</small>
+                    <strong>
+                      {weatherName(battleState.weather)} / {weatherName(battleState.nextWeather)}
+                    </strong>
+                  </div>
+                  <div>
+                    <small>{locale === 'zh' ? '火计天气倍率' : 'Fire weather multiplier'}</small>
+                    <strong>×{fireWeatherMultiplier(battleState.weather)}</strong>
+                  </div>
+                  <div>
+                    <small>{locale === 'zh' ? '己方 / 敌方粮食' : 'Food: yours / enemy'}</small>
+                    <strong>
+                      {battleState.supplies[battleState.playerSide].toLocaleString()} /{' '}
+                      {battleState.supplies[
+                        battleState.playerSide === 'attacker' ? 'defender' : 'attacker'
+                      ].toLocaleString()}
+                    </strong>
+                  </div>
+                  {currentUnit ? (
+                    <>
+                      <div>
+                        <small>
+                          {locale === 'zh' ? '移动额度 / 射程' : 'Movement budget / range'}
+                        </small>
+                        <strong>
+                          {movementBudget(currentUnit.troopType)} / {currentUnit.attackRange}
+                        </strong>
+                      </div>
+                      <div>
+                        <small>
+                          {locale === 'zh' ? '武力 / 智力 / 等级' : 'Force / intellect / level'}
+                        </small>
+                        <strong>
+                          {currentUnit.force} / {currentUnit.intellect} / {currentUnit.level}
+                        </strong>
+                      </div>
+                    </>
+                  ) : null}
+                  {inspectionTerrain && inspectionPosition && inspectionModifiers ? (
+                    <>
+                      <div>
+                        <small>{locale === 'zh' ? '检查地形' : 'Inspected terrain'}</small>
+                        <strong>
+                          {terrainName(inspectionTerrain)} ({inspectionPosition.x + 1},{' '}
+                          {inspectionPosition.y + 1})
+                        </strong>
+                      </div>
+                      <div>
+                        <small>{locale === 'zh' ? '基础移动消耗' : 'Base movement cost'}</small>
+                        <strong>
+                          {inspectionMovementCost === null
+                            ? '—'
+                            : Number.isFinite(inspectionMovementCost)
+                              ? inspectionMovementCost
+                              : locale === 'zh'
+                                ? '不可通行'
+                                : 'Impassable'}
+                        </strong>
+                      </div>
+                      <div>
+                        <small>
+                          {locale === 'zh' ? '普通攻击受伤倍率' : 'Normal-hit terrain multiplier'}
+                        </small>
+                        <strong>×{terrainDefenseMultiplier(inspectionTerrain)}</strong>
+                      </div>
+                      <div>
+                        <small>
+                          {locale === 'zh' ? '地形火计受伤倍率' : 'Fire terrain multiplier'}
+                        </small>
+                        <strong>×{fireTerrainMultiplier(inspectionTerrain)}</strong>
+                      </div>
+                      <div>
+                        <small>
+                          {locale === 'zh'
+                            ? '水域攻击 / 受伤倍率'
+                            : 'Water attack / incoming multiplier'}
+                        </small>
+                        <strong>
+                          ×{inspectionModifiers.attackMultiplier} / ×
+                          {inspectionModifiers.incomingDamageMultiplier}
+                        </strong>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+                <small>
+                  {locale === 'zh'
+                    ? '跨越水陆边界或在水上移动每步至少消耗 2 点；森林/丘陵会按兵种增加移动成本。点击格子可检查其状态，合法的移动或攻击仍照常执行。'
+                    : 'Any step touching water costs at least 2; forest and hills use troop-specific costs. Click a tile to inspect it; legal moves and attacks still execute normally.'}
+                </small>
+              </section>
+              <div className="v03-unit-list">
+                {battleState.units
+                  .filter((unit) => unit.troops > 0)
+                  .map((unit) => (
+                    <button
+                      type="button"
+                      key={unit.id}
+                      className={`v03-unit-row ${unit.id === selectedUnitId ? 'selected' : ''} ${unit.side === battleState.playerSide ? '' : 'enemy'}`}
+                      onClick={() => handleBattleUnitClick(unit.id)}
+                    >
+                      <span className="v03-unit-glyph">{troopGlyph(unit.troopType)}</span>
+                      <span>
+                        <strong>{localizedOfficerName(unit.name)}</strong>
+                        <small>
+                          {unit.troops.toLocaleString()} · {unit.morale}% · {unitBattleStatus(unit)}
+                        </small>
+                        {unit.side !== battleState.playerSide && attackForecasts.has(unit.id) ? (
+                          <small className="v03-attack-forecast">
+                            {t.estimatedLosses}{' '}
+                            {attackForecasts.get(unit.id)?.estimatedCasualties?.toLocaleString() ??
+                              '—'}
+                            {' · '}
+                            {t.counterattackLabel}{' '}
+                            {attackForecasts
+                              .get(unit.id)
+                              ?.counterattack.estimatedCasualties?.toLocaleString() ?? '—'}
+                            {' · '}
+                            {attackForecasts.get(unit.id)?.targetOnWater
+                              ? t.waterTargetDamage
+                              : attackForecasts.get(unit.id)?.sourceOnWater
+                                ? t.waterAttackPenalty
+                                : t.landModifiers}
+                          </small>
+                        ) : null}
+                        {selectedTactic && tacticForecasts.has(unit.id) ? (
+                          <small className="v03-tactic-forecast">
+                            {tacticLabel(selectedTactic, locale)} · {t.tacticChance}{' '}
+                            {tacticForecasts.get(unit.id)?.chance ?? 0}%
+                            {(tacticForecasts.get(unit.id)?.maxCasualties ?? 0) > 0 ? (
+                              <>
+                                {' · '}
+                                {t.tacticCasualties}{' '}
+                                {tacticForecasts.get(unit.id)?.minCasualties.toLocaleString()}–
+                                {tacticForecasts.get(unit.id)?.maxCasualties.toLocaleString()}
+                              </>
+                            ) : null}
+                            {(tacticForecasts.get(unit.id)?.moraleChange ?? 0) !== 0 ? (
+                              <>
+                                {' · '}
+                                {t.tacticMorale}{' '}
+                                {tacticForecasts.get(unit.id)!.moraleChange > 0 ? '+' : ''}
+                                {tacticForecasts.get(unit.id)?.moraleChange}%
+                              </>
+                            ) : null}
+                            {(tacticForecasts.get(unit.id)?.suppliesTransferred ?? 0) > 0 ? (
+                              <>
+                                {' · '}
+                                {t.tacticSupplies}{' '}
+                                {tacticForecasts.get(unit.id)?.suppliesTransferred.toLocaleString()}
+                              </>
+                            ) : null}
+                            {tacticForecasts.get(unit.id)?.sourceOnWater ||
+                            tacticForecasts.get(unit.id)?.targetOnWater ? (
+                              <>
+                                {' · '}
+                                {tacticForecasts.get(unit.id)?.sourceOnWater
+                                  ? t.waterAttackPenalty
+                                  : t.waterTargetDamage}
+                              </>
+                            ) : null}
+                          </small>
+                        ) : null}
+                      </span>
+                      <i>{unit.side === battleState.playerSide ? '●' : '○'}</i>
+                    </button>
+                  ))}
               </div>
               {currentUnit ? (
                 <div className="v03-card v03-unit-detail">
@@ -2670,7 +3030,7 @@ export default function V03App() {
                     {availableTactics.map((entry) => {
                       const label = tacticLabel(entry.tactic, locale);
                       const reason = entry.reason
-                        ? localizeTacticReason(entry.reason, locale)
+                        ? localizeTacticReason(entry.reason, locale, state)
                         : null;
                       return (
                         <button
@@ -2709,7 +3069,7 @@ export default function V03App() {
                         .map((entry) => (
                           <li id={`v03-tactic-${entry.tactic}-reason`} key={entry.tactic}>
                             {tacticLabel(entry.tactic, locale)}:{' '}
-                            {localizeTacticReason(entry.reason!, locale)}
+                            {localizeTacticReason(entry.reason!, locale, state)}
                           </li>
                         ))}
                     </ul>
@@ -2719,7 +3079,7 @@ export default function V03App() {
                       <strong>{tacticLabel(selectedTactic, locale)}</strong>
                       {selectedTacticAvailability?.reason ? (
                         <span>
-                          {localizeTacticReason(selectedTacticAvailability.reason, locale)}
+                          {localizeTacticReason(selectedTacticAvailability.reason, locale, state)}
                         </span>
                       ) : tacticTargets.length === 0 ? (
                         <span>{t.tacticNoTargets}</span>
@@ -2739,14 +3099,7 @@ export default function V03App() {
                 className="v03-block v03-retreat-action"
                 disabled={!currentUnit || activeBattle.playerDayComplete}
                 aria-describedby="v03-retreat-warning"
-                onClick={() =>
-                  currentUnit &&
-                  dispatch({
-                    type: 'battleAction',
-                    battleId: activeBattle.id,
-                    action: { type: 'retreat', unitId: currentUnit.id },
-                  })
-                }
+                onClick={() => setConfirmation('withdraw')}
               >
                 {t.retreat}
               </button>
@@ -2817,6 +3170,14 @@ export default function V03App() {
                       <strong>{selectedCity.garrisonTroops.toLocaleString()}</strong>
                     </div>
                     <div>
+                      <small>{locale === 'zh' ? '预备兵' : 'Reserve soldiers'}</small>
+                      <strong>{selectedCity.reserve.toLocaleString()}</strong>
+                    </div>
+                    <div>
+                      <small>{locale === 'zh' ? '人口' : 'Population'}</small>
+                      <strong>{selectedCity.population.toLocaleString()}</strong>
+                    </div>
+                    <div>
                       <small>{t.food}</small>
                       <strong>{selectedCity.food.toLocaleString()}</strong>
                     </div>
@@ -2850,9 +3211,11 @@ export default function V03App() {
                         <h3>{t.governor}</h3>
                         <span>
                           {selectedCity.governorId
-                            ? state.officers.find(
-                                (officer) => officer.id === selectedCity.governorId,
-                              )?.name
+                            ? localizedOfficerName(
+                                state.officers.find(
+                                  (officer) => officer.id === selectedCity.governorId,
+                                )?.name ?? '',
+                              )
                             : t.localSteward}
                         </span>
                       </div>
@@ -2862,44 +3225,80 @@ export default function V03App() {
                             <select
                               key={selectedCity.id}
                               id="v03-governor-select"
-                              defaultValue={
-                                selectedCity.pendingAppointment?.governorId ??
-                                selectedCity.governorId ??
-                                ''
+                              aria-label={locale === 'zh' ? '太守人选' : 'Governor candidate'}
+                              value={governorSelection}
+                              onChange={(event) =>
+                                setGovernorDraft({
+                                  cityId: selectedCity.id,
+                                  officerId: event.target.value,
+                                })
                               }
                             >
                               <option value="">{t.localSteward}</option>
-                              {pendingGovernor && !pendingGovernorAvailable ? (
-                                <option value={pendingGovernor.id} disabled>
-                                  {pendingGovernor.name} · {locale === 'zh' ? '途中' : 'in transit'}
-                                </option>
-                              ) : null}
                               {governorCandidates.map((officer) => {
                                 const cityId =
                                   officer.location.kind === 'city' ? officer.location.cityId : '';
                                 const city = state.cities.find((entry) => entry.id === cityId);
                                 return (
-                                  <option key={officer.id} value={officer.id}>
-                                    {officer.name} · {officer.chinese} ·{' '}
+                                  <option
+                                    key={officer.id}
+                                    value={officer.id}
+                                    disabled={
+                                      !canAppointGovernor(state, selectedCity.id, officer.id).ok
+                                    }
+                                  >
+                                    {localizedOfficerName(officer.name)} ·{' '}
                                     {city ? displayName(city, locale) : ''}
+                                    {!canAppointGovernor(state, selectedCity.id, officer.id).ok
+                                      ? ` · ${localizeAppMessage(canAppointGovernor(state, selectedCity.id, officer.id).reason ?? '', locale)}`
+                                      : ''}
                                   </option>
                                 );
                               })}
                             </select>
                             <button
                               type="button"
+                              disabled={
+                                !canAppointGovernor(
+                                  state,
+                                  selectedCity.id,
+                                  governorSelection || null,
+                                ).ok ||
+                                (!governorSelection &&
+                                  !selectedCity.governorId &&
+                                  !selectedCity.pendingAppointment)
+                              }
+                              title={localizeAppMessage(
+                                canAppointGovernor(
+                                  state,
+                                  selectedCity.id,
+                                  governorSelection || null,
+                                ).reason ?? '',
+                                locale,
+                                state,
+                              )}
                               onClick={() => {
-                                const input = document.getElementById(
-                                  'v03-governor-select',
-                                ) as HTMLSelectElement | null;
                                 dispatch({
                                   type: 'appointGovernor',
                                   cityId: selectedCity.id,
-                                  officerId: input?.value || null,
+                                  officerId: governorSelection || null,
                                 });
                               }}
                             >
-                              {selectedCity.governorId ? t.dismiss : t.appoint}
+                              {!governorSelection
+                                ? selectedCity.governorId
+                                  ? t.dismiss
+                                  : selectedCity.pendingAppointment
+                                    ? locale === 'zh'
+                                      ? '撤销待任'
+                                      : 'Cancel appointment'
+                                    : t.localSteward
+                                : selectedCity.governorId &&
+                                    selectedCity.governorId !== governorSelection
+                                  ? locale === 'zh'
+                                    ? '更换太守'
+                                    : 'Replace governor'
+                                  : t.appoint}
                             </button>
                           </div>
                           {selectedCity.pendingAppointment
@@ -2932,7 +3331,7 @@ export default function V03App() {
                                   ? state.cities.find((city) => city.id === transfer.sourceCityId)
                                   : null;
                                 const subject = pendingOfficer
-                                  ? `${pendingOfficer.name} · ${pendingOfficer.chinese}`
+                                  ? localizedOfficerName(pendingOfficer.name)
                                   : t.localSteward;
                                 return (
                                   <small className="v03-muted">
@@ -2957,11 +3356,8 @@ export default function V03App() {
                           </small>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              selectedCity.gold < 80 ||
-                              selectedCity.farming >= 100
-                            }
+                            disabled={!capitalAvailability('develop-farming').ok}
+                            title={capitalReason('develop-farming')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -2974,11 +3370,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              selectedCity.gold < 80 ||
-                              selectedCity.commerce >= 100
-                            }
+                            disabled={!capitalAvailability('develop-commerce').ok}
+                            title={capitalReason('develop-commerce')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -2991,7 +3384,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={directWorkRemaining === 0}
+                            disabled={!capitalAvailability('search').ok}
+                            title={capitalReason('search')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3004,7 +3398,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={directWorkRemaining === 0 || selectedCity.population <= 1000}
+                            disabled={!capitalAvailability('recruit').ok}
+                            title={capitalReason('recruit')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3017,7 +3412,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={directWorkRemaining === 0 || selectedCity.loyalty >= 100}
+                            disabled={!capitalAvailability('security').ok}
+                            title={capitalReason('security')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3030,10 +3426,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              !directCityOfficers.some((officer) => officer.loyalty < 100)
-                            }
+                            disabled={!capitalAvailability('feast').ok}
+                            title={capitalReason('feast')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3046,11 +3440,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              selectedCity.gold < 80 ||
-                              selectedCity.food + 800 > 9_999_999
-                            }
+                            disabled={!capitalAvailability('buy-food').ok}
+                            title={capitalReason('buy-food')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3063,11 +3454,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              selectedCity.food < 800 ||
-                              selectedCity.gold + 80 > 9_999_999
-                            }
+                            disabled={!capitalAvailability('sell-food').ok}
+                            title={capitalReason('sell-food')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3080,12 +3468,8 @@ export default function V03App() {
                           </button>
                           <button
                             type="button"
-                            disabled={
-                              directWorkRemaining === 0 ||
-                              selectedCity.gold < 80 ||
-                              selectedCity.food < 600 ||
-                              (selectedCity.loyalty >= 100 && selectedCity.population >= 9_999_999)
-                            }
+                            disabled={!capitalAvailability('relieve').ok}
+                            title={capitalReason('relieve')}
                             onClick={() =>
                               dispatch({
                                 type: 'cityAction',
@@ -3096,13 +3480,60 @@ export default function V03App() {
                           >
                             {t.relievePeople}
                           </button>
+                          <p className="v03-muted">
+                            {locale === 'zh'
+                              ? '征募先增加预备兵；再将预备兵编入武将所部，最后下达出征。出征按武将整支所部编组，请求少于任一可用武将带兵数时可能没有可执行兵力。每项内政使用本月工作点，已批准订单的资源会保留。'
+                              : 'Recruit soldiers into reserve, assign reserve soldiers to an officer, then issue a march order. Marches take whole officer forces; a request smaller than every available force may have no executable troops. Each city action uses monthly work points; approved orders keep their resources reserved.'}{' '}
+                            <button
+                              type="button"
+                              className="text-button"
+                              onClick={() => openWiki('governance')}
+                            >
+                              {t.wiki}
+                            </button>
+                          </p>
+                          <ul
+                            className="v03-muted"
+                            aria-label={locale === 'zh' ? '内政行动限制' : 'Capital action limits'}
+                          >
+                            {(
+                              [
+                                ['develop-farming', t.improveFarm],
+                                ['develop-commerce', t.improveMarket],
+                                ['search', t.search],
+                                ['recruit', t.recruit],
+                                ['security', t.security],
+                                ['feast', t.feast],
+                                ['buy-food', t.buyFood],
+                                ['sell-food', t.sellFood],
+                                ['relieve', t.relievePeople],
+                              ] as const
+                            ).flatMap(([action, label]) => {
+                              const reason = capitalReason(action);
+                              return reason
+                                ? [
+                                    <li key={action}>
+                                      {label}: {reason}
+                                    </li>,
+                                  ]
+                                : [];
+                            })}
+                          </ul>
                           {directCityOfficers.map((officer) => {
                             const desiredTroops = troopAssignments[officer.id] ?? officer.troops;
                             return (
                               <div className="v03-work-officer" key={officer.id}>
                                 <strong>
-                                  {officer.name} · {officer.troops.toLocaleString()}
+                                  {localizedOfficerName(officer.name)} ·{' '}
+                                  {officer.troops.toLocaleString()}
                                 </strong>
+                                <small className="v03-muted">
+                                  {locale === 'zh' ? '忠诚' : 'Loyalty'} {officer.loyalty} ·{' '}
+                                  {locale === 'zh' ? '武力' : 'Force'} {officer.force} ·{' '}
+                                  {locale === 'zh' ? '智力' : 'Intellect'} {officer.intellect} ·{' '}
+                                  {locale === 'zh' ? '经验' : 'Experience'} {officer.experience} ·{' '}
+                                  {locale === 'zh' ? '等级' : 'Level'} {officer.level}
+                                </small>
                                 <small className="v03-muted">
                                   {officer.equipment === 'Fine arms'
                                     ? t.fineArmsEquipped
@@ -3110,11 +3541,8 @@ export default function V03App() {
                                 </small>
                                 <button
                                   type="button"
-                                  disabled={
-                                    directWorkRemaining === 0 ||
-                                    officer.loyalty >= 100 ||
-                                    selectedCity.gold < 100
-                                  }
+                                  disabled={!capitalAvailability('reward', officer.id).ok}
+                                  title={capitalReason('reward', officer.id)}
                                   onClick={() =>
                                     dispatch({
                                       type: 'cityAction',
@@ -3128,12 +3556,8 @@ export default function V03App() {
                                 </button>
                                 <button
                                   type="button"
-                                  disabled={
-                                    directWorkRemaining === 0 ||
-                                    officer.equipment === 'Fine arms' ||
-                                    officer.force >= 105 ||
-                                    selectedCity.gold < 180
-                                  }
+                                  disabled={!capitalAvailability('equip', officer.id).ok}
+                                  title={capitalReason('equip', officer.id)}
                                   onClick={() =>
                                     dispatch({
                                       type: 'cityAction',
@@ -3147,13 +3571,8 @@ export default function V03App() {
                                 </button>
                                 <button
                                   type="button"
-                                  disabled={
-                                    directWorkRemaining === 0 ||
-                                    officer.troops <= 0 ||
-                                    (officer.experience >= 10_000 &&
-                                      officer.force >=
-                                        (officer.equipment === 'Fine arms' ? 105 : 100))
-                                  }
+                                  disabled={!capitalAvailability('train', officer.id).ok}
+                                  title={capitalReason('train', officer.id)}
                                   onClick={() =>
                                     dispatch({
                                       type: 'cityAction',
@@ -3168,7 +3587,7 @@ export default function V03App() {
                                 <label>
                                   {t.assignmentAmount}
                                   <input
-                                    aria-label={`${t.assignmentAmount}: ${officer.name}`}
+                                    aria-label={`${t.assignmentAmount}: ${displayName(officer, locale)}`}
                                     type="number"
                                     min={0}
                                     max={10000}
@@ -3185,10 +3604,10 @@ export default function V03App() {
                                 <button
                                   type="button"
                                   disabled={
-                                    directWorkRemaining === 0 ||
-                                    desiredTroops === officer.troops ||
-                                    desiredTroops > officer.troops + selectedCity.reserve
+                                    !capitalAvailability('assign-troops', officer.id, desiredTroops)
+                                      .ok
                                   }
+                                  title={capitalReason('assign-troops', officer.id, desiredTroops)}
                                   onClick={() =>
                                     dispatch({
                                       type: 'cityAction',
@@ -3201,13 +3620,47 @@ export default function V03App() {
                                 >
                                   {t.assignTroops}
                                 </button>
+                                <ul
+                                  className="v03-muted"
+                                  aria-label={
+                                    locale === 'zh'
+                                      ? `${officer.chinese}的行动限制`
+                                      : `${officer.name} action limits`
+                                  }
+                                >
+                                  {(
+                                    [
+                                      ['reward', t.rewardOfficer],
+                                      ['equip', t.issueFineArms],
+                                      ['train', t.train],
+                                      ['assign-troops', t.assignTroops],
+                                    ] as const
+                                  ).flatMap(([action, label]) => {
+                                    const reason = capitalReason(
+                                      action,
+                                      officer.id,
+                                      action === 'assign-troops' ? desiredTroops : undefined,
+                                    );
+                                    return reason
+                                      ? [
+                                          <li key={action}>
+                                            {label}: {reason}
+                                          </li>,
+                                        ]
+                                      : [];
+                                  })}
+                                </ul>
                               </div>
                             );
                           })}
                         </div>
                       ) : (
                         <small className="v03-muted">
-                          {getCityCapabilities(state, selectedCity.id).reason}
+                          {localizeAppMessage(
+                            getCityCapabilities(state, selectedCity.id).reason ?? '',
+                            locale,
+                            state,
+                          )}
                         </small>
                       )}
                     </div>
@@ -3477,7 +3930,10 @@ export default function V03App() {
               ) : (
                 <p className="v03-muted">{t.noCity}</p>
               )}
-              <section className="v03-orders-list">
+              <section
+                className="v03-orders-list v03-backlog-list"
+                aria-label={locale === 'zh' ? '玩家订单' : 'Player orders'}
+              >
                 <div className="v03-section-title">
                   <h3>{t.campaignOrders}</h3>
                   <button
@@ -3491,7 +3947,7 @@ export default function V03App() {
                 {activeOrders.length === 0 ? (
                   <p className="v03-muted">{t.emptyOrders}</p>
                 ) : (
-                  activeOrders.slice(-6).map((order) => {
+                  activeOrders.map((order) => {
                     const journey = order.journeyId
                       ? state?.journeys.find((entry) => entry.id === order.journeyId)
                       : undefined;
@@ -3778,11 +4234,22 @@ export default function V03App() {
               </section>
             </>
           )}
-          <section className="v03-events">
+          <section
+            className="v03-events v03-backlog-list"
+            aria-label={locale === 'zh' ? '报告' : 'Reports'}
+            tabIndex={-1}
+          >
             <div className="v03-section-title">
               <h3>{t.events}</h3>
               <span>{worldEvents.length}</span>
             </div>
+            {dueReports.length ? (
+              <p className="v03-report-blocker" role="status">
+                {locale === 'zh'
+                  ? `${dueReports.length} 份报告待确认；确认后才能推进时间。`
+                  : `${dueReports.length} due reports require acknowledgement before time advances.`}
+              </p>
+            ) : null}
             {worldEvents.length === 0 ? (
               <p className="v03-muted">—</p>
             ) : (
@@ -3805,6 +4272,23 @@ export default function V03App() {
           </section>
         </aside>
       </section>
+      {confirmation === 'withdraw' && activeBattle && currentUnit ? (
+        <ConfirmDialog
+          title={locale === 'zh' ? '撤离战场？' : 'Withdraw from battle?'}
+          detail={t.retreatWarning}
+          cancelLabel={locale === 'zh' ? '取消' : 'Cancel'}
+          confirmLabel={locale === 'zh' ? '确认撤离' : 'Confirm withdrawal'}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            setConfirmation(null);
+            dispatch({
+              type: 'battleAction',
+              battleId: activeBattle.id,
+              action: { type: 'retreat', unitId: currentUnit.id },
+            });
+          }}
+        />
+      ) : null}
       {showWiki ? (
         <div
           className="v03-modal-backdrop"

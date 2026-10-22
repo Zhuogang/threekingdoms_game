@@ -58,6 +58,17 @@ export function troopGlyph(troopType: string): string {
   return TROOP_NAMES[troopType]?.glyph ?? '兵';
 }
 
+/** Historical casualties stay in rule/save records, not active map tokens. */
+export function isLivingBattleUnitVisual(unit: BattleUnitVisual): boolean {
+  return unit.strength === undefined || (Number.isFinite(unit.strength) && unit.strength > 0);
+}
+
+/** Exact counts avoid turning a living detachment into a misleading zero badge. */
+export function formatTroopCount(strength: number, locale: 'en' | 'zh'): string {
+  const count = Number.isFinite(strength) ? Math.max(0, Math.floor(strength)) : 0;
+  return count.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US');
+}
+
 export function formatModifier(
   multiplier: number | undefined,
   locale: 'en' | 'zh',

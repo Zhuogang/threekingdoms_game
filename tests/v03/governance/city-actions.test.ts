@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
-import { applyV03CityAction } from '../../../src/v03/governance/city-actions';
+import {
+  applyV03CityAction,
+  getV03CityActionAvailability,
+} from '../../../src/v03/governance/city-actions';
 import type { V03GameState, V03Officer } from '../../../src/v03/types';
 
 function fixture(seed = 51): { state: V03GameState; cityId: string; officer: V03Officer } {
@@ -38,6 +41,91 @@ function rand(state: V03GameState, max: number): number {
 }
 
 describe('v0.3 ruler city actions', () => {
+  it.each([
+    { force: 100, experience: 25 },
+    { force: 60, experience: 10_000 },
+  ])('shares training availability at either cap: %o', ({ force, experience }) => {
+    const { state, cityId, officer } = fixture();
+    Object.assign(officer, { force, experience, troops: 300 });
+    const input = { cityId, action: 'train' as const, officerId: officer.id };
+    const before = structuredClone(state);
+
+    const availability = getV03CityActionAvailability(state, input);
+    const executed = applyV03CityAction(state, input);
+
+    expect(availability).toEqual({ ok: false, reason: executed.error });
+    expect(availability.reason).toContain('training limit');
+    expect(state).toEqual(before);
+  });
+
+  it('queries search availability without consuming RNG, stock or monthly work', () => {
+    const { state, cityId } = fixture();
+    const before = structuredClone(state);
+    expect(getV03CityActionAvailability(state, { cityId, action: 'search' })).toEqual({
+      ok: true,
+      reason: null,
+    });
+    expect(state).toEqual(before);
+  });
+
+  it('shares authority, work-budget and affordability rejections with command execution', () => {
+    for (const kind of ['authority', 'work', 'gold', 'valid'] as const) {
+      const { state, cityId } = fixture();
+      const city = state.cities.find((entry) => entry.id === cityId)!;
+      if (kind === 'authority') city.governanceMode = 'steward';
+      if (kind === 'work') city.workPointsUsed = 3;
+      if (kind === 'gold') city.gold = 0;
+      const input = { cityId, action: 'develop-farming' as const };
+      const availability = getV03CityActionAvailability(state, input);
+      const executed = applyV03CityAction(state, input);
+      expect(availability.ok).toBe(executed.ok);
+      expect(availability.reason).toBe(executed.error ?? null);
+    }
+  });
+
+  it('protects approved gold, food and garrison commitments in previews and execution', () => {
+    const { state, cityId, officer } = fixture();
+    const city = state.cities.find((entry) => entry.id === cityId)!;
+    officer.loyalty = 50;
+    officer.force = 60;
+    state.requisitions.push({
+      id: 'approved-capital-stock',
+      factionId: state.playerFactionId,
+      sourceCityId: cityId,
+      targetCityId: 'puyang',
+      requested: { gold: 900, food: 2700, troops: city.garrisonTroops },
+      proposed: { gold: 900, food: 2700, troops: city.garrisonTroops },
+      createdDay: state.absoluteDay,
+      requestedByDay: null,
+      earliestDepartureDay: null,
+      estimatedArrivalDay: null,
+      status: 'reserved',
+      journeyId: null,
+      governanceRevision: state.governanceRevision,
+      message: 'Reserved stock',
+    });
+    for (const input of [
+      { cityId, action: 'equip' as const, officerId: officer.id },
+      { cityId, action: 'relieve' as const },
+      { cityId, action: 'assign-troops' as const, officerId: officer.id, amount: 0 },
+    ]) {
+      const availability = getV03CityActionAvailability(state, input);
+      const executed = applyV03CityAction(state, input);
+      expect(availability.ok).toBe(false);
+      expect(availability.reason).toContain('reserved');
+      expect(executed.error).toBe(availability.reason);
+      expect(executed.state).toBe(state);
+    }
+    // Spending exactly the unreserved balance remains legal.
+    expect(
+      getV03CityActionAvailability(state, { cityId, action: 'reward', officerId: officer.id }).ok,
+    ).toBe(true);
+    // A dispatched journey has already debited its cargo; do not reserve it twice.
+    state.requisitions[0]!.journeyId = 'already-debited-journey';
+    expect(
+      getV03CityActionAvailability(state, { cityId, action: 'equip', officerId: officer.id }).ok,
+    ).toBe(true);
+  });
   it('uses the same 80-gold work effect and monthly staffed quota for direct development', () => {
     const { state, cityId } = fixture();
     const city = state.cities.find((entry) => entry.id === cityId)!;

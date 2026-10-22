@@ -6,12 +6,18 @@ import {
   type BattleTerrain,
   type BattleTroopType,
   type BattleUnitPosition,
+  type BattleWeather,
   type WaterCombatModifiers,
 } from './types';
 import { battleTerrainAt } from './maps';
 
 export const WATER_ATTACK_MULTIPLIER = 0.75;
 export const WATER_INCOMING_DAMAGE_MULTIPLIER = 1.25;
+
+/** Existing weather modifier used by fire forecasts and resolution. */
+export function fireWeatherMultiplier(weather: BattleWeather): number {
+  return weather === 'rain' ? 0.4 : weather === 'wind' ? 1.25 : 1;
+}
 
 const MOVE_BUDGET: Readonly<Record<BattleTroopType, number>> = {
   infantry: 3,

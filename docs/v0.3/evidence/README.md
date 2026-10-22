@@ -4,6 +4,8 @@ Updated 2026-10-21. The diagnostics are deterministic, matched-seed development/
 
 The later [read-only playability review](../playability-review-and-todo.md) records fresh unit/build/browser/production/performance validation at `01e65ef`, plus independent UI failure evidence in [review-2026-10-21](review-2026-10-21/runtime-check.json). It identifies new scoped interface tasks and corrects stale documentation; it does not rerun or reinterpret the accepted long-campaign balance result. The older report fingerprints identify generation-time sources, including diagnostic tools, rather than the current whole tree after tool changes.
 
+The subsequent [RV01–RV10 implementation evidence](rv-implementation-2026-10-21/README.md) records the repaired UI paths, final automated checks and new runtime screenshots. The original failure captures above remain historical; the strategic diagnostic artifacts below retain their generation fingerprints and accepted limits.
+
 ## Campaign tuning
 
 The neutral-access 96-month comparison in [`v03-campaign-neutral-access-96m.json`](v03-campaign-neutral-access-96m.json) completed all 24 rows with source fingerprint `872bf9a564847d6558f891d17a93a68d867e34635f968710b1992a99f4531400` and config fingerprint `3fd43fb806cbed635c076825ec638d2a7d18e77259a916c758e0df7f11631b92`. It reported zero true unifications, Hegemon claims or Hegemon victories, and selected-faction eliminations. Selected factions averaged 3.25 cities; their 136 battles had an 8-day median, 3 close outcomes (2.2%), and 19 wins by the initially weaker side (14.0%).
