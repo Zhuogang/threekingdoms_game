@@ -156,6 +156,8 @@ async function main() {
               'Campaign route is multi-leg when the route snapshot includes an intermediate city; raw nominal route kilometres are retained.',
             governorIdle:
               'Count only autonomous cities whose workMonthIndex matches the latest completed month; unobserved cities are kept separate.',
+            npcCampaigns:
+              'Counts engine-created rival campaign journeys; capture, repulse, draw, and unresolved outcomes are separate.',
           },
           victoryDefinitions: {
             trueUnification: 'Every campaign city is controlled by the selected faction.',

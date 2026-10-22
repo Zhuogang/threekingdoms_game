@@ -32,6 +32,171 @@ describe('v0.3 campaign diagnostic outcome reporting', () => {
     });
   });
 
+  it('reports faction-wide ownership and resolves each rival campaign dispatch', () => {
+    const state = {
+      playerFactionId: 'player',
+      absoluteDay: 60,
+      monthIndex: 2,
+      phase: 'planning',
+      winnerFactionId: null,
+      hegemon: { factionId: null, months: 0 },
+      factions: [
+        { id: 'player', isPlayer: true, eliminated: false, capitalCityId: 'p-city' },
+        { id: 'cao', isPlayer: false, eliminated: false, capitalCityId: 'cao-city' },
+        { id: 'liu', isPlayer: false, eliminated: false, capitalCityId: 'liu-city' },
+        { id: 'gone', isPlayer: false, eliminated: true, capitalCityId: 'lost-city' },
+      ],
+      cities: [
+        { id: 'p-city', factionId: 'player', gold: 0, food: 0 },
+        { id: 'cao-city', factionId: 'cao', gold: 0, food: 0 },
+        { id: 'liu-city', factionId: 'liu', gold: 0, food: 0 },
+        { id: 'neutral-city', factionId: null, gold: 0, food: 0 },
+      ],
+      officers: [],
+      battles: [
+        {
+          id: 'battle-capture',
+          active: false,
+          attackerJourneyId: 'journey-capture',
+          resolved: true,
+          outcome: 'attacker',
+          battleData: { outcome: { reason: 'elimination' } },
+        },
+        {
+          id: 'battle-repulse',
+          active: false,
+          attackerJourneyId: 'journey-repulse',
+          resolved: true,
+          outcome: 'defender',
+          battleData: { outcome: { reason: 'camp' } },
+        },
+        {
+          id: 'battle-active',
+          active: true,
+          attackerJourneyId: 'journey-unknown',
+          resolved: false,
+          outcome: null,
+          battleData: { outcome: null },
+        },
+        {
+          id: 'battle-draw',
+          active: false,
+          attackerJourneyId: 'journey-draw',
+          resolved: true,
+          outcome: 'draw',
+          battleData: { outcome: { reason: 'dayLimit' } },
+        },
+      ],
+      directives: [
+        {
+          id: 'directive-capture',
+          factionId: 'cao',
+          sourceCityId: 'cao-city',
+          targetCityId: 'neutral-city',
+          proposedTroops: 900,
+          status: 'delivered',
+          journeyId: 'journey-capture',
+        },
+        {
+          id: 'directive-repulse',
+          factionId: 'liu',
+          sourceCityId: 'liu-city',
+          targetCityId: 'cao-city',
+          proposedTroops: 800,
+          status: 'delivered',
+          journeyId: 'journey-repulse',
+        },
+        {
+          id: 'directive-unknown',
+          factionId: 'liu',
+          sourceCityId: 'liu-city',
+          targetCityId: 'neutral-city',
+          proposedTroops: 700,
+          status: 'dispatched',
+          journeyId: 'journey-unknown',
+        },
+        {
+          id: 'directive-draw',
+          factionId: 'cao',
+          sourceCityId: 'cao-city',
+          targetCityId: 'liu-city',
+          proposedTroops: 650,
+          status: 'delivered',
+          journeyId: 'journey-draw',
+        },
+        {
+          id: 'directive-player',
+          factionId: 'player',
+          sourceCityId: 'p-city',
+          targetCityId: 'cao-city',
+          proposedTroops: 600,
+          status: 'dispatched',
+          journeyId: 'journey-player',
+        },
+      ],
+      journeys: [
+        {
+          id: 'journey-capture',
+          executionId: 'directive-capture',
+          ownerFactionId: 'cao',
+          kind: 'campaign',
+          status: 'cancelled',
+        },
+        {
+          id: 'journey-repulse',
+          executionId: 'directive-repulse',
+          ownerFactionId: 'liu',
+          kind: 'campaign',
+          status: 'cancelled',
+        },
+        {
+          id: 'journey-unknown',
+          executionId: 'directive-unknown',
+          ownerFactionId: 'liu',
+          kind: 'campaign',
+          status: 'outbound',
+        },
+        {
+          id: 'journey-draw',
+          executionId: 'directive-draw',
+          ownerFactionId: 'cao',
+          kind: 'campaign',
+          status: 'cancelled',
+        },
+        {
+          id: 'journey-player',
+          executionId: 'directive-player',
+          ownerFactionId: 'player',
+          kind: 'campaign',
+          status: 'outbound',
+        },
+      ],
+      requisitions: [],
+    };
+
+    const result = summarize(state, 'player', 2, []);
+    expect(result.factionOwnership).toMatchObject({
+      totalCities: 4,
+      independentCities: 1,
+      factions: [
+        { factionId: 'player', ownedCities: 1, eliminated: false },
+        { factionId: 'cao', ownedCities: 1, eliminated: false },
+        { factionId: 'liu', ownedCities: 1, eliminated: false },
+        { factionId: 'gone', ownedCities: 0, eliminated: true },
+      ],
+    });
+    expect(result.rivalCampaigns).toMatchObject({
+      dispatched: 4,
+      outcomes: { capture: 1, repulse: 1, draw: 1, unknown: 1 },
+    });
+    expect(result.rivalCampaigns.raw.map((entry) => entry.outcome)).toEqual([
+      'capture',
+      'repulse',
+      'unknown',
+      'draw',
+    ]);
+  });
+
   it('does not count another faction’s Hegemon win as player elimination', () => {
     const aggregate = aggregateResults([
       {

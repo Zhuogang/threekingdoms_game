@@ -139,6 +139,109 @@ function playerAutonomyMetrics(state, factionId) {
   };
 }
 
+function factionOwnershipMetrics(state) {
+  return {
+    totalCities: state.cities.length,
+    factions: state.factions.map((faction) => ({
+      factionId: faction.id,
+      ownedCities: state.cities.filter((city) => city.factionId === faction.id).length,
+      eliminated: Boolean(faction.eliminated),
+      capitalCityId: faction.capitalCityId,
+    })),
+    independentCities: state.cities.filter((city) => city.factionId === null).length,
+  };
+}
+
+function rivalCampaignOutcome(state, directive) {
+  const journey = state.journeys.find((entry) => entry.id === directive.journeyId);
+  const battle = state.battles.find((entry) => entry.attackerJourneyId === directive.journeyId);
+  if (battle?.resolved) {
+    return {
+      outcome:
+        battle.outcome === 'attacker'
+          ? 'capture'
+          : battle.outcome === 'defender'
+            ? 'repulse'
+            : 'draw',
+      outcomeReason: battle.battleData?.outcome?.reason ?? 'resolved-battle',
+      battleId: battle.id,
+      journeyStatus: journey?.status ?? null,
+    };
+  }
+  if (battle) {
+    return {
+      outcome: 'unknown',
+      outcomeReason: 'battle-unresolved-at-checkpoint',
+      battleId: battle.id,
+      journeyStatus: journey?.status ?? null,
+    };
+  }
+  const target = state.cities.find((city) => city.id === directive.targetCityId);
+  if (journey?.status === 'delivered' && target?.factionId === directive.factionId) {
+    return {
+      outcome: 'capture',
+      outcomeReason: 'destination-was-already-friendly-on-arrival',
+      battleId: null,
+      journeyStatus: journey.status,
+    };
+  }
+  return {
+    outcome: 'unknown',
+    outcomeReason: journey ? `no-resolved-battle-${journey.status}` : 'journey-record-missing',
+    battleId: null,
+    journeyStatus: journey?.status ?? null,
+  };
+}
+
+function rivalCampaignMetrics(state, selectedFactionId) {
+  const dispatched = state.directives
+    .filter((directive) => directive.factionId !== selectedFactionId && directive.journeyId)
+    .filter((directive) => {
+      const journey = state.journeys.find((entry) => entry.id === directive.journeyId);
+      return (
+        journey?.kind === 'campaign' &&
+        journey.executionId === directive.id &&
+        journey.ownerFactionId === directive.factionId
+      );
+    })
+    .map((directive) => {
+      const result = rivalCampaignOutcome(state, directive);
+      return {
+        directiveId: directive.id,
+        factionId: directive.factionId,
+        sourceCityId: directive.sourceCityId,
+        targetCityId: directive.targetCityId,
+        requestedTroops: directive.proposedTroops,
+        status: directive.status,
+        journeyId: directive.journeyId,
+        ...result,
+      };
+    });
+  const outcomes = { capture: 0, repulse: 0, draw: 0, unknown: 0 };
+  const byFaction = new Map();
+  for (const campaign of dispatched) {
+    outcomes[campaign.outcome]++;
+    const faction = byFaction.get(campaign.factionId) ?? {
+      factionId: campaign.factionId,
+      dispatched: 0,
+      capture: 0,
+      repulse: 0,
+      draw: 0,
+      unknown: 0,
+    };
+    faction.dispatched++;
+    faction[campaign.outcome]++;
+    byFaction.set(campaign.factionId, faction);
+  }
+  return {
+    status: 'observed',
+    dispatched: dispatched.length,
+    outcomes,
+    byFaction: [...byFaction.values()].sort((a, b) => a.factionId.localeCompare(b.factionId)),
+    raw: dispatched,
+  };
+}
+
 export function summarize(state, factionId, month, initialIndependentCityIds = []) {
   const ownedCities = state.cities.filter((city) => city.factionId === factionId).length;
   const initialIndependentIds = new Set(initialIndependentCityIds);
@@ -195,6 +298,8 @@ export function summarize(state, factionId, month, initialIndependentCityIds = [
       dispatched: state.directives.filter((item) => item.status === 'dispatched').length,
       failed: state.directives.filter((item) => item.status === 'failed').length,
     },
+    factionOwnership: factionOwnershipMetrics(state),
+    rivalCampaigns: rivalCampaignMetrics(state, factionId),
     journeys: {
       outbound: state.journeys.filter((item) => item.status === 'outbound').length,
       returning: state.journeys.filter((item) => item.status === 'returning').length,
