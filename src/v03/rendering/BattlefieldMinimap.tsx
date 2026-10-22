@@ -1,3 +1,4 @@
+import { message } from '../i18n';
 import {
   clientToViewBoxPoint,
   clipPolygonToGrid,
@@ -116,11 +117,7 @@ export function BattlefieldMinimap({
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role={onNavigate ? 'application' : 'img'}
       tabIndex={onNavigate ? 0 : undefined}
-      aria-label={
-        locale === 'zh'
-          ? '战场小地图。点击或拖动定位主地图；方向键微调，按住 Shift 移动五格。'
-          : 'Battlefield minimap. Click or drag to recenter the main map; use arrow keys to nudge and Shift to move five cells.'
-      }
+      aria-label={message(locale, 'ui.battlefield.minimap.click.or.drag.to.recenter.th.144')}
       onPointerDown={startNavigate}
       onPointerMove={(event) => {
         if (event.currentTarget.hasPointerCapture(event.pointerId)) moveTo(event);

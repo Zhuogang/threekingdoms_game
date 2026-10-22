@@ -251,9 +251,9 @@ function makeJourney(input: JourneyCreationInput): V03Journey {
 }
 
 describe('v0.3 governor orders', () => {
-  it('rejects every requisition and campaign answer outside planning without changing state', () => {
+  it('rejects every requisition and campaign answer after the campaign ends without changing state', () => {
     const state = fixture();
-    state.phase = 'battle';
+    state.phase = 'finished';
     state.requisitions.push({
       id: 'battle-phase-requisition',
       factionId: state.playerFactionId,

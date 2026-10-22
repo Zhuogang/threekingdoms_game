@@ -1,3 +1,9 @@
+import {
+  isCityCommitted,
+  isOfficerCommitted,
+  CITY_COMMITTED_REASON,
+  OFFICER_COMMITTED_REASON,
+} from './commitments';
 import type { V03City, V03GameState, V03JourneyCargo, V03Officer } from '../types';
 
 export interface V03Capabilities {
@@ -98,6 +104,17 @@ function productionPerDay(city: V03City, resource: 'gold' | 'food') {
   return monthly / 30;
 }
 
+export function availableCityResources(state: V03GameState, cityId: string): V03JourneyCargo {
+  const city = state.cities.find((city) => city.id === cityId);
+  if (!city) return zeroCargo();
+  const reserved = outstandingAtSource(state, cityId);
+  return {
+    gold: Math.max(0, city.gold - reserved.gold),
+    food: Math.max(0, city.food - reserved.food),
+    troops: Math.max(0, city.garrisonTroops - reserved.troops),
+  };
+}
+
 export function estimateRequisition(
   state: V03GameState,
   sourceCityId: string,
@@ -185,7 +202,8 @@ export function estimateRequisition(
 }
 
 export function canAppointGovernor(
-  state: Pick<V03GameState, 'playerFactionId' | 'playerCapitalCityId' | 'cities' | 'officers'>,
+  state: Pick<V03GameState, 'playerFactionId' | 'playerCapitalCityId' | 'cities' | 'officers'> &
+    Partial<Pick<V03GameState, 'battles' | 'journeys'>>,
   cityId: string,
   officerId: string | null,
 ): { ok: boolean; reason: string | null; city?: V03City; officer?: V03Officer } {
@@ -194,6 +212,22 @@ export function canAppointGovernor(
     return { ok: false, reason: 'You can appoint a governor only to one of your own cities.' };
   if (city.id === state.playerCapitalCityId)
     return { ok: false, reason: 'The ruler’s capital remains directly governed.' };
+  if (
+    state.battles &&
+    state.journeys &&
+    isCityCommitted({ battles: state.battles, journeys: state.journeys }, cityId)
+  )
+    return { ok: false, reason: CITY_COMMITTED_REASON };
+  if (
+    officerId &&
+    state.battles &&
+    state.journeys &&
+    isOfficerCommitted(
+      { officers: state.officers, battles: state.battles, journeys: state.journeys },
+      officerId,
+    )
+  )
+    return { ok: false, reason: OFFICER_COMMITTED_REASON };
   if (officerId === null) return { ok: true, reason: null, city };
   const officer = state.officers.find((entry) => entry.id === officerId);
   if (!officer || !officer.alive || officer.factionId !== state.playerFactionId)

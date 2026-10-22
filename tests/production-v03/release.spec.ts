@@ -42,6 +42,20 @@ test('production release serves v0.3 under a subpath and restores its campaign s
 
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();
   await expect(page.locator('.v03-date strong')).toContainText('Day 2');
+  expect(await page.evaluate(() => Reflect.has(window, '__V03_PLAYTEST__'))).toBe(false);
+  const scripts = await page
+    .locator('script[src]')
+    .evaluateAll((nodes) => nodes.map((node) => (node as HTMLScriptElement).src));
+  for (const url of scripts) {
+    const javascript = await (await page.request.get(url)).text();
+    expect(javascript).not.toMatch(/__V03_PLAYTEST__|Playtest fixtures|playtestFixture/);
+  }
+  expect(
+    await page.evaluate(async () => {
+      await document.fonts.load('14px "Source Sans 3"');
+      return document.fonts.check('14px "Source Sans 3"');
+    }),
+  ).toBe(true);
   await expect
     .poll(() => page.evaluate((key) => localStorage.getItem(key), AUTOSAVE_KEY))
     .not.toBeNull();

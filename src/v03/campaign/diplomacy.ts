@@ -85,7 +85,7 @@ export function proposeV03Alliance(
   targetFactionId: string,
 ): { ok: boolean; state: V03GameState; message?: string; error?: string; chance?: number } {
   const target = state.factions.find((faction) => faction.id === targetFactionId);
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return { ok: false, state, error: 'Diplomacy can only be changed during campaign planning.' };
   if (!target || target.eliminated || targetFactionId === state.playerFactionId)
     return { ok: false, state, error: 'Choose another active faction.' };
@@ -154,7 +154,7 @@ export function breakV03Alliance(
   state: V03GameState,
   targetFactionId: string,
 ): { ok: boolean; state: V03GameState; message?: string; error?: string } {
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return { ok: false, state, error: 'Diplomacy can only be changed during campaign planning.' };
   if (
     !isV03AllianceActive(state.alliances, state.playerFactionId, targetFactionId, state.monthIndex)
@@ -178,7 +178,7 @@ export function acceptV03Invitation(
   state: V03GameState,
   invitationId: string,
 ): { ok: boolean; state: V03GameState; message?: string; error?: string } {
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return { ok: false, state, error: 'Diplomacy can only be changed during campaign planning.' };
   const invitation = state.coalitionInvitations.find((entry) => entry.id === invitationId);
   if (!invitation || invitation.expiresMonthIndex <= state.monthIndex)

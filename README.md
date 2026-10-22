@@ -70,3 +70,5 @@ The [validation record](docs/v0.3/evidence/rv-implementation-2026-10-21/README.m
 Original ImageGen artwork has [provenance](docs/v0.3/assets/provenance.md) and a [manifest](docs/v0.3/assets/manifest.json). Existing portrait identity/provenance remains in [portrait credits](docs/assets/portrait-credits.md). Geographic overlays and combat data determine positions and rules, not painted decoration.
 
 BAYE source reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This is an independent redesign, not an official BAYE or San10WPK product. The optional local reference checkout is not required to build or play.
+
+October 22 playability/UI changes and current evidence: [implementation ledger](docs/v0.3/playability-implementation.md).

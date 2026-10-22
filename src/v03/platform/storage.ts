@@ -1,3 +1,4 @@
+import { reconcileV03Rulers } from '../engine';
 import { z } from 'zod';
 import type { V03GameState } from '../types';
 import { validateBattleMap } from '../battle/maps';
@@ -102,6 +103,22 @@ const tacticalBattle = z
     nextWeather: z.enum(['clear', 'rain', 'wind']),
     units: z.array(tacticalUnit).min(2).max(20),
     log: z.array(z.string().max(1000)).max(2000),
+    logEntries: z
+      .array(
+        z
+          .object({
+            day: nonnegative,
+            index: nonnegative,
+            code: z.string().max(100),
+            params: z.record(
+              z.string().max(100),
+              z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.null()]),
+            ),
+          })
+          .strict(),
+      )
+      .max(2000)
+      .optional(),
     outcome: z
       .object({
         winner: z.enum(['attacker', 'defender']).nullable(),
@@ -197,6 +214,7 @@ const officer = z
     level: safeInt.min(0).max(20),
     governorOfCityId: id.nullable(),
     alive: z.boolean(),
+    prisonerActionMonth: nonnegative.optional(),
   })
   .strict();
 const journey = z
@@ -274,6 +292,8 @@ const requisition = z
   .strict();
 const directive = z
   .object({
+    food: nonnegative.optional(),
+    officerIds: z.array(id).max(100).optional(),
     id,
     factionId: id,
     sourceCityId: id,
@@ -290,6 +310,15 @@ const directive = z
     message: z.string().max(2000),
   })
   .strict();
+const sideReportSchema = z
+  .object({
+    startingTroops: nonnegative,
+    survivingTroops: nonnegative,
+    returned: z.array(id).max(100),
+    captured: z.array(id).max(100),
+    killed: z.array(id).max(100),
+  })
+  .strict();
 const event = z
   .object({
     id,
@@ -297,6 +326,8 @@ const event = z
     kind: z.enum([
       'journeyArrival',
       'battleReady',
+      'succession',
+      'prisonerAction',
       'battleResolved',
       'requisitionResponse',
       'governorChanged',
@@ -311,6 +342,41 @@ const event = z
     detail: z.string().max(3000),
     entityId: id.nullable(),
     acknowledged: z.boolean(),
+    code: z.string().max(100).optional(),
+    params: z
+      .record(
+        z.string().max(100),
+        z.union([z.string().max(1000), z.number().finite(), z.boolean(), z.null()]),
+      )
+      .optional(),
+    tier: z.enum(['critical', 'notice', 'chronicle']).optional(),
+    battleOutcome: z
+      .object({
+        cityId: id,
+        cityCaptured: z.boolean(),
+        winner: z.enum(['attacker', 'defender', 'draw']),
+        attacker: sideReportSchema,
+        defender: sideReportSchema,
+        loot: z.object({ gold: nonnegative, food: nonnegative }).strict(),
+        returnArrivalDay: nonnegative.nullable(),
+      })
+      .strict()
+      .optional(),
+    monthlySummary: z
+      .array(
+        z
+          .object({
+            cityId: id,
+            gold: safeInt,
+            food: safeInt,
+            troops: safeInt,
+            governorActions: z.array(z.string().max(100)).max(10),
+            shortage: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(100)
+      .optional(),
   })
   .strict();
 const battle = z
@@ -328,6 +394,7 @@ const battle = z
     active: z.boolean(),
     resolved: z.boolean(),
     playerDayComplete: z.boolean(),
+    autoCommand: z.boolean().optional(),
     outcome: z.enum(['attacker', 'defender', 'draw']).nullable(),
     loot: z.object({ gold: nonnegative, food: nonnegative }).strict().nullable(),
     battleData: tacticalBattle,
@@ -478,7 +545,12 @@ export function validateV03State(value: unknown): value is V03GameState {
   for (const entry of state.factions) {
     if (!cityIds.has(entry.capitalCityId) || !officerIds.has(entry.leaderOfficerId)) return false;
     const capital = state.cities.find((cityEntry) => cityEntry.id === entry.capitalCityId);
-    if (!entry.eliminated && capital?.factionId !== entry.id) return false;
+    if (
+      !entry.eliminated &&
+      state.cities.some((city) => city.factionId === entry.id) &&
+      capital?.factionId !== entry.id
+    )
+      return false;
     if (entry.eliminated && state.cities.some((cityEntry) => cityEntry.factionId === entry.id))
       return false;
   }
@@ -817,6 +889,10 @@ export function validateV03State(value: unknown): value is V03GameState {
     if (entry.entityId === null)
       return entry.kind === 'monthBoundary' || entry.kind === 'campaignEvent';
     switch (entry.kind) {
+      case 'succession':
+        return factionIds.has(entry.entityId);
+      case 'prisonerAction':
+        return officerIds.has(entry.entityId);
       case 'journeyArrival':
         return journeyIds.has(entry.entityId);
       case 'battleReady':
@@ -927,7 +1003,7 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
   }
   if (!validateV03State(parsed.data.state))
     throw new Error('The save contains inconsistent campaign state.');
-  return compactV03History(parsed.data.state);
+  return reconcileV03Rulers(compactV03History(parsed.data.state));
 }
 
 export function saveV03Autosave(

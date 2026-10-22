@@ -199,8 +199,10 @@ describe('v0.3 governor monthly work planning', () => {
 
     city.reserve = 1000;
     city.population = 1000;
-    city.farming = 100;
-    city.commerce = 100;
+    manager.troops = 5000;
+    city.garrisonTroops = 5000;
+    city.farming = 500;
+    city.commerce = 500;
     city.food = 0;
     city.gold = 1000;
     plan = planGovernorMonthlyWork(state, cityId, 3);
@@ -230,8 +232,8 @@ describe('v0.3 governor monthly work planning', () => {
     );
     const manager = state.officers.find((officer) => officer.governorOfCityId === cityId)!;
     city.food = 10_000;
-    city.farming = 100;
-    city.commerce = 100;
+    city.farming = 500;
+    city.commerce = 500;
     city.loyalty = 80;
     city.reserve = 1000;
     city.gold = 1000;
@@ -299,8 +301,8 @@ describe('v0.3 governor monthly work planning', () => {
       (officer) => officer.id === rewardCity.governorId,
     )!;
     rewardCity.food = 10_000;
-    rewardCity.farming = 100;
-    rewardCity.commerce = 100;
+    rewardCity.farming = 500;
+    rewardCity.commerce = 500;
     rewardCity.loyalty = 80;
     rewardCity.reserve = 1000;
     rewardOfficer.troops = 0;
@@ -353,8 +355,8 @@ describe('v0.3 governor monthly work planning', () => {
       (officer) => officer.id === equipmentCity.governorId,
     )!;
     equipmentCity.food = 10_000;
-    equipmentCity.farming = 100;
-    equipmentCity.commerce = 100;
+    equipmentCity.farming = 500;
+    equipmentCity.commerce = 500;
     equipmentCity.loyalty = 80;
     equipmentCity.reserve = 1000;
     equipmentCity.gold = 1000;

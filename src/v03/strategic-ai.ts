@@ -1,3 +1,4 @@
+import { isCityCommitted } from './governance/commitments';
 /**
  * Deterministic monthly rival campaign planning for v0.3.
  *
@@ -336,7 +337,7 @@ export function planStrategicRivalCampaigns(
   options: StrategicAiPlannerOptions = {},
 ): StrategicRivalCampaignPlan[] {
   if (
-    state.phase !== 'planning' ||
+    state.phase === 'finished' ||
     !Number.isSafeInteger(state.absoluteDay) ||
     state.absoluteDay < 0
   )
@@ -363,7 +364,7 @@ export function planStrategicRivalCampaigns(
     const candidates: Candidate[] = [];
 
     for (const source of ownedCities) {
-      if (hasActiveSourceOrder(state, source.id)) continue;
+      if (isCityCommitted(state, source.id) || hasActiveSourceOrder(state, source.id)) continue;
       for (const target of state.cities) {
         if (
           target.id === source.id ||

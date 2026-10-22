@@ -1,3 +1,4 @@
+import { message } from '../i18n';
 import {
   useEffect,
   useMemo,
@@ -93,6 +94,8 @@ function CitySymbol({
       }}
       style={{ cursor: onClick ? 'pointer' : 'default', outline: 'none' }}
     >
+      <circle r={radius + 5} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={4} />
+      <rect x={-44} y={-radius - 8} width={88} height={radius * 2 + 40} fill="transparent" />
       {city.selected ? (
         <circle
           r={selectedRadius}
@@ -165,7 +168,16 @@ function CitySymbol({
         </g>
       )}
       {governance ? (
-        <g transform={`translate(${radius * 0.78} ${-radius * 0.78})`} aria-label={governance}>
+        <g
+          transform={`translate(${radius * 0.78} ${-radius * 0.78})`}
+          aria-label={
+            governance === 'direct'
+              ? message(locale, 'ui.ruler.s.capital.126')
+              : governance === 'governed'
+                ? message(locale, 'ui.governor.145')
+                : message(locale, 'ui.local.stewardship.13')
+          }
+        >
           <circle
             r={8}
             fill={
@@ -186,16 +198,10 @@ function CitySymbol({
             fontWeight={700}
           >
             {governance === 'direct'
-              ? locale === 'zh'
-                ? '君'
-                : 'R'
+              ? message(locale, 'ui.r.146')
               : governance === 'governed'
-                ? locale === 'zh'
-                  ? '守'
-                  : 'G'
-                : locale === 'zh'
-                  ? '郡'
-                  : 'L'}
+                ? message(locale, 'ui.g.147')
+                : message(locale, 'ui.l.148')}
           </text>
         </g>
       ) : null}
@@ -212,7 +218,7 @@ function CitySymbol({
       >
         {label}
       </text>
-      <title>{label}</title>
+      <title>{city.info ?? label}</title>
     </g>
   );
 }
@@ -359,11 +365,7 @@ export function CampaignMapView({
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
       role={canNavigate ? 'application' : 'img'}
-      aria-label={
-        locale === 'zh'
-          ? '三国战略地图。方向键平移，+ 和 − 缩放，Home 显示全图；按 Tab 选择城市。'
-          : 'Three Kingdoms campaign map. Use arrow keys to pan, plus and minus to zoom, Home to fit, and Tab to select a city.'
-      }
+      aria-label={message(locale, 'ui.three.kingdoms.campaign.map.use.arrow.keys.to.pa.149')}
       tabIndex={canNavigate ? 0 : undefined}
       onPointerDown={startPan}
       onPointerMove={movePan}
@@ -430,7 +432,7 @@ export function CampaignMapView({
         fill="url(#v03-campaign-grain)"
       />
       {mountainRanges.map((range) => (
-        <g key={range.id} aria-label={range.label ?? (locale === 'zh' ? '山系' : 'Mountain range')}>
+        <g key={range.id} aria-label={range.label ?? message(locale, 'ui.mountain.range.150')}>
           <path
             d={pathFromPoints(range.points)}
             fill="none"
@@ -453,7 +455,7 @@ export function CampaignMapView({
         </g>
       ))}
       {waterways.map((waterway) => (
-        <g key={waterway.id} aria-label={waterway.label ?? (locale === 'zh' ? '河流' : 'River')}>
+        <g key={waterway.id} aria-label={waterway.label ?? message(locale, 'ui.river.151')}>
           <path
             d={pathFromPoints(waterway.points)}
             fill="none"

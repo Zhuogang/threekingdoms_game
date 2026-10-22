@@ -1,3 +1,4 @@
+import { message } from '../i18n';
 import type { GridPoint } from './geometry';
 
 export type TroopVisualKind = string;
@@ -66,7 +67,7 @@ export function isLivingBattleUnitVisual(unit: BattleUnitVisual): boolean {
 /** Exact counts avoid turning a living detachment into a misleading zero badge. */
 export function formatTroopCount(strength: number, locale: 'en' | 'zh'): string {
   const count = Number.isFinite(strength) ? Math.max(0, Math.floor(strength)) : 0;
-  return count.toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US');
+  return count.toLocaleString(message(locale, 'ui.en.us.19'));
 }
 
 export function formatModifier(
@@ -75,7 +76,7 @@ export function formatModifier(
 ): string | undefined {
   if (multiplier === undefined || !Number.isFinite(multiplier)) return undefined;
   const percent = Math.round(multiplier * 100);
-  return locale === 'zh' ? `${percent}%` : `${percent}%`;
+  return message(locale, 'ui.text.153', { p0: percent });
 }
 
 export interface CellMarker {
@@ -85,6 +86,7 @@ export interface CellMarker {
 }
 
 export interface CampaignCityVisual {
+  info?: string;
   id: string;
   name: string;
   position: { x: number; y: number };

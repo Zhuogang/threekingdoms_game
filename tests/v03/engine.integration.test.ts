@@ -570,7 +570,7 @@ describe('v0.3 strategic engine integration', () => {
     expect(validateV03State(decodeV03Save(encodeV03Save(stationedDay.state)))).toBe(true);
   });
 
-  it('runs autonomous city work at a month boundary during battle but rejects direct city work', () => {
+  it('runs autonomous work during battle and allows direct work in an uncommitted capital', () => {
     let state = acknowledgePendingEvents(reachableCampaignBattle());
     expect(state.battles.some((entry) => entry.active)).toBe(true);
     const governorCity = state.cities.find(
@@ -645,8 +645,8 @@ describe('v0.3 strategic engine integration', () => {
       cityId: state.playerCapitalCityId,
       action: 'develop-farming',
     });
-    expect(directWork.ok).toBe(false);
-    expect(directWork.state).toBe(state);
+    expect(directWork.ok).toBe(true);
+    expect(directWork.state).not.toBe(state);
 
     const advanced = advanceV03(state, 1);
     expect(advanced.daysAdvanced).toBe(1);
@@ -908,8 +908,11 @@ describe('v0.3 strategic engine integration', () => {
     expect(settled.state.requisitions[0]?.status).toBe('proposed');
   });
 
-  it('pauses a multi-day advance on a month report created during that advance', () => {
+  it('pauses a multi-day advance on a monthly shortage report', () => {
     const state = createV03Game(playerFaction, 8181);
+    const capital = state.cities.find((city) => city.id === state.playerCapitalCityId)!;
+    capital.food = 0;
+    capital.troopServiceDaysThisMonth = 100_000_000;
     state.absoluteDay = 29;
     state.monthIndex = 0;
     state.events.forEach((event) => (event.acknowledged = true));

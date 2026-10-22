@@ -1,3 +1,10 @@
+import {
+  openMenu,
+  closeMenu,
+  acknowledgeAll,
+  submitBattleDay,
+  showWithdrawal,
+} from './ui-navigation';
 import { Buffer } from 'node:buffer';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
@@ -21,9 +28,11 @@ async function startCampaign(page: Page) {
 }
 
 async function setLocale(page: Page, locale: 'en' | 'zh') {
+  await openMenu(page);
   const current = await page.locator('html').getAttribute('lang');
   if (current !== locale)
     await page.getByRole('button', { name: current === 'en' ? '中文' : 'EN', exact: true }).click();
+  await closeMenu(page);
   await expect(page.locator('html')).toHaveAttribute('lang', locale);
 }
 
@@ -239,6 +248,7 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
   await page.getByRole('button', { name: 'Advance 10 days', exact: true }).click();
   await expect(date).toContainText('Day 12');
 
+  await openMenu(page);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const saved = await storedSave(page);
   expect(saved).toMatchObject({ format: 'hegemony.save', version: 3, ruleset: 'hegemony-3' });
@@ -324,7 +334,7 @@ test('renders and resumes a playable 24×20 battle with unit artwork', async ({
   await expect(page.locator('.v03-battle-main')).toBeVisible();
   await expect(page.locator('.v03-battle-board svg')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
-  await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+  await acknowledgeAll(page);
   const endBattleDay = page
     .locator('.v03-top-actions')
     .getByRole('button', { name: 'End battle day', exact: true });
@@ -337,7 +347,7 @@ test('renders and resumes a playable 24×20 battle with unit artwork', async ({
 
   const battleDay = page.locator('.v03-battle-day');
   await expect(battleDay).toContainText('1 / 30');
-  await endBattleDay.click();
+  await submitBattleDay(page);
   await expect(battleDay).toContainText('2 / 30');
   await page.reload();
   await expect(page.locator('.v03-battle-day')).toContainText('Battle day 2 / 30');
@@ -353,12 +363,12 @@ const tacticLabels: Record<BattleTactic, string> = {
   rockfall: 'Rockfall',
 };
 const tacticLogs: Record<BattleTactic, RegExp> = {
-  fire: /fire tactic strikes/i,
-  rally: /rallies/i,
-  confuse: /confuses|resists/i,
-  raidSupply: /raids .* supplies/i,
-  ambush: /ambushes/i,
-  rockfall: /drops rocks/i,
+  fire: /uses Fire/i,
+  rally: /uses Rally/i,
+  confuse: /uses Confuse/i,
+  raidSupply: /uses Raid supply/i,
+  ambush: /uses Ambush/i,
+  rockfall: /uses Rockfall/i,
 };
 
 for (const tactic of Object.keys(tacticLabels) as BattleTactic[]) {
@@ -371,7 +381,7 @@ for (const tactic of Object.keys(tacticLabels) as BattleTactic[]) {
     await importFile(page, `${tactic}-battle.save`, createTacticBattleSave(tactic));
     await expect(page.locator('.v03-battle-main')).toBeVisible();
     await page.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+    await acknowledgeAll(page);
 
     const sourceRow = page.locator('.v03-unit-row:not(.enemy)').first();
     await sourceRow.click();
@@ -382,7 +392,7 @@ for (const tactic of Object.keys(tacticLabels) as BattleTactic[]) {
     await tacticButton.click();
     if (tactic === 'rally') await sourceRow.click();
     else await page.locator('.v03-unit-row.enemy').first().click();
-    await expect(page.locator('.v03-log-box p').first()).toContainText(tacticLogs[tactic]);
+    await expect(page.locator('.v03-log-box p').last()).toContainText(tacticLogs[tactic]);
   });
 }
 
@@ -404,13 +414,14 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   await importFile(page, 'camera-battle.save', save);
   await expect(page.locator('.v03-battle-main')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
-  await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+  await acknowledgeAll(page);
 
   const map = page.locator('.v03-battlefield-map');
   const minimap = page.locator('.v03-battlefield-minimap');
   const viewportPolygon = minimap.locator('polygon');
   await expect(map).toHaveAttribute('viewBox', /\d/);
   await expect(viewportPolygon).toBeVisible();
+  await page.getByRole('button', { name: 'Fit full battlefield', exact: true }).click();
   const fitted = await map.getAttribute('viewBox');
   const initialPolygon = await viewportPolygon.getAttribute('points');
 
@@ -485,6 +496,7 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   await page.keyboard.press('Enter');
   await expect(page.locator('.v03-unit-row.selected')).toContainText('Moved · action available');
 
+  await openMenu(page);
   await page.getByRole('button', { name: '中文', exact: true }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh');
   await expect(page.locator('.v03-battlefield-minimap')).toHaveAttribute(
@@ -509,13 +521,20 @@ test('renders all four geographic battlefield templates in the playable view', a
   for (const region of ['hanzhong', 'shouchun', 'xiapi', 'chengdu'] as const) {
     await importFile(page, `${region}-battle.save`, createBattleSave(region));
     await expect(page.locator('.v03-battle-main')).toBeVisible();
-    await expect(page.locator('.v03-view-heading .v03-kicker')).toContainText(region.toUpperCase());
+    await expect(page.locator('.v03-view-heading .v03-kicker')).toContainText(
+      {
+        hanzhong: 'Western mountains',
+        shouchun: 'River country',
+        xiapi: 'Central plains',
+        chengdu: 'Shu hills',
+      }[region],
+    );
     await expect(page.locator('.v03-battle-board svg image').first()).toHaveAttribute(
       'href',
       /(?:units|terrain)\//,
     );
     await page.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+    await acknowledgeAll(page);
     await page.screenshot({
       path: testInfo.outputPath(`battlefield-${region}.png`),
       fullPage: true,
@@ -529,6 +548,7 @@ test('opens the wiki in English and Chinese while keeping the campaign available
 }) => {
   await startCampaign(page);
 
+  await openMenu(page);
   await page
     .locator('.v03-top-actions')
     .getByRole('button', { name: 'Field guide / Wiki', exact: true })
@@ -543,7 +563,9 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(englishWiki.getByText(/Recruit → assign → march/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Close' }).click();
 
+  await openMenu(page);
   await page.getByRole('button', { name: '中文', exact: true }).click();
+  await openMenu(page);
   await page
     .locator('.v03-top-actions')
     .getByRole('button', { name: '游戏指南 / Wiki', exact: true })
@@ -580,10 +602,12 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
           exact: true,
         })
         .first();
+      await openMenu(page);
       const wiki = page.locator('.v03-top-actions').getByRole('button', {
         name: locale === 'en' ? 'Field guide / Wiki' : '游戏指南 / Wiki',
         exact: true,
       });
+      await openMenu(page);
       const save = page.getByRole('button', {
         name: locale === 'en' ? 'Save' : '保存',
         exact: true,
@@ -605,7 +629,7 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
   await importFile(page, 'viewport-battle.save', createBattleSave());
   await expect(page.locator('.v03-battle-main')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
-  await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+  await acknowledgeAll(page);
   for (const locale of ['en', 'zh'] as const) {
     await setLocale(page, locale);
     for (const width of widths) {
@@ -622,6 +646,8 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
           exact: true,
         })
         .first();
+      await showWithdrawal(page);
+      await showWithdrawal(page);
       const retreat = page
         .getByRole('button', {
           name: locale === 'en' ? 'Withdraw from battle' : '撤离战场',
@@ -663,6 +689,7 @@ test('keeps campaign and battlefield controls reachable with 200% browser zoom',
         exact: true,
       })
       .first();
+    await openMenu(page);
     const wiki = page.locator('.v03-top-actions').getByRole('button', {
       name: locale === 'en' ? 'Field guide / Wiki' : '游戏指南 / Wiki',
       exact: true,
@@ -681,7 +708,7 @@ test('keeps campaign and battlefield controls reachable with 200% browser zoom',
   await importFile(page, 'zoom-battle.save', createBattleSave());
   await expect(page.locator('.v03-battle-main')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
-  await page.getByRole('button', { name: 'Acknowledge', exact: true }).click();
+  await acknowledgeAll(page);
   for (const locale of ['en', 'zh'] as const) {
     await setLocale(page, locale);
     const fit = page.getByRole('button', {
@@ -694,6 +721,7 @@ test('keeps campaign and battlefield controls reachable with 200% browser zoom',
         exact: true,
       })
       .first();
+    await showWithdrawal(page);
     const retreat = page
       .getByRole('button', {
         name: locale === 'en' ? 'Withdraw from battle' : '撤离战场',

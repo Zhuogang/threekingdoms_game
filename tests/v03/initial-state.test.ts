@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../src/v03/initial-state';
-import { SCENARIOS } from '../../src/content/scenario';
+import { SCENARIOS } from '../../src/v03/content/scenario';
 import { validateV03State } from '../../src/v03/platform/storage';
 
 describe('v0.3 new-campaign setup', () => {

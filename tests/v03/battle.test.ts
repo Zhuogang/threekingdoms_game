@@ -1430,6 +1430,7 @@ describe('serializable tactical battle operations', () => {
     state.units[0]!.y = 5;
     state.units[1]!.x = 6;
     state.units[1]!.y = 5;
+    state.map.terrain[index(state.map, 6, 5)] = 'forest';
     state.tacticPoints.attacker = 20;
     const result = runBattleAiTurn(state, 'attacker');
     expect(result.log.some((line) => line.includes('fire tactic strikes'))).toBe(true);

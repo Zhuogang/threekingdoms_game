@@ -139,6 +139,12 @@ export interface BattleOutcome {
 }
 
 /** Plain JSON-safe battle state; no functions, Maps or rendering objects are stored. */
+export interface V03BattleLogEntry {
+  day: number;
+  index: number;
+  code: string;
+  params: Record<string, string | number | boolean | null>;
+}
 export interface V03TacticalBattleState {
   schemaVersion: 1;
   id: string;
@@ -157,6 +163,7 @@ export interface V03TacticalBattleState {
   nextWeather: BattleWeather;
   units: TacticalBattleUnit[];
   log: string[];
+  logEntries?: V03BattleLogEntry[];
   outcome: BattleOutcome | null;
 }
 

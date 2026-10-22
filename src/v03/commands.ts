@@ -1,3 +1,5 @@
+import { marchArmy } from './governance/army';
+import { decidePrisoner } from './campaign/prisoners';
 import {
   acknowledgeV03Event,
   advanceV03,
@@ -29,11 +31,38 @@ export interface V03ActionResult {
 const services = createV03OrderServices();
 
 /** Single application command boundary for the independent v0.3 ruleset. */
-export function executeV03Command(state: V03GameState, command: V03Command): V03ActionResult {
+function executeCommand(state: V03GameState, command: V03Command): V03ActionResult {
   if (state.phase === 'finished' && command.type !== 'acknowledgeEvent') {
     return { ok: false, state, error: 'This campaign has ended.' };
   }
   switch (command.type) {
+    case 'marchArmy':
+      return marchArmy(state, command);
+    case 'prisonerAction':
+      return decidePrisoner(
+        state,
+        state.playerFactionId,
+        command.officerId,
+        command.action,
+        command.exchangeOfficerId,
+      );
+    case 'setBattleAutoCommand': {
+      const current = state.battles.find(
+        (battle) => battle.id === command.battleId && battle.active,
+      );
+      if (
+        !current ||
+        (current.attackerFactionId !== state.playerFactionId &&
+          current.defenderFactionId !== state.playerFactionId)
+      )
+        return { ok: false, state, error: 'This is not the player-controlled side.' };
+      const next = structuredClone(state);
+      const battle = next.battles.find((entry) => entry.id === command.battleId)!;
+      battle.autoCommand = command.enabled;
+      battle.playerDayComplete = false;
+      next.revision++;
+      return { ok: true, state: next };
+    }
     case 'advance': {
       const mode = command.days === 'nextEvent' ? 'next-event' : command.days;
       const result = advanceV03(state, mode);
@@ -181,4 +210,18 @@ export function executeV03Command(state: V03GameState, command: V03Command): V03
     case 'acknowledgeEvent':
       return { ok: true, state: acknowledgeV03Event(state, command.eventId) };
   }
+}
+
+/** Optional structured fields preserve the v3 envelope and legacy report reader. */
+export function executeV03Command(state: V03GameState, command: V03Command): V03ActionResult {
+  const result = executeCommand(state, command);
+  if (result.state !== state) {
+    const existing = new Set(state.events.map((event) => event.id));
+    for (const event of result.state.events)
+      if (!existing.has(event.id) && !event.code) {
+        event.code = event.kind;
+        event.params = { entityId: event.entityId };
+      }
+  }
+  return result;
 }

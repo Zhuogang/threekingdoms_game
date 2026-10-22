@@ -1,0 +1,182 @@
+import { Button } from '../kit';
+import { message } from '../../i18n';
+
+import { WATER_ATTACK_MULTIPLIER, WATER_INCOMING_DAMAGE_MULTIPLIER } from '../../battle';
+
+import { BattlefieldMapView, BattlefieldMinimap } from '../../rendering';
+
+import type { GameplayContext } from '../hooks/gameplayView';
+
+export function BattleScreen({
+  context,
+}: {
+  context: GameplayContext & {
+    state: NonNullable<GameplayContext['state']>;
+    battleState: NonNullable<GameplayContext['battleState']>;
+    activeBattle: NonNullable<GameplayContext['activeBattle']>;
+  };
+}) {
+  const {
+    t,
+    battleState,
+    locationName,
+    state,
+    activeBattle,
+    battleMapFrame,
+    troopVisuals,
+    camps,
+    battleViewport,
+    setBattleViewport,
+    currentUnit,
+    reachableCells,
+    attackableCells,
+    tacticTargets,
+    locale,
+    handleBattleUnitClick,
+    setInspectedCell,
+    selectedTactic,
+    setFeedback,
+    dispatch,
+    zoomBattleMap,
+    fitBattleMap,
+    focusBattleMapUnit,
+    focusBattleMapCamps,
+    battleViewportPolygon,
+    navigateBattleMinimap,
+    localizedOfficerName,
+  } = context;
+  return (
+    <section
+      className="v03-battle-main"
+      onKeyDown={(event) => {
+        if ((event.target as HTMLElement).matches('input,select,textarea')) return;
+        if (event.key === 'Tab' && !event.shiftKey) {
+          event.preventDefault();
+          context.nextReadyUnit();
+        }
+        if (event.key.toLowerCase() === 'w' && currentUnit) {
+          event.preventDefault();
+          dispatch({
+            type: 'battleAction',
+            battleId: activeBattle.id,
+            action: { type: 'wait', unitId: currentUnit.id },
+          });
+        }
+        if (event.key.toLowerCase() === 'e') {
+          event.preventDefault();
+          context.requestEndBattleDay();
+        }
+        if (event.key === 'Escape') {
+          context.setSelectedTactic(null);
+          context.setInspectedCell(null);
+        }
+      }}
+    >
+      <div className="v03-view-heading">
+        <div>
+          <span className="v03-kicker">
+            {t.battle} ·{' '}
+            {locale === 'zh'
+              ? {
+                  xiapi: '中原平野',
+                  hanzhong: '西部山地',
+                  shouchun: '江淮水乡',
+                  chengdu: '蜀地丘陵',
+                }[battleState.map.regionId]
+              : {
+                  xiapi: 'Central plains',
+                  hanzhong: 'Western mountains',
+                  shouchun: 'River country',
+                  chengdu: 'Shu hills',
+                }[battleState.map.regionId]}
+          </span>
+          <h1>
+            {locationName(
+              state.journeys.find((journey) => journey.id === activeBattle.attackerJourneyId)
+                ?.destinationCityId ?? '',
+            )}
+          </h1>
+        </div>
+        <div className="v03-battle-day">
+          {t.battleDayLabel} {battleState.day} / {battleState.dayLimit}
+        </div>
+      </div>
+      <div ref={battleMapFrame} className="v03-battle-board">
+        <BattlefieldMapView
+          map={battleState.map}
+          units={troopVisuals}
+          camps={camps}
+          viewport={battleViewport ?? undefined}
+          interactive
+          onViewportChange={setBattleViewport}
+          selectedCell={currentUnit ? { x: currentUnit.x, y: currentUnit.y } : undefined}
+          reachableCells={reachableCells}
+          attackableCells={attackableCells}
+          tacticTargetCells={tacticTargets.map((target) => ({ x: target.x, y: target.y }))}
+          locale={locale}
+          waterAttackMultiplier={WATER_ATTACK_MULTIPLIER}
+          waterIncomingDamageMultiplier={WATER_INCOMING_DAMAGE_MULTIPLIER}
+          onUnitClick={(unitId) => {
+            handleBattleUnitClick(unitId);
+          }}
+          onCellClick={(cell) => {
+            setInspectedCell(cell);
+            if (selectedTactic) {
+              setFeedback({ key: 'tacticChooseTarget' });
+              return;
+            }
+            if (!currentUnit) {
+              setFeedback({ key: 'selectUnit' });
+              return;
+            }
+            dispatch({
+              type: 'battleAction',
+              battleId: activeBattle.id,
+              action: { type: 'move', unitId: currentUnit.id, x: cell.x, y: cell.y },
+            });
+          }}
+        />
+        <div className="v03-battle-camera-controls" role="group" aria-label={t.battleMapCamera}>
+          <Button type="button" aria-label={t.battleMapZoomOut} onClick={() => zoomBattleMap(0.8)}>
+            −
+          </Button>
+          <Button type="button" aria-label={t.battleMapZoomIn} onClick={() => zoomBattleMap(1.25)}>
+            +
+          </Button>
+          <Button type="button" aria-label={t.battleMapFit} onClick={fitBattleMap}>
+            {message(locale, 'ui.fit.74')}
+          </Button>
+          <Button
+            type="button"
+            aria-label={t.battleMapFocusUnit}
+            disabled={!currentUnit}
+            onClick={focusBattleMapUnit}
+          >
+            {message(locale, 'ui.unit.123')}
+          </Button>
+          <Button type="button" aria-label={t.battleMapFocusCamps} onClick={focusBattleMapCamps}>
+            {message(locale, 'ui.camps.124')}
+          </Button>
+        </div>
+      </div>
+      <div className="v03-battle-lower">
+        <BattlefieldMinimap
+          map={battleState.map}
+          units={troopVisuals}
+          camps={camps}
+          viewportPolygon={battleViewportPolygon}
+          locale={locale}
+          className="v03-battlefield-minimap"
+          onNavigate={navigateBattleMinimap}
+        />
+        <div className="v03-battle-help">
+          <strong>{currentUnit ? localizedOfficerName(currentUnit.name) : t.selectUnit}</strong>
+          <p>{t.moveHelp}</p>
+          <p>{t.attackHelp}</p>
+          <p>{t.waterRule}</p>
+          <small>{t.dayLimit.replace('30', String(battleState.dayLimit))}</small>
+        </div>
+      </div>
+    </section>
+  );
+}

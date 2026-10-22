@@ -5,7 +5,7 @@ export async function portraitRoster() {
   const result = await build({
     stdin: {
       contents:
-        "export { SCENARIOS } from './src/content/scenario'; export { OFFICER_IDENTITIES } from './src/content/officerIdentity';",
+        "export { SCENARIOS } from './src/v03/content/scenario'; export { OFFICER_IDENTITIES } from './src/v03/content/officerIdentity';",
       resolveDir: process.cwd(),
       loader: 'ts',
     },

@@ -1,5 +1,7 @@
 # v0.3 validation evidence
 
+The [October 22 playability implementation ledger](../playability-implementation.md) records the latest automated checks, paired PX-01 campaign runs, measured battle pacing and bilingual screen baselines. Those additions preserve the historical artifacts below and do not certify the remaining human acceptance gates.
+
 Updated 2026-10-21. The diagnostics are deterministic, matched-seed development/held-out runs of a narrow adjacent-city campaign bot. They are evidence about this test policy and the recorded simulation, not a player win-rate target or proof of human campaign balance. Every result below is preserved as a separate artifact; do not overwrite historical runs.
 
 The later [read-only playability review](../playability-review-and-todo.md) records fresh unit/build/browser/production/performance validation at `01e65ef`, plus independent UI failure evidence in [review-2026-10-21](review-2026-10-21/runtime-check.json). It identifies new scoped interface tasks and corrects stale documentation; it does not rerun or reinterpret the accepted long-campaign balance result. The older report fingerprints identify generation-time sources, including diagnostic tools, rather than the current whole tree after tool changes.

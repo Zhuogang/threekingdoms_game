@@ -244,9 +244,11 @@ describe('v0.3 strategic rival planning', () => {
     expect(new Set(plans.map((plan) => plan.sourceCityId)).size).toBe(plans.length);
   });
 
-  it('does not plan outside the monthly planning phase', () => {
+  it('plans during battles and rejects a finished campaign', () => {
     const state = fixture();
     state.phase = 'battle';
+    expect(planStrategicRivalCampaigns(state).length).toBeGreaterThan(0);
+    state.phase = 'finished';
     expect(planStrategicRivalCampaigns(state)).toEqual([]);
   });
 });

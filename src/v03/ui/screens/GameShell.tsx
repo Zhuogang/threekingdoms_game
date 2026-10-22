@@ -1,0 +1,203 @@
+import { Button, Input } from '../kit';
+import { message } from '../../i18n';
+import { ReportsInbox } from '../panels/ReportsInbox';
+import { BattleOutcome } from '../panels/BattleOutcome';
+import { localizeAppMessage } from '../shared/app-copy-2';
+
+import { TOPIC_LABEL } from '../shared/app-copy-1';
+
+import { ConfirmDialog } from '../shared/app-copy-3';
+import type { GameplayContext } from '../hooks/gameplayView';
+import { TopBar } from '../panels/TopBar';
+import { Workspace } from '../panels/Workspace';
+export function GameShell({
+  context,
+}: {
+  context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
+}) {
+  const {
+    t,
+    locale,
+    activeBattle,
+    dispatch,
+    saveGame,
+    autosaveError,
+    feedback,
+    setFeedback,
+    currentUnit,
+    setConfirmation,
+    selectedGeo,
+    orderPreviewOrder,
+    orderPreviewSourceCity,
+    confirmation,
+    showWiki,
+    setShowWiki,
+    wikiModalRef,
+    wikiSearch,
+    setWikiSearch,
+    filteredWikiArticles,
+    wikiTopic,
+    setWikiTopic,
+    displayedWikiArticle,
+  } = context;
+  return (
+    <main className="v03-shell">
+      {context.showReports ? <ReportsInbox context={context} /> : null}
+      {(() => {
+        const event = context.state.events.find(
+          (entry) =>
+            entry.kind === 'battleResolved' &&
+            entry.battleOutcome &&
+            !entry.acknowledged &&
+            entry.tier === 'critical',
+        );
+        return event ? (
+          <BattleOutcome
+            event={event}
+            state={context.state}
+            locale={locale}
+            onClose={() => {
+              dispatch({ type: 'acknowledgeEvent', eventId: event.id });
+              context.setSelectedCityId(event.battleOutcome!.cityId);
+              context.setViewMode('campaign');
+            }}
+          />
+        ) : null;
+      })()}
+
+      <TopBar context={{ ...context }} />
+      {autosaveError ? (
+        <div className="v03-alert" role="alert">
+          {t.savingFailed}{' '}
+          <Button type="button" onClick={saveGame}>
+            {t.saveRetry}
+          </Button>
+        </div>
+      ) : null}
+      {feedback ? (
+        <div className="v03-toast" role="status">
+          {localizeAppMessage(feedback, locale, context.state)}
+          <Button type="button" aria-label={t.close} onClick={() => setFeedback('')}>
+            ×
+          </Button>
+        </div>
+      ) : null}
+      <Workspace
+        context={{
+          ...context,
+          selectedGeo: selectedGeo!,
+          orderPreviewSourceCity: orderPreviewSourceCity!,
+          orderPreviewOrder: orderPreviewOrder!,
+        }}
+      />
+      {confirmation === 'end-day' && activeBattle ? (
+        <ConfirmDialog
+          title={message(locale, 'ui.end.battle.day.59')}
+          detail={message(locale, 'ui.some.units.are.still.ready.they.will.hold.positi.60')}
+          cancelLabel={context.t.cancel}
+          confirmLabel={context.t.advanceBattle}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            setConfirmation(null);
+            dispatch({ type: 'completeBattleDay', battleId: activeBattle.id });
+          }}
+        />
+      ) : null}
+      {confirmation === 'withdraw' && activeBattle && currentUnit ? (
+        <ConfirmDialog
+          title={message(locale, 'ui.withdraw.from.battle.61')}
+          detail={t.retreatWarning}
+          cancelLabel={message(locale, 'ui.cancel.62')}
+          confirmLabel={message(locale, 'ui.confirm.withdrawal.63')}
+          onCancel={() => setConfirmation(null)}
+          onConfirm={() => {
+            setConfirmation(null);
+            dispatch({
+              type: 'battleAction',
+              battleId: activeBattle.id,
+              action: { type: 'retreat', unitId: currentUnit.id },
+            });
+          }}
+        />
+      ) : null}
+      {showWiki ? (
+        <div
+          className="v03-modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setShowWiki(false);
+          }}
+        >
+          <section
+            ref={wikiModalRef}
+            className="v03-wiki-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.wiki}
+            onKeyDown={(event) => {
+              if (event.key !== 'Tab') return;
+              const controls = wikiModalRef.current?.querySelectorAll<HTMLElement>(
+                'button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])',
+              );
+              if (!controls?.length) return;
+              const first = controls[0]!;
+              const last = controls[controls.length - 1]!;
+              if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+              } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+              }
+            }}
+          >
+            <header>
+              <div>
+                <span className="v03-kicker">HEGEMONY v0.3</span>
+                <h2>{t.wiki}</h2>
+              </div>
+              <Button type="button" onClick={() => setShowWiki(false)} aria-label={t.close}>
+                ×
+              </Button>
+            </header>
+            <label className="v03-wiki-search">
+              <span>{t.searchWiki}</span>
+              <Input
+                type="search"
+                value={wikiSearch}
+                onChange={(event) => setWikiSearch(event.target.value)}
+                aria-label={t.searchWiki}
+              />
+            </label>
+            <nav className="v03-wiki-tabs">
+              {filteredWikiArticles.map((article) => (
+                <Button
+                  type="button"
+                  className={wikiTopic === article.id ? 'active' : ''}
+                  key={article.id}
+                  onClick={() => setWikiTopic(article.id)}
+                >
+                  {TOPIC_LABEL[locale][article.id]}
+                </Button>
+              ))}
+            </nav>
+            <div className="v03-wiki-body">
+              {displayedWikiArticle ? (
+                displayedWikiArticle.sections.map((section) => (
+                  <section key={section.heading}>
+                    <h3>{section.heading}</h3>
+                    {section.body.map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
+                  </section>
+                ))
+              ) : (
+                <p role="status">{t.noWikiResults}</p>
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </main>
+  );
+}

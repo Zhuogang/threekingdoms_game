@@ -17,7 +17,7 @@ export function queueGovernorAppointment(
   officerId: string | null,
   services?: GovernanceOrderServices,
 ): { ok: boolean; state: V03GameState; error?: string } {
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return {
       ok: false,
       state,

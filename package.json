@@ -9,23 +9,21 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:perf:v03": "vitest run tests/v03/performance.test.ts",
-    "test:perf:v02": "vitest run --config vitest.perf.config.ts",
     "test:watch": "vitest",
     "test:e2e": "playwright test --config playwright.v03.config.ts",
     "test:production": "playwright test --config playwright.production-v03.config.ts",
-    "test:production:v02": "playwright test --config playwright.production.config.ts",
-    "test:fps:v02": "playwright test --config playwright.fps.config.ts",
     "validate:portraits": "node tools/validate-portraits.mjs",
-    "diagnostics:ai": "node tools/ai-diagnostics.mjs",
-    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.v03.config.ts playwright.production.config.ts playwright.production-v03.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json",
-    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.v03.config.ts playwright.production.config.ts playwright.production-v03.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json"
+    "diagnostics:ai": "node tools/v03-campaign-diagnostics.mjs",
+    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",
+    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",
+    "diagnostics:battles": "node tools/battle-pacing.mjs",
+    "lint:ui": "node tools/lint-ui.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
-    "pixi.js": "^8.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^4.0.0"

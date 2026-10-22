@@ -1,3 +1,4 @@
+import { message } from '../i18n';
 import { useMemo, useState } from 'react';
 import { BattlefieldMapView } from './BattlefieldMapView';
 import { BattlefieldMinimap } from './BattlefieldMinimap';
@@ -170,7 +171,7 @@ export function V03RenderingFixture({ locale = 'en' }: { locale?: 'en' | 'zh' })
           fontFamily: 'serif',
         }}
       >
-        <strong>{locale === 'zh' ? '战场图例 / 小地图' : 'Battlefield legend / minimap'}</strong>
+        <strong>{message(locale, 'ui.battlefield.legend.minimap.154')}</strong>
         <BattlefieldMinimap
           map={map}
           units={units}
@@ -181,10 +182,8 @@ export function V03RenderingFixture({ locale = 'en' }: { locale?: 'en' | 'zh' })
         />
         <span style={{ fontSize: 13, lineHeight: 1.5 }}>
           {selectedCell
-            ? `${locale === 'zh' ? '已选格' : 'Selected cell'}: ${selectedCell.x + 1}, ${selectedCell.y + 1}`
-            : locale === 'zh'
-              ? '点击格子查看命中位置'
-              : 'Click a tile to inspect its logical position'}
+            ? `${message(locale, 'ui.selected.cell.155')}: ${selectedCell.x + 1}, ${selectedCell.y + 1}`
+            : message(locale, 'ui.click.a.tile.to.inspect.its.logical.position.156')}
         </span>
       </aside>
     </section>

@@ -8,17 +8,17 @@ Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.
 
 按[根 README](../../README.md#start-playing)启动本地服务，打开 Vite 地址。首次游玩时选择 190 或 200 剧本及势力，再点“开始新战役”；新手可从曹操开始。如已有有效自动存档，游戏会直接恢复，通过“战役菜单”可继续或新开，新开前会确认并提供导出。
 
-每月抽象为 30 日。你经营君主本城，向其他城市征调物资或下达出征令，并在交战时指挥己方部队。可以控制全部城市完成统一，或在每个月界持有洛阳及至少 16 城，连续 12 个月界达成称霸。两种结局分开统计。注意保住君主本城；失去它可能结束本局。
+每月抽象为 30 日。你经营君主本城，向其他城市征调物资或下达出征令，并在交战时指挥己方部队。可以控制全部城市完成统一，或在每个月界持有洛阳及至少 16 城，连续 12 个月界达成称霸。两种结局分开统计。君主被俘后由最忠诚的自由武将继位；没有自由武将时势力覆灭。
 
 ### 2. 第一月：征募 → 分配 → 出征
 
 1. 选择君主本城，查看金、粮、预备兵、人口及本月工作点。工作点等于驻城在世己方武将数，上限 3；本城内政共用这些点。
 2. “征募士兵”先把人口转为**预备兵**，不会直接增加武将带兵数。征募也会消耗工作点并降低少量民心。
 3. 找到驻城武将，输入希望的**最终带兵数**，再点“调整兵力”。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。调整也受工作点和已有承诺限制。
-4. 选“下达出征令”，选择目标、任务、兵力和可选的最晚出发日，再点“下达命令”。查看可执行兵力、粮草、留守要求、路线、缺口与日期。
-5. 出征以武将**整支所部**编组，总兵力不超过请求数。如果每名可用武将都带 900 兵，而你只请求 700，方案可能为零；提高请求数或先在本城调整武将带兵。
+4. 打开“军队”页，勾选随军武将，选择目标并核对军粮、行程和敌军；点击“出征”。君主本城直接派出所选武将。
+5. 出征兵力等于所选武将**整支所部**之和。太守城市的方案仍可能因最低留守、预留与军粮出现缺口，需接受缩减、等待或取消。
 6. 方案若需要决策，可接受、接受缩减、等待足额或取消。出发后会出现实际行程；未抵达不会瞬间获得目的地资源或开战。
-7. 推进一日或到下个事件。遇到到期报告先确认；军队会行军、吃粮、到达并开战。胜败之后仍需处理驻留或返程。
+7. 推进一日或到下个事件。关键报告需要确认，普通月报与天下纪事不会暂停；军队会行军、吃粮、到达并开战。胜败之后仍需处理驻留或返程。
 
 不是每个动作都能在同一个月做完。工作点用尽需等月界；不要反复任免太守试图刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
 
@@ -32,7 +32,7 @@ Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.
 
 在“外交”面板选择其他势力，可查看结盟成功率并提议为期六个月的同盟；有效同盟期间不能相互出征。面板也可解除现有同盟。若反董卓联盟事件提供邀请，可在该面板接受；事件和同盟到期会出现在报告中。点面板旁的“?” 可查看游戏内规则说明。
 
-“订单”和“报告”会列出全部当前事项，可滚动查看。时间停住时先看报告的到期数量，以及是否还有己方战场未提交本日指令。纯 NPC 战斗会自动处理，不需要你替敌军操作。
+“订单”页与顶栏“收件箱”列出全部当前事项，可滚动查看。时间停住时先看报告的到期数量，以及是否还有己方战场未提交本日指令。纯 NPC 战斗会自动处理，不需要你替敌军操作。
 
 ### 4. 装备与本城经营
 
@@ -116,10 +116,10 @@ Launch using the [project README](../../README.md#start-playing). On a fresh bro
 1. Select the ruler's capital. Check gold, food, population, reserve and monthly work points. Staffing supplies one point per stationed living friendly officer, capped at three.
 2. Recruit soldiers into **city reserve**. Recruitment uses a work point and population; it does not directly increase an officer's army.
 3. Set an officer's desired **final** troop count, then click Set troop count. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. This also uses the shared work budget.
-4. Order a march: destination, Capture/Raid/Sack, requested strength and optional latest departure. Read the force, garrison, supply, route, date and shortfall preview.
-5. Marches select **whole officer forces**, at most the requested amount. If every available force has 900 soldiers, requesting 700 may yield zero. Increase the request or adjust a capital officer first.
+4. Open **Forces**, choose the marching officers and destination, check provisions, ETA and defenders, then click **March**. Capital armies depart directly.
+5. Army strength is the sum of the chosen **whole officer forces**. Governor-city proposals may have a shortfall because they protect a minimum garrison, provisions and prior commitments.
 6. If a plan needs a decision, accept, accept a reduced amount, wait or cancel. Approved stock is reserved. Departure creates a journey; delivery and battle wait for arrival.
-7. Advance one day, ten days or to the next event. Acknowledge due reports, command your arriving troops in battle, then handle occupation or return travel.
+7. Advance one day, ten days or to the next event. Acknowledge critical reports, command your arriving troops in battle, then read the aftermath and follow the order through its return. Routine monthly summaries and rival battles do not pause the clock.
 
 Work points reset at monthly settlement, not by repeated appointments. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
 
@@ -127,7 +127,7 @@ Work points reset at monthly settlement, not by repeated appointments. Long jour
 
 Only your capital accepts direct city work. Other cities are autonomous under governors or local stewards; use supply requests and campaign orders instead of controlling their individual internal actions. You retain tactical command of your forces.
 
-Governor candidates show shared availability reasons. Cross-city candidates must have zero troops, travel to the new city and take office at a legal monthly boundary. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. Full order and report lists scroll; due reports and unsubmitted player battles explain most clock pauses.
+Governor candidates show shared availability reasons. Cross-city candidates must have zero troops, travel to the new city and take office at a legal monthly boundary. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. Orders are in their own tab; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
 
 In the Diplomacy panel, select another faction to see the alliance chance and propose a six-month alliance. Active allies cannot attack one another; the panel also lets you break an alliance. When the anti-Dong coalition event offers an invitation, accept it there if you wish. Reports show events and expiring treaties; the panel's “?” opens the in-game rules.
 

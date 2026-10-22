@@ -2,6 +2,8 @@
 
 Written October 22, 2026 on branch `hegemony_of_the_three_kindoms_v0.3`. This plan follows a hands-on play session and a source review. It adds new scoped tasks; it does not reopen the completed RV01–RV10 work. [Current status](implementation-status.md) · [Open items before this plan](../next-steps.md#open-now) · [Decisions D1–D11](00-decisions-and-contracts.md).
 
+Implementation and executed evidence: [playability implementation ledger](playability-implementation.md). Fresh-player, actual low-end hardware and artwork acceptance remain player-owned gates.
+
 ## Why the game does not feel playable yet
 
 The automated suite passes, but a real session reaches several dead ends and many small inconsistencies. These are the main causes, most severe first:
@@ -250,17 +252,17 @@ src/v03/ui/
 
 A checklist of small fixes. Some become trivial once ST-03 lands:
 
-- [ ] Header shows the scenario title, not `divided-realm-190` (`App.tsx:2676`).
-- [ ] Battle header shows the destination city and the battlefield's regional style, not `XIAPI` (`App.tsx:2563`). The log says "The battle at Luoyang begins", not "Battle battle-3 … xiapi field".
-- [ ] Weather (`wind`, `rain`) and terrain (`plain`) use localized names.
-- [ ] One coordinate convention in logs, the inspector and both languages (`App.tsx:901`).
-- [ ] Scenario title localized on the start screen (`App.tsx:2123` uses `scenario.title` in both branches).
-- [ ] House card second line shows the leader or a blurb, not the name again (`App.tsx:2137–2138`).
-- [ ] ZH uses full house names (曹操 rather than 曹) in the top bar and diplomacy.
-- [ ] "Anchor confidence" and its notes move to a geography tooltip or the Wiki and follow the UI language (`App.tsx:3202`).
-- [ ] The capital no longer shows both "Ruler's capital" and "Governor: Local stewardship".
-- [ ] An error toast clears after the next successful action. Toasts follow language switches.
-- [ ] Battle log: newest day first, entries within a day in the order they happened, with a day header.
+- [x] Header shows the scenario title, not `divided-realm-190` (`App.tsx:2676`).
+- [x] Battle header shows the destination city and the battlefield's regional style, not `XIAPI` (`App.tsx:2563`). The log says "The battle at Luoyang begins", not "Battle battle-3 … xiapi field".
+- [x] Weather (`wind`, `rain`) and terrain (`plain`) use localized names.
+- [x] One coordinate convention in logs, the inspector and both languages (`App.tsx:901`).
+- [x] Scenario title localized on the start screen (`App.tsx:2123` uses `scenario.title` in both branches).
+- [x] House card second line shows the leader or a blurb, not the name again (`App.tsx:2137–2138`).
+- [x] ZH uses full house names (曹操 rather than 曹) in the top bar and diplomacy.
+- [x] "Anchor confidence" and its notes move to a geography tooltip or the Wiki and follow the UI language (`App.tsx:3202`).
+- [x] The capital no longer shows both "Ruler's capital" and "Governor: Local stewardship".
+- [x] An error toast clears after the next successful action. Toasts follow language switches.
+- [x] Battle log: newest day first, entries within a day in the order they happened, with a day header.
 
 **Acceptance:** a browser test walks the start → campaign → battle → report path in EN and ZH and fails on known raw IDs (`divided-realm`, `battle-\d+`, upper-case region IDs) or untranslated enum strings.
 

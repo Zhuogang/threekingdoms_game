@@ -1,3 +1,5 @@
+import { message } from '../i18n';
+import { nearestLegalBattleCell, battleMovementPreview } from './battle-input';
 import {
   useEffect,
   useMemo,
@@ -55,7 +57,7 @@ export interface BattlefieldMapViewProps {
   camps?: readonly CellMarker[];
   route?: readonly GridPoint[];
   selectedCell?: GridPoint;
-  reachableCells?: readonly GridPoint[];
+  reachableCells?: readonly (GridPoint & { cost?: number })[];
   attackableCells?: readonly GridPoint[];
   tacticTargetCells?: readonly GridPoint[];
   viewport?: BattlefieldViewBox;
@@ -162,7 +164,7 @@ function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' })
   return (
     <g
       transform={`translate(${x} ${y})`}
-      aria-label={camp.label ?? (locale === 'zh' ? '野战营地目标' : 'Field camp objective')}
+      aria-label={camp.label ?? message(locale, 'ui.field.camp.objective.138')}
     >
       <ellipse
         cx="0"
@@ -177,7 +179,7 @@ function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' })
       <path d="M -17 6 L 0 -13 L 17 6 Z" fill="#e9dcc1" stroke="#554b3d" strokeWidth="2" />
       <path d="M 0 -13 L 0 7" stroke="#554b3d" strokeWidth="2" />
       <path d="M 1 -14 L 11 -20 L 11 -11 Z" fill="#a34e3b" stroke="#6c3b31" strokeWidth="1.5" />
-      <title>{camp.label ?? (locale === 'zh' ? '野战营地目标' : 'Field camp objective')}</title>
+      <title>{camp.label ?? message(locale, 'ui.field.camp.objective.138')}</title>
     </g>
   );
 }
@@ -258,9 +260,9 @@ function UnitSprite({
     .join(' · ');
   const aria = [
     details,
-    onWater ? (locale === 'zh' ? '水上' : 'Afloat') : undefined,
-    attackText ? `${locale === 'zh' ? '水上攻击' : 'Water attack'} ${attackText}` : undefined,
-    damageText ? `${locale === 'zh' ? '承受伤害' : 'Incoming damage'} ${damageText}` : undefined,
+    onWater ? message(locale, 'ui.afloat.139') : undefined,
+    attackText ? `${message(locale, 'ui.water.attack.140')} ${attackText}` : undefined,
+    damageText ? `${message(locale, 'ui.incoming.damage.141')} ${damageText}` : undefined,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -319,7 +321,7 @@ function UnitSprite({
         <NativeUnitToken unit={unit} locale={locale} />
       )}
       {onWater ? (
-        <g transform="translate(0 35)" aria-label={locale === 'zh' ? '水上' : 'Afloat'}>
+        <g transform="translate(0 35)" aria-label={message(locale, 'ui.afloat.139')}>
           <rect
             x={-24}
             y={-10}
@@ -337,7 +339,7 @@ function UnitSprite({
             fontWeight="700"
             fill="#fffaf0"
           >
-            {locale === 'zh' ? '水上' : 'AFLOAT'}
+            {message(locale, 'ui.afloat.142')}
           </text>
         </g>
       ) : null}
@@ -428,7 +430,11 @@ export function BattlefieldMapView({
   const reachable = new Set(reachableCells.map(({ x, y }) => `${x},${y}`));
   const attackable = new Set(attackableCells.map(({ x, y }) => `${x},${y}`));
   const tacticTargetable = new Set(tacticTargetCells.map(({ x, y }) => `${x},${y}`));
-  const routePoints = route.map((point) => gridToWorld(point));
+  const [hoverCell, setHoverCell] = useState<GridPoint | null>(null);
+  const previewPath = route.length
+    ? route
+    : battleMovementPreview(selectedCell, hoverCell, reachableCells);
+  const routePoints = previewPath.map((point) => gridToWorld(point));
   const routePath = routePoints
     .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
     .join(' ');
@@ -449,7 +455,8 @@ export function BattlefieldMapView({
       height: view.height,
     });
     const cell = hitTestWorld(world, map.width, map.height);
-    if (cell) onCellClick(cell);
+    const snapped = nearestLegalBattleCell(world, reachableCells);
+    if (snapped || cell) onCellClick(snapped ?? cell!);
   };
   const pointerWorldPoint = (clientX: number, clientY: number, camera: BattlefieldViewBox) =>
     clientToViewBoxPoint(
@@ -473,6 +480,11 @@ export function BattlefieldMapView({
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
+    const hoverWorld = pointerWorldPoint(event.clientX, event.clientY, viewport ?? board);
+    setHoverCell(
+      nearestLegalBattleCell(hoverWorld, reachableCells) ??
+        hitTestWorld(hoverWorld, map.width, map.height),
+    );
     const drag = panStartRef.current;
     if (!canNavigate || !drag || drag.pointerId !== event.pointerId) return;
     if (Math.hypot(event.clientX - drag.clientX, event.clientY - drag.clientY) > 4) {
@@ -577,15 +589,17 @@ export function BattlefieldMapView({
       preserveAspectRatio="xMidYMid meet"
       role={onCellClick || canNavigate ? 'application' : 'img'}
       tabIndex={onCellClick || canNavigate ? 0 : undefined}
-      aria-label={
-        locale === 'zh'
-          ? `${map.width}×${map.height} 水陆战场地图。方向键移动格子光标，Shift+方向键平移，+ 和 − 缩放，Home 显示全图，回车选择当前格。当前第 ${focusedCell.y + 1} 行、第 ${focusedCell.x + 1} 列。`
-          : `${map.width} by ${map.height} land and water battlefield map. Arrow keys move the grid cursor, Shift+arrows pan, plus and minus zoom, Home fits the map, and Enter selects the current cell. Current cell ${focusedCell.x + 1}, ${focusedCell.y + 1}.`
-      }
+      aria-label={message(locale, 'ui.by.land.and.water.battlefield.map.arrow.keys.mov.143', {
+        p0: map.width,
+        p1: map.height,
+        p2: focusedCell.y,
+        p3: focusedCell.x,
+      })}
       onClick={clickCell}
       onKeyDown={handleMapKeyDown}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
+      onPointerLeave={() => setHoverCell(null)}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
       onWheel={handleWheel}
@@ -716,6 +730,9 @@ export function BattlefieldMapView({
                 strokeDasharray="3 4"
                 pointerEvents="none"
               />
+            ) : null}
+            {hoverCell?.x === x && hoverCell?.y === y ? (
+              <path d={d} fill="none" stroke="var(--accent)" strokeWidth={5} pointerEvents="none" />
             ) : null}
             {selectedId === key ? (
               <path

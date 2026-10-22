@@ -1,3 +1,4 @@
+import { message } from '../i18n';
 import { useId, type KeyboardEvent, type PointerEvent } from 'react';
 import { clientToViewBoxPoint } from './geometry';
 import type { CampaignViewBox } from './campaign-viewport';
@@ -94,11 +95,7 @@ export function CampaignMinimap({
       className={className}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role={onNavigate ? 'application' : 'img'}
-      aria-label={
-        locale === 'zh'
-          ? '战略地图小地图。点击或拖动移动主地图视口；方向键微调，按住 Shift 加速。'
-          : 'Campaign map overview. Click or drag to move the main map; use arrow keys to nudge and Shift for larger steps.'
-      }
+      aria-label={message(locale, 'ui.campaign.map.overview.click.or.drag.to.move.the..152')}
       tabIndex={onNavigate ? 0 : undefined}
       onPointerDown={onPointerDown}
       onPointerMove={(event) => {

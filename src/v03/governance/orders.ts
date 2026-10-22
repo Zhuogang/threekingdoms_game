@@ -1,3 +1,4 @@
+import { isCityCommitted } from './commitments';
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
@@ -14,6 +15,7 @@ import type {
 } from '../types';
 
 export type GovernanceOrderReasonCode =
+  | 'order.city-committed'
   | 'order.invalid-phase'
   | 'order.invalid-amount'
   | 'order.source-unavailable'
@@ -104,6 +106,8 @@ export interface RequisitionInput {
 }
 
 export interface CampaignDirectiveInput {
+  food?: number;
+  officerIds?: string[];
   sourceCityId: string;
   targetCityId: string;
   intent: V03BattleIntent;
@@ -162,6 +166,7 @@ const ACTIVE_DIRECTIVE_STATUSES: readonly V03OrderStatus[] = [
 
 function msg(code: GovernanceOrderReasonCode, detail?: string): string {
   const base: Record<GovernanceOrderReasonCode, string> = {
+    'order.city-committed': 'This city is committed to an active battle.',
     'order.invalid-phase': 'Orders can only be issued during campaign planning.',
     'order.invalid-amount': 'Enter a positive whole-number amount within the available range.',
     'order.source-unavailable': 'The source city is no longer held by your faction.',
@@ -283,7 +288,9 @@ function validRequisitionInput(
   codes: GovernanceOrderReasonCode[],
   reasons: string[],
 ) {
-  if (state.phase !== 'planning') addReason(codes, reasons, 'order.invalid-phase');
+  if (state.phase === 'finished') addReason(codes, reasons, 'order.invalid-phase');
+  if (isCityCommitted(state, input.sourceCityId) || isCityCommitted(state, input.targetCityId))
+    addReason(codes, reasons, 'order.city-committed');
   const source = state.cities.find((city) => city.id === input.sourceCityId);
   const target = state.cities.find((city) => city.id === input.targetCityId);
   if (!source || source.factionId !== state.playerFactionId)
@@ -462,6 +469,46 @@ export function previewRequisition(
   };
 }
 
+function selectedOfficerServices(
+  state: V03GameState,
+  sourceCityId: string,
+  officerIds: string[] | undefined,
+  services: GovernanceOrderServices,
+): GovernanceOrderServices {
+  if (!officerIds) return services;
+  return {
+    ...services,
+    planParty: (request) => {
+      const officers = state.officers.filter((officer) => officerIds.includes(officer.id));
+      if (
+        officers.length !== officerIds.length ||
+        officers.some(
+          (officer) =>
+            !officer.alive ||
+            officer.factionId !== state.playerFactionId ||
+            officer.location.kind !== 'city' ||
+            officer.location.cityId !== sourceCityId,
+        )
+      )
+        return null;
+      let total = 0;
+      const selected: typeof officers = [];
+      for (const officer of officers.sort((a, b) => a.id.localeCompare(b.id)))
+        if (officer.troops > 0 && total + officer.troops <= request.maxTroops) {
+          selected.push(officer);
+          total += officer.troops;
+        }
+      return total
+        ? {
+            officerIds: selected.map((officer) => officer.id),
+            troopCount: total,
+            composition: { troopTypes: selected.map((officer) => officer.troopType) },
+          }
+        : null;
+    },
+  };
+}
+
 function previewCampaign(
   state: V03GameState,
   input: CampaignDirectiveInput,
@@ -471,7 +518,9 @@ function previewCampaign(
   const reasons: string[] = [];
   const source = state.cities.find((city) => city.id === input.sourceCityId);
   const target = state.cities.find((city) => city.id === input.targetCityId);
-  if (state.phase !== 'planning') addReason(codes, reasons, 'order.invalid-phase');
+  if (state.phase === 'finished') addReason(codes, reasons, 'order.invalid-phase');
+  if (isCityCommitted(state, input.sourceCityId) || isCityCommitted(state, input.targetCityId))
+    addReason(codes, reasons, 'order.city-committed');
   if (!source || source.factionId !== state.playerFactionId)
     addReason(codes, reasons, 'order.source-unavailable');
   if (!target) addReason(codes, reasons, 'order.target-unavailable');
@@ -546,6 +595,7 @@ function previewCampaign(
     { gold: 0, food: 0, troops: input.requestedTroops },
     routeSeed.estimatedDays,
   );
+  services = selectedOfficerServices(state, input.sourceCityId, input.officerIds, services);
   let party = partyPlan(state, services, {
     sourceCityId: input.sourceCityId,
     maxTroops: troopEstimate.executable.troops,
@@ -598,13 +648,15 @@ function previewCampaign(
     };
   }
   const returnDays = route.estimatedDays;
-  const supplyFor = (troops: number) =>
-    estimateCampaignSupply({
+  const supplyFor = (troops: number) => {
+    const supply = estimateCampaignSupply({
       troopCount: troops,
       outboundDays: route!.estimatedDays,
       battleDays: input.intent === 'raid' ? 10 : 30,
       returnDays,
     });
+    return { ...supply, totalFood: Math.max(supply.totalFood, input.food ?? 0) };
+  };
   let supply = supplyFor(executableTroops);
   let resourceEstimate = estimateCampaignResources(
     state,
@@ -978,7 +1030,7 @@ export function answerRequisition(
   const order = state.requisitions.find((entry) => entry.id === id);
   if (!order)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return {
       ok: false,
       state,
@@ -1075,6 +1127,7 @@ function directiveJourneyInput(
   troops: number,
   services: GovernanceOrderServices,
 ): JourneyCreationInput | null {
+  services = selectedOfficerServices(state, order.sourceCityId, order.officerIds, services);
   const party = partyPlan(state, services, {
     sourceCityId: order.sourceCityId,
     maxTroops: troops,
@@ -1109,7 +1162,7 @@ function directiveJourneyInput(
     route,
     party,
     cargo: { gold: 0, food: 0, troops },
-    carriedFood: supply.totalFood,
+    carriedFood: Math.max(supply.totalFood, order.food ?? 0),
   };
 }
 
@@ -1204,6 +1257,8 @@ export function requestCampaignDirective(
   }
   const order: V03CampaignDirective = {
     id: directiveId(state),
+    ...(input.officerIds ? { officerIds: input.officerIds } : {}),
+    ...(input.food !== undefined ? { food: input.food } : {}),
     factionId: state.playerFactionId,
     sourceCityId: input.sourceCityId,
     targetCityId: input.targetCityId,
@@ -1266,7 +1321,7 @@ export function answerCampaignDirective(
   const order = state.directives.find((entry) => entry.id === id);
   if (!order)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
-  if (state.phase !== 'planning')
+  if (state.phase === 'finished')
     return {
       ok: false,
       state,
@@ -1300,6 +1355,8 @@ export function answerCampaignDirective(
         };
   }
   const input: CampaignDirectiveInput = {
+    ...(order.officerIds ? { officerIds: order.officerIds } : {}),
+    ...(order.food !== undefined ? { food: order.food } : {}),
     sourceCityId: order.sourceCityId,
     targetCityId: order.targetCityId,
     intent: order.intent,

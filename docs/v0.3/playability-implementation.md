@@ -1,0 +1,68 @@
+# Playability plan implementation
+
+Implements [the October 22 plan](playability-and-ui-plan.md). This ledger distinguishes implementation and repeatable checks from player-owned acceptance. The historical RV evidence remains unchanged.
+
+| Tasks        | Implementation                                                                                                                                                                                                                                                                                                                   |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PX-01        | Shared city/officer battle commitments; unrelated city work, appointments, orders and diplomacy continue during battle. Monthly strategic planning accepts battle states and excludes busy targets and sources.                                                                                                                  |
+| PX-02, GP-07 | Structured battle outcomes with each side's starting/surviving troops, returned/captured/killed officer IDs, ownership result, loot and return ETA. Player-relative titles; neutral rival titles. An acknowledgement dismisses the one-time aftermath into the campaign at the contested city.                                   |
+| PX-03        | Prisoner panel; monthly release, seeded loyalty-based recruitment, seeded one-for-one exchange and confirmed execution. The AI uses the same decisions. Captured rulers remain prisoners; loyalty and stable officer ID choose succession. No free officer means elimination. Earlier v3 captured-ruler saves reconcile on load. |
+| PX-04        | Critical acknowledgement gate, notice inbox and world chronicle. Monthly reports contain actual net city changes, governor actions and shortage flags. Rival battles and routine settlement do not pause time.                                                                                                                   |
+| PX-05        | A lifecycle query follows the original order through preparation, march, battle, return and collapsed completion history; in-battle cards open the battle.                                                                                                                                                                       |
+| ST-01        | App entry, session/command/order hooks, campaign and battle screens, named panels and shared readers. UI modules are checked against a 600-line limit.                                                                                                                                                                           |
+| ST-02        | Local `v0.2-final` preservation tag; scenario, traits, identities and content types under `src/v03/content`. Legacy engines, UI, tests, diagnostic tools, configs and scripts retired. Pixi removed from dependencies.                                                                                                           |
+| ST-03        | Typed English/Chinese catalogs and parameter formatter; structured domain-event and tactical-log fields in the v3 envelope. New tactical messages render from data, with old v3 prose readers retained. Toast identity follows language changes. Common weather, terrain, counts and coordinate formatters.                      |
+| ST-04        | Development-only fixtures and frozen state/command harness. Browser tests exercise every named fixture. Production checks reject harness code.                                                                                                                                                                                   |
+| UI-01, UI-02 | Color/type/spacing/focus tokens, bundled Source Sans 3 and a character subset of Noto Serif SC, shared controls and panel primitives. `lint:ui` checks colors, minimum type sizes, control usage and module size.                                                                                                                |
+| UI-03        | Fixed viewport; compact top bar and menu; City/Forces/Orders/Diplomacy tabs; inbox drawer; fixed battle actions with withdrawal in an overflow menu.                                                                                                                                                                             |
+| UI-04        | Scenario/city/regional-style headings, full Chinese house names, localized conditions, consistent zero-based coordinates, hidden research notes, capital governance copy and chronological entries within reverse-ordered battle days.                                                                                           |
+| UI-05, UI-06 | Ownership rings, larger city targets, city information tooltips including route distance/ETA, optional minimap, richer bilingual house cards with portraits and actual starting-city/officer counts.                                                                                                                             |
+| GP-01, GP-02 | Officer checklist, complete officer forces, provisions, owner/ETA-sorted destinations, defenders and force comparison. Enemy city inspection supports nearest-source **March here** and displays troops/supplies committed to its field battle. Governor-city requests retain proposal answers.                                  |
+| GP-03        | One formation per officer, at most ten per side including separate militia. Overflow merges into the weakest matching troop type. Existing saved merged formations remain valid.                                                                                                                                                 |
+| GP-04        | Seeded 200-battle-per-template before/after measurements. Damage, morale loss and tactical approach scoring tuned; grid, water multipliers and day limit retained.                                                                                                                                                               |
+| GP-05, GP-06 | Hover/path feedback, nearby legal-tile snapping, initial working zoom, stable movement camera, next-ready selection, shortcuts and ready-unit warning. Optional persistent AI command can be returned to manual control.                                                                                                         |
+| GP-08, GP-09 | Farming/commerce cap 500 for direct and governor work, retaining seeded values and existing saves. Work quota explains the actual rule: one point per stationed living officer, up to three, refreshed monthly.                                                                                                                  |
+| GP-10        | Paired 96-month diagnostics recorded before roster/pacing changes. No strategic policy tuning: monthly dispatch already supplied a planning snapshot, and the paired campaign outcomes did not change.                                                                                                                           |
+| QA-01–QA-03  | First-hour script, repeatable browser matrix, baseline captures and regression commands. Fresh-player understanding, four human twelve-month sessions, real low-end hardware and art approval remain player gates.                                                                                                               |
+
+## Evidence
+
+- `evidence/px01-ai-before.json` and `px01-ai-after.json`: 24 seeded 96-month scenario/faction/cohort runs each. Dispatch already bypassed the global phase in the previous engine; the public planner now shares that behavior. Keep the conservative one-front policy.
+- `evidence/battle-pacing-before.json` and `battle-pacing-after.json`: 200 seeds per template, three officers per side. Records include first contact, length, outcome, survivors and separate casualty samples per primary hit, counterattack and damaging tactic. Side-turn totals remain a separate metric. `--baseline` loads the tagged rules into an ignored artifact directory, so both distributions can be regenerated.
+- `evidence/plan-screens/`: start, city, forces, orders, diplomacy, battle and aftermath in EN/ZH at 390, 1366 and 1920 pixels. These are review baselines; README art replacement still needs approval.
+- `public/fonts/manifest.json`: reproducible character corpus, compressed font sizes and SHA-256 hashes. Licenses ship beside the fonts. Final subsets total 368,080 bytes (16,168 Source Sans 3; 351,912 Noto Serif SC). Regenerate the manifest after catalog changes.
+
+Before this work the production application was 670.05 kB JavaScript / 20.42 kB CSS (209.00 / 5.11 kB gzip). The final ordinary build is 746.88 kB JavaScript / 33.72 kB CSS (232.33 / 7.75 kB gzip), plus the bundled fonts above. The explicit `/hegemony/` build is 746.91 / 33.74 kB (232.34 / 7.75 kB gzip). Removing legacy source alone does not guarantee a smaller bundle because the previous entry already tree-shook it. Rollup reports the JavaScript chunk above its 700 kB warning threshold; this is a remaining download-size cost of the expanded UI and catalogs.
+
+The 800 matched-seed battles in each pacing run retain the 24×20 grid, water modifiers and 30-day limit:
+
+| Template | First contact, median day | Battle days, median before → after | Battle days, p90 before → after | Casualties per exchange, median before → after |
+| -------- | ------------------------- | ---------------------------------- | ------------------------------- | ---------------------------------------------- |
+| Xiapi    | 2                         | 30 → 9                             | 30 → 10                         | 51 → 246                                       |
+| Hanzhong | 2                         | 30 → 8                             | 30 → 10                         | 48 → 248                                       |
+| Shouchun | 3                         | 30 → 9                             | 30 → 13                         | 37 → 163                                       |
+| Chengdu  | 2                         | 29 → 9                             | 30 → 9                          | 36 → 216                                       |
+
+These are controlled three-officer engagements, not a guarantee that every campaign battle ends in the target interval. The full records retain outcomes and the longer tail.
+
+## Rules and compatibility
+
+The envelope remains `version: 3`, `ruleset: hegemony-3`. Structured fields, automatic command and monthly prisoner decisions are optional additions. Old event prose and old merged formations are readable. The global phase and daily-cursor validation remain intact; phase no longer grants or removes authority over unrelated cities.
+
+The development cap is 500 on the existing economic scale. Development still costs 80 gold and adds one point. No initial or loaded city is rescaled: a farming point contributes 2.2 food in an ordinary harvest formula before flooring; a commerce point contributes 0.55 gold before flooring. Values already over the cap remain intact and cannot be manually increased.
+
+Execution has no additional loyalty or diplomacy penalty. Recruitment chance is clamped to 5–90%, based on `100 - loyalty`; exchange acceptance is 75%, using the saved RNG. A prisoner receives at most one holder decision per month. Release from a house with no remaining city produces a free neutral officer at the holding city, without reviving the eliminated house.
+
+## Validation record
+
+Executed locally on October 22, 2026:
+
+- Unit/integration/performance: **329 tests, 29 files passed**. The 30-sample 10v10 tactical-day benchmark measured **31.77 ms p95**, below the 50 ms budget on this host.
+- TypeScript and production build: passed. Production browser check: **1 passed** for both ordinary and explicit subpath builds, including `/hegemony/` assets, save restoration, bundled fonts, no external requests and no development harness.
+- UI lint, repository formatting and `git diff --check`: passed.
+- Portrait validation: **53 named mappings plus garrison, 108 WebP renditions passed**. Visual acceptance remains separate.
+- Browser suite: **45 passed** in Chrome, including EN/ZH, 390/1366/1920 widths, 200% zoom, all five fixtures, prisoner decisions, capital marches, inbox paths and existing RV regressions. Refreshed **42 baseline PNGs** across seven screens, both locales and three widths; visually inspected campaign, battle and aftermath samples.
+
+The local `v0.2-final` tag preserves the starting checkout. No push, pull request or remote CI run was made. Human gates and remote publication are not implied by local automated results.
+
+Remaining acceptance: run the [fresh-player script](first-hour-playtest.md), record the four human twelve-month sessions and the actual low-end hardware check from [next steps](../next-steps.md), and approve the artwork before replacing README images. These require a player or the specified hardware; the fixtures, automation and captures prepare those checks without claiming their results.

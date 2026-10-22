@@ -12,13 +12,13 @@ Updated October 22, 2026. Branch `hegemony_of_the_three_kindoms_v0.3`, implement
 
 ## Open now
 
-- [ ] **V/I/Q — development eligibility:** all starting cities in both scenarios have farming 240–380 and commerce 220–355, while manual development rejects either value at 100. Decide a cap/scale consistent with these seeded values; implement and test capital plus governor behavior, UI reasons, existing saves and short-run income before calling development usable. This is a newly documented rules mismatch, not part of the completed RV01–RV10 set.
+- [x] **V/I/Q — development eligibility:** shared cap 500, direct and governor eligibility, retained save scale and short-run economy checks. See the [playability implementation](v0.3/playability-implementation.md).
 - [ ] **Player:** four campaign sessions, each 12 months and at least three manual battles. Vary house/scenario; report friction and defects with exported saves.
 - [ ] **Player:** real low-end-machine check, covering startup, campaign map, one 24×20 battle, camera/minimap and a long resolution.
 - [ ] **Player → A/R/Q:** specific art notes, targeted revisions, runtime review and approval. Seven active generated assets and an inactive paper alternative remain draft. [Workflow](v0.3/06-imagegen-and-artwork.md#next-revision-steps).
 - [ ] **Deferred by user:** push/PR/remote CI. No remote publication or CI pass is claimed.
 
-No RV coding task remains open. The development-limit mismatch above is a separate bounded review; other new defects should be reproduced and scoped before implementation. Geography uncertainty, narrow AI progression and incomplete dedicated art variants are visible limitations; they are not authorization for a large redesign.
+No RV coding task remains open. The development-limit mismatch is repaired in the playability implementation; other new defects should be reproduced and scoped before implementation. Geography uncertainty, narrow AI progression and incomplete dedicated art variants are visible limitations; they are not authorization for a large redesign.
 
 ## Player test record
 

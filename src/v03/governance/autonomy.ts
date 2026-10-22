@@ -330,7 +330,7 @@ export function planGovernorMonthlyWork(
   let targetTroops: number | null = null;
   const action: GovernorWorkAction | null =
     projectedNextMonthFood < protectedFood
-      ? city.farming < 100
+      ? city.farming < 500
         ? 'develop-farming'
         : 'buy-food'
       : city.loyalty < 60
@@ -363,9 +363,9 @@ export function planGovernorMonthlyWork(
                             manager.troops + city.reserve - reserves.troops - 1000,
                           )),
                           'assign-troops')
-                        : city.farming < 100 && city.farming <= city.commerce
+                        : city.farming < 500 && city.farming <= city.commerce
                           ? 'develop-farming'
-                          : city.commerce < 100 && city.commerce < city.farming
+                          : city.commerce < 500 && city.commerce < city.farming
                             ? 'develop-commerce'
                             : workUsed === 0 &&
                                 equipmentTarget &&

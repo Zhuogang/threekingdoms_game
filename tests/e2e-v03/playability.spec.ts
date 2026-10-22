@@ -1,3 +1,11 @@
+import {
+  openMenu,
+  closeMenu,
+  submitBattleDay,
+  showSupplies,
+  showWithdrawal,
+  selectTab,
+} from './ui-navigation';
 import { Buffer } from 'node:buffer';
 import { expect, test, type Page } from '@playwright/test';
 import { createV03Game } from '../../src/v03/initial-state';
@@ -30,8 +38,10 @@ async function savedState(page: Page): Promise<V03GameState> {
 }
 
 async function locale(page: Page, value: 'en' | 'zh') {
+  await openMenu(page);
   if ((await page.locator('html').getAttribute('lang')) !== value)
     await page.getByRole('button', { name: value === 'zh' ? '中文' : 'EN', exact: true }).click();
+  await closeMenu(page);
   await expect(page.locator('html')).toHaveAttribute('lang', value);
 }
 
@@ -70,12 +80,12 @@ for (const twoPlayerBattles of [false, true])
     const state = mixedBattleState(twoPlayerBattles);
     await loadState(page, state);
     await expect(page.locator('.v03-battle-tab')).toHaveCount(twoPlayerBattles ? 2 : 1);
-    await page.getByRole('button', { name: 'End battle day', exact: true }).first().click();
+    await submitBattleDay(page);
     if (twoPlayerBattles) {
       expect((await savedState(page)).absoluteDay).toBe(state.absoluteDay);
       await page.reload();
       await page.locator('.v03-battle-tab').nth(1).click();
-      await page.getByRole('button', { name: 'End battle day', exact: true }).first().click();
+      await submitBattleDay(page);
     }
     await expect.poll(async () => (await savedState(page)).absoluteDay).toBe(state.absoluteDay + 1);
   });
@@ -86,6 +96,7 @@ test('RV03 resumes without replacing a save, confirms a new campaign, and reopen
   const state = reviewBattleState();
   await loadState(page, state);
   const original = await savedState(page);
+  await openMenu(page);
   await page.getByRole('button', { name: 'Campaign menu', exact: true }).click();
   await page.getByRole('button', { name: 'New campaign', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Replace current campaign?', exact: true });
@@ -109,6 +120,7 @@ test('RV03 resumes without replacing a save, confirms a new campaign, and reopen
     )
     .toBeLessThan(0.01);
   await page.setViewportSize({ width: 1440, height: 960 });
+  await openMenu(page);
   await page.getByRole('button', { name: 'Campaign menu', exact: true }).click();
   await page.getByRole('button', { name: 'New campaign', exact: true }).click();
   await dialog.getByRole('button', { name: 'Replace and begin', exact: true }).click();
@@ -118,6 +130,7 @@ test('RV03 resumes without replacing a save, confirms a new campaign, and reopen
   finished.phase = 'finished';
   finished.winnerFactionId = 'cao';
   await importState(page, finished);
+  await openMenu(page);
   await page.getByRole('button', { name: 'Campaign menu', exact: true }).click();
   await expect(page.getByRole('button', { name: 'New campaign', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Resume campaign', exact: true })).toBeEnabled();
@@ -131,6 +144,7 @@ test('RV03 clears successful-import drafts and preserves them on failed import',
   const initial = await assignment.inputValue();
   await assignment.fill('37');
   await page.getByRole('button', { name: 'Puyang', exact: true }).click();
+  await showSupplies(page);
   await page.getByRole('combobox', { name: 'Destination', exact: true }).selectOption('chenliu');
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   const preview = page.locator('.v03-route-preview[aria-live="polite"]');
@@ -143,6 +157,7 @@ test('RV03 clears successful-import drafts and preserves them on failed import',
   await expect(preview).toHaveCount(1);
   await expect(page.getByRole('status')).toContainText(/not a valid|invalid/i);
   await page.getByRole('button', { name: 'Chenliu', exact: true }).click();
+  await selectTab(page, 'City');
   await expect(assignment).toHaveValue('37');
   await importState(page, createV03Game('cao', 174));
   await expect(assignment).toHaveValue(initial);
@@ -174,6 +189,7 @@ for (const language of ['en', 'zh'] as const)
       .click();
     await expect(page.getByRole('alert')).toContainText(language === 'en' ? /sav/i : /存/);
     const download = page.waitForEvent('download');
+    await openMenu(page);
     await page
       .getByRole('button', { name: language === 'en' ? 'Export' : '导出', exact: true })
       .click();
@@ -234,19 +250,16 @@ test('RV07 completes recruit, assign and march through the visible capital contr
       recruited.reserve - 100,
     );
     await page
-      .getByRole('button', {
-        name: language === 'en' ? 'Order a march' : '下达出征令',
-        exact: true,
-      })
+      .getByRole('tab', { name: language === 'en' ? 'Forces' : '军队', exact: true })
       .click();
+    await page.locator('.v03-army-officer input').first().check();
     await page
-      .getByRole('combobox', { name: language === 'en' ? 'Destination' : '目标', exact: true })
+      .getByLabel(
+        language === 'en' ? 'Destination (house, then ETA)' : '目的地（按势力、行程排序）',
+      )
       .selectOption('xiapi');
     await page
-      .getByRole('spinbutton', { name: language === 'en' ? 'Troops' : '兵力', exact: true })
-      .fill(String(officer.troops + 100));
-    await page
-      .getByRole('button', { name: language === 'en' ? 'Issue order' : '下达命令', exact: true })
+      .getByRole('button', { name: language === 'en' ? 'March' : '出征', exact: true })
       .click();
     await expect
       .poll(
@@ -263,12 +276,15 @@ test('RV04 exposes every player decision and the full report backlog without riv
   page,
 }) => {
   await loadState(page, inboxState());
+  await selectTab(page, 'Orders');
   await expect(page.locator('.v03-orders-list .v03-order-card')).toHaveCount(9);
   await expect(page.locator('.v03-orders-list')).not.toContainText('Review rival order');
   await expect(page.locator('.v03-orders-list')).toContainText('Review player order 1');
   await expect(page.locator('.v03-orders-list')).toContainText('Review player order 9');
+  await page.getByRole('button', { name: /Inbox/ }).click();
   await expect(page.locator('.v03-events .v03-event')).toHaveCount(12);
-  await expect(page.locator('.v03-events .v03-section-title')).toContainText('12');
+  await expect(page.locator('.v03-events > header')).toContainText('12');
+  await page.locator('.v03-events > header').getByRole('button').click();
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();
   expect((await savedState(page)).absoluteDay).toBe(0);
   for (let remaining = 12; remaining > 0; remaining--) {
@@ -279,6 +295,7 @@ test('RV04 exposes every player decision and the full report backlog without riv
       .click();
   }
   await expect(page.locator('.v03-events .v03-event')).toHaveCount(0);
+  await page.locator('.v03-events > header').getByRole('button').click();
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();
   await expect.poll(async () => (await savedState(page)).absoluteDay).toBe(1);
   await locale(page, 'zh');
@@ -401,6 +418,7 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
       await expect(page.locator('.v03-unit-list')).toContainText('夏侯渊');
       await expect(page.locator('.v03-unit-list')).not.toContainText(/Cavalry|Militia|Xiahou Yuan/);
     }
+    await showWithdrawal(page);
     await page
       .getByRole('button', {
         name: language === 'en' ? 'Withdraw from battle' : '撤离战场',
@@ -423,6 +441,7 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
       }),
     ).toBeFocused();
     expect(await savedState(page)).toEqual(original);
+    await showWithdrawal(page);
     await page
       .getByRole('button', {
         name: language === 'en' ? 'Withdraw from battle' : '撤离战场',
@@ -522,6 +541,7 @@ for (const region of ['xiapi', 'shouchun', 'hanzhong', 'chengdu'] as BattleRegio
 
 test('RV02 keeps the atlas minimap compact inside its stable main frame', async ({ page }) => {
   await loadState(page, createV03Game('cao', 761));
+  await page.getByRole('button', { name: 'Toggle minimap', exact: true }).click();
   for (const width of [390, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     const measure = await page.locator('.v03-map-frame').evaluate(async (frame) => {

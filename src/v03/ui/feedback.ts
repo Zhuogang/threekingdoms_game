@@ -1,6 +1,6 @@
+import { troopName } from '../rendering/presentation';
 import type { V03GameState } from '../types';
 import type { V03Locale } from '../wiki';
-import { troopName } from '../rendering/presentation';
 
 const ROUTINE_ZH: Readonly<Record<string, string>> = {
   'Only your directly governed capital accepts city work orders.':

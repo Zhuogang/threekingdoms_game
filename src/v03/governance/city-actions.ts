@@ -1,3 +1,4 @@
+import { isCityCommitted, CITY_COMMITTED_REASON } from './commitments';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
 
 export interface V03CityActionInput {
@@ -72,8 +73,8 @@ export function applySharedCityWorkEffect(
     city.gold < CITY_MONTHLY_WORK_GOLD_COST
   )
     return null;
-  if (action === 'develop-farming' && city.farming >= 100) return null;
-  if (action === 'develop-commerce' && city.commerce >= 100) return null;
+  if (action === 'develop-farming' && city.farming >= 500) return null;
+  if (action === 'develop-commerce' && city.commerce >= 500) return null;
   if (action === 'restore-loyalty' && city.loyalty >= 100) return null;
   if (action === 'buy-food' && city.food + 800 > RESOURCE_CAP) return null;
   if (action === 'sell-food' && (city.food < 800 || city.gold + 80 > RESOURCE_CAP)) return null;
@@ -183,11 +184,8 @@ function inspectCityAction(
         ? 'Monthly governor work requires an owned city under autonomous governance.'
         : 'Only your directly governed capital accepts city work orders.',
     );
+  if (isCityCommitted(state, input.cityId)) return fail(CITY_COMMITTED_REASON);
   if (state.phase === 'finished') return fail('This campaign has ended.');
-  const governorMonthSettlement =
-    governorExecution && state.dayResolution?.phase === 'month-settlement';
-  if (state.phase !== 'planning' && !governorMonthSettlement)
-    return fail('City work is available during campaign planning.');
   const actor = officerForAction(state, city, input.officerId);
   if (!actor)
     return fail('A living officer must be stationed in the capital to organize this work.');
@@ -206,7 +204,7 @@ function inspectCityAction(
       break;
     case 'develop-farming':
     case 'develop-commerce':
-      if (city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= 100)
+      if (city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= 500)
         return fail('This improvement is already at its current limit.');
       if (city.gold < 80) return fail('The capital needs 80 unreserved gold for this work.');
       goldCost = 80;
@@ -334,7 +332,7 @@ function applyCityAction(
     case 'develop-farming':
     case 'develop-commerce': {
       const field = input.action === 'develop-farming' ? 'farming' : 'commerce';
-      if (city[field] >= 100) return fail('This improvement is already at its current limit.');
+      if (city[field] >= 500) return fail('This improvement is already at its current limit.');
       const updated = applySharedCityWorkEffect(city, input.action);
       if (!updated) return fail('The capital needs 80 unreserved gold for this work.');
       Object.assign(city, updated);

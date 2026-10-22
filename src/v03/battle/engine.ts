@@ -236,6 +236,7 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
     nextWeather,
     units,
     log: [`Battle ${options.id} begins on a ${options.map.regionId} field.`],
+    logEntries: [{ day: 1, index: 0, code: 'log.begin', params: {} }],
     outcome: null,
   };
   const deploymentErrors = validateBattleUnits(state.map, state.units);
@@ -303,10 +304,24 @@ export function getUnitAttackTargets(
     .sort((a, b) => a.troops - b.troops || a.id.localeCompare(b.id));
 }
 
-function append(state: V03TacticalBattleState, message: string): void {
+export function appendBattleLog(
+  state: V03TacticalBattleState,
+  message: string,
+  code: string,
+  params: Record<string, string | number | boolean | null> = {},
+): void {
+  state.logEntries ??= [];
+  state.logEntries.push({ day: state.day, index: state.log.length, code, params });
   state.log.push(message);
-  if (state.log.length > 250) state.log.splice(0, state.log.length - 250);
+  if (state.log.length > 250) {
+    const removed = state.log.length - 250;
+    state.log.splice(0, removed);
+    state.logEntries = state.logEntries
+      .filter((entry) => entry.index >= removed)
+      .map((entry) => ({ ...entry, index: entry.index - removed }));
+  }
 }
+const append = appendBattleLog;
 
 function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | null {
   if (state.outcome) return state.outcome;
@@ -315,7 +330,12 @@ function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | n
   if (!attackerAlive || !defenderAlive) {
     const winner = attackerAlive ? 'attacker' : defenderAlive ? 'defender' : null;
     state.outcome = { winner, reason: 'elimination' };
-    append(state, winner ? `${winner} wins by elimination.` : 'Both armies are eliminated.');
+    append(
+      state,
+      winner ? `${winner} wins by elimination.` : 'Both armies are eliminated.',
+      'log.elimination',
+      { winner },
+    );
     return state.outcome;
   }
   for (const objective of state.map.objectives) {
@@ -325,7 +345,9 @@ function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | n
     );
     if (occupier && occupier.side !== objective.owner) {
       state.outcome = { winner: occupier.side, reason: 'camp' };
-      append(state, `${occupier.side} captures the opposing field camp.`);
+      append(state, `${occupier.side} captures the opposing field camp.`, 'log.camp', {
+        side: occupier.side,
+      });
       return state.outcome;
     }
   }
@@ -360,7 +382,7 @@ function baseDamage(
   return Math.max(
     20,
     source.troops *
-      0.045 *
+      0.3 *
       forceRatio *
       morale *
       matchup *
@@ -434,18 +456,18 @@ export function predictBattleAttack(
   const initial = waterCombatModifiers(state.map, source, target);
   const estimatedCasualties = inRange ? estimateDamage(source, target, state.map).casualties : null;
   const survivingTarget = estimatedCasualties === null ? null : target.troops - estimatedCasualties;
+  const targetMoraleLoss = estimatedCasualties
+    ? Math.min(45, Math.max(1, Math.ceil((estimatedCasualties / Math.max(1, target.troops)) * 55)))
+    : 0;
   const counterattackPossible = Boolean(
     inRange &&
     survivingTarget !== null &&
     survivingTarget > 0 &&
     target.status !== 'confused' &&
-    !isRouted(target) &&
+    target.morale - targetMoraleLoss >= ROUTED_MORALE &&
     source.troops > 0 &&
     isBattleAttackInRange(state.map, target, source, target.attackRange),
   );
-  const targetMoraleLoss = estimatedCasualties
-    ? Math.min(45, Math.max(1, Math.ceil((estimatedCasualties / target.initialTroops) * 45)))
-    : 0;
   const counterSource = counterattackPossible
     ? {
         ...target,
@@ -660,7 +682,7 @@ function attackOneWay(
   if (casualties > 0) {
     const moraleLoss = Math.min(
       45,
-      Math.max(1, Math.ceil((casualties / target.initialTroops) * 45)),
+      Math.max(1, Math.ceil((casualties / Math.max(1, target.troops + casualties)) * 55)),
     );
     target.morale = Math.max(MIN_MORALE, target.morale - moraleLoss);
   }
@@ -671,7 +693,19 @@ function attackOneWay(
     modifiers.sourceOnWater || modifiers.targetOnWater
       ? ` (water ${modifiers.attackMultiplier.toFixed(2)}× attack × ${modifiers.incomingDamageMultiplier.toFixed(2)}× damage received)`
       : '';
-  append(state, `${source.name} attacks ${target.name}: ${casualties} casualties${waterNote}.`);
+  append(
+    state,
+    `${source.name} attacks ${target.name}: ${casualties} casualties${waterNote}.`,
+    'log.attack',
+    {
+      sourceId: source.id,
+      targetId: target.id,
+      casualties,
+      water: modifiers.sourceOnWater || modifiers.targetOnWater,
+      attackMultiplier: modifiers.attackMultiplier,
+      incomingMultiplier: modifiers.incomingDamageMultiplier,
+    },
+  );
   return casualties;
 }
 
@@ -695,6 +729,8 @@ function performMove(
     `${unit.name} moves to (${unit.x}, ${unit.y})${
       !startWater && endWater ? '; now on water, attack −25%, damage received +25%' : ''
     }.`,
+    'log.move',
+    { unitId: unit.id, x: unit.x, y: unit.y, water: !startWater && endWater },
   );
   checkImmediateOutcome(state);
   return null;
@@ -744,7 +780,10 @@ function applyTacticDamage(
     target.morale = Math.max(
       MIN_MORALE,
       target.morale -
-        Math.min(45, Math.max(1, Math.ceil((casualties / target.initialTroops) * 45))),
+        Math.min(
+          45,
+          Math.max(1, Math.ceil((casualties / Math.max(1, target.troops + casualties)) * 55)),
+        ),
     );
   if (target.troops === 0) {
     target.moved = true;
@@ -775,6 +814,9 @@ function performTactic(
   state.tacticPoints[source.side] -= tacticCost(source, tactic);
   source.acted = true;
   source.moved = true;
+  const troopsBefore = target.troops,
+    moraleBefore = target.morale,
+    suppliesBefore = state.supplies[target.side];
   let message: string;
   if (tactic === 'fire') {
     const variation = (90 + nextRandomInt(state, 21)) / 100;
@@ -823,7 +865,16 @@ function performTactic(
     (forecast.sourceOnWater || forecast.targetOnWater)
   )
     message += ` (water ${forecast.attackMultiplier.toFixed(2)}× attack × ${forecast.incomingDamageMultiplier.toFixed(2)}× damage received)`;
-  append(state, `${message}.`);
+  append(state, `${message}.`, 'log.tactic', {
+    sourceId: source.id,
+    targetId: target.id,
+    tactic,
+    casualties: troopsBefore - target.troops,
+    morale: target.morale - moraleBefore,
+    food: suppliesBefore - state.supplies[target.side],
+    success: tactic !== 'confuse' || target.status === 'confused',
+    chance: forecast.chance,
+  });
   checkImmediateOutcome(state);
   return null;
 }
@@ -836,7 +887,12 @@ function performAction(draft: V03TacticalBattleState, action: BattleAction): str
   if (action.type === 'retreat') {
     const winner = otherSide(unit.side);
     draft.outcome = { winner, reason: 'retreat' };
-    append(draft, `${unit.side} forces retreat from the field; ${winner} holds the battlefield.`);
+    append(
+      draft,
+      `${unit.side} forces retreat from the field; ${winner} holds the battlefield.`,
+      'log.retreat',
+      { side: unit.side, winner },
+    );
     return null;
   }
   if (unit.status === 'confused') return `${unit.name} is confused and cannot act today.`;
@@ -849,7 +905,7 @@ function performAction(draft: V03TacticalBattleState, action: BattleAction): str
     if (unit.acted) return `${unit.name} has already acted today.`;
     unit.moved = true;
     unit.acted = true;
-    append(draft, `${unit.name} holds position.`);
+    append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     return null;
   }
   const target = unitById(draft, action.targetId);
@@ -889,22 +945,17 @@ function chooseAiDestination(
     ownCamp &&
     enemies.some((enemy) => manhattanDistance(enemy, ownCamp.position) <= AI_CAMP_ALERT_DISTANCE),
   );
-  const defensivePositions =
-    campThreatened && ownCamp
-      ? state.map.terrain.flatMap((terrain, index) => {
-          if (terrain === 'cliff' || occupied.has(index)) return [];
-          const position = { x: index % state.map.width, y: Math.floor(index / state.map.width) };
-          return manhattanDistance(position, ownCamp.position) <= 2 ? [position] : [];
-        })
-      : [];
   const nearbyAttacks =
     campThreatened && ownCamp
-      ? attackPositions.filter((position) => manhattanDistance(position, ownCamp.position) <= 2)
+      ? attackPositions.filter(
+          (position) => manhattanDistance(position, ownCamp.position) <= AI_CAMP_ALERT_DISTANCE,
+        )
       : attackPositions;
-  // A nearby threat shifts the AI from a distant camp rush to locally defending its own field camp.
-  const goals = campThreatened
-    ? [...defensivePositions, ...nearbyAttacks]
-    : [...attackPositions, ...(enemyCamp ? [{ ...enemyCamp.position, offset: 1 }] : [])];
+  // Closing to an actual firing position prevents two camp guards waiting forever.
+  const goals = [
+    ...(nearbyAttacks.length ? nearbyAttacks : attackPositions),
+    ...(enemyCamp ? [{ ...enemyCamp.position, offset: 1 }] : []),
+  ];
   const routeDistance = getBattleRouteDistanceField(
     state.map,
     unit,
@@ -925,7 +976,7 @@ function chooseAiDestination(
     const waterExposure = isOnWater(state.map, candidate)
       ? baseDamage(candidate, enemies[0] ?? candidate, state.map) * (1 - WATER_ATTACK_MULTIPLIER)
       : 0;
-    return routeCost * 100 + threatened * 2 + waterExposure;
+    return routeCost * 400 + threatened * 0.25 + waterExposure;
   };
   const currentScore = score(unit);
   const best = options
@@ -1005,7 +1056,9 @@ export function runBattleAiTurn(
       unit.status = 'normal';
       unit.moved = true;
       unit.acted = true;
-      append(draft, `${unit.name} loses its turn to confusion.`);
+      append(draft, `${unit.name} loses its turn to confusion.`, 'log.confused', {
+        unitId: unit.id,
+      });
       continue;
     }
     const availableTarget = () =>
@@ -1048,7 +1101,7 @@ export function runBattleAiTurn(
     } else {
       unit.moved = true;
       unit.acted = true;
-      append(draft, `${unit.name} holds position.`);
+      append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
   return draft;
@@ -1133,7 +1186,10 @@ function resolveRout(state: V03TacticalBattleState): boolean {
   const loser: BattleSide = broken('attacker') ? 'attacker' : 'defender';
   const winner = otherSide(loser);
   state.outcome = { winner, reason: 'rout' };
-  append(state, `${loser} army breaks and retreats; ${winner} holds the battlefield.`);
+  append(state, `${loser} army breaks and retreats; ${winner} holds the battlefield.`, 'log.rout', {
+    side: loser,
+    winner,
+  });
   return true;
 }
 
@@ -1147,8 +1203,10 @@ export function advanceBattleDay(state: V03TacticalBattleState): V03TacticalBatt
       unit.acted = true;
       if (unit.status === 'confused') {
         unit.status = 'normal';
-        append(draft, `${unit.name} loses its turn to confusion.`);
-      } else append(draft, `${unit.name} holds position.`);
+        append(draft, `${unit.name} loses its turn to confusion.`, 'log.confused', {
+          unitId: unit.id,
+        });
+      } else append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
   draft = runBattleAiTurn(draft, otherSide(draft.playerSide));
@@ -1161,6 +1219,8 @@ export function advanceBattleDay(state: V03TacticalBattleState): V03TacticalBatt
       draft.outcome.winner
         ? `${draft.outcome.winner} controls the field when the ${draft.dayLimit}-day limit is reached.`
         : `The battle ends in a draw at the ${draft.dayLimit}-day limit.`,
+      'log.timeout',
+      { winner: draft.outcome.winner, limit: draft.dayLimit },
     );
     return draft;
   }
@@ -1177,6 +1237,6 @@ export function advanceBattleDay(state: V03TacticalBattleState): V03TacticalBatt
     unit.acted = false;
     if (unit.status === 'confused' || unit.status === 'inspired') unit.status = 'normal';
   }
-  append(draft, `Battle day ${draft.day} begins.`);
+  append(draft, `Battle day ${draft.day} begins.`, 'log.day', { day: draft.day });
   return draft;
 }

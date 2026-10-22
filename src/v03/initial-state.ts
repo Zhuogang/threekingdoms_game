@@ -1,4 +1,4 @@
-import { scenarioById, SCENARIOS } from '../content/scenario';
+import { scenarioById, SCENARIOS } from './content/scenario';
 import { CITY_GEOGRAPHY_BY_ID, type CityId } from './geography';
 import type { V03City, V03Faction, V03GameState, V03Officer } from './types';
 
@@ -54,7 +54,7 @@ export function createV03Game(
     return {
       id: faction.id,
       name: faction.name,
-      chinese: faction.chinese,
+      chinese: leader.chinese,
       leaderOfficerId: leader.id,
       color: faction.color,
       capitalCityId,

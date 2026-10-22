@@ -1,6 +1,6 @@
 # v0.3 developer guide
 
-Checked October 22, 2026 against implementation `1e02e65`, branch `hegemony_of_the_three_kindoms_v0.3`. [Product overview](README.md) · [Decisions/contracts](00-decisions-and-contracts.md) · [Status](implementation-status.md) · [Maintenance handoff](implementation-plan.md).
+Updated October 22, 2026 for the [playability implementation](playability-implementation.md), branch `hegemony_of_the_three_kindoms_v0.3`. [Product overview](README.md) · [Decisions/contracts](00-decisions-and-contracts.md) · [Status](implementation-status.md) · [Maintenance handoff](implementation-plan.md).
 
 ## Install and run
 
@@ -40,7 +40,7 @@ src/main.tsx → src/v03/App.tsx → executeV03Command
 | [App.tsx](../../src/v03/App.tsx), [styles.css](../../src/v03/styles.css), [wiki.ts](../../src/v03/wiki.ts), [ui/feedback.ts](../../src/v03/ui/feedback.ts) | Presentation, nine bilingual Wiki topics, action/readout integration, routine/formation localization and transient UI state. |
 | [platform/storage.ts](../../src/v03/platform/storage.ts)                                                                                                   | Strict v3 envelope, input/history bounds, associations, localStorage autosave and validated import/export.                   |
 
-Shared [scenario.ts](../../src/content/scenario.ts), `guandu.ts` and old troop/identity types supply authored content. The old `src/game`, `src/ui`, Pixi renderer and IndexedDB implementation remain for history/shared dependencies and old tests; do not treat them as the current entry or duplicate new rules there.
+Authored [scenario.ts](../../src/v03/content/scenario.ts), `guandu.ts`, traits and identity types now live in `src/v03/content`. The previous engines, UI, Pixi dependency, IndexedDB implementation and legacy tests have been retired; the local `v0.2-final` tag preserves their source. Presentation is split across `ui/screens`, `ui/panels`, `ui/hooks` and `ui/kit`, with typed messages in `i18n`.
 
 ## Invariants for changes
 
@@ -53,22 +53,26 @@ Shared [scenario.ts](../../src/content/scenario.ts), `guandu.ts` and old troop/i
 
 ## Validation commands
 
-| Command                                            | What it checks                                                                                   |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `npm test -- --maxWorkers=1 --no-file-parallelism` | Full mixed legacy/v0.3 unit/integration suite. A total count alone is not v0.3 feature coverage. |
-| `npm run build`                                    | TypeScript and production build.                                                                 |
-| `npm run format:check`                             | Repository formatting.                                                                           |
-| `npm run test:e2e`                                 | Active v0.3 browser flows and responsive/zoom/layout checks.                                     |
-| `npm run test:production`                          | Production subpath assets and save reload.                                                       |
-| `npm run test:perf:v03`                            | Active tactical-day performance.                                                                 |
-| `npm run validate:portraits`                       | Portrait mappings/files/provenance, not human art acceptance.                                    |
+| Command                                            | What it checks                                                                 |
+| -------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `npm test -- --maxWorkers=1 --no-file-parallelism` | Active v0.3 unit/integration suite, including the tactical performance budget. |
+| `npm run build`                                    | TypeScript and production build.                                               |
+| `npm run format:check`                             | Repository formatting.                                                         |
+| `npm run test:e2e`                                 | Active v0.3 browser flows and responsive/zoom/layout checks.                   |
+| `npm run test:production`                          | Production subpath assets and save reload.                                     |
+| `npm run test:perf:v03`                            | Active tactical-day performance.                                               |
+| `npm run validate:portraits`                       | Portrait mappings/files/provenance, not human art acceptance.                  |
+| `npm run lint:ui`                                  | Shared controls, tokens, minimum type sizes and UI module length.              |
+| `npm run diagnostics:battles -- OUTPUT 200`        | Seeded pacing distributions; add `--baseline` to load the preservation tag.    |
 
 Browser tests use Chrome locally; CI config may use Playwright's bundled browser. Tests start isolated servers. `HEGEMONY_V03_PORT` and `HEGEMONY_PRODUCTION_PORT` select test ports. Do not point tests at a player's live save/profile. Run browser/performance work separately when collecting reliable timing. In restricted Windows sessions, a writable ignored temporary directory may be needed for TEMP/TMP/TMPDIR; the recorded RV run documents this environment adjustment.
 
-`test:perf:v02`, `test:production:v02`, `test:fps:v02` and `diagnostics:ai` are legacy tools. They do not certify v0.3. Active campaign diagnostics use `tools/v03-campaign-diagnostics.mjs`; follow [the evidence protocol](evidence/README.md), write new output to `.artifacts/` or a new named record, and retain source/config fingerprints. Never overwrite historical evidence to make it appear current.
+The v0.2 performance, production and FPS scripts have been removed. `npm run diagnostics:ai -- --months 96 --output OUTPUT` runs the active `tools/v03-campaign-diagnostics.mjs`. Follow [the evidence protocol](evidence/README.md), write new output to `.artifacts/` or a new named record, and retain source/config fingerprints. Never overwrite historical evidence to make it appear current.
+
+Development builds provide named fixtures from the Campaign menu and a frozen state/command harness at `?debug=1`. Production builds exclude both. Regenerate bundled fonts after changing the catalogs or authored text with `python tools/subset-fonts.py`; install `fonttools` and `brotli` into `.artifacts/fonttools` first. The script caches upstream sources and records compressed sizes and hashes in `public/fonts/manifest.json`.
 
 ## Documentation maintenance
 
 Update the player guide/Wiki when controls or rules change, the numbered system reference for technical boundaries, release notes for user-visible changes, and status/evidence for actual validation. Current status and next steps should agree. Preserve dated audit/research/test records in history; do not globally replace historical branch names, counts or hashes.
 
-The [October 22 audit](documentation-audit-2026-10-22.md) records the documentation cleanup. The [RV validation](evidence/rv-implementation-2026-10-21/README.md) records the last gameplay tests. This docs-only pass does not claim a new build or full gameplay rerun.
+The [October 22 audit](documentation-audit-2026-10-22.md) records the earlier documentation cleanup. The [playability ledger](playability-implementation.md) records current checks and the remaining human gates; [RV validation](evidence/rv-implementation-2026-10-21/README.md) remains historical evidence.

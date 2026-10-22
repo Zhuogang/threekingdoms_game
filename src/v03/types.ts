@@ -1,4 +1,4 @@
-import type { TroopType } from '../game/types';
+import type { TroopType } from './content/types';
 import type { BattleAction, V03TacticalBattleState } from './battle';
 import type { V03CoalitionInvitation, V03TimedAlliance } from './campaign/monthly-systems';
 import type { Journey as CalendarJourney } from './calendar';
@@ -96,6 +96,8 @@ export interface V03Officer {
   level: number;
   governorOfCityId: string | null;
   alive: boolean;
+  /** At most one holder decision per prisoner per campaign month. */
+  prisonerActionMonth?: number;
 }
 
 export interface V03JourneyCargo {
@@ -143,6 +145,8 @@ export interface V03Requisition {
 }
 
 export interface V03CampaignDirective {
+  food?: number;
+  officerIds?: string[];
   id: string;
   factionId: string;
   sourceCityId: string;
@@ -160,6 +164,8 @@ export interface V03CampaignDirective {
 }
 
 export type V03DomainEventKind =
+  | 'succession'
+  | 'prisonerAction'
   | 'journeyArrival'
   | 'battleReady'
   | 'battleResolved'
@@ -180,6 +186,38 @@ export interface V03DomainEvent {
   detail: string;
   entityId: string | null;
   acknowledged: boolean;
+  code?: string;
+  params?: Record<string, string | number | boolean | null>;
+  tier?: 'critical' | 'notice' | 'chronicle';
+  battleOutcome?: V03BattleOutcomeReport;
+  monthlySummary?: V03MonthlyCitySummary[];
+}
+
+export interface V03BattleSideReport {
+  startingTroops: number;
+  survivingTroops: number;
+  returned: string[];
+  captured: string[];
+  killed: string[];
+}
+
+export interface V03BattleOutcomeReport {
+  cityId: string;
+  cityCaptured: boolean;
+  winner: 'attacker' | 'defender' | 'draw';
+  attacker: V03BattleSideReport;
+  defender: V03BattleSideReport;
+  loot: { gold: number; food: number };
+  returnArrivalDay: number | null;
+}
+
+export interface V03MonthlyCitySummary {
+  cityId: string;
+  gold: number;
+  food: number;
+  troops: number;
+  governorActions: string[];
+  shortage: boolean;
 }
 
 export interface V03BattleState {
@@ -208,6 +246,7 @@ export interface V03BattleState {
   foodShortfallDays: number;
   attackerFormationOfficerIds: Record<string, string[]>;
   defenderFormationOfficerIds: Record<string, string[]>;
+  autoCommand?: boolean;
 }
 
 export type V03DayResolution = CalendarDayResolution;
@@ -288,6 +327,21 @@ export type V03Command =
   | { type: 'breakAlliance'; targetFactionId: string }
   | { type: 'acceptCoalitionInvitation'; invitationId: string }
   | { type: 'battleAction'; battleId: string; action: BattleAction }
+  | { type: 'setBattleAutoCommand'; battleId: string; enabled: boolean }
+  | {
+      type: 'marchArmy';
+      sourceCityId: string;
+      targetCityId: string;
+      officerIds: string[];
+      food?: number;
+      intent: V03BattleIntent;
+    }
+  | {
+      type: 'prisonerAction';
+      officerId: string;
+      action: 'release' | 'recruit' | 'exchange' | 'execute';
+      exchangeOfficerId?: string;
+    }
   | { type: 'completeBattleDay'; battleId: string }
   | { type: 'acknowledgeEvent'; eventId: string };
 

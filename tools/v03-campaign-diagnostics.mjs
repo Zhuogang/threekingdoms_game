@@ -96,8 +96,8 @@ async function main() {
   const options = optionsFromArgs(process.argv.slice(2));
   const sourceFingerprint = await fingerprint(SOURCE_FILES);
   const configFingerprint = await fingerprint([
-    'src/content/scenario.ts',
-    'src/content/guandu.ts',
+    'src/v03/content/scenario.ts',
+    'src/v03/content/guandu.ts',
     'src/v03/geography/index.ts',
     'src/v03/battle/maps.ts',
     'src/v03/calendar/index.ts',
@@ -120,7 +120,7 @@ async function main() {
       server.ssrLoadModule('/src/v03/initial-state.ts'),
       server.ssrLoadModule('/src/v03/commands.ts'),
       server.ssrLoadModule('/src/v03/battle/engine.ts'),
-      server.ssrLoadModule('/src/content/scenario.ts'),
+      server.ssrLoadModule('/src/v03/content/scenario.ts'),
       server.ssrLoadModule('/src/v03/geography/index.ts'),
     ]);
     const checkpoints = [...new Set([Math.min(48, options.months), options.months])];
@@ -184,8 +184,8 @@ async function main() {
           sourceFiles: SOURCE_FILES,
           sourceSha256: sourceFingerprint,
           configFiles: [
-            'src/content/scenario.ts',
-            'src/content/guandu.ts',
+            'src/v03/content/scenario.ts',
+            'src/v03/content/guandu.ts',
             'src/v03/geography/index.ts',
             'src/v03/battle/maps.ts',
             'src/v03/calendar/index.ts',
