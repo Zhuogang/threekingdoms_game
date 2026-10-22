@@ -5,6 +5,16 @@ import { validateBattleMap } from '../battle/maps';
 const safeInt = z.number().int().safe();
 const nonnegative = safeInt.nonnegative();
 const id = z.string().min(1).max(120);
+// A byte cap bounds JSON parsing before Zod walks an imported file. Collection
+// limits remain generous enough for long campaigns and are secondary guards.
+export const V03_MAX_SAVE_BYTES = 16 * 1024 * 1024;
+const HISTORY_RECORD_LIMIT = 25_000;
+const BATTLE_HISTORY_LIMIT = 10_000;
+const RECENT_EVENT_HISTORY = 1_500;
+const RECENT_BATTLE_HISTORY = 100;
+const RECENT_ORDER_HISTORY = 500;
+const RECENT_JOURNEY_HISTORY = 500;
+const RECENT_LOG_HISTORY = 1_000;
 const cargo = z.object({ gold: nonnegative, food: nonnegative, troops: nonnegative }).strict();
 const troopType = z.enum(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard']);
 const intent = z.enum(['conquer', 'raid', 'sack']);
@@ -63,8 +73,13 @@ const tacticalUnit = z
     troops: nonnegative,
     initialTroops: nonnegative,
     force: z.number().finite().min(0).max(120),
+    intellect: z.number().finite().min(0).max(120),
+    level: safeInt.min(0).max(5),
+    isMilitia: z.boolean(),
+    cunning: z.boolean(),
     attackRange: safeInt.min(1).max(24),
     morale: nonnegative.max(100),
+    status: z.enum(['normal', 'confused', 'inspired']),
     moved: z.boolean(),
     acted: z.boolean(),
   })
@@ -78,12 +93,19 @@ const tacticalBattle = z
     day: safeInt.min(1).max(1000),
     dayLimit: safeInt.min(1).max(1000),
     timeoutPolicy: z.enum(['survivor-count', 'field-control', 'defender-holds', 'draw']),
+    tacticPoints: z
+      .object({ attacker: safeInt.min(0).max(30), defender: safeInt.min(0).max(30) })
+      .strict(),
+    supplies: z.object({ attacker: nonnegative, defender: nonnegative }).strict(),
+    rngState: safeInt.min(0).max(0xffffffff),
+    weather: z.enum(['clear', 'rain', 'wind']),
+    nextWeather: z.enum(['clear', 'rain', 'wind']),
     units: z.array(tacticalUnit).min(2).max(20),
-    log: z.array(z.string().max(1000)).max(250),
+    log: z.array(z.string().max(1000)).max(2000),
     outcome: z
       .object({
         winner: z.enum(['attacker', 'defender']).nullable(),
-        reason: z.enum(['elimination', 'camp', 'dayLimit']),
+        reason: z.enum(['elimination', 'camp', 'dayLimit', 'retreat', 'rout']),
       })
       .strict()
       .nullable(),
@@ -120,6 +142,16 @@ const faction = z
     eliminated: z.boolean(),
   })
   .strict();
+const timedAlliance = z.object({ a: id, b: id, expiresMonthIndex: nonnegative }).strict();
+const coalitionInvitation = z
+  .object({
+    id,
+    eventId: z.literal('anti-dong-coalition'),
+    targetFactionId: id,
+    memberFactionIds: z.array(id).max(20),
+    expiresMonthIndex: nonnegative,
+  })
+  .strict();
 const city = z
   .object({
     id,
@@ -142,6 +174,9 @@ const city = z
       .nullable(),
     governanceMode: z.enum(['ruler', 'governor', 'steward']),
     plunderCooldownUntilDay: nonnegative.optional(),
+    workMonthIndex: nonnegative.optional(),
+    workPointsUsed: safeInt.min(0).max(3).optional(),
+    troopServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
   })
   .strict();
 const officer = z
@@ -157,6 +192,7 @@ const officer = z
     age: nonnegative,
     troops: nonnegative,
     troopType,
+    equipment: z.literal('Fine arms').nullable().optional(),
     experience: nonnegative,
     level: safeInt.min(0).max(20),
     governorOfCityId: id.nullable(),
@@ -168,12 +204,14 @@ const journey = z
     id,
     kind: z.enum(['requisition', 'campaign', 'appointment', 'return']),
     intent: intent.optional(),
+    returnRequested: z.boolean().optional(),
     executionId: id,
     ownerFactionId: id,
     sourceCityId: id,
     destinationCityId: id,
     routeId: id,
     routeVersion: z.string().min(1).max(40),
+    routeCityIds: z.array(id).min(2).max(100).optional(),
     routeSnapshot: z
       .array(
         z
@@ -263,6 +301,9 @@ const event = z
       'requisitionResponse',
       'governorChanged',
       'monthBoundary',
+      'campaignEvent',
+      'hegemonWarning',
+      'diplomacy',
       'factionEliminated',
       'victory',
     ]),
@@ -286,6 +327,7 @@ const battle = z
     intent,
     active: z.boolean(),
     resolved: z.boolean(),
+    playerDayComplete: z.boolean(),
     outcome: z.enum(['attacker', 'defender', 'draw']).nullable(),
     loot: z.object({ gold: nonnegative, food: nonnegative }).strict().nullable(),
     battleData: tacticalBattle,
@@ -304,7 +346,9 @@ const dayResolution = z
     phase: z.enum(['battles', 'journeys', 'date', 'month-settlement']),
     battleIds: z.array(id).max(100),
     completedBattleIds: z.array(id).max(100),
+    daybreakJourneySignatures: z.record(id, z.string().max(10_000)),
     arrivals: z.array(id).max(1000),
+    cityServiceAccounted: z.boolean().default(false),
     settledMonth: z
       .object({ year: safeInt, month: safeInt.min(1).max(12) })
       .strict()
@@ -325,19 +369,24 @@ const stateSchema = z
     absoluteDay: nonnegative,
     monthIndex: nonnegative,
     rng: safeInt.min(0).max(0xffffffff),
+    alliances: z.array(timedAlliance).max(200),
+    coalitionInvitations: z.array(coalitionInvitation).max(100),
+    firedMonthlyEventIds: z.array(id).max(100),
+    lastAllianceBreakMonthByFaction: z.record(id, nonnegative),
+    hegemon: z.object({ factionId: id.nullable(), months: safeInt.min(0).max(12) }).strict(),
     nextId: nonnegative,
     phase: z.enum(['planning', 'battle', 'finished']),
     playerCapitalCityId: id,
     factions: z.array(faction).min(2).max(20),
     cities: z.array(city).min(1).max(100),
     officers: z.array(officer).min(1).max(2000),
-    journeys: z.array(journey).max(2000),
-    requisitions: z.array(requisition).max(2000),
-    directives: z.array(directive).max(2000),
-    battles: z.array(battle).max(200),
+    journeys: z.array(journey).max(HISTORY_RECORD_LIMIT),
+    requisitions: z.array(requisition).max(HISTORY_RECORD_LIMIT),
+    directives: z.array(directive).max(HISTORY_RECORD_LIMIT),
+    battles: z.array(battle).max(BATTLE_HISTORY_LIMIT),
     dayResolution,
-    events: z.array(event).max(2000),
-    log: z.array(z.string().max(3000)).max(1000),
+    events: z.array(event).max(HISTORY_RECORD_LIMIT),
+    log: z.array(z.string().max(3000)).max(10_000),
     winnerFactionId: id.nullable(),
     governanceRevision: nonnegative,
   })
@@ -370,7 +419,11 @@ export function validateV03State(value: unknown): value is V03GameState {
   )
     return false;
   if (!unique(state.events)) return false;
-  if (!state.factions.some((entry) => entry.id === state.playerFactionId && entry.isPlayer))
+  if (
+    state.factions.filter((entry) => entry.isPlayer && entry.id === state.playerFactionId)
+      .length !== 1 ||
+    state.factions.filter((entry) => entry.isPlayer).length !== 1
+  )
     return false;
   if (
     !state.factions.some(
@@ -386,12 +439,72 @@ export function validateV03State(value: unknown): value is V03GameState {
   const officerIds = new Set(state.officers.map((entry) => entry.id));
   const journeyIds = new Set(state.journeys.map((entry) => entry.id));
   const battleIds = new Set(state.battles.map((entry) => entry.id));
+  const requisitionIds = new Set(state.requisitions.map((entry) => entry.id));
+  const alliancePairs = new Set<string>();
+  for (const alliance of state.alliances) {
+    if (
+      !factionIds.has(alliance.a) ||
+      !factionIds.has(alliance.b) ||
+      alliance.a === alliance.b ||
+      alliance.expiresMonthIndex <= state.monthIndex ||
+      alliance.expiresMonthIndex > state.monthIndex + 6
+    )
+      return false;
+    const pair = [alliance.a, alliance.b].sort().join(':');
+    if (alliancePairs.has(pair)) return false;
+    alliancePairs.add(pair);
+  }
+  if (
+    !isUnique(state.firedMonthlyEventIds) ||
+    new Set(state.coalitionInvitations.map((invitation) => invitation.id)).size !==
+      state.coalitionInvitations.length ||
+    state.coalitionInvitations.some(
+      (invitation) =>
+        !factionIds.has(invitation.targetFactionId) ||
+        invitation.expiresMonthIndex <= state.monthIndex ||
+        invitation.expiresMonthIndex > state.monthIndex + 3 ||
+        invitation.memberFactionIds.some((factionId) => !factionIds.has(factionId)) ||
+        new Set(invitation.memberFactionIds).size !== invitation.memberFactionIds.length,
+    ) ||
+    Object.entries(state.lastAllianceBreakMonthByFaction).some(
+      ([factionId, month]) => !factionIds.has(factionId) || month > state.monthIndex,
+    ) ||
+    (state.hegemon.factionId === null) !== (state.hegemon.months === 0)
+  )
+    return false;
+  const officerAssignments = new Map<string, string>();
+  const activeJourneyOfficerIds = new Set<string>();
+  const activeBattleOfficerIds = new Set<string>();
   for (const entry of state.factions) {
     if (!cityIds.has(entry.capitalCityId) || !officerIds.has(entry.leaderOfficerId)) return false;
+    const capital = state.cities.find((cityEntry) => cityEntry.id === entry.capitalCityId);
+    if (!entry.eliminated && capital?.factionId !== entry.id) return false;
+    if (entry.eliminated && state.cities.some((cityEntry) => cityEntry.factionId === entry.id))
+      return false;
+  }
+  if (state.factions.some((entry) => entry.eliminated && entry.id === state.playerFactionId)) {
+    if (state.phase !== 'finished') return false;
   }
   for (const entry of state.cities) {
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
+    if (
+      (entry.workMonthIndex === undefined) !== (entry.workPointsUsed === undefined) ||
+      (entry.workMonthIndex !== undefined && entry.workMonthIndex > state.monthIndex)
+    )
+      return false;
+    // Work already spent in this month does not become invalid if officers
+    // depart or are reassigned later in the same settlement period.
     if (entry.governorId !== null && !officerIds.has(entry.governorId)) return false;
+    if (entry.governorId !== null) {
+      const governor = state.officers.find((officerEntry) => officerEntry.id === entry.governorId);
+      if (
+        !governor ||
+        governor.governorOfCityId !== entry.id ||
+        governor.factionId !== entry.factionId ||
+        !governor.alive
+      )
+        return false;
+    }
     if (
       entry.governanceMode === 'ruler' &&
       entry.id !== state.playerCapitalCityId &&
@@ -400,10 +513,25 @@ export function validateV03State(value: unknown): value is V03GameState {
       return false;
     if (
       entry.pendingAppointment &&
-      entry.pendingAppointment.journeyId &&
-      !journeyIds.has(entry.pendingAppointment.journeyId)
+      ((entry.pendingAppointment.governorId !== null &&
+        !officerIds.has(entry.pendingAppointment.governorId)) ||
+        (entry.pendingAppointment.journeyId && !journeyIds.has(entry.pendingAppointment.journeyId)))
     )
       return false;
+    if (entry.pendingAppointment?.journeyId) {
+      const appointmentJourney = state.journeys.find(
+        (journeyEntry) => journeyEntry.id === entry.pendingAppointment?.journeyId,
+      );
+      if (
+        !appointmentJourney ||
+        appointmentJourney.kind !== 'appointment' ||
+        appointmentJourney.destinationCityId !== entry.id ||
+        entry.pendingAppointment.governorId === null ||
+        !appointmentJourney.manifest.officerIds.includes(entry.pendingAppointment.governorId) ||
+        appointmentJourney.status === 'cancelled'
+      )
+        return false;
+    }
   }
   for (const entry of state.officers) {
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
@@ -418,6 +546,37 @@ export function validateV03State(value: unknown): value is V03GameState {
       !cityIds.has(entry.location.cityId)
     )
       return false;
+    if (entry.governorOfCityId !== null) {
+      const governedCity = state.cities.find(
+        (cityEntry) => cityEntry.id === entry.governorOfCityId,
+      );
+      if (!governedCity || governedCity.governorId !== entry.id) return false;
+    }
+    if (entry.location.kind === 'journey') {
+      const journeyId = entry.location.journeyId;
+      const assignedJourney = state.journeys.find((journeyEntry) => journeyEntry.id === journeyId);
+      if (
+        !assignedJourney ||
+        !['outbound', 'returning', 'waiting'].includes(assignedJourney.status) ||
+        !assignedJourney.manifest.officerIds.includes(entry.id) ||
+        activeJourneyOfficerIds.has(entry.id)
+      )
+        return false;
+      activeJourneyOfficerIds.add(entry.id);
+      officerAssignments.set(entry.id, assignedJourney.id);
+    }
+    if (entry.location.kind === 'battle') {
+      const battleId = entry.location.battleId;
+      const assignedBattle = state.battles.find((battleEntry) => battleEntry.id === battleId);
+      if (
+        !assignedBattle?.active ||
+        !battleHasOfficer(assignedBattle, entry.id) ||
+        activeBattleOfficerIds.has(entry.id)
+      )
+        return false;
+      activeBattleOfficerIds.add(entry.id);
+      officerAssignments.set(entry.id, assignedBattle.id);
+    }
   }
   for (const entry of state.journeys) {
     if (
@@ -432,7 +591,60 @@ export function validateV03State(value: unknown): value is V03GameState {
       entry.segmentWaitDays.length !== entry.routeSnapshot.length
     )
       return false;
+    if (!isUnique(entry.manifest.officerIds)) return false;
     if (entry.manifest.officerIds.some((officerId) => !officerIds.has(officerId))) return false;
+    if (
+      entry.routeCityIds &&
+      (entry.routeCityIds.length < 2 ||
+        entry.routeCityIds.some((cityId) => !cityIds.has(cityId)) ||
+        entry.routeCityIds[0] !== entry.sourceCityId ||
+        entry.routeCityIds.at(-1) !== entry.destinationCityId)
+    )
+      return false;
+    if (
+      entry.segmentProgressKm.some(
+        (distance, index) => distance > entry.routeSnapshot[index]!.lengthKm + 1e-7,
+      )
+    )
+      return false;
+    const active = ['outbound', 'returning', 'waiting'].includes(entry.status);
+    if (active) {
+      const battleInProgress = state.battles.find(
+        (battleEntry) =>
+          battleEntry.active &&
+          [battleEntry.attackerJourneyId, battleEntry.defenderJourneyId].includes(entry.id),
+      );
+      for (const officerId of entry.manifest.officerIds) {
+        if (
+          activeJourneyOfficerIds.has(officerId) &&
+          officerAssignments.get(officerId) !== entry.id
+        )
+          return false;
+        const officer = state.officers.find((officerEntry) => officerEntry.id === officerId);
+        if (
+          officer?.location.kind === 'journey' &&
+          officer.location.journeyId === entry.id &&
+          officerAssignments.get(officerId) !== entry.id
+        )
+          return false;
+        if (
+          battleInProgress
+            ? officer?.location.kind !== 'battle' ||
+              officer.location.battleId !== battleInProgress.id ||
+              !battleHasOfficer(battleInProgress, officerId)
+            : officer?.location.kind !== 'journey' || officer.location.journeyId !== entry.id
+        )
+          return false;
+      }
+      if (entry.kind === 'requisition') {
+        const order = state.requisitions.find((orderEntry) => orderEntry.id === entry.executionId);
+        if (!order || order.journeyId !== entry.id) return false;
+      }
+      if (entry.kind === 'campaign') {
+        const order = state.directives.find((orderEntry) => orderEntry.id === entry.executionId);
+        if (!order || order.journeyId !== entry.id) return false;
+      }
+    }
   }
   for (const entry of [...state.requisitions, ...state.directives]) {
     if (
@@ -443,6 +655,36 @@ export function validateV03State(value: unknown): value is V03GameState {
       return false;
     if (entry.journeyId !== null && !journeyIds.has(entry.journeyId)) return false;
   }
+  for (const entry of state.requisitions) {
+    if (entry.journeyId === null) continue;
+    const assignedJourney = state.journeys.find(
+      (journeyEntry) => journeyEntry.id === entry.journeyId,
+    );
+    if (
+      !assignedJourney ||
+      assignedJourney.executionId !== entry.id ||
+      assignedJourney.kind !== 'requisition' ||
+      assignedJourney.ownerFactionId !== entry.factionId ||
+      assignedJourney.sourceCityId !== entry.sourceCityId ||
+      assignedJourney.destinationCityId !== entry.targetCityId
+    )
+      return false;
+  }
+  for (const entry of state.directives) {
+    if (entry.journeyId === null) continue;
+    const assignedJourney = state.journeys.find(
+      (journeyEntry) => journeyEntry.id === entry.journeyId,
+    );
+    if (
+      !assignedJourney ||
+      assignedJourney.executionId !== entry.id ||
+      assignedJourney.kind !== 'campaign' ||
+      assignedJourney.ownerFactionId !== entry.factionId ||
+      assignedJourney.sourceCityId !== entry.sourceCityId ||
+      assignedJourney.destinationCityId !== entry.targetCityId
+    )
+      return false;
+  }
   for (const entry of state.battles) {
     if (
       !factionIds.has(entry.attackerFactionId) ||
@@ -452,13 +694,26 @@ export function validateV03State(value: unknown): value is V03GameState {
     if (!journeyIds.has(entry.attackerJourneyId)) return false;
     if (entry.defenderJourneyId !== null && !journeyIds.has(entry.defenderJourneyId)) return false;
     if (entry.resolved !== (entry.outcome !== null)) return false;
+    const attackerJourney = state.journeys.find(
+      (journeyEntry) => journeyEntry.id === entry.attackerJourneyId,
+    );
+    if (
+      !attackerJourney ||
+      attackerJourney.kind !== 'campaign' ||
+      attackerJourney.ownerFactionId !== entry.attackerFactionId ||
+      !cityIds.has(attackerJourney.destinationCityId)
+    )
+      return false;
+    if (entry.active && state.phase !== 'battle') return false;
     if (entry.active === entry.resolved) return false;
     const battle = entry.battleData;
     if (
       battle.id !== entry.id ||
       battle.map.mapId !== entry.mapId ||
       battle.map.templateVersion !== entry.mapVersion ||
-      battle.map.seed !== entry.seed
+      battle.map.seed !== entry.seed ||
+      battle.supplies.attacker !== entry.attackerFood ||
+      battle.supplies.defender !== entry.defenderFood
     )
       return false;
     if (validateBattleMap(battle.map).length > 0) return false;
@@ -469,6 +724,27 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
     if (new Set(battle.units.map((unit) => unit.id)).size !== battle.units.length) return false;
+    const sideOfficerIds = [
+      ...Object.values(entry.attackerFormationOfficerIds).flat(),
+      ...Object.values(entry.defenderFormationOfficerIds).flat(),
+    ];
+    if (
+      new Set(sideOfficerIds).size !== sideOfficerIds.length ||
+      sideOfficerIds.some((officerId) => !officerIds.has(officerId))
+    )
+      return false;
+    for (const [unitId, ids] of Object.entries(entry.attackerFormationOfficerIds)) {
+      if (!battle.units.some((unit) => unit.id === unitId && unit.side === 'attacker'))
+        return false;
+      if (entry.active && ids.some((officerId) => officerAssignments.get(officerId) !== entry.id))
+        return false;
+    }
+    for (const [unitId, ids] of Object.entries(entry.defenderFormationOfficerIds)) {
+      if (!battle.units.some((unit) => unit.id === unitId && unit.side === 'defender'))
+        return false;
+      if (entry.active && ids.some((officerId) => officerAssignments.get(officerId) !== entry.id))
+        return false;
+    }
     if (
       new Set(battle.units.filter((unit) => unit.troops > 0).map((unit) => `${unit.x},${unit.y}`))
         .size !== battle.units.filter((unit) => unit.troops > 0).length
@@ -484,6 +760,13 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
   }
+  if (
+    state.dayResolution &&
+    Object.keys(state.dayResolution.daybreakJourneySignatures).some(
+      (journeyId) => !journeyIds.has(journeyId),
+    )
+  )
+    return false;
   if (state.dayResolution) {
     if (state.dayResolution.phase === 'month-settlement') {
       if (
@@ -492,7 +775,13 @@ export function validateV03State(value: unknown): value is V03GameState {
       )
         return false;
     } else if (state.dayResolution.processingAbsoluteDay !== state.absoluteDay) return false;
-    if (state.dayResolution.battleIds.some((entry) => !battleIds.has(entry))) return false;
+    if (
+      !isUnique(state.dayResolution.battleIds) ||
+      !isUnique(state.dayResolution.completedBattleIds) ||
+      !isUnique(state.dayResolution.arrivals) ||
+      state.dayResolution.battleIds.some((entry) => !battleIds.has(entry))
+    )
+      return false;
     if (state.dayResolution.arrivals.some((entry) => !journeyIds.has(entry))) return false;
     if (
       state.dayResolution.completedBattleIds.some(
@@ -500,24 +789,101 @@ export function validateV03State(value: unknown): value is V03GameState {
       )
     )
       return false;
+    if (
+      state.dayResolution.phase === 'battles' &&
+      (state.dayResolution.battleIds.length === 0 ||
+        state.dayResolution.completedBattleIds.length >= state.dayResolution.battleIds.length)
+    )
+      return false;
+    if (
+      state.dayResolution.phase !== 'battles' &&
+      state.dayResolution.completedBattleIds.length !== state.dayResolution.battleIds.length
+    )
+      return false;
+    if (
+      state.dayResolution.phase === 'month-settlement' &&
+      (state.dayResolution.settledMonth?.year !==
+        state.startYear +
+          Math.floor(Math.floor(state.dayResolution.processingAbsoluteDay / 30) / 12) ||
+        state.dayResolution.settledMonth?.month !==
+          (Math.floor(state.dayResolution.processingAbsoluteDay / 30) % 12) + 1)
+    )
+      return false;
   }
   if (state.winnerFactionId !== null && !factionIds.has(state.winnerFactionId)) return false;
+  if ((state.phase === 'finished') !== (state.winnerFactionId !== null)) return false;
+  if ((state.phase === 'battle') !== state.battles.some((entry) => entry.active)) return false;
+  const validEventReference = (entry: V03GameState['events'][number]) => {
+    if (entry.entityId === null)
+      return entry.kind === 'monthBoundary' || entry.kind === 'campaignEvent';
+    switch (entry.kind) {
+      case 'journeyArrival':
+        return journeyIds.has(entry.entityId);
+      case 'battleReady':
+      case 'battleResolved':
+        return battleIds.has(entry.entityId);
+      case 'requisitionResponse':
+        return requisitionIds.has(entry.entityId);
+      case 'governorChanged':
+        return cityIds.has(entry.entityId);
+      case 'factionEliminated':
+      case 'victory':
+        return factionIds.has(entry.entityId);
+      case 'monthBoundary':
+      case 'campaignEvent':
+        return false;
+      case 'hegemonWarning':
+      case 'diplomacy':
+        return factionIds.has(entry.entityId);
+    }
+  };
+  if (state.events.some((entry) => !validEventReference(entry))) return false;
   return true;
 }
 
+function isUnique(values: string[]): boolean {
+  return new Set(values).size === values.length;
+}
+
+function battleHasOfficer(entry: V03GameState['battles'][number], officerId: string): boolean {
+  return (
+    Object.values(entry.attackerFormationOfficerIds).some((ids) => ids.includes(officerId)) ||
+    Object.values(entry.defenderFormationOfficerIds).some((ids) => ids.includes(officerId))
+  );
+}
+
 export function encodeV03Save(state: V03GameState): string {
-  if (!validateV03State(state))
+  const snapshot = compactV03History(state);
+  if (!validateV03State(snapshot))
     throw new Error('The v0.3 campaign state is not valid and cannot be saved.');
-  return JSON.stringify({ format: V03_SAVE_FORMAT, version: 3, ruleset: 'hegemony-3', state });
+  const payload = JSON.stringify({
+    format: V03_SAVE_FORMAT,
+    version: 3,
+    ruleset: 'hegemony-3',
+    state: snapshot,
+  });
+  assertSaveSize(payload);
+  return payload;
 }
 
 export function decodeV03Save(payload: string | unknown): V03GameState {
   let decoded: unknown = payload;
   if (typeof payload === 'string') {
+    assertSaveSize(payload);
     try {
       decoded = JSON.parse(payload) as unknown;
     } catch {
       throw new Error('This save file is not valid JSON.');
+    }
+  } else {
+    try {
+      const serialized = JSON.stringify(payload);
+      if (serialized === undefined) throw new Error('The file is not serializable JSON.');
+      assertSaveSize(serialized);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('exceeds the v0.3 save limit'))
+        throw error;
+      throw new Error('This file is not a valid hegemony.save v0.3 campaign.');
     }
   }
   const parsed = envelopeSchema.safeParse(decoded);
@@ -532,7 +898,7 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
   }
   if (!validateV03State(parsed.data.state))
     throw new Error('The save contains inconsistent campaign state.');
-  return structuredClone(parsed.data.state);
+  return compactV03History(parsed.data.state);
 }
 
 export function saveV03Autosave(
@@ -548,4 +914,117 @@ export function loadV03Autosave(
 ): V03GameState | null {
   const payload = storage.getItem(V03_AUTOSAVE_KEY);
   return payload === null ? null : decodeV03Save(payload);
+}
+
+function assertSaveSize(payload: string): void {
+  if (payload.length > V03_MAX_SAVE_BYTES) {
+    throw new Error(`This save exceeds the v0.3 save limit of ${V03_MAX_SAVE_BYTES} bytes.`);
+  }
+  const byteLength = new TextEncoder().encode(payload).byteLength;
+  if (byteLength > V03_MAX_SAVE_BYTES) {
+    throw new Error(`This save exceeds the v0.3 save limit of ${V03_MAX_SAVE_BYTES} bytes.`);
+  }
+}
+
+/**
+ * Keep saves bounded without trimming anything that is still part of live play.
+ * This operates on a clone, so saving/exporting never mutates the running campaign.
+ */
+function compactV03History(source: V03GameState): V03GameState {
+  const state = structuredClone(source);
+  const keepRecentOrPinned = <T extends { id: string }>(
+    entries: T[],
+    recentCount: number,
+    pinnedIds: ReadonlySet<string> = new Set(),
+  ): T[] => {
+    const recent = new Set(entries.slice(-recentCount).map((entry) => entry.id));
+    for (const id of pinnedIds) recent.add(id);
+    return entries.filter((entry) => recent.has(entry.id));
+  };
+  const activeOrder = (status: string) =>
+    ['requested', 'proposed', 'waiting', 'accepted', 'reserved', 'dispatched'].includes(status);
+  const recentAcknowledgedEventIds = new Set(
+    state.events
+      .filter((event) => event.acknowledged)
+      .slice(-RECENT_EVENT_HISTORY)
+      .map((event) => event.id),
+  );
+  // Filter in place order so interleaved pending and acknowledged reports remain
+  // chronological in the saved campaign timeline.
+  const retainedEvents = state.events.filter(
+    (event) => !event.acknowledged || recentAcknowledgedEventIds.has(event.id),
+  );
+  const eventBattleIds = new Set(
+    retainedEvents
+      .filter((event) => event.kind === 'battleReady' || event.kind === 'battleResolved')
+      .map((event) => event.entityId!)
+      .filter(Boolean),
+  );
+  const eventJourneyIds = new Set(
+    retainedEvents
+      .filter((event) => event.kind === 'journeyArrival')
+      .map((event) => event.entityId!),
+  );
+  const eventRequisitionIds = new Set(
+    retainedEvents
+      .filter((event) => event.kind === 'requisitionResponse')
+      .map((event) => event.entityId!),
+  );
+
+  state.events = retainedEvents;
+  const requisitionIds = new Set(
+    state.requisitions
+      .filter((entry) => activeOrder(entry.status))
+      .map((entry) => entry.id)
+      .concat([...eventRequisitionIds]),
+  );
+  const directiveIds = new Set(
+    state.directives.filter((entry) => activeOrder(entry.status)).map((entry) => entry.id),
+  );
+  state.requisitions = keepRecentOrPinned(
+    state.requisitions.filter(
+      (entry) => requisitionIds.has(entry.id) || !activeOrder(entry.status),
+    ),
+    RECENT_ORDER_HISTORY,
+    requisitionIds,
+  );
+  state.directives = keepRecentOrPinned(
+    state.directives.filter((entry) => directiveIds.has(entry.id) || !activeOrder(entry.status)),
+    RECENT_ORDER_HISTORY,
+    directiveIds,
+  );
+
+  const battleIdsToKeep = new Set([
+    ...eventBattleIds,
+    ...(state.dayResolution?.battleIds ?? []),
+    ...state.battles.filter((entry) => entry.active).map((entry) => entry.id),
+  ]);
+  state.battles = keepRecentOrPinned(
+    state.battles.filter((entry) => !entry.active),
+    RECENT_BATTLE_HISTORY,
+    battleIdsToKeep,
+  ).concat(state.battles.filter((entry) => entry.active));
+
+  const journeyIdsToKeep = new Set([
+    ...eventJourneyIds,
+    ...(state.dayResolution?.arrivals ?? []),
+    ...state.officers.flatMap((officer) =>
+      officer.location.kind === 'journey' ? [officer.location.journeyId] : [],
+    ),
+    ...state.cities.flatMap((city) =>
+      city.pendingAppointment?.journeyId ? [city.pendingAppointment.journeyId] : [],
+    ),
+    ...state.requisitions.flatMap((entry) => (entry.journeyId ? [entry.journeyId] : [])),
+    ...state.directives.flatMap((entry) => (entry.journeyId ? [entry.journeyId] : [])),
+    ...state.battles.flatMap((entry) => [entry.attackerJourneyId, entry.defenderJourneyId ?? '']),
+  ]);
+  state.journeys = keepRecentOrPinned(
+    state.journeys.filter((entry) => entry.status === 'delivered' || entry.status === 'cancelled'),
+    RECENT_JOURNEY_HISTORY,
+    journeyIdsToKeep,
+  ).concat(
+    state.journeys.filter((entry) => entry.status !== 'delivered' && entry.status !== 'cancelled'),
+  );
+  state.log = state.log.slice(-RECENT_LOG_HISTORY);
+  return state;
 }

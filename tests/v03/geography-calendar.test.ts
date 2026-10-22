@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   CITY_GEOGRAPHY,
+  C_GRADE_ANCHOR_IDS,
   ROUTE_DEFINITIONS,
   CITY_GEOGRAPHY_BY_ID,
   ROUTE_BY_ID,
   projectCampaignPoint,
+  findStrategicRoutePath,
+  analyzeAnchorSensitivity,
   routeIdBetween,
   straightLineDistanceKm,
   validateGeographyData,
@@ -27,6 +30,7 @@ import {
   createJourney,
   createStrategicTimeline,
   deliverCargo,
+  deliverCargoWithinCapacity,
   dispatchCargo,
   estimateCampaignSupply,
   estimateTravel,
@@ -121,6 +125,66 @@ describe('v0.3 historical geography and routes', () => {
       ).toBe(route.straightLineKm);
     }
   });
+
+  it('finds a reproducible friendly multi-leg route and never transits excluded cities', () => {
+    const friendlyCities = new Set(
+      CITY_GEOGRAPHY.map((city) => city.id).filter((cityId) => cityId !== 'hanzhong'),
+    );
+    const first = findStrategicRoutePath('xuchang', 'chengdu', {
+      allowedCityIds: friendlyCities,
+      departureAbsoluteDay: 12,
+      composition: foot,
+    });
+    const repeated = findStrategicRoutePath('xuchang', 'chengdu', {
+      allowedCityIds: friendlyCities,
+      departureAbsoluteDay: 12,
+      composition: foot,
+    });
+
+    expect(first).not.toBeNull();
+    expect(repeated).toEqual(first);
+    expect(first!.cityIds[0]).toBe('xuchang');
+    expect(first!.cityIds.at(-1)).toBe('chengdu');
+    expect(first!.cityIds.length).toBeGreaterThan(2);
+    expect(first!.cityIds).not.toContain('hanzhong');
+    expect(first!.legs).toHaveLength(first!.cityIds.length - 1);
+    expect(first!.roadKmNominal).toBe(
+      first!.legs.reduce((sum, leg) => sum + leg.route.roadKmNominal, 0),
+    );
+    expect(first!.estimatedDays).toBeGreaterThan(0);
+
+    const noFriendlyCorridor = new Set(
+      CITY_GEOGRAPHY.map((city) => city.id).filter(
+        (cityId) => cityId !== 'hanzhong' && cityId !== 'jiangzhou',
+      ),
+    );
+    expect(
+      findStrategicRoutePath('xuchang', 'chengdu', { allowedCityIds: noFriendlyCorridor }),
+    ).toBeNull();
+  });
+
+  it('reports ±20/40 km map-anchor sensitivity for every C-grade city without changing roads', () => {
+    expect(C_GRADE_ANCHOR_IDS).toHaveLength(5);
+    for (const cityId of C_GRADE_ANCHOR_IDS) {
+      for (const radiusKm of [20, 40] as const) {
+        const results = analyzeAnchorSensitivity(cityId, radiusKm);
+        const adjacent = ROUTE_DEFINITIONS.filter(
+          (route) => route.fromCityId === cityId || route.toCityId === cityId,
+        );
+        expect(results).toHaveLength(adjacent.length);
+        for (const result of results) {
+          expect(result.minimumStraightLineKm).toBeLessThanOrEqual(result.baselineStraightLineKm);
+          expect(result.maximumStraightLineKm).toBeGreaterThanOrEqual(
+            result.baselineStraightLineKm,
+          );
+          expect(
+            ROUTE_BY_ID.get(result.routeId)?.roadKmNominal,
+            `${cityId} ±${radiusKm} km ${result.routeId} nominal road km`,
+          ).toBe(adjacent.find((route) => route.id === result.routeId)?.roadKmNominal);
+        }
+      }
+    }
+  });
 });
 
 describe('v0.3 calendar and journey progression', () => {
@@ -196,6 +260,49 @@ describe('v0.3 calendar and journey progression', () => {
     });
   });
 
+  it('does not move a journey created or replaced by a battle until the next day', () => {
+    const route = ROUTE_BY_ID.get('chenliu--xuchang')!;
+    const arrivedJourney = {
+      ...createJourney({
+        id: 'return-trip',
+        executionId: 'return-command',
+        ownerFactionId: 'test',
+        route,
+        sourceCityId: 'chenliu',
+        destinationCityId: 'xuchang',
+        departureAbsoluteDay: 0,
+        manifest: {
+          officerIds: ['captain'],
+          troopCount: 1000,
+          composition: foot,
+          carriedFood: 100,
+          cargo: {},
+        },
+      }),
+      status: 'delivered' as const,
+    };
+    const initial = {
+      ...createStrategicTimeline(190),
+      absoluteDay: 5,
+      journeys: [arrivedJourney],
+    };
+    const advanced = advanceTimeline(initial, 1, {
+      battleIdsAtDaybreak: () => ['battle'],
+      resolveBattleDay: (current) => {
+        const returning = beginJourneyReturn(arrivedJourney, current.absoluteDay);
+        return {
+          timeline: { ...current, journeys: [returning] },
+          completed: true,
+        };
+      },
+    });
+    const returning = advanced.timeline.journeys[0]!;
+    expect(advanced.daysAdvanced).toBe(1);
+    expect(returning.status).toBe('returning');
+    expect(returning.elapsedDays).toBe(0);
+    expect(returning.segmentProgressKm).toEqual([0]);
+  });
+
   it('settles at the 30-day boundary and allows saveable month-boundary state', () => {
     let timeline = createStrategicTimeline(190);
     timeline.absoluteDay = 29;
@@ -209,6 +316,29 @@ describe('v0.3 calendar and journey progression', () => {
     });
     timeline = completeMonthSettlement(timeline);
     expect(timeline.dayResolution).toBeNull();
+  });
+
+  it('refreshes events after settlement and stops at a newly created month report', () => {
+    const initial = { ...createStrategicTimeline(190), absoluteDay: 29 };
+    const advanced = advanceTimeline(initial, 10, {
+      settleMonth: (timeline) => completeMonthSettlement(timeline),
+      refreshTimeline: (timeline) =>
+        timeline.absoluteDay === 30 && !timeline.events.some((event) => event.id === 'month-report')
+          ? addTimelineEvent(timeline, {
+              id: 'month-report',
+              absoluteDay: timeline.absoluteDay,
+              kind: 'monthly-report',
+              pause: true,
+              visibleToPlayer: true,
+            })
+          : timeline,
+    });
+    expect(advanced).toMatchObject({
+      daysAdvanced: 1,
+      stoppedFor: 'event',
+      event: { id: 'month-report', absoluteDay: 30 },
+      timeline: { absoluteDay: 30 },
+    });
   });
 
   it('gives identical travel progress from one-day and ten-day stepping', () => {
@@ -292,6 +422,51 @@ describe('v0.3 calendar and journey progression', () => {
     expect(hungryStep.journey.accumulatedFoodShortfall).toBe(7);
   });
 
+  it('carries fractional daily rations without reporting starvation when stock covers them', () => {
+    const route = ROUTE_BY_ID.get('changan--hanzhong')!;
+    let journey = createJourney({
+      id: 'fractional-rations',
+      executionId: 'fractional-rations-command',
+      ownerFactionId: 'test',
+      route,
+      sourceCityId: 'hanzhong',
+      destinationCityId: 'changan',
+      departureAbsoluteDay: 0,
+      manifest: {
+        officerIds: [],
+        troopCount: 101,
+        composition: foot,
+        carriedFood: 100,
+        cargo: {},
+      },
+    });
+    for (let day = 0; day < 10; day++) journey = advanceJourneyOneDay(journey).journey;
+    expect(journey.consumedFood).toBe(8);
+    expect(journey.manifest.carriedFood).toBe(92);
+    expect(journey.supplyRemainderMicro).toBe(80_000);
+    expect(journey.accumulatedFoodShortfall).toBe(0);
+
+    const noStock = createJourney({
+      id: 'fractional-shortfall',
+      executionId: 'fractional-shortfall-command',
+      ownerFactionId: 'test',
+      route,
+      sourceCityId: 'hanzhong',
+      destinationCityId: 'changan',
+      departureAbsoluteDay: 0,
+      manifest: {
+        officerIds: [],
+        troopCount: 1,
+        composition: foot,
+        carriedFood: 0,
+        cargo: {},
+      },
+    });
+    const shortfallStep = advanceJourneyOneDay(noStock);
+    expect(shortfallStep.foodShortfall).toBe(0.008);
+    expect(shortfallStep.journey.supplyRemainderMicro).toBe(0);
+  });
+
   it('estimates round-trip food, battle reserve, and integer commitment explicitly', () => {
     const estimate = estimateCampaignSupply({
       troopCount: 1000,
@@ -328,5 +503,42 @@ describe('v0.3 calendar and journey progression', () => {
     });
     expect(() => dispatchCargo(ledger, 'order-1')).toThrow();
     expect(() => reserveCargo(ledger, 'order-1', { gold: 1, food: 0, reserve: 0 })).toThrow();
+  });
+
+  it('holds cargo at a full destination and delivers the exact remainder after capacity frees', () => {
+    let ledger = createCargoLedger({ gold: 200, food: 0, reserve: 0 });
+    ledger = reserveCargo(ledger, 'blocked-delivery', { gold: 200, food: 0, reserve: 0 });
+    ledger = dispatchCargo(ledger, 'blocked-delivery');
+    ledger = deliverCargoWithinCapacity(ledger, 'blocked-delivery', {
+      gold: 0,
+      food: 0,
+      reserve: 0,
+    });
+    expect(ledger.executions['blocked-delivery']).toMatchObject({
+      stage: 'waiting',
+      remaining: { gold: 200, food: 0, reserve: 0 },
+      delivered: { gold: 0, food: 0, reserve: 0 },
+    });
+
+    ledger = deliverCargoWithinCapacity(ledger, 'blocked-delivery', {
+      gold: 150,
+      food: 0,
+      reserve: 0,
+    });
+    expect(ledger.executions['blocked-delivery']).toMatchObject({
+      stage: 'waiting',
+      remaining: { gold: 50, food: 0, reserve: 0 },
+      delivered: { gold: 150, food: 0, reserve: 0 },
+    });
+    ledger = deliverCargoWithinCapacity(ledger, 'blocked-delivery', {
+      gold: 50,
+      food: 0,
+      reserve: 0,
+    });
+    expect(ledger.executions['blocked-delivery']).toMatchObject({
+      stage: 'delivered',
+      remaining: { gold: 0, food: 0, reserve: 0 },
+      delivered: { gold: 200, food: 0, reserve: 0 },
+    });
   });
 });

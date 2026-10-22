@@ -23,6 +23,11 @@ function fixture(): V03GameState {
     absoluteDay: 15,
     monthIndex: 0,
     rng: 2,
+    alliances: [],
+    coalitionInvitations: [],
+    firedMonthlyEventIds: [],
+    lastAllianceBreakMonthByFaction: {},
+    hegemon: { factionId: null, months: 0 },
     nextId: 1,
     phase: 'planning',
     playerCapitalCityId: 'capital',
@@ -138,6 +143,9 @@ describe('v0.3 authority boundaries', () => {
     expect(canDirectlyAdminister(state, 'province')).toBe(false);
     expect(getCityCapabilities(state, 'province').requisitionResources).toBe(true);
     expect(getCityCapabilities(state, 'enemy').requisitionResources).toBe(false);
+    expect(getCityCapabilities(state, 'capital').appointGovernor).toBe(false);
+    expect(getCityCapabilities(state, 'province').appointGovernor).toBe(true);
+    expect(getCityCapabilities(state, 'enemy').appointGovernor).toBe(false);
   });
 
   it('keeps the capital directly governed and permits a troop-free officer from another friendly city', () => {

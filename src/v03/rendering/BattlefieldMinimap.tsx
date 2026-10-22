@@ -7,7 +7,7 @@ import {
 } from './geometry';
 import type { BattlefieldVisualMap } from './BattlefieldMapView';
 import type { BattleUnitVisual, CellMarker } from './presentation';
-import type { MouseEvent } from 'react';
+import type { KeyboardEvent, PointerEvent } from 'react';
 
 export interface BattlefieldMinimapProps {
   map: BattlefieldVisualMap;
@@ -38,6 +38,17 @@ function terrainFill(terrain: string): string {
   }
 }
 
+function terrainLabel(terrain: string, locale: 'en' | 'zh'): string {
+  const labels: Record<string, { en: string; zh: string }> = {
+    plain: { en: 'Open ground', zh: '平地' },
+    forest: { en: 'Forest', zh: '林地' },
+    hill: { en: 'Walkable hill', zh: '可通行山坡' },
+    water: { en: 'Water', zh: '水域' },
+    cliff: { en: 'Impassable cliff', zh: '不可通行峭壁' },
+  };
+  return labels[terrain]?.[locale] ?? terrain;
+}
+
 /** Compact top-down navigator; the large map keeps its 2:1 isometric view. */
 export function BattlefieldMinimap({
   map,
@@ -55,7 +66,7 @@ export function BattlefieldMinimap({
     minimapPoint(point, map.width, map.height, VIEWPORT),
   );
   const viewportPath = viewportPoints.map((point) => `${point.x},${point.y}`).join(' ');
-  const click = (event: MouseEvent<SVGSVGElement>) => {
+  const moveTo = (event: PointerEvent<SVGSVGElement>) => {
     if (!onNavigate) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const point = clientToViewBoxPoint({ x: event.clientX, y: event.clientY }, rect, {
@@ -67,19 +78,60 @@ export function BattlefieldMinimap({
     const cell = minimapCellAt(point, map.width, map.height, VIEWPORT);
     if (cell) onNavigate(cell);
   };
+  const onKeyDown = (event: KeyboardEvent<SVGSVGElement>) => {
+    if (!onNavigate || !event.key.startsWith('Arrow')) return;
+    const center = viewportPolygon.length
+      ? viewportPolygon.reduce((sum, point) => ({ x: sum.x + point.x, y: sum.y + point.y }), {
+          x: 0,
+          y: 0,
+        })
+      : { x: map.width / 2, y: map.height / 2 };
+    if (viewportPolygon.length) {
+      center.x /= viewportPolygon.length;
+      center.y /= viewportPolygon.length;
+    }
+    const step = event.shiftKey ? 5 : 1;
+    const delta =
+      event.key === 'ArrowLeft'
+        ? { x: -step, y: 0 }
+        : event.key === 'ArrowRight'
+          ? { x: step, y: 0 }
+          : event.key === 'ArrowUp'
+            ? { x: 0, y: -step }
+            : { x: 0, y: step };
+    event.preventDefault();
+    onNavigate({
+      x: Math.max(0, Math.min(map.width - 1, Math.round(center.x + delta.x))),
+      y: Math.max(0, Math.min(map.height - 1, Math.round(center.y + delta.y))),
+    });
+  };
+  const startNavigate = (event: PointerEvent<SVGSVGElement>) => {
+    if (!onNavigate || event.button !== 0) return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    moveTo(event);
+  };
   return (
     <svg
       className={className}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      role="img"
-      aria-label={locale === 'zh' ? '战场小地图' : 'Battlefield minimap'}
-      onClick={click}
+      role={onNavigate ? 'application' : 'img'}
+      tabIndex={onNavigate ? 0 : undefined}
+      aria-label={
+        locale === 'zh'
+          ? '战场小地图。点击或拖动定位主地图；方向键微调，按住 Shift 移动五格。'
+          : 'Battlefield minimap. Click or drag to recenter the main map; use arrow keys to nudge and Shift to move five cells.'
+      }
+      onPointerDown={startNavigate}
+      onPointerMove={(event) => {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) moveTo(event);
+      }}
+      onKeyDown={onKeyDown}
       style={{
         display: 'block',
         width: '100%',
         height: '100%',
         cursor: onNavigate ? 'crosshair' : 'default',
-        touchAction: 'manipulation',
+        touchAction: onNavigate ? 'none' : 'manipulation',
       }}
     >
       <rect
@@ -107,7 +159,7 @@ export function BattlefieldMinimap({
             stroke="#fff9eb"
             strokeWidth="0.35"
           >
-            <title>{terrain}</title>
+            <title>{terrainLabel(terrain, locale)}</title>
           </rect>
         );
       })}

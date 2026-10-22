@@ -87,4 +87,6 @@ export interface WorldPolyline {
   id: string;
   points: readonly { x: number; y: number }[];
   label?: string;
+  /** Presentation-only route/party status; it never affects travel rules. */
+  display?: 'route' | 'selected' | 'marching' | 'transport' | 'waiting';
 }

@@ -1,5 +1,6 @@
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
+import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
 import { estimateRequisition } from './authority';
 import type {
   V03BattleIntent,
@@ -20,6 +21,7 @@ export type GovernanceOrderReasonCode =
   | 'order.same-city'
   | 'order.target-not-friendly'
   | 'order.target-is-friendly'
+  | 'order.target-allied'
   | 'order.target-cooldown'
   | 'order.route-unavailable'
   | 'order.party-unavailable'
@@ -40,6 +42,8 @@ export interface OrderRoutePlan {
   routeVersion: string;
   roadKmNominal: number;
   estimatedDays: number;
+  /** Ordered origin, friendly transit cities, and destination for map and audit display. */
+  routeCityIds?: readonly string[];
   /** Route data is snapshotted by the journey factory; no later route edit changes an ETA. */
   routeSnapshot: readonly JourneySegmentSnapshot[];
 }
@@ -165,6 +169,7 @@ function msg(code: GovernanceOrderReasonCode, detail?: string): string {
     'order.same-city': 'Choose a different destination city.',
     'order.target-not-friendly': 'The destination must be held by your faction.',
     'order.target-is-friendly': 'A campaign directive must target an enemy or independent city.',
+    'order.target-allied': 'An active alliance prevents this attack.',
     'order.target-cooldown': 'This city is recovering from a recent raid or sack.',
     'order.route-unavailable': 'There is no currently usable route to the destination.',
     'order.party-unavailable': 'The governor cannot assemble an available force for this order.',
@@ -472,6 +477,16 @@ function previewCampaign(
   if (!target) addReason(codes, reasons, 'order.target-unavailable');
   else if (target.factionId === state.playerFactionId)
     addReason(codes, reasons, 'order.target-is-friendly');
+  else if (
+    target.factionId &&
+    getV03AttackAllianceBlock(
+      state.alliances,
+      state.playerFactionId,
+      target.factionId,
+      state.monthIndex,
+    )
+  )
+    addReason(codes, reasons, 'order.target-allied');
   else if (input.intent !== 'conquer' && state.absoluteDay < (target.plunderCooldownUntilDay ?? 0))
     addReason(codes, reasons, 'order.target-cooldown');
   if (input.sourceCityId === input.targetCityId) addReason(codes, reasons, 'order.same-city');
@@ -963,7 +978,15 @@ export function answerRequisition(
   const order = state.requisitions.find((entry) => entry.id === id);
   if (!order)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
-  if (order.status === 'dispatched' || order.status === 'delivered')
+  if (state.phase !== 'planning')
+    return {
+      ok: false,
+      state,
+      order,
+      reasonCode: 'order.invalid-phase',
+      message: msg('order.invalid-phase'),
+    };
+  if (order.journeyId !== null || order.status === 'dispatched' || order.status === 'delivered')
     return {
       ok: true,
       state,
@@ -1243,7 +1266,15 @@ export function answerCampaignDirective(
   const order = state.directives.find((entry) => entry.id === id);
   if (!order)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
-  if (order.status === 'dispatched' || order.status === 'delivered')
+  if (state.phase !== 'planning')
+    return {
+      ok: false,
+      state,
+      order,
+      reasonCode: 'order.invalid-phase',
+      message: msg('order.invalid-phase'),
+    };
+  if (order.journeyId !== null || order.status === 'dispatched' || order.status === 'delivered')
     return {
       ok: true,
       state,

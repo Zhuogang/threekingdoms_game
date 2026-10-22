@@ -33,30 +33,7 @@ export function queueGovernorAppointment(
   if (!result.ok || !result.city)
     return { ok: false, state, error: result.reason ?? 'Appointment is not allowed.' };
   const city = result.city;
-  if (result.officer?.governorOfCityId && result.officer.governorOfCityId !== cityId)
-    return {
-      ok: false,
-      state,
-      error: 'The officer must be relieved from the other city before taking office.',
-    };
   if (city.governorId === officerId && city.pendingAppointment === null) return { ok: true, state };
-  if (city.pendingAppointment?.journeyId) {
-    const pendingJourney = state.journeys.find(
-      (journey) => journey.id === city.pendingAppointment?.journeyId,
-    );
-    if (
-      pendingJourney &&
-      pendingJourney.status !== 'delivered' &&
-      pendingJourney.status !== 'cancelled'
-    ) {
-      return {
-        ok: false,
-        state,
-        error:
-          'A governor transfer is already in transit. Wait for it to arrive before changing the pending appointment.',
-      };
-    }
-  }
 
   let journey: ReturnType<GovernanceOrderServices['createJourney']> | null = null;
   if (
@@ -117,8 +94,20 @@ export function queueGovernorAppointment(
 
   const next = structuredClone(state);
   const nextCity = next.cities.find((entry) => entry.id === cityId)!;
+  const previousJourneyId = nextCity.pendingAppointment?.journeyId;
+  if (previousJourneyId) {
+    const previousJourney = next.journeys.find((entry) => entry.id === previousJourneyId);
+    if (previousJourney && ['outbound', 'waiting', 'delivered'].includes(previousJourney.status)) {
+      // The former candidate stays in the journey until a safe return can start.
+      // For an outbound transfer, the engine turns the party around at arrival.
+      previousJourney.returnRequested = true;
+    }
+  }
   if (journey) {
     const officer = next.officers.find((entry) => entry.id === result.officer!.id)!;
+    // The source office remains in force until this appointment takes effect at
+    // the month boundary. Local staff can govern autonomously while the officer
+    // is away, and the boundary transition moves the office atomically.
     officer.location = { kind: 'journey', journeyId: journey.id };
     next.journeys.push(journey);
     nextCity.pendingAppointment = {
@@ -150,10 +139,38 @@ export function applyGovernanceMonthBoundary(
   );
   for (const city of due) {
     const pending = city.pendingAppointment!;
+    if (city.factionId !== next.playerFactionId) {
+      cancelPendingAppointment(
+        next,
+        city.id,
+        pending.governorId,
+        'the city is no longer under your faction’s control',
+        pending.journeyId,
+      );
+      continue;
+    }
     if (pending.journeyId) {
       const journey = next.journeys.find((entry) => entry.id === pending.journeyId);
-      if (!journey || journey.status !== 'delivered') {
+      if (!journey || journey.status === 'cancelled' || journey.status === 'returning') {
+        cancelPendingAppointment(
+          next,
+          city.id,
+          pending.governorId,
+          'the transfer can no longer complete',
+          pending.journeyId,
+        );
+        continue;
+      }
+      if (journey.status !== 'delivered') {
         city.pendingAppointment = { ...pending, effectiveDay: effectiveDay + 30 };
+        addAppointmentEvent(
+          next,
+          'governor-appointment-delayed',
+          city.id,
+          pending.governorId,
+          `The appointment at ${city.name} is delayed because the candidate has not arrived. Current governance remains unchanged; it will be checked again next month.`,
+          effectiveDay,
+        );
         continue;
       }
     }
@@ -168,12 +185,29 @@ export function applyGovernanceMonthBoundary(
         incoming.location.kind !== 'city' ||
         incoming.location.cityId !== city.id)
     ) {
-      city.pendingAppointment = { ...pending, effectiveDay: effectiveDay + 30 };
+      const reason =
+        incoming.location.kind === 'captured'
+          ? 'the candidate has been captured'
+          : !incoming.alive
+            ? 'the candidate is no longer available'
+            : incoming.factionId !== city.factionId
+              ? 'the candidate no longer serves this faction'
+              : 'the candidate is no longer available in this city';
+      cancelPendingAppointment(next, city.id, pending.governorId, reason, pending.journeyId);
       continue;
     }
     if (city.governorId) {
       const previous = next.officers.find((officer) => officer.id === city.governorId);
-      if (previous) previous.governorOfCityId = null;
+      if (previous?.governorOfCityId === city.id) previous.governorOfCityId = null;
+    }
+    if (incoming) {
+      // Moving an appointed officer between offices is one boundary operation:
+      // keep the source governance intact while in transit, then vacate it here.
+      for (const source of next.cities) {
+        if (source.id === city.id || source.governorId !== incoming.id) continue;
+        source.governorId = null;
+        if (source.governanceMode === 'governor') source.governanceMode = 'steward';
+      }
     }
     city.governorId = incoming?.id ?? null;
     city.governanceMode = incoming ? 'governor' : 'steward';
@@ -196,4 +230,74 @@ export function applyGovernanceMonthBoundary(
   }
   next.revision += due.length > 0 ? 1 : 0;
   return next;
+}
+
+function addAppointmentEvent(
+  state: V03GameState,
+  key: 'governor-appointment-delayed' | 'governor-appointment-cancelled',
+  cityId: string,
+  officerId: string | null,
+  detail: string,
+  absoluteDay: number,
+): void {
+  const event: V03DomainEvent = {
+    id: eventId(state, 'campaignEvent'),
+    absoluteDay,
+    kind: 'campaignEvent',
+    title: key,
+    detail: JSON.stringify({
+      key,
+      entityIds: officerId ? [cityId, officerId] : [cityId],
+      message: detail,
+    }),
+    entityId: null,
+    acknowledged: false,
+  };
+  state.events.push(event);
+  state.nextId += 1;
+}
+
+function cancelPendingAppointment(
+  state: V03GameState,
+  cityId: string,
+  officerId: string | null,
+  reason: string,
+  journeyId?: string,
+): void {
+  const city = state.cities.find((entry) => entry.id === cityId);
+  if (!city) return;
+  if (journeyId) {
+    const journey = state.journeys.find((entry) => entry.id === journeyId);
+    const candidate = officerId
+      ? state.officers.find((entry) => entry.id === officerId)
+      : undefined;
+    if (
+      journey &&
+      candidate?.alive &&
+      candidate.location.kind !== 'captured' &&
+      ['outbound', 'waiting', 'delivered'].includes(journey.status)
+    )
+      journey.returnRequested = true;
+  }
+  city.pendingAppointment = null;
+  addAppointmentEvent(
+    state,
+    'governor-appointment-cancelled',
+    cityId,
+    officerId,
+    `The appointment at ${city.name} was cancelled because ${reason}. Current governance remains unchanged; you may choose another candidate.`,
+    state.absoluteDay,
+  );
+}
+
+/** Cancel a pending appointment as soon as its city stops being a valid target. */
+export function cancelPendingGovernorAppointment(
+  state: V03GameState,
+  cityId: string,
+  reason: string,
+): void {
+  const city = state.cities.find((entry) => entry.id === cityId);
+  const pending = city?.pendingAppointment;
+  if (!pending) return;
+  cancelPendingAppointment(state, cityId, pending.governorId, reason, pending.journeyId);
 }

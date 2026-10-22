@@ -1,15 +1,32 @@
 import type { TroopType } from '../game/types';
 import type { BattleAction, V03TacticalBattleState } from './battle';
+import type { V03CoalitionInvitation, V03TimedAlliance } from './campaign/monthly-systems';
 import type { Journey as CalendarJourney } from './calendar';
 import type { DayResolution as CalendarDayResolution } from './calendar/day-resolution';
 
 export type { TroopType };
+export type { V03CoalitionInvitation, V03TimedAlliance };
 
 export type V03GovernanceMode = 'ruler' | 'governor' | 'steward';
 export type V03GamePhase = 'planning' | 'battle' | 'finished';
 export type V03JourneyKind = 'requisition' | 'campaign' | 'appointment' | 'return';
 export type V03JourneyStatus = CalendarJourney['status'];
 export type V03BattleIntent = 'conquer' | 'raid' | 'sack';
+export type V03CityAction =
+  | 'restore-loyalty'
+  | 'develop-farming'
+  | 'develop-commerce'
+  | 'search'
+  | 'recruit'
+  | 'train'
+  | 'security'
+  | 'feast'
+  | 'buy-food'
+  | 'sell-food'
+  | 'reward'
+  | 'relieve'
+  | 'equip'
+  | 'assign-troops';
 
 export interface V03Faction {
   id: string;
@@ -46,6 +63,11 @@ export interface V03City {
   governorId: string | null;
   pendingAppointment: V03PendingAppointment | null;
   governanceMode: V03GovernanceMode;
+  /** Work slots spent by direct ruler-city orders in the active campaign month. */
+  workMonthIndex?: number;
+  workPointsUsed?: number;
+  /** Troop-days spent stationed in this city since the last monthly settlement. */
+  troopServiceDaysThisMonth?: number;
   /** Absolute month boundary until which raid/sack actions are unavailable. */
   plunderCooldownUntilDay?: number;
 }
@@ -68,6 +90,8 @@ export interface V03Officer {
   age: number;
   troops: number;
   troopType: TroopType;
+  /** Fine arms add a persistent +5 force bonus; omitted is accepted in earlier v3 saves. */
+  equipment?: 'Fine arms' | null;
   experience: number;
   level: number;
   governorOfCityId: string | null;
@@ -83,6 +107,10 @@ export interface V03JourneyCargo {
 export interface V03Journey extends CalendarJourney {
   kind: V03JourneyKind;
   intent?: V03BattleIntent;
+  /** Requested return at the next safe route decision point; no cargo is discarded. */
+  returnRequested?: boolean;
+  /** Ordered city waypoints for multi-leg land journeys; road segment snapshots remain authoritative. */
+  routeCityIds?: string[];
 }
 
 export type V03OrderStatus =
@@ -138,6 +166,9 @@ export type V03DomainEventKind =
   | 'requisitionResponse'
   | 'governorChanged'
   | 'monthBoundary'
+  | 'campaignEvent'
+  | 'hegemonWarning'
+  | 'diplomacy'
   | 'factionEliminated'
   | 'victory';
 
@@ -164,6 +195,8 @@ export interface V03BattleState {
   intent: V03BattleIntent;
   active: boolean;
   resolved: boolean;
+  /** A player may submit this battle's day while other manual battles remain active. */
+  playerDayComplete: boolean;
   outcome: 'attacker' | 'defender' | 'draw' | null;
   loot: { gold: number; food: number } | null;
   /** Plain serializable tactical state owned by the battle rules module. */
@@ -190,6 +223,11 @@ export interface V03GameState {
   absoluteDay: number;
   monthIndex: number;
   rng: number;
+  alliances: V03TimedAlliance[];
+  coalitionInvitations: V03CoalitionInvitation[];
+  firedMonthlyEventIds: string[];
+  lastAllianceBreakMonthByFaction: Record<string, number>;
+  hegemon: { factionId: string | null; months: number };
   nextId: number;
   phase: V03GamePhase;
   playerCapitalCityId: string;
@@ -210,6 +248,13 @@ export interface V03GameState {
 export type V03Command =
   | { type: 'advance'; days: 1 | 10 | 'nextEvent' }
   | { type: 'appointGovernor'; cityId: string; officerId: string | null }
+  | {
+      type: 'cityAction';
+      cityId: string;
+      action: V03CityAction;
+      officerId?: string;
+      amount?: number;
+    }
   | { type: 'developCapital'; field: 'farming' | 'commerce' }
   | {
       type: 'requestRequisition';
@@ -238,7 +283,12 @@ export type V03Command =
       answer: 'accept' | 'reduce' | 'wait' | 'cancel';
       reducedTroops?: number;
     }
+  | { type: 'recallJourney'; journeyId: string }
+  | { type: 'proposeAlliance'; targetFactionId: string }
+  | { type: 'breakAlliance'; targetFactionId: string }
+  | { type: 'acceptCoalitionInvitation'; invitationId: string }
   | { type: 'battleAction'; battleId: string; action: BattleAction }
+  | { type: 'completeBattleDay'; battleId: string }
   | { type: 'acknowledgeEvent'; eventId: string };
 
 export interface V03CommandResult {

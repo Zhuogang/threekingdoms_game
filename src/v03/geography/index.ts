@@ -1,3 +1,5 @@
+import { estimateTravel, type TravelComposition } from '../calendar';
+
 /**
  * Versioned geography contract for the independent v0.3 ruleset.
  *
@@ -987,6 +989,108 @@ export function routeIdBetween(a: CityId, b: CityId): string {
   return a < b ? `${a}--${b}` : `${b}--${a}`;
 }
 
+export interface StrategicRouteLeg {
+  fromCityId: CityId;
+  toCityId: CityId;
+  route: RouteDefinition;
+  direction: 'forward' | 'reverse';
+}
+
+export interface StrategicRoutePath {
+  /** Ordered endpoints and intermediate friendly cities, including both endpoints. */
+  cityIds: CityId[];
+  legs: StrategicRouteLeg[];
+  roadKmNominal: number;
+  /** Continuous travel estimate, rounded once across the ordered leg segments. */
+  estimatedDays: number;
+  /** Fractional work-day cost used to compare candidate paths before the final rounding. */
+  workDays: number;
+}
+
+export interface StrategicRouteOptions {
+  /** Transit is permitted only through this set; callers should pass currently friendly cities. */
+  allowedCityIds?: ReadonlySet<CityId>;
+  departureAbsoluteDay?: number;
+  composition?: TravelComposition;
+}
+
+/**
+ * Find the lowest estimated-time path across the versioned 42-edge land network.
+ * Equal-cost paths resolve lexicographically, so save/replay and UI use the same path.
+ * The result preserves each researched edge and direction for route snapshots and display.
+ */
+export function findStrategicRoutePath(
+  fromCityId: CityId,
+  toCityId: CityId,
+  options: StrategicRouteOptions = {},
+): StrategicRoutePath | null {
+  if (fromCityId === toCityId) {
+    if (options.allowedCityIds && !options.allowedCityIds.has(fromCityId)) return null;
+    return { cityIds: [fromCityId], legs: [], roadKmNominal: 0, estimatedDays: 0, workDays: 0 };
+  }
+  const allowed = options.allowedCityIds;
+  if (allowed && (!allowed.has(fromCityId) || !allowed.has(toCityId))) return null;
+  const departureAbsoluteDay = options.departureAbsoluteDay ?? 0;
+  const composition = options.composition ?? { troopTypes: ['infantry'] as const };
+  const paths = new Map<CityId, StrategicRoutePath>([
+    [
+      fromCityId,
+      { cityIds: [fromCityId], legs: [], roadKmNominal: 0, estimatedDays: 0, workDays: 0 },
+    ],
+  ]);
+  const pending = new Set<CityId>(CITY_GEOGRAPHY.map((city) => city.id));
+
+  while (pending.size > 0) {
+    const current = [...pending]
+      .filter((cityId) => paths.has(cityId))
+      .sort((a, b) => {
+        const pathA = paths.get(a)!;
+        const pathB = paths.get(b)!;
+        return (
+          pathA.workDays - pathB.workDays ||
+          pathA.cityIds.join('|').localeCompare(pathB.cityIds.join('|'))
+        );
+      })[0];
+    if (!current) break;
+    pending.delete(current);
+    if (current === toCityId) return paths.get(current)!;
+
+    const currentPath = paths.get(current)!;
+    const adjacent = ROUTE_DEFINITIONS.filter(
+      (route) => route.fromCityId === current || route.toCityId === current,
+    ).sort((a, b) => a.id.localeCompare(b.id));
+    for (const route of adjacent) {
+      const next = route.fromCityId === current ? route.toCityId : route.fromCityId;
+      if (!pending.has(next) || (allowed && !allowed.has(next))) continue;
+      const direction: StrategicRouteLeg['direction'] =
+        route.fromCityId === current ? 'forward' : 'reverse';
+      const estimate = estimateTravel(route, direction, departureAbsoluteDay, composition);
+      const legWorkDays =
+        estimate.segments.reduce((sum, segment) => sum + segment.workDays, 0) +
+        estimate.fixedDelayDays;
+      const legs = [...currentPath.legs, { fromCityId: current, toCityId: next, route, direction }];
+      const cityIds = [...currentPath.cityIds, next];
+      const workDays = currentPath.workDays + legWorkDays;
+      const candidate: StrategicRoutePath = {
+        cityIds,
+        legs,
+        roadKmNominal: currentPath.roadKmNominal + route.roadKmNominal,
+        estimatedDays: Math.max(1, Math.ceil(workDays - 1e-10)),
+        workDays,
+      };
+      const existing = paths.get(next);
+      if (
+        !existing ||
+        workDays < existing.workDays - 1e-10 ||
+        (Math.abs(workDays - existing.workDays) <= 1e-10 &&
+          cityIds.join('|').localeCompare(existing.cityIds.join('|')) < 0)
+      )
+        paths.set(next, candidate);
+    }
+  }
+  return null;
+}
+
 /** Great-circle distance, rounded to the nearest 5 km for audit displays only. */
 export function straightLineDistanceKm(a: CityGeography, b: CityGeography): number {
   const radians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -999,6 +1103,74 @@ export function straightLineDistanceKm(a: CityGeography, b: CityGeography): numb
   const km = 2 * 6371.0088 * Math.asin(Math.min(1, Math.sqrt(haversine)));
   return Math.round(km / 5) * 5;
 }
+
+export interface AnchorRouteSensitivity {
+  routeId: string;
+  otherCityId: CityId;
+  baselineStraightLineKm: number;
+  minimumStraightLineKm: number;
+  maximumStraightLineKm: number;
+  minimumDeltaKm: number;
+  maximumDeltaKm: number;
+}
+
+/**
+ * Recalculate straight-line distances to adjacent route anchors after moving a city
+ * by the requested radius in eight compass directions. Nominal road km are deliberately
+ * unchanged: this is a visual/anchor sensitivity check, not authority to rewrite roads.
+ */
+export function analyzeAnchorSensitivity(
+  cityId: CityId,
+  radiusKm: 20 | 40,
+): AnchorRouteSensitivity[] {
+  const city = CITY_GEOGRAPHY_BY_ID.get(cityId);
+  if (!city) throw new Error(`Unknown city anchor ${cityId}.`);
+  const radians = (degrees: number) => (degrees * Math.PI) / 180;
+  const degrees = (value: number) => (value * 180) / Math.PI;
+  const angularDistance = radiusKm / 6371.0088;
+  const displaced = Array.from({ length: 8 }, (_, index) => {
+    const bearing = radians(index * 45);
+    const latitude = radians(city.latitude);
+    const longitude = radians(city.longitude);
+    const nextLatitude = Math.asin(
+      Math.sin(latitude) * Math.cos(angularDistance) +
+        Math.cos(latitude) * Math.sin(angularDistance) * Math.cos(bearing),
+    );
+    const nextLongitude =
+      longitude +
+      Math.atan2(
+        Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(latitude),
+        Math.cos(angularDistance) - Math.sin(latitude) * Math.sin(nextLatitude),
+      );
+    return { ...city, latitude: degrees(nextLatitude), longitude: degrees(nextLongitude) };
+  });
+  return ROUTE_DEFINITIONS.filter(
+    (route) => route.fromCityId === cityId || route.toCityId === cityId,
+  )
+    .map((route) => {
+      const otherCityId = route.fromCityId === cityId ? route.toCityId : route.fromCityId;
+      const other = CITY_GEOGRAPHY_BY_ID.get(otherCityId)!;
+      const baselineStraightLineKm = straightLineDistanceKm(city, other);
+      const distances = displaced.map((anchor) => straightLineDistanceKm(anchor, other));
+      const minimumStraightLineKm = Math.min(...distances);
+      const maximumStraightLineKm = Math.max(...distances);
+      return {
+        routeId: route.id,
+        otherCityId,
+        baselineStraightLineKm,
+        minimumStraightLineKm,
+        maximumStraightLineKm,
+        minimumDeltaKm: minimumStraightLineKm - baselineStraightLineKm,
+        maximumDeltaKm: maximumStraightLineKm - baselineStraightLineKm,
+      };
+    })
+    .sort((a, b) => a.routeId.localeCompare(b.routeId));
+}
+
+/** The five current C-grade anchors called out for ±20/40 km review in the route plan. */
+export const C_GRADE_ANCHOR_IDS: readonly CityId[] = CITY_GEOGRAPHY.filter(
+  (city) => city.confidence === 'C',
+).map((city) => city.id);
 
 export interface MapBounds {
   minLatitude: number;
@@ -1031,6 +1203,111 @@ export function projectCampaignPoint(
     x: ((longitude * longitudeScale - xStart) / (xEnd - xStart)) * 1000,
     y: ((bounds.maxLatitude - latitude) / (bounds.maxLatitude - bounds.minLatitude)) * 1000,
   };
+}
+
+export interface ProjectedCityRoute {
+  cityIds: readonly CityId[];
+  points: readonly { x: number; y: number }[];
+  /** These are network connectors between city anchors, not reconstructed road alignments. */
+  geometryBasis: 'schematic-city-anchor-network';
+}
+
+export interface ProjectedCampaignRoute extends ProjectedCityRoute {
+  routeId: string;
+  nominalRoadKm: number;
+  baselineDaysNominal: number;
+  confidence: 'estimated';
+  sourceRefs: readonly string[];
+  researchNotes: string;
+}
+
+/**
+ * Project an ordered route through the configured city network. The line follows
+ * city anchors and known graph legs only; it must not be presented as a surveyed
+ * ancient road or as a terrain-accurate corridor.
+ */
+export function projectCityRoute(
+  cityIds: readonly CityId[],
+  project: (latitude: number, longitude: number) => { x: number; y: number } = projectCampaignPoint,
+): ProjectedCityRoute | null {
+  if (cityIds.length < 2) return null;
+  const cities = cityIds.map((cityId) => CITY_GEOGRAPHY_BY_ID.get(cityId));
+  if (cities.some((city) => !city)) return null;
+  for (let index = 0; index < cityIds.length - 1; index++) {
+    if (!ROUTE_BY_ID.has(routeIdBetween(cityIds[index]!, cityIds[index + 1]!))) return null;
+  }
+  return {
+    cityIds: [...cityIds],
+    points: cities.map((city) => project(city!.latitude, city!.longitude)),
+    geometryBasis: 'schematic-city-anchor-network',
+  };
+}
+
+/** Map presentation data keeps estimated road kilometres separate from travel days. */
+export function projectCampaignRoute(
+  route: RouteDefinition,
+  project: (latitude: number, longitude: number) => { x: number; y: number } = projectCampaignPoint,
+): ProjectedCampaignRoute {
+  const geometry = projectCityRoute([route.fromCityId, route.toCityId], project);
+  if (!geometry) throw new Error(`Route ${route.id} has invalid city anchors or graph topology.`);
+  return {
+    ...geometry,
+    routeId: route.id,
+    nominalRoadKm: route.roadKmNominal,
+    baselineDaysNominal: route.baselineDaysNominal,
+    confidence: route.confidence,
+    sourceRefs: route.sourceRefs,
+    researchNotes: route.researchNotes,
+  };
+}
+
+/**
+ * Interpolate an in-transit marker along the strategic network using saved route
+ * snapshot progress. Snapshot kilometres determine progress; city-anchor geometry
+ * is only a schematic display, and this function never changes ETA or road distance.
+ */
+export function projectJourneyPosition(
+  cityIds: readonly CityId[],
+  segmentLengthsKm: readonly number[],
+  segmentProgressKm: readonly number[],
+  project: (latitude: number, longitude: number) => { x: number; y: number } = projectCampaignPoint,
+): { x: number; y: number } | null {
+  if (
+    segmentLengthsKm.length === 0 ||
+    segmentLengthsKm.length !== segmentProgressKm.length ||
+    segmentLengthsKm.some((length) => !Number.isFinite(length) || length < 0) ||
+    segmentProgressKm.some((progress) => !Number.isFinite(progress) || progress < 0)
+  )
+    return null;
+  const route = projectCityRoute(cityIds, project);
+  if (!route) return null;
+  const routeLengths = cityIds.slice(1).map((cityId, index) => {
+    const edge = ROUTE_BY_ID.get(routeIdBetween(cityIds[index]!, cityId));
+    return edge?.roadKmNominal ?? 0;
+  });
+  const totalSnapshotKm = segmentLengthsKm.reduce((sum, length) => sum + length, 0);
+  const totalRouteKm = routeLengths.reduce((sum, length) => sum + length, 0);
+  if (totalSnapshotKm <= 0 || totalRouteKm <= 0) return null;
+  const completedSnapshotKm = segmentLengthsKm.reduce(
+    (sum, length, index) => sum + Math.min(length, segmentProgressKm[index]!),
+    0,
+  );
+  if (completedSnapshotKm >= totalSnapshotKm) return route.points.at(-1)!;
+  let remainingRouteKm = (completedSnapshotKm / totalSnapshotKm) * totalRouteKm;
+  for (let index = 0; index < routeLengths.length; index++) {
+    const legLength = routeLengths[index]!;
+    const from = route.points[index]!;
+    const to = route.points[index + 1]!;
+    if (remainingRouteKm <= legLength || index === routeLengths.length - 1) {
+      const fraction = Math.max(0, Math.min(1, remainingRouteKm / legLength));
+      return {
+        x: from.x + (to.x - from.x) * fraction,
+        y: from.y + (to.y - from.y) * fraction,
+      };
+    }
+    remainingRouteKm -= legLength;
+  }
+  return null;
 }
 
 export function validateGeographyData(): string[] {

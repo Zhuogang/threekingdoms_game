@@ -9,6 +9,12 @@ import {
   type V03TacticalBattleState,
 } from './battle';
 import { createBattleMap } from './battle/maps';
+import { hasTrait } from '../content/traits';
+import {
+  advanceV03Hegemon,
+  getV03AttackAllianceBlock,
+  resolveV03MonthlyEvents,
+} from './campaign/monthly-systems';
 import {
   advanceTimeline,
   completeMonthSettlement,
@@ -26,7 +32,12 @@ import {
 import { CITY_GEOGRAPHY_BY_ID, ROUTE_DEFINITIONS, type CityId } from './geography';
 import { createV03OrderServices } from './governance/services';
 import { refreshWaitingOrders } from './governance/orders';
-import { applyGovernanceMonthBoundary } from './governance/appointments';
+import {
+  applyGovernanceMonthBoundary,
+  cancelPendingGovernorAppointment,
+} from './governance/appointments';
+import { applyGovernorMonthlyWork, planGovernorMonthlyWork } from './governance/autonomy';
+import { cityWorkQuota } from './governance/city-actions';
 import { planStrategicRivalCampaigns, type StrategicRivalCampaignPlan } from './strategic-ai';
 import type {
   V03BattleState,
@@ -78,6 +89,32 @@ function addEvent(
   state.nextId++;
 }
 
+function completeHegemonVictoryIfReady(state: V03GameState): void {
+  const claimant = state.hegemon.factionId;
+  if (
+    state.phase === 'finished' ||
+    !claimant ||
+    state.hegemon.months < 12 ||
+    state.battles.some((battle) => battle.active)
+  )
+    return;
+  const stillQualifies =
+    state.cities.find((city) => city.id === 'luoyang')?.factionId === claimant &&
+    state.cities.filter((city) => city.factionId === claimant).length >= 16;
+  if (!stillQualifies) return;
+  state.phase = 'finished';
+  state.winnerFactionId = claimant;
+  if (!state.events.some((event) => event.kind === 'victory' && event.entityId === claimant)) {
+    addEvent(
+      state,
+      'victory',
+      'Proclaimed Hegemon',
+      `${attackerFactionName(state, claimant)} held Luoyang and sixteen cities for twelve consecutive months.`,
+      claimant,
+    );
+  }
+}
+
 function toTimeline(state: V03GameState): StrategicTimeline {
   const events: ScheduledEvent[] = state.events
     .filter((event) => !event.acknowledged)
@@ -94,7 +131,11 @@ function toTimeline(state: V03GameState): StrategicTimeline {
       visibleToPlayer: true,
     }));
   for (const journey of state.journeys) {
-    if (journey.status !== 'outbound' && journey.status !== 'returning') continue;
+    if (
+      (journey.status !== 'outbound' && journey.status !== 'returning') ||
+      journey.expectedArrivalDay <= state.absoluteDay
+    )
+      continue;
     const id = `arrival:${journey.id}`;
     if (events.some((event) => event.id === id)) continue;
     events.push({
@@ -148,6 +189,7 @@ interface FormationGroup {
   type: TroopType;
   officers: V03Officer[];
   troops: number;
+  militia?: boolean;
 }
 
 function groupOfficers(officers: readonly V03Officer[]): FormationGroup[] {
@@ -175,12 +217,14 @@ function rosterFromGroups(
 } {
   const membership: Record<string, string[]> = {};
   const roster = groups.map((group) => {
-    const id = `${prefix}:${group.type}`;
+    const id = `${prefix}:${group.type}${group.militia ? ':militia' : ''}`;
     membership[id] = group.officers.map((officer) => officer.id);
     const leaders = group.officers.map((officer) => officer.name).join(', ');
     const name =
       group.type === 'infantry'
-        ? 'Infantry'
+        ? group.militia
+          ? 'Militia'
+          : 'Infantry'
         : group.type === 'cavalry'
           ? 'Cavalry'
           : group.type === 'archer'
@@ -193,9 +237,21 @@ function rosterFromGroups(
       troops: group.troops,
       force: group.officers.length
         ? Math.round(
-            group.officers.reduce((sum, officer) => sum + officer.force, 0) / group.officers.length,
+            group.officers.reduce((sum, officer) => sum + officer.force * officer.troops, 0) /
+              Math.max(1, group.troops),
           )
         : 45,
+      intellect: group.officers.length
+        ? Math.round(
+            group.officers.reduce((sum, officer) => sum + officer.intellect * officer.troops, 0) /
+              Math.max(1, group.troops),
+          )
+        : 40,
+      level: group.officers.length
+        ? Math.max(...group.officers.map((officer) => officer.level))
+        : 0,
+      isMilitia: Boolean(group.militia),
+      cunning: group.officers.some((officer) => hasTrait(officer.id, 'cunning')),
       attackRange: group.type === 'archer' ? 3 : undefined,
     } satisfies BattleRosterEntry;
   });
@@ -241,8 +297,9 @@ function chargeBattleRations(battle: V03BattleState): void {
       Math.round(PILOT_LOGISTICS_RATES.battleFoodPerTroopDay * FOOD_MICRO) * totalTroops +
       battle[remainderKey];
     const demandFood = Math.floor(demandMicro / FOOD_MICRO);
-    const paid = Math.min(battle[foodKey], demandFood);
-    battle[foodKey] -= paid;
+    const paid = Math.min(data.supplies[side], demandFood);
+    data.supplies[side] -= paid;
+    battle[foodKey] = data.supplies[side];
     const shortage = demandFood - paid;
     battle[remainderKey] = shortage > 0 ? 0 : demandMicro - paid * FOOD_MICRO;
     if (shortage > 0 && living.length > 0) {
@@ -308,6 +365,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         id: `${targetJourney.id}:return`,
         executionId: `${targetJourney.executionId}:return`,
         kind: 'return' as const,
+        routeCityIds: targetJourney.routeCityIds?.slice().reverse(),
       };
       state.journeys.push(returnJourney);
       for (const officerId of returnManifest.officerIds) {
@@ -328,7 +386,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
       }
     }
   };
-  const applyPlunder = (recipient: V03City): { gold: number; food: number } | null => {
+  const applyPlunder = (recipient?: V03City): { gold: number; food: number } | null => {
     if (state.absoluteDay < (target.plunderCooldownUntilDay ?? 0)) return null;
     const leaders = state.officers.filter(
       (officer) =>
@@ -343,8 +401,10 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
     const power = leader.force + leader.intellect;
     const gold = Math.floor(2 * power + Math.floor(target.commerce * 1.5));
     const food = 5 * power + Math.floor(target.farming * 4);
-    recipient.gold = Math.min(RESOURCE_CAP, recipient.gold + gold);
-    recipient.food = Math.min(RESOURCE_CAP, recipient.food + food);
+    if (recipient) {
+      recipient.gold = Math.min(RESOURCE_CAP, recipient.gold + gold);
+      recipient.food = Math.min(RESOURCE_CAP, recipient.food + food);
+    }
     target.loyalty = Math.floor(target.loyalty / 2);
     target.farming = Math.floor(target.farming / 2);
     target.commerce = Math.floor(target.commerce / 2);
@@ -371,21 +431,24 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
             : { kind: 'captured', cityId: target.id };
       }
     }
-    const home =
-      state.cities.find(
-        (city) =>
-          city.id === targetJourney.sourceCityId && city.factionId === battle.attackerFactionId,
-      ) ??
-      state.cities
-        .filter((city) => city.factionId === battle.attackerFactionId)
-        .sort((a, b) => a.id.localeCompare(b.id))[0];
-    battle.loot = home ? applyPlunder(home) : null;
+    battle.loot = applyPlunder();
     returnAttackers(battle.loot);
   } else if (attackerWon) {
+    // Capture ends the former governor's appointment even when that officer
+    // survives into captivity. Keep the city/officer relationship reciprocal
+    // so the resulting campaign remains valid for save and reload.
+    for (const officer of state.officers) {
+      if (officer.governorOfCityId === target.id) officer.governorOfCityId = null;
+    }
     target.factionId = battle.attackerFactionId;
+    if (oldOwner !== battle.attackerFactionId) target.troopServiceDaysThisMonth = 0;
+    cancelPendingGovernorAppointment(
+      state,
+      target.id,
+      'the city was captured before the candidate took office',
+    );
     target.governorId = null;
     target.governanceMode = target.id === attackerFaction.capitalCityId ? 'ruler' : 'steward';
-    target.pendingAppointment = null;
     target.garrisonTroops = attackerSurvivors;
     target.food = Math.min(RESOURCE_CAP, target.food + battle.attackerFood + battle.defenderFood);
     if (battle.intent === 'sack') battle.loot = applyPlunder(target);
@@ -400,9 +463,16 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
       );
       if (newCapital) {
         formerOwner.capitalCityId = newCapital.id;
+        cancelPendingGovernorAppointment(
+          state,
+          newCapital.id,
+          'the city became the capital before the candidate took office',
+        );
         newCapital.governanceMode = 'ruler';
+        for (const officer of state.officers) {
+          if (officer.governorOfCityId === newCapital.id) officer.governorOfCityId = null;
+        }
         newCapital.governorId = null;
-        newCapital.pendingAppointment = null;
         if (formerOwner.id === state.playerFactionId) {
           state.playerCapitalCityId = newCapital.id;
         }
@@ -466,6 +536,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         : `The forces draw at ${target.name}; the defender keeps control of the city.`,
     battle.id,
   );
+  completeHegemonVictoryIfReady(state);
 }
 
 function openBattle(state: V03GameState, journey: V03Journey): void {
@@ -505,6 +576,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
         militia,
         defenderGroups.length === 0 ? Math.max(500, target.garrisonTroops) : 0,
       ),
+      militia: true,
     });
   }
   const defender = rosterFromGroups(defenderGroups, `${journey.id}:defend`);
@@ -523,6 +595,8 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
     playerSide: journey.ownerFactionId === state.playerFactionId ? 'attacker' : 'defender',
     dayLimit: journey.intent === 'raid' ? 10 : 30,
     timeoutPolicy: 'survivor-count',
+    supplies: { attacker: journey.manifest.carriedFood, defender: target.food },
+    seed: state.rng + state.nextId,
   });
   const battle: V03BattleState = {
     id,
@@ -537,6 +611,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
     intent: journey.intent ?? 'conquer',
     active: true,
     resolved: false,
+    playerDayComplete: false,
     outcome: null,
     loot: null,
     battleData: tactical,
@@ -550,6 +625,9 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
   };
   journey.manifest = { ...journey.manifest, carriedFood: 0 };
   target.food = 0;
+  // Defending troops are now accounted by battle rations and the battlefield
+  // roster until the result returns survivors to the city.
+  target.garrisonTroops = 0;
   for (const officer of [...attackers, ...defenders])
     officer.location = { kind: 'battle', battleId: id };
   state.battles.push(battle);
@@ -654,6 +732,9 @@ function redirectJourneyToFriendlyCity(state: V03GameState, journey: V03Journey)
     carriedFood: journey.manifest.carriedFood,
   });
   journey.status = 'cancelled';
+  journey.returnRequested = false;
+  // This replacement path was planned from the current destination outward,
+  // so its own routeCityIds are already in travel order.
   state.journeys.push({ ...redirected, kind: 'return' });
   for (const officerId of journey.manifest.officerIds) {
     const officer = state.officers.find((entry) => entry.id === officerId);
@@ -663,14 +744,134 @@ function redirectJourneyToFriendlyCity(state: V03GameState, journey: V03Journey)
   return true;
 }
 
+function startRequestedJourneyReturn(state: V03GameState, journey: V03Journey): boolean {
+  if (journey.status !== 'waiting' && journey.status !== 'delivered') return false;
+  const source = state.cities.find((city) => city.id === journey.sourceCityId);
+  const routeCityIds = journey.routeCityIds ?? [journey.sourceCityId, journey.destinationCityId];
+  const legalReverseRoute =
+    source?.factionId === journey.ownerFactionId &&
+    routeCityIds
+      .slice(1, -1)
+      .every(
+        (cityId) =>
+          state.cities.find((city) => city.id === cityId)?.factionId === journey.ownerFactionId,
+      );
+  if (!legalReverseRoute) {
+    if (!redirectJourneyToFriendlyCity(state, journey)) return false;
+    const requisition = state.requisitions.find((entry) => entry.journeyId === journey.id);
+    if (requisition) {
+      requisition.status = 'cancelled';
+      requisition.message =
+        'The dispatched party is returning to friendly territory with its cargo.';
+    }
+    const directive = state.directives.find((entry) => entry.journeyId === journey.id);
+    if (directive) {
+      directive.status = 'cancelled';
+      directive.message = 'The campaign party is returning to friendly territory before battle.';
+    }
+    for (const city of state.cities)
+      if (city.pendingAppointment?.journeyId === journey.id) city.pendingAppointment = null;
+    addEvent(
+      state,
+      'journeyArrival',
+      'Journey recalled',
+      'The original route is no longer safe; the party is returning by a currently friendly route.',
+      journey.id,
+    );
+    return true;
+  }
+
+  const returning = beginJourneyReturn(journey, state.absoluteDay);
+  const returnId = `${journey.id}:recall:${state.nextId}`;
+  journey.status = 'cancelled';
+  journey.returnRequested = false;
+  const returnJourney: V03Journey = {
+    ...returning,
+    id: returnId,
+    executionId: `${journey.executionId}:recall`,
+    kind: 'return',
+    returnRequested: false,
+    routeCityIds: routeCityIds.slice().reverse(),
+  };
+  state.journeys.push(returnJourney);
+  for (const officerId of returnJourney.manifest.officerIds) {
+    const officer = state.officers.find((entry) => entry.id === officerId);
+    if (officer) officer.location = { kind: 'journey', journeyId: returnJourney.id };
+  }
+  const requisition = state.requisitions.find((entry) => entry.journeyId === journey.id);
+  if (requisition) {
+    requisition.status = 'cancelled';
+    requisition.message = 'The dispatched party is returning with all remaining cargo.';
+  }
+  const directive = state.directives.find((entry) => entry.journeyId === journey.id);
+  if (directive) {
+    directive.status = 'cancelled';
+    directive.message = 'The campaign party is returning before battle.';
+  }
+  for (const city of state.cities)
+    if (city.pendingAppointment?.journeyId === journey.id) city.pendingAppointment = null;
+  state.nextId++;
+  addEvent(
+    state,
+    'journeyArrival',
+    'Journey recalled',
+    `The party has turned back from ${journey.destinationCityId} and is returning with its remaining cargo.`,
+    returnJourney.id,
+  );
+  return true;
+}
+
+/** Request a safe return for an already-dispatched player journey. */
+export function recallV03Journey(
+  state: V03GameState,
+  journeyId: string,
+): { ok: boolean; state: V03GameState; error?: string } {
+  const journey = state.journeys.find((entry) => entry.id === journeyId);
+  if (state.phase !== 'planning')
+    return { ok: false, state, error: 'Journeys can only be recalled during campaign planning.' };
+  if (
+    !journey ||
+    journey.ownerFactionId !== state.playerFactionId ||
+    !['requisition', 'campaign', 'appointment'].includes(journey.kind) ||
+    !['outbound', 'waiting'].includes(journey.status)
+  )
+    return { ok: false, state, error: 'This journey cannot be recalled.' };
+  if (journey.returnRequested)
+    return { ok: false, state, error: 'A return is already requested for this journey.' };
+  if (
+    state.battles.some(
+      (battle) =>
+        battle.active && [battle.attackerJourneyId, battle.defenderJourneyId].includes(journey.id),
+    )
+  )
+    return { ok: false, state, error: 'A force already engaged in battle cannot be recalled.' };
+
+  const next = cloneState(state);
+  const recalled = next.journeys.find((entry) => entry.id === journeyId)!;
+  recalled.returnRequested = true;
+  if (recalled.status === 'waiting') startRequestedJourneyReturn(next, recalled);
+  next.revision++;
+  return {
+    ok: true,
+    state: next,
+  };
+}
+
 function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): void {
   const previousStatuses = new Map(previous.map((journey) => [journey.id, journey.status]));
   for (const journey of state.journeys) {
     if (journey.status !== 'waiting') continue;
-    if (
-      state.cities.find((city) => city.id === journey.destinationCityId)?.factionId ===
-      journey.ownerFactionId
-    ) {
+    const target = state.cities.find((city) => city.id === journey.destinationCityId);
+    const battleAtDestination = state.battles.some((battle) => {
+      if (!battle.active) return false;
+      const attackerJourney = state.journeys.find((entry) => entry.id === battle.attackerJourneyId);
+      return attackerJourney?.destinationCityId === journey.destinationCityId;
+    });
+    const queuedCampaignCanStart =
+      journey.kind === 'campaign' &&
+      target?.factionId !== journey.ownerFactionId &&
+      !battleAtDestination;
+    if (target?.factionId === journey.ownerFactionId || queuedCampaignCanStart) {
       journey.status = 'delivered';
     }
   }
@@ -680,7 +881,26 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
         journey.status === 'delivered' && previousStatuses.get(journey.id) !== 'delivered',
     )
     .sort((a, b) => a.expectedArrivalDay - b.expectedArrivalDay || a.id.localeCompare(b.id));
+  for (const journey of state.journeys) {
+    if (journey.returnRequested && journey.status === 'waiting') {
+      if (!startRequestedJourneyReturn(state, journey)) continue;
+    }
+    // A delivered appointment transfer can be replaced before the monthly
+    // boundary. Start its safe return from the destination on the next arrival
+    // refresh instead of leaving the officer stranded there.
+    if (
+      journey.returnRequested &&
+      journey.status === 'delivered' &&
+      previousStatuses.get(journey.id) === 'delivered'
+    ) {
+      if (!startRequestedJourneyReturn(state, journey)) journey.status = 'waiting';
+    }
+  }
   for (const journey of arriving) {
+    if (journey.returnRequested) {
+      if (!startRequestedJourneyReturn(state, journey)) journey.status = 'waiting';
+      continue;
+    }
     const target = state.cities.find((city) => city.id === journey.destinationCityId);
     if (!target) {
       journey.status = 'waiting';
@@ -696,18 +916,19 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
     if (journey.kind === 'campaign') {
       const directive = state.directives.find((entry) => entry.journeyId === journey.id);
       if (target.factionId === journey.ownerFactionId) {
-        target.gold = Math.min(RESOURCE_CAP, target.gold + (journey.manifest.cargo.gold ?? 0));
-        target.food = Math.min(
-          RESOURCE_CAP,
-          target.food + (journey.manifest.cargo.food ?? 0) + journey.manifest.carriedFood,
-        );
-        target.garrisonTroops += Math.max(
-          journey.manifest.troopCount,
-          journey.manifest.cargo.troops ?? 0,
-        );
-        for (const officerId of journey.manifest.officerIds) {
-          const officer = state.officers.find((entry) => entry.id === officerId);
-          if (officer) officer.location = { kind: 'city', cityId: target.id };
+        const unloaded = unloadJourneyAtCity(state, journey, target);
+        if (!unloaded) {
+          journey.status = 'waiting';
+          if (directive) directive.status = 'waiting';
+          if (previousStatuses.get(journey.id) !== 'waiting')
+            addEvent(
+              state,
+              'journeyArrival',
+              'Warehouse full',
+              `The party reached ${target.name}, but its stores cannot hold the cargo yet. The full cargo remains with the party until capacity is available.`,
+              journey.id,
+            );
+          continue;
         }
         if (directive) directive.status = 'delivered';
         addEvent(
@@ -717,6 +938,38 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
           `The campaign party joined friendly ${target.name}; the city changed hands before the battle began.`,
           journey.id,
         );
+        continue;
+      }
+      const battleAtTarget = state.battles.some((battle) => {
+        if (!battle.active) return false;
+        const activeJourney = state.journeys.find((entry) => entry.id === battle.attackerJourneyId);
+        return activeJourney?.destinationCityId === target.id;
+      });
+      if (battleAtTarget) {
+        journey.status = 'waiting';
+        // Keep the already-dispatched order out of the answer/redispatch path.
+        if (directive) directive.status = 'waiting';
+        if (previousStatuses.get(journey.id) !== 'waiting')
+          addEvent(
+            state,
+            'journeyArrival',
+            'Army awaiting battle queue',
+            `The army reached ${target.name}, where another field battle is in progress. It is waiting outside the city; supplies continue to be consumed.`,
+            journey.id,
+          );
+        continue;
+      }
+      if (
+        target.factionId &&
+        getV03AttackAllianceBlock(
+          state.alliances,
+          journey.ownerFactionId,
+          target.factionId,
+          state.monthIndex,
+        )
+      ) {
+        journey.returnRequested = true;
+        if (!startRequestedJourneyReturn(state, journey)) journey.status = 'waiting';
         continue;
       }
       if (directive) directive.status = 'delivered';
@@ -750,16 +1003,22 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
       }
       continue;
     }
-    const cargo = journey.manifest.cargo;
-    target.gold = Math.min(RESOURCE_CAP, target.gold + (cargo.gold ?? 0));
-    target.food = Math.min(
-      RESOURCE_CAP,
-      target.food + (cargo.food ?? 0) + journey.manifest.carriedFood,
-    );
-    target.garrisonTroops += Math.max(journey.manifest.troopCount, cargo.troops ?? 0);
-    for (const officerId of journey.manifest.officerIds) {
-      const officer = state.officers.find((entry) => entry.id === officerId);
-      if (officer) officer.location = { kind: 'city', cityId: target.id };
+    if (!unloadJourneyAtCity(state, journey, target)) {
+      journey.status = 'waiting';
+      const order = state.requisitions.find((entry) => entry.journeyId === journey.id);
+      if (order) {
+        order.status = 'waiting';
+        order.message = 'The destination warehouse is full; the cargo is waiting for capacity.';
+      }
+      if (previousStatuses.get(journey.id) !== 'waiting')
+        addEvent(
+          state,
+          'journeyArrival',
+          'Warehouse full',
+          `The cargo reached ${target.name}, but its stores cannot hold the full delivery yet. It remains with the party until capacity is available.`,
+          journey.id,
+        );
+      continue;
     }
     if (target.pendingAppointment?.journeyId === journey.id) {
       target.pendingAppointment.effectiveDay = Math.max(
@@ -777,6 +1036,33 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
       journey.id,
     );
   }
+}
+
+/** Transfer a journey's remaining manifest atomically so capped stores never erase cargo. */
+function unloadJourneyAtCity(state: V03GameState, journey: V03Journey, target: V03City): boolean {
+  const cargo = journey.manifest.cargo;
+  const gold = Math.max(0, (cargo.gold ?? 0) - (journey.deliveredCargo.gold ?? 0));
+  const food = Math.max(
+    0,
+    (cargo.food ?? 0) + journey.manifest.carriedFood - (journey.deliveredCargo.food ?? 0),
+  );
+  if (target.gold + gold > RESOURCE_CAP || target.food + food > RESOURCE_CAP) return false;
+
+  target.gold += gold;
+  target.food += food;
+  journey.deliveredCargo.gold = (journey.deliveredCargo.gold ?? 0) + gold;
+  journey.deliveredCargo.food = (journey.deliveredCargo.food ?? 0) + food;
+  if (journey.deliveredCargo.personnel !== 1) {
+    const troops = Math.max(journey.manifest.troopCount, cargo.troops ?? 0);
+    target.garrisonTroops += troops;
+    journey.deliveredCargo.troops = troops;
+    for (const officerId of journey.manifest.officerIds) {
+      const officer = state.officers.find((entry) => entry.id === officerId);
+      if (officer) officer.location = { kind: 'city', cityId: target.id };
+    }
+    journey.deliveredCargo.personnel = 1;
+  }
+  return true;
 }
 
 function reservedCampaignTroops(state: V03GameState, cityId: string): number {
@@ -872,9 +1158,15 @@ function dispatchRivalCampaignPlan(
     !source ||
     source.factionId !== plan.factionId ||
     !target ||
-    !target.factionId ||
     target.factionId === plan.factionId ||
-    state.factions.find((entry) => entry.id === target.factionId)?.eliminated ||
+    (target.factionId !== null &&
+      (getV03AttackAllianceBlock(
+        state.alliances,
+        plan.factionId,
+        target.factionId,
+        state.monthIndex,
+      ) !== null ||
+        state.factions.find((entry) => entry.id === target.factionId)?.eliminated)) ||
     plan.departureDay !== state.absoluteDay ||
     plan.intent !== 'conquer' ||
     hasConflictingRivalOperation(state, plan.sourceCityId, plan.targetCityId)
@@ -1012,6 +1304,8 @@ function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
   // Monthly strategic decisions continue while the global UI is in a manual battle.
   const planningSnapshot =
     state.phase === 'planning' ? state : { ...state, phase: 'planning' as const };
+  // Keep each rival to one new campaign per monthly boundary. The planner
+  // validates supply, routes and reserves from one snapshot.
   const plans = planStrategicRivalCampaigns(planningSnapshot);
   const assignedOfficerIds = new Set<string>();
   for (const plan of plans) dispatchRivalCampaignPlan(state, plan, assignedOfficerIds);
@@ -1020,7 +1314,10 @@ function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
 function settleMonth(state: V03GameState, year: number, month: number): V03GameState {
   const next = cloneState(state);
   for (const city of next.cities) {
-    if (!city.factionId) continue;
+    if (!city.factionId) {
+      city.troopServiceDaysThisMonth = 0;
+      continue;
+    }
     const serving = next.officers.filter(
       (officer) =>
         officer.alive &&
@@ -1028,37 +1325,60 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
         officer.location.kind === 'city' &&
         officer.location.cityId === city.id,
     );
-    const troopCount = serving.reduce((sum, officer) => sum + officer.troops, 0);
+    const staffedTroops = serving.reduce((sum, officer) => sum + officer.troops, 0);
+    const militiaTroops = Math.max(0, city.garrisonTroops - staffedTroops);
+    const troopCount = staffedTroops + militiaTroops;
     const harvest = Math.floor(city.farming * (month === 9 ? 4 : 2.2) + city.population / 80);
     const income = Math.floor(city.population / 150 + city.commerce * 0.55);
-    const foodUpkeep = Math.ceil(troopCount * 0.12);
-    const goldUpkeep = Math.ceil(troopCount * 0.025);
+    const troopServiceDays = city.troopServiceDaysThisMonth ?? troopCount * DAYS_PER_MONTH;
+    const foodUpkeep = Math.ceil(troopServiceDays * PILOT_LOGISTICS_RATES.cityFoodPerTroopDay);
+    const goldUpkeep = Math.ceil((troopServiceDays * 0.025) / DAYS_PER_MONTH);
+    city.troopServiceDaysThisMonth = 0;
     city.food = Math.min(RESOURCE_CAP, city.food + harvest);
     city.gold = Math.min(RESOURCE_CAP, city.gold + income);
     if (city.food < foodUpkeep) {
       city.food = 0;
       city.loyalty = Math.max(0, city.loyalty - 8);
-      city.garrisonTroops = Math.floor(city.garrisonTroops * 0.85);
+      const survivingMilitia = Math.floor(militiaTroops * 0.85);
       for (const officer of serving) {
         officer.troops = Math.floor(officer.troops * 0.85);
         officer.loyalty = Math.max(0, officer.loyalty - 4);
       }
+      city.garrisonTroops =
+        serving.reduce((sum, officer) => sum + officer.troops, 0) + survivingMilitia;
       pushLog(next, `${city.name} runs short of provisions; soldiers desert.`);
-    } else city.food -= foodUpkeep;
+    } else {
+      city.food -= foodUpkeep;
+      city.garrisonTroops =
+        serving.reduce((sum, officer) => sum + officer.troops, 0) + militiaTroops;
+    }
     if (city.gold < goldUpkeep) {
       city.gold = 0;
       for (const officer of serving) officer.loyalty = Math.max(0, officer.loyalty - 3);
     } else city.gold -= goldUpkeep;
-    if (
-      city.governanceMode !== 'ruler' &&
-      city.gold >= 80 &&
-      city.food >= Math.max(500, foodUpkeep * 2)
-    ) {
-      if (city.farming <= city.commerce) city.farming = Math.min(100, city.farming + 1);
-      else city.commerce = Math.min(100, city.commerce + 1);
-      city.gold -= 80;
+  }
+  for (const city of next.cities) {
+    if (city.factionId === null || city.governanceMode === 'ruler') continue;
+    const quota = cityWorkQuota(next, city);
+    let completed = 0;
+    for (let point = 0; point < quota; point++) {
+      const plan = planGovernorMonthlyWork(next, city.id, month);
+      const work = applyGovernorMonthlyWork(next, plan);
+      if (!work.applied || !work.city) {
+        if (completed === 0) pushLog(next, `${city.name} autonomy: no work (${plan.reason})`);
+        break;
+      }
+      Object.assign(city, work.city);
+      if (work.state) {
+        next.officers = work.state.officers;
+        next.rng = work.state.rng;
+        next.nextId = work.state.nextId;
+        next.log = work.state.log;
+        next.revision = work.state.revision;
+      }
+      completed++;
+      pushLog(next, `${city.name} autonomy: ${plan.action} (${plan.reason})`);
     }
-    city.garrisonTroops = serving.reduce((sum, officer) => sum + officer.troops, 0);
   }
   for (const faction of next.factions) {
     const owned = next.cities.filter((city) => city.factionId === faction.id);
@@ -1068,8 +1388,176 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
   }
   const effectiveDay = next.absoluteDay;
   const governed = applyGovernanceMonthBoundary(next, effectiveDay);
+  const systems = resolveV03MonthlyEvents({
+    monthIndex: governed.monthIndex,
+    startYear: governed.startYear,
+    playerFactionId: governed.playerFactionId,
+    rng: governed.rng,
+    firedEventIds: governed.firedMonthlyEventIds,
+    alliances: governed.alliances,
+    cities: governed.cities.map((city) => ({
+      id: city.id,
+      factionId: city.factionId,
+      population: city.population,
+      farming: city.farming,
+      commerce: city.commerce,
+      loyalty: city.loyalty,
+      gold: city.gold,
+      food: city.food,
+      reserve: city.reserve,
+      garrisonTroops: city.garrisonTroops,
+      neighbors: ROUTE_DEFINITIONS.filter(
+        (route) => route.fromCityId === city.id || route.toCityId === city.id,
+      ).map((route) => (route.fromCityId === city.id ? route.toCityId : route.fromCityId)),
+    })),
+    officers: governed.officers.map((officer) => ({
+      id: officer.id,
+      factionId: officer.factionId,
+      location:
+        officer.location.kind === 'city'
+          ? { kind: 'city' as const, cityId: officer.location.cityId }
+          : officer.location.kind === 'captured'
+            ? { kind: 'captured' as const }
+            : officer.location.kind === 'battle'
+              ? { kind: 'battle' as const }
+              : { kind: 'journey' as const },
+      force: officer.force,
+      intellect: officer.intellect,
+      loyalty: officer.loyalty,
+      age: officer.age,
+      troops: officer.troops,
+      alive: officer.alive,
+    })),
+    attackedWithinLastTwoMonths: governed.battles
+      .filter((battle) => !battle.active && effectiveDay - battle.absoluteDay <= 60)
+      .map(
+        (battle) =>
+          governed.journeys.find((journey) => journey.id === battle.attackerJourneyId)
+            ?.destinationCityId,
+      )
+      .filter((cityId): cityId is string => Boolean(cityId)),
+  });
+  governed.rng = systems.rng;
+  governed.firedMonthlyEventIds = systems.firedEventIds;
+  governed.alliances = systems.alliances;
+  governed.coalitionInvitations = governed.coalitionInvitations.filter(
+    (invitation) => invitation.expiresMonthIndex > governed.monthIndex,
+  );
+  for (const updated of systems.cities) {
+    const city = governed.cities.find((entry) => entry.id === updated.id)!;
+    Object.assign(city, {
+      factionId: updated.factionId,
+      population: updated.population,
+      farming: updated.farming,
+      commerce: updated.commerce,
+      loyalty: updated.loyalty,
+      gold: updated.gold,
+      food: updated.food,
+      reserve: updated.reserve,
+      garrisonTroops: updated.garrisonTroops,
+    });
+  }
+  for (const updated of systems.officers) {
+    const officer = governed.officers.find((entry) => entry.id === updated.id)!;
+    officer.force = updated.force;
+    officer.intellect = updated.intellect;
+    officer.loyalty = updated.loyalty;
+    officer.age = updated.age;
+    officer.troops = updated.troops;
+    if (updated.location.kind === 'city') {
+      const oldCityId = officer.location.kind === 'city' ? officer.location.cityId : null;
+      if (oldCityId !== updated.location.cityId) {
+        if (oldCityId) {
+          const oldCity = governed.cities.find((city) => city.id === oldCityId);
+          if (oldCity?.governorId === officer.id) {
+            oldCity.governorId = null;
+            if (oldCity.governanceMode === 'governor') oldCity.governanceMode = 'steward';
+          }
+        }
+        officer.governorOfCityId = null;
+        officer.location = { kind: 'city', cityId: updated.location.cityId };
+      }
+    }
+  }
+  for (const invitation of systems.invitations) {
+    if (!governed.coalitionInvitations.some((entry) => entry.id === invitation.id))
+      governed.coalitionInvitations.push(invitation);
+  }
+  for (const monthlyEvent of systems.events) {
+    if (monthlyEvent.key === 'dong-burns-luoyang') {
+      const dong = governed.factions.find((faction) => faction.id === 'dong');
+      const luoyang = governed.cities.find((city) => city.id === 'luoyang');
+      const changan = governed.cities.find((city) => city.id === 'changan');
+      if (dong && changan && dong.capitalCityId === 'luoyang') {
+        dong.capitalCityId = 'changan';
+        if (governed.playerFactionId === dong.id) governed.playerCapitalCityId = 'changan';
+        if (luoyang) {
+          luoyang.governorId = null;
+          luoyang.pendingAppointment = null;
+          luoyang.governanceMode = 'steward';
+        }
+        changan.governorId = null;
+        changan.pendingAppointment = null;
+        changan.governanceMode = 'ruler';
+        for (const officer of governed.officers) {
+          if (officer.governorOfCityId === 'luoyang' || officer.governorOfCityId === 'changan')
+            officer.governorOfCityId = null;
+        }
+      }
+    }
+    addEvent(
+      governed,
+      'campaignEvent',
+      `Monthly campaign event: ${monthlyEvent.key}`,
+      JSON.stringify({
+        key: monthlyEvent.key,
+        entityIds: monthlyEvent.entityIds,
+        values: monthlyEvent.values,
+      }),
+      null,
+      effectiveDay,
+    );
+  }
+  for (const invitation of systems.invitations) {
+    if (invitation.targetFactionId === governed.playerFactionId) {
+      addEvent(
+        governed,
+        'campaignEvent',
+        'Coalition invitation',
+        JSON.stringify({
+          key: 'coalition-invitation',
+          invitationId: invitation.id,
+          targetFactionId: invitation.targetFactionId,
+        }),
+        null,
+        effectiveDay,
+      );
+    }
+  }
+  const hegemon = advanceV03Hegemon({
+    cityOwners: governed.cities.map((city) => ({ id: city.id, factionId: city.factionId })),
+    previousFactionId: governed.hegemon.factionId,
+    previousMonths: governed.hegemon.months,
+    playerFactionId: governed.playerFactionId,
+    alreadyFinished:
+      governed.phase === 'finished' || governed.battles.some((battle) => battle.active),
+  });
+  governed.hegemon = { factionId: hegemon.factionId, months: hegemon.months };
+  if (hegemon.rivalWarning && hegemon.factionId) {
+    addEvent(
+      governed,
+      'hegemonWarning',
+      hegemon.rivalWarning === 'claim-started'
+        ? 'Rival Hegemon claim started'
+        : 'Rival Hegemon warning',
+      `${hegemon.months}`,
+      hegemon.factionId,
+      effectiveDay,
+    );
+  }
+  if (hegemon.declared) completeHegemonVictoryIfReady(governed);
   const refreshed = refreshWaitingOrders(governed, createV03OrderServices());
-  dispatchMonthlyRivalCampaigns(refreshed);
+  if (refreshed.phase !== 'finished') dispatchMonthlyRivalCampaigns(refreshed);
   addEvent(
     refreshed,
     'monthBoundary',
@@ -1087,6 +1575,7 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
   if (!battle || !battle.active) return true;
   if (battle.battleData.outcome) {
     finishBattle(state, battle);
+    battle.playerDayComplete = false;
     return true;
   }
   const playerFights =
@@ -1096,6 +1585,7 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
   if (!playerFights) tactical = runBattleAiTurn(tactical, tactical.playerSide);
   tactical = advanceBattleDay(tactical);
   battle.battleData = tactical;
+  battle.playerDayComplete = false;
   chargeBattleRations(battle);
   if (tactical.outcome) finishBattle(state, battle);
   return true;
@@ -1128,8 +1618,25 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
       error: 'Advance one day at a time while a player battle is active.',
     };
   }
+  if (
+    hasManualBattle &&
+    initial.battles.some(
+      (battle) =>
+        battle.active &&
+        (battle.attackerFactionId === initial.playerFactionId ||
+          battle.defenderFactionId === initial.playerFactionId) &&
+        !battle.playerDayComplete,
+    )
+  ) {
+    return {
+      state: initial,
+      daysAdvanced: 0,
+      stoppedFor: 'active-battle',
+      eventId: null,
+      error: 'Complete the day in every active player battle before advancing the world.',
+    };
+  }
   let state = cloneState(initial);
-  const previousJourneys = structuredClone(state.journeys);
   let timeline = toTimeline(state);
   const result = advanceTimeline(timeline, mode, {
     battleIdsAtDaybreak: () =>
@@ -1142,6 +1649,34 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
         completed,
       };
     },
+    accountCityServiceDay: (current) => {
+      const citiesInBattle = new Set(
+        (current.dayResolution?.battleIds ?? [])
+          .map((battleId) => {
+            const battle = state.battles.find((entry) => entry.id === battleId);
+            return state.journeys.find((entry) => entry.id === battle?.attackerJourneyId)
+              ?.destinationCityId;
+          })
+          .filter((cityId): cityId is string => Boolean(cityId)),
+      );
+      for (const city of state.cities) {
+        if (!city.factionId || citiesInBattle.has(city.id)) continue;
+        const staffedTroops = state.officers
+          .filter(
+            (officer) =>
+              officer.alive &&
+              officer.factionId === city.factionId &&
+              officer.location.kind === 'city' &&
+              officer.location.cityId === city.id,
+          )
+          .reduce((sum, officer) => sum + officer.troops, 0);
+        const troopCount = Math.max(city.garrisonTroops, staffedTroops);
+        const elapsedDaysInMonth = state.absoluteDay % DAYS_PER_MONTH;
+        city.troopServiceDaysThisMonth =
+          (city.troopServiceDaysThisMonth ?? troopCount * elapsedDaysInMonth) + troopCount;
+      }
+      return current;
+    },
     settleMonth: (current, year, month) => {
       applyTimeline(state, current);
       state = settleMonth(state, year, month);
@@ -1153,11 +1688,17 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
       applyTimeline(state, completed);
       return completed;
     },
+    refreshTimeline: (current) => {
+      const previousJourneys = structuredClone(state.journeys);
+      applyTimeline(state, current);
+      handleArrivals(state, previousJourneys);
+      return toTimeline(state);
+    },
   });
   timeline = result.timeline;
   applyTimeline(state, timeline);
-  handleArrivals(state, previousJourneys);
-  if (!state.battles.some((battle) => battle.active)) state.phase = 'planning';
+  if (state.phase !== 'finished')
+    state.phase = state.battles.some((battle) => battle.active) ? 'battle' : 'planning';
   if (state.factions.find((faction) => faction.id === state.playerFactionId)?.eliminated) {
     state.phase = 'finished';
     if (state.winnerFactionId === null) {
@@ -1232,6 +1773,17 @@ export function applyV03BattleAction(
 ): { ok: boolean; state: V03GameState; error?: string } {
   const current = state.battles.find((battle) => battle.id === battleId && battle.active);
   if (!current) return { ok: false, state, error: 'This battle is no longer active.' };
+  if (current.playerDayComplete)
+    return {
+      ok: false,
+      state,
+      error: 'This battle day is already complete; wait for the other battles.',
+    };
+  const playerParticipates =
+    current.attackerFactionId === state.playerFactionId ||
+    current.defenderFactionId === state.playerFactionId;
+  if (!playerParticipates)
+    return { ok: false, state, error: 'This is not the player-controlled side.' };
   if (
     current.battleData.playerSide !==
     (current.attackerFactionId === state.playerFactionId ? 'attacker' : 'defender')
@@ -1243,10 +1795,50 @@ export function applyV03BattleAction(
   const next = cloneState(state);
   const battle = next.battles.find((entry) => entry.id === battleId)!;
   battle.battleData = applied.state;
+  battle.attackerFood = applied.state.supplies.attacker;
+  battle.defenderFood = applied.state.supplies.defender;
   if (applied.state.outcome) finishBattle(next, battle);
   next.phase = next.battles.some((entry) => entry.active) ? 'battle' : 'planning';
   next.revision++;
   return { ok: true, state: next };
+}
+
+/** Mark one active player battle ready; the world advances only when every player battle is ready. */
+export function completeV03BattleDay(
+  state: V03GameState,
+  battleId: string,
+): { ok: boolean; state: V03GameState; error?: string; advancedWorldDay?: boolean } {
+  const current = state.battles.find((battle) => battle.id === battleId && battle.active);
+  if (!current) return { ok: false, state, error: 'This battle is no longer active.' };
+  const playerParticipates =
+    current.attackerFactionId === state.playerFactionId ||
+    current.defenderFactionId === state.playerFactionId;
+  if (!playerParticipates)
+    return { ok: false, state, error: 'This is not the player-controlled side.' };
+  if (current.playerDayComplete)
+    return { ok: false, state, error: 'This battle day is already complete.' };
+  if (state.events.some((event) => !event.acknowledged && event.absoluteDay <= state.absoluteDay))
+    return {
+      ok: false,
+      state,
+      error: 'Acknowledge the current report before completing the battle day.',
+    };
+
+  const next = cloneState(state);
+  next.battles.find((battle) => battle.id === battleId)!.playerDayComplete = true;
+  const manual = next.battles.filter(
+    (battle) =>
+      battle.active &&
+      (battle.attackerFactionId === next.playerFactionId ||
+        battle.defenderFactionId === next.playerFactionId),
+  );
+  if (manual.every((battle) => battle.playerDayComplete)) {
+    const advanced = advanceV03(next, 1);
+    if (advanced.error) return { ok: false, state, error: advanced.error };
+    return { ok: true, state: advanced.state, advancedWorldDay: advanced.daysAdvanced > 0 };
+  }
+  next.revision++;
+  return { ok: true, state: next, advancedWorldDay: false };
 }
 
 export function acknowledgeV03Event(state: V03GameState, eventId: string): V03GameState {

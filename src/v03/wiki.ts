@@ -7,7 +7,8 @@ export type V03WikiTopic =
   | 'battle'
   | 'water'
   | 'governance'
-  | 'requisition';
+  | 'requisition'
+  | 'diplomacy';
 
 export interface V03WikiArticle {
   id: V03WikiTopic;
@@ -84,6 +85,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'A battle begins outside the destination city. This version has no walls, gates, siege weapons, climbing, or city-street battle phase. Field camps are ordinary terrain with a tactical objective overlay.',
           'Battle maps use a 24×20 logical grid. The angled painting is a view of that grid; it does not change movement distance, attack range, or terrain rules.',
           'Battles last at most 30 days. At the limit, the side with more surviving troops controls the field; ties go to the defender.',
+          'Six tactics are available when their officer and terrain requirements are met: Fire, Confuse, Rally, Raid Supplies, Ambush, and Rockfall. Tactic points regenerate by 2 each battle day. Costs, range, target rules, chance, casualties, morale, and supply effects are shown in the tactic panel before you commit; those forecasts use the same rules as resolution.',
         ],
       },
     ],
@@ -112,6 +114,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
         body: [
           'Your capital is directly ruled. You can manage its internal work. A city with a formal governor is autonomous; an unassigned city is maintained by local stewards. Neither gives you direct access to every officer and internal action.',
           'Appointing or dismissing a governor takes effect at the next monthly settlement. Repeated appointments cannot refresh a city’s monthly work or reset its commitments.',
+          'At the capital, one staffed monthly work point can reward an officer for 100 gold and up to 15 loyalty, issue fine arms for 180 gold and up to 5 force (force limit 105), or relieve the people for 80 gold and 600 food to add up to 15 city loyalty and 300 population. Governors can choose these actions from their own city budget and work points; committed resources remain protected.',
           'Autonomy does not remove tactical command. If your forces enter a manual battle, you can still command your units regardless of which city sent them.',
         ],
       },
@@ -128,6 +131,21 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'The response lists what can be sent or fielded, what is missing, the earliest preparation date, and the estimated arrival date. If it cannot meet the full request, you choose to accept a smaller plan, wait for the full amount, or cancel.',
           'Accepting a plan reserves the resources. Dispatch creates a real journey with a saved route snapshot. Resources arrive only when the party reaches the destination; repeated confirmation cannot create a second shipment.',
           'A destination that changes hands, a blocked route, or a full storehouse is reported and handled explicitly. Resources are not teleported back or silently discarded.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'diplomacy',
+    title: 'Diplomacy and alliances',
+    sections: [
+      {
+        heading: 'Six-month treaties',
+        body: [
+          'Alliance proposals use the ruler’s intellect: the base chance is 40 plus half of that intellect, with a 5–90% limit. Offering to unite against the strongest house can add 20 points; proposing to the strongest house removes 30. Breaking an alliance reduces your chance for the next twelve months.',
+          'A successful treaty lasts six campaign months and prevents both houses from attacking one another. Campaigns already on the road turn back at the next safe route decision. Breaking a treaty takes effect immediately.',
+          'If the anti-Dong coalition forms, a non-Dong player can accept its invitation to join six-month treaties with its surviving members. The invitation expires after three months.',
+          'Holding Luoyang and at least sixteen cities at every monthly boundary for twelve consecutive months proclaims a Hegemon. Rival claims are reported when they begin and when three months remain. This is separate from capturing every city for unification.',
         ],
       },
     ],
@@ -203,6 +221,7 @@ const CHINESE: readonly V03WikiArticle[] = [
           '战斗发生在目标城市外围。本版没有城墙、城门、攻城器、攀墙或城内巷战阶段。野战营地是普通地形上的战术目标。',
           '战场使用 24×20 逻辑格。斜俯视画面是这些格子的投影，不会改变移动距离、射程或地形规则。',
           '战斗最多持续三十日。到达期限时，剩余兵力较多的一方控制战场；双方兵力相同时由守方获胜。',
+          '武将满足能力和地形条件时可用六种计策：火计、混乱、鼓舞、劫粮、伏兵和落石。每个战斗日回复 2 点计策点。计策面板会在使用前显示消耗、射程、目标条件、概率、伤亡、士气与粮草效果；预览与实际结算使用同一套规则。',
         ],
       },
     ],
@@ -231,6 +250,7 @@ const CHINESE: readonly V03WikiArticle[] = [
         body: [
           '君主本城由玩家直接治理。正式任命太守的城市进入自治；没有正式太守的城市由地方班底维持。玩家不能直接逐项操控这些城市的武将和内政。',
           '任命或免职要等到下一个月界生效。反复任免不会刷新城市当月内政额度，也不会清除既有承诺。',
+          '君主本城每个驻城武将每月提供一个工作点（最多 3 点）：可花 100 金赏赐武将（忠诚最多 +15）、花 180 金配发精良兵器（武力最多 +5，上限 105），或花 80 金与 600 粮赈济百姓（民心最多 +15、人口 +300）。太守也可在自身城市预算与工作点内决定这些动作，已承诺的资源会保留。',
           '自治不影响临阵指挥。来自任何城市的部队进入手动战斗后，玩家仍可控制自己的部队。',
         ],
       },
@@ -247,6 +267,21 @@ const CHINESE: readonly V03WikiArticle[] = [
           '答复会列明可交付或可出征数量、缺口、最早筹备日和预计抵达日。无法满足全部要求时，玩家选择接受缩减方案、等待足额筹备或取消。',
           '接受方案后资源进入预留。部队出发时生成带路线快照的真实行程，抵达后才交付；重复确认不会复制运输队。',
           '目的地易手、道路中断或仓库满额时会明确报告并处理；资源不会瞬间返回，也不会无声消失。',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'diplomacy',
+    title: '外交與同盟',
+    sections: [
+      {
+        heading: '六個月盟約',
+        body: [
+          '同盟提議以君主智力計算：基礎概率為 40 加上智力的一半，並限制在 5%–90%。共同對抗最強勢力可加 20 點；向最強勢力提議則減 30 點。解除同盟後十二個月內，提議成功率會降低。',
+          '成功的同盟持續六個戰役月，雙方不能互相攻擊。已在途的出征隊會在下一個安全路線節點返程。解除同盟立即生效。',
+          '討伐董卓聯盟成立時，非董卓玩家可以接受邀請，與仍存續的盟友締結六個月同盟。邀請三個月後失效。',
+          '在每個月界都控制洛陽與至少十六座城市，連續維持十二個月即可稱霸。若敵方開始稱霸，遊戲會在進度開始與剩餘三個月時發出警告。稱霸與攻取全部城市、天下一統是不同勝利條件。',
         ],
       },
     ],

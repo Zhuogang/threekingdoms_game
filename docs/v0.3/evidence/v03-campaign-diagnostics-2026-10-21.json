@@ -1,0 +1,660 @@
+{
+  "generatedAt": "2026-10-21T22:16:44.219Z",
+  "status": "partial",
+  "command": [
+    "--output",
+    "docs/v0.3/evidence/v03-campaign-diagnostics-2026-10-21.json"
+  ],
+  "nodeVersion": "v24.15.0",
+  "wallClockMs": 213041,
+  "model": {
+    "description": "Passive-player baseline: rival monthly campaign AI runs; the selected player faction issues no strategic orders. In player battles both sides use the current deterministic tactical AI for diagnostic progression.",
+    "victoryDefinitions": {
+      "trueUnification": "Every campaign city is controlled by the selected faction.",
+      "hegemon": "Not implemented by the current v0.3 state/engine; reported as N/A."
+    },
+    "limitations": [
+      "This is a deterministic smoke/baseline diagnostic, not an autonomous player bot or a balance acceptance run.",
+      "Diplomacy, monthly events, and continuous Hegemon victory are not implemented in the current v0.3 engine.",
+      "It does not replace human campaign/battle playtests or low-end-device measurement."
+    ]
+  },
+  "matrix": {
+    "scenarios": [
+      "divided-realm-190",
+      "guandu-200"
+    ],
+    "factions": [
+      "cao",
+      "liu",
+      "sun",
+      "yuan",
+      "dong",
+      "yan",
+      "ma"
+    ],
+    "unavailableFactions": {
+      "divided-realm-190": [
+        "ma"
+      ]
+    },
+    "cohorts": [
+      "development",
+      "held-out"
+    ],
+    "months": 96,
+    "campaignCount": 8
+  },
+  "fingerprints": {
+    "sourceFiles": [
+      "src/v03/engine.ts",
+      "src/v03/initial-state.ts",
+      "src/v03/strategic-ai.ts",
+      "src/v03/calendar/index.ts",
+      "src/v03/calendar/day-resolution.ts",
+      "src/v03/battle/engine.ts",
+      "src/v03/battle/maps.ts",
+      "src/v03/geography/index.ts",
+      "src/v03/governance/autonomy.ts",
+      "src/v03/governance/services.ts"
+    ],
+    "sourceSha256": "536c2656a4d104ad73891ef06ade8d491ce4e8614b543da1e57c7ac729570c21",
+    "configFiles": [
+      "src/content/scenario.ts",
+      "src/content/guandu.ts",
+      "src/v03/geography/index.ts",
+      "src/v03/battle/maps.ts",
+      "src/v03/calendar/index.ts"
+    ],
+    "configSha256": "187c4ccd32c6a263152109b47935d914248688fa74598a4a0e2b3873583a8e56"
+  },
+  "aggregate": {
+    "trueUnificationsAtFinal": 0,
+    "playerEliminations": 0,
+    "hegemon": {
+      "status": "not-implemented-in-v0.3",
+      "count": null
+    }
+  },
+  "results": [
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "cao",
+      "cohort": "development",
+      "seed": 610301,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 121748,
+          "totalPlayerFood": 317350,
+          "activeBattles": 0,
+          "battlesStarted": 10,
+          "battlesResolved": 10,
+          "campaignDirectives": {
+            "total": 10,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 238467,
+          "totalPlayerFood": 589762,
+          "activeBattles": 0,
+          "battlesStarted": 10,
+          "battlesResolved": 10,
+          "campaignDirectives": {
+            "total": 10,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "cao",
+      "cohort": "held-out",
+      "seed": 970301,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 122248,
+          "totalPlayerFood": 320398,
+          "activeBattles": 0,
+          "battlesStarted": 9,
+          "battlesResolved": 9,
+          "campaignDirectives": {
+            "total": 9,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 239485,
+          "totalPlayerFood": 595450,
+          "activeBattles": 0,
+          "battlesStarted": 9,
+          "battlesResolved": 9,
+          "campaignDirectives": {
+            "total": 9,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "liu",
+      "cohort": "development",
+      "seed": 610302,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "liu",
+          "playerEliminated": false,
+          "ownedCities": 1,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 26599,
+          "totalPlayerFood": 65362,
+          "activeBattles": 0,
+          "battlesStarted": 13,
+          "battlesResolved": 13,
+          "campaignDirectives": {
+            "total": 13,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "liu",
+          "playerEliminated": false,
+          "ownedCities": 1,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 51607,
+          "totalPlayerFood": 116590,
+          "activeBattles": 0,
+          "battlesStarted": 13,
+          "battlesResolved": 13,
+          "campaignDirectives": {
+            "total": 13,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "liu",
+      "cohort": "held-out",
+      "seed": 970302,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "liu",
+          "playerEliminated": false,
+          "ownedCities": 1,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 26734,
+          "totalPlayerFood": 65980,
+          "activeBattles": 0,
+          "battlesStarted": 13,
+          "battlesResolved": 13,
+          "campaignDirectives": {
+            "total": 13,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "liu",
+          "playerEliminated": false,
+          "ownedCities": 1,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 51886,
+          "totalPlayerFood": 117880,
+          "activeBattles": 0,
+          "battlesStarted": 13,
+          "battlesResolved": 13,
+          "campaignDirectives": {
+            "total": 13,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "sun",
+      "cohort": "development",
+      "seed": 610303,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "sun",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 113121,
+          "totalPlayerFood": 295127,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "sun",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 221265,
+          "totalPlayerFood": 547259,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "sun",
+      "cohort": "held-out",
+      "seed": 970303,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "sun",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 113221,
+          "totalPlayerFood": 295590,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "sun",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 221461,
+          "totalPlayerFood": 548154,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "yuan",
+      "cohort": "development",
+      "seed": 610304,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "yuan",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 118986,
+          "totalPlayerFood": 306443,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "yuan",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 232848,
+          "totalPlayerFood": 568871,
+          "activeBattles": 0,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "campaignDirectives": {
+            "total": 12,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "yuan",
+      "cohort": "held-out",
+      "seed": 970304,
+      "requestedMonths": 96,
+      "completedMonths": 96,
+      "stoppedEarly": false,
+      "finalPhase": "planning",
+      "checkpoints": {
+        "48": {
+          "month": 48,
+          "absoluteDay": 1440,
+          "phase": "planning",
+          "playerFactionId": "yuan",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 118940,
+          "totalPlayerFood": 306303,
+          "activeBattles": 0,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "campaignDirectives": {
+            "total": 11,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        },
+        "96": {
+          "month": 96,
+          "absoluteDay": 2880,
+          "phase": "planning",
+          "playerFactionId": "yuan",
+          "playerEliminated": false,
+          "ownedCities": 3,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "status": "not-implemented-in-v0.3"
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 232764,
+          "totalPlayerFood": 568491,
+          "activeBattles": 0,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "campaignDirectives": {
+            "total": 11,
+            "dispatched": 0,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 0,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    }
+  ],
+  "stopReason": "Stopped at the root task request after 8 of 28 campaigns so final integrated source changes can be included in the rerun.",
+  "completedCampaignCount": 8,
+  "plannedCampaignCount": 28
+}

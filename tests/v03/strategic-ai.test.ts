@@ -117,7 +117,7 @@ describe('v0.3 strategic rival planning', () => {
     expect(first[0]).toMatchObject({
       factionId: 'yuan',
       sourceCityId: 'ye',
-      targetCityId: 'jinyang',
+      targetCityId: 'pingyuan',
       intent: 'conquer',
       requestedByDay: null,
       requestedTroops: 5000,
@@ -130,7 +130,7 @@ describe('v0.3 strategic rival planning', () => {
       troopTypes: ['infantry', 'cavalry', 'archer', 'guard', 'elite'],
       heavySupplyTrain: true,
     });
-    expect(first[0]!.route.routeId).toBe('jinyang--ye');
+    expect(first[0]!.route.routeId).toBe('pingyuan--ye');
     expect(first[0]!.food).toBe(first[0]!.supply.totalFood);
   });
 
@@ -155,25 +155,30 @@ describe('v0.3 strategic rival planning', () => {
     expect(plans[0]!.estimatedArrivalDay).toBe(state.absoluteDay + plans[0]!.route.estimatedDays);
   });
 
-  it('never selects a neutral or friendly target', () => {
+  it('treats an independent city as a valid target and never selects a friendly city', () => {
     const state = fixture();
-    const friendlyNeighbor = ROUTE_DEFINITIONS.find(
-      (route) =>
-        (route.fromCityId === 'ye' || route.toCityId === 'ye') &&
-        route.fromCityId !== 'jinyang' &&
-        route.toCityId !== 'jinyang',
-    )!;
-    const friendlyCityId =
-      friendlyNeighbor.fromCityId === 'ye'
-        ? friendlyNeighbor.toCityId
-        : friendlyNeighbor.fromCityId;
-    state.cities.push(city(friendlyCityId, 'yuan', 1000));
+    expect(planStrategicRivalCampaigns(state)[0]?.targetCityId).toBe('pingyuan');
+    state.cities.find((entry) => entry.id === 'pingyuan')!.factionId = 'yuan';
 
-    const plans = planStrategicRivalCampaigns(state);
+    const plansAfterOccupation = planStrategicRivalCampaigns(state);
+    expect(plansAfterOccupation.every((plan) => plan.targetCityId !== 'pingyuan')).toBe(true);
+    expect(plansAfterOccupation[0]?.targetCityId).toBe('jinyang');
+  });
 
-    expect(plans.every((plan) => plan.targetCityId !== 'pingyuan')).toBe(true);
-    expect(plans.every((plan) => plan.targetCityId !== friendlyCityId)).toBe(true);
-    expect(plans.every((plan) => plan.targetCityId === 'jinyang')).toBe(true);
+  it('ranks a zero-garrison independent city as the 500 militia its battle receives', () => {
+    const state = fixture();
+    state.cities.find((entry) => entry.id === 'jinyang')!.garrisonTroops = 450;
+    state.officers.push(officer('cao-defender', 'cao', 'jinyang', 450));
+
+    expect(planStrategicRivalCampaigns(state)[0]?.targetCityId).toBe('jinyang');
+  });
+
+  it('does not give a capital a target-priority bonus', () => {
+    const state = fixture();
+    state.cities.find((entry) => entry.id === 'jinyang')!.garrisonTroops = 1000;
+    state.factions.find((entry) => entry.id === 'cao')!.capitalCityId = 'jinyang';
+
+    expect(planStrategicRivalCampaigns(state)[0]?.targetCityId).toBe('pingyuan');
   });
 
   it('does not duplicate active source orders or attack an occupied target', () => {
@@ -183,7 +188,9 @@ describe('v0.3 strategic rival planning', () => {
 
     const activeTarget = fixture();
     activeTarget.directives.push(directive('cao', 'xuchang', 'jinyang', 'dispatched'));
-    expect(planStrategicRivalCampaigns(activeTarget)).toEqual([]);
+    expect(
+      planStrategicRivalCampaigns(activeTarget).every((plan) => plan.targetCityId !== 'jinyang'),
+    ).toBe(true);
   });
 
   it('does not plan when the source lacks available troops or the full campaign ration', () => {

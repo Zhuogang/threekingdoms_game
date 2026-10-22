@@ -1,4 +1,14 @@
-import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type MouseEvent,
+  type PointerEvent,
+  type WheelEvent,
+} from 'react';
 import { V03_ASSETS, resolvePublicAsset, spriteOffsetFromAnchor } from './assets';
 import {
   BATTLE_VIEW_INSETS,
@@ -13,6 +23,12 @@ import {
   type GridPoint,
   type Point,
 } from './geometry';
+import {
+  fitBattlefieldViewport,
+  panBattlefieldViewport,
+  zoomBattlefieldViewport,
+  type BattlefieldViewBox,
+} from './battlefield-viewport';
 import {
   formatModifier,
   troopGlyph,
@@ -39,7 +55,11 @@ export interface BattlefieldMapViewProps {
   selectedCell?: GridPoint;
   reachableCells?: readonly GridPoint[];
   attackableCells?: readonly GridPoint[];
-  viewport?: { left: number; top: number; width: number; height: number };
+  tacticTargetCells?: readonly GridPoint[];
+  viewport?: BattlefieldViewBox;
+  /** Enables drag pan, wheel zoom and keyboard camera controls. */
+  interactive?: boolean;
+  onViewportChange?: (viewport: BattlefieldViewBox) => void;
   locale?: 'en' | 'zh';
   waterAttackMultiplier?: number;
   waterIncomingDamageMultiplier?: number;
@@ -86,12 +106,31 @@ function viewBoxFor(
   viewport?: BattlefieldMapViewProps['viewport'],
 ): BoardBounds {
   if (!viewport) return bounds;
-  const left = Math.max(bounds.left, viewport.left);
-  const top = Math.max(bounds.top, viewport.top);
-  const right = Math.min(bounds.right, viewport.left + viewport.width);
-  const bottom = Math.min(bounds.bottom, viewport.top + viewport.height);
-  if (right <= left || bottom <= top) return bounds;
-  return { left, top, right, bottom, width: right - left, height: bottom - top };
+  if (
+    !Number.isFinite(viewport.left) ||
+    !Number.isFinite(viewport.top) ||
+    !Number.isFinite(viewport.width) ||
+    !Number.isFinite(viewport.height) ||
+    viewport.width <= 0 ||
+    viewport.height <= 0
+  )
+    return bounds;
+  return {
+    left: viewport.left,
+    top: viewport.top,
+    right: viewport.left + viewport.width,
+    bottom: viewport.top + viewport.height,
+    width: viewport.width,
+    height: viewport.height,
+  };
+}
+
+interface PanStart {
+  pointerId: number;
+  clientX: number;
+  clientY: number;
+  world: Point;
+  viewport: BattlefieldViewBox;
 }
 
 function cellPath(center: Point): string {
@@ -222,6 +261,7 @@ function UnitSprite({
     .join(' · ');
   return (
     <g
+      className="v03-unit-token"
       transform={`translate(${x} ${y})`}
       role="button"
       tabIndex={0}
@@ -326,7 +366,10 @@ export function BattlefieldMapView({
   selectedCell,
   reachableCells = [],
   attackableCells = [],
+  tacticTargetCells = [],
   viewport,
+  interactive = false,
+  onViewportChange,
   locale = 'en',
   waterAttackMultiplier,
   waterIncomingDamageMultiplier,
@@ -335,6 +378,16 @@ export function BattlefieldMapView({
   onCellClick,
   onUnitClick,
 }: BattlefieldMapViewProps) {
+  const [focusedCell, setFocusedCell] = useState<GridPoint>(
+    () => selectedCell ?? { x: Math.floor(map.width / 2), y: Math.floor(map.height / 2) },
+  );
+  const [mapHasFocus, setMapHasFocus] = useState(false);
+  const [mapIsPanning, setMapIsPanning] = useState(false);
+  const panStartRef = useRef<PanStart | null>(null);
+  const didPanRef = useRef(false);
+  useEffect(() => {
+    setFocusedCell(selectedCell ?? { x: Math.floor(map.width / 2), y: Math.floor(map.height / 2) });
+  }, [selectedCell?.x, selectedCell?.y, map.width, map.height]);
   const groundReady = useImageAvailability(GROUND_HREF);
   const ridgeReady = useImageAvailability(RIDGE_HREF);
   const transportReady = useImageAvailability(TRANSPORT_HREF);
@@ -354,10 +407,12 @@ export function BattlefieldMapView({
     [map.width, map.height],
   );
   const view = viewBoxFor(board, viewport);
+  const canNavigate = interactive && Boolean(onViewportChange);
   const safeLength = map.width * map.height;
   const terrain = Array.from({ length: safeLength }, (_, index) => map.terrain[index] ?? 'plain');
   const reachable = new Set(reachableCells.map(({ x, y }) => `${x},${y}`));
   const attackable = new Set(attackableCells.map(({ x, y }) => `${x},${y}`));
+  const tacticTargetable = new Set(tacticTargetCells.map(({ x, y }) => `${x},${y}`));
   const routePoints = route.map((point) => gridToWorld(point));
   const routePath = routePoints
     .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
@@ -366,6 +421,10 @@ export function BattlefieldMapView({
   const backgroundId = `v03-ground-${map.id ?? 'map'}`.replace(/[^a-zA-Z0-9_-]/g, '-');
 
   const clickCell = (event: MouseEvent<SVGSVGElement>) => {
+    if (didPanRef.current) {
+      didPanRef.current = false;
+      return;
+    }
     if (!onCellClick) return;
     const rect = event.currentTarget.getBoundingClientRect();
     const world = clientToViewBoxPoint({ x: event.clientX, y: event.clientY }, rect, {
@@ -377,22 +436,152 @@ export function BattlefieldMapView({
     const cell = hitTestWorld(world, map.width, map.height);
     if (cell) onCellClick(cell);
   };
+  const pointerWorldPoint = (clientX: number, clientY: number, camera: BattlefieldViewBox) =>
+    clientToViewBoxPoint(
+      { x: clientX, y: clientY },
+      svgRef.current?.getBoundingClientRect() ?? { left: 0, top: 0, width: 0, height: 0 },
+      camera,
+    );
+  const handlePointerDown = (event: PointerEvent<SVGSVGElement>) => {
+    didPanRef.current = false;
+    if (!canNavigate || event.button !== 0) return;
+    const target = event.target as Element;
+    if (target.closest?.('[role="button"]')) return;
+    const camera = viewport ?? board;
+    panStartRef.current = {
+      pointerId: event.pointerId,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      world: pointerWorldPoint(event.clientX, event.clientY, camera),
+      viewport: camera,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
+    const drag = panStartRef.current;
+    if (!canNavigate || !drag || drag.pointerId !== event.pointerId) return;
+    if (Math.hypot(event.clientX - drag.clientX, event.clientY - drag.clientY) > 4) {
+      didPanRef.current = true;
+      setMapIsPanning(true);
+    }
+    if (!didPanRef.current) return;
+    const current = pointerWorldPoint(event.clientX, event.clientY, drag.viewport);
+    onViewportChange?.(
+      panBattlefieldViewport(
+        drag.viewport,
+        { x: current.x - drag.world.x, y: current.y - drag.world.y },
+        board,
+      ),
+    );
+  };
+  const handlePointerUp = (event: PointerEvent<SVGSVGElement>) => {
+    if (panStartRef.current?.pointerId !== event.pointerId) return;
+    panStartRef.current = null;
+    setMapIsPanning(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const handleWheel = (event: WheelEvent<SVGSVGElement>) => {
+    if (!canNavigate) return;
+    event.preventDefault();
+    const camera = viewport ?? board;
+    onViewportChange?.(
+      zoomBattlefieldViewport(
+        camera,
+        board,
+        pointerWorldPoint(event.clientX, event.clientY, camera),
+        Math.exp(-event.deltaY * 0.001),
+      ),
+    );
+  };
+  const handleMapKeyDown = (event: KeyboardEvent<SVGSVGElement>) => {
+    if (event.target !== event.currentTarget || (!onCellClick && !canNavigate)) return;
+    const camera = viewport ?? board;
+    if (canNavigate && event.shiftKey && event.key.startsWith('Arrow')) {
+      const pan = {
+        x: camera.width * 0.08,
+        y: camera.height * 0.08,
+      };
+      const delta =
+        event.key === 'ArrowLeft'
+          ? { x: pan.x, y: 0 }
+          : event.key === 'ArrowRight'
+            ? { x: -pan.x, y: 0 }
+            : event.key === 'ArrowUp'
+              ? { x: 0, y: pan.y }
+              : { x: 0, y: -pan.y };
+      event.preventDefault();
+      onViewportChange?.(panBattlefieldViewport(camera, delta, board));
+      return;
+    }
+    if (canNavigate && ['+', '=', '-'].includes(event.key)) {
+      event.preventDefault();
+      onViewportChange?.(
+        zoomBattlefieldViewport(
+          camera,
+          board,
+          { x: camera.left + camera.width / 2, y: camera.top + camera.height / 2 },
+          event.key === '-' ? 0.8 : 1.25,
+        ),
+      );
+      return;
+    }
+    if (canNavigate && event.key === 'Home') {
+      event.preventDefault();
+      const rect = svgRef.current?.getBoundingClientRect();
+      onViewportChange?.(
+        fitBattlefieldViewport(board, rect && rect.height > 0 ? rect.width / rect.height : 1),
+      );
+      return;
+    }
+    if (!onCellClick) return;
+    let next: GridPoint | null = null;
+    if (event.key === 'ArrowLeft') next = { ...focusedCell, x: Math.max(0, focusedCell.x - 1) };
+    else if (event.key === 'ArrowRight')
+      next = { ...focusedCell, x: Math.min(map.width - 1, focusedCell.x + 1) };
+    else if (event.key === 'ArrowUp') next = { ...focusedCell, y: Math.max(0, focusedCell.y - 1) };
+    else if (event.key === 'ArrowDown')
+      next = { ...focusedCell, y: Math.min(map.height - 1, focusedCell.y + 1) };
+    else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onCellClick(focusedCell);
+      return;
+    }
+    if (next) {
+      event.preventDefault();
+      setFocusedCell(next);
+    }
+  };
 
+  const svgRef = useRef<SVGSVGElement | null>(null);
   return (
     <svg
-      className={className}
+      ref={svgRef}
+      className={`v03-battlefield-map ${className ?? ''}`.trim()}
       viewBox={`${view.left} ${view.top} ${view.width} ${view.height}`}
       preserveAspectRatio="xMidYMid meet"
-      role="img"
+      role={onCellClick || canNavigate ? 'application' : 'img'}
+      tabIndex={onCellClick || canNavigate ? 0 : undefined}
       aria-label={
-        locale === 'zh' ? '24×20 水陆战场地图' : '24 by 20 land and water battlefield map'
+        locale === 'zh'
+          ? `${map.width}×${map.height} 水陆战场地图。方向键移动格子光标，Shift+方向键平移，+ 和 − 缩放，Home 显示全图，回车选择当前格。当前第 ${focusedCell.y + 1} 行、第 ${focusedCell.x + 1} 列。`
+          : `${map.width} by ${map.height} land and water battlefield map. Arrow keys move the grid cursor, Shift+arrows pan, plus and minus zoom, Home fits the map, and Enter selects the current cell. Current cell ${focusedCell.x + 1}, ${focusedCell.y + 1}.`
       }
       onClick={clickCell}
+      onKeyDown={handleMapKeyDown}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}
+      onFocus={() => setMapHasFocus(true)}
+      onBlur={() => setMapHasFocus(false)}
       style={{
         width: '100%',
         height: '100%',
         display: 'block',
-        touchAction: 'manipulation',
+        touchAction: canNavigate ? 'none' : 'manipulation',
+        cursor: mapIsPanning ? 'grabbing' : canNavigate ? 'grab' : undefined,
         background: '#e8dfcc',
         ...style,
       }}
@@ -502,6 +691,17 @@ export function BattlefieldMapView({
                 pointerEvents="none"
               />
             ) : null}
+            {tacticTargetable.has(key) ? (
+              <path
+                d={d}
+                fill="#9d83b2"
+                fillOpacity={0.2}
+                stroke="#6d4a91"
+                strokeWidth={4}
+                strokeDasharray="3 4"
+                pointerEvents="none"
+              />
+            ) : null}
             {selectedId === key ? (
               <path
                 d={d}
@@ -526,6 +726,18 @@ export function BattlefieldMapView({
           strokeDasharray="11 8"
           opacity={0.9}
           pointerEvents="none"
+        />
+      ) : null}
+      {mapHasFocus ? (
+        <path
+          d={cellPath(gridToWorld(focusedCell))}
+          fill="#d4a94e"
+          fillOpacity={0.1}
+          stroke="#4d6e87"
+          strokeWidth={5}
+          strokeDasharray="5 4"
+          pointerEvents="none"
+          aria-hidden="true"
         />
       ) : null}
       {camps.map((camp, index) => (

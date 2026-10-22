@@ -90,12 +90,18 @@ export function findBattlePath(
   start: BattlePosition,
   destination: BattlePosition,
   blockers: readonly PathBlocker[] = [],
+  stopAfter: readonly BattlePosition[] = [],
 ): BattlePosition[] | null {
   if (!isBattlePosition(start) || !isBattlePosition(destination)) return null;
   if (battleTerrainAt(map, start) === 'cliff' || battleTerrainAt(map, destination) === 'cliff')
     return null;
   const blockerIndexes = new Set(
     blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)),
+  );
+  const stopAfterIndexes = new Set(
+    stopAfter
+      .filter(isBattlePosition)
+      .map((position) => battlePositionIndex(position.x, position.y)),
   );
   const startIndex = battlePositionIndex(start.x, start.y);
   const destinationIndex = battlePositionIndex(destination.x, destination.y);
@@ -124,6 +130,8 @@ export function findBattlePath(
     if (currentIndex === undefined) break;
     open.delete(currentIndex);
     if (currentIndex === destinationIndex) break;
+    // A unit may enter an enemy control zone, but it cannot move through one.
+    if (currentIndex !== startIndex && stopAfterIndexes.has(currentIndex)) continue;
     closed.add(currentIndex);
     const current = {
       x: currentIndex % BATTLE_WIDTH,
@@ -162,15 +170,110 @@ export interface ReachableBattleTile extends BattlePosition {
   cost: number;
 }
 
+interface CostQueueEntry {
+  index: number;
+  cost: number;
+}
+
+function queueLess(a: CostQueueEntry, b: CostQueueEntry): boolean {
+  return a.cost < b.cost || (a.cost === b.cost && a.index < b.index);
+}
+
+function queuePush(queue: CostQueueEntry[], entry: CostQueueEntry): void {
+  let index = queue.length;
+  queue.push(entry);
+  while (index > 0) {
+    const parent = Math.floor((index - 1) / 2);
+    if (!queueLess(entry, queue[parent]!)) break;
+    queue[index] = queue[parent]!;
+    index = parent;
+  }
+  queue[index] = entry;
+}
+
+function queuePop(queue: CostQueueEntry[]): CostQueueEntry | undefined {
+  if (queue.length === 0) return undefined;
+  const first = queue[0]!;
+  const last = queue.pop()!;
+  if (queue.length === 0) return first;
+  let index = 0;
+  while (true) {
+    const left = index * 2 + 1;
+    const right = left + 1;
+    if (left >= queue.length) break;
+    const child = right < queue.length && queueLess(queue[right]!, queue[left]!) ? right : left;
+    if (!queueLess(queue[child]!, last)) break;
+    queue[index] = queue[child]!;
+    index = child;
+  }
+  queue[index] = last;
+  return first;
+}
+
+/**
+ * Weighted distance from every cell to the nearest goal, respecting terrain and occupied cells.
+ * The reverse edge uses the corresponding forward move cost, so asymmetric uphill costs remain
+ * correct. `goalOffsets` can assign e.g. a one-point preference cost to a camp goal.
+ */
+export function getBattleRouteDistanceField(
+  map: BattleMap,
+  unit: Pick<BattleUnitPosition, 'troopType'>,
+  goals: readonly (BattlePosition & { offset?: number })[],
+  blockers: readonly PathBlocker[] = [],
+): number[] {
+  const distances = Array.from(
+    { length: BATTLE_WIDTH * BATTLE_HEIGHT },
+    () => Number.POSITIVE_INFINITY,
+  );
+  const goalIndexes = new Set<number>();
+  const queue: CostQueueEntry[] = [];
+  for (const goal of goals) {
+    if (!isBattlePosition(goal) || battleTerrainAt(map, goal) === 'cliff') continue;
+    const index = battlePositionIndex(goal.x, goal.y);
+    const offset = Number.isFinite(goal.offset) ? Math.max(0, goal.offset ?? 0) : 0;
+    distances[index] = Math.min(distances[index]!, offset);
+    goalIndexes.add(index);
+    queuePush(queue, { index, cost: offset });
+  }
+  const blocked = new Set(blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)));
+  for (const goalIndex of goalIndexes) blocked.delete(goalIndex);
+
+  while (queue.length) {
+    const currentEntry = queuePop(queue)!;
+    const { index: currentIndex, cost: currentCost } = currentEntry;
+    if (currentCost !== distances[currentIndex]) continue;
+    const current = { x: currentIndex % BATTLE_WIDTH, y: Math.floor(currentIndex / BATTLE_WIDTH) };
+    for (const direction of DIRECTIONS) {
+      const predecessor = { x: current.x + direction.x, y: current.y + direction.y };
+      if (!isBattlePosition(predecessor)) continue;
+      const predecessorIndex = battlePositionIndex(predecessor.x, predecessor.y);
+      if (blocked.has(predecessorIndex)) continue;
+      const forwardCost = battleStepCost(map, unit, predecessor, current);
+      if (!Number.isFinite(forwardCost)) continue;
+      const candidate = currentCost + forwardCost;
+      if (candidate >= distances[predecessorIndex]!) continue;
+      distances[predecessorIndex] = candidate;
+      queuePush(queue, { index: predecessorIndex, cost: candidate });
+    }
+  }
+  return distances;
+}
+
 export function getReachableBattleTiles(
   map: BattleMap,
   unit: Pick<BattleUnitPosition, 'troopType'>,
   start: BattlePosition,
   budget = movementBudget(unit.troopType),
   blockers: readonly PathBlocker[] = [],
+  stopAfter: readonly BattlePosition[] = [],
 ): ReachableBattleTile[] {
   if (!isBattlePosition(start) || battleTerrainAt(map, start) === 'cliff' || budget < 0) return [];
   const blocked = new Set(blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)));
+  const stopAfterIndexes = new Set(
+    stopAfter
+      .filter(isBattlePosition)
+      .map((position) => battlePositionIndex(position.x, position.y)),
+  );
   const startIndex = battlePositionIndex(start.x, start.y);
   blocked.delete(startIndex);
   const costs = new Map<number, number>([[startIndex, 0]]);
@@ -193,6 +296,8 @@ export function getReachableBattleTiles(
     if (currentIndex === undefined) break;
     open.delete(currentIndex);
     closed.add(currentIndex);
+    // A unit may enter an enemy control zone, but it cannot continue through it.
+    if (currentIndex !== startIndex && stopAfterIndexes.has(currentIndex)) continue;
     const current = {
       x: currentIndex % BATTLE_WIDTH,
       y: Math.floor(currentIndex / BATTLE_WIDTH),

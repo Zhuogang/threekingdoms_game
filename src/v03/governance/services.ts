@@ -3,7 +3,13 @@ import {
   estimateTravel,
   type TravelComposition,
 } from '../calendar';
-import { ROUTE_BY_ID, routeIdBetween, type CityId } from '../geography';
+import {
+  findStrategicRoutePath,
+  ROUTE_BY_ID,
+  ROUTE_DEFINITIONS,
+  type CityId,
+  type RouteDefinition,
+} from '../geography';
 import type { V03Journey } from '../types';
 import type {
   GovernanceOrderServices,
@@ -15,25 +21,50 @@ import type {
 } from './orders';
 
 function planRoute(input: PlanRouteInput): OrderRoutePlan | null {
-  const route = ROUTE_BY_ID.get(
-    routeIdBetween(input.sourceCityId as CityId, input.targetCityId as CityId),
-  );
-  if (!route) return null;
-  const direction = input.sourceCityId === route.fromCityId ? 'forward' : 'reverse';
-  const travel = estimateTravel(route, direction, input.departureDay, input.composition);
-  return {
-    routeId: route.id,
-    routeVersion: 'v0.3-geography-1',
-    roadKmNominal: route.roadKmNominal,
-    estimatedDays: travel.estimatedDays,
-    routeSnapshot: travel.segments.map((segment, index) => ({
+  const source = input.state.cities.find((city) => city.id === input.sourceCityId);
+  if (!source?.factionId) return null;
+  const allowedCityIds = new Set<CityId>([
+    ...input.state.cities
+      .filter((city) => city.factionId === source.factionId)
+      .map((city) => city.id as CityId),
+    input.targetCityId as CityId,
+  ]);
+  const path = findStrategicRoutePath(input.sourceCityId as CityId, input.targetCityId as CityId, {
+    allowedCityIds,
+    departureAbsoluteDay: input.departureDay,
+    composition: input.composition,
+  });
+  if (!path || path.legs.length === 0) return null;
+  const legs = path.legs.map((leg) => ({
+    leg,
+    travel: estimateTravel(leg.route, leg.direction, input.departureDay, input.composition),
+  }));
+  const routeSnapshot = legs.flatMap(({ leg, travel }) =>
+    travel.segments.map((segment, index) => ({
       terrain: segment.terrain,
       lengthKm: segment.lengthKm,
       baseSpeedKmPerDay: segment.baseSpeedKmPerDay,
       speedMultiplier: segment.speedMultiplier,
-      fixedDelayDays: route.segments[index]?.fixedDelayDays ?? 0,
+      fixedDelayDays: leg.route.segments[index]?.fixedDelayDays ?? 0,
     })),
+  );
+  const routeId =
+    path.legs.length === 1 ? path.legs[0]!.route.id : `path-${stablePathHash(path.cityIds)}`;
+  return {
+    routeId,
+    routeVersion: 'v0.3-geography-2-path',
+    roadKmNominal: path.roadKmNominal,
+    estimatedDays: path.estimatedDays,
+    routeCityIds: path.cityIds,
+    routeSnapshot,
   };
+}
+
+function stablePathHash(cityIds: readonly string[]): string {
+  let hash = 2_166_136_261;
+  for (const character of cityIds.join('\u0000'))
+    hash = Math.imul(hash ^ character.charCodeAt(0), 16_777_619);
+  return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 function planParty(input: PlanPartyInput): OrderPartyPlan | null {
@@ -83,8 +114,25 @@ function planParty(input: PlanPartyInput): OrderPartyPlan | null {
 }
 
 function createJourney(input: JourneyCreationInput): V03Journey {
-  const route = ROUTE_BY_ID.get(input.route.routeId);
-  if (!route) throw new Error(`Unknown route ${input.route.routeId}.`);
+  const base =
+    ROUTE_BY_ID.get(input.route.routeId) ??
+    ROUTE_BY_ID.get(input.route.routeCityIds?.slice(0, 2).sort().join('--') ?? '') ??
+    ROUTE_DEFINITIONS[0]!;
+  const route: RouteDefinition = {
+    ...base,
+    id: input.route.routeId,
+    fromCityId: input.sourceCityId as CityId,
+    toCityId: input.targetCityId as CityId,
+    roadKmLow: input.route.roadKmNominal,
+    roadKmNominal: input.route.roadKmNominal,
+    roadKmHigh: input.route.roadKmNominal,
+    segments: input.route.routeSnapshot.map((segment) => ({
+      terrain: segment.terrain,
+      lengthKm: segment.lengthKm,
+      fixedDelayDays: segment.fixedDelayDays,
+      researchNote: 'Copied from the versioned leg geography snapshot.',
+    })),
+  };
   const journey = createCalendarJourney({
     id: input.id,
     executionId: input.executionId,
@@ -104,7 +152,12 @@ function createJourney(input: JourneyCreationInput): V03Journey {
   });
   if (journey.expectedArrivalDay !== input.arrivalDay)
     throw new Error('Journey estimate changed while building its snapshot.');
-  return { ...journey, kind: input.kind, ...(input.intent ? { intent: input.intent } : {}) };
+  return {
+    ...journey,
+    kind: input.kind,
+    routeCityIds: [...(input.route.routeCityIds ?? [input.sourceCityId, input.targetCityId])],
+    ...(input.intent ? { intent: input.intent } : {}),
+  };
 }
 
 export function createV03OrderServices(): GovernanceOrderServices {

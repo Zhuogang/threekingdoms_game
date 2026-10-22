@@ -13,7 +13,7 @@ import {
   type BattleTerrain,
   type BattleUnitPosition,
 } from './types';
-import { battlePositionIndex, findBattlePath } from './rules';
+import { battlePositionIndex } from './rules';
 
 const makePosition = (x: number, y: number): BattlePosition => ({ x, y });
 
@@ -314,16 +314,61 @@ export function validateBattleMap(map: BattleMap): string[] {
       errors.push(`Camp ${camp.id} must sit on passable land.`);
   }
 
-  const testUnit: BattleUnitPosition = {
-    id: 'map-validation',
-    side: 'attacker',
-    troopType: 'infantry',
-    ...map.attackerDeployment[0]!,
-  };
-  if (testUnit.x !== undefined) {
-    const destination = map.defenderDeployment[0];
-    if (destination && findBattlePath(map, testUnit, testUnit, destination) === null)
-      errors.push('Attacker and defender deployment zones have no passable route between them.');
+  const start = map.attackerDeployment.find(
+    (position) =>
+      Number.isInteger(position.x) &&
+      Number.isInteger(position.y) &&
+      position.x >= 0 &&
+      position.x < map.width &&
+      position.y >= 0 &&
+      position.y < map.height &&
+      battleTerrainAt(map, position) !== 'cliff',
+  );
+  if (start) {
+    // Every non-cliff terrain cell is traversable for every unit type. This checks the
+    // connected components of the shared map graph, including all spawns and camps;
+    // the path service separately accounts for asymmetric movement costs.
+    const reachable = new Set<number>([battlePositionIndex(start.x, start.y)]);
+    const queue = [start];
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const current = queue[cursor]!;
+      for (const next of [
+        { x: current.x, y: current.y - 1 },
+        { x: current.x + 1, y: current.y },
+        { x: current.x, y: current.y + 1 },
+        { x: current.x - 1, y: current.y },
+      ]) {
+        if (
+          next.x < 0 ||
+          next.x >= map.width ||
+          next.y < 0 ||
+          next.y >= map.height ||
+          battleTerrainAt(map, next) === 'cliff'
+        )
+          continue;
+        const nextIndex = battlePositionIndex(next.x, next.y);
+        if (reachable.has(nextIndex)) continue;
+        reachable.add(nextIndex);
+        queue.push(next);
+      }
+    }
+    const requiredPositions = [
+      ...map.attackerDeployment.map((position) => ['attacker deployment', position] as const),
+      ...map.defenderDeployment.map((position) => ['defender deployment', position] as const),
+      ...map.objectives.map((objective) => [`camp ${objective.id}`, objective.position] as const),
+    ];
+    for (const [label, position] of requiredPositions) {
+      if (
+        Number.isInteger(position.x) &&
+        Number.isInteger(position.y) &&
+        position.x >= 0 &&
+        position.x < map.width &&
+        position.y >= 0 &&
+        position.y < map.height &&
+        !reachable.has(battlePositionIndex(position.x, position.y))
+      )
+        errors.push(`${label} at (${position.x}, ${position.y}) has no passable route.`);
+    }
   }
   return errors;
 }

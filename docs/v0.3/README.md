@@ -1,6 +1,6 @@
 # v0.3 实施总览：地理行军、太守自治、大型水陆战场
 
-**更新：2026-10-21。状态：已建立 `v0.3` 分支，现为可运行但未完成全部需求的候选实现。** 全文代码复核确认物流账本、日调度、战斗权限/编组及存档校验缺陷，完整自治、战术动作和地图交互也有缺口。本目录取代[最初提案](../improvement_proposals_261021.md)；优先阅读[实施状态台账](implementation-status.md)、[完整复核报告](implementation-audit.md)和[后续实施计划/代理待办](implementation-plan.md)。不得把单元测试通过表述为全轨完成。
+**更新：2026-10-21。状态：v0.3 的确认缺陷已修复，计划中的玩法与地图交互已接入，最终自动化矩阵已完成；候选仍待玩家验收。** 当前实施状态、测试结果和人工门槛见[实施状态台账](implementation-status.md)及[接续实施计划](implementation-plan.md)。[完整代码复核](implementation-audit.md)是修复前的历史快照；其中记录的 F01–F08 不代表当前仍有缺陷。本目录取代[最初提案](../improvement_proposals_261021.md)。
 
 **这是独立发展的新三国游戏。** BAYE 是项目的历史来源，旧规则复刻与旧存档兼容不再是产品目标。沿用有价值的工程基础和真实来源记录；产品暂名《Hegemony of the Three Kingdoms》。
 
@@ -28,6 +28,12 @@
 | 宛城—襄阳 | 约 115 km | 130–155 km，名义 140 km | 7 日             |
 
 这些数值来自可复算的初始模型，路线长度和日速仍含研究估计。五个低置信古城锚点、跨年代迁城和优先核查的长途路线均在 G 轨明确列出；不能把整张表称为已测绘的汉末道路。正式素材和最终行程配置在这些记录上继续收敛。
+
+### Campaign map paper candidate (draft)
+
+The current campaign map background includes painted terrain washes that are only illustrative. This alternate ImageGen paper substrate avoids assigning river or mountain locations in the raster; program overlays remain the geographic source. It is not active in the game and remains draft until it is reviewed with the city, river, ridge, and route overlays. See the [asset manifest](assets/manifest.json) and [generation provenance](assets/provenance.md).
+
+![Draft paper-wash background candidate with a quiet center for exact map overlays](../../public/assets/v03/maps/campaign-paper-wash-02.webp)
 
 ## 2. 分轨文档与负责人
 
@@ -97,7 +103,7 @@ flowchart LR
 
 当前实施状态：核心地理、日历/行军、太守权限、战斗规则与界面、原创图像、存档和中英 Wiki 已进入新 v0.3 应用。已完成与未完成的验收边界列在[实施状态台账](implementation-status.md)；请勿把人工试玩或图像候选误记为已批准。
 
-里程碑复核：M0 的模块边界已建立但部分合同仍需落实；M1 有账本/顺序缺陷；M2 缺自治规划器和完整 D8 界面；M3 的基础水战可用但战术动作/AI/集成不完整；M4 缺实际相机接线和地理/美术批准；M5 的广泛性能、长战役、人工和保存不变量未完成。全部七个素材按玩家要求保持 draft；四场试玩和低端实机检查由玩家运行并反馈。
+里程碑复核（2026-10-21）：M0–M3 的主要接口、账本、权限和战斗规则已集成并有自动化回归；M4 的相机、小地图和地图交互已接线。最终单前线 96 个月机器人矩阵、全量自动化测试和浏览器验证均已通过；历史路线精度、长战役平衡、四场玩家试玩和真实低端机检查仍需实测。素材保持 `draft`，等玩家提供修订意见并审核运行时画面。
 
 ## 6. 不随本轮自动纳入的内容
 

@@ -43,7 +43,10 @@ export function getCityCapabilities(
   return {
     view: true,
     administerDirectly: direct,
-    appointGovernor: true,
+    // The capital is directly ruled and is never a valid governor appointment target.
+    // Keep this query aligned with canAppointGovernor so UI capabilities cannot promise
+    // an action that the command boundary will reject.
+    appointGovernor: city.id !== state.playerCapitalCityId,
     requisitionResources: true,
     issueCampaignDirective: true,
     diplomacy: direct,

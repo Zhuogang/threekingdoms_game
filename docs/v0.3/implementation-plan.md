@@ -1,144 +1,84 @@
-# v0.3 后续实施计划与并行任务清单
+# v0.3 implementation plan and remaining work
 
-更新：2026-10-21；基于[完整代码复核](implementation-audit.md)。当前分支 `v0.3` 是候选快照，不是完成验收的发布版。原 `00`–`07` 需求继续有效；下表是接下来可以分派给编码代理的实际工作，取代“从零开始”安排。
+Updated 2026-10-21 after implementation of the confirmed defects and the planned feature tracks. The branch `v0.3` now contains the fixes and feature work described below. This plan records what is implemented, what remains open, who should own the next step, and how to accept it. The initial source audit remains available as a historical pre-fix snapshot in [implementation-audit.md](implementation-audit.md); use [implementation-status.md](implementation-status.md) for current evidence.
 
-## 已完成、应保留的基础
+## Completed implementation
 
-- [x] 新应用入口和独立 v0.3 状态/本地存档格式。
-- [x] 24 城、42 边估算表、基准 ETA、日历与行程快照。
-- [x] 本城/辖城权限基础、月界任免、征调/出征规则层和竞争者派军基础。
-- [x] 四区域 24×20 战术数据、基本移动/攻击/反击、六类单位水上统一惩罚、D11 默认规则。
-- [x] SVG 地图/小地图几何、七个候选 ImageGen 资产、八章中英 Wiki 和实际截图。
-- [x] 初始单元、构建、浏览器 smoke 与单战斗日性能基线。
+- [x] P01 — daily troop-service ledger, fixed-point journey food charging, cargo delivery/accounting, capture handling, and once-per-day accounting guard. Regression cases cover F01–F03 and the monthly/capture paths.
+- [x] P02 — deterministic day-resolution order, event pause behavior, delayed travel for newly created return trips, defender garrison snapshotting, and troop-day month accounting. Regression cases cover F04–F06.
+- [x] P03 — battle participant authorization, militia/officer roster identity, strategic access during other battles, per-battle day completion and saved cursors. Regression cases cover F07 and the linked campaign/battle flows.
+- [x] P04 — deterministic governor autonomy on the existing monthly work-point budget, reserve protection, shared city-action validation, imported legacy reward/fine-arms/relief actions, and month-boundary appointment recovery. Replaced or captured-city transfer candidates request a safe return; invalid candidates clear the pending appointment and preserve current governance.
+- [x] P05 — bilingual order controls expose requested quantity, executable amount, shortfall, route/date estimates, and accept/reduce/wait/cancel choices; the in-game wiki explains governance and the six battle tactics in both languages.
+- [x] P06 — six tactics, legacy point costs and eligibility, common forecast/resolution rules, ZOC, retreat, AI path-cost handling, D11 survivor-count resolution, and expanded map/shore-water scenario tests. The player approved porting legacy tactic rules.
+- [x] P07 — route distance/profile labels, saved multi-hop route display and journey progress, plus a C-grade anchor sensitivity report. Only directly supported schematic geography is drawn; no unsupported historical corridor bends were invented.
+- [x] P08 — campaign/battle camera controls, fit/focus, battle minimap navigation and viewport, party/status overlays, bilingual labels, and keyboard focus/order feedback are integrated.
+- [x] P10 — v0.3 save validation now checks journey/officer/order associations and duplicate membership, applies bounded input/retention rules, and preserves the current save when import validation fails.
+- [x] P11 foundations — deterministic campaign-bot and diagnostics runner, reproducible source/config fingerprints, metrics helpers, two-month smoke evidence, updated CI performance script, and regression coverage for F01–F08.
 
-“基础完成”不抵消下列缺陷；完整轨道与 E01–E15 的状态见[台账](implementation-status.md)。
+These checkmarks describe implementation and automated coverage. They do not claim final art approval, historical map certification, full campaign balance, human play acceptance, or low-end hardware acceptance.
 
-## 并行与文件所有权
+## Work package status
 
-| Agent       | 独占领域                                                                                                      | 当前工作包                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| L 日历/账本 | `src/v03/calendar/`、物流领域测试                                                                             | P01、P02 的领域服务；通过 I 接入 `engine.ts`                 |
-| V 治理/战略 | `src/v03/governance/`、`strategic-ai.ts` 和其测试                                                             | P04、P05 的规则查询/订单接口                                 |
-| B 战术      | `src/v03/battle/`、战术测试/诊断                                                                              | P06；P02 编组接口和战后结果                                  |
-| G 地理      | `src/v03/geography/`、路线数据及核查                                                                          | P07；给 R/A 同一控制点布局                                   |
-| R 渲染      | `src/v03/rendering/`、渲染测试                                                                                | P08；提出 App 接线改动交 I                                   |
-| A ImageGen  | `public/assets/v03/`、`docs/v0.3/assets/`                                                                     | P09；不改逻辑地形或伤害                                      |
-| I 集成      | `engine.ts`、`types.ts`、`commands.ts`、`App.tsx`、`wiki.ts`、`styles.css`、`platform/storage.ts`、入口/包/CI | P03、P05 UI、P10、各轨接线；一个时段只允许一个人编辑共享文件 |
-| Q 验证      | 集成/浏览器夹具、诊断脚本与持久化证据                                                                         | P11；先写能暴露已确认缺陷的测试，再比较修复结果              |
+| Package                                   | Owner / files                                              | Status                                                                                                                                                                                                   | Remaining acceptance work                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P01 resources and troop-day accounting    | L + I; `calendar/`, `engine.ts`, `types.ts`                | Implemented; F01–F03 regressions added; final full suite passes                                                                                                                                          | Player campaign sessions remain open; the final campaign ledger is preserved in the 96-month evidence.                                                                                                                                                                                                                                                                                                           |
+| P02 daily ordering and battle aftermath   | L + B + I; `calendar/`, `engine.ts`                        | Implemented; F04–F06 regressions and combined battle/arrival/month/save paths pass                                                                                                                       | Player campaign sessions remain open.                                                                                                                                                                                                                                                                                                                                                                            |
+| P03 battle authority and multiple battles | B + I + Q; `engine.ts`, commands, App and tests            | Implemented; F07 regression, per-battle cursor coverage and full browser suite pass                                                                                                                      | Player play sessions must confirm the complete experience.                                                                                                                                                                                                                                                                                                                                                       |
+| P04 governor autonomy and city actions    | V + I; `governance/`, App, Wiki                            | User-approved legacy actions, confirmed troop-free transfers, death cancellation and month-boundary appointment recovery are covered by focused integration tests                                        | Lost-home refuge recovery is covered in the engine integration suite. The player confirmed the troop-free transfer rule; see [03](03-governors-and-authority.md) and [decisions](00-decisions-and-contracts.md#10-后续确认的实现规则).                                                                                                                                                                           |
+| P05 D8 order UI and wiki                  | V + I; App, `wiki.ts`, localization                        | Main bilingual flow implemented; full browser suite passes                                                                                                                                               | Multi-city coordination and fully simulated future budgets remain outside the implemented planner.                                                                                                                                                                                                                                                                                                               |
+| P06 tactics, water rules and AI           | B + I; `battle/`, App and tests                            | Six tactics use ported legacy rules; targeted domain and tactic-browser tests pass; the exact-source 24-run, 96-month campaign-bot matrix and tuning comparisons are complete                            | The tested narrow bot produced no true unifications or Hegemon victories. The attempted capital-priority and two-front variants were rejected for no safe progression gain; strategic progression remains an open player-review risk. Tactical art remains draft and four human play sessions remain open.                                                                                                       |
+| P07 route and geography presentation      | G + L + R; geography, rendering, evidence                  | Schematic route display, multi-hop progress and ±20/40 km anchor sensitivity are implemented                                                                                                             | Historical road bends and seasonal/directional parameters remain unsupported where source coordinates are unavailable. Keep those routes explicitly schematic.                                                                                                                                                                                                                                                   |
+| P08 maps and accessibility                | R + I; rendering, App, CSS                                 | Camera, minimap, keyboard feedback and overlays are implemented; automated checks cover 390/1366/1920 CSS px in both languages and 200% zoom                                                             | Large-text/manual usability and real low-end-device acceptance remain player-owned; browser checks do not replace the requested play sessions.                                                                                                                                                                                                                                                                   |
+| P09 ImageGen revisions                    | A + R + G; `public/assets/v03/`, asset manifest/provenance | Seven current assets and the new campaign-paper candidate remain `draft`, as requested                                                                                                                   | Wait for specific player revision notes. Then read the local `imagegen` skill instructions at `C:\Users\pengz\.codex\skills\.system\imagegen\SKILL.md` and source provenance, edit the referenced candidate, inspect at map/field scale, validate output dimensions/alpha/anchor/hash, update manifest and provenance, and ask the player to review the rendered result before changing any status from `draft`. |
+| P10 save integrity                        | I + Q; `platform/storage.ts`, schema, tests                | Association validation, limits, history bounds, import preservation and save round-trip coverage implemented; final unit, production-path and browser checks pass                                        | Human testing may still expose UX recovery or long-session issues.                                                                                                                                                                                                                                                                                                                                               |
+| P11 campaign and release evidence         | Q + I; `tools/v03-campaign-*`, CI and evidence             | Capital-priority and two-front tuning were rejected after matched diagnostics; the conservative one-plan policy is restored and the exact-source 24-run 96-month matrix and evidence review are complete | No true unification or Hegemon outcomes were recorded; this narrow-bot limitation is documented for player review. Push, PR and remote CI remain deferred.                                                                                                                                                                                                                                                       |
 
-可用并发少于角色数时轮换代理。第一波 L/V/B/Q 可独立形成纯接口和回归用例；G/R/A 可同时做路线核查、镜头组件和已有 draft 的问题标注。I 按次序合并共享文件；不得让多个代理同时编辑 `engine.ts` 或 `App.tsx`。
+## Owner assignments for remaining acceptance
 
-## 第一波：先修复规则与账本
+### Q — final automated evidence
 
-### P01 — L / I：资源和兵力守恒
+1. **Complete:** the mixed 48-month and clean two-front-only 96-month trials were rejected; the latter ended both Guandu/Liu runs by month 5 without producing a unification or Hegemon result. The one-plan default is restored. The final `docs/v0.3/evidence/v03-campaign-final-96m.json` contains all 24 runs for the exact retained source fingerprint.
+2. **Complete:** the final artifact records all 24 available scenario/faction/cohort runs, current source/config fingerprints, and observed metrics. Water-attributed casualties and city shortage days remain `N/A` where the runner cannot observe them; no values were inferred.
+3. **Complete:** earlier passive-player diagnostics remain immutable and labeled historical. No v0.2 balance waiver was carried into v0.3.
+4. **Complete:** full unit suite, build, TypeScript, format, v0.3 performance test, full E2E browser suite, portrait validation and production subpath test passed on the frozen candidate. Exact outcomes and build warnings are in `implementation-status.md`.
 
-- [ ] 修 F01，复用正确的定点累计，不把余数算成缺粮；行军/待命/战场缺粮采用有说明的一致处理。
-- [ ] 修 F02/F03：突袭战利品只放一次在途货舱；满仓留待卸队列；交付/取消/返程各有明确已交/未交账本。
-- [ ] 以每日所在地点计算粮饷/服役日，月结只结应付部分；不得在月底重新推导而遗漏在途人员或抹掉未编组驻军。
-- [ ] 覆盖玩家/AI、敌城变化、跨月、重载和重复命令；记录各项消耗而不是让总量无解释变化。
+### I — integration and documentation
 
-**验收：** F01 的 101 兵十日扣 8、余 80,000；突袭到达前不进本城库存，到达只进一次；满仓的 200 金最终精确卸下；月末前后出发/抵达不免除或重复费用。保存恢复、拆队/合队和连续运行账本一致。先红后绿保留回归用例。
+1. Fix only failures exposed by the final verification; keep regression tests for each defect.
+2. Verify that Save, Export, Import, Wiki, language switching, all six tactics, governor actions and per-battle controls are reachable from the v0.3 UI.
+3. Keep `implementation-audit.md` as a pre-fix record. Update the living README, contracts, track reports, implementation plan and status so no pre-fix statement is presented as current behavior.
+4. Commit the reviewed candidate locally on branch `v0.3`. Do not push, open a PR, or claim remote CI: those actions were deferred.
 
-### P02 — L / B / I：每日顺序、到达和战后处理
+### G — historical route evidence
 
-- [ ] 修 F04/F05：冻结日初行动实体；每个日末重新纳入新事件，新建返程下日才走；月报/到达/待决事项在正确日期暂停。
-- [ ] 对同日同城到达按稳定次序排队，已有战斗时不得重复读取守军/粮库；待命照常消耗口粮。
-- [ ] 修 F06：军官编组与民兵用唯一 ID/独立 membership，补空城与无官驻军的明确兵力来源。
-- [ ] 返回/改送只采用合法路径与实际代价；无路等待、召回、失去最后友城、来源/目的地失陷有可恢复结果。
+1. Preserve the current 24-city/42-edge estimates and the reproducible anchor-sensitivity calculation.
+2. Add a corridor bend or waypoint only when a source supports a place and usable coordinate. Record the source, dating, uncertainty and route segment. Until then show a schematic connector and keep the route’s distance and ETA sourced from the numeric profile.
+3. Do not change city anchors to make lines visually attractive or represent a regional theater graphic as a measured road map.
 
-**验收：** 29+10 停在 30；next-event 不越过新月报/新到达；新返程 elapsedDays=0；步兵守将+民兵正常开战。双手动战场+AI战场+在途运输+月界组合中，一日只结算一次，所有分支可存读档且无额外行军/扣粮。
+### R — visual acceptance
 
-### P03 — I / B / Q：玩家战斗权限与多战场流程
+1. Run the campaign and battle flows at 390, 1366 and 1920 CSS-pixel widths in both English and Chinese.
+2. At 200% zoom and large text, verify city selection, order submission, unit selection, move/attack, camera fit/focus, minimap pan and language switching remain operable without a unique hidden control.
+3. Record browser/OS/resolution and screenshots for any failures. This is automated/browser evidence; it does not replace the player's four play sessions or low-end-device test.
 
-- [ ] 修 F07：命令层验证玩家是参战方；UI 过滤/只读显示非玩家战斗。
-- [ ] 把“当前视图”与“选中战斗 ID”分开，任意活动战斗期间可返回战略地图。
-- [ ] 每场玩家战斗明确提交本日完成；未完成其他战场时暂停全局日期，日内保存包含稳定游标。
+### A — image revision after player feedback
 
-**验收：** 外国战斗所有玩家动作原子拒绝；甲战场结束后可操作乙战场，甲不重置动作；全部当日战场完成后世界恰好前进一天；中英 UI 全链路浏览器测试通过。
+1. Keep every current asset marked `draft` until the player gives concrete revision feedback and approves the rendered result.
+2. For a requested revision, use the ImageGen editing workflow with the matching local source asset as a reference. Preserve the ink-wash palette, geographic-overlay quiet zones, unit foot anchors and existing alpha unless the player asks to change them.
+3. Generate only the requested variant, inspect the source and runtime-sized output, check that terrain never encodes hidden movement/damage rules, and update provenance with prompt intent, source, tool output, dimensions, alpha, hash and reviewer disposition.
+4. Capture the real campaign/battle overlays at overview and close scale. Do not mark an image approved from a contact sheet alone.
 
-## 第二波：完成原计划的玩法与交互
+## Player-owned acceptance gates
 
-### P04 — V / I：真实自治与保留的城市系统
+- Four campaign/battle play sessions, each covering 12 in-game months and at least three manually controlled battles. Record discoveries and send them for follow-up; until then the gate remains open.
+- A real low-end-machine check, including startup, campaign-map responsiveness, one 24×20 battle, camera/minimap interaction and a long day-resolution case. Record the actual machine and browser; emulator throttling is supplemental evidence only.
+- Art remains draft pending revision feedback. The player already approved the earlier Ma Chao portrait/contact sheet and four v0.2 profiles, but that approval does not approve the v0.3 candidate set.
 
-- [ ] 按 `03` 权限矩阵提供城市工作/征募编兵等可执行服务，再让玩家本城与太守代理共用费用、额度和校验。
-- [ ] 用人员、威胁、储备和已批准命令生成自治计划；现有一次农商自动加点不能代替 V5。
-- [ ] 同步 capability 和执行校验；各订单答复统一阶段/修订规则；异常待任不静默无限顺延。
-- [ ] 安全处理带兵将领的任命、代理、空缺、失陷和返程。当前“仅无兵将领可任命”是实现限制，不是用户决定。
-- [ ] 清点原合同保留的外交/期限、月事件、Hegemon 等功能，按合同接回新日历；若要取消任何一项，先形成明确产品取舍供玩家决定。
+## Decisions already recorded
 
-**验收：** 确定性自治记录说明每项动作/费用；任免不刷新额度；无免费资源、无重复用将；两剧本正常初局具备可用任命和补兵链路。事件/外交/胜利的日期测试使用新引擎；未实现项继续标 open，不能靠旧模块通过测试来关闭。
+- D1–D11 are accepted. For D11, after 30 days the side with more surviving troops takes the field; defender wins a tie. The default policy is `survivor-count`.
+- Legacy combat tactic costs/chances/rules were accepted for porting.
+- Legacy governor reward, fine-arms and relief rules were accepted for porting within the existing v0.3 monthly work-point and resource budget.
+- The user deferred push, PR and CI. No old v0.2 balance exception is inherited.
 
-### P05 — V / I：D8 完整中英订单与 Wiki
-
-- [ ] 保留规则层结构化 preview，展示需求/可交付/缺口、留守、分项口粮、真实编队 ETA、最早日期及原因。
-- [ ] 资源表单支持兵力和期限；提案的接受足额、指定缩减、等待、取消各有合法路径和准确文案。
-- [ ] 支持在途召回/未出发修订，明确两种生命周期，避免重新派出同一资源。
-- [ ] 动态错误/事件/战况采用可本地化模板；同步八章 Wiki，说明突袭 10 日而普通战斗 30 日、调任可能跨多个月界以及尚不提供的操作。
-
-**验收：** 用户从游戏界面完成 E05 的全部分支，不依赖构造命令或存档；英文/中文数字与规则查询相同，读取帮助/切换语言不改变状态。满仓/无路文案必须等待 P01/P02 真正实现相应保障后才能宣称。
-
-### P06 — B / I：战术功能、AI 与地域规则
-
-- [ ] 按 `04` 完成计策、ZOC、撤退和纯伤害/反击预测；对确实要精简的内容另行提交范围决策，不能默删。
-- [ ] AI 用路径距离和水上风险评分，处理绕障、堵塞、岸射、护卫上岸和守营；无永久等待循环。
-- [ ] 四地区 ×20+种子 ×四方向验证全部部署点、营地及水陆通道，不只验证第一对出生点。
-- [ ] 六乘六兵种 ×四岸水组合，验证普通攻击/反击/适用计策、取整与击杀上限；D11 用真实开战到战略结果链路验证。
-
-**验收：** 同输入预测与实伤一致；水上规则不因兵种或操作路径失效；24×20 不缩水、无攻城；完成原任务书的 AI 与交火/时长测量。关联 P02/P03 后再执行 E08。
-
-### P07 — G / L / R：路线与地域可解释性
-
-- [ ] 补五个 C 级锚点 ±20/40 km 敏感性报告，优先秦岭、太行、汉水上游、江州—江陵、江夏—许县。
-- [ ] 将有证据的走廊控制点/路段模式写入同一版本数据；友境多段路径逐节点验证通行和总 ETA。
-- [ ] R 用同一路径放置队伍、路线高亮与分段进度；保持基准公里与编队 ETA 区别。
-
-**验收：** 所有42边距离/分段/版本可复算；UI 与规则同一 route；图上避让山河不靠改城市锚点伪造距离。没有依据的方向/季节/渡口参数明确为中性/待核，战略航运不冒充 R 类岸路。
-
-## 第三波：地图、美术和保存质量（可提前并行）
-
-### P08 — R / I：可操作的地图和可访问性
-
-- [ ] 将相机状态、平移/缩放、fit、聚焦选中和小地图点击/视口框接入 App。
-- [ ] 修队伍覆盖层与 SVG 的坐标比例，运输/行军/等待有不同图形，可查看粮草/ETA/状态。
-- [ ] 六类单位均有可区分的语义标记，显示行动状态、岸水修正和 P06 预测。
-- [ ] 完成键盘选城/选格、可见焦点、Wiki 搜索/帮助快捷键/Escape/焦点恢复、语言切换及 html lang。
-
-**验收：** 390/1366/1920、双语、200%缩放和大字号下实际执行选城→下令→战场移动/攻击→小地图重定位，所有唯一操作可达；不能仅断言元素 visible。相机与语言不改变 RNG/ETA。
-
-### P09 — A / R / G：ImageGen 修订和正式审核
-
-- [ ] 继续保留七个资产的 `draft`，收集玩家具体修订反馈；当前没有自动获批的图。
-- [ ] G 的控制线与 R 的相机/脚点先锁定；生成前读 imagegen skill 和原始 provenance，使用已有源图作为编辑参考。
-- [ ] 依据 `06` 拆分地面/山林/地域变体与兵种身份，先修一个样板，接真实场景验证；不必为三种其他兵种强制生成独立人物图，清晰的原生徽记也满足既定身份要求。
-- [ ] 校验尺寸/alpha/完整武器与马匹/脚点/hash/来源，登记每次选择理由；以四区域实机、全图和近景、岸水各态交给玩家审核。
-
-**验收：** 图片边界不决定规则；地图地理、可走 hill 与 cliff、友敌与兵种在小尺寸可分辨。玩家明确接受后才更新资产状态；未通过的变体仍为 draft。技术验证不能代替审美批准。
-
-### P10 — I / Q：存档完整性与长期可保存
-
-- [ ] 修 F08 及全部双向实体不变量；对未知 scenario/city IDs、人员多重归属、进度超路长、阶段/日期/结果冲突拒绝导入。
-- [ ] 解析前限制文件大小；设计 events/battles/journeys 保留与历史归档策略，避免正常长局越过 schema 上限后无法保存。
-- [ ] Save/Export/自动保存失败都有可重试提示；拒绝导入保持原局和原存档；旧版浏览器数据保持独立。
-
-**验收：** E14 包含超大输入、坏关联、各日内阶段和长局边界；往返后继续推进与原状态确定性一致。失败不会白屏或覆盖最后有效存档。
-
-## 第四波：验证与交付
-
-### P11 — Q / I：真正的 v0.3 验证矩阵
-
-- [ ] 先把 F01–F08 和关键 G 项变成失败回归；逐包修复后重跑相关测试，然后完整套件/构建/格式/浏览器/生产子路径。
-- [ ] 修 CI 的失效 `test:perf` 命令，验证选中的脚本实际运行 v0.3；当前授权仍仅本地，不因此 push/PR。
-- [ ] 新建使用 v0.3 命令的机器人与诊断；两剧本×六势力、开发/独立留出种子，跑真实 48/96×30 日，记录配置/源码指纹、异常、中止及原始计数。
-- [ ] 先固定 v0.3 平衡指标；报告交火日、时长、兵力强弱、水域损失、缺粮、征调履约、太守闲置和长途参与。真统一与 Hegemon 分开；功能未实现则明确 N/A。
-- [ ] 比较水上乘数、部署纵深、物流费率，每次只改一个维度；未达目标不得沿用 v0.2 豁免。
-- [ ] 测量整场战斗和复杂日调度 p50/p95、真实点击/绘制时延、CPU4×、空闲与重复挂载资源；单战斗日 p95 不是全局性能。
-- [ ] 收集玩家四场试玩和低端机器反馈，修复后记录复测；刷新最终截图、README、Wiki和台账。
-
-**结束条件：** E01–E15 均有对应证据和真实状态，P01–P10 完成或有具体获批范围调整；没有未处理的 P1 规则缺陷；艺术与人类门槛有实际处置。届时记录候选 commit 和命令结果。push/PR/远程 CI/发布须后续授权。
-
-## 玩家决定及当前外部输入
-
-- 已决定 D1–D11，不重新询问。D11：30 日时限剩余总兵力多者胜，平手守方胜；应用默认 policy 为 `survivor-count`。
-- 已决定图像保留 draft 待修订，具体美术修改点尚待反馈；有反馈后按 P09 处理。
-- 玩家将亲自进行四场试玩与低端机检查并反馈，未做部分仍保持 open。
-- 若未来需要删减计策、自治动作、外交/Hegemon 等原合同内容，应列出精确影响再问玩家；本次复核没有擅自删减。
+The conservative one-plan rival policy remains after capital-priority and two-front tuning trials failed to show a safe progression gain. The 96-month narrow-bot matrix recorded no true unification or Hegemon outcomes; this remains a strategic progression risk for player review, not a claimed success. All planned automated validation passes on the candidate. The four requested player play sessions, real low-end-machine check, and later art revision review remain open player-owned gates; do not mark v0.3 fully accepted while any of those gates lacks evidence.

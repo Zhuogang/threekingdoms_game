@@ -359,7 +359,11 @@ export interface JourneyStepResult {
 
 /** Advances one full strategic day. The journey is immutable from the caller's view. */
 export function advanceJourneyOneDay(journey: Journey): JourneyStepResult {
-  if (journey.status !== 'outbound' && journey.status !== 'returning') {
+  if (
+    journey.status !== 'outbound' &&
+    journey.status !== 'returning' &&
+    journey.status !== 'waiting'
+  ) {
     return {
       journey,
       arrived: journey.status === 'delivered',
@@ -374,7 +378,13 @@ export function advanceJourneyOneDay(journey: Journey): JourneyStepResult {
   };
   let remainingWorkDays = 1;
   let distanceTravelledKm = 0;
-  for (let index = 0; index < updated.routeSnapshot.length && remainingWorkDays > 1e-10; index++) {
+  for (
+    let index = 0;
+    journey.status !== 'waiting' &&
+    index < updated.routeSnapshot.length &&
+    remainingWorkDays > 1e-10;
+    index++
+  ) {
     const segment = updated.routeSnapshot[index]!;
     const waitRemaining = updated.segmentWaitDays[index]!;
     if (waitRemaining > 0) {
@@ -392,23 +402,30 @@ export function advanceJourneyOneDay(journey: Journey): JourneyStepResult {
     remainingWorkDays -= movementKm / speed;
   }
   updated.elapsedDays += 1;
-  const arrived = updated.routeSnapshot.every((segment, index) => {
-    return (
-      updated.segmentWaitDays[index]! <= 1e-10 &&
-      updated.segmentProgressKm[index]! >= segment.lengthKm - 1e-8
-    );
-  });
+  const arrived =
+    updated.status !== 'waiting' &&
+    updated.routeSnapshot.every((segment, index) => {
+      return (
+        updated.segmentWaitDays[index]! <= 1e-10 &&
+        updated.segmentProgressKm[index]! >= segment.lengthKm - 1e-8
+      );
+    });
   const dailyChargeMicro =
     updated.manifest.troopCount *
     Math.round(PILOT_LOGISTICS_RATES.travelFoodPerTroopDay * 1_000_000);
   const rationMicro = updated.supplyRemainderMicro + dailyChargeMicro;
   const rationWholeFood = Math.floor(rationMicro / 1_000_000);
   const paidFood = Math.min(updated.manifest.carriedFood, rationWholeFood);
-  const foodShortfall = Math.max(0, (rationMicro - paidFood * 1_000_000) / 1_000_000);
+  const unpaidMicro = Math.max(0, rationMicro - paidFood * 1_000_000);
+  const hasEnoughFoodForCurrentRation = updated.manifest.carriedFood * 1_000_000 >= rationMicro;
+  // Keep fractional demand in the fixed-point accumulator while the party has
+  // enough stock to cover it. Only turn it into a shortfall when the available
+  // stock cannot cover the complete daily demand.
+  const foodShortfall = hasEnoughFoodForCurrentRation ? 0 : unpaidMicro / 1_000_000;
   updated.manifest = { ...updated.manifest, carriedFood: updated.manifest.carriedFood - paidFood };
   updated.consumedFood += paidFood;
   updated.accumulatedFoodShortfall += foodShortfall;
-  updated.supplyRemainderMicro = foodShortfall > 0 ? 0 : rationMicro - paidFood * 1_000_000;
+  updated.supplyRemainderMicro = hasEnoughFoodForCurrentRation ? unpaidMicro : 0;
   if (arrived) updated.status = 'delivered';
   return { journey: updated, arrived, distanceTravelledKm, foodShortfall };
 }
@@ -501,7 +518,7 @@ export interface CargoBundle {
   reserve: number;
 }
 
-export type CargoStage = 'reserved' | 'inTransit' | 'delivered' | 'released' | 'lost';
+export type CargoStage = 'reserved' | 'inTransit' | 'waiting' | 'delivered' | 'released' | 'lost';
 
 export interface CargoExecution {
   executionId: string;
@@ -590,6 +607,42 @@ export function dispatchCargo(ledger: CargoLedger, executionId: string): CargoLe
 
 export function deliverCargo(ledger: CargoLedger, executionId: string): CargoLedger {
   return transitionCargo(ledger, executionId, 'inTransit', 'delivered', 'delivered');
+}
+
+/**
+ * Unload only the amount the destination can hold. Any remainder stays in the
+ * execution ledger at the destination and can be retried when capacity frees.
+ */
+export function deliverCargoWithinCapacity(
+  ledger: CargoLedger,
+  executionId: string,
+  availableCapacity: CargoBundle,
+): CargoLedger {
+  const execution = ledger.executions[executionId];
+  if (!execution || (execution.stage !== 'inTransit' && execution.stage !== 'waiting')) {
+    throw new Error(`Execution ${executionId} is not waiting for delivery.`);
+  }
+  assertCargo(availableCapacity);
+  const delivered = copyCargo(execution.delivered);
+  const remaining = copyCargo(execution.remaining);
+  for (const key of Object.keys(remaining) as (keyof CargoBundle)[]) {
+    const amount = Math.min(remaining[key], availableCapacity[key]);
+    delivered[key] += amount;
+    remaining[key] -= amount;
+  }
+  const hasRemainder = Object.values(remaining).some((amount) => amount > 0);
+  return {
+    ...ledger,
+    executions: {
+      ...ledger.executions,
+      [executionId]: {
+        ...execution,
+        stage: hasRemainder ? 'waiting' : 'delivered',
+        remaining,
+        delivered,
+      },
+    },
+  };
 }
 
 export function loseCargo(ledger: CargoLedger, executionId: string): CargoLedger {

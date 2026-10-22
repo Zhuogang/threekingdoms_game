@@ -1,0 +1,500 @@
+{
+  "generatedAt": "2026-10-21T22:56:20.712Z",
+  "status": "complete",
+  "command": [
+    "--months",
+    "2",
+    "--scenario",
+    "divided-realm-190",
+    "--factions",
+    "cao",
+    "--output",
+    "docs/v0.3/evidence/v03-campaign-bot-smoke-2m.json"
+  ],
+  "nodeVersion": "v24.15.0",
+  "wallClockMs": 45350,
+  "model": {
+    "description": "Deterministic in-memory adjacent-city campaign bot. It attacks one adjacent enemy city at a time per campaign day using campaign commands, preserves the protected source garrison, accepts a command-proposed reduced force when executable, and drives its side in battles with the deterministic tactical AI.",
+    "policy": "deterministic-adjacent-campaign-bot-v1",
+    "decisionRules": [
+      "Select only directly connected cities owned by a non-allied, non-eliminated enemy faction; skip neutral cities and targets with active campaigns or battles.",
+      "Rank available attacks by defender-to-dispatched-force ratio, then nominal route days, source city ID, and target city ID.",
+      "Retain the existing 35%/1,000 protected source garrison rule and ten-officer campaign party cap.",
+      "Issue and answer campaign directives through executeV03Command; command route, alliance, food, officer, and resource checks remain authoritative.",
+      "Acknowledge due events before policy actions. Resolve the selected faction’s tactical turns with the deterministic battle AI and submit battle-day completion through the command boundary."
+    ],
+    "metricDefinitions": {
+      "battleDuration": "Tactical battle day number at the checkpoint; raw per-battle values are retained.",
+      "closeBattle": "Resolved battle with an absolute surviving-troop difference no greater than 10% of combined initial troops.",
+      "relativeStrength": "Initial attacker/defender troop counts and ratio; weaker-side wins are counted separately.",
+      "longDistance": "Campaign route is multi-leg when the route snapshot includes an intermediate city; raw nominal route kilometres are retained.",
+      "governorIdle": "Count only autonomous cities whose workMonthIndex matches the latest completed month; unobserved cities are kept separate."
+    },
+    "victoryDefinitions": {
+      "trueUnification": "Every campaign city is controlled by the selected faction.",
+      "hegemon": "The engine declares victory after one faction controls Luoyang and at least 16 cities for 12 consecutive month boundaries, when no battle remains active. Reported separately from true city unification."
+    },
+    "limitations": [
+      "This is a narrow heuristic policy, not a human-like strategic agent: it does not prioritize economy, diplomacy, defense, raids/sacks, governance actions, long-term supply planning, or multi-front coordination.",
+      "It considers only direct adjacent enemy cities and uses a simple force-to-garrison ratio with nominal route time. Tactical battle outcomes are AI-driven, not human-play results.",
+      "It is an implementation diagnostic, not by itself a balance acceptance run; its policy biases the selected faction toward expansion and affects outcome distributions.",
+      "True unification, Hegemon claim/streak/win, player elimination, and the state winner are reported as distinct outcomes; this diagnostic does not establish feature completeness or gameplay quality.",
+      "It does not replace human campaign/battle playtests or a real low-end-device check."
+    ]
+  },
+  "matrix": {
+    "scenarios": [
+      "divided-realm-190"
+    ],
+    "factions": [
+      "cao"
+    ],
+    "unavailableFactions": {
+      "divided-realm-190": []
+    },
+    "cohorts": [
+      "development",
+      "held-out"
+    ],
+    "months": 2,
+    "campaignCount": 2
+  },
+  "fingerprints": {
+    "sourceFiles": [
+      "src/v03/engine.ts",
+      "src/v03/initial-state.ts",
+      "src/v03/strategic-ai.ts",
+      "src/v03/calendar/index.ts",
+      "src/v03/calendar/day-resolution.ts",
+      "src/v03/battle/engine.ts",
+      "src/v03/battle/maps.ts",
+      "src/v03/geography/index.ts",
+      "src/v03/governance/autonomy.ts",
+      "src/v03/governance/services.ts",
+      "src/v03/campaign/monthly-systems.ts",
+      "tools/v03-campaign-bot.mjs",
+      "tools/v03-campaign-diagnostics.mjs",
+      "tools/v03-campaign-diagnostics-helpers.mjs"
+    ],
+    "sourceSha256": "233e8f78e8deff29c4e0191b218c7c4ac1205aa53c7c5c62464ab45f1e1ff59a",
+    "configFiles": [
+      "src/content/scenario.ts",
+      "src/content/guandu.ts",
+      "src/v03/geography/index.ts",
+      "src/v03/battle/maps.ts",
+      "src/v03/calendar/index.ts"
+    ],
+    "configSha256": "187c4ccd32c6a263152109b47935d914248688fa74598a4a0e2b3873583a8e56"
+  },
+  "aggregate": {
+    "trueUnificationsAtFinal": 0,
+    "playerEliminations": 0,
+    "hegemon": {
+      "status": "implemented",
+      "claimsAtFinal": 0,
+      "victoriesAtFinal": 0
+    }
+  },
+  "results": [
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "cao",
+      "cohort": "development",
+      "seed": 610301,
+      "requestedMonths": 2,
+      "completedMonths": 2,
+      "stoppedEarly": false,
+      "finalPhase": "battle",
+      "bot": {
+        "campaignCandidatesTried": 4,
+        "campaignCommandsRejected": 0,
+        "campaignsDispatched": 4,
+        "campaignsReducedAndDispatched": 0,
+        "campaignsCancelledAfterShortfall": 0,
+        "tacticalBattleDays": 52
+      },
+      "checkpoints": {
+        "2": {
+          "month": 2,
+          "absoluteDay": 60,
+          "phase": "battle",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 4,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 12164,
+          "totalPlayerFood": 66872,
+          "activeBattles": 1,
+          "battlesStarted": 6,
+          "battlesResolved": 5,
+          "battles": {
+            "started": 5,
+            "active": 0,
+            "resolved": 5,
+            "durationDays": {
+              "unit": "tactical days",
+              "median": 10,
+              "maximum": 16,
+              "raw": [
+                {
+                  "battleId": "battle-7",
+                  "resolved": true,
+                  "durationDays": 5,
+                  "initialTroops": {
+                    "attacker": 700,
+                    "defender": 2500
+                  },
+                  "survivingTroops": {
+                    "attacker": 0,
+                    "defender": 2220
+                  },
+                  "initialAttackerToDefenderRatio": 0.28,
+                  "outcome": "defender",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-10",
+                  "resolved": true,
+                  "durationDays": 16,
+                  "initialTroops": {
+                    "attacker": 1000,
+                    "defender": 1700
+                  },
+                  "survivingTroops": {
+                    "attacker": 576,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 0.5882,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": true,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-12",
+                  "resolved": true,
+                  "durationDays": 15,
+                  "initialTroops": {
+                    "attacker": 1500,
+                    "defender": 1600
+                  },
+                  "survivingTroops": {
+                    "attacker": 1106,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 0.9375,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": true,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-28",
+                  "resolved": true,
+                  "durationDays": 6,
+                  "initialTroops": {
+                    "attacker": 800,
+                    "defender": 900
+                  },
+                  "survivingTroops": {
+                    "attacker": 0,
+                    "defender": 849
+                  },
+                  "initialAttackerToDefenderRatio": 0.8889,
+                  "outcome": "defender",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-30",
+                  "resolved": true,
+                  "durationDays": 10,
+                  "initialTroops": {
+                    "attacker": 1800,
+                    "defender": 800
+                  },
+                  "survivingTroops": {
+                    "attacker": 1323,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 2.25,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                }
+              ]
+            },
+            "closeOutcomes": {
+              "definition": "Resolved battles where the absolute surviving troop difference is <= 10% of combined initial troops.",
+              "decidedBattles": 5,
+              "closeBattles": 0,
+              "weakerSideWins": 2
+            },
+            "waterCasualties": {
+              "status": "not-attributable",
+              "reason": "The battle state records surviving troops and water modifiers in action log text, but does not retain structured per-action casualties linked to unit water positions."
+            },
+            "foodShortfallDays": 0
+          },
+          "logistics": {
+            "requisitions": {
+              "requested": 0,
+              "delivered": 0,
+              "failed": 0,
+              "cancelledOrRejected": 0,
+              "closedDeliveryRate": null
+            },
+            "travelFoodShortfall": 0,
+            "campaignParticipation": {
+              "started": 4,
+              "multiLegJourneys": 0,
+              "nominalRoadKm": 1035,
+              "distanceDefinition": "Multi-leg means the route snapshot contains at least one intermediate city."
+            },
+            "cityFoodShortageDays": {
+              "status": "not-attributable",
+              "reason": "Monthly settlement records current city stock and applies desertion effects but does not persist a structured city-level shortage-day counter."
+            }
+          },
+          "autonomy": {
+            "autonomousCities": 3,
+            "workMonthIndexExpected": 1,
+            "observedForLastSettlement": 0,
+            "workedCities": 0,
+            "idleCities": 0,
+            "unobservedCities": 3,
+            "completedWorkPoints": 0,
+            "coverageNote": "Idle is counted only for autonomous cities whose workMonthIndex matches the most recent completed month; unobserved entries are not classified as idle."
+          },
+          "campaignDirectives": {
+            "total": 10,
+            "dispatched": 4,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 4,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    },
+    {
+      "scenarioId": "divided-realm-190",
+      "factionId": "cao",
+      "cohort": "held-out",
+      "seed": 970301,
+      "requestedMonths": 2,
+      "completedMonths": 2,
+      "stoppedEarly": false,
+      "finalPhase": "battle",
+      "bot": {
+        "campaignCandidatesTried": 4,
+        "campaignCommandsRejected": 0,
+        "campaignsDispatched": 4,
+        "campaignsReducedAndDispatched": 0,
+        "campaignsCancelledAfterShortfall": 0,
+        "tacticalBattleDays": 59
+      },
+      "checkpoints": {
+        "2": {
+          "month": 2,
+          "absoluteDay": 60,
+          "phase": "battle",
+          "playerFactionId": "cao",
+          "playerEliminated": false,
+          "ownedCities": 4,
+          "totalCities": 24,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          },
+          "stateWinnerFactionId": null,
+          "totalPlayerGold": 12177,
+          "totalPlayerFood": 67168,
+          "activeBattles": 1,
+          "battlesStarted": 6,
+          "battlesResolved": 5,
+          "battles": {
+            "started": 5,
+            "active": 0,
+            "resolved": 5,
+            "durationDays": {
+              "unit": "tactical days",
+              "median": 9,
+              "maximum": 24,
+              "raw": [
+                {
+                  "battleId": "battle-7",
+                  "resolved": true,
+                  "durationDays": 5,
+                  "initialTroops": {
+                    "attacker": 700,
+                    "defender": 2500
+                  },
+                  "survivingTroops": {
+                    "attacker": 0,
+                    "defender": 2214
+                  },
+                  "initialAttackerToDefenderRatio": 0.28,
+                  "outcome": "defender",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-10",
+                  "resolved": true,
+                  "durationDays": 24,
+                  "initialTroops": {
+                    "attacker": 1000,
+                    "defender": 1700
+                  },
+                  "survivingTroops": {
+                    "attacker": 105,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 0.5882,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": true,
+                  "weakerSideWon": true,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-12",
+                  "resolved": true,
+                  "durationDays": 13,
+                  "initialTroops": {
+                    "attacker": 1500,
+                    "defender": 1600
+                  },
+                  "survivingTroops": {
+                    "attacker": 791,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 0.9375,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": true,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-28",
+                  "resolved": true,
+                  "durationDays": 8,
+                  "initialTroops": {
+                    "attacker": 800,
+                    "defender": 900
+                  },
+                  "survivingTroops": {
+                    "attacker": 0,
+                    "defender": 809
+                  },
+                  "initialAttackerToDefenderRatio": 0.8889,
+                  "outcome": "defender",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                },
+                {
+                  "battleId": "battle-30",
+                  "resolved": true,
+                  "durationDays": 9,
+                  "initialTroops": {
+                    "attacker": 1800,
+                    "defender": 800
+                  },
+                  "survivingTroops": {
+                    "attacker": 1314,
+                    "defender": 0
+                  },
+                  "initialAttackerToDefenderRatio": 2.25,
+                  "outcome": "attacker",
+                  "outcomeReason": "elimination",
+                  "closeOutcome": false,
+                  "weakerSideWon": false,
+                  "foodShortfallDays": 0
+                }
+              ]
+            },
+            "closeOutcomes": {
+              "definition": "Resolved battles where the absolute surviving troop difference is <= 10% of combined initial troops.",
+              "decidedBattles": 5,
+              "closeBattles": 1,
+              "weakerSideWins": 2
+            },
+            "waterCasualties": {
+              "status": "not-attributable",
+              "reason": "The battle state records surviving troops and water modifiers in action log text, but does not retain structured per-action casualties linked to unit water positions."
+            },
+            "foodShortfallDays": 0
+          },
+          "logistics": {
+            "requisitions": {
+              "requested": 0,
+              "delivered": 0,
+              "failed": 0,
+              "cancelledOrRejected": 0,
+              "closedDeliveryRate": null
+            },
+            "travelFoodShortfall": 0,
+            "campaignParticipation": {
+              "started": 4,
+              "multiLegJourneys": 0,
+              "nominalRoadKm": 1035,
+              "distanceDefinition": "Multi-leg means the route snapshot contains at least one intermediate city."
+            },
+            "cityFoodShortageDays": {
+              "status": "not-attributable",
+              "reason": "Monthly settlement records current city stock and applies desertion effects but does not persist a structured city-level shortage-day counter."
+            }
+          },
+          "autonomy": {
+            "autonomousCities": 3,
+            "workMonthIndexExpected": 1,
+            "observedForLastSettlement": 0,
+            "workedCities": 0,
+            "idleCities": 0,
+            "unobservedCities": 3,
+            "completedWorkPoints": 0,
+            "coverageNote": "Idle is counted only for autonomous cities whose workMonthIndex matches the most recent completed month; unobserved entries are not classified as idle."
+          },
+          "campaignDirectives": {
+            "total": 10,
+            "dispatched": 4,
+            "failed": 0
+          },
+          "journeys": {
+            "outbound": 4,
+            "returning": 0,
+            "waiting": 0,
+            "failed": 0
+          }
+        }
+      }
+    }
+  ]
+}

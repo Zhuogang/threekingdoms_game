@@ -220,6 +220,24 @@ function validateRoute(
   );
 }
 
+function expectedBattleDefenderTroops(state: Readonly<V03GameState>, cityId: string): number {
+  const target = state.cities.find((city) => city.id === cityId);
+  if (!target) return 0;
+  const staffedTroops = state.officers
+    .filter(
+      (officer) =>
+        officer.alive &&
+        officer.factionId === target.factionId &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === target.id &&
+        officer.troops > 0,
+    )
+    .reduce((total, officer) => total + officer.troops, 0);
+  // openBattle supplies a 500-person militia when a city has no staffed
+  // defenders, even when its stored garrison is zero.
+  return Math.max(target.garrisonTroops, staffedTroops, staffedTroops === 0 ? 500 : 0);
+}
+
 function makeCandidate(
   state: Readonly<V03GameState>,
   factionId: string,
@@ -299,11 +317,8 @@ function makeCandidate(
 }
 
 function compareCandidates(a: Candidate, b: Candidate): number {
-  // Prefer the more favorable force-to-garrison ratio, then the shorter ETA.
-  const aDefenseRatio = a.defenderTroops / a.proposedTroops;
-  const bDefenseRatio = b.defenderTroops / b.proposedTroops;
   return (
-    aDefenseRatio - bDefenseRatio ||
+    a.defenderTroops / a.proposedTroops - b.defenderTroops / b.proposedTroops ||
     a.route.estimatedDays - b.route.estimatedDays ||
     compareIds(a.sourceCityId, b.sourceCityId) ||
     compareIds(a.targetCityId, b.targetCityId)
@@ -313,7 +328,8 @@ function compareCandidates(a: Candidate, b: Candidate): number {
 /**
  * Build legal rival campaign plans from the current state, normally once after a
  * monthly settlement. The planner never mutates the state, uses no RNG or clock,
- * excludes neutral/friendly/occupied targets, and returns stable ordering.
+ * considers independent cities, excludes friendly/occupied targets, and returns
+ * stable ordering by defender-to-proposed-force ratio and travel time.
  */
 export function planStrategicRivalCampaigns(
   state: Readonly<V03GameState>,
@@ -351,14 +367,18 @@ export function planStrategicRivalCampaigns(
       for (const target of state.cities) {
         if (
           target.id === source.id ||
-          !target.factionId ||
           target.factionId === faction.id ||
           busyTargets.has(target.id) ||
           plannedTargets.has(target.id)
         )
           continue;
-        const targetFaction = factionsById.get(target.factionId);
-        if (!targetFaction || targetFaction.eliminated) continue;
+        // Independent cities are valid conquests. They are often the only
+        // bridge between rival territories, so excluding them can stall a
+        // faction even when it has troops and adjacent expansion options.
+        if (target.factionId) {
+          const targetFaction = factionsById.get(target.factionId);
+          if (!targetFaction || targetFaction.eliminated) continue;
+        }
 
         const candidate = makeCandidate(
           state,
@@ -366,7 +386,7 @@ export function planStrategicRivalCampaigns(
           faction.leaderOfficerId,
           source.id,
           target.id,
-          target.garrisonTroops,
+          expectedBattleDefenderTroops(state, target.id),
           services,
         );
         if (candidate) candidates.push(candidate);

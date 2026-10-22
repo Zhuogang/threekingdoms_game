@@ -7,3 +7,5 @@ playwright-report/
 test-results/
 # Immutable pre-change save captures and SHA256 evidence.
 tests/fixtures/legacy-*.json
+# Machine-generated v0.3 campaign diagnostics are preserved in runner format.
+docs/v0.3/evidence/*.json

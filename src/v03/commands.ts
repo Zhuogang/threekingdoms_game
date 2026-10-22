@@ -1,5 +1,13 @@
-import { acknowledgeV03Event, advanceV03, applyV03BattleAction } from './engine';
+import {
+  acknowledgeV03Event,
+  advanceV03,
+  applyV03BattleAction,
+  completeV03BattleDay,
+  recallV03Journey,
+} from './engine';
 import { queueGovernorAppointment } from './governance/appointments';
+import { acceptV03Invitation, breakV03Alliance, proposeV03Alliance } from './campaign/diplomacy';
+import { applyV03CityAction } from './governance/city-actions';
 import { createV03OrderServices } from './governance/services';
 import {
   answerCampaignDirective,
@@ -49,37 +57,13 @@ export function executeV03Command(state: V03GameState, command: V03Command): V03
         : { ok: false, state, error: result.error };
     }
     case 'developCapital': {
-      const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId);
-      if (!city || city.governanceMode !== 'ruler' || city.factionId !== state.playerFactionId)
-        return {
-          ok: false,
-          state,
-          error: 'Only the ruler’s directly governed capital can be developed by direct order.',
-        };
-      if (state.phase !== 'planning')
-        return {
-          ok: false,
-          state,
-          error: 'Direct city work is available during campaign planning.',
-        };
-      if (city.gold < 100)
-        return { ok: false, state, error: 'The capital needs 100 gold for this work.' };
-      if (city[command.field] >= 100)
-        return { ok: false, state, error: 'This improvement is already at its current limit.' };
-      const next = structuredClone(state);
-      const updated = next.cities.find((entry) => entry.id === next.playerCapitalCityId)!;
-      updated.gold -= 100;
-      updated[command.field]++;
-      next.revision++;
-      next.log.push(
-        `${updated.name} improved its ${command.field === 'farming' ? 'farmland' : 'market'}.`,
-      );
-      return {
-        ok: true,
-        state: next,
-        message: `${command.field === 'farming' ? 'Farmland' : 'Commerce'} improved by 1.`,
-      };
+      return applyV03CityAction(state, {
+        cityId: state.playerCapitalCityId,
+        action: command.field === 'farming' ? 'develop-farming' : 'develop-commerce',
+      });
     }
+    case 'cityAction':
+      return applyV03CityAction(state, command);
     case 'requestRequisition': {
       const result = requestRequisition(
         state,
@@ -155,9 +139,44 @@ export function executeV03Command(state: V03GameState, command: V03Command): V03
         preview: result.preview,
       };
     }
+    case 'recallJourney': {
+      const result = recallV03Journey(state, command.journeyId);
+      return result.ok
+        ? { ok: true, state: result.state, message: 'The party will return by a safe route.' }
+        : { ok: false, state, error: result.error };
+    }
+    case 'proposeAlliance': {
+      const result = proposeV03Alliance(state, command.targetFactionId);
+      return {
+        ok: result.ok,
+        state: result.state,
+        message: result.message,
+        error: result.error,
+      };
+    }
+    case 'breakAlliance': {
+      const result = breakV03Alliance(state, command.targetFactionId);
+      return { ok: result.ok, state: result.state, message: result.message, error: result.error };
+    }
+    case 'acceptCoalitionInvitation': {
+      const result = acceptV03Invitation(state, command.invitationId);
+      return { ok: result.ok, state: result.state, message: result.message, error: result.error };
+    }
     case 'battleAction': {
       const result = applyV03BattleAction(state, command.battleId, command.action);
       return { ok: result.ok, state: result.state, error: result.error };
+    }
+    case 'completeBattleDay': {
+      const result = completeV03BattleDay(state, command.battleId);
+      return result.ok
+        ? {
+            ok: true,
+            state: result.state,
+            message: result.advancedWorldDay
+              ? 'All active battles completed their day; the campaign advanced one day.'
+              : 'Battle day complete. Resolve the other active battles to advance the campaign.',
+          }
+        : { ok: false, state, error: result.error };
     }
     case 'acknowledgeEvent':
       return { ok: true, state: acknowledgeV03Event(state, command.eventId) };

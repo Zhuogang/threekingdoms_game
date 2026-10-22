@@ -1,9 +1,29 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  type WheelEvent,
+} from 'react';
 import { V03_ASSETS, resolvePublicAsset } from './assets';
 import type { CampaignCityVisual, WorldPolyline } from './presentation';
+import {
+  fitCampaignViewport,
+  panCampaignViewport,
+  zoomCampaignViewport,
+  type CampaignViewBox,
+} from './campaign-viewport';
 
 export interface CampaignMapViewProps {
   bounds: { left: number; top: number; width: number; height: number };
+  /** World-space SVG viewBox. Omit to show the full map bounds. */
+  viewport?: CampaignViewBox;
+  /** Enables wheel zoom, drag pan, keyboard arrows, +/- and Home. */
+  interactive?: boolean;
+  onViewportChange?: (viewport: CampaignViewBox) => void;
   cities: readonly CampaignCityVisual[];
   routes?: readonly WorldPolyline[];
   waterways?: readonly WorldPolyline[];
@@ -14,6 +34,12 @@ export interface CampaignMapViewProps {
   style?: CSSProperties;
   onCityClick?: (cityId: string) => void;
   onRouteClick?: (routeId: string) => void;
+}
+
+interface PanStart {
+  pointerId: number;
+  start: { x: number; y: number };
+  viewport: CampaignViewBox;
 }
 
 function pathFromPoints(points: readonly { x: number; y: number }[]): string {
@@ -49,8 +75,10 @@ function CitySymbol({
   const label = city.name;
   return (
     <g
+      className="v03-city-symbol"
       transform={`translate(${city.position.x} ${city.position.y})`}
       role={onClick ? 'button' : undefined}
+      data-campaign-interactive={onClick ? 'true' : undefined}
       tabIndex={onClick ? 0 : undefined}
       aria-label={label}
       onClick={(event) => {
@@ -195,6 +223,9 @@ function CitySymbol({
  */
 export function CampaignMapView({
   bounds,
+  viewport,
+  interactive = false,
+  onViewportChange,
   cities,
   routes = [],
   waterways = [],
@@ -207,23 +238,148 @@ export function CampaignMapView({
   onRouteClick,
 }: CampaignMapViewProps) {
   const [backgroundFailed, setBackgroundFailed] = useState(false);
+  const panStartRef = useRef<PanStart | null>(null);
+  const canNavigate = interactive && Boolean(onViewportChange);
   useEffect(() => setBackgroundFailed(false), [backgroundImage]);
   const cityOrder = useMemo(
     () => [...cities].sort((a, b) => a.position.y - b.position.y || a.id.localeCompare(b.id)),
     [cities],
   );
-  const viewBox = `${bounds.left} ${bounds.top} ${bounds.width} ${bounds.height}`;
+  const activeViewport = viewport ?? bounds;
+  const viewBox = `${activeViewport.left} ${activeViewport.top} ${activeViewport.width} ${activeViewport.height}`;
+  const pointerWorldPoint = (clientX: number, clientY: number, view: CampaignViewBox) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: view.left, y: view.top };
+    const rect = svg.getBoundingClientRect();
+    const scale = Math.min(rect.width / view.width, rect.height / view.height);
+    if (!Number.isFinite(scale) || scale <= 0) return { x: view.left, y: view.top };
+    const offsetX = (rect.width - view.width * scale) / 2;
+    const offsetY = (rect.height - view.height * scale) / 2;
+    return {
+      x: view.left + (clientX - rect.left - offsetX) / scale,
+      y: view.top + (clientY - rect.top - offsetY) / scale,
+    };
+  };
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const startPan = (event: PointerEvent<SVGSVGElement>) => {
+    if (!canNavigate || event.button !== 0) return;
+    const target = event.target as Element;
+    if (target.closest?.('[data-campaign-interactive="true"]')) return;
+    const start = pointerWorldPoint(event.clientX, event.clientY, activeViewport);
+    panStartRef.current = { pointerId: event.pointerId, start, viewport: activeViewport };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const movePan = (event: PointerEvent<SVGSVGElement>) => {
+    const drag = panStartRef.current;
+    if (!canNavigate || !drag || drag.pointerId !== event.pointerId) return;
+    const current = pointerWorldPoint(event.clientX, event.clientY, drag.viewport);
+    onViewportChange?.(
+      panCampaignViewport(
+        drag.viewport,
+        { x: current.x - drag.start.x, y: current.y - drag.start.y },
+        bounds,
+      ),
+    );
+  };
+  const endPan = (event: PointerEvent<SVGSVGElement>) => {
+    if (panStartRef.current?.pointerId !== event.pointerId) return;
+    panStartRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+  const handleWheel = (event: WheelEvent<SVGSVGElement>) => {
+    if (!canNavigate) return;
+    event.preventDefault();
+    const focus = pointerWorldPoint(event.clientX, event.clientY, activeViewport);
+    onViewportChange?.(
+      zoomCampaignViewport(activeViewport, bounds, focus, Math.exp(-event.deltaY * 0.001)),
+    );
+  };
+  const handleKeyDown = (event: KeyboardEvent<SVGSVGElement>) => {
+    if (!canNavigate) return;
+    const pan = {
+      x: activeViewport.width * 0.08,
+      y: activeViewport.height * 0.08,
+    };
+    const delta =
+      event.key === 'ArrowLeft'
+        ? { x: pan.x, y: 0 }
+        : event.key === 'ArrowRight'
+          ? { x: -pan.x, y: 0 }
+          : event.key === 'ArrowUp'
+            ? { x: 0, y: pan.y }
+            : event.key === 'ArrowDown'
+              ? { x: 0, y: -pan.y }
+              : null;
+    if (delta) {
+      event.preventDefault();
+      onViewportChange?.(panCampaignViewport(activeViewport, delta, bounds));
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      onViewportChange?.(
+        zoomCampaignViewport(
+          activeViewport,
+          bounds,
+          {
+            x: activeViewport.left + activeViewport.width / 2,
+            y: activeViewport.top + activeViewport.height / 2,
+          },
+          1.25,
+        ),
+      );
+    } else if (event.key === '-') {
+      event.preventDefault();
+      onViewportChange?.(
+        zoomCampaignViewport(
+          activeViewport,
+          bounds,
+          {
+            x: activeViewport.left + activeViewport.width / 2,
+            y: activeViewport.top + activeViewport.height / 2,
+          },
+          0.8,
+        ),
+      );
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      const rect = svgRef.current?.getBoundingClientRect();
+      onViewportChange?.(
+        fitCampaignViewport(bounds, rect && rect.height > 0 ? rect.width / rect.height : 1),
+      );
+    }
+  };
   const resolvedBackground =
     backgroundImage ??
     resolvePublicAsset(V03_ASSETS.campaignMapInk01.path, import.meta.env.BASE_URL);
   return (
     <svg
+      ref={svgRef}
       className={className}
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
-      role="img"
-      aria-label={locale === 'zh' ? '三国战略地图' : 'Three Kingdoms campaign map'}
-      style={{ display: 'block', width: '100%', height: '100%', background: '#eee4d0', ...style }}
+      role={canNavigate ? 'application' : 'img'}
+      aria-label={
+        locale === 'zh'
+          ? '三国战略地图。方向键平移，+ 和 − 缩放，Home 显示全图；按 Tab 选择城市。'
+          : 'Three Kingdoms campaign map. Use arrow keys to pan, plus and minus to zoom, Home to fit, and Tab to select a city.'
+      }
+      tabIndex={canNavigate ? 0 : undefined}
+      onPointerDown={startPan}
+      onPointerMove={movePan}
+      onPointerUp={endPan}
+      onPointerCancel={endPan}
+      onWheel={handleWheel}
+      onKeyDown={handleKeyDown}
+      style={{
+        display: 'block',
+        width: '100%',
+        height: '100%',
+        background: '#eee4d0',
+        touchAction: canNavigate ? 'none' : undefined,
+        cursor: canNavigate ? 'grab' : undefined,
+        ...style,
+      }}
     >
       <defs>
         <linearGradient id="v03-campaign-paper" x1="0" y1="0" x2="1" y2="1">
@@ -331,19 +487,56 @@ export function CampaignMapView({
         <g
           key={route.id}
           role={onRouteClick ? 'button' : undefined}
+          data-campaign-interactive={onRouteClick ? 'true' : undefined}
           tabIndex={onRouteClick ? 0 : undefined}
           onClick={() => onRouteClick?.(route.id)}
+          onKeyDown={(event) => {
+            if (onRouteClick && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault();
+              onRouteClick(route.id);
+            }
+          }}
           style={{ cursor: onRouteClick ? 'pointer' : 'default' }}
         >
           <path
             d={pathFromPoints(route.points)}
             fill="none"
-            stroke="#806c50"
-            strokeWidth={3}
-            strokeOpacity={0.72}
-            strokeDasharray="5 7"
+            stroke={
+              route.display === 'selected'
+                ? '#a33f32'
+                : route.display === 'transport'
+                  ? '#3e718d'
+                  : route.display === 'waiting'
+                    ? '#977849'
+                    : route.display === 'marching'
+                      ? '#39777a'
+                      : '#806c50'
+            }
+            strokeWidth={route.display === 'selected' ? 6 : route.display === 'route' ? 3 : 4}
+            strokeOpacity={route.display === 'selected' ? 0.94 : 0.78}
+            strokeDasharray={
+              route.display === 'marching'
+                ? '3 5'
+                : route.display === 'waiting'
+                  ? '1 5'
+                  : route.display === 'transport'
+                    ? '8 4 2 4'
+                    : route.display === 'selected'
+                      ? '10 5'
+                      : '5 7'
+            }
             strokeLinecap="round"
           />
+          {route.display === 'waiting' && route.points.length > 0 ? (
+            <circle
+              cx={route.points[route.points.length - 1]?.x}
+              cy={route.points[route.points.length - 1]?.y}
+              r="7"
+              fill="#f5e5b9"
+              stroke="#977849"
+              strokeWidth="2"
+            />
+          ) : null}
           <title>{route.label ?? route.id}</title>
         </g>
       ))}

@@ -245,6 +245,51 @@ button:disabled {
   width: 100%;
   height: 100%;
 }
+.v03-battlefield-map:focus-visible {
+  outline: 4px solid #285d73;
+  outline-offset: -5px;
+}
+.v03-map-frame > svg:focus-visible,
+.v03-campaign-minimap:focus-visible {
+  outline: 4px solid #285d73;
+  outline-offset: -5px;
+}
+.v03-city-symbol:focus-visible,
+.v03-unit-token:focus-visible,
+.v03-map-frame svg [role='button']:focus-visible {
+  filter: drop-shadow(0 0 5px #bf542d);
+  outline: 3px solid #7d3a24;
+  outline-offset: 3px;
+}
+.v03-campaign-map-controls {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 4px;
+}
+.v03-campaign-map-controls button {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid #766b56;
+  border-radius: 5px;
+  background: #f3ecdce8;
+  color: #38352c;
+  font-weight: 700;
+}
+.v03-campaign-minimap {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  bottom: 10px;
+  width: min(240px, 31%);
+  height: auto;
+  aspect-ratio: 6 / 5;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px #17161140;
+}
 .v03-army-marker {
   position: absolute;
   z-index: 2;
@@ -261,6 +306,26 @@ button:disabled {
   font:
     700 12px 'Noto Serif SC',
     serif;
+}
+.v03-army-marker.marching {
+  background: #426d6a;
+}
+.v03-army-marker.transport {
+  background: #416c88;
+}
+.v03-army-marker.waiting {
+  border-color: #f1d480;
+  background: #956d2b;
+}
+.v03-army-marker.grouped {
+  width: 38px;
+  height: 30px;
+  border-radius: 15px;
+  font-size: 10px;
+}
+.v03-army-marker:focus-visible {
+  outline: 3px solid #f3c65b;
+  outline-offset: 2px;
 }
 .v03-map-legend {
   min-height: 35px;
@@ -453,8 +518,40 @@ button:disabled {
   color: #6d634f;
   font-size: 11px;
 }
+.v03-direct-work .v03-work-quota {
+  grid-column: 1 / -1;
+  color: #777264;
+  font-size: 11px;
+}
 .v03-direct-work button {
   text-align: left;
+}
+.v03-work-officer {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid #d7cbb4;
+  border-radius: 5px;
+  background: #f3ecdc;
+}
+.v03-work-officer strong,
+.v03-work-officer label {
+  grid-column: 1 / -1;
+}
+.v03-work-officer label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #777264;
+  font-size: 11px;
+}
+.v03-work-officer input {
+  width: 110px;
+  min-width: 0;
 }
 .v03-muted {
   color: #777264;
@@ -538,6 +635,32 @@ button:disabled {
   padding: 4px;
   font-size: 10px;
 }
+.v03-order-actions-panel {
+  margin-top: 7px;
+}
+.v03-order-actions-panel .v03-row {
+  flex-wrap: wrap;
+}
+.v03-order-actions-panel .v03-field {
+  min-width: 82px;
+  flex: 1;
+  font-size: 10px;
+}
+.v03-order-actions-panel input {
+  min-width: 0;
+  width: 100%;
+  padding: 5px;
+  font-size: 12px;
+}
+.v03-retreat-action {
+  border-color: #935747;
+  background: #f0ded4;
+  color: #703a2c;
+  font-weight: 700;
+}
+.v03-retreat-action:hover:not(:disabled) {
+  background: #e5c9bd;
+}
 .text-button {
   border: 0;
   background: transparent;
@@ -575,6 +698,7 @@ button:disabled {
   grid-template-columns: 54px minmax(400px, 1fr) minmax(300px, 360px);
 }
 .v03-battle-board {
+  position: relative;
   flex: 1;
   min-height: 400px;
   margin: 12px;
@@ -586,6 +710,44 @@ button:disabled {
 .v03-battle-board svg {
   width: 100%;
   height: 100%;
+}
+.v03-battle-camera-controls {
+  position: absolute;
+  z-index: 4;
+  top: 9px;
+  left: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: calc(100% - 18px);
+  padding: 5px;
+  border: 1px solid #766b58;
+  border-radius: 7px;
+  background: #f7f1e6e8;
+  box-shadow: 0 2px 8px #17161130;
+}
+.v03-battle-camera-controls button {
+  min-width: 36px;
+  min-height: 34px;
+  padding: 4px 9px;
+  border: 1px solid #a89b81;
+  border-radius: 5px;
+  background: #fffaf0;
+  color: #3d392f;
+  font-weight: 700;
+}
+.v03-battle-camera-controls button:hover:not(:disabled) {
+  background: #efe2c6;
+}
+.v03-battle-camera-controls button:focus-visible,
+.v03-battlefield-map:focus-visible,
+.v03-battlefield-minimap:focus-visible {
+  outline: 3px solid #a64d37;
+  outline-offset: 2px;
+}
+.v03-battle-camera-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 .v03-battle-day {
   padding: 8px 11px;
@@ -602,6 +764,10 @@ button:disabled {
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 12px;
+}
+.v03-battlefield-minimap {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px #17161126;
 }
 .v03-battle-help {
   padding: 5px 8px;
@@ -648,6 +814,11 @@ button:disabled {
 .v03-unit-row small {
   display: block;
 }
+.v03-unit-row .v03-attack-forecast {
+  max-width: 230px;
+  line-height: 1.35;
+  color: #805d36;
+}
 .v03-unit-row strong {
   font-size: 11px;
 }
@@ -685,6 +856,62 @@ button:disabled {
 .v03-unit-detail p {
   color: #746d5d;
   font-size: 11px;
+}
+.v03-tactics {
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px solid #c3b69f;
+  border-radius: 7px;
+  background: #eee6d6;
+}
+.v03-tactics .v03-section-title {
+  margin: 0;
+}
+.v03-tactics .v03-section-title h3 {
+  margin: 0;
+}
+.v03-tactics .v03-section-title small {
+  color: #716957;
+}
+.v03-tactic-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.v03-tactic-list button {
+  min-height: 36px;
+  padding: 5px 7px;
+  border: 1px solid #b8ac93;
+  border-radius: 5px;
+  background: #f8f2e6;
+  color: #554a3d;
+  font-size: 11px;
+}
+.v03-tactic-list button.selected {
+  border-color: #6d4a91;
+  background: #e4d7ed;
+  color: #482c67;
+  font-weight: 700;
+}
+.v03-tactic-list button:hover {
+  border-color: #6d4a91;
+}
+.v03-tactic-reasons {
+  margin: 7px 0 0;
+  padding-left: 17px;
+  color: #706958;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.v03-tactic-preview {
+  margin-top: 7px;
+  display: grid;
+  gap: 2px;
+  color: #51416a;
+  font-size: 11px;
+}
+.v03-tactic-forecast {
+  color: #634c79 !important;
 }
 .v03-log-box {
   margin-top: 12px;
@@ -770,6 +997,22 @@ button:disabled {
   overflow-x: auto;
   border-bottom: 1px solid #d5c9b3;
 }
+.v03-wiki-search {
+  padding: 8px 12px;
+  display: grid;
+  gap: 4px;
+  color: #716957;
+  font-size: 12px;
+}
+.v03-wiki-search input {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #b8ac93;
+  border-radius: 6px;
+  background: #fffdf6;
+  color: #292820;
+}
 .v03-wiki-tabs button {
   flex: 0 0 auto;
   padding: 7px 9px;
@@ -811,12 +1054,24 @@ button:disabled {
   background: radial-gradient(ellipse at 68% 25%, #f1e6cf 0, #ddd2bb 36%, #a8a08c 100%);
 }
 .v03-start-card {
+  position: relative;
   width: min(760px, 100%);
   padding: clamp(20px, 4vw, 42px);
   border: 1px solid #a6987a;
   border-radius: 12px;
   background: #f2ecdded;
   box-shadow: 0 18px 50px #2d2a1f42;
+}
+.v03-start-locale {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  min-width: 44px;
+  min-height: 34px;
+  border: 1px solid #8e846e;
+  border-radius: 6px;
+  background: #373931;
+  color: #f4efdf;
 }
 .v03-start-kicker {
   color: #86724c;

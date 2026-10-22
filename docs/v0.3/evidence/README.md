@@ -1,0 +1,32 @@
+# v0.3 validation evidence
+
+Updated 2026-10-21. The diagnostics are deterministic, matched-seed development/held-out runs of a narrow adjacent-city campaign bot. They are evidence about this test policy and the recorded simulation, not a player win-rate target or proof of human campaign balance. Every result below is preserved as a separate artifact; do not overwrite historical runs.
+
+## Campaign tuning
+
+The neutral-access 96-month comparison in [`v03-campaign-neutral-access-96m.json`](v03-campaign-neutral-access-96m.json) completed all 24 rows with source fingerprint `872bf9a564847d6558f891d17a93a68d867e34635f968710b1992a99f4531400` and config fingerprint `3fd43fb806cbed635c076825ec638d2a7d18e77259a916c758e0df7f11631b92`. It reported zero true unifications, Hegemon claims or Hegemon victories, and selected-faction eliminations. Selected factions averaged 3.25 cities; their 136 battles had an 8-day median, 3 close outcomes (2.2%), and 19 wins by the initially weaker side (14.0%).
+
+The combined two-front plus capital-priority 96-month experiment in [`v03-campaign-capital-priority-96m.json`](v03-campaign-capital-priority-96m.json) also completed 24 rows, with the same config fingerprint and source fingerprint `f272ab3f47cb165c8bcc3d6f66f111a9aef75620cf910de67d492ce84d844860`. It produced no unifications, Hegemon claims/victories, or selected-faction eliminations. Mean selected cities were 3.21, with 131 selected-faction battles, 2 close outcomes (1.5%), and 18 weaker-side wins (13.7%). These outcomes did not support the added capital-priority credit; that credit has been removed from the current candidate.
+
+The matched 48-month neutral-access and combined candidate artifacts are [`v03-campaign-neutral-access-48m.json`](v03-campaign-neutral-access-48m.json) and [`v03-campaign-two-fronts-48m.json`](v03-campaign-two-fronts-48m.json). Both have 24 seed-matched rows and the same config fingerprint. The candidate combined two changes, so it does not isolate the two-front cap: mean selected cities rose from 3.25 to 3.33 and independent-city ownership from 0.46 to 0.54, while selected-faction eliminations rose from 0/24 to 2/24. No unifications or Hegemon claims/victories occurred. Treat this as mixed evidence, not an accepted tuning result.
+
+The clean two-front-only comparison in [`v03-campaign-two-fronts-only-96m.json`](v03-campaign-two-fronts-only-96m.json) completed 24 rows with source fingerprint `e9bb867ba108e8d5f53299e28c751abe5a0d243891ce41f085544169bceecee9` and the same config fingerprint. Two Guandu/Liu runs ended at month 5; the other 22 reached month 96. Across all 24 outcomes, mean endpoint cities were 3.29, mean independent cities 0.50, 138 selected-faction battles had an 8.5-day median, 5 close outcomes (3.6%), and 15 weaker-side wins (10.9%). There were 2 selected-faction eliminations and no unifications, Hegemon claims or victories. The small 0.04 mean-city increase over the 3.25 baseline does not justify the early eliminations, so the two-front policy was rejected.
+
+The final one-plan matrix in [`v03-campaign-final-96m.json`](v03-campaign-final-96m.json) completed all 24 rows at 96 months, with retained-source fingerprint `cf305a5e8b0fdd3f466ad1e69fe2bda16498771d8095139690bd7bc2fea1db93` and config fingerprint `3fd43fb806cbed635c076825ec638d2a7d18e77259a916c758e0df7f11631b92`. Every selected side survived; mean cities were 3.25 and mean initial-independent-city captures were 0.46. Its 136 selected-faction battles had an 8-day median (maximum 24), 3 close outcomes (2.2%), 19 weaker-side wins (14.0%), and no recorded food-shortfall days. There were no unifications, Hegemon claims or victories. All 24 outcomes match the older neutral-access 96-month result on cities, campaign dispatches and these battle totals. This is a diagnostic result, not an approved balance target.
+
+Across the final matrix the selected bot dispatched 69 campaigns in total; no route used an intermediate city. No requisitions were requested, so delivery rate is `N/A`. Governor work for the last settlement was unobserved in all sampled checkpoints; it must not be reported as idle or as completed work. Water-attributed casualties and city food-shortage days remain `N/A` because the state does not persist the required structured counters.
+
+To reproduce a full run from a frozen source tree, use:
+
+```powershell
+node tools/v03-campaign-diagnostics.mjs --months 96 --output docs/v0.3/evidence/v03-campaign-final-96m.json
+```
+
+The runner records raw scenario/faction/cohort rows, source/config fingerprints, true unification separately from Hegemon, and `N/A` when it cannot observe water-attributed casualties or city shortage days. Do not infer those values. Dispatch totals are the selected bot's count, not all NPC campaign decisions; the runner does not expose NPC target-selection telemetry. The bot itself only attacks an adjacent enemy or independent city using a narrow force-ratio and route-time policy. It does not model a human strategy, economy, diplomacy, defense, raids, long-term supply planning or coordinated fronts.
+
+## Historical artifacts
+
+- [`v03-campaign-bot-diagnostics-96m-pre-neutral.json`](v03-campaign-bot-diagnostics-96m-pre-neutral.json) and [`v03-campaign-diagnostics-2026-10-21.json`](v03-campaign-diagnostics-2026-10-21.json) are earlier passive-player or partial snapshots. Their reports preserve the source state at generation time; they are not current campaign-balance evidence.
+- [`v03-campaign-bot-diagnostics-96m.json`](v03-campaign-bot-diagnostics-96m.json) is an earlier completed adjacent-city-bot result. Use its recorded fingerprint, not its filename, to identify the implementation snapshot.
+- [`v03-campaign-bot-smoke-2m.json`](v03-campaign-bot-smoke-2m.json) verifies runner wiring only; it is not balance evidence.
+- [`anchor-sensitivity.md`](anchor-sensitivity.md) records the reproducible C-grade sensitivity analysis for estimated city anchors. It does not certify historic coordinates or road alignments.

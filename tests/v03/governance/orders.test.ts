@@ -25,6 +25,11 @@ function fixture(): V03GameState {
     absoluteDay: 12,
     monthIndex: 0,
     rng: 1,
+    alliances: [],
+    coalitionInvitations: [],
+    firedMonthlyEventIds: [],
+    lastAllianceBreakMonthByFaction: {},
+    hegemon: { factionId: null, months: 0 },
     nextId: 1,
     phase: 'planning',
     playerCapitalCityId: 'source',
@@ -246,6 +251,70 @@ function makeJourney(input: JourneyCreationInput): V03Journey {
 }
 
 describe('v0.3 governor orders', () => {
+  it('rejects every requisition and campaign answer outside planning without changing state', () => {
+    const state = fixture();
+    state.phase = 'battle';
+    state.requisitions.push({
+      id: 'battle-phase-requisition',
+      factionId: state.playerFactionId,
+      sourceCityId: 'source',
+      targetCityId: 'friend',
+      requested: { gold: 100, food: 0, troops: 0 },
+      proposed: { gold: 100, food: 0, troops: 0 },
+      createdDay: state.absoluteDay,
+      requestedByDay: null,
+      earliestDepartureDay: state.absoluteDay,
+      estimatedArrivalDay: state.absoluteDay + 5,
+      status: 'proposed',
+      journeyId: null,
+      governanceRevision: state.governanceRevision,
+      message: 'Ready to review.',
+    });
+    state.directives.push({
+      id: 'battle-phase-directive',
+      factionId: state.playerFactionId,
+      sourceCityId: 'source',
+      targetCityId: 'enemy',
+      intent: 'conquer',
+      requestedTroops: 1000,
+      proposedTroops: 1000,
+      requestedByDay: null,
+      earliestDepartureDay: state.absoluteDay,
+      estimatedArrivalDay: state.absoluteDay + 5,
+      status: 'proposed',
+      journeyId: null,
+      governanceRevision: state.governanceRevision,
+      message: 'Ready to review.',
+    });
+    const before = structuredClone(state);
+    const api = services();
+
+    for (const answer of ['accept', 'reduce', 'wait', 'cancel'] as const) {
+      const requisition = answerRequisition(
+        state,
+        'battle-phase-requisition',
+        answer,
+        api,
+        answer === 'reduce' ? { gold: 50, food: 0, troops: 0 } : undefined,
+      );
+      expect(requisition.ok).toBe(false);
+      expect(requisition.reasonCode).toBe('order.invalid-phase');
+      expect(requisition.state).toBe(state);
+
+      const directive = answerCampaignDirective(
+        state,
+        'battle-phase-directive',
+        answer,
+        api,
+        answer === 'reduce' ? 500 : undefined,
+      );
+      expect(directive.ok).toBe(false);
+      expect(directive.reasonCode).toBe('order.invalid-phase');
+      expect(directive.state).toBe(state);
+      expect(state).toEqual(before);
+    }
+  });
+
   it('previews a requisition shortfall and requires a player choice before reserving or dispatching', () => {
     const state = fixture();
     const preview = previewRequisition(

@@ -9,6 +9,7 @@ export type BattleTerrain = 'plain' | 'forest' | 'hill' | 'water' | 'cliff';
 export type BattleRegion = 'hanzhong' | 'shouchun' | 'xiapi' | 'chengdu';
 export type ApproachDirection = 'north' | 'east' | 'south' | 'west';
 export type BattleSide = 'attacker' | 'defender';
+export type BattleWeather = 'clear' | 'rain' | 'wind';
 
 /** v0.3 retains the current roster, while removing any water privilege. */
 export type BattleTroopType = 'infantry' | 'cavalry' | 'archer' | 'naval' | 'elite' | 'guard';
@@ -80,6 +81,11 @@ export interface BattleRosterEntry {
   troopType: BattleTroopType;
   troops: number;
   force: number;
+  /** Officer-derived combat attributes; omitted only by isolated rules tests. */
+  intellect?: number;
+  level?: number;
+  isMilitia?: boolean;
+  cunning?: boolean;
   /** Defaults to one tile, except archers (three tiles). */
   attackRange?: number;
 }
@@ -89,15 +95,47 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   troops: number;
   initialTroops: number;
   force: number;
+  intellect: number;
+  level: number;
+  isMilitia: boolean;
+  cunning: boolean;
   attackRange: number;
   morale: number;
+  status: 'normal' | 'confused' | 'inspired';
   moved: boolean;
   acted: boolean;
 }
 
+export type BattleTactic = 'fire' | 'rally' | 'confuse' | 'raidSupply' | 'ambush' | 'rockfall';
+
+export interface BattleTacticAvailability {
+  tactic: BattleTactic;
+  allowed: boolean;
+  reason: string | null;
+  range: number;
+  cost: number;
+}
+
+export interface BattleTacticForecast {
+  sourceId: string;
+  targetId: string;
+  tactic: BattleTactic;
+  inRange: boolean;
+  minCasualties: number;
+  maxCasualties: number;
+  chance: number;
+  moraleChange: number;
+  endsConfusion: boolean;
+  suppliesTransferred: number;
+  sourceOnWater: boolean;
+  targetOnWater: boolean;
+  attackMultiplier: number;
+  incomingDamageMultiplier: number;
+}
+
 export interface BattleOutcome {
   winner: BattleSide | null;
-  reason: 'elimination' | 'camp' | 'dayLimit';
+  reason: 'elimination' | 'camp' | 'dayLimit' | 'retreat' | 'rout';
 }
 
 /** Plain JSON-safe battle state; no functions, Maps or rendering objects are stored. */
@@ -110,6 +148,13 @@ export interface V03TacticalBattleState {
   dayLimit: number;
   /** The approved day-limit rule awards control by surviving troop count; ties favor the defender. */
   timeoutPolicy: BattleTimeoutPolicy;
+  tacticPoints: Record<BattleSide, number>;
+  /** Raw food balances, shared with campaign logistics after each tactical action/day. */
+  supplies: Record<BattleSide, number>;
+  /** Deterministic tactical random stream, persisted so chance-based actions replay after load. */
+  rngState: number;
+  weather: BattleWeather;
+  nextWeather: BattleWeather;
   units: TacticalBattleUnit[];
   log: string[];
   outcome: BattleOutcome | null;
@@ -123,9 +168,13 @@ export interface CreateBattleStateOptions {
   playerSide?: BattleSide;
   dayLimit?: number;
   timeoutPolicy?: BattleTimeoutPolicy;
+  supplies?: Partial<Record<BattleSide, number>>;
+  seed?: number;
 }
 
 export type BattleAction =
+  | { type: 'retreat'; unitId: string }
+  | { type: 'tactic'; unitId: string; tactic: BattleTactic; targetId: string }
   | { type: 'move'; unitId: string; x: number; y: number }
   | { type: 'attack'; unitId: string; targetId: string }
   | { type: 'wait'; unitId: string };

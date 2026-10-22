@@ -14,7 +14,11 @@ export interface DayResolution {
   phase: DailyPhase;
   battleIds: string[];
   completedBattleIds: string[];
+  /** Stable movement identity captured at daybreak; journeys created or replaced later wait until tomorrow. */
+  daybreakJourneySignatures: Record<string, string>;
   arrivals: string[];
+  /** Prevents duplicate city service accounting if a date-phase cursor is resumed. */
+  cityServiceAccounted?: boolean;
   settledMonth?: { year: number; month: number };
 }
 
@@ -44,9 +48,26 @@ export function beginDayResolution(
       phase: battleIds.length > 0 ? 'battles' : 'journeys',
       battleIds,
       completedBattleIds: [],
+      daybreakJourneySignatures: Object.fromEntries(
+        timeline.journeys.map((journey) => [journey.id, journeyMovementSignature(journey)]),
+      ),
       arrivals: [],
+      cityServiceAccounted: false,
     },
   };
+}
+
+function journeyMovementSignature(journey: Journey): string {
+  return JSON.stringify({
+    executionId: journey.executionId,
+    sourceCityId: journey.sourceCityId,
+    destinationCityId: journey.destinationCityId,
+    status: journey.status,
+    departedAbsoluteDay: journey.departedAbsoluteDay,
+    elapsedDays: journey.elapsedDays,
+    segmentProgressKm: journey.segmentProgressKm,
+    segmentWaitDays: journey.segmentWaitDays,
+  });
 }
 
 export function completeBattleDay(
@@ -82,6 +103,13 @@ export function progressJourneysForDay(timeline: StrategicTimeline): StrategicTi
   }
   const arrivals: string[] = [];
   const journeys = timeline.journeys.map((journey) => {
+    const signatureAtDaybreak = resolution.daybreakJourneySignatures[journey.id];
+    if (
+      signatureAtDaybreak === undefined ||
+      signatureAtDaybreak !== journeyMovementSignature(journey)
+    ) {
+      return journey;
+    }
     const result = advanceJourneyOneDay(journey);
     if (result.arrived && journey.status !== 'delivered') arrivals.push(journey.id);
     return result.journey;
@@ -135,8 +163,8 @@ export function addTimelineEvent(
   if (timeline.events.some((candidate) => candidate.id === event.id)) {
     throw new Error(`Event ${event.id} already exists.`);
   }
-  if (!Number.isSafeInteger(event.absoluteDay) || event.absoluteDay <= timeline.absoluteDay) {
-    throw new Error('An event must be scheduled after the current absolute day.');
+  if (!Number.isSafeInteger(event.absoluteDay) || event.absoluteDay < timeline.absoluteDay) {
+    throw new Error('An event cannot be scheduled before the current absolute day.');
   }
   return {
     ...timeline,
@@ -158,6 +186,10 @@ export interface AdvanceHandlers {
   ) => { timeline: StrategicTimeline; completed: boolean };
   /** Settle city income, monthly policies, refreshes, and reports exactly once. */
   settleMonth?: (timeline: StrategicTimeline, year: number, month: number) => StrategicTimeline;
+  /** Accrue one day of city-stationed troop service after battles and journeys. */
+  accountCityServiceDay?: (timeline: StrategicTimeline) => StrategicTimeline;
+  /** Refresh state-derived events/journeys after a full day and its month settlement. */
+  refreshTimeline?: (timeline: StrategicTimeline) => StrategicTimeline;
   /** Safety limit used only by next-event stepping. */
   maxDaysWithoutEvent?: number;
 }
@@ -231,7 +263,19 @@ export function advanceTimeline(
       }
     }
     if (timeline.dayResolution?.phase === 'journeys') timeline = progressJourneysForDay(timeline);
-    if (timeline.dayResolution?.phase === 'date') timeline = closeStrategicDay(timeline);
+    if (timeline.dayResolution?.phase === 'date') {
+      if (!timeline.dayResolution.cityServiceAccounted) {
+        timeline = handlers.accountCityServiceDay?.(timeline) ?? timeline;
+        if (!timeline.dayResolution || timeline.dayResolution.phase !== 'date') {
+          throw new Error('City service accounting must preserve the active date cursor.');
+        }
+        timeline = {
+          ...timeline,
+          dayResolution: { ...timeline.dayResolution, cityServiceAccounted: true },
+        };
+      }
+      timeline = closeStrategicDay(timeline);
+    }
     if (timeline.dayResolution?.phase === 'month-settlement') {
       const month = timeline.dayResolution.settledMonth!;
       timeline = handlers.settleMonth
@@ -241,6 +285,7 @@ export function advanceTimeline(
         throw new Error('Month settlement handler must clear the saved day-resolution cursor.');
       }
     }
+    if (handlers.refreshTimeline) timeline = handlers.refreshTimeline(timeline);
     daysAdvanced++;
 
     const due = firstDuePlayerEvent(timeline);

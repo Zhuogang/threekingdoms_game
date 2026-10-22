@@ -28,6 +28,7 @@ function prepareRivalMonth() {
     city.governanceMode = 'steward';
     city.pendingAppointment = null;
   }
+  for (const officer of state.officers) officer.governorOfCityId = null;
   source.factionId = yuan.id;
   source.food = 1_000_000;
   target.factionId = state.playerFactionId;
@@ -86,6 +87,9 @@ function prepareRivalMonth() {
     }
   }
   source.garrisonTroops = roster.reduce((sum, officer) => sum + officer.troops, 0);
+  // The fixture jumps directly to the last day of the month. Seed the daily
+  // ledger for the 29 days that would have elapsed in a live campaign.
+  source.troopServiceDaysThisMonth = source.garrisonTroops * 29;
   return state;
 }
 
@@ -98,7 +102,7 @@ function advanceOneDayAcknowledgingEvents(state: ReturnType<typeof createV03Game
 }
 
 describe('v0.3 engine rival campaign integration', () => {
-  it('dispatches a deterministic rival plan at month settlement with exact accounting and a valid save', () => {
+  it('dispatches a deterministic independent-city conquest at month settlement with exact accounting and a valid save', () => {
     const initial = prepareRivalMonth();
     const initialSource = initial.cities.find((city) => city.id === 'ye')!;
     const expectedPostSettlementFood =
@@ -117,13 +121,13 @@ describe('v0.3 engine rival campaign integration', () => {
     expect(directive).toMatchObject({
       factionId: 'yuan',
       sourceCityId: 'ye',
-      targetCityId: 'jinyang',
       intent: 'conquer',
       status: 'dispatched',
       requestedTroops: 5000,
       proposedTroops: 5000,
       earliestDepartureDay: 30,
     });
+    expect(state.cities.find((city) => city.id === directive.targetCityId)?.factionId).toBeNull();
     const journey = state.journeys.find((entry) => entry.id === directive.journeyId);
     expect(journey, JSON.stringify({ directive, journeys: state.journeys })).toBeDefined();
     if (!journey) throw new Error('Rival directive did not retain its created journey.');
@@ -152,6 +156,71 @@ describe('v0.3 engine rival campaign integration', () => {
     }
     expect(validateV03State(state)).toBe(true);
     expect(decodeV03Save(encodeV03Save(state))).toEqual(state);
+  });
+
+  it('dispatches only one monthly rival front even when multiple sources are eligible', () => {
+    const initial = prepareRivalMonth();
+    const source = initial.cities.find((city) => city.id === 'ye')!;
+    const secondSource = initial.cities.find((city) => city.id === 'pingyuan')!;
+    const yuan = initial.factions.find((faction) => faction.id === 'yuan')!;
+    const roster = initial.officers.filter(
+      (officer) =>
+        officer.factionId === yuan.id &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === source.id &&
+        officer.troops > 0,
+    );
+    expect(roster).toHaveLength(6);
+
+    secondSource.factionId = yuan.id;
+    secondSource.food = 1_000_000;
+    secondSource.garrisonTroops = 3_000;
+    secondSource.troopServiceDaysThisMonth = 3_000 * 29;
+    for (const [index, officer] of roster.entries()) {
+      if (index < 3) {
+        officer.location = { kind: 'city', cityId: secondSource.id };
+        source.garrisonTroops -= officer.troops;
+        source.troopServiceDaysThisMonth =
+          (source.troopServiceDaysThisMonth ?? 0) - officer.troops * 29;
+      }
+    }
+
+    const result = advanceV03(initial, 1).state;
+    expect(result.directives).toHaveLength(1);
+    expect(new Set(result.directives.map((entry) => entry.sourceCityId)).size).toBe(1);
+    const dispatchedJourneys = result.directives
+      .map((entry) => result.journeys.find((journey) => journey.id === entry.journeyId))
+      .filter((journey) => journey !== undefined);
+    expect(dispatchedJourneys).toHaveLength(1);
+    const officerIds = dispatchedJourneys.flatMap((journey) => journey.manifest.officerIds);
+    expect(new Set(officerIds).size).toBe(officerIds.length);
+    expect(validateV03State(result)).toBe(true);
+  });
+
+  it('resolves a rival campaign against an independent city and captures it from its militia', () => {
+    let state = prepareRivalMonth();
+    state = advanceOneDayAcknowledgingEvents(state);
+    const directive = state.directives.find((entry) => entry.status === 'dispatched')!;
+    const independentCityId = directive.targetCityId;
+    expect(state.cities.find((city) => city.id === independentCityId)?.factionId).toBeNull();
+
+    for (
+      let day = 0;
+      day < 80 && state.cities.find((city) => city.id === independentCityId)?.factionId !== 'yuan';
+      day++
+    ) {
+      state = advanceOneDayAcknowledgingEvents(state);
+    }
+
+    const battle = state.battles.find((entry) => entry.attackerJourneyId === directive.journeyId);
+    expect(battle?.defenderFactionId).toBeNull();
+    expect(battle?.resolved).toBe(true);
+    const militia = battle?.battleData.units.find(
+      (unit) => unit.side === 'defender' && unit.isMilitia,
+    );
+    expect(militia?.initialTroops).toBe(500);
+    expect(state.cities.find((city) => city.id === independentCityId)?.factionId).toBe('yuan');
+    expect(validateV03State(state)).toBe(true);
   });
 
   it('opens new field battles with survivor-count timeout and awards equal survivors to the defender', () => {
