@@ -2,15 +2,16 @@
 
 ## Start here
 
-Current game: [v0.3 implementation tracks](v0.3/README.md), local branch `v0.3`. The October 21 audit identifies a playable candidate with remaining correctness defects and planned features, not a finished release. v0.3 excludes siege systems and old-save compatibility; its scope, code evidence and remaining tasks are linked below.
+Current game: [v0.3 implementation tracks](v0.3/README.md), local branch `v0.3`. The original eight audited defects are repaired. The latest [playability review and scoped to-do list](v0.3/playability-review-and-todo.md) identifies new UI progression, layout and clarity tasks for this version, with fresh validation and reproduction evidence. Human acceptance remains open. v0.3 excludes siege systems and old-save compatibility.
 
-| Document                                                          | What it is for                                                                         |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [v0.3 implementation status](v0.3/implementation-status.md)       | Current track and E01–E15 status, checks and user decisions                            |
-| [v0.3 full implementation audit](v0.3/implementation-audit.md)    | Source-to-plan comparison, confirmed defects and reproducible evidence                 |
-| [v0.3 remaining implementation plan](v0.3/implementation-plan.md) | P01–P11, coding-agent ownership, parallel work, acceptance criteria and ImageGen steps |
-| [implementation.md](implementation.md)                            | Current v0.3 module tour followed by the historical v0.2 guide                         |
-| [next-steps.md](next-steps.md)                                    | The to-do list, open and settled design decisions, and what comes next                 |
+| Document                                                                        | What it is for                                                                                    |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [v0.3 playability review and scoped to-do](v0.3/playability-review-and-todo.md) | Active small repairs and polish, agent assignments, reproduction evidence and acceptance criteria |
+| [v0.3 implementation status](v0.3/implementation-status.md)                     | Current track and E01–E15 status, checks and user decisions                                       |
+| [v0.3 full implementation audit](v0.3/implementation-audit.md)                  | Source-to-plan comparison, confirmed defects and reproducible evidence                            |
+| [v0.3 remaining implementation plan](v0.3/implementation-plan.md)               | P01–P11, coding-agent ownership, parallel work, acceptance criteria and ImageGen steps            |
+| [implementation.md](implementation.md)                                          | Current v0.3 module tour followed by the historical v0.2 guide                                    |
+| [next-steps.md](next-steps.md)                                                  | The to-do list, open and settled design decisions, and what comes next                            |
 
 Historical v0.2 implementation and evidence (not current v0.3 acceptance):
 

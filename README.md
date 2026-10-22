@@ -2,7 +2,7 @@
 
 An independent, bilingual Three Kingdoms strategy game built around historically informed travel estimates, autonomous governor-run cities, daily campaign time, and large ink-wash field battles. v0.3 is a new game with its own rules and save format; v0.1/v0.2 saves are not compatible.
 
-**Tested local candidate · October 21, 2026 · branch `v0.3`.** The eight confirmed defects from the initial implementation audit are fixed, and the planned campaign, governor, battle, map, save and wiki tracks are integrated. Automated checks pass. Four player play sessions, a real low-end-machine check and v0.3 art revision/approval remain open, so this is not a release approval. See the [implementation status](docs/v0.3/implementation-status.md) and [remaining plan](docs/v0.3/implementation-plan.md). The initial [implementation audit](docs/v0.3/implementation-audit.md) is a historical pre-fix record.
+**Local candidate · October 21, 2026 · branch `v0.3`.** The original eight audited defects are fixed and the core campaign, governor, battle, save and Wiki systems are integrated. Fresh automated checks pass, but a follow-up review found an NPC-only-battle clock lock, map framing defects and smaller usability gaps. The [scoped playability to-do list](docs/v0.3/playability-review-and-todo.md) records the reproduction evidence and repairs proposed for this version. Four player play sessions, a real low-end-machine check and art revision/approval also remain open. See the [implementation status](docs/v0.3/implementation-status.md). The initial [implementation audit](docs/v0.3/implementation-audit.md) is a historical pre-fix record.
 
 ## Run locally
 
@@ -31,7 +31,7 @@ All troop types can enter passable water. Units on water deal 25% less damage an
 
 ## Current browser captures
 
-These screenshots were regenerated from the current browser test run. They show the integrated interface; draft artwork and geographic estimates are still awaiting player review.
+These earlier v0.3 captures show the integrated interface. The follow-up review includes fresh [map layout failure evidence](docs/v0.3/playability-review-and-todo.md#validation-and-evidence); repair and recapture the framing before judging draft artwork or treating these images as visual acceptance.
 
 ![Current v0.3 campaign atlas and governor controls](docs/images/v03-campaign.png)
 
@@ -51,7 +51,7 @@ The game stores one automatic v0.3 save in local browser storage and supports v0
 
 Run these commands from the repository root:
 
-- `npm test -- --maxWorkers=1 --no-file-parallelism` — 593 passed, 1 skipped across 43 files.
+- `npm test -- --maxWorkers=1 --no-file-parallelism` — 594 passed, 1 skipped across 43 files.
 - `npx tsc --noEmit` and `npm run build` — type check and production build pass.
 - `npm run format:check` — formatting check passes.
 - `npm run test:e2e` — 15 Playwright browser tests pass, including all six tactics, four battlefield templates, both languages, 390/1366/1920 px widths and 200% zoom.

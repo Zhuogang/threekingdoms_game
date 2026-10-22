@@ -4,28 +4,29 @@
 
 ## Active v0.3 update and to-do
 
-**Branch `v0.3`; local candidate, not complete.** The [full implementation audit](v0.3/implementation-audit.md) found eight reproducible defects and material gaps against the original plan. Passing the current tests does not close these gaps. The [updated implementation plan](v0.3/implementation-plan.md) provides exact steps, agent/file assignments, dependencies and acceptance criteria.
+**Branch `v0.3`; local candidate awaiting scoped repairs and human acceptance.** The original F01–F08 defects are repaired. A fresh read-only double-check of `01e65ef` found new interface and presentation gaps despite passing automated checks. Use the [playability review and scoped to-do list](v0.3/playability-review-and-todo.md) for the active priorities, reproduction evidence, agent assignments and acceptance criteria. The [implementation plan](v0.3/implementation-plan.md) retains the P01–P11 milestone record; the original audit is a historical pre-fix snapshot.
 
-| Order    | Work package / owner | Remaining outcome                                                                                                                      |
-| -------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| 1        | P01 · L/I            | Fix fractional food, raid double credit, full-store loss and daily/monthly troop accounting.                                           |
-| 2        | P02/P03 · L/B/I      | Correct event pauses/new returns, same-city arrival queues, militia IDs, player battle authority and multi-battle/campaign navigation. |
-| 3        | P10 · I/Q            | Validate all save relationships, input limits and long-campaign histories; recover failed saves.                                       |
-| 4        | P04/P05 · V/I        | Complete governor/capital work, appointment recovery, retained campaign rules and D8's bilingual plan/shortfall/date/choice UI.        |
-| 5        | P06 · B/Q            | Complete planned tactics, ZOC, retreat, forecasts, stronger water/path AI and rule matrices.                                           |
-| Parallel | P07/P08 · G/R/I      | Historical-route checks, friendly multi-leg travel, usable cameras/minimap, map journeys and keyboard/zoom/readability.                |
-| Parallel | P09 · A/R/G + player | Keep seven art assets draft; revise from player notes and shared geography/camera references, then obtain in-game approval.            |
-| Final    | P11 · Q/I + player   | v0.3 diagnostics, 48/96-month development/held-out runs, global/render performance, complete browser matrix and human feedback.        |
+| Order  | Task / owner        | Current-version outcome                                                                             |
+| ------ | ------------------- | --------------------------------------------------------------------------------------------------- |
+| 1      | RV01 · I/B/Q        | Allow campaign time to advance during NPC-only battles; preserve player battle authorization.       |
+| 2      | RV02 · R/Q          | Keep the campaign minimap compact and stabilize battlefield framing; add geometry assertions.       |
+| 3      | RV03 · I/Q          | Reach New/Resume safely; clear stale drafts on successful import; distinguish save/export feedback. |
+| 4      | RV04 · I/V/Q        | Keep every player order and pending report discoverable instead of silently truncating the inbox.   |
+| 5      | RV05 · V/I/Q        | Expose existing troop-free governor transfers and label replacement/dismissal accurately.           |
+| 6      | RV06 · B/R/Q        | Make surviving/defeated units, selection and small troop counts visually trustworthy.               |
+| Then   | RV07/RV08 · V/I/B/Q | Show reserve/officer stats and correct action availability; finish routine EN/ZH feedback.          |
+| Polish | RV09/RV10 · B/I/Q   | Inspect existing weather/supply/terrain effects; confirm immediate withdrawal.                      |
+| Gated  | A/R + player        | Review art after layout repairs; revise only from concrete notes and keep draft until approved.     |
 
-- [x] Independent app, geography/time, authority/order/battle foundations, seven draft assets and initial automated checks are present.
-- [x] Full source-to-plan review and current/prioritized documentation completed on 2026-10-21.
-- [ ] Confirmed F01–F08 defects repaired and regression-tested.
-- [ ] All original G/L/V/B/R/A/I/Q requirements completed or explicitly adjusted by the player; no new scope exceptions are currently approved.
-- [ ] Four campaign/battle sessions and a real low-end-machine check: **player will run and report**, not deferred or passed.
+- [x] Original F01–F08 defects repaired and regression-tested; planned core campaign/governor/battle/save/Wiki systems integrated.
+- [x] Strategic diagnostics and rejected tuning variants documented; the user accepted the measured miss and retained the conservative one-front rule.
+- [x] Read-only playability review and fresh automated validation completed on October 21, 2026. **No RV task was implemented in this documentation pass.**
+- [ ] RV01–RV06 progression/reachability/presentation repairs, then bounded RV07–RV10 usability polish.
+- [ ] Four campaign/battle sessions and a real low-end-machine check: **player will run and report**; these are neither deferred nor passed.
 - [ ] Art finalization: **keep draft for revisions**, specific revision notes pending.
-- [ ] Push/PR/remote CI/publication: still outside this local branch-and-commit request. CI currently references removed `test:perf`; fix locally under P11 before relying on remote checks.
+- [ ] Push/PR/remote CI/publication remain deferred. The local CI configuration already uses `test:perf:v03`; no remote CI result is claimed.
 
-Current verification: 100 v0.3 tests pass; whole-repo suite 467 passed/1 skipped; production build passes. Previous same-candidate browser evidence is 6 smoke tests and 1 production test. These counts do not cover all new findings. See the ledger for exact scope and timing.
+Fresh verification: **594 passed/1 skipped across 43 files; 15 browser tests; 1 production test; 1 tactical performance test; build/typecheck, formatting and portrait checks pass.** Additional browser validation reproduces the NPC-only-battle clock lock and a 924 px minimap in a 926 px map frame. Passing existing tests does not close those tasks. See the [review](v0.3/playability-review-and-todo.md) and [status ledger](v0.3/implementation-status.md).
 
 ## Historical v0.2 disposition
 
