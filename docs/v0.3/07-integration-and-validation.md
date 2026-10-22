@@ -1,119 +1,30 @@
-# I / Q 轨：集成、新存档、验证与交付
+# Integration, saves and validation
 
-状态（2026-10-21二次复核）：原 F01–F08 已修复；核心应用、存档、双语 Wiki、战斗/治理功能和既有自动化矩阵均已接入并通过。新的只读复核仍发现 NPC 战斗导致界面日历阻塞、地图布局和其他易用性问题，详见[当前小范围待办](playability-review-and-todo.md)、[接续计划](implementation-plan.md)和[台账](implementation-status.md)。[原审计](implementation-audit.md)保留修复前历史。玩家已接受 v0.3 的战略诊断缺口，但人工试玩、低端实机和艺术修订未通过；v0.2 豁免不沿用。
+Current reference checked October 22, 2026. [Developer guide](development.md) · [Current status](implementation-status.md) · [Original integration/QA brief](history/design/07-integration-and-validation.md).
 
-## 当前 I/Q 接续清单
+## Running implementation
 
-- [x] 实际领域模块位于 `src/v03/`；入口只加载 `V03App`，共享内容仍引用旧场景表与兵种类型。
-- [x] 封装固定为 `format: hegemony.save` / `version: 3` / `ruleset: hegemony-3`，localStorage key `hegemony-v0.3:autosave`；旧档不迁移。
-- [x] 本次全仓复跑 594 通过/1 跳过（43 文件），生产构建/类型、格式、15 个浏览器测试、1 个生产路径测试、战术日性能与肖像检查通过；结果仅覆盖现有用例。
-- [x] 玩家参战权限、逐场战斗日提交、存档关联/输入限制、D8 预览和核心双语 Wiki 已有实现与测试。
-- [x] CI 本地配置已使用 `test:perf:v03`；v0.3 长战役诊断、拒绝的调优实验和用户接受的诊断缺口已有记录。未运行远程 CI。
-- [ ] RV01/RV02：修 NPC-only 战斗的 UI 推进阻塞与真实地图布局；补现有可见性测试缺失的参与者/几何断言。
-- [ ] RV03–RV06：补安全 New/Resume/import、完整玩家订单与报告入口、太守调任入口和可靠部队显示。
-- [ ] RV07–RV10：现有机制的数值解释、按钮可用性、日常中英反馈、战场检查与撤退确认。
-- [ ] 四场玩家试玩、低端实机与艺术修订结果；玩家已选择亲自试玩并报告，未豁免。
+`src/main.tsx` mounts `src/v03/App.tsx`. `executeV03Command` routes requests to the strategic, governance, diplomacy and tactical domains. Authoritative state is serializable `V03GameState`; React/SVG presents it. Authored scenarios/identities are shared with older modules, but the legacy campaign/Pixi application is not the v0.3 runtime.
 
-先修复本次复现的阻塞与布局问题，再做有限润色。下面第 1 节起保留原始设计/验收合同及职责约定，不能把目标清单当成当前已完成证据；以实施台账和 RV 任务的实际结果关单。
+Daily journeys/accounting, autonomy/appointments, plan previews and answers, six tactics/water, aftermath, monthly events, diplomacy/endings, cameras/minimaps, bilingual Wiki and save recovery are integrated. F01–F08 and RV01–RV10 are completed with regression evidence; they are not open implementation tracks.
 
-## 1. I1：先建立能并行的代码边界
+## Actual save contract
 
-实施开始先读取仓库状态和适用指令，再由 I 拆出领域接口。建议目录职责：`game/geography` 数据消费、`game/calendar`、`game/logistics`、`game/governance`、`game/battle`、`rendering`、`content`、`platform`；具体是否建子目录服从现有风格，关键是单一 owner。
+- Envelope: `format: hegemony.save`, `version: 3`, `ruleset: hegemony-3`.
+- Browser key: `hegemony-v0.3:autosave`, one localStorage slot. Earlier IndexedDB guides describe the old game.
+- Import checks: 16 MiB byte limit, schema/finite bounds, 480-cell terrain, cross-entity references, journey/order/officer membership and saved daily cursor.
+- History retention is bounded; active/pending associations remain subject to validation. See `platform/storage.ts` for exact current retention limits.
+- Invalid/oversized/malformed/known-old/future saves are rejected without replacing current state or draft controls. A valid import resets campaign-bound transient UI.
+- Local saving and file export have distinct results. Failed storage preserves the live in-memory campaign, exposes Retry and permits export. Export is not a claim of successful local persistence.
 
-I 唯一写入共享类型、命令分发与校验入口、`src/ui/App.tsx` 总装、公共语言索引、`src/platform/saves.ts` 封装、依赖/scripts 与根 README。其他 owner 编写独立模块和测试，提出所需接线，不同时修改大块单体文件。
+## Recorded automated checks
 
-接口先提供独立 fixture：固定天数的运输、待确认太守方案、带水的 24×20 地图、全六类单位、相同条件的中英显示。数据 owner 能替换真实内容而不改 renderer；美术 owner 能替换资源而不改战斗公式。
+The [October 21 RV record](evidence/rv-implementation-2026-10-21/README.md) records 668 passes/one existing skip across 46 files, 34 browser cases and six final affected-case reruns. Build/typecheck, `/hegemony/` production, 10v10 tactical performance, formatting and portrait validation passed. The October 22 documentation audit does not rerun or redate those gameplay checks.
 
-## 2. I2：v0.3 独立数据与保存
+Current commands are `npm test -- --maxWorkers=1 --no-file-parallelism`, `npm run build`, `npm run format:check`, `npm run test:e2e`, `npm run test:production`, `npm run test:perf:v03` and `npm run validate:portraits`. The [developer guide](development.md#validation-commands) explains environment and legacy script distinctions.
 
-玩家已决定不支持旧存档。因此只实现新的状态版本、独立存储、导出格式和文件名；不做 v1→v2→v3 迁移、不保留运行中的旧模拟器、不靠旧规则哈希约束新玩法。
+The [campaign evidence](evidence/README.md) retains generation-time fingerprints and rejected tuning trials. The conservative one-front rival policy remains; the player accepted the narrow-bot progression miss. Report true unification separately from Hegemon; unavailable diagnostic counters remain N/A. Do not claim the historical run hashes describe the present tree or rerun them over the old evidence files.
 
-建议统一使用 `hegemony-3` ruleset、`hegemony.save` format、version 3，以及 `hegemony-v0.3` 存储。首次代码合同固定后，各轨不得自建不同版本号。
+## Still open
 
-需要做到：
-
-- 旧 `baye.save` 导入给出中英“不支持旧版本，请开始 v0.3 新战役”说明；不覆盖当前状态。
-- 旧浏览器数据库和下载文件保留原样，不因为新版本不读取就擅自删除。
-- 新存档校验字段、有限数、ID 引用、日期、480 格地图、军队唯一位置、预留/在途数量、日调度阶段、权限与订单关联。
-- 新版在规划、途中、月界、待确认方案、手动战斗未完成日、多战场切换等节点都可保存/恢复。
-- 自动保存失败可重试，有状态提示；导入损坏数据失败时当前游戏和已有保存保持不变。
-- 路线版本及行程快照、地图版本、资源清单版本分开，换一张图片不能改变途中 ETA 或伤害。
-
-v1/v2 专用测试可移到历史说明或从 v0.3 测试集移除，但原子命令、确定性、导入不破坏当前局、资源守恒、键盘与可访问性等通用保障必须保留并改用新 fixture。不是把全部测试删掉后重新计数。
-
-## 3. I3：产品定位和内容一致性
-
-- 根 README、启动页面、Wiki 和新规则说明改为独立三国策略游戏，不再承诺 BAYE 复刻或旧格式兼容。保留实际引用、许可和贡献者致谢。
-- `baye.*` 存储、旧规则标识、旧版默认文案和脚本名称做清单，区分需要新命名的运行入口与应保留的历史记录。不能盲目全仓搜索替换破坏来源。
-- 清除 v0.3 中的攻城描述、城门耐久/墙体通行假设、海军独享水域、水上免罚、即刻运输、“全在月末到达”等过期提示。
-- `City.defense` 原来参与城墙生成和民兵能力。v0.3 不保留隐形攻城加成：按 B 轨把它从新规则/公共城市 schema 移除；普通民兵采用统一可调基础值，不顺便新增复杂城防/战备系统。
-- 新增 Wiki 章节：日历与路线、去程/战斗/返程粮、太守权限、征调缺额、24×20 镜头、小地图、水上状态和岸对水攻击。
-- 最后拍真实主地图、太守方案、在途队伍、水陆交战截图，更新 README；概念图不能标成实机成品。
-
-## 4. Q1：跨轨验收场景
-
-| ID  | 场景                                       | 必须观察到的结果                                             |
-| --- | ------------------------------------------ | ------------------------------------------------------------ |
-| E01 | 汉中—长安标准军队、轻骑、运输队            | 使用 G 数据名义值与修正，日数能解释，没有写死 30 天          |
-| E02 | 同行程一天点十次与一次推进一旬             | 无暂停时状态相同；有事件在同一日暂停，剩余推进量清楚         |
-| E03 | 第 29/30/31 天、跨年、到达即月界           | 到达、收入、权限、恢复各一次，日期无偏移                     |
-| E04 | 太守城直接农业/编兵/装备与伪造命令         | UI 和引擎都拒绝，不扣资源/额度/RNG                           |
-| E05 | 征调不足、缩减确认、等待、取消、重复确认   | 按 D8 答复，有缺口与最早日期，无重复预留或运输               |
-| E06 | 换太守、空缺、被俘、出征留代理             | 自治持续；月界生效，无刷新额度或瞬移任命                     |
-| E07 | 目标易主、来源失守、满仓、路由失效         | 实体有去向，不能消失、交给错误阵营或重复退款                 |
-| E08 | 双手动战场 + AI 战场 + 同日在途运输        | 每场只推进一日，全局只推进一日，加载续玩一致                 |
-| E09 | 六兵种逐一陆→水→陆                         | 人人可进出，统一水上减攻防，上岸恢复，没有海军例外           |
-| E10 | 岸→水、水→岸、水→水、反击、伤害计策        | 射程、伤害、预览同一公式；无因跨岸被错误拒绝                 |
-| E11 | 高防御旧场景概念在新游戏中开战             | 仍是野战/水战，无墙门、攻城菜单或潜在城市加成                |
-| E12 | 所有区域模板与 24×20 投影、缩放            | 路线/单位/点击格一致，无部署在不可行走格、无法离水或陷入无路 |
-| E13 | 390/1366/1920 宽，中英，大字号与 200% 缩放 | 关键命令、单位信息、地图/小地图可用，无被遮挡的唯一操作      |
-| E14 | 新档导出/导入、旧档导入、损坏/超大值       | 新档可恢复；旧档/损坏档明确拒绝，当前游戏不被破坏            |
-| E15 | 图片失效、低动态设置、重复挂载地图         | 有正确回退、无状态影响、纹理释放、零无意义空闲绘制           |
-
-这些是必须出现的验收场景，不限定机械地写成 15 个大测试。选择有意义的单元、集成与浏览器覆盖，避免测试只是复述实现。
-
-## 5. Q2：自动化与测量协议
-
-v0.3 的验证入口为：`npm test`、`npm run build`、`npm run format:check`、`npm run test:e2e`、`npm run test:production`、`npm run test:perf:v03`。v0.2 的性能和 FPS 工具保留在 `test:perf:v02` 与 `test:fps:v02`，不能用旧模拟器测量替代 v0.3 结果。
-
-先跑领域测试，再整合测试。浏览器整套与性能测量分开运行，避免并行浏览器负载造成误判。每个候选记录代码 revision、内容/路线配置指纹、种子、命令、硬件、浏览器和结果文件。
-
-新测试覆盖 480 格地图与全部可水战兵种，不再只用旧 12×10 fixture。旧版通过的截图/测试数量不能直接算为 v0.3 证据。
-
-### 性能初始门槛
-
-| 指标       | 初始目标/协议                                                                              |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| 自动战斗   | 10v10、24×20，预热 3 次、至少 30 固定种子；p95 <50 ms，明确是否计单场规则还是完整日调度    |
-| 大地图推进 | 24 城、多人多运输，报告一日/一旬推进 p50/p95，避免主线程长时间冻结；需要分片时保持结果一致 |
-| 渲染       | 正常环境目标约 60 fps；CPU 4× 降速至少 30 fps 交互底线；记录真正绘制耗时与点击反馈         |
-| 静止与资源 | 无变化时零额外绘制；反复进出地图/战场，纹理与监听器数量不持续增长                          |
-
-水战、步兵绕路、骑兵入水、拥堵与多战场均要包含在测试集中。失败时先优化并提交实测；不能为了“通过”改小地图、隐藏单位或删门槛。若性能目标需改，记录成本和新目标供玩家决定。
-
-### 长战役与平衡
-
-准备开发种子和独立留出种子，覆盖两剧本 × 六势力。比较 48/96 个月的真实模拟日跨度；更新机器人使用新征调/出征与在途模型，先确认机器人不会因旧命令失效而躺平。
-
-分开报告：真统一、Hegemon、存活、战斗首次接触/总时长、强弱队列、水域进入与损失、后勤缺粮、征调履约、太守闲置/拒绝、长途地区参与度。地理与制度变更后的新平衡目标应在正式扫参前固定；旧版例外不是自动批准的新例外。
-
-在原候选基础上成对比较水上惩罚、部署纵深、后勤费率。不能同时改所有倍率后把改进归因给一个参数。目标是让跨水有风险但可玩、远征有成本但不是无限等待。
-
-## 6. Q3：人工体验与交付
-
-至少形成以下实际体验记录：汉中北上、辖城征粮到达、换太守后的权限、六兵种下水与岸上射击、四区域大地图、一次多战场/途中读档。记录操作者、环境、场景、用时、观察与缺陷；没有做就写未做。
-
-最终画面和“参考 San10 的体验质量”需要玩家在可玩版本中确认。手册/宣传截图只说明参考，不证明实现达到品质。
-
-I/Q 最终交付包应包含新规则说明、路线来源、资产来源、实际验证记录、已接受例外、真实截图和可复现运行方法。默认只做本地工作；push/PR/远程 CI 按后续明确授权执行，不能把原来的延期当作已验证。
-
-## 7. 结束条件
-
-- [ ] D1–D10 全部实现，无偷带旧档/攻城/水军门槛。
-- [ ] G/L/V/B/R/A 各轨交接经过 I 校验，接口不冲突。
-- [ ] 新版日内/在途/战斗保存、资源守恒、权限与确定性测试通过。
-- [ ] 场景 E01–E15 有证据与清楚的未完成项状态。
-- [ ] 性能、平衡和人工体验有实际结果，未用旧报告顶替。
-- [ ] Wiki、启动说明和 README 与新游戏行为一致。
-
-总体状态和方框逐项结果以[实施状态台账](implementation-status.md)为准；尚未取得人工或硬件证据的场景保持未完成。
+Four player sessions (12 months and three manual battles each), a real low-end-machine check, and specific draft-art revision/approval. Geography retains stated research limits. Local CI configuration is not evidence of remote CI: push/PR/remote CI remain deferred. See [next steps](../next-steps.md) for the current action list and [status](implementation-status.md) for the acceptance boundary.

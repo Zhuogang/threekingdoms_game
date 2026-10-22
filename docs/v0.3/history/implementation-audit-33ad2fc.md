@@ -1,8 +1,8 @@
 # v0.3 初始候选复核：代码、计划差异与证据（修复前基线）
 
-复核日期：2026-10-21。分支：`v0.3`，从 `main` 的 `b9ee0b9` 建立。本记录描述初始候选快照 `33ad2fc`，其中只更新文档和诊断证据，没有修补游戏源码。**本文件是修复前的历史基线；修复后的状态、测试和剩余事项以[实施台账](implementation-status.md)与[后续实施计划](implementation-plan.md)为准。**
+复核日期：2026-10-21。分支：`v0.3`，从 `main` 的 `b9ee0b9` 建立。本记录描述初始候选快照 `33ad2fc`，其中只更新文档和诊断证据，没有修补游戏源码。**本文件是修复前的历史基线；修复后的状态、测试和剩余事项以[实施台账](../implementation-status.md)与[后续实施计划](../implementation-plan.md)为准。**
 
-入口：[最新状态](implementation-status.md) · [后续实施计划](implementation-plan.md) · [原始分轨合同](README.md)。本次没有接受新的范围删减、平衡例外或人工验收豁免。
+入口：[最新状态](../implementation-status.md) · [后续实施计划](../implementation-plan.md) · [原始分轨合同](../README.md)。本次没有接受新的范围删减、平衡例外或人工验收豁免。
 
 ## 阅读范围与方法
 
@@ -10,7 +10,7 @@
 
 对照 `00`–`07` 全部任务书、E01–E15 和现有 Wiki/README，区分：已实现且有对应测试、只实现基础部分、源码确认缺失、运行时确认缺陷、待人工验证。外部历史引文沿用已有调查记录，本次没有重新进行独立历史资料核验。地图精度和历史真实性不能靠代码测试认证。
 
-定向诊断在初始候选源码上使用实际导出的命令/推进/存档函数和可重建的受控状态。原始结果见 [reproductions.json](evidence/reproductions.json)。其中的脚本会直接编译当前工作树，因此修复后不再能重放旧故障；F01–F08 的修复由[实施台账](implementation-status.md)列出的回归测试验证。原始结果仅说明故障曾在 `33ad2fc` 出现，不表示当前仍有这些故障。
+定向诊断在初始候选源码上使用实际导出的命令/推进/存档函数和可重建的受控状态。原始结果见 [reproductions.json](../evidence/reproductions.json)。其中的脚本会直接编译当前工作树，因此修复后不再能重放旧故障；F01–F08 的修复由[实施台账](../implementation-status.md)列出的回归测试验证。原始结果仅说明故障曾在 `33ad2fc` 出现，不表示当前仍有这些故障。
 
 ## 已交付的基础
 
@@ -56,11 +56,11 @@ F06 使用明确构造的混合驻军 fixture；F07 使用明确构造的非参�
 | G11 | L2 所列外交期限、月事件、Hegemon 连续持有等不在新状态/命令/结算中；仅有玩家全城统一与玩家失去所有城的结束。不能用旧版引擎或其长战役诊断说明新版本已有这些系统。                                                                              | P04/P11：逐项补齐既定合同或取得单独的范围决定；测量时把未实现指标写 N/A。   |
 | G12 | `.github/workflows/checks.yml` 仍运行已删除的 `npm run test:perf`。`tools/ai-diagnostics.mjs` 等旧诊断仍使用旧引擎；不是 v0.3 长战役机器人。                                                                                                 | P11：迁移本地验证/CI 命令，建立 v0.3 48/96 月开发/留出种子诊断，再做平衡。  |
 
-此外，V 轨发现 capability 与本城任命命令不一致、战斗阶段 wait/cancel 可绕过规划限制、失败待任静默顺延；B/R/A 轨发现更细的规则矩阵、AI、地图、小尺寸资产等缺口。详见 [03](03-governors-and-authority.md)、[04](04-battlefields-and-water-combat.md)、[05](05-rendering-and-map-ui.md)、[06](06-imagegen-and-artwork.md) 的 dated audit；它们是本审计的组成部分。
+此外，V 轨发现 capability 与本城任命命令不一致、战斗阶段 wait/cancel 可绕过规划限制、失败待任静默顺延；B/R/A 轨发现更细的规则矩阵、AI、地图、小尺寸资产等缺口。详见 [03](../03-governors-and-authority.md)、[04](../04-battlefields-and-water-combat.md)、[05](../05-rendering-and-map-ui.md)、[06](../06-imagegen-and-artwork.md) 的 dated audit；它们是本审计的组成部分。
 
 ## 证据如何解释
 
-本次重新执行 v0.3 领域套件：13 文件 / 100 测试通过；生产构建通过。完整套件和格式检查结果列于[状态台账](implementation-status.md)。旧记录的 467 passed / 1 skipped 包含旧版回归，并不是 467 项 v0.3 验收；旧的 6 个浏览器 smoke 和 1 个生产 smoke 只证明其实际动作。此次没有改动游戏代码，保留其上次执行日期/范围，不把它们说成覆盖新发现的失败场景。
+本次重新执行 v0.3 领域套件：13 文件 / 100 测试通过；生产构建通过。完整套件和格式检查结果列于[状态台账](../implementation-status.md)。旧记录的 467 passed / 1 skipped 包含旧版回归，并不是 467 项 v0.3 验收；旧的 6 个浏览器 smoke 和 1 个生产 smoke 只证明其实际动作。此次没有改动游戏代码，保留其上次执行日期/范围，不把它们说成覆盖新发现的失败场景。
 
 30 种子性能测量只计一次双边 AI 战斗日，不是整场 30 日战斗，不是复杂全局日推进，更不是长战役平衡。没有 v0.3 的 48/96 月、低端实机、完整键盘/200% 缩放或长局存档证据。
 

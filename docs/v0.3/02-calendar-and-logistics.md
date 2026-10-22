@@ -1,134 +1,28 @@
-# L 轨：按日战略、行军与补给
+# Daily calendar, journeys and logistics
 
-负责人：模拟/后勤轨。状态：核心日推进、路线行军、在途口粮、返程和物资账本已实现，并修复初始候选中确认的 F01–F05 缺陷。自动化证据见[实施状态台账](implementation-status.md)。已定要求见 [共同合同](00-decisions-and-contracts.md) D1/D2/D7/D9；历史路线估计与局限见 [G 轨](01-geography-and-routes.md)。
+Current reference checked October 22, 2026. [Player guide](player-guide.md) · [Governance/orders](03-governors-and-authority.md) · [Original design brief](history/design/02-calendar-and-logistics.md).
 
-## 当前实现更新（2026-10-21）
+## Implemented behavior
 
-本节覆盖下面“修复前复核表”的旧状态。日历、账本和日序已通过 `engine.ts` 的实际命令链路接入，自动化测试包括 `calendar/day-resolution.test.ts`、`engine.integration.test.ts`、`engine.rival-dispatch.test.ts` 与 `geography-calendar.test.ts`。
+- One absolute day drives campaign date, journeys, deadlines, battle days, monthly settlement and saved continuation. Months have 30 days; years have 360.
+- One-day, ten-day and next-event commands use the same daily engine. Due reports/events and month boundaries can stop advancement early. Reading, switching language and camera changes never advance time.
+- The daily cursor records pending/completed battles so each player battle submits once and the global date advances once. NPC-only battles are automatic; they do not require a player turn. Save/reload retains the cursor.
+- Journeys carry officers/troops, food and cargo on versioned route snapshots. Departure, arrival, return and safe redirection are real states. Battle-created returns begin moving no earlier than the next strategic day.
+- Approved orders reserve stock; dispatch debits it; delivery credits it on arrival. Repeated confirmation cannot duplicate a party. Undelivered cargo remains accounted for through capacity/return handling instead of silently vanishing.
+- Daily food uses a fixed-point remainder, including small forces. City troop-service responsibility accumulates over actual service days for monthly accounting. A unit cannot simultaneously be in city, travel and battle rosters.
 
-| 规则             | 当前行为                                                                                                                         | 覆盖边界                                                                  |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 按日口粮         | 行程使用定点余数账本；每日粮耗实际扣除与短缺报告来自同一计算，101 兵十日的累计有回归覆盖。                                       | 城内 troop-day 责任另行累计；不要把当前原型费率解释为史料结论或最终平衡。 |
-| 运送与交付       | 掠夺物资保存在 Journey 货舱，到达才结算；库存满时保留未交付数量并走显式卸货/返还路径。                                           | 复杂连续阻断和所有可能的失路情形仍应以具体已测路径为准。                  |
-| 每日顺序         | 每日处理游标阻止重复记账；到期事件/月界按日暂停；日内创建的新返程最早下一天前进。                                                | 跨多场战斗、运输、月界的长期综合表现需要最终矩阵和玩家试玩确认。          |
-| 服役月结         | 城市 troop-day 计数按日累计，按当月实际在城服役时间结算，月界/占领变化会重置适用账本；旧 v0.3 存档没有该可选字段时使用兼容默认。 | 费率目前是可调参数；长战役资金与兵力平衡待 96 月诊断。                    |
-| 防守方编组和战后 | 活跃战斗使用冻结的守军快照；民兵与将领编组有唯一身份；战后返回不会在同日额外走一天。                                             | 保存/继续与其他战场并行的人工体验仍待玩家验证。                           |
+## Travel and provision defaults
 
-## 修复前复核（2026-10-21）：初始候选缺陷历史记录
+Baseline speeds in `calendar/index.ts`: plain 20 km/day, hill 15, mountain 10. Solo-officer or all-cavalry parties can use light-party modifiers; heavy supply trains cap speed according to terrain. Mixed composition, terrain segments and fixed delays determine ETA; do not multiply a road-detour estimate into speed a second time.
 
-以下表格和“优先执行 P01/P02/P03”的原文描述 commit `33ad2fc` 的修复前状态。F01–F05 后由代码和回归测试修复，当前开口以本节及[实施状态台账](implementation-status.md)为准。
+Current prototype food rates are city 0.004, travel 0.008 and battle 0.04 per soldier/day. They are design settings, not historical facts or a final balance claim. Previews account for travel/battle/return needs where applicable; cargo food and the party's own rations are distinct ledger roles.
 
-已全文审阅 `calendar/index.ts`、`calendar/day-resolution.ts`、`engine.ts`、`types.ts` 及日历/引擎集成测试。已实现纯日历、ETA、行程快照、基础状态机和若干目的地易主后的重定向；这些不能代表 L1–L7 全部验收。
+Destination capture, source loss, active battles, capacity and route changes use explicit waiting/return/redirect paths with reports. Coverage of specific paths does not establish every hypothetical sequence; retain an exported save for a newly discovered case.
 
-| 要求                   | 当前证据                                          | 剩余工作                                                                                       |
-| ---------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| 一日/一旬/事件共用日历 | 纯 timeline 单测通过；实际 App 调用 `advanceV03`  | F04：日29+10未在月报30停下；新事件/行程未逐日同步。                                            |
-| 日初实体与多战场       | 有可序列化 battle IDs/completed IDs               | App 没有逐场提交；F05 战后返程同日就走1日；到达在整次推进末尾才处理。                          |
-| 定点粮草               | `chargeDailyFood` helper 通过拆队等价测试         | 实际 journey 用另一段计算且F01出错；101兵10日扣0却报8.08缺粮。                                 |
-| 城内/途中/战场统一费用 | travel 0.008、battle 0.04的试验费率已接入部分路径 | 城内仍按月底在场兵力×0.12、薪资×0.025结算；没有逐日责任/服役累计；待命无口粮。                 |
-| 预留/交付/返程         | helper cargo ledger 幂等和若干重定向测试通过      | helper ledger并未作为全应用唯一账本；F02突袭提前/重复入账、F03满仓丢货，deliveredCargo未落实。 |
-| 到达冲突/路线失效      | 来源/目标易主的几个场景可返回友境                 | 无已有战斗到达队列、无玩家召回；避难路径可穿敌城，待命/无路恢复未完备。                        |
-| 月度与势力规则         | 基础收入、待任和竞争者派军                        | 外交期限、Hegemon、月事件等原L2要求未进入新状态/结算。                                         |
+## Source, completed repairs and evidence
 
-以上是初始候选的历史待办；P01/P02/P03 已由计划中的修复和回归用例完成。当前验收仍以真实 `executeV03Command` / `advanceV03` 链路为准，不能只测无调用的辅助账本。实际费率尚未用最终 48/96 月矩阵完成平衡，也不是历史事实或最终平衡参数。
+Sources: [calendar/index.ts](../../src/v03/calendar/index.ts), [day-resolution.ts](../../src/v03/calendar/day-resolution.ts), [engine.ts](../../src/v03/engine.ts), governance services/orders and shared state.
 
-以下保留原目标合同与验收；没有证据的方框继续未完成。
+F01–F05 fixed small-party ration loss, early/duplicate loot credit, discarded full-store cargo, advancement past boundaries and same-day return movement. RV01 fixed the separate UI clock lock during NPC-only battles. These findings are closed with regressions, not current to-do items.
 
-## 1. 目标与边界
-
-军队、资源运输、武将调任都有实际在途状态；同一时间只能占一个位置。玩家可以推进 1 日、1 旬或到下个事件，途中会到达、消耗口粮、遇到目的地变化并产生报告。不是在旧月末瞬移流程上加一行 ETA。
-
-本轨拥有日历、事件调度、运输实体、物资账本、去程/返程和预览。太守决定“派什么”，由 V 负责；战斗日内移动/攻击由 B 负责；地图动画由 R 负责。首轮不增加开放世界野外截击、海运造船和玩家强行军技能。
-
-## 2. 实施任务
-
-### L1：建立单一日历和日结算状态机
-
-- `absoluteDay=0` 为剧本第一天早晨；日期只从绝对日派生。一月 30 日，一年 360 日。
-- 30 天行程从首日早晨出发，到下一月首日早晨结束。第 29 个完整日结束前不能到达；零天行程仅限原地无操作，不创建新运输。
-- `advanceDays(1/10)` 和 `advanceUntilEvent` 使用同一推进器；后者有步数上限和可取消进度，不能在没有事件时无限循环。
-- 到达、敌我开战、资源缺口答复、命令失效、月报等有明确暂停策略；只给玩家显示相关事件，避免暴露敌方未知信息。
-- 玩家停留、读 Wiki、缩放、切换语言不走时间；只由合法推进命令推进模拟。
-
-**建议固定日序：**
-
-1. 当日早晨提交/确认指令、按已生效权限规划行动，执行可出发队伍；所有扣款/预留原子化。
-2. 冻结当日活动实体名单与顺序，按当前位置类别计算该日口粮责任。
-3. 对早晨已存在的每场战斗，各完成一个战斗日；玩家可手动，其他场由 AI。等待操作时冻结进度，已完成场不再重复行动。
-4. 提交当日战斗结果和各实体补给，推进仍有效的在途队伍一天，处理到达与失效；战后新建返程本日不额外走一天。
-5. 全局日期只增加一次。抵达后新产生的战斗最早在新日执行；一名武将不能一天走完路又多打一整日。
-6. 若跨月，先完成旧月记账和收入/恢复，再处理新月的权限生效、月度事件与新额度；生成月报。按日定义的期限在每日新日期生效前检查，不推迟到月界。相关顺序一旦选定就进入测试合同。
-
-当日军队所属城市在步骤 3 易主时，步骤 4 必须用新所有权复核目的地；不能按过期阵营直接交付。RNG 事件使用稳定 ID 排序，不依赖画面访问顺序或对象插入顺序。
-
-### L2：区分每天与每月的规则
-
-| 每天处理                                            | 每月仅一次处理                                                                             |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| 行程、途中口粮、战斗回合、预留/到达、返程、期限检查 | 经济产出、农商月收益、动作额度重置、体力月恢复、原有月事件机会、Hegemon 连续持有计数、月报 |
-
-同盟/邀请/冷却的实际到期以统一日期表示；界面可以显示“剩余 2 月”，但不能同时维护两份不同的到期逻辑。武将出征和在途状态不会因月度恢复重新变成在城可用。去掉按日重复调用旧 `finishMonth` 或 `planAi` 的可能。
-
-### L3：实现路线预览与进度
-
-从 G 轨读取已标定的 route/profile 数据，提供纯函数：估计天数、到达日、所需粮和理由。采用 G 轨定义的路线长度与速度；不要再额外加入汉中—长安 30 天最低值，也不要把绕行倍率当速度倍率重复计算。
-
-完整保留内部计算精度；公里显示取整不反过来改变 ETA。UI 显示确定的名义天数，并在详情给出该路线粗估区间与来源等级。首轮季节修正建议在出发时固定进该行程快照，避免天气动画导致预览漂移。
-
-混编军队按 G 轨规定的最慢有效运输类别计算；单位在战术水格上的攻防惩罚不能混进战略速度。多段友境路线要验证每个中间节点可通过；同盟不自动产生军队通行权，未实现的通行权应明确拒绝。
-
-### L4：明确库存、预留、在途和交付
-
-资源只能依次处于 `available → reserved → inTransit → delivered`，取消和战损有具名分支。库存总额可以包含预留，但“可用”必须扣除；发出后从来源实际移除。同一份兵、粮或金不可同时用于两份承诺。
-
-`Journey` 需要独立保存兵力、随行武将、携粮、货物、路线进度、命令引用、出发/预计到达日和状态。区分“运送的粮货”与“队伍自己的口粮”；必要时可按批准规则使用部分粮货维生，并在日志与交付缺口里可追踪。
-
-不允许一份预留指令在任免太守、读档或重复点击确认后生成两支运输队。使用唯一执行 ID 和状态转换校验；完成后再次执行应拒绝或返回已完成结果。
-
-### L5：补给与薪资统一账本
-
-当前城内兵每月口粮约 `兵数×0.12`，战场却按每日 `ceil(兵数/25)`；把后者直接套到几十天行军会显著改变经济。必须显式制定城市、途中、作战三个费率，不能把旧差异当历史事实。
-
-首轮实现建议：集中配置各位置的每日口粮费率、月薪费率；城市日口粮按旧月总额分摊作为对照，途中过渡费率与战斗费率经配对实验确定。用定点累计/余数结转避免拆成小队产生额外舍入税；最终扣除仍是整数资源。
-
-每个武将/兵力账本每日最多被一个地点类别收费；月底不得再对在途军队征收整月驻城口粮。月薪按本月服役日累计，避免恰好月末离城免薪。设好费率前，原型允许使用显式临时常量，但必须记录在验证产物里。
-
-预览分列：去程、预计战斗储备、返程建议、运输货物、城市剩余可用粮。原 10/20/30 日仅可继续作为战斗储备选项；突袭也支付真实往返成本。粮尽后采用统一缺粮规则，并让 AI 与玩家一致。
-
-### L6：返回、失效与冲突
-
-| 触发               | 明确处理                                                       |
-| ------------------ | -------------------------------------------------------------- |
-| 未出发取消         | 释放预留，保留已消耗的真实准备成本，不恢复已执行的工作额度     |
-| 在途召回           | 沿可行路径返程，实际耗时；不能即时退回资源                     |
-| 来源失守           | 在途队伍仍存在，改选合法友城或报告无路；资源不退给敌城         |
-| 目的地易主/结盟    | 到达前复核；停止攻击、等候/返程/改送的规则明确，不静默销单     |
-| 目的地战斗中       | 留在待命队列并耗粮；首轮不自动突破每侧 10 单位上限变成即时增援 |
-| 同日多支军队到同城 | 依到达时间与稳定 ID 排序，串行复核占领/防守/已友好结果         |
-| 库存已满           | 留在队伍/卸货队列，显示未交付数量，不能 clamp 后丢失           |
-| 武将被俘/死亡/叛离 | 更新实体归属和未执行承诺；不能留下无主路线或复活重复单位       |
-
-撤退地点按路线代价找合法友城，不再按连线跳数视为最近；途中的部队不参加原城防守。胜利占领后剩余携粮与人员落到新城，未占领的战斗结果按返程规则处理。
-
-### L7：多战场与自动战斗
-
-保存“本日已完成战场集合”。玩家在甲战场结束一日后切到乙战场，同一天只在全部需处理战场完成后推进一次。自动战斗必须调用同一日推进器：不能把甲一次跑完 30 日，再让乙从旧日期开始。
-
-B 提供 `resolveBattleDay` 与结果，L 调度时间；I 把多个玩家待操作战场接入界面。暂不允许一支军队同时被两个战场引用。若新战场在月底产生，要能在“月界已结算、战斗尚未开始”的节点保存恢复。
-
-## 3. 并行启动条件与交接
-
-G 完成实际地理前，本轨可用两条显式测试路线推进（例如固定 3 日平路、32 日山路）；这些只是 fixture，不能进入正式城市表。V 可以通过假运输服务测试指令状态机；B 可单独推进战斗日；R 读只读行程快照。
-
-交付：日推进模块、行程与物资模块、纯预览接口、事件合同、固定种子测试、跨月/多战场保存夹具、真实路线集成报告。共享类型和命令入口由 I 合并，不同时修改大块 `campaign.ts`。
-
-## 4. 验收
-
-- [ ] 单日十次与一次推进十日，在无暂停事件时得到相同状态和 RNG。
-- [ ] 1/29/30/31/60 日与跨年行程准确；历史估算名义值与 UI ETA 一致。
-- [ ] 货物、兵力、金粮守恒（扣除明确支出/战损），取消、返程、满仓均无复制或丢失。
-- [ ] 同日两场手动战斗、一场 AI 战斗、一支运输，日期只推进一次；读档结果相同。
-- [ ] 在途武将跨月不可用，出发城防守不包含已出城军队，城市月结不重复收费。
-- [ ] AI 使用相同路线与补给公式；同输入下预览无状态/RNG 改动。
-- [ ] 期限、盟约、月事件、Hegemon 等均有跨月测试，没有每日重复触发。
-- [ ] 节点损失、目标易主、满仓等故障均可继续游戏，有清楚中英报告。
+Tests include `geography-calendar.test.ts`, `calendar/day-resolution.test.ts`, `engine.integration.test.ts`, `engine.rival-dispatch.test.ts` and the RV browser cases. [Recorded validation](evidence/rv-implementation-2026-10-21/README.md) and [campaign diagnostics](evidence/README.md) describe their limits. Human long-session and low-end checks remain open.

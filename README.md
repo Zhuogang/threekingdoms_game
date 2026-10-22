@@ -1,66 +1,72 @@
 # Hegemony of the Three Kingdoms · v0.3
 
-An independent, bilingual Three Kingdoms strategy game built around historically informed travel estimates, autonomous governor-run cities, daily campaign time, and large ink-wash field battles. v0.3 is a new game with its own rules and save format; v0.1/v0.2 saves are not compatible.
+An independent single-player Three Kingdoms strategy game with Chinese/English UI, daily campaign time, historically informed travel estimates, autonomous governors and 24×20 ink-wash field battles. BAYE is a historical reference; v0.3 has its own rules and saves.
 
-**Local candidate · October 21, 2026 · branch `v0.3`.** The original eight audited defects and all ten [follow-up playability tasks](docs/v0.3/playability-review-and-todo.md#rv-completion-ledger) are implemented. The campaign clock handles NPC-only battles, maps fit stable frames, and recovery, orders, governors, troop counts, bilingual help and tactical readouts are clearer. Four player play sessions, a real low-end-machine check and art revision/approval remain open. See the [implementation status](docs/v0.3/implementation-status.md) and [fresh validation](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md). The initial audit and pre-repair layout captures remain historical evidence.
+**Current local version:** branch `hegemony_of_the_three_kindoms_v0.3`, implementation commit `1e02e65`. Documentation checked October 22, 2026. Core feature tracks, the eight initial defect repairs and RV01–RV10 playability tasks are implemented. Player playtests, real low-end-machine testing and draft-art review remain open. Push, PR and remote CI remain deferred.
 
-## Run locally
+[中文玩法指南](docs/v0.3/player-guide.md#中文玩法指南) · [English player guide](docs/v0.3/player-guide.md#english-player-guide) · [What changed in v0.3](docs/v0.3/release-notes.md) · [Current status](docs/v0.3/implementation-status.md) · [All documentation](docs/README.md)
+
+## Start playing
 
 Requires Node.js 22.12 or newer.
 
-1. Run `npm ci`.
-2. Run `npm run dev`.
-3. Open the local URL printed by Vite, normally `http://127.0.0.1:5173/`.
-4. Choose a scenario and house, then begin a campaign.
+```powershell
+npm ci
+npm run dev
+```
 
-Use the language toggle and open **Field guide / Wiki** (**游戏指南 / Wiki**) at any time. Autosaves stay in this browser profile; export a v0.3 save to keep a portable backup.
+Open the address Vite prints, normally `http://127.0.0.1:5173/`. On a fresh browser profile, choose the 190 or 200 scenario, select a house and click **New campaign**. Cao Cao is a reasonable first choice. A valid autosave opens automatically; use **Campaign menu** to resume or start a different campaign. The **中文 / EN** toggle changes language; **Field guide / Wiki / 游戏指南** and F1 open help during play. Use Ctrl+C in the server terminal to stop it.
 
-Use **Campaign menu / 战役菜单** to resume or choose a new campaign. Starting over requires confirmation and offers export first. A failed import leaves your campaign and drafts intact; a successful import starts with clean controls. Export downloads a file independently of local saving; if browser storage fails, export remains available and **Retry save / 重试保存** retries the current state.
+On the first day, inspect your capital's food, reserve and work points. Recruit into reserve, assign soldiers to an officer, then issue a march with enough troops for a whole officer force. Request supplies or armies from your other cities through their plans. Advance one day, ten days or to the next event; acknowledge due reports when time pauses. On arrival, command your side in the field battle. [The player guide](docs/v0.3/player-guide.md) walks through the sequence, equipment, tactics, water and common problems.
 
-## Campaign and governance
+## What this version includes
 
-The world advances by day. Choose one day, ten days, or the next event. A month has 30 days; cities, armies, orders, battles and saves use the same calendar.
+| System       | Playable behavior                                                                                                                                                                                                                                                                 |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Campaign     | Two scenarios, six playable houses per scenario, 24 cities, diplomacy, monthly events, true-unification and Hegemon endings.                                                                                                                                                      |
+| Daily world  | One-day/ten-day/next-event controls, 30-day months, travel/arrival/return journeys, food and cargo accounting.                                                                                                                                                                    |
+| Geography    | 24 historical regional anchors and 42 configured links; straight-line distance, estimated road distance and party ETA are distinct. Hanzhong–Chang'an has a 425 km / 33-day nominal baseline; actual party ETA varies.                                                            |
+| Governors    | Direct capital administration; other cities use formal governors or local stewards. Orders expose available amounts, gaps and dates. Troop-free governor transfers travel and take effect at a month boundary.                                                                    |
+| Capital work | Recruitment/assignment, public order, search, training, feasts, rewards, fine arms, relief and food trading within monthly work points and available stock. Farming/commerce development controls exist but are unavailable in all starting cities under the current value limit. |
+| Battles      | Four regional 24×20 templates, six unit types, six tactics, forecasts, morale, zone of control, camps, AI turns and manual player command.                                                                                                                                        |
+| Water        | Every unit type may enter passable water. On water, attack ×0.75 and incoming troop damage ×1.25; shore units can attack water units in normal range.                                                                                                                             |
+| Interface    | Ink-wash atlas and oblique battlefield, pan/zoom/Fit/focus/minimaps, exact troop counts, weather/supply/terrain inspection, full order/report lists and bilingual Wiki.                                                                                                           |
+| Recovery     | One browser autosave, portable export/import, in-game Campaign menu/Resume, confirmed replacement and withdrawal, and Retry save after storage failure.                                                                                                                           |
 
-The atlas contains 24 cities and 42 configured routes. Route records distinguish straight-line distance from estimated road distance and travel time. Hanzhong–Chang'an is about 225 km straight-line, roughly 425 km by the modeled route and 33 nominal marching days. These are transparent historical-geography estimates, not surveyed Han-era road measurements; see the [geography and routes record](docs/v0.3/01-geography-and-routes.md).
+Normal battles last at most 30 days; raids at most 10. At timeout, more surviving troops wins field control; ties favor the defender. Taking the opposing camp can also decide a battle. There is **no siege system**: no walls, gates, siege weapons or city-street phase. City administration and tactical command are separate.
 
-The ruler directly manages the capital. Cities with a formal governor run monthly local administration; the player retains authority over campaign orders and can manually command player battles. A governor order previews the requested amount, available amount, shortfall, route and earliest arrival, then lets the player accept, reduce, wait or cancel. Governor appointments take effect at a month boundary, and a transfer candidate must travel without troops. Multi-city coordination and stochastic future-budget forecasting are outside this candidate's planner.
+Geographic routes and regional battlefields are documented approximations, not surveyed Han-era maps. Multi-city plan coordination, full future-budget simulation, naval-skill gates, extra save slots and old-save conversion are not included. See [scope and release notes](docs/v0.3/release-notes.md).
 
-## Field battles
+**Known economy limit:** both scenarios start every city with farming and commerce above the current manual-development cap of 100. The development buttons stay disabled until a value falls below that cap. The initial-value/cap mismatch is [recorded for a scoped rules review](docs/next-steps.md#open-now); this documentation pass does not change the economy.
 
-Field battles use a 24×20 logical grid in a high-angle oblique view. Four regional templates represent the Hanzhong valleys, Shouchun waterways, lower Yi–Shu plains and Chengdu basin. Select a unit, move to a highlighted cell, choose an eligible target or tactic, and end the battle day when ready. The in-game wiki describes all six tactics and their costs and eligibility.
+## Current runtime views
 
-All troop types can enter passable water. Units on water deal 25% less damage and receive 25% more troop damage; units on shore may attack water units within normal range. Normal battles have a 30-day limit and raids 10 days. At the limit, the side with more surviving troops controls the field; ties go to the defender. The game has no siege phase, walls, gates or siege weapons. Regional battle maps are gameplay templates, not historically surveyed terrain.
+The atlas and Shouchun-template battlefield below are runtime captures after the playability repairs. Battle screenshots use a controlled Xiapi save with substituted regional terrain; the destination title can remain Xiapi. They demonstrate layout, not historical battle placement or final art approval. [All four fields at Fit and working zoom](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures).
 
-## Current browser captures
+![v0.3 campaign atlas, compact minimap and capital controls](docs/images/v03-campaign.png)
 
-Fresh 1920×1080 captures after the playability repairs show the compact atlas minimap and fitted battlefield. [All four templates at Fit and working zoom](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md) are available for review. Battle captures use a controlled test save with shortened travel and substituted regional terrain; they illustrate rendering, not historical battle locations. Artwork remains draft pending player feedback.
-
-![Current v0.3 campaign atlas and governor controls](docs/images/v03-campaign.png)
-
-![Current v0.3 24×20 battlefield, water terrain, tactics and controls](docs/images/v03-battlefield.png)
-
-## Art and attribution
-
-The campaign map, battlefield textures, ridge props, unit miniatures and transport craft include original ImageGen artwork. Generated assets remain `draft` for revisions as requested. Geographic anchors, routes and playable terrain come from program data; atmospheric artwork does not define exact geography. See the [asset manifest](docs/v0.3/assets/manifest.json), [art provenance and prompts](docs/v0.3/assets/provenance.md) and [rendering contract](docs/v0.3/05-rendering-and-map-ui.md).
-
-BAYE is the project's historical source and code reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This game is an independent redesign, not an official BAYE or San10WPK product. The reference source directory is not needed to build or play.
+![v0.3 fitted 24×20 battlefield with battle conditions and tactics](docs/images/v03-battlefield.png)
 
 ## Saves
 
-The game stores one automatic v0.3 save in local browser storage and supports v0.3 JSON export/import. Older save versions are recognized and rejected without overwriting the current campaign. Browser storage is scoped to the local browser profile and address, so export a backup before clearing site data or moving to another URL.
+v0.3 uses `hegemony.save`, version 3, ruleset `hegemony-3`. Older saves are rejected without deleting them or replacing the current game. Browser saves belong to the browser profile and address; export before changing profiles, URLs or clearing site data. A different port has separate storage.
 
-## Validation
+**Campaign menu / 战役菜单** offers Resume and New campaign. Replacing the campaign requires confirmation and offers Export first. Failed imports preserve the current game and drafts; successful imports reset campaign-bound controls. Export downloads a file independently of local saving. If local saving fails, keep the tab open, export a backup and use Retry save after storage is available.
 
-Run these commands from the repository root:
+## Validation and remaining acceptance
 
-- `npm test -- --maxWorkers=1 --no-file-parallelism` — 668 passed, 1 skipped across 46 files.
-- `npx tsc --noEmit` and `npm run build` — type check and production build pass.
-- `npm run format:check` — formatting check passes.
-- `npm run test:e2e` — 34 Playwright browser tests cover all six tactics, four templates, EN/ZH, 390/1366/1920 px and 200% zoom, plus the RV clock, geometry, recovery, inbox, governor, troop, economy and withdrawal regressions.
-- `npm run test:production` — production subpath and save-reload smoke test passes.
-- `npm run test:perf:v03` — tactical-day performance test passes.
-- `npm run validate:portraits` — 53 named mappings plus garrison and 108 WebP renditions pass validation; the contact sheet still needs human review.
+Recorded October 21, 2026 for the RV implementation candidate, not a new October 22 gameplay run:
 
-The 24-run, 96-month campaign-bot diagnostic completed without selected-player eliminations, true unifications or Hegemon victories. A matched 48-month second-front trial increased rival campaigns and battles, but reduced average player cities and caused one early elimination, with no new victory outcomes. The user accepted this diagnostic miss for v0.3, and the conservative one-front policy remains. The narrow bot is diagnostic evidence, not a player win-rate target; the four requested play sessions remain open. Raw results and limits are recorded in the [validation evidence](docs/v0.3/evidence/README.md).
+- Full suite: **668 passed, 1 existing skip, 46 files**.
+- Browser suite: **34 passed**, plus six affected cases rechecked after final CSS; EN/ZH, four maps, 390/1366/1920 effective CSS px and 200% zoom.
+- TypeScript/build, production `/hegemony/` save-reload, tactical performance, formatting and portrait checks passed.
 
-The [v0.3 documentation index](docs/v0.3/README.md) contains the design contracts, implementation tracks, art records and acceptance status. The [project documentation index](docs/README.md) identifies v0.3 as the active game and v0.2 records as historical evidence.
+The [validation record](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md) contains commands, environment, limits and screenshots. The accepted 96-month narrow-bot diagnostic produced no unifications or Hegemon wins; it is not a player win-rate claim. Art remains `draft`. Four 12-month/three-manual-battle play sessions and a real low-end-machine check await player observations. [Remaining tasks](docs/next-steps.md).
+
+## Development and attribution
+
+[Developer guide](docs/v0.3/development.md) covers the active React/SVG modules, scripts and save contract. Old React/Pixi/IndexedDB guides are in the [versioned archive](docs/archive/README.md).
+
+Original ImageGen artwork has [provenance](docs/v0.3/assets/provenance.md) and a [manifest](docs/v0.3/assets/manifest.json). Existing portrait identity/provenance remains in [portrait credits](docs/assets/portrait-credits.md). Geographic overlays and combat data determine positions and rules, not painted decoration.
+
+BAYE source reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This is an independent redesign, not an official BAYE or San10WPK product. The optional local reference checkout is not required to build or play.

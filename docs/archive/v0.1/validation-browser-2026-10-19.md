@@ -1,6 +1,8 @@
 # v0.1 improvement browser evidence
 
-> **Archived:** v0.1 browser evidence. This file is not updated. See the [documentation index](../README.md).
+> **Historical record, reorganized October 22, 2026.** Rules, results, approvals and pending statements below belong to the original version/date. See the [current v0.3 overview](../../v0.3/README.md) for the running game. Original body retained; local links rebased.
+
+> **Archived:** v0.1 browser evidence. This file is not updated. See the [documentation index](../../README.md).
 
 The complete development browser suite passed **41 tests**. After the final formatting pass, all
 **12 readability configurations** passed again with campaign label font measurements added and
@@ -15,7 +17,7 @@ human usability acceptance.
 
 ## Measured display results
 
-The [complete measured matrix](../validation-evidence/display-metrics.json) retains both languages,
+The [complete measured matrix](../../validation-evidence/display-metrics.json) retains both languages,
 every preset, the canvas size, board bounds, and rendered font targets. Values below are CSS
 pixels after camera transforms at 100% browser zoom.
 
@@ -41,8 +43,8 @@ at least 12 pixels of clearance. When the complete board fits in readable mode i
 those boundaries; a regression protects the floating-point edge case that previously caused
 unnecessary centering near the top row.
 
-Clean current screenshots: [Chinese campaign](../images/campaign-zh.png),
-[English dense battlefield](../images/battle-en.png).
+Clean current screenshots: [Chinese campaign](../../images/campaign-zh.png),
+[English dense battlefield](../../images/battle-en.png).
 
 ## Interaction and identity checks
 
@@ -87,7 +89,7 @@ or pinch/page scaling substitutes for browser zoom.
 
 Language, display settings, saving, next commander, centering, and End battle day remain usable
 through ordinary clicking and scrolling. A manual battle day advances and saves successfully.
-The [actual browser surface](../images/improvements/browser-zoom-200.png) is captured through Chrome's
+The [actual browser surface](../../images/improvements/browser-zoom-200.png) is captured through Chrome's
 screenshot protocol to avoid full-page clipping errors at non-default browser zoom.
 
 ## Reproducing the evidence

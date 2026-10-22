@@ -1,10 +1,12 @@
 # Baye web architecture
 
-> **Implementation status — October 17, 2026:** A runnable Atlas edition now implements the campaign, battles, AI, React/Pixi interface, and local saves. Read [the actual architecture and authored rules](implementation.md) first. This document preserves the original design proposal. Exact legacy fidelity, the full proposed content pipeline, and broad browser/performance release gates are not claimed complete.
+> **Historical record, reorganized October 22, 2026.** Rules, results, approvals and pending statements below belong to the original version/date. See the [current v0.3 overview](../../v0.3/README.md) for the running game. Original body retained; local links rebased.
+
+> **Implementation status — October 17, 2026:** A runnable Atlas edition now implements the campaign, battles, AI, React/Pixi interface, and local saves. Read [the actual architecture and authored rules](../v0.2/implementation.md) first. This document preserves the original design proposal. Exact legacy fidelity, the full proposed content pipeline, and broad browser/performance release gates are not claimed complete.
 
 Decision date: October 17, 2026. This is the proposed implementation design; the approved product direction is a substantial web-only rebuild using TypeScript, React, and PixiJS.
 
-V1 is a single-player, illustrated 2D strategy game for desktop browsers. It preserves Baye's core campaign and tactical battle rules while rebuilding the interface, state ownership, rendering, and persistence. One complete historical scenario is the proposed first release scope. The [roadmap](archive/roadmap.md) defines the incremental delivery gates, and the [reference baseline](reference-baseline.md) explains what preserving the rules means.
+V1 is a single-player, illustrated 2D strategy game for desktop browsers. It preserves Baye's core campaign and tactical battle rules while rebuilding the interface, state ownership, rendering, and persistence. One complete historical scenario is the proposed first release scope. The [roadmap](../v0.1/roadmap.md) defines the incremental delivery gates, and the [reference baseline](reference-baseline.md) explains what preserving the rules means.
 
 ## The central decision
 

@@ -1,8 +1,10 @@
 # Baye rebuild milestones
 
-> **Archived:** the original rebuild milestones of October 17, 2026. This file is not updated. See the [documentation index](../README.md).
+> **Historical record, reorganized October 22, 2026.** Rules, results, approvals and pending statements below belong to the original version/date. See the [current v0.3 overview](../../v0.3/README.md) for the running game. Original body retained; local links rebased.
 
-> **Implementation status — October 17, 2026:** The user requested the full playable game in one implementation pass. An authored Atlas edition now provides the economic, conquest, campaign, battle, scenario, presentation, and save systems described in [the implementation guide](../implementation.md). All 66 core/save tests, five Chrome journeys, and production smoke checks pass; see [validation](validation.md). This does not mark all original milestone gates complete: frozen legacy fidelity, broad browser coverage, and measured release performance remain open.
+> **Archived:** the original rebuild milestones of October 17, 2026. This file is not updated. See the [documentation index](../../README.md).
+
+> **Implementation status — October 17, 2026:** The user requested the full playable game in one implementation pass. An authored Atlas edition now provides the economic, conquest, campaign, battle, scenario, presentation, and save systems described in [the implementation guide](../v0.2/implementation.md). All 66 core/save tests, five Chrome journeys, and production smoke checks pass; see [validation](validation.md). This does not mark all original milestone gates complete: frozen legacy fidelity, broad browser coverage, and measured release performance remain open.
 
 This roadmap records the original plan to build a polished desktop-browser strategy game in small, playable increments. Each milestone has a demonstration, measurable completion criteria, and a learning goal. Its delivery sequence is historical; its unfulfilled quality gates remain useful follow-up work.
 
@@ -10,7 +12,7 @@ The first two playable slices stay deliberately small. One proves city managemen
 
 ## Proposed V1 scope
 
-Release one complete historical scenario with ruler selection, campaign management, officers, diplomacy, military orders, tactical battles, baseline AI, victory/defeat, settings, and reliable local saves with import/export. The [baseline](../reference-baseline.md) will turn these categories into an explicit mechanic checklist.
+Release one complete historical scenario with ruler selection, campaign management, officers, diplomacy, military orders, tactical battles, baseline AI, victory/defeat, settings, and reliable local saves with import/export. The [baseline](../design/reference-baseline.md) will turn these categories into an explicit mechanic checklist.
 
 Development begins with a synthetic scenario of three connected cities, two factions, and approximately six officers. These numbers keep fixtures understandable; they are not limits on the engine. The final historical scenario is selected during M0. Existing mod packs do not automatically define V1.
 
