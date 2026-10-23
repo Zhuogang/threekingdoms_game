@@ -1,13 +1,10 @@
 {
   "id": "campaign-china-full-ink-01",
-  "status": "draft",
-  "active": false,
+  "status": "integrated",
+  "active": true,
   "generationTool": "built-in image_gen",
   "source": "docs/v0.3/assets/generated/campaign-china-full-ink-01-source.png",
-  "sourceDimensions": [
-    1479,
-    1063
-  ],
+  "sourceDimensions": [1479, 1063],
   "master": "docs/v0.3/assets/generated/campaign-china-full-ink-01-master.png",
   "path": "public/assets/v03/maps/campaign-china-full-ink-01.webp",
   "width": 3260,
@@ -27,12 +24,7 @@
       "width": 3260,
       "height": 2340
     },
-    "bbox": [
-      72.02782698327158,
-      16,
-      137.18462890447856,
-      55
-    ],
+    "bbox": [72.02782698327158, 16, 137.18462890447856, 55],
     "projection": "Current campaign projection, same scale; only frame expanded",
     "oldRegionalPlacement": {
       "x": 1300,
@@ -67,10 +59,7 @@
     }
   },
   "validation": {
-    "dimensions": [
-      3260,
-      2340
-    ],
+    "dimensions": [3260, 2340],
     "originalScale": 1,
     "originalPlacement": {
       "x": 980,
@@ -87,7 +76,7 @@
       "differentChannels": 0
     }
   },
-  "scope": "Artwork candidate only; no game source, active background registration, city coordinates, city icons, routes or rules changed.",
+  "scope": "Active China-wide campaign background and minimap; preserves the original projection, city coordinates and travel rules. Initial camera shows the existing campaign region, with pan/zoom across the full canvas.",
   "resolutionNotes": "The AI full-frame source is smaller than the packaged master. The existing 1920x1400 painted region is composited at 1:1 pixel scale, with an 80-pixel seam transition. Newly generated outer regions are resized to the master and remain candidates for local detail refinement.",
   "prompt": "Use case: precise-object-edit / outpainting.\nAsset type: continuous CHINA-WIDE Chinese ink-wash physical landscape MASTER BACKGROUND for a Three Kingdoms game. The user has expanded the scope from a regional map to all China, so smaller campaign crops can be taken later. No UI, city icons, political boundaries or text.\nFinal canvas: landscape 3260 x 2340 pixels (aspect 163:117). North is up. Exact continuous geographic frame approximately 72.028E–137.185E, 16N–55N, including all mainland China, Hainan and Taiwan, plus surrounding physical land/sea needed by this rectangular frame. Do NOT put islands in a separate inset. Do NOT use a China-shaped cutout on blank paper. Paint an edge-to-edge geographically registered landscape rectangle with no borders.\n\nREFERENCE ROLES:\nImage 1 is the FULL TARGET CANVAS, containing the existing accepted regional ink painting at its correct geographic place and scale, with real relief / river guides around it. Preserve and seamlessly expand that painting, do not shrink or reposition it. Its existing painted rectangle has top-left (980,590), width 1920, height 1400 in the 3260x2340 target. Leave its relative geography and visible landmarks in place; extend the SAME art around it, with no rectangular insert or seams.\nImage 2 is the real physical geography of the SAME full canvas, with annotations identifying major regions for guidance. Follow its actual relief, rivers, coastlines and basins across ALL newly painted areas. REMOVE ALL annotations and labels in the final. Shaded-relief/photo-like guide texture must become matching hand-painted ink.\nImage 3 is the clean existing regional painting, a style/detail preservation reference ONLY; its whole frame corresponds to the placed rectangle in Image 1. It is not the full new framing.\n\nART DIRECTION:\nTraditional Chinese ink-wash landscape atlas (中国水墨山水), warm ivory xuan paper, restrained grey/charcoal dry-brush mountain forms and fine texture strokes, diluted layered washes, distant soft foothills, generous quiet flat plains. The existing muted sage vegetation and pale celadon rivers/sea continue seamlessly. Rich painterly craft matching the reference, not glossy 3D or flat vector iconography. Maintain high-bird's-eye geographic north-up composition, with low oblique brush-painted mountain forms but no horizon or viewpoint that distorts the map layout.\nThe western and northern extensions should NOT copy the dense eastern forests everywhere: use sparse dry brush and pale earth tones for arid basins and high plateau, restrained sparse shrubs, delicate pale rocky or snow-like mountain highlights where appropriate. The map should read as one coherent original ink atlas, not a patchwork.\n\nGEOGRAPHY IS A HARD CONSTRAINT:\nUse the real relief and drainage in Image 2. Xinjiang: east-west Tianshan between the broad open Junggar and Tarim basins; Tarim is a quiet sandy dry basin, NOT a lake or a forest. Tibet/Qinghai: high rugged plateau with real lake scatter; Kunlun and the Himalayan arc are in their proper places, not a huge wall cutting through the North China Plain. Gansu/Qilian and Loess terrain connect naturally to the already painted Qinling region. Mongolia/northern dry plateaus contain genuine large quiet open areas. Northeast plain is broad and open, with surrounding ranges following the relief reference.\nPreserve the existing North China Plain, Sichuan basin, Yangtze lowlands, Shandong peninsula, Bohai bays, mainland coast and Taiwan/Hainan shapes in their correct proportions and positions. Rivers must follow reference courses: Yellow River including its large northern loop; Yangtze through its real western mountain valleys and across middle/lower China; Han, Pearl, southwest river valleys, and northeastern drainage where shown. Rivers must connect logically to their proper basins and seas, never invent a single giant channel crossing unrelated basins. Plains stay flat and lightly painted; mountains belong to the reference's mountain terrain, not scattered for decoration.\nNatural land extends through the rectangular frame into surrounding areas; no country border or modern administrative line is needed.\n\nEXCLUDE:\nAny lettering, city, village, castle, structure, road, city marker, dot, labels, calligraphy, seal, compass, scale, grid, legend, political border, country-name outline, inset, separate island panel, UI, watermark, photo imagery, modern infrastructure, saturated colors, or European/fantasy mountain forms.\nDeliver one complete continuous CHINA-WIDE ink background, with all surrounding guide areas fully painted in the SAME style, and no change in geographic scale or placement of the existing region.",
   "referenceSources": {

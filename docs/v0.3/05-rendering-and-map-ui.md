@@ -16,6 +16,8 @@ The battlefield uses 128×64 world-unit diamonds with ground projection `((x-y)�
 - Accessible confirmation dialogs with focus/Escape behavior, safe campaign menu/resume, localized officer/formation labels and routine feedback.
 - Manifest-backed raster artwork with native rendering fallbacks; hill/cliff/water identity comes from logical terrain, not a painted impression.
 
+The campaign now uses the 3260×2340 China-wide ink canvas and eight small frontal city icon variants (imperial, plains, frontier, loess, basin, mountain, river and Jiangnan). The canvas spans world coordinates `(-1300, -790)` through `(1960, 1550)` at the existing geographic scale. New campaigns start on the original 1600×1000 city region; dragging and zooming explore the larger canvas, while Fit/Home show the whole painting. The minimap uses the same background without stretching its aspect ratio. City anchors, route distances, travel and combat rules are unchanged. Artwork manifests: [background](assets/campaign-china-full-ink-01.json), [city icons](assets/cities-front-ink-01.json).
+
 RV02 bounded main SVG frames independently from minimaps, corrected intrinsic sizing feedback and reattaches the battlefield resize observer after menu/session remount. RV06 removed false zero labels for small forces and active defeated-unit markers. The final capital helper/reason text spans sidebar columns without stretching adjacent action buttons.
 
 ## Evidence and remaining limits

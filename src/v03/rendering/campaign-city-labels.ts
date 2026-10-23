@@ -1,3 +1,4 @@
+import { campaignCityArtwork } from './campaign-city-art';
 import type { CampaignCityVisual } from './presentation';
 
 export interface CampaignLabelPlacement {
@@ -12,12 +13,12 @@ export function layoutCampaignCityLabels(
   cities: readonly CampaignCityVisual[],
 ): Map<string, CampaignLabelPlacement> {
   const occupied: CampaignLabelPlacement[] = cities.map((city) => {
-    const radius = city.scale === 'imperial' ? 23 : 19;
+    const art = campaignCityArtwork(city);
     return {
-      x: city.position.x - radius,
-      y: city.position.y - radius,
-      width: radius * 2,
-      height: radius * 2,
+      x: city.position.x + art.x - 4,
+      y: city.position.y + art.y - 4,
+      width: art.width + 8,
+      height: art.height + 12,
     };
   });
   const intersects = (a: CampaignLabelPlacement, b: CampaignLabelPlacement) =>

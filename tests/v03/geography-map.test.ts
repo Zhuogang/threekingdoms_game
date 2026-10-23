@@ -14,7 +14,7 @@ import { estimateTravel } from '../../src/v03/calendar';
 
 describe('v0.3 campaign route map geometry', () => {
   it('uses the approved regional center and uniform scale with a margin around every city', () => {
-    expect(CAMPAIGN_WORLD_BOUNDS.width / CAMPAIGN_WORLD_BOUNDS.height).toBe(16 / 10);
+    expect(CAMPAIGN_WORLD_BOUNDS).toEqual({ left: -1300, top: -790, width: 3260, height: 2340 });
     expect(projectCampaignPoint(33.5, 114)).toEqual({ x: 800, y: 500 });
     const north = projectCampaignPoint(34.5, 114);
     const east = projectCampaignPoint(33.5, 115);

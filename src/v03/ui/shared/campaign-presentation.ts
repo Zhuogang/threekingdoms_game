@@ -9,7 +9,7 @@ import type { V03GameState } from '../../types';
 import { CAMPAIGN_WORLD_BOUNDS } from '../../geography/campaign-map';
 
 export const CAMPAIGN_BACKGROUND = resolvePublicAsset(
-  V03_ASSETS.campaignMapRegional.path,
+  V03_ASSETS.campaignMapChinaInk01.path,
   import.meta.env.BASE_URL,
 );
 

@@ -3,6 +3,7 @@ import { useId, type KeyboardEvent, type PointerEvent } from 'react';
 import { clientToViewBoxPoint } from './geometry';
 import type { CampaignViewBox } from './campaign-viewport';
 import type { CampaignCityVisual, WorldPolyline } from './presentation';
+import { V03_ASSETS, resolvePublicAsset } from './assets';
 
 export interface CampaignMinimapProps {
   bounds: CampaignViewBox;
@@ -16,7 +17,6 @@ export interface CampaignMinimapProps {
 
 const WIDTH = 240;
 const HEIGHT = 150;
-const MAP = { left: 11, top: 7, width: 218, height: 136.25 };
 
 /** Overview navigator for the campaign atlas; the frame shows the current camera. */
 export function CampaignMinimap({
@@ -29,6 +29,13 @@ export function CampaignMinimap({
   onNavigate,
 }: CampaignMinimapProps) {
   const clipId = `v03-campaign-minimap-clip-${useId().replaceAll(':', '')}`;
+  const scale = Math.min(218 / bounds.width, 136.25 / bounds.height);
+  const MAP = {
+    left: (WIDTH - bounds.width * scale) / 2,
+    top: (HEIGHT - bounds.height * scale) / 2,
+    width: bounds.width * scale,
+    height: bounds.height * scale,
+  };
   const toMap = (point: { x: number; y: number }) => ({
     x: MAP.left + ((point.x - bounds.left) / bounds.width) * MAP.width,
     y: MAP.top + ((point.y - bounds.top) / bounds.height) * MAP.height,
@@ -125,6 +132,15 @@ export function CampaignMinimap({
       />
       <g clipPath={`url(#${clipId})`}>
         <rect x={MAP.left} y={MAP.top} width={MAP.width} height={MAP.height} fill="#e6dec9" />
+        <image
+          href={resolvePublicAsset(V03_ASSETS.campaignMapChinaInk01.path, import.meta.env.BASE_URL)}
+          x={MAP.left}
+          y={MAP.top}
+          width={MAP.width}
+          height={MAP.height}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        />
         {routes.map((route) => (
           <polyline
             key={route.id}

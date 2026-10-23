@@ -13,7 +13,16 @@ export const CAMPAIGN_MAP_BOUNDS: MapBounds = {
   maxLongitude: 114 + 32 / 3,
 };
 
-export const CAMPAIGN_WORLD_BOUNDS = { left: 0, top: 0, width: 1600, height: 1000 } as const;
+/** Initial camera framing; the projection and all existing city anchors stay unchanged. */
+export const CAMPAIGN_REGIONAL_BOUNDS = { left: 0, top: 0, width: 1600, height: 1000 } as const;
+
+/** China-wide ink canvas, registered at the original regional pixel density. */
+export const CAMPAIGN_WORLD_BOUNDS = {
+  left: -1300,
+  top: -790,
+  width: 3260,
+  height: 2340,
+} as const;
 
 /**
  * North-up geographic presentation with uniform scale and room around the city network.

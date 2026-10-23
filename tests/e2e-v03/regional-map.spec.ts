@@ -1,5 +1,22 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Locator } from '@playwright/test';
 import { CITY_GEOGRAPHY } from '../../src/v03/geography';
+import { CAMPAIGN_WORLD_BOUNDS } from '../../src/v03/geography/campaign-map';
+import { fitCampaignViewport } from '../../src/v03/rendering/campaign-viewport';
+
+async function expectFullCanvas(map: Locator) {
+  const frame = (await map.boundingBox())!;
+  const full = fitCampaignViewport(CAMPAIGN_WORLD_BOUNDS, frame.width / frame.height);
+  await expect
+    .poll(async () => {
+      const actual = (await map.getAttribute('viewBox'))!.split(' ').map(Number);
+      return Math.max(
+        ...[full.left, full.top, full.width, full.height].map((value, index) =>
+          Math.abs(value - actual[index]!),
+        ),
+      );
+    })
+    .toBeLessThan(0.1);
+}
 
 async function start(page: Page, locale: 'en' | 'zh') {
   await page.goto(`/?lang=${locale}&debug=1`);
@@ -11,7 +28,7 @@ async function start(page: Page, locale: 'en' | 'zh') {
 }
 
 for (const locale of ['en', 'zh'] as const) {
-  test(`regional map keeps its extent, aspect and margins across screen sizes (${locale})`, async ({
+  test(`campaign canvas keeps its initial framing, aspect and margins across screen sizes (${locale})`, async ({
     page,
   }) => {
     await start(page, locale);
@@ -116,6 +133,66 @@ for (const locale of ['en', 'zh'] as const) {
     await expect(map).not.toHaveAttribute('viewBox', panned!);
     await map.focus();
     await page.keyboard.press('Home');
-    await expect(map).toHaveAttribute('viewBox', before!);
+    await expectFullCanvas(map);
   });
 }
+
+test('loads frontal city art and pans across the China-wide ink canvas', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1200 });
+  const failedAssets: string[] = [];
+  page.on('response', (response) => {
+    if (response.url().includes('/assets/v03/') && response.status() >= 400)
+      failedAssets.push(response.url());
+  });
+  await start(page, 'zh');
+  const map = page.locator('.v03-map-frame > svg').first();
+  await expect(map.locator(':scope > image')).toHaveAttribute(
+    'href',
+    /campaign-china-full-ink-01\.webp$/,
+  );
+  await expect(map.locator('.v03-city-artwork image')).toHaveCount(24);
+  const art = await map
+    .locator('.v03-city-artwork')
+    .evaluateAll((nodes) =>
+      [...new Set(nodes.map((node) => node.getAttribute('data-city-art')))].sort(),
+    );
+  expect(art).toEqual([
+    'basin',
+    'frontier',
+    'imperial',
+    'jiangnan',
+    'loess',
+    'mountain',
+    'plains',
+    'river',
+  ]);
+  await page.waitForLoadState('networkidle');
+  expect(failedAssets).toEqual([]);
+  await page.screenshot({ path: testInfo.outputPath('campaign-ink-region.png') });
+
+  const anchors = await map
+    .locator('.v03-city-symbol')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('transform')));
+  const initial = await map.getAttribute('viewBox');
+  const frame = (await map.boundingBox())!;
+  await page.mouse.move(frame.x + frame.width * 0.1, frame.y + frame.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(frame.x + frame.width * 0.5, frame.y + frame.height * 0.65, { steps: 12 });
+  await page.mouse.up();
+  await expect(map).not.toHaveAttribute('viewBox', initial!);
+  expect(Number((await map.getAttribute('viewBox'))!.split(' ')[0])).toBeLessThan(0);
+  const panned = await map.getAttribute('viewBox');
+  await page.mouse.wheel(0, -400);
+  await expect(map).not.toHaveAttribute('viewBox', panned!);
+  expect(
+    await map
+      .locator('.v03-city-symbol')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('transform'))),
+  ).toEqual(anchors);
+  await map.focus();
+  await page.keyboard.press('Home');
+  await expectFullCanvas(map);
+  await page.screenshot({ path: testInfo.outputPath('campaign-ink-full-canvas.png') });
+});

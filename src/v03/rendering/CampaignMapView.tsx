@@ -10,6 +10,7 @@ import {
   type WheelEvent,
 } from 'react';
 import { V03_ASSETS, resolvePublicAsset } from './assets';
+import { campaignCityArtwork } from './campaign-city-art';
 import type { CampaignCityVisual, WorldPolyline } from './presentation';
 import { CAMPAIGN_REGION_LABELS } from '../geography/campaign-map';
 import { layoutCampaignCityLabels, type CampaignLabelPlacement } from './campaign-city-labels';
@@ -49,19 +50,6 @@ function pathFromPoints(points: readonly { x: number; y: number }[]): string {
   return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
 }
 
-function citySize(scale: CampaignCityVisual['scale']): number {
-  switch (scale) {
-    case 'imperial':
-      return 22;
-    case 'major':
-      return 17;
-    case 'humble':
-      return 9;
-    default:
-      return 12;
-  }
-}
-
 function CitySymbol({
   city,
   locale,
@@ -73,9 +61,11 @@ function CitySymbol({
   labelPlacement: CampaignLabelPlacement;
   onClick?: (cityId: string) => void;
 }) {
-  const radius = citySize(city.scale);
+  const art = campaignCityArtwork(city);
+  const [artFailed, setArtFailed] = useState(false);
+  useEffect(() => setArtFailed(false), [art.asset.path]);
   const color = city.controllerColor ?? '#72634d';
-  const selectedRadius = radius + 8;
+
   const governance = city.governance;
   const label = city.name;
   const labelX = labelPlacement.x + labelPlacement.width / 2 - city.position.x;
@@ -127,83 +117,49 @@ function CitySymbol({
         opacity={0.6}
         pointerEvents="none"
       />
-      <circle r={Math.max(23, selectedRadius * 0.7)} fill="transparent" />
-      <g className="v03-city-artwork" transform="scale(0.7)">
-        <circle r={radius + 5} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={4} />
+      <rect x={art.x} y={art.y} width={art.width} height={art.height + 8} fill="transparent" />
+      <g className="v03-city-artwork" data-city-art={art.kind}>
         {city.selected ? (
-          <circle
-            r={selectedRadius}
+          <ellipse
+            cx={0}
+            cy={-6}
+            rx={art.width / 2 + 5}
+            ry={16}
             fill="#edc86e"
             fillOpacity={0.24}
             stroke="#8c6419"
-            strokeWidth={2.5}
+            strokeWidth={1.8}
           />
         ) : null}
-        {city.scale === 'imperial' ? (
-          <g>
-            <circle r={radius} fill="#f3ead5" stroke={color} strokeWidth={3.6} />
-            <path
-              d={`M ${-radius * 0.64} ${radius * 0.56} V ${-radius * 0.1} L ${-radius * 0.29} ${-radius * 0.52} L 0 ${-radius * 0.14} L ${radius * 0.29} ${-radius * 0.52} L ${radius * 0.64} ${-radius * 0.1} V ${radius * 0.56} Z`}
-              fill="#d8c5a0"
-              stroke="#544733"
-              strokeWidth={2.2}
-            />
-            <path d={`M 0 ${-radius * 0.14} V ${radius * 0.56}`} stroke="#5b4a34" strokeWidth={2} />
-            <circle cy={-radius * 0.52} r={radius * 0.13} fill="#9a6241" />
-          </g>
-        ) : city.scale === 'major' ? (
-          <g>
-            <path
-              d={`M ${-radius} ${radius * 0.48} L ${-radius * 0.76} ${-radius * 0.25} L 0 ${-radius * 0.68} L ${radius * 0.76} ${-radius * 0.25} L ${radius} ${radius * 0.48} Z`}
-              fill="#eadcc0"
-              stroke={color}
-              strokeWidth={2.8}
-            />
-            <path
-              d={`M ${-radius * 0.48} ${radius * 0.48} V ${-radius * 0.16} H ${radius * 0.48} V ${radius * 0.48}`}
-              fill="#c8b08a"
-              stroke="#625640"
-              strokeWidth={2}
-            />
-            <path
-              d={`M 0 ${-radius * 0.65} V ${-radius * 0.24}`}
-              stroke="#625640"
-              strokeWidth={2.2}
-            />
-          </g>
-        ) : city.scale === 'humble' ? (
-          <g>
-            <rect
-              x={-radius * 0.66}
-              y={-radius * 0.28}
-              width={radius * 1.32}
-              height={radius * 1.05}
-              rx={1.5}
-              fill="#e9ddc8"
-              stroke={color}
-              strokeWidth={2.2}
-            />
-            <path
-              d={`M ${-radius} ${-radius * 0.24} L 0 ${-radius} L ${radius} ${-radius * 0.24} Z`}
-              fill="#b69e78"
-              stroke="#665943"
-              strokeWidth={1.8}
-            />
-          </g>
+        <ellipse
+          cx={0}
+          cy={-3}
+          rx={art.width * 0.35}
+          ry={5}
+          fill={color}
+          fillOpacity={0.18}
+          stroke={color}
+          strokeWidth={1.5}
+        />
+        {!artFailed ? (
+          <image
+            href={resolvePublicAsset(art.asset.path, import.meta.env.BASE_URL)}
+            x={art.x}
+            y={art.y}
+            width={art.width}
+            height={art.height}
+            onError={() => setArtFailed(true)}
+            aria-hidden="true"
+          />
         ) : (
-          <g>
-            <circle r={radius} fill="#f0e6d2" stroke={color} strokeWidth={2.8} />
-            <path
-              d={`M ${-radius * 0.65} ${radius * 0.35} V ${-radius * 0.08} L 0 ${-radius * 0.55} L ${radius * 0.65} ${-radius * 0.08} V ${radius * 0.35} Z`}
-              fill="#d1bc95"
-              stroke="#625640"
-              strokeWidth={1.8}
-            />
+          <g aria-hidden="true" fill="#e9ddc8" stroke={color} strokeWidth={2}>
+            <path d="M -20 -3 V -21 H -10 V -29 H 10 V -21 H 20 V -3 Z" />
+            <path d="M -4 -3 V -14 H 4 V -3" fill="#514a3b" />
           </g>
         )}
         {governance ? (
           <g
-            transform={`translate(${radius * 0.78} ${-radius * 0.78})`}
+            transform={`translate(${art.width * 0.36} ${art.y + art.height * 0.25})`}
             aria-label={
               governance === 'direct'
                 ? message(locale, 'ui.ruler.s.capital.126')
@@ -308,6 +264,7 @@ export function CampaignMapView({
     if (!canNavigate || event.button !== 0) return;
     const target = event.target as Element;
     if (target.closest?.('[data-campaign-interactive="true"]')) return;
+    event.preventDefault();
     const start = pointerWorldPoint(event.clientX, event.clientY, activeViewport);
     panStartRef.current = { pointerId: event.pointerId, start, viewport: activeViewport };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -394,7 +351,7 @@ export function CampaignMapView({
   };
   const resolvedBackground =
     backgroundImage ??
-    resolvePublicAsset(V03_ASSETS.campaignMapRegional.path, import.meta.env.BASE_URL);
+    resolvePublicAsset(V03_ASSETS.campaignMapChinaInk01.path, import.meta.env.BASE_URL);
   return (
     <svg
       ref={svgRef}
@@ -416,6 +373,7 @@ export function CampaignMapView({
         height: '100%',
         background: '#eee4d0',
         touchAction: canNavigate ? 'none' : undefined,
+        userSelect: canNavigate ? 'none' : undefined,
         cursor: canNavigate ? 'grab' : undefined,
         ...style,
       }}
@@ -603,6 +561,25 @@ export function CampaignMapView({
           onClick={onCityClick}
         />
       ))}
+      {/* Keep geographic anchors clickable above nearby artwork and label connectors. */}
+      {onCityClick
+        ? cityOrder.map((city) => (
+            <circle
+              key={`anchor-${city.id}`}
+              cx={city.position.x}
+              cy={city.position.y}
+              r={10}
+              fill="transparent"
+              data-campaign-interactive="true"
+              aria-hidden="true"
+              style={{ cursor: 'pointer' }}
+              onClick={(event) => {
+                event.stopPropagation();
+                onCityClick(city.id);
+              }}
+            />
+          ))
+        : null}
     </svg>
   );
 }

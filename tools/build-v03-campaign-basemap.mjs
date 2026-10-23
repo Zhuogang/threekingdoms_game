@@ -14,7 +14,7 @@ const compiled = await build({
   format: 'esm',
   platform: 'node',
 });
-const { projectCampaignPoint, CAMPAIGN_WORLD_BOUNDS: bounds } = await import(
+const { projectCampaignPoint, CAMPAIGN_REGIONAL_BOUNDS: bounds } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled.outputFiles[0].contents).toString('base64')}`
 );
 const project = ([longitude, latitude]) => {

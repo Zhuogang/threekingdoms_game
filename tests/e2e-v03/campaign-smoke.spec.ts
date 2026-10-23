@@ -234,14 +234,14 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
 }, testInfo) => {
   await page.goto('/');
   const atlasResponse = page.waitForResponse((response) =>
-    response.url().includes('/assets/v03/maps/campaign-ink-map-01.webp'),
+    response.url().includes('/assets/v03/maps/campaign-china-full-ink-01.webp'),
   );
   await page.getByRole('button', { name: 'New campaign', exact: true }).click();
   await expect(page.locator('.v03-campaign-main')).toBeVisible();
   expect((await atlasResponse).status()).toBe(200);
   await expect(page.locator('.v03-map-frame svg image').first()).toHaveAttribute(
     'href',
-    /campaign-ink-map-01\.webp$/,
+    /campaign-china-full-ink-01\.webp$/,
   );
   await page.screenshot({
     path: testInfo.outputPath('campaign.png'),

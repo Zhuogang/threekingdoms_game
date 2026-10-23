@@ -36,6 +36,7 @@ import type { V03BattleIntent, V03GameState, V03JourneyCargo } from '../../types
 
 import { COPY } from '../shared/app-copy-1';
 import { localizeSaveError, CAMPAIGN_BOUNDS } from '../shared/app-copy-2';
+import { CAMPAIGN_REGIONAL_BOUNDS } from '../../geography/campaign-map';
 
 export function useGameSession() {
   const [locale, setLocale] = useState<V03Locale>(
@@ -113,13 +114,16 @@ export function useGameSession() {
       const rect = frame.getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
       setCampaignFrameSize({ width: rect.width, height: rect.height });
-      setCampaignViewport((viewport) => {
-        if (!campaignViewportInitialized.current) {
-          campaignViewportInitialized.current = true;
-          return fitCampaignViewport(CAMPAIGN_BOUNDS, rect.width / rect.height);
-        }
-        return resizeCampaignViewport(CAMPAIGN_BOUNDS, viewport, rect.width / rect.height);
-      });
+      if (!campaignViewportInitialized.current) {
+        campaignViewportInitialized.current = true;
+        setCampaignViewport(
+          fitCampaignViewport(CAMPAIGN_REGIONAL_BOUNDS, rect.width / rect.height),
+        );
+      } else {
+        setCampaignViewport((viewport) =>
+          resizeCampaignViewport(CAMPAIGN_BOUNDS, viewport, rect.width / rect.height),
+        );
+      }
     };
     updateViewportForFrame();
     if (typeof ResizeObserver === 'undefined') {
