@@ -5,13 +5,40 @@ import { prisonerHolder, prisonerRecruitChance } from '../../campaign/prisoners'
 import { Button, Select, Panel } from '../kit';
 import { ConfirmDialog, displayName } from '../shared/app-copy-3';
 
-export function PrisonerPanel({ context }: { context: GameplayContext }) {
-  const { state, selectedCity, locale, dispatch } = context;
+export function PrisonerPanel({
+  context,
+  officerId,
+  onComplete,
+}: {
+  context: GameplayContext;
+  officerId?: string;
+  onComplete?: () => void;
+}) {
+  const { state, selectedCity, locale } = context;
+  const dispatch = (
+    command: Extract<Parameters<GameplayContext['dispatch']>[0], { type: 'prisonerAction' }>,
+  ) => {
+    const result = context.dispatch(command);
+    if (result?.ok) {
+      const decision = result.state.events
+        .filter((event) => event.code === 'prisoner.decision')
+        .at(-1);
+      context.setFeedback({
+        key:
+          decision?.params?.accepted === false
+            ? 'flow.prisonerRefused'
+            : `flow.prisoner.${command.action}`,
+      });
+      onComplete?.();
+    }
+    return result;
+  };
   const [exchangeId, setExchangeId] = useState('');
   const [execution, setExecution] = useState<string | null>(null);
   const prisoners = state.officers.filter(
     (officer) =>
       officer.alive &&
+      (!officerId || officer.id === officerId) &&
       officer.location.kind === 'captured' &&
       officer.location.cityId === selectedCity?.id,
   );

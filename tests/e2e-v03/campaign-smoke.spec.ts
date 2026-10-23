@@ -1,4 +1,7 @@
 import {
+  showCityManagement,
+  showOfficer,
+  confirmWork,
   openMenu,
   closeMenu,
   acknowledgeAll,
@@ -28,6 +31,11 @@ async function startCampaign(page: Page) {
 }
 
 async function setLocale(page: Page, locale: 'en' | 'zh') {
+  if (await page.locator('.v03-campaign-window').count()) {
+    if ((await page.locator('html').getAttribute('lang')) !== locale)
+      await page.locator('.v03-window-language').click();
+    return;
+  }
   await openMenu(page);
   const current = await page.locator('html').getAttribute('lang');
   if (current !== locale)
@@ -276,16 +284,21 @@ test('runs reward, equipment, and relief through capital work points and persist
 }) => {
   await startCampaign(page);
   await importFile(page, 'capital-actions.save', createCapitalActionsSave());
+  await showOfficer(page);
 
   const reward = page.getByRole('button', { name: /Reward officer · 100 gold/ }).first();
   const equipment = page.getByRole('button', { name: /Issue fine arms · 180 gold/ }).first();
   const relief = page.getByRole('button', { name: /Relieve people · 80 gold/ });
   await expect(reward).toBeEnabled();
   await expect(equipment).toBeEnabled();
-  await expect(relief).toBeEnabled();
   await reward.click();
+  await confirmWork(page);
   await equipment.click();
+  await confirmWork(page);
+  await showCityManagement(page);
+  await expect(relief).toBeEnabled();
   await relief.click();
+  await confirmWork(page);
 
   await expect
     .poll(async () => {

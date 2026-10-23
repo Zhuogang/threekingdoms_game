@@ -38,7 +38,16 @@ import { COPY } from '../shared/app-copy-1';
 import { localizeSaveError, CAMPAIGN_BOUNDS } from '../shared/app-copy-2';
 
 export function useGameSession() {
-  const [locale, setLocale] = useState<V03Locale>('en');
+  const [locale, setLocale] = useState<V03Locale>(
+    new URLSearchParams(window.location.search).get('lang') === 'zh' ? 'zh' : 'en',
+  );
+  const [campaignWindowOpen, setCampaignWindowOpen] = useState(false);
+  const [marchNotice, setMarchNotice] = useState<{
+    source: string;
+    target: string;
+    troops: number;
+    arrivalDay: number;
+  } | null>(null);
   const [state, setState] = useState<V03GameState | null>(null);
   const [campaignTab, setCampaignTab] = useState<'city' | 'forces' | 'orders' | 'diplomacy'>(
     'city',
@@ -137,6 +146,7 @@ export function useGameSession() {
           wikiReturnFocus.current =
             document.activeElement instanceof HTMLElement ? document.activeElement : null;
           setWikiTopic('overview');
+          setCampaignWindowOpen(false);
           setShowWiki(true);
         }
       } else if (event.key === 'Escape' && showWiki) {
@@ -356,6 +366,10 @@ export function useGameSession() {
     }
   }, [state, activeBattles, selectedBattleId, selectedCityId, selectedUnitId, viewMode]);
   return {
+    campaignWindowOpen,
+    setCampaignWindowOpen,
+    marchNotice,
+    setMarchNotice,
     campaignTab,
     setCampaignTab,
     showReports,

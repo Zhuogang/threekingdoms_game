@@ -109,6 +109,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
     setFeedback('');
     setState(result.state);
+    if (command.type === 'advance') context.setMarchNotice(null);
     if (command.type === 'battleAction') {
       const battle = result.state.battles.find((entry) => entry.id === command.battleId);
       const acted = battle?.battleData.units.find((unit) => unit.id === command.action.unitId);
@@ -129,8 +130,32 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
     if (result.message) setFeedback(result.message);
     else if (command.type === 'marchArmy') setFeedback({ key: 'feedback.marchArmy' });
+    if (command.type === 'marchArmy') {
+      const journey = result.state.journeys.find(
+        (entry) =>
+          entry.kind === 'campaign' &&
+          entry.status === 'outbound' &&
+          !state.journeys.some((old) => old.id === entry.id),
+      );
+      if (journey) {
+        context.setMarchNotice({
+          source: journey.sourceCityId,
+          target: journey.destinationCityId,
+          troops: journey.manifest.troopCount,
+          arrivalDay: journey.expectedArrivalDay,
+        });
+        context.setCampaignWindowOpen(false);
+        setViewMode('campaign');
+        setFeedback('');
+      } else {
+        context.setCampaignTab('orders');
+      }
+    }
+    return result;
   };
   const replaceCampaign = (fresh: V03GameState) => {
+    context.setCampaignWindowOpen(false);
+    context.setMarchNotice(null);
     setShowReports(false);
     setState(fresh);
     setScenarioId(fresh.scenarioId);
@@ -392,7 +417,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   const submitResourceOrder = () => {
     if (!state || !selectedCity) return;
     const deadline = requestedByDay.trim() === '' ? null : Number(requestedByDay);
-    dispatch({
+    return dispatch({
       type: 'requestRequisition',
       sourceCityId: selectedCity.id,
       targetCityId,
@@ -407,7 +432,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   const submitCampaignOrder = () => {
     if (!state || !selectedCity) return;
     const deadline = requestedByDay.trim() === '' ? null : Number(requestedByDay);
-    dispatch({
+    return dispatch({
       type: 'issueCampaignDirective',
       sourceCityId: selectedCity.id,
       targetCityId,
@@ -423,14 +448,14 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     reduced?: unknown,
   ) => {
     if (kind === 'resource')
-      dispatch({
+      return dispatch({
         type: 'answerRequisition',
         requisitionId: orderId,
         answer,
         reduced: reduced as V03JourneyCargo | undefined,
       });
     else
-      dispatch({
+      return dispatch({
         type: 'answerCampaignDirective',
         directiveId: orderId,
         answer,

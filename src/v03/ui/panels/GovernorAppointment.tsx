@@ -9,11 +9,13 @@ import type { GameplayContext } from '../hooks/gameplayView';
 
 export function GovernorAppointment({
   context,
+  onComplete,
 }: {
   context: GameplayContext & {
     state: NonNullable<GameplayContext['state']>;
     selectedCity: NonNullable<GameplayContext['selectedCity']>;
   };
+  onComplete?: () => void;
 }) {
   const {
     selectedCity,
@@ -72,11 +74,12 @@ export function GovernorAppointment({
             state,
           )}
           onClick={() => {
-            dispatch({
+            const result = dispatch({
               type: 'appointGovernor',
               cityId: selectedCity.id,
               officerId: governorSelection || null,
             });
+            if (result?.ok) onComplete?.();
           }}
         >
           {!governorSelection
@@ -90,6 +93,21 @@ export function GovernorAppointment({
               : t.appoint}
         </Button>
       </div>
+      <PendingGovernor context={context} />
+    </>
+  );
+}
+
+export function PendingGovernor({
+  context,
+}: {
+  context: GameplayContext & {
+    selectedCity: NonNullable<GameplayContext['selectedCity']>;
+  };
+}) {
+  const { selectedCity, state, locale, localizedOfficerName, t } = context;
+  return (
+    <>
       {selectedCity.pendingAppointment
         ? (() => {
             const pendingOfficer = selectedCity.pendingAppointment.governorId

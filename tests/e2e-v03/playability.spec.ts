@@ -1,4 +1,12 @@
 import {
+  openCity,
+  closeCityWindow,
+  showCityManagement,
+  showAssignment,
+  showOfficer,
+  showGovernor,
+  confirmWork,
+  showForces,
   openMenu,
   closeMenu,
   submitBattleDay,
@@ -38,6 +46,11 @@ async function savedState(page: Page): Promise<V03GameState> {
 }
 
 async function locale(page: Page, value: 'en' | 'zh') {
+  if (await page.locator('.v03-campaign-window').count()) {
+    if ((await page.locator('html').getAttribute('lang')) !== value)
+      await page.locator('.v03-window-language').click();
+    return;
+  }
   await openMenu(page);
   if ((await page.locator('html').getAttribute('lang')) !== value)
     await page.getByRole('button', { name: value === 'zh' ? '中文' : 'EN', exact: true }).click();
@@ -140,12 +153,18 @@ test('RV03 clears successful-import drafts and preserves them on failed import',
   page,
 }) => {
   await loadState(page, createV03Game('cao', 173));
+  await showAssignment(page);
   const assignment = page.getByRole('spinbutton', { name: /Officer troop count/ }).first();
   const initial = await assignment.inputValue();
   await assignment.fill('37');
-  await page.getByRole('button', { name: 'Puyang', exact: true }).click();
+  await openCity(page, 'Puyang');
   await showSupplies(page);
-  await page.getByRole('combobox', { name: 'Destination', exact: true }).selectOption('chenliu');
+  await page
+    .locator('.v03-supply-targets')
+    .getByRole('button', { name: 'Chenliu', exact: true })
+    .click();
+  await page.getByLabel('Gold', { exact: true }).fill('500000');
+  await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   const preview = page.locator('.v03-route-preview[aria-live="polite"]');
   await expect(preview).toHaveCount(1);
@@ -156,10 +175,11 @@ test('RV03 clears successful-import drafts and preserves them on failed import',
   });
   await expect(preview).toHaveCount(1);
   await expect(page.getByRole('status')).toContainText(/not a valid|invalid/i);
-  await page.getByRole('button', { name: 'Chenliu', exact: true }).click();
-  await selectTab(page, 'City');
+  await openCity(page, 'Chenliu');
+  await showAssignment(page);
   await expect(assignment).toHaveValue('37');
   await importState(page, createV03Game('cao', 174));
+  await showAssignment(page);
   await expect(assignment).toHaveValue(initial);
   await expect(preview).toHaveCount(0);
   await importState(page, createV03Game('sun', 175, 'guandu-200'));
@@ -218,14 +238,17 @@ test('RV07 completes recruit, assign and march through the visible capital contr
     )!;
     await loadState(page, state);
     await locale(page, language);
+    await showCityManagement(page);
     await page
       .getByRole('button', {
         name: language === 'en' ? 'Recruit soldiers' : '征募士兵',
         exact: true,
       })
       .click();
+    await confirmWork(page);
     const recruited = (await savedState(page)).cities.find((city) => city.id === capital.id)!;
     expect(recruited.reserve).toBeGreaterThan(capital.reserve);
+    await showAssignment(page, language === 'en' ? officer.name : officer.chinese);
     await page
       .getByRole('spinbutton', {
         name:
@@ -235,13 +258,7 @@ test('RV07 completes recruit, assign and march through the visible capital contr
         exact: true,
       })
       .fill(String(officer.troops + 100));
-    await page
-      .getByRole('button', {
-        name: language === 'en' ? 'Set troop count' : '调整兵力',
-        exact: true,
-      })
-      .first()
-      .click();
+    await confirmWork(page);
     const assigned = await savedState(page);
     expect(assigned.officers.find((entry) => entry.id === officer.id)?.troops).toBe(
       officer.troops + 100,
@@ -249,9 +266,7 @@ test('RV07 completes recruit, assign and march through the visible capital contr
     expect(assigned.cities.find((city) => city.id === capital.id)?.reserve).toBe(
       recruited.reserve - 100,
     );
-    await page
-      .getByRole('tab', { name: language === 'en' ? 'Forces' : '军队', exact: true })
-      .click();
+    await showForces(page);
     await page.locator('.v03-army-officer input').first().check();
     await page
       .getByLabel(
@@ -259,7 +274,7 @@ test('RV07 completes recruit, assign and march through the visible capital contr
       )
       .selectOption('xiapi');
     await page
-      .getByRole('button', { name: language === 'en' ? 'March' : '出征', exact: true })
+      .getByRole('button', { name: language === 'en' ? 'Confirm march' : '确认出征', exact: true })
       .click();
     await expect
       .poll(
@@ -281,6 +296,7 @@ test('RV04 exposes every player decision and the full report backlog without riv
   await expect(page.locator('.v03-orders-list')).not.toContainText('Review rival order');
   await expect(page.locator('.v03-orders-list')).toContainText('Review player order 1');
   await expect(page.locator('.v03-orders-list')).toContainText('Review player order 9');
+  await closeCityWindow(page);
   await page.getByRole('button', { name: /Inbox/ }).click();
   await expect(page.locator('.v03-events .v03-event')).toHaveCount(12);
   await expect(page.locator('.v03-events > header')).toContainText('12');
@@ -299,6 +315,7 @@ test('RV04 exposes every player decision and the full report backlog without riv
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();
   await expect.poll(async () => (await savedState(page)).absoluteDay).toBe(1);
   await locale(page, 'zh');
+  await selectTab(page, 'Orders');
   await expect(page.locator('.v03-orders-list .v03-order-card')).toHaveCount(9);
 });
 
@@ -307,7 +324,8 @@ test('RV05 transfers a troop-free incumbent through the actual governor controls
 }) => {
   const state = governorTransferState();
   await loadState(page, state);
-  await page.getByRole('button', { name: 'Xuchang', exact: true }).click();
+  await openCity(page, 'Xuchang');
+  await showGovernor(page);
   const candidate = page.getByLabel('Governor candidate', { exact: true });
   await candidate.selectOption('xiahoudun');
   await page.getByRole('button', { name: 'Appoint governor', exact: true }).click();
@@ -324,6 +342,7 @@ test('RV05 transfers a troop-free incumbent through the actual governor controls
     'journey',
   );
   await locale(page, 'zh');
+  await page.getByRole('button', { name: /太守任免/ }).click();
   await expect(page.getByLabel('太守人选', { exact: true })).toBeVisible();
 });
 
@@ -356,7 +375,8 @@ test('RV06 presents living small forces accurately and removes defeated units fr
 test('RV05 preserves an explicitly pending dismissal after reload', async ({ page }) => {
   const state = governorTransferState();
   await loadState(page, state);
-  await page.getByRole('button', { name: 'Puyang', exact: true }).click();
+  await openCity(page, 'Puyang');
+  await showGovernor(page);
   await page.getByLabel('Governor candidate', { exact: true }).selectOption('');
   await page.getByRole('button', { name: 'Dismiss governor', exact: true }).click();
   await expect
@@ -367,7 +387,8 @@ test('RV05 preserves an explicitly pending dismissal after reload', async ({ pag
     )
     .toBe(null);
   await page.reload();
-  await page.getByRole('button', { name: 'Puyang', exact: true }).click();
+  await openCity(page, 'Puyang');
+  await showGovernor(page);
   await expect(page.getByLabel('Governor candidate', { exact: true })).toHaveValue('');
   await locale(page, 'zh');
   await expect(page.getByLabel('太守人选', { exact: true })).toHaveValue('');
@@ -387,18 +408,24 @@ test('RV07 shows reserve/officer results and rejects training at either cap befo
   officer.force = 100;
   officer.experience = 0;
   await loadState(page, state);
+  await showCityManagement(page);
   await expect(page.getByText('Reserve soldiers', { exact: true })).toBeVisible();
   await expect(page.getByText('Population', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Train', exact: true }).first()).toBeDisabled();
+  await showOfficer(page, officer.name);
+  await page.getByRole('button', { name: 'Train', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Confirm order', exact: true })).toBeDisabled();
+  await expect(page.locator('.v03-action-reason')).toContainText('training limit');
+  await showCityManagement(page);
   await locale(page, 'zh');
   await page.getByRole('button', { name: '征募士兵', exact: true }).click();
+  await confirmWork(page);
   await expect
     .poll(
       async () => (await savedState(page)).cities.find((city) => city.id === capital.id)!.reserve,
     )
     .toBeGreaterThan(capital.reserve);
   await expect(page.getByText('预备兵', { exact: true })).toBeVisible();
-  await expect(page.locator('.v03-toast')).not.toContainText(/recruit|reserve|soldiers/);
+  await expect(page.locator('.v03-window-feedback')).not.toContainText(/recruit|reserve|soldiers/);
 });
 
 test('RV09 and RV10 expose current conditions and make withdrawal cancelable in both languages', async ({

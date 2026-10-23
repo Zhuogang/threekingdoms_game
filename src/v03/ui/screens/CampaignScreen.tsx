@@ -1,6 +1,8 @@
 import { message } from '../../i18n';
 
-import { ROUTE_DEFINITIONS } from '../../geography';
+import { Button } from '../kit';
+import { Flag, ScrollText, Handshake, X } from 'lucide-react';
+import { displayName } from '../shared/app-copy-3';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { CampaignMap } from '../panels/CampaignMap';
@@ -9,7 +11,12 @@ export function CampaignScreen({
 }: {
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
 }) {
-  const { t, state, friendlyCities, locale } = context;
+  const { t, state, locale } = context;
+  const open = (tab: 'orders' | 'diplomacy') => {
+    context.setCampaignTab(tab);
+    context.setCampaignWindowOpen(true);
+    context.setFeedback('');
+  };
   return (
     <section className="v03-campaign-main">
       <div className="v03-view-heading">
@@ -26,30 +33,62 @@ export function CampaignScreen({
           </span>
           <h1>{t.territory}</h1>
         </div>
-        <div className="v03-stat-line">
-          <span>
-            {t.owned} <b>{friendlyCities.length}</b>
-          </span>
-          <span>
-            {t.routes} <b>{ROUTE_DEFINITIONS.length}</b>
-          </span>
-        </div>
+        <p className="v03-map-instruction">{message(locale, 'flow.mapHint')}</p>
       </div>
       <CampaignMap context={{ ...context }} />
-      <footer className="v03-map-legend">
-        <span>
-          <i className="legend-river" />
-          {message(locale, 'ui.major.waterways.illustrative.125')}
-        </span>
-        <span>
-          <i className="legend-road" />
-          {t.routes}
-        </span>
-        <span>
-          <i className="legend-ruler" />
-          {message(locale, 'ui.ruler.s.capital.126')}
-        </span>
+      <footer className="v03-campaign-dock">
+        <Button onClick={() => context.focusCampaignCity(state.playerCapitalCityId)}>
+          <Flag size={18} />
+          {t.rulerCapital}
+        </Button>
+        <Button onClick={() => open('orders')}>
+          <ScrollText size={18} />
+          {message(locale, 'flow.orders')}
+        </Button>
+        <Button onClick={() => open('diplomacy')}>
+          <Handshake size={18} />
+          {t.diplomacy}
+        </Button>
+        {context.activeBattles.map((battle) => (
+          <Button
+            key={battle.id}
+            variant="danger"
+            onClick={() => {
+              context.setSelectedBattleId(battle.id);
+              context.setViewMode('battle');
+            }}
+          >
+            {message(locale, 'ui.open.battle.397')}
+          </Button>
+        ))}
       </footer>
+      {context.marchNotice ? (
+        <div className="v03-march-notice" role="status">
+          <Flag size={22} />
+          <div>
+            <strong>{message(locale, 'flow.departed')}</strong>
+            <span>
+              {displayName(
+                state.cities.find((city) => city.id === context.marchNotice!.source)!,
+                locale,
+              )}{' '}
+              →{' '}
+              {displayName(
+                state.cities.find((city) => city.id === context.marchNotice!.target)!,
+                locale,
+              )}
+              {' · '}
+              {context.marchNotice.troops.toLocaleString()} {t.troops}
+              {' · '}
+              {Math.max(0, context.marchNotice.arrivalDay - state.absoluteDay)}{' '}
+              {message(locale, 'ui.days.15')}
+            </span>
+          </div>
+          <Button variant="ghost" onClick={() => context.setMarchNotice(null)} aria-label={t.close}>
+            <X size={16} />
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

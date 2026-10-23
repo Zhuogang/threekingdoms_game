@@ -1,7 +1,17 @@
+import {
+  openCity,
+  closeCityWindow,
+  showCityManagement,
+  showOfficers,
+  confirmWork,
+  showForces,
+  selectTab,
+} from './ui-navigation';
 import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { PLAYTEST_FIXTURES } from '../../src/v03/dev/fixtures';
 async function menu(page: Page) {
+  await closeCityWindow(page);
   const details = page.locator('.v03-app-menu');
   if (await details.count())
     await details.evaluate((node) => {
@@ -9,6 +19,11 @@ async function menu(page: Page) {
     });
 }
 async function language(page: Page, locale: 'en' | 'zh') {
+  if (await page.locator('.v03-campaign-window').count()) {
+    if ((await page.locator('html').getAttribute('lang')) !== locale)
+      await page.locator('.v03-window-language').click();
+    return;
+  }
   if ((await page.locator('html').getAttribute('lang')) !== locale) {
     await menu(page);
     await page.getByRole('button', { name: locale === 'zh' ? '中文' : 'EN', exact: true }).click();
@@ -49,14 +64,17 @@ test('rival combat permits real city work and diplomacy in EN/ZH', async ({ page
   for (const locale of ['en', 'zh'] as const) {
     await fixture(page, 'rival-battle');
     await language(page, locale);
+    await showCityManagement(page);
     const farm = page.getByRole('button', {
       name: locale === 'zh' ? '发展农田 · 80 金' : 'Improve farmland · 80 gold',
       exact: true,
     });
     await expect(farm).toBeEnabled();
     await farm.click();
+    await confirmWork(page);
+    await closeCityWindow(page);
     await page
-      .getByRole('tab', { name: locale === 'zh' ? '外交' : 'Diplomacy', exact: true })
+      .getByRole('button', { name: locale === 'zh' ? '外交' : 'Diplomacy', exact: true })
       .click();
     await expect(page.locator('.v03-diplomacy')).toBeVisible();
   }
@@ -66,17 +84,17 @@ test('capital army dispatch uses selected officers directly and keeps its order'
 }) => {
   await page.goto('/?debug=1');
   await page.getByRole('button', { name: 'New campaign', exact: true }).click();
-  await page.getByRole('tab', { name: 'Forces', exact: true }).click();
+  await showForces(page);
   await page.locator('.v03-army-officer input').first().check();
   await page.getByLabel('Destination (house, then ETA)').selectOption('luoyang');
-  await page.getByRole('button', { name: 'March', exact: true }).click();
-  await page.getByRole('tab', { name: 'Orders', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirm march', exact: true }).click();
+  await selectTab(page, 'Orders');
   await expect(page.locator('.v03-order-card')).toContainText('Marching');
 });
 for (const width of [390, 1366, 1920])
   for (const locale of ['en', 'zh'] as const)
     test(`baseline screens ${width} ${locale}`, async ({ page }) => {
-      await mkdir('docs/v0.3/evidence/plan-screens', { recursive: true });
+      await mkdir('.artifacts/city-flow-regression', { recursive: true });
       await page.setViewportSize({
         width,
         height: width === 390 ? 844 : width === 1366 ? 768 : 1080,
@@ -84,7 +102,7 @@ for (const width of [390, 1366, 1920])
       await page.goto('/?debug=1');
       await language(page, locale);
       await page.screenshot({
-        path: `docs/v0.3/evidence/plan-screens/start-${width}-${locale}.png`,
+        path: `.artifacts/city-flow-regression/start-${width}-${locale}.png`,
       });
       await page
         .getByRole('button', { name: locale === 'zh' ? '新战役' : 'New campaign', exact: true })
@@ -102,16 +120,20 @@ for (const width of [390, 1366, 1920])
         ['Orders', locale === 'zh' ? '订单' : 'Orders'],
         ['Diplomacy', locale === 'zh' ? '外交' : 'Diplomacy'],
       ] as const) {
-        await page.getByRole('tab', { name, exact: true }).click();
+        await closeCityWindow(page);
+        if (tab === 'City') await openCity(page);
+        else if (tab === 'Forces') await showForces(page);
+        else if (tab === 'Orders') await selectTab(page, 'Orders');
+        else await page.getByRole('button', { name, exact: true }).click();
         await page.screenshot({
-          path: `docs/v0.3/evidence/plan-screens/${tab.toLowerCase()}-${width}-${locale}.png`,
+          path: `.artifacts/city-flow-regression/${tab.toLowerCase()}-${width}-${locale}.png`,
         });
         expect(await overflow()).toBe(false);
       }
       await fixture(page, 'battle');
       await language(page, locale);
       await page.screenshot({
-        path: `docs/v0.3/evidence/plan-screens/battle-${width}-${locale}.png`,
+        path: `.artifacts/city-flow-regression/battle-${width}-${locale}.png`,
       });
       expect(await overflow()).toBe(false);
       await page.locator('.v03-battle-action-bar summary').click();
@@ -124,7 +146,7 @@ for (const width of [390, 1366, 1920])
       await page.getByRole('dialog').getByRole('button').last().click();
       await expect(page.locator('.v03-outcome-modal')).toBeVisible();
       await page.screenshot({
-        path: `docs/v0.3/evidence/plan-screens/aftermath-${width}-${locale}.png`,
+        path: `.artifacts/city-flow-regression/aftermath-${width}-${locale}.png`,
       });
       await page
         .getByRole('button', {
@@ -152,6 +174,9 @@ for (const locale of ['en', 'zh'] as const)
       await page
         .getByRole('button', { name: locale === 'zh' ? '陈留' : 'Chenliu', exact: true })
         .click();
+      await showOfficers(page);
+      await page.getByRole('button', { name: /Prisoners|俘虏/ }).click();
+      await page.locator('.v03-roster-list').getByRole('button').first().click();
       const panel = page.locator('.v03-panel').filter({
         has: page.getByRole('heading', {
           name: locale === 'zh' ? '俘虏' : 'Prisoners',
@@ -171,7 +196,10 @@ for (const locale of ['en', 'zh'] as const)
         execute: { en: 'Execute', zh: '处决' },
       };
       await panel.getByRole('button', { name: labels[action][locale], exact: true }).click();
-      if (action === 'execute')
+      if (action === 'execute') {
+        await page.keyboard.press('Escape');
+        await expect(panel).toBeVisible();
+        await panel.getByRole('button', { name: labels[action][locale], exact: true }).click();
         await page
           .getByRole('dialog', {
             name: locale === 'zh' ? '处决俘虏？' : 'Execute prisoner?',
@@ -180,6 +208,9 @@ for (const locale of ['en', 'zh'] as const)
           .getByRole('button')
           .last()
           .click();
+      }
+      await expect(page.locator('.v03-roster')).toBeVisible();
+      await expect(page.locator('.v03-window-feedback')).toBeVisible();
       await expect
         .poll(() =>
           page.evaluate(

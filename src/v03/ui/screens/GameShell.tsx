@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../shared/app-copy-3';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { TopBar } from '../panels/TopBar';
 import { Workspace } from '../panels/Workspace';
+import { CampaignWindow } from '../panels/CampaignWindow';
 export function GameShell({
   context,
 }: {
@@ -74,7 +75,7 @@ export function GameShell({
           </Button>
         </div>
       ) : null}
-      {feedback ? (
+      {feedback && !context.campaignWindowOpen ? (
         <div className="v03-toast" role="status">
           {localizeAppMessage(feedback, locale, context.state)}
           <Button type="button" aria-label={t.close} onClick={() => setFeedback('')}>
@@ -90,6 +91,9 @@ export function GameShell({
           orderPreviewOrder: orderPreviewOrder!,
         }}
       />
+      {context.campaignWindowOpen && !context.isBattleView ? (
+        <CampaignWindow context={context} />
+      ) : null}
       {confirmation === 'end-day' && activeBattle ? (
         <ConfirmDialog
           title={message(locale, 'ui.end.battle.day.59')}

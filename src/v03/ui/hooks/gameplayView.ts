@@ -15,7 +15,6 @@ import {
   fitCampaignViewport,
   focusBattlefieldViewport,
   focusBattlefieldPointsViewport,
-  focusCampaignViewport,
   gridToWorld,
   recenterBattlefieldViewport,
   zoomBattlefieldViewport,
@@ -57,7 +56,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     campaignMapFrame,
     setCampaignViewport,
     setSelectedCityId,
-    campaignCities,
     battleMapFrame,
     battleBounds,
     setBattleViewport,
@@ -243,11 +241,9 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     );
   const focusCampaignCity = (cityId: string) => {
     setSelectedCityId(cityId);
-    const city = campaignCities.find((entry) => entry.id === cityId);
-    if (city)
-      setCampaignViewport((viewport) =>
-        focusCampaignViewport(CAMPAIGN_BOUNDS, viewport, city.position, 2.4),
-      );
+    context.setCampaignTab('city');
+    context.setCampaignWindowOpen(true);
+    context.setFeedback('');
   };
   const fitBattleMap = () => {
     const rect = battleMapFrame.current?.querySelector('svg')?.getBoundingClientRect();

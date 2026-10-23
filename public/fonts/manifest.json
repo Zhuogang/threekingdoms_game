@@ -1,15 +1,15 @@
 {
   "source": "https://github.com/google/fonts",
   "corpus": "src/v03/**/*.ts and tsx",
-  "characterCount": 1109,
+  "characterCount": 1120,
   "files": {
     "source-sans-3.woff2": {
       "bytes": 16168,
       "sha256": "35bfea21d7338c5962eeed9934f17692d0fe988f33ce36c70b689be7282e9b89"
     },
     "noto-serif-sc.woff2": {
-      "bytes": 351912,
-      "sha256": "976882790867f42f5f76552c14f5565c2995406c4f5fe879f2cc00a93aedb385"
+      "bytes": 356272,
+      "sha256": "9251f0444f16db9fe94edde194d9017a6655026cf8a95e813cb9a78a65b57db6"
     }
   }
 }

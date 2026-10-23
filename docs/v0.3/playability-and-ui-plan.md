@@ -4,6 +4,8 @@ Written October 22, 2026 on branch `hegemony_of_the_three_kindoms_v0.3`. This pl
 
 Implementation and executed evidence: [playability implementation ledger](playability-implementation.md). Fresh-player, actual low-end hardware and artwork acceptance remain player-owned gates.
 
+**Interface direction revised October 22, 2026:** the player rejected the permanent campaign sidebar and approved a map-first prototype: main map → click a city → city window → March out → return to the same map view. This replaces UI-03's campaign sidebar/tab arrangement. City affairs, supplies, orders and diplomacy open on demand; battlefield layout and all game rules remain unchanged in this iteration. Save-system work is outside this prototype's scope.
+
 ## Why the game does not feel playable yet
 
 The automated suite passes, but a real session reaches several dead ends and many small inconsistencies. These are the main causes, most severe first:

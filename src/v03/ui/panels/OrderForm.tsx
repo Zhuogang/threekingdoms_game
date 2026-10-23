@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Button, Input, Select } from '../kit';
 import { message } from '../../i18n';
 
@@ -8,11 +9,19 @@ import type { GameplayContext } from '../hooks/gameplayView';
 import { OrderPreview } from './OrderPreview';
 export function OrderForm({
   context,
+  onSubmitted,
+  fixedDestination = false,
+  showPreview = true,
+  onReview,
 }: {
   context: GameplayContext & {
     state: NonNullable<GameplayContext['state']>;
     selectedCity: NonNullable<GameplayContext['selectedCity']>;
   };
+  onSubmitted?: () => void;
+  fixedDestination?: boolean;
+  showPreview?: boolean;
+  onReview?: () => void;
 }) {
   const {
     t,
@@ -43,19 +52,37 @@ export function OrderForm({
     orderPreviewOrder,
     orderPreviewSourceCity,
   } = context;
+  const submitted = useRef(false);
+  const submit = () => {
+    if (onReview) {
+      onReview();
+      return;
+    }
+    if (submitted.current) return;
+    submitted.current = true;
+    const result = requestKind === 'resource' ? submitResourceOrder() : submitCampaignOrder();
+    if (result?.ok && onSubmitted) onSubmitted();
+    else submitted.current = false;
+  };
   return (
     <div className="v03-order-form">
-      <label className="v03-field">
-        {t.to}
-        <Select value={targetCityId} onChange={(event) => setTargetCityId(event.target.value)}>
-          <option value="">—</option>
-          {availableTargets.map((city) => (
-            <option key={city.id} value={city.id}>
-              {displayName(city, locale)}
-            </option>
-          ))}
-        </Select>
-      </label>
+      {fixedDestination ? (
+        <p>
+          {locationName(selectedCity.id)} → {locationName(targetCityId)}
+        </p>
+      ) : (
+        <label className="v03-field">
+          {t.to}
+          <Select value={targetCityId} onChange={(event) => setTargetCityId(event.target.value)}>
+            <option value="">—</option>
+            {availableTargets.map((city) => (
+              <option key={city.id} value={city.id}>
+                {displayName(city, locale)}
+              </option>
+            ))}
+          </Select>
+        </label>
+      )}
       <label className="v03-field">
         {t.deadline}
         <Input
@@ -102,9 +129,9 @@ export function OrderForm({
             <Button
               type="button"
               disabled={!targetCityId || requestedResourceTroops < 0}
-              onClick={submitResourceOrder}
+              onClick={submit}
             >
-              {t.request}
+              {onReview ? message(locale, 'flow.proposal') : t.request}
             </Button>
           </div>
         </>
@@ -137,9 +164,9 @@ export function OrderForm({
             type="button"
             className="v03-block"
             disabled={!targetCityId || requestedTroops <= 0}
-            onClick={submitCampaignOrder}
+            onClick={submit}
           >
-            {t.issue}
+            {onReview ? message(locale, 'flow.proposal') : t.issue}
           </Button>
         </>
       )}
@@ -165,7 +192,7 @@ export function OrderForm({
       ) : targetCityId ? (
         <p className="v03-muted">{t.noRoute}</p>
       ) : null}
-      {orderPreview ? (
+      {showPreview && orderPreview ? (
         <OrderPreview
           context={{
             ...context,

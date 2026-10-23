@@ -24,39 +24,43 @@ export function Workspace({
     orderPreviewSourceCity,
   } = context;
   return (
-    <section className={`v03-workspace ${isBattleView ? 'battle-layout' : ''}`}>
-      <aside className="v03-rail">
-        <Button
-          type="button"
-          className={!isBattleView ? 'active' : ''}
-          onClick={() => setViewMode('campaign')}
-          title={t.campaign}
-        >
-          {t.campaign}
-        </Button>
-        {activeBattles.map((battle, index) => (
+    <section className={`v03-workspace ${isBattleView ? 'battle-layout' : 'map-first-layout'}`}>
+      {isBattleView ? (
+        <aside className="v03-rail">
           <Button
             type="button"
-            key={battle.id}
-            className={battle.id === activeBattle?.id ? 'active v03-battle-tab' : 'v03-battle-tab'}
-            onClick={() => {
-              setSelectedBattleId(battle.id);
-              setViewMode('battle');
-              const friendly = battle.battleData.units.find(
-                (unit) => unit.side === battle.battleData.playerSide && unit.troops > 0,
-              );
-              setSelectedUnitId(friendly?.id ?? null);
-            }}
+            className={!isBattleView ? 'active' : ''}
+            onClick={() => setViewMode('campaign')}
+            title={t.campaign}
           >
-            {index + 1}
+            {t.campaign}
           </Button>
-        ))}
-        <div className="v03-rail-bottom">
-          <Button type="button" onClick={() => openWiki('units')}>
-            ?
-          </Button>
-        </div>
-      </aside>
+          {activeBattles.map((battle, index) => (
+            <Button
+              type="button"
+              key={battle.id}
+              className={
+                battle.id === activeBattle?.id ? 'active v03-battle-tab' : 'v03-battle-tab'
+              }
+              onClick={() => {
+                setSelectedBattleId(battle.id);
+                setViewMode('battle');
+                const friendly = battle.battleData.units.find(
+                  (unit) => unit.side === battle.battleData.playerSide && unit.troops > 0,
+                );
+                setSelectedUnitId(friendly?.id ?? null);
+              }}
+            >
+              {index + 1}
+            </Button>
+          ))}
+          <div className="v03-rail-bottom">
+            <Button type="button" onClick={() => openWiki('units')}>
+              ?
+            </Button>
+          </div>
+        </aside>
+      ) : null}
       {isBattleView && battleState && activeBattle ? (
         <BattleScreen
           context={{ ...context, battleState: battleState!, activeBattle: activeBattle! }}
@@ -64,14 +68,16 @@ export function Workspace({
       ) : (
         <CampaignScreen context={{ ...context }} />
       )}
-      <SidePanel
-        context={{
-          ...context,
-          selectedGeo: selectedGeo!,
-          orderPreviewSourceCity: orderPreviewSourceCity!,
-          orderPreviewOrder: orderPreviewOrder!,
-        }}
-      />
+      {isBattleView ? (
+        <SidePanel
+          context={{
+            ...context,
+            selectedGeo: selectedGeo!,
+            orderPreviewSourceCity: orderPreviewSourceCity!,
+            orderPreviewOrder: orderPreviewOrder!,
+          }}
+        />
+      ) : null}
     </section>
   );
 }

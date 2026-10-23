@@ -1,6 +1,6 @@
 # v0.3 player guide / 中英玩法指南
 
-Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
+Updated October 22, 2026 for the map-first city-window prototype. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
 
 ## 中文玩法指南
 
@@ -10,12 +10,14 @@ Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.
 
 每月抽象为 30 日。你经营君主本城，向其他城市征调物资或下达出征令，并在交战时指挥己方部队。可以控制全部城市完成统一，或在每个月界持有洛阳及至少 16 城，连续 12 个月界达成称霸。两种结局分开统计。君主被俘后由最忠诚的自由武将继位；没有自由武将时势力覆灭。
 
+主界面以大地图为主，点击城池后才打开操作窗口。“返回城池”回到本城概况，“返回大地图”或关闭按钮回到原地图位置；Esc 逐层返回。
+
 ### 2. 第一月：征募 → 分配 → 出征
 
-1. 选择君主本城，查看金、粮、预备兵、人口及本月工作点。工作点等于驻城在世己方武将数，上限 3；本城内政共用这些点。
-2. “征募士兵”先把人口转为**预备兵**，不会直接增加武将带兵数。征募也会消耗工作点并降低少量民心。
-3. 找到驻城武将，输入希望的**最终带兵数**，再点“调整兵力”。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。调整也受工作点和已有承诺限制。
-4. 打开“军队”页，勾选随军武将，选择目标并核对军粮、行程和敌军；点击“出征”。君主本城直接派出所选武将。
+1. 在大地图点击君主本城，打开城池窗口，概况显示金粮，再点“城务”查看农商、预备兵、人口及本月工作点。工作点等于驻城在世己方武将数，上限 3；本城内政共用这些点。
+2. 在“城务”选“征募士兵”，指派执行武将，查看变化后点“确认执行”，成功后返回城务菜单。征募先把人口转为**预备兵**，不会直接增加武将带兵数。征募也会消耗工作点并降低少量民心。
+3. 返回城池，依次进入“驻城武将 → 选择武将 → 调整兵力”，输入希望的**最终带兵数**，核对变化后点“确认执行”。完成后返回这名武将的详情。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。调整也受工作点和已有承诺限制。
+4. 返回城池概况，点“出征”，勾选随军武将，选择目标并核对军粮、行程和敌军；点击“确认出征”。君主本城直接派出所选武将，窗口关闭并回到原位置的大地图，显示部队行军标记。
 5. 出征兵力等于所选武将**整支所部**之和。太守城市的方案仍可能因最低留守、预留与军粮出现缺口，需接受缩减、等待或取消。
 6. 方案若需要决策，可接受、接受缩减、等待足额或取消。出发后会出现实际行程；未抵达不会瞬间获得目的地资源或开战。
 7. 推进一日或到下个事件。关键报告需要确认，普通月报与天下纪事不会暂停；军队会行军、吃粮、到达并开战。胜败之后仍需处理驻留或返程。
@@ -26,25 +28,31 @@ Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.
 
 君主本城可以直接内政。其他城市由正式太守或地方班底自治，不能逐项控制其农业、装备或编兵；你仍可查看库存、征调金粮兵、下达出征令、任免太守并临阵指挥。
 
-选择己方城市，在“太守人选”中查看候选人及不可用理由。跨城调任必须先归还全部带兵，再按路线旅行；抵达后在合法月界就任。原职和目的地当前治理持续到实际交接，不会点击后立即换城或刷新工作点。
+点击己方自治城市，进入“城务 → 太守任免”，在“太守人选”中查看候选人及不可用理由。跨城调任必须先归还全部带兵，再按路线旅行；抵达后在合法月界就任。原职和目的地当前治理持续到实际交接，不会点击后立即换城或刷新工作点。
+
+从城池进入“征调资源 → 选择命令 → 选择目的地 → 填写数量 → 查看方案”，核对后再提交。核对页返回不会生成订单或扣除资源；足额请求按原规则直接出发并返回请求菜单，有缺额时进入答复页，接受、缩减、等待或取消后返回菜单。待答复方案退出后可继续查看，订单也保留在“军情与命令”中。
 
 资源订单的目的地是友城。答复说明可执行量、缺额、最早出发和预计到达；接受后保留相应资源，出发后从来源库存扣除，到达才交付。已派出且仍允许返程的行程可请求召回；进入战斗后不能瞬间召回。目的地易手或容量不足等情况会有报告。
 
-在“外交”面板选择其他势力，可查看结盟成功率并提议为期六个月的同盟；有效同盟期间不能相互出征。面板也可解除现有同盟。若反董卓联盟事件提供邀请，可在该面板接受；事件和同盟到期会出现在报告中。点面板旁的“?” 可查看游戏内规则说明。
+从地图打开“外交 → 选择势力 → 结盟或解盟”，核对成功率或解盟后果后确认，得到答复后返回该势力详情。有效同盟持续六个月，期间双方不能互相出征。联盟邀请有独立的确认页，加入后返回外交列表。势力详情中的游戏指南可查看规则说明。
 
-“订单”页与顶栏“收件箱”列出全部当前事项，可滚动查看。时间停住时先看报告的到期数量，以及是否还有己方战场未提交本日指令。纯 NPC 战斗会自动处理，不需要你替敌军操作。
+地图底部“军情与命令”和顶栏“收件箱”列出全部当前事项，可滚动查看。时间停住时先看报告的到期数量，以及是否还有己方战场未提交本日指令。纯 NPC 战斗会自动处理，不需要你替敌军操作。
 
 ### 4. 装备与本城经营
 
-| 操作             | 当前作用与注意事项                                                                                                                                                                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 精良兵器         | 选武将配发，180 金、一个工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                                                           |
-| 赏赐             | 100 金、一个工作点，单将忠诚最多 +15。                                                                                                                                             |
-| 训练             | 需要驻城且带兵的武将；经验 +25、武力 +1。升级时弓兵再加智力 2，其他兵种再加武力 2，均受属性上限约束；经验或武力达到训练上限时不可训练。                                            |
-| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +300。                                                                                                                           |
-| 发展农商         | 各花 80 金和一个工作点；当前上限是 100，但两个剧本所有城市的初始农商值都高于上限，因此开局按钮均禁用。数值跌至 100 以下才可使用；[初始值与上限待核对](../next-steps.md#open-now)。 |
-| 买卖粮食         | 买入 800 粮花 80 金；卖出 800 粮得 80 金，也共用工作点，受库存和已批准预留限制。                                                                                                   |
-| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                                                           |
+每项城务先选择执行武将。征兵按执行者武力计算人数，搜索和治安使用其智力；农业、商业等固定效果保持原样。所有执行者共用城市工作点，不新增个人行动次数或任务占用时间。
+
+赏赐、装备、训练和配兵从“驻城武将 → 选择武将”进入，每次只打开一项操作，确认后回到武将详情。俘虏从“驻城武将 → 俘虏 → 选择俘虏”进入，处置后返回俘虏列表。城务操作在确认前显示预计变化；未确认时返回不会消耗资源或工作点。
+
+| 操作             | 当前作用与注意事项                                                                                                                      |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 精良兵器         | 选武将配发，180 金、一个工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                |
+| 赏赐             | 100 金、一个工作点，单将忠诚最多 +15。                                                                                                  |
+| 训练             | 需要驻城且带兵的武将；经验 +25、武力 +1。升级时弓兵再加智力 2，其他兵种再加武力 2，均受属性上限约束；经验或武力达到训练上限时不可训练。 |
+| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +300。                                                                                |
+| 发展农商         | 各花 80 金和一个工作点，提高 1 点；当前上限为 500。已有数值不重算，达到上限时不可继续发展。                                             |
+| 买卖粮食         | 买入 800 粮花 80 金；卖出 800 粮得 80 金，也共用工作点，受库存和已批准预留限制。                                                        |
+| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                |
 
 灰色按钮先看理由：权限、阶段、工作点、库存、已有承诺、无合适武将、属性上限均可能造成限制。地图上的“预备兵”和武将“带兵”是不同数字。
 
@@ -113,10 +121,10 @@ Checked against implementation `1e02e65` on October 22, 2026. [Overview](README.
 
 Launch using the [project README](../../README.md#start-playing). On a fresh browser profile, choose the 190 or 200 scenario and a house, then start; Cao Cao is a reasonable first campaign. A valid browser autosave opens automatically, and Campaign menu offers Resume or a confirmed new game with Export available first. Change language with 中文/EN; F1 opens the in-game Wiki during play.
 
-1. Select the ruler's capital. Check gold, food, population, reserve and monthly work points. Staffing supplies one point per stationed living friendly officer, capped at three.
-2. Recruit soldiers into **city reserve**. Recruitment uses a work point and population; it does not directly increase an officer's army.
-3. Set an officer's desired **final** troop count, then click Set troop count. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. This also uses the shared work budget.
-4. Open **Forces**, choose the marching officers and destination, check provisions, ETA and defenders, then click **March**. Capital armies depart directly.
+1. Select the ruler's capital. The overview shows gold and food; **City affairs** shows development, population, reserve and monthly work points. Staffing supplies one point per stationed living friendly officer, capped at three.
+2. Open **City affairs → Recruit soldiers → assign an officer → Confirm order**. Completion returns to the affairs menu. Recruits enter **city reserve**. Recruitment uses a work point and population; it does not directly increase an officer's army.
+3. Return to the city and open **Officers in the city → choose an officer → Set troop count**. Enter the desired **final** troop count, review the changes, then **Confirm order**. Completion returns to that officer. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. This also uses the shared work budget.
+4. Click your capital on the map, then **March out** in its city window. Choose officers and a destination, check provisions, ETA and defenders, then **Confirm march**. Capital armies depart directly; the window closes and the army appears on the map at the same camera position. City affairs and officers have separate entries; Escape and the footer return one level at a time.
 5. Army strength is the sum of the chosen **whole officer forces**. Governor-city proposals may have a shortfall because they protect a minimum garrison, provisions and prior commitments.
 6. If a plan needs a decision, accept, accept a reduced amount, wait or cancel. Approved stock is reserved. Departure creates a journey; delivery and battle wait for arrival.
 7. Advance one day, ten days or to the next event. Acknowledge critical reports, command your arriving troops in battle, then read the aftermath and follow the order through its return. Routine monthly summaries and rival battles do not pause the clock.
@@ -127,11 +135,15 @@ Work points reset at monthly settlement, not by repeated appointments. Long jour
 
 Only your capital accepts direct city work. Other cities are autonomous under governors or local stewards; use supply requests and campaign orders instead of controlling their individual internal actions. You retain tactical command of your forces.
 
-Governor candidates show shared availability reasons. Cross-city candidates must have zero troops, travel to the new city and take office at a legal monthly boundary. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. Orders are in their own tab; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
+Open **City affairs → Governor appointments** in an autonomous city. Appointment submission returns to affairs, showing its pending status. Candidates show shared availability reasons. Cross-city candidates must have zero troops, travel to the new city and take office at a legal monthly boundary. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. The map dock opens **Marches & orders** in its own window; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
 
-In the Diplomacy panel, select another faction to see the alliance chance and propose a six-month alliance. Active allies cannot attack one another; the panel also lets you break an alliance. When the anti-Dong coalition event offers an invitation, accept it there if you wish. Reports show events and expiring treaties; the panel's “?” opens the in-game rules.
+Supply requests follow **request kind → destination → amounts → review → submit**. Review does not issue an order or spend stock. Full requests still dispatch on submission; shortfalls open the existing accept/reduce/wait/cancel decisions. Completion returns to the request menu, and orders remain in Marches & orders.
 
-Fine arms is an officer action: **180 gold and one work point**, up to +5 force, capped at 105. There is no separate weapon inventory, manual weapon-use button or siege equipment. Reward costs 100 gold for up to +15 officer loyalty. Relief costs 80 gold/600 food for up to +15 city loyalty and +300 population. Training needs a stationed officer with troops and adds 25 experience/+1 force; a level-up adds two intellect for archers or two more force for other types, within the attribute cap. Either the experience or force training cap can block it. Farming/commerce development costs 80 gold and a work point, but every starting city in both scenarios has values above the current manual cap of 100, so those controls start disabled; [the value/cap mismatch awaits review](../next-steps.md#open-now). Buy/sell trades 800 food for 80 gold. These actions share work points and stock/commitment checks. Search, security and feasts provide the other existing city options. Disabled controls explain authority, resources, staffing, stage, commitments and caps.
+Diplomacy follows **house → action → confirmation → house details**. Accepted alliances last six months and block attacks between allies. The confirmation screen shows the acceptance chance or the consequences of breaking a treaty. Coalition invitations have a separate confirmation and return to the diplomacy list. House details link to the in-game rules.
+
+City affairs first asks for an executing officer: recruitment uses force, search and security use intellect, and fixed effects keep their existing formulas. Officers share the city work budget; this does not add individual action limits or task duration.
+
+Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order has its own screen and returns to the selected officer on success. Prisoners have a separate list and individual decision screen. Fine arms is an officer action: **180 gold and one work point**, up to +5 force, capped at 105. There is no separate weapon inventory, manual weapon-use button or siege equipment. Reward costs 100 gold for up to +15 officer loyalty. Relief costs 80 gold/600 food for up to +15 city loyalty and +300 population. Training needs a stationed officer with troops and adds 25 experience/+1 force; a level-up adds two intellect for archers or two more force for other types, within the attribute cap. Either the experience or force training cap can block it. Farming/commerce development costs 80 gold and a work point for one point of improvement, capped at 500; existing values are not rescaled. Buy/sell trades 800 food for 80 gold. These actions share work points and stock/commitment checks. Search, security and feasts provide the other existing city options. Disabled controls explain authority, resources, staffing, stage, commitments and caps.
 
 ### Troops and battlefield actions
 
