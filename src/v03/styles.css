@@ -2105,16 +2105,16 @@ th small {
 }
 .map-first-layout .v03-map-frame {
   flex: none;
-  width: min(100cqw, 160cqh);
-  height: auto;
-  aspect-ratio: 16 / 10;
+  width: 100cqw;
+  height: 100cqh;
+  aspect-ratio: auto;
   min-height: 0;
   margin: 0;
   border: 0;
   border-radius: 8px;
   box-shadow: 0 8px 28px var(--map-frame-shadow);
 }
-/* Draw the border without changing the SVG's 16:10 content area or camera aspect. */
+/* Draw the border without changing the responsive SVG content area. */
 .map-first-layout .v03-map-frame::after {
   content: '';
   position: absolute;

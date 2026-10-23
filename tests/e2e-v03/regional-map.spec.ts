@@ -28,12 +28,13 @@ async function start(page: Page, locale: 'en' | 'zh') {
 }
 
 for (const locale of ['en', 'zh'] as const) {
-  test(`campaign canvas keeps its initial framing, aspect and margins across screen sizes (${locale})`, async ({
+  test(`campaign canvas fills the available stage without stretching the map (${locale})`, async ({
     page,
   }) => {
     await start(page, locale);
     for (const [width, height] of [
       [1920, 1200],
+      [1920, 922],
       [1366, 768],
       [1920, 780],
       [390, 844],
@@ -41,16 +42,39 @@ for (const locale of ['en', 'zh'] as const) {
       await page.setViewportSize({ width: width!, height: height! });
       await expect
         .poll(async () => {
-          const frame = await page.locator('.v03-map-frame').boundingBox();
-          return Math.abs(frame!.width / frame!.height - 1.6);
+          return page.evaluate(() => {
+            const frame = document.querySelector('.v03-map-frame')!.getBoundingClientRect();
+            const stage = document.querySelector('.v03-campaign-map-stage')!;
+            const rect = stage.getBoundingClientRect();
+            const style = getComputedStyle(stage);
+            return Math.max(
+              Math.abs(
+                frame.width -
+                  rect.width +
+                  parseFloat(style.paddingLeft) +
+                  parseFloat(style.paddingRight),
+              ),
+              Math.abs(
+                frame.height -
+                  rect.height +
+                  parseFloat(style.paddingTop) +
+                  parseFloat(style.paddingBottom),
+              ),
+            );
+          });
         })
-        .toBeLessThan(0.001);
+        .toBeLessThan(1);
+      const map = page.locator('.v03-map-frame > svg').first();
+      await map.focus();
+      await page.keyboard.press('Home');
+      await expectFullCanvas(map);
       await expect
         .poll(async () => {
-          const view = await page.locator('.v03-map-frame > svg').first().getAttribute('viewBox');
-          return Math.abs(Number(view!.split(' ')[2]) - 1600);
+          const frame = (await map.boundingBox())!;
+          const view = (await map.getAttribute('viewBox'))!.split(' ').map(Number);
+          return Math.abs(view[2]! / view[3]! - frame.width / frame.height);
         })
-        .toBeLessThan(0.1);
+        .toBeLessThan(0.001);
       const layout = await page.evaluate(() => {
         const frame = document.querySelector('.v03-map-frame')!.getBoundingClientRect();
         const stage = document.querySelector('.v03-campaign-map-stage')!.getBoundingClientRect();
