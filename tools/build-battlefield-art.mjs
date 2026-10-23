@@ -1,11 +1,27 @@
 import { deflateSync } from 'node:zlib';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile as writeFileNow } from 'node:fs/promises';
 import { join } from 'node:path';
 
 // Builds the battlefield art kit in docs/v0.3/battlefield-art/: one folder per canvas with
 // the 48×32 cell layout, a 1536×1024 color reference image and the full ImageGen prompt.
 // Layouts live here until they move into src/v03/battle as game data.
 const OUT = 'docs/v0.3/battlefield-art';
+
+// Writes only changed files, retrying briefly: on Windows another process
+// (indexer, antivirus, an open viewer) sometimes holds a file for a moment.
+async function writeFile(path, content) {
+  const next = Buffer.from(content);
+  const previous = await readFile(path).catch(() => null);
+  if (previous?.equals(next)) return;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await writeFileNow(path, next);
+    } catch (error) {
+      if (attempt >= 5) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+    }
+  }
+}
 const W = 48;
 const H = 32;
 const CELL = 32;
@@ -303,11 +319,12 @@ function yellowRiverFord(g) {
   // Levees, broken at the two ferries.
   g.rect(18, 0, 19, 31, '^');
   g.rect(28, 0, 29, 31, '^');
+  // Each ferry is a full wooden bridge from bank to sand bar, as the v1 painting draws it.
   for (const y of [8, 24]) {
     g.rect(18, y - 1, 19, y + 1, '.');
     g.rect(28, y - 1, 29, y + 1, '.');
-    g.set(22, y, '=');
-    g.set(25, y, '=');
+    g.rect(20, y, 22, y, '=');
+    g.rect(25, y, 27, y, '=');
   }
   g.rect(20, 13, 20, 18, 'r');
   g.rect(27, 4, 27, 7, 'r');
@@ -541,7 +558,7 @@ function yangtzeCrossing(g) {
   g.ellipse(35, 24, 1.5, 1.2, 'T');
 }
 
-function riverValley(g) {
+function riverValley(g, south) {
   for (let x = 0; x < W; x++) {
     const top = 4 + Math.round(Math.sin(x / 4));
     const bottom = 27 + Math.round(Math.sin(x / 5 + 1));
@@ -550,8 +567,9 @@ function riverValley(g) {
     g.rect(x, bottom, x, H - 1, '^');
     g.rect(x, H - 2 - Math.round(Math.sin(x / 3)), x, H - 1, '#');
   }
-  g.ellipse(4, 24, 3, 1.5, '^');
-  g.ellipse(40, 22, 4, 2, '^');
+  // The Wei terraces are wooded knolls in the Han painting.
+  g.ellipse(4, 24, 3, 1.5, south ? 'T' : '^');
+  g.ellipse(40, 22, 4, 2, south ? 'T' : '^');
   g.ellipse(30, 8, 2, 1.5, 'T');
   g.ellipse(14, 25, 2, 1.2, 'T');
   g.ellipse(8, 13, 2, 1.2, 'T');
@@ -772,13 +790,16 @@ function gorge(g) {
   );
   g.ellipse(39, 28, 3, 1.5, '^');
   g.set(13, 4, 'T');
-  // Rock spurs pinch the floor down to plank roads.
-  g.ellipse(6, 10, 3, 2, '#');
-  g.rect(3, 13, 9, 13, '=');
+  // Rock spurs pinch the floor down to plank roads. The two upper spurs follow
+  // the v1 painting: the plank hugs the spur's face and rocks fill the gap below.
+  g.ellipse(6, 9, 3, 2, '#');
+  g.rect(4, 12, 8, 13, '#');
+  g.rect(3, 11, 9, 11, '=');
   g.ellipse(14, 21, 3, 2, '#');
   g.rect(11, 18, 17, 18, '=');
-  g.ellipse(36, 11, 3, 2, '#');
-  g.rect(33, 13, 39, 13, '=');
+  g.ellipse(36, 10, 3, 2, '#');
+  g.rect(34, 13, 38, 13, '#');
+  g.rect(33, 12, 39, 12, '=');
   g.ellipse(44, 21, 3, 2, '#');
   g.set(47, 22, '#');
   g.rect(41, 18, 47, 18, '=');
@@ -977,13 +998,13 @@ const MAPS = [
     target: { plain: 55, forest: 8, hill: 12, water: 25, cliff: 0 },
     about: [
       '白马津、孟津一类的黄河渡口：浑黄大河竖贯中间，河心三块沙洲，两岸大堤只在两处渡口断开。',
-      '沙洲两侧各 3 格水，渡口有码头伸入水中；守方岸后是台地。',
+      '沙洲两侧各 3 格水；两处渡口各有一座木桥从岸边接到沙洲，再接到对岸；守方岸后是台地。',
     ],
     legend: {
       '~': 'the wide, muddy, ochre-brown Yellow River with silt swirls',
       _: 'pale sand bars in the middle of the river',
       '^': 'high earthen levees along both banks, and loess terraces on the right side',
-      '=': 'short wooden ferry jetties',
+      '=': 'two wooden ferry bridges, each running from a bank to a sand bar and on to the far bank',
       r: 'thin reed fringes on the river edge',
       T: 'bank-side willows',
       V: 'small ferry hamlets',
@@ -1129,7 +1150,7 @@ const MAPS = [
     no: '⑥南',
     zh: '河谷川地（汉水）',
     round: 1,
-    build: riverValley,
+    build: (g) => riverValley(g, true),
     camps: { a: [5, 18], d: [42, 10] },
     rows: { a: [13, 22], d: [6, 14] },
     target: { plain: 49, forest: 10, hill: 22, water: 10, cliff: 9 },

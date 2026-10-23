@@ -31,17 +31,17 @@ node tools/build-battlefield-art.mjs
 | 战场 | 文件夹 | 轮次 | 状态 |
 | --- | --- | --- | --- |
 | ① 北方旷野 | [bf01-north-plain](bf01-north-plain/README.md) | 一 | **v4 已入库**（`public/assets/v03/battlefields/bf01-north-plain.webp`），画风样板；旧布局 v1 保留 |
-| ② 中原沃野 | [bf02-central-farmland](bf02-central-farmland/README.md) | 一 | 双门木栅新布局 v3 已出图，待审核；上一批 v1、v2 已舍弃 |
-| ③ 黄河津渡 | [bf03-yellow-river-ford](bf03-yellow-river-ford/README.md) | 一 | v1 已出图，待审核 |
-| ④北 水网泽国（淮泗） | [bf04-wetland-north](bf04-wetland-north/README.md) | 一 | v1 已出图，待审核 |
-| ⑤A 大江·沿江 | [bf05-yangtze-bank](bf05-yangtze-bank/README.md) | 一 | v1 已出图，待审核 |
-| ⑤B 大江·渡江 | [bf05-yangtze-crossing](bf05-yangtze-crossing/README.md) | 一 | v1 已出图，待审核 |
-| ⑥北 河谷川地（渭水） | [bf06-valley-north](bf06-valley-north/README.md) | 一 | v1 已出图，待审核 |
-| ⑥南 河谷川地（汉水） | [bf06-valley-south](bf06-valley-south/README.md) | 一 | v1 已出图，待审核 |
-| ⑦太行 北方山丘 | [bf07-taihang](bf07-taihang/README.md) | 一 | v1 已出图，待审核 |
-| ⑧ 南方丘陵 | [bf08-south-hills](bf08-south-hills/README.md) | 一 | v1 已出图，待审核 |
-| ⑨峡谷 峡谷栈道 | [bf09-gorge](bf09-gorge/README.md) | 一 | v1 已出图，待审核 |
-| ⑩ 雄关隘口 | [bf10-mountain-pass](bf10-mountain-pass/README.md) | 一 | v1 已出图，待审核 |
+| ② 中原沃野 | [bf02-central-farmland](bf02-central-farmland/README.md) | 一 | **v3 已入库**（`public/assets/v03/battlefields/bf02-central-farmland.webp`） |
+| ③ 黄河津渡 | [bf03-yellow-river-ford](bf03-yellow-river-ford/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf03-yellow-river-ford.webp`） |
+| ④北 水网泽国（淮泗） | [bf04-wetland-north](bf04-wetland-north/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf04-wetland-north.webp`） |
+| ⑤A 大江·沿江 | [bf05-yangtze-bank](bf05-yangtze-bank/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf05-yangtze-bank.webp`） |
+| ⑤B 大江·渡江 | [bf05-yangtze-crossing](bf05-yangtze-crossing/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf05-yangtze-crossing.webp`） |
+| ⑥北 河谷川地（渭水） | [bf06-valley-north](bf06-valley-north/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf06-valley-north.webp`） |
+| ⑥南 河谷川地（汉水） | [bf06-valley-south](bf06-valley-south/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf06-valley-south.webp`） |
+| ⑦太行 北方山丘 | [bf07-taihang](bf07-taihang/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf07-taihang.webp`） |
+| ⑧ 南方丘陵 | [bf08-south-hills](bf08-south-hills/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf08-south-hills.webp`） |
+| ⑨峡谷 峡谷栈道 | [bf09-gorge](bf09-gorge/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf09-gorge.webp`） |
+| ⑩ 雄关隘口 | [bf10-mountain-pass](bf10-mountain-pass/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf10-mountain-pass.webp`） |
 | ④南 水网泽国（江南） | [bf04-wetland-south](bf04-wetland-south/README.md) | 二 | v1 已出图，待审核 |
 | ⑦丘陵 北方山丘（沂蒙、方城） | [bf07-rolling-hills](bf07-rolling-hills/README.md) | 二 | v1 已出图，待审核 |
 | ⑨三峡 峡谷栈道（三峡） | [bf09-three-gorges](bf09-three-gorges/README.md) | 二 | v1 已出图，待审核 |

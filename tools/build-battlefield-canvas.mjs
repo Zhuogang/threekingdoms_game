@@ -1,6 +1,6 @@
 import { chromium } from '@playwright/test';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile as writeFileNow } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 // Turns a chosen ImageGen attempt into the shipped battlefield canvas:
@@ -9,6 +9,22 @@ import { existsSync } from 'node:fs';
 // are installed here), stepping quality down until it fits the 1.5 MB budget.
 // It keeps the attempt's 1536×1024 pixels: a plain resample to 3072×2048 adds
 // bytes but no detail, and the renderer stretches it over the 48×32 board.
+// Writes only changed files, retrying briefly: on Windows another process
+// (indexer, antivirus, the dev server) sometimes holds a file for a moment.
+async function writeFile(path, content) {
+  const next = Buffer.from(content);
+  const previous = await readFile(path).catch(() => null);
+  if (previous?.equals(next)) return;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await writeFileNow(path, next);
+    } catch (error) {
+      if (attempt >= 5) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+    }
+  }
+}
+
 const [id, version] = process.argv.slice(2);
 if (!id || !version)
   throw new Error('Usage: node tools/build-battlefield-canvas.mjs <id> <attempt>');
