@@ -13,6 +13,8 @@
     "test:e2e": "playwright test --config playwright.v03.config.ts",
     "test:production": "playwright test --config playwright.production-v03.config.ts",
     "validate:portraits": "node tools/validate-portraits.mjs",
+    "prepare:portraits:v03": "node tools/prepare-portraits-v03.mjs",
+    "validate:portraits:v03": "node tools/validate-portraits-v03.mjs",
     "diagnostics:ai": "node tools/v03-campaign-diagnostics.mjs",
     "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",
     "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",

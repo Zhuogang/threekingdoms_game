@@ -2,6 +2,8 @@
 
 The active v0.3 art source of truth is its [manifest](../v0.3/assets/manifest.json), [provenance](../v0.3/assets/provenance.md) and [art status/workflow](../v0.3/06-imagegen-and-artwork.md). Generated v0.3 assets remain draft; older visual approvals do not change that status.
 
+The [98-person v0.3 portrait inventory](v0.3-portraits/asset-inventory.md) records the October 22, 2026 portrait delivery, reused images, revised age/identity variants, source prompts and full contact sheet. Its [runtime manifest](../../public/assets/v03/portraits/manifest.json) indexes both sizes without overwriting the earlier scenario portraits.
+
 This directory retains earlier/shared records without moving image/JSON evidence or rewriting hashes:
 
 | Record                                           | Scope                                                                                                                        |
