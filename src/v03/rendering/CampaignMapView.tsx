@@ -11,6 +11,8 @@ import {
 } from 'react';
 import { V03_ASSETS, resolvePublicAsset } from './assets';
 import type { CampaignCityVisual, WorldPolyline } from './presentation';
+import { CAMPAIGN_REGION_LABELS } from '../geography/campaign-map';
+import { layoutCampaignCityLabels, type CampaignLabelPlacement } from './campaign-city-labels';
 import {
   fitCampaignViewport,
   panCampaignViewport,
@@ -63,10 +65,12 @@ function citySize(scale: CampaignCityVisual['scale']): number {
 function CitySymbol({
   city,
   locale,
+  labelPlacement,
   onClick,
 }: {
   city: CampaignCityVisual;
   locale: 'en' | 'zh';
+  labelPlacement: CampaignLabelPlacement;
   onClick?: (cityId: string) => void;
 }) {
   const radius = citySize(city.scale);
@@ -74,9 +78,12 @@ function CitySymbol({
   const selectedRadius = radius + 8;
   const governance = city.governance;
   const label = city.name;
+  const labelX = labelPlacement.x + labelPlacement.width / 2 - city.position.x;
+  const labelY = labelPlacement.y + labelPlacement.height / 2 - city.position.y;
   return (
     <g
       className="v03-city-symbol"
+      data-city-id={city.id}
       transform={`translate(${city.position.x} ${city.position.y})`}
       role={onClick ? 'button' : undefined}
       data-campaign-interactive={onClick ? 'true' : undefined}
@@ -94,122 +101,151 @@ function CitySymbol({
       }}
       style={{ cursor: onClick ? 'pointer' : 'default', outline: 'none' }}
     >
-      <circle r={radius + 5} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={4} />
-      <rect x={-44} y={-radius - 8} width={88} height={radius * 2 + 40} fill="transparent" />
-      {city.selected ? (
-        <circle
-          r={selectedRadius}
-          fill="#edc86e"
-          fillOpacity={0.24}
-          stroke="#8c6419"
-          strokeWidth={2.5}
-        />
-      ) : null}
-      {city.scale === 'imperial' ? (
-        <g>
-          <circle r={radius} fill="#f3ead5" stroke={color} strokeWidth={3.6} />
-          <path
-            d={`M ${-radius * 0.64} ${radius * 0.56} V ${-radius * 0.1} L ${-radius * 0.29} ${-radius * 0.52} L 0 ${-radius * 0.14} L ${radius * 0.29} ${-radius * 0.52} L ${radius * 0.64} ${-radius * 0.1} V ${radius * 0.56} Z`}
-            fill="#d8c5a0"
-            stroke="#544733"
-            strokeWidth={2.2}
-          />
-          <path d={`M 0 ${-radius * 0.14} V ${radius * 0.56}`} stroke="#5b4a34" strokeWidth={2} />
-          <circle cy={-radius * 0.52} r={radius * 0.13} fill="#9a6241" />
-        </g>
-      ) : city.scale === 'major' ? (
-        <g>
-          <path
-            d={`M ${-radius} ${radius * 0.48} L ${-radius * 0.76} ${-radius * 0.25} L 0 ${-radius * 0.68} L ${radius * 0.76} ${-radius * 0.25} L ${radius} ${radius * 0.48} Z`}
-            fill="#eadcc0"
-            stroke={color}
-            strokeWidth={2.8}
-          />
-          <path
-            d={`M ${-radius * 0.48} ${radius * 0.48} V ${-radius * 0.16} H ${radius * 0.48} V ${radius * 0.48}`}
-            fill="#c8b08a"
-            stroke="#625640"
-            strokeWidth={2}
-          />
-          <path
-            d={`M 0 ${-radius * 0.65} V ${-radius * 0.24}`}
-            stroke="#625640"
-            strokeWidth={2.2}
-          />
-        </g>
-      ) : city.scale === 'humble' ? (
-        <g>
-          <rect
-            x={-radius * 0.66}
-            y={-radius * 0.28}
-            width={radius * 1.32}
-            height={radius * 1.05}
-            rx={1.5}
-            fill="#e9ddc8"
-            stroke={color}
-            strokeWidth={2.2}
-          />
-          <path
-            d={`M ${-radius} ${-radius * 0.24} L 0 ${-radius} L ${radius} ${-radius * 0.24} Z`}
-            fill="#b69e78"
-            stroke="#665943"
-            strokeWidth={1.8}
-          />
-        </g>
-      ) : (
-        <g>
-          <circle r={radius} fill="#f0e6d2" stroke={color} strokeWidth={2.8} />
-          <path
-            d={`M ${-radius * 0.65} ${radius * 0.35} V ${-radius * 0.08} L 0 ${-radius * 0.55} L ${radius * 0.65} ${-radius * 0.08} V ${radius * 0.35} Z`}
-            fill="#d1bc95"
-            stroke="#625640"
-            strokeWidth={1.8}
-          />
-        </g>
-      )}
-      {governance ? (
-        <g
-          transform={`translate(${radius * 0.78} ${-radius * 0.78})`}
-          aria-label={
-            governance === 'direct'
-              ? message(locale, 'ui.ruler.s.capital.126')
-              : governance === 'governed'
-                ? message(locale, 'ui.governor.145')
-                : message(locale, 'ui.local.stewardship.13')
-          }
-        >
+      <line
+        x1={0}
+        y1={0}
+        x2={labelX}
+        y2={labelY}
+        stroke="transparent"
+        strokeWidth={20}
+        pointerEvents="stroke"
+      />
+      <rect
+        x={labelPlacement.x - city.position.x}
+        y={labelPlacement.y - city.position.y}
+        width={labelPlacement.width}
+        height={labelPlacement.height}
+        fill="transparent"
+      />
+      <line
+        x1={0}
+        y1={0}
+        x2={labelX}
+        y2={labelY}
+        stroke="#9b8969"
+        strokeWidth={0.85}
+        opacity={0.6}
+        pointerEvents="none"
+      />
+      <circle r={Math.max(23, selectedRadius * 0.7)} fill="transparent" />
+      <g className="v03-city-artwork" transform="scale(0.7)">
+        <circle r={radius + 5} fill={color} fillOpacity={0.18} stroke={color} strokeWidth={4} />
+        {city.selected ? (
           <circle
-            r={8}
-            fill={
-              governance === 'direct'
-                ? '#3c7374'
-                : governance === 'governed'
-                  ? '#966c3c'
-                  : '#72634d'
-            }
-            stroke="#fff8e9"
-            strokeWidth={1.5}
+            r={selectedRadius}
+            fill="#edc86e"
+            fillOpacity={0.24}
+            stroke="#8c6419"
+            strokeWidth={2.5}
           />
-          <text
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="#fffaf0"
-            fontSize={8}
-            fontWeight={700}
+        ) : null}
+        {city.scale === 'imperial' ? (
+          <g>
+            <circle r={radius} fill="#f3ead5" stroke={color} strokeWidth={3.6} />
+            <path
+              d={`M ${-radius * 0.64} ${radius * 0.56} V ${-radius * 0.1} L ${-radius * 0.29} ${-radius * 0.52} L 0 ${-radius * 0.14} L ${radius * 0.29} ${-radius * 0.52} L ${radius * 0.64} ${-radius * 0.1} V ${radius * 0.56} Z`}
+              fill="#d8c5a0"
+              stroke="#544733"
+              strokeWidth={2.2}
+            />
+            <path d={`M 0 ${-radius * 0.14} V ${radius * 0.56}`} stroke="#5b4a34" strokeWidth={2} />
+            <circle cy={-radius * 0.52} r={radius * 0.13} fill="#9a6241" />
+          </g>
+        ) : city.scale === 'major' ? (
+          <g>
+            <path
+              d={`M ${-radius} ${radius * 0.48} L ${-radius * 0.76} ${-radius * 0.25} L 0 ${-radius * 0.68} L ${radius * 0.76} ${-radius * 0.25} L ${radius} ${radius * 0.48} Z`}
+              fill="#eadcc0"
+              stroke={color}
+              strokeWidth={2.8}
+            />
+            <path
+              d={`M ${-radius * 0.48} ${radius * 0.48} V ${-radius * 0.16} H ${radius * 0.48} V ${radius * 0.48}`}
+              fill="#c8b08a"
+              stroke="#625640"
+              strokeWidth={2}
+            />
+            <path
+              d={`M 0 ${-radius * 0.65} V ${-radius * 0.24}`}
+              stroke="#625640"
+              strokeWidth={2.2}
+            />
+          </g>
+        ) : city.scale === 'humble' ? (
+          <g>
+            <rect
+              x={-radius * 0.66}
+              y={-radius * 0.28}
+              width={radius * 1.32}
+              height={radius * 1.05}
+              rx={1.5}
+              fill="#e9ddc8"
+              stroke={color}
+              strokeWidth={2.2}
+            />
+            <path
+              d={`M ${-radius} ${-radius * 0.24} L 0 ${-radius} L ${radius} ${-radius * 0.24} Z`}
+              fill="#b69e78"
+              stroke="#665943"
+              strokeWidth={1.8}
+            />
+          </g>
+        ) : (
+          <g>
+            <circle r={radius} fill="#f0e6d2" stroke={color} strokeWidth={2.8} />
+            <path
+              d={`M ${-radius * 0.65} ${radius * 0.35} V ${-radius * 0.08} L 0 ${-radius * 0.55} L ${radius * 0.65} ${-radius * 0.08} V ${radius * 0.35} Z`}
+              fill="#d1bc95"
+              stroke="#625640"
+              strokeWidth={1.8}
+            />
+          </g>
+        )}
+        {governance ? (
+          <g
+            transform={`translate(${radius * 0.78} ${-radius * 0.78})`}
+            aria-label={
+              governance === 'direct'
+                ? message(locale, 'ui.ruler.s.capital.126')
+                : governance === 'governed'
+                  ? message(locale, 'ui.governor.145')
+                  : message(locale, 'ui.local.stewardship.13')
+            }
           >
-            {governance === 'direct'
-              ? message(locale, 'ui.r.146')
-              : governance === 'governed'
-                ? message(locale, 'ui.g.147')
-                : message(locale, 'ui.l.148')}
-          </text>
-        </g>
-      ) : null}
+            <circle
+              r={8}
+              fill={
+                governance === 'direct'
+                  ? '#3c7374'
+                  : governance === 'governed'
+                    ? '#966c3c'
+                    : '#72634d'
+              }
+              stroke="#fff8e9"
+              strokeWidth={1.5}
+            />
+            <text
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="#fffaf0"
+              fontSize={8}
+              fontWeight={700}
+            >
+              {governance === 'direct'
+                ? message(locale, 'ui.r.146')
+                : governance === 'governed'
+                  ? message(locale, 'ui.g.147')
+                  : message(locale, 'ui.l.148')}
+            </text>
+          </g>
+        ) : null}
+      </g>
       <text
-        x={0}
-        y={radius + 17}
+        className="v03-city-label"
+        x={labelX}
+        y={labelY + 6}
         textAnchor="middle"
-        fontSize={14}
+        fontSize={18}
         fontWeight={city.scale === 'humble' ? 500 : 700}
         fill="#392f25"
         stroke="#f3ecde"
@@ -251,6 +287,7 @@ export function CampaignMapView({
     () => [...cities].sort((a, b) => a.position.y - b.position.y || a.id.localeCompare(b.id)),
     [cities],
   );
+  const cityLabels = useMemo(() => layoutCampaignCityLabels(cities), [cities]);
   const activeViewport = viewport ?? bounds;
   const viewBox = `${activeViewport.left} ${activeViewport.top} ${activeViewport.width} ${activeViewport.height}`;
   const pointerWorldPoint = (clientX: number, clientY: number, view: CampaignViewBox) => {
@@ -357,7 +394,7 @@ export function CampaignMapView({
   };
   const resolvedBackground =
     backgroundImage ??
-    resolvePublicAsset(V03_ASSETS.campaignMapInk01.path, import.meta.env.BASE_URL);
+    resolvePublicAsset(V03_ASSETS.campaignMapRegional.path, import.meta.env.BASE_URL);
   return (
     <svg
       ref={svgRef}
@@ -419,7 +456,6 @@ export function CampaignMapView({
           width={bounds.width}
           height={bounds.height}
           preserveAspectRatio="none"
-          opacity={0.86}
           onError={() => setBackgroundFailed(true)}
           aria-hidden="true"
         />
@@ -431,6 +467,22 @@ export function CampaignMapView({
         height={bounds.height}
         fill="url(#v03-campaign-grain)"
       />
+      {CAMPAIGN_REGION_LABELS.map((region) => (
+        <text
+          key={region.en}
+          x={region.position.x}
+          y={region.position.y}
+          fill="#837c68"
+          fontSize={28}
+          opacity={0.43}
+          textAnchor="middle"
+          letterSpacing={locale === 'zh' ? 7 : 2}
+          pointerEvents="none"
+          aria-hidden="true"
+        >
+          {region[locale]}
+        </text>
+      ))}
       {mountainRanges.map((range) => (
         <g key={range.id} aria-label={range.label ?? message(locale, 'ui.mountain.range.150')}>
           <path
@@ -514,7 +566,7 @@ export function CampaignMapView({
                       ? '#39777a'
                       : '#806c50'
             }
-            strokeWidth={route.display === 'selected' ? 6 : route.display === 'route' ? 3 : 4}
+            strokeWidth={route.display === 'selected' ? 6 : route.display === 'route' ? 1.8 : 4}
             strokeOpacity={route.display === 'selected' ? 0.94 : 0.78}
             strokeDasharray={
               route.display === 'marching'
@@ -525,7 +577,7 @@ export function CampaignMapView({
                     ? '8 4 2 4'
                     : route.display === 'selected'
                       ? '10 5'
-                      : '5 7'
+                      : '5 5'
             }
             strokeLinecap="round"
           />
@@ -543,7 +595,13 @@ export function CampaignMapView({
         </g>
       ))}
       {cityOrder.map((city) => (
-        <CitySymbol key={city.id} city={city} locale={locale} onClick={onCityClick} />
+        <CitySymbol
+          key={city.id}
+          city={city}
+          locale={locale}
+          labelPlacement={cityLabels.get(city.id)!}
+          onClick={onCityClick}
+        />
       ))}
     </svg>
   );

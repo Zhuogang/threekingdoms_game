@@ -16,7 +16,7 @@ const MAX_CAMPAIGN_ZOOM = 8;
 export function fitCampaignViewport(
   bounds: CampaignWorldBounds,
   aspectRatio: number,
-  padding = 0.035,
+  padding = 0,
 ): CampaignViewBox {
   validateCampaignBounds(bounds);
   const safeAspect = Number.isFinite(aspectRatio) && aspectRatio > 0 ? aspectRatio : 1;

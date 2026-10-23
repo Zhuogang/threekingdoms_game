@@ -15,8 +15,8 @@ export interface CampaignMinimapProps {
 }
 
 const WIDTH = 240;
-const HEIGHT = 200;
-const MAP = { left: 11, top: 11, width: 218, height: 178 };
+const HEIGHT = 150;
+const MAP = { left: 11, top: 7, width: 218, height: 136.25 };
 
 /** Overview navigator for the campaign atlas; the frame shows the current camera. */
 export function CampaignMinimap({

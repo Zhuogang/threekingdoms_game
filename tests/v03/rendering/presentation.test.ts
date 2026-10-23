@@ -15,17 +15,17 @@ import {
 } from '../../../src/v03/rendering/presentation';
 
 describe('v0.3 asset loading and sprite contract', () => {
-  it('registers the campaign atlas in the canonical square projection contract', () => {
-    expect(V03_ASSETS.campaignMapInk01).toMatchObject({
+  it('registers the regional campaign atlas with the 16:10 projection contract', () => {
+    expect(V03_ASSETS.campaignMapRegional).toMatchObject({
       category: 'map-background',
-      path: 'assets/v03/maps/campaign-ink-map-01.webp',
-      width: 1000,
+      path: 'assets/v03/maps/campaign-regional-map.svg',
+      width: 1600,
       height: 1000,
       alpha: false,
-      status: 'draft',
+      status: 'integrated',
     });
-    expect(resolvePublicAsset(V03_ASSETS.campaignMapInk01.path, '/campaign/')).toBe(
-      '/campaign/assets/v03/maps/campaign-ink-map-01.webp',
+    expect(resolvePublicAsset(V03_ASSETS.campaignMapRegional.path, '/campaign/')).toBe(
+      '/campaign/assets/v03/maps/campaign-regional-map.svg',
     );
   });
 

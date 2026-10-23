@@ -13,13 +13,18 @@ import {
 const bounds = { left: 0, top: 0, width: 1000, height: 600 };
 
 describe('campaign camera geometry', () => {
-  it('fits the whole map while matching the display aspect ratio', () => {
-    const viewport = fitCampaignViewport(bounds, 2);
+  it('fits the whole map with optional padding while matching the display aspect ratio', () => {
+    const viewport = fitCampaignViewport(bounds, 2, 0.035);
     expect(viewport.width / viewport.height).toBeCloseTo(2);
     expect(viewport.left).toBeLessThan(bounds.left);
     expect(viewport.top).toBeLessThan(bounds.top);
     expect(viewport.left + viewport.width).toBeGreaterThan(bounds.width);
     expect(viewport.top + viewport.height).toBeGreaterThan(bounds.height);
+  });
+
+  it('preserves the approved geographic extent when the frame matches its aspect ratio', () => {
+    const regionalBounds = { left: 0, top: 0, width: 1600, height: 1000 };
+    expect(fitCampaignViewport(regionalBounds, 16 / 10)).toEqual(regionalBounds);
   });
 
   it('zooms toward the pointer while retaining its relative location', () => {

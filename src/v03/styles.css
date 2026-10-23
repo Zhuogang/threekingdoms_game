@@ -2,6 +2,9 @@
   --ink: #292820;
   --paper: #d9d4c8;
   --paper-muted: #d6d1c4;
+  --map-surround: #e8e1d2;
+  --map-frame-border: #b6aa8f;
+  --map-frame-shadow: #39312520;
   --tone-3: #262821;
   --tone-4: #f4efdf;
   --tone-5: #756a54;
@@ -511,7 +514,7 @@ button:disabled {
   bottom: 10px;
   width: min(240px, 31%);
   height: auto;
-  aspect-ratio: 6 / 5;
+  aspect-ratio: 16 / 10;
   border-radius: 8px;
   box-shadow: 0 2px 10px var(--tone-44);
 }
@@ -2069,13 +2072,14 @@ th small {
 .v03-workspace.map-first-layout {
   display: flex;
   width: 100%;
-  padding: var(--space-2);
+  padding: clamp(12px, 2vw, 24px);
   min-height: 0;
 }
 .map-first-layout .v03-campaign-main {
   flex: 1;
   position: relative;
   padding: 0;
+  background: var(--map-surround);
 }
 .map-first-layout .v03-view-heading {
   flex: 0 0 auto;
@@ -2090,12 +2094,35 @@ th small {
   color: var(--tone-5);
   margin: 0;
 }
-.map-first-layout .v03-map-frame {
+.v03-campaign-map-stage {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 2vw, 24px);
+  container-type: size;
+}
+.map-first-layout .v03-map-frame {
+  flex: none;
+  width: min(100cqw, 160cqh);
+  height: auto;
+  aspect-ratio: 16 / 10;
   min-height: 0;
   margin: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px var(--map-frame-shadow);
+}
+/* Draw the border without changing the SVG's 16:10 content area or camera aspect. */
+.map-first-layout .v03-map-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--map-frame-border);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
 }
 .v03-campaign-dock {
   display: flex;

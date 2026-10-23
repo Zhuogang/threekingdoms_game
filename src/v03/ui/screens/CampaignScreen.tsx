@@ -35,7 +35,9 @@ export function CampaignScreen({
         </div>
         <p className="v03-map-instruction">{message(locale, 'flow.mapHint')}</p>
       </div>
-      <CampaignMap context={{ ...context }} />
+      <div className="v03-campaign-map-stage">
+        <CampaignMap context={context} />
+      </div>
       <footer className="v03-campaign-dock">
         <Button onClick={() => context.focusCampaignCity(state.playerCapitalCityId)}>
           <Flag size={18} />

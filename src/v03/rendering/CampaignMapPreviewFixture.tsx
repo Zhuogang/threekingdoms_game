@@ -1,11 +1,11 @@
-import { CAMPAIGN_MAP_BOUNDS, CITY_GEOGRAPHY, projectCampaignPoint } from '../geography';
+import { CAMPAIGN_WORLD_BOUNDS, CITY_GEOGRAPHY, projectCampaignPoint } from '../geography';
 import { CampaignMapView } from './CampaignMapView';
 import type { CampaignCityVisual } from './presentation';
 
 const PREVIEW_CITIES: readonly CampaignCityVisual[] = CITY_GEOGRAPHY.map((city) => ({
   id: city.id,
   name: city.nameEn,
-  position: projectCampaignPoint(city.latitude, city.longitude, CAMPAIGN_MAP_BOUNDS),
+  position: projectCampaignPoint(city.latitude, city.longitude),
   scale:
     city.id === 'luoyang' || city.id === 'changan'
       ? 'imperial'
@@ -18,8 +18,8 @@ const PREVIEW_CITIES: readonly CampaignCityVisual[] = CITY_GEOGRAPHY.map((city) 
 }));
 
 /**
- * Art and anchor preview only. It deliberately omits route and hydrography data;
- * the raster is atmosphere and must not become the source for game geography.
+ * Art and anchor preview only. Physical geography is a visual reference;
+ * estimated route distances remain independent of the basemap.
  */
 export function CampaignMapPreviewFixture({ locale = 'en' }: { locale?: 'en' | 'zh' }) {
   const cities = PREVIEW_CITIES.map((visual) => {
@@ -29,11 +29,5 @@ export function CampaignMapPreviewFixture({ locale = 'en' }: { locale?: 'en' | '
       name: locale === 'zh' ? (source?.nameZh ?? visual.name) : (source?.nameEn ?? visual.name),
     };
   });
-  return (
-    <CampaignMapView
-      bounds={{ left: 0, top: 0, width: 1000, height: 1000 }}
-      cities={cities}
-      locale={locale}
-    />
-  );
+  return <CampaignMapView bounds={CAMPAIGN_WORLD_BOUNDS} cities={cities} locale={locale} />;
 }

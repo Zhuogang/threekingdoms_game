@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   CITY_GEOGRAPHY_BY_ID,
+  CITY_GEOGRAPHY,
+  CAMPAIGN_WORLD_BOUNDS,
   ROUTE_BY_ID,
   findStrategicRoutePath,
   projectCampaignPoint,
@@ -11,6 +13,22 @@ import {
 import { estimateTravel } from '../../src/v03/calendar';
 
 describe('v0.3 campaign route map geometry', () => {
+  it('uses the approved regional center and uniform scale with a margin around every city', () => {
+    expect(CAMPAIGN_WORLD_BOUNDS.width / CAMPAIGN_WORLD_BOUNDS.height).toBe(16 / 10);
+    expect(projectCampaignPoint(33.5, 114)).toEqual({ x: 800, y: 500 });
+    const north = projectCampaignPoint(34.5, 114);
+    const east = projectCampaignPoint(33.5, 115);
+    expect(500 - north.y).toBeCloseTo(60);
+    expect(east.x - 800).toBeCloseTo(60 * Math.cos((33.5 * Math.PI) / 180));
+    for (const city of CITY_GEOGRAPHY) {
+      const point = projectCampaignPoint(city.latitude, city.longitude);
+      expect(point.x).toBeGreaterThan(100);
+      expect(point.x).toBeLessThan(1500);
+      expect(point.y).toBeGreaterThan(100);
+      expect(point.y).toBeLessThan(900);
+    }
+  });
+
   it('keeps route geometry explicitly schematic and road kilometres separate from baseline ETA', () => {
     const route = ROUTE_BY_ID.get('changan--hanzhong')!;
     const display = projectCampaignRoute(route);

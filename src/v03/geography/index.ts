@@ -1,4 +1,6 @@
 import { estimateTravel, type TravelComposition } from '../calendar';
+import { projectCampaignPoint } from './campaign-map';
+export * from './campaign-map';
 
 /**
  * Versioned geography contract for the independent v0.3 ruleset.
@@ -1171,39 +1173,6 @@ export function analyzeAnchorSensitivity(
 export const C_GRADE_ANCHOR_IDS: readonly CityId[] = CITY_GEOGRAPHY.filter(
   (city) => city.confidence === 'C',
 ).map((city) => city.id);
-
-export interface MapBounds {
-  minLatitude: number;
-  maxLatitude: number;
-  minLongitude: number;
-  maxLongitude: number;
-}
-
-export const CAMPAIGN_MAP_BOUNDS: MapBounds = {
-  minLatitude: 28.8,
-  maxLatitude: 40.5,
-  minLongitude: 103.2,
-  maxLongitude: 121.6,
-};
-
-/**
- * A simple north-up equirectangular projection for the campaign canvas. It is an
- * illustration projection only; distance estimates always use route kilometres.
- */
-export function projectCampaignPoint(
-  latitude: number,
-  longitude: number,
-  bounds: MapBounds = CAMPAIGN_MAP_BOUNDS,
-): { x: number; y: number } {
-  const meanLatitude = (bounds.minLatitude + bounds.maxLatitude) / 2;
-  const longitudeScale = Math.cos((meanLatitude * Math.PI) / 180);
-  const xStart = bounds.minLongitude * longitudeScale;
-  const xEnd = bounds.maxLongitude * longitudeScale;
-  return {
-    x: ((longitude * longitudeScale - xStart) / (xEnd - xStart)) * 1000,
-    y: ((bounds.maxLatitude - latitude) / (bounds.maxLatitude - bounds.minLatitude)) * 1000,
-  };
-}
 
 export interface ProjectedCityRoute {
   cityIds: readonly CityId[];

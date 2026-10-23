@@ -30,14 +30,14 @@ test('production release serves v0.3 under a subpath and restores its campaign s
   await expect(page).toHaveTitle('Hegemony of the Three Kingdoms · v0.3');
 
   const atlasResponse = page.waitForResponse((candidate) =>
-    candidate.url().includes('/hegemony/assets/v03/maps/campaign-ink-map-01.webp'),
+    candidate.url().includes('/hegemony/assets/v03/maps/campaign-regional-map.svg'),
   );
   await page.getByRole('button', { name: 'New campaign', exact: true }).click();
   await expect(page.locator('.v03-campaign-main')).toBeVisible();
   expect((await atlasResponse).status()).toBe(200);
   const atlasHref = await page.locator('.v03-map-frame svg image').first().getAttribute('href');
   expect(new URL(atlasHref!, page.url()).pathname).toBe(
-    '/hegemony/assets/v03/maps/campaign-ink-map-01.webp',
+    '/hegemony/assets/v03/maps/campaign-regional-map.svg',
   );
 
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();

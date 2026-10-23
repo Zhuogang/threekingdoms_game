@@ -1,14 +1,7 @@
 import { Button } from '../kit';
 import { message } from '../../i18n';
 
-import { CAMPAIGN_MOUNTAIN_RANGES, CAMPAIGN_WATERWAYS } from '../../geography/illustration';
-
-import {
-  CampaignMinimap,
-  CampaignMapView,
-  recenterCampaignViewport,
-  type WorldPolyline,
-} from '../../rendering';
+import { CampaignMinimap, CampaignMapView, recenterCampaignViewport } from '../../rendering';
 
 import { CAMPAIGN_BACKGROUND, CAMPAIGN_BOUNDS } from '../shared/app-copy-2';
 
@@ -31,11 +24,7 @@ export function CampaignMap({ context }: { context: GameplayContext }) {
     setFeedback,
   } = context;
   return (
-    <div
-      ref={campaignMapFrame}
-      className="v03-map-frame"
-      style={{ backgroundImage: `url(${CAMPAIGN_BACKGROUND})` }}
-    >
+    <div ref={campaignMapFrame} className="v03-map-frame">
       <CampaignMapView
         bounds={CAMPAIGN_BOUNDS}
         viewport={campaignViewport}
@@ -44,8 +33,6 @@ export function CampaignMap({ context }: { context: GameplayContext }) {
         backgroundImage={CAMPAIGN_BACKGROUND}
         cities={campaignCities}
         routes={campaignRoutes}
-        waterways={CAMPAIGN_WATERWAYS as WorldPolyline[]}
-        mountainRanges={CAMPAIGN_MOUNTAIN_RANGES as WorldPolyline[]}
         locale={locale}
         onCityClick={focusCampaignCity}
       />
