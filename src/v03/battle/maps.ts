@@ -1,5 +1,6 @@
 import {
   BATTLE_HEIGHT,
+  BATTLE_MAP_SIZES,
   BATTLE_MAP_TEMPLATE_VERSION,
   BATTLE_TILE_COUNT,
   BATTLE_WIDTH,
@@ -16,10 +17,12 @@ import {
 import { battlePositionIndex } from './rules';
 
 const makePosition = (x: number, y: number): BattlePosition => ({ x, y });
+/** Grid of the legacy regional templates built in this file. */
+const LEGACY_GRID = { width: BATTLE_WIDTH, height: BATTLE_HEIGHT };
 
 function writeTerrain(terrain: BattleTerrain[], x: number, y: number, value: BattleTerrain): void {
   if (x >= 0 && x < BATTLE_WIDTH && y >= 0 && y < BATTLE_HEIGHT)
-    terrain[battlePositionIndex(x, y)] = value;
+    terrain[battlePositionIndex(LEGACY_GRID, x, y)] = value;
 }
 
 function writeRect(
@@ -157,7 +160,7 @@ function safeDeployment(
   terrain: readonly BattleTerrain[],
 ): boolean {
   return positions.every((position) => {
-    const tile = terrain[battlePositionIndex(position.x, position.y)];
+    const tile = terrain[battlePositionIndex(LEGACY_GRID, position.x, position.y)];
     return tile !== undefined && tile !== 'water' && tile !== 'cliff';
   });
 }
@@ -233,7 +236,7 @@ export function createBattleMap(options: BattleMapOptions): BattleMap {
 export function battleTerrainAt(map: BattleMap, position: BattlePosition): BattleTerrain | null {
   if (position.x < 0 || position.x >= map.width || position.y < 0 || position.y >= map.height)
     return null;
-  return map.terrain[battlePositionIndex(position.x, position.y)] ?? null;
+  return map.terrain[battlePositionIndex(map, position.x, position.y)] ?? null;
 }
 
 export function objectiveAt(
@@ -269,10 +272,12 @@ export function fireTerrainMultiplier(terrain: BattleTerrain | null): number {
 
 export function validateBattleMap(map: BattleMap): string[] {
   const errors: string[] = [];
-  if (map.width !== BATTLE_WIDTH || map.height !== BATTLE_HEIGHT)
-    errors.push(`Battlefield must be ${BATTLE_WIDTH}×${BATTLE_HEIGHT}.`);
-  if (map.terrain.length !== BATTLE_TILE_COUNT)
-    errors.push(`Battlefield must contain exactly ${BATTLE_TILE_COUNT} terrain cells.`);
+  if (!BATTLE_MAP_SIZES.some(([width, height]) => map.width === width && map.height === height))
+    errors.push(
+      `Battlefield must be ${BATTLE_MAP_SIZES.map(([width, height]) => `${width}×${height}`).join(' or ')}.`,
+    );
+  if (map.terrain.length !== map.width * map.height)
+    errors.push(`Battlefield must contain exactly ${map.width * map.height} terrain cells.`);
   const terrainValues: readonly string[] = ['plain', 'forest', 'hill', 'water', 'cliff'];
   if (map.terrain.some((tile) => !terrainValues.includes(tile)))
     errors.push(
@@ -284,7 +289,7 @@ export function validateBattleMap(map: BattleMap): string[] {
     errors.push(`Defender deployment needs at least ${MAX_UNITS_PER_SIDE} spaces.`);
 
   const indexList = (positions: readonly BattlePosition[]) =>
-    positions.map((position) => battlePositionIndex(position.x, position.y));
+    positions.map((position) => battlePositionIndex(map, position.x, position.y));
   const attackers = indexList(map.attackerDeployment);
   const defenders = indexList(map.defenderDeployment);
   if (new Set(attackers).size !== attackers.length)
@@ -335,7 +340,7 @@ export function validateBattleMap(map: BattleMap): string[] {
     // Every non-cliff terrain cell is traversable for every unit type. This checks the
     // connected components of the shared map graph, including all spawns and camps;
     // the path service separately accounts for asymmetric movement costs.
-    const reachable = new Set<number>([battlePositionIndex(start.x, start.y)]);
+    const reachable = new Set<number>([battlePositionIndex(map, start.x, start.y)]);
     const queue = [start];
     for (let cursor = 0; cursor < queue.length; cursor++) {
       const current = queue[cursor]!;
@@ -353,7 +358,7 @@ export function validateBattleMap(map: BattleMap): string[] {
           battleTerrainAt(map, next) === 'cliff'
         )
           continue;
-        const nextIndex = battlePositionIndex(next.x, next.y);
+        const nextIndex = battlePositionIndex(map, next.x, next.y);
         if (reachable.has(nextIndex)) continue;
         reachable.add(nextIndex);
         queue.push(next);
@@ -372,7 +377,7 @@ export function validateBattleMap(map: BattleMap): string[] {
         position.x < map.width &&
         position.y >= 0 &&
         position.y < map.height &&
-        !reachable.has(battlePositionIndex(position.x, position.y))
+        !reachable.has(battlePositionIndex(map, position.x, position.y))
       )
         errors.push(`${label} at (${position.x}, ${position.y}) has no passable route.`);
     }
@@ -393,7 +398,7 @@ export function validateBattleUnits(
     errors.push(`Defender has more than ${MAX_UNITS_PER_SIDE} units.`);
   if (new Set(units.map((unit) => unit.id)).size !== units.length)
     errors.push('Unit IDs must be unique.');
-  if (new Set(units.map((unit) => battlePositionIndex(unit.x, unit.y))).size !== units.length)
+  if (new Set(units.map((unit) => battlePositionIndex(map, unit.x, unit.y))).size !== units.length)
     errors.push('Two units cannot occupy the same battlefield cell.');
 
   for (const unit of units) {

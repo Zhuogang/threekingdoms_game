@@ -16,7 +16,7 @@ import {
   type BattleRegion,
   type BattleTactic,
 } from '../../src/v03/battle';
-import { battlefieldBounds } from '../../src/v03/rendering/geometry';
+import { battlefieldBounds, V03_BATTLEFIELD_PADDING } from '../../src/v03/rendering/geometry';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
 import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
@@ -450,6 +450,12 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   await page.getByRole('button', { name: 'Focus both field camps', exact: true }).click();
   const campsFocused = await map.getAttribute('viewBox');
   expect(campsFocused).not.toBe(focused);
+  // On the square board the two camps span nearly the whole field, and a wide
+  // frame shows the full board width until about 1.6× zoom. Zoom in past that
+  // before checking that the minimap and keyboard can still move the camera.
+  for (let step = 0; step < 3; step++)
+    await page.getByRole('button', { name: 'Zoom in battlefield', exact: true }).click();
+  const campsZoomed = await map.getAttribute('viewBox');
 
   // The battlefield shell clips its contents and the viewport observer updates
   // while the page scrolls. Scroll the SVG directly, then use its live client
@@ -471,7 +477,7 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
     positionedMiniBox.y + positionedMiniBox.height * 0.78,
   );
   const minimapNavigated = await map.getAttribute('viewBox');
-  expect(minimapNavigated).not.toBe(campsFocused);
+  expect(minimapNavigated).not.toBe(campsZoomed);
 
   await minimap.focus();
   await page.keyboard.press('Shift+ArrowLeft');
@@ -489,7 +495,7 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   const top = fittedValues[1]!;
   const width = fittedValues[2]!;
   const height = fittedValues[3]!;
-  const boardBounds = battlefieldBounds(24, 20, 140);
+  const boardBounds = battlefieldBounds(24, 20, V03_BATTLEFIELD_PADDING);
   expect(left).toBeLessThanOrEqual(boardBounds.left);
   expect(top).toBeLessThanOrEqual(boardBounds.top);
   expect(left + width).toBeGreaterThanOrEqual(boardBounds.right);

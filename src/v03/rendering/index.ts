@@ -1,4 +1,5 @@
 export * from './assets';
+export * from './battlefield-canvases.generated';
 export * from './geometry';
 export * from './campaign-viewport';
 export * from './campaign-parties';

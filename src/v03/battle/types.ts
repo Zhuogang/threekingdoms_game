@@ -1,9 +1,22 @@
 /** Logical battlefield contracts for the independent v0.3 ruleset. */
+/** Size of the four legacy regional templates. */
 export const BATTLE_WIDTH = 24;
 export const BATTLE_HEIGHT = 20;
 export const BATTLE_TILE_COUNT = BATTLE_WIDTH * BATTLE_HEIGHT;
+/** Size of the painted canvas battlefields (docs/v0.3/08-battlefield-canvas-plan.md). */
+export const CANVAS_BATTLE_WIDTH = 48;
+export const CANVAS_BATTLE_HEIGHT = 32;
+/** Every map carries its own size; these are the only sizes a map or save may use. */
+export const BATTLE_MAP_SIZES: readonly (readonly [width: number, height: number])[] = [
+  [BATTLE_WIDTH, BATTLE_HEIGHT],
+  [CANVAS_BATTLE_WIDTH, CANVAS_BATTLE_HEIGHT],
+];
 export const MAX_UNITS_PER_SIDE = 10;
 export const BATTLE_MAP_TEMPLATE_VERSION = 'v0.3.1';
+/** Canvas battlefields built from a character layout. */
+export const CANVAS_BATTLE_MAP_VERSION = 'v0.3.2';
+export type BattleMapVersion =
+  typeof BATTLE_MAP_TEMPLATE_VERSION | typeof CANVAS_BATTLE_MAP_VERSION;
 
 export type BattleTerrain = 'plain' | 'forest' | 'hill' | 'water' | 'cliff';
 export type BattleRegion = 'hanzhong' | 'shouchun' | 'xiapi' | 'chengdu';
@@ -37,12 +50,14 @@ export interface BattleLandmark {
 /** Terrain is row-major: index = y * width + x. */
 export interface BattleMap {
   mapId: string;
-  templateVersion: typeof BATTLE_MAP_TEMPLATE_VERSION;
+  templateVersion: BattleMapVersion;
   regionId: BattleRegion;
+  /** Canvas battlefield id (e.g. `bf01-north-plain`); absent on legacy regional templates. */
+  battlefieldId?: string;
   approachDirection: ApproachDirection;
   seed: number;
-  width: typeof BATTLE_WIDTH;
-  height: typeof BATTLE_HEIGHT;
+  width: number;
+  height: number;
   terrain: BattleTerrain[];
   attackerDeployment: BattlePosition[];
   defenderDeployment: BattlePosition[];

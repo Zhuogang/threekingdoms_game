@@ -15,6 +15,13 @@ export interface BattleUnitVisual {
   label?: string;
   selected?: boolean;
   status?: string;
+  /** Portrait of the formation's highest-level officer; display only. */
+  portraitKey?: string;
+}
+
+/** Public path of the 128px battle-token portrait for an officer identity. */
+export function battlePortraitPath(portraitKey: string): string {
+  return `assets/portraits/${portraitKey}-small.webp`;
 }
 
 export interface WaterCombatDisplay {

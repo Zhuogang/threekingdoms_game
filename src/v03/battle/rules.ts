@@ -1,6 +1,4 @@
 import {
-  BATTLE_HEIGHT,
-  BATTLE_WIDTH,
   type BattleMap,
   type BattlePosition,
   type BattleTerrain,
@@ -28,18 +26,21 @@ const MOVE_BUDGET: Readonly<Record<BattleTroopType, number>> = {
   guard: 2,
 };
 
-export function battlePositionIndex(x: number, y: number): number {
-  return y * BATTLE_WIDTH + x;
+/** The board size a position helper needs; every battle map carries its own. */
+export type BattleGrid = Pick<BattleMap, 'width' | 'height'>;
+
+export function battlePositionIndex(map: BattleGrid, x: number, y: number): number {
+  return y * map.width + x;
 }
 
-export function isBattlePosition(position: BattlePosition): boolean {
+export function isBattlePosition(map: BattleGrid, position: BattlePosition): boolean {
   return (
     Number.isInteger(position.x) &&
     Number.isInteger(position.y) &&
     position.x >= 0 &&
-    position.x < BATTLE_WIDTH &&
+    position.x < map.width &&
     position.y >= 0 &&
-    position.y < BATTLE_HEIGHT
+    position.y < map.height
   );
 }
 
@@ -68,7 +69,11 @@ export function battleStepCost(
   from: BattlePosition,
   to: BattlePosition,
 ): number {
-  if (!isBattlePosition(from) || !isBattlePosition(to) || manhattanDistance(from, to) !== 1)
+  if (
+    !isBattlePosition(map, from) ||
+    !isBattlePosition(map, to) ||
+    manhattanDistance(from, to) !== 1
+  )
     return Number.POSITIVE_INFINITY;
   const fromTerrain = battleTerrainAt(map, from);
   const toTerrain = battleTerrainAt(map, to);
@@ -98,19 +103,19 @@ export function findBattlePath(
   blockers: readonly PathBlocker[] = [],
   stopAfter: readonly BattlePosition[] = [],
 ): BattlePosition[] | null {
-  if (!isBattlePosition(start) || !isBattlePosition(destination)) return null;
+  if (!isBattlePosition(map, start) || !isBattlePosition(map, destination)) return null;
   if (battleTerrainAt(map, start) === 'cliff' || battleTerrainAt(map, destination) === 'cliff')
     return null;
   const blockerIndexes = new Set(
-    blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)),
+    blockers.map((blocker) => battlePositionIndex(map, blocker.x, blocker.y)),
   );
   const stopAfterIndexes = new Set(
     stopAfter
-      .filter(isBattlePosition)
-      .map((position) => battlePositionIndex(position.x, position.y)),
+      .filter((position) => isBattlePosition(map, position))
+      .map((position) => battlePositionIndex(map, position.x, position.y)),
   );
-  const startIndex = battlePositionIndex(start.x, start.y);
-  const destinationIndex = battlePositionIndex(destination.x, destination.y);
+  const startIndex = battlePositionIndex(map, start.x, start.y);
+  const destinationIndex = battlePositionIndex(map, destination.x, destination.y);
   blockerIndexes.delete(startIndex);
   if (blockerIndexes.has(destinationIndex)) return null;
 
@@ -140,13 +145,13 @@ export function findBattlePath(
     if (currentIndex !== startIndex && stopAfterIndexes.has(currentIndex)) continue;
     closed.add(currentIndex);
     const current = {
-      x: currentIndex % BATTLE_WIDTH,
-      y: Math.floor(currentIndex / BATTLE_WIDTH),
+      x: currentIndex % map.width,
+      y: Math.floor(currentIndex / map.width),
     };
     for (const direction of DIRECTIONS) {
       const next = { x: current.x + direction.x, y: current.y + direction.y };
-      if (!isBattlePosition(next)) continue;
-      const nextIndex = battlePositionIndex(next.x, next.y);
+      if (!isBattlePosition(map, next)) continue;
+      const nextIndex = battlePositionIndex(map, next.x, next.y);
       if (closed.has(nextIndex) || blockerIndexes.has(nextIndex)) continue;
       const step = battleStepCost(map, unit, current, next);
       if (!Number.isFinite(step)) continue;
@@ -162,7 +167,7 @@ export function findBattlePath(
   const path: BattlePosition[] = [];
   let cursor = destinationIndex;
   while (cursor !== startIndex) {
-    path.push({ x: cursor % BATTLE_WIDTH, y: Math.floor(cursor / BATTLE_WIDTH) });
+    path.push({ x: cursor % map.width, y: Math.floor(cursor / map.width) });
     const parent = previous.get(cursor);
     if (parent === undefined) return null;
     cursor = parent;
@@ -176,90 +181,133 @@ export interface ReachableBattleTile extends BattlePosition {
   cost: number;
 }
 
-interface CostQueueEntry {
-  index: number;
-  cost: number;
-}
-
-function queueLess(a: CostQueueEntry, b: CostQueueEntry): boolean {
-  return a.cost < b.cost || (a.cost === b.cost && a.index < b.index);
-}
-
-function queuePush(queue: CostQueueEntry[], entry: CostQueueEntry): void {
-  let index = queue.length;
-  queue.push(entry);
-  while (index > 0) {
-    const parent = Math.floor((index - 1) / 2);
-    if (!queueLess(entry, queue[parent]!)) break;
-    queue[index] = queue[parent]!;
-    index = parent;
+/**
+ * Binary heap over parallel cost/index arrays (no per-entry objects), ordered by
+ * cost, then by cell index.
+ */
+class IndexCostHeap {
+  private readonly costs: number[] = [];
+  private readonly indexes: number[] = [];
+  get size(): number {
+    return this.costs.length;
   }
-  queue[index] = entry;
-}
-
-function queuePop(queue: CostQueueEntry[]): CostQueueEntry | undefined {
-  if (queue.length === 0) return undefined;
-  const first = queue[0]!;
-  const last = queue.pop()!;
-  if (queue.length === 0) return first;
-  let index = 0;
-  while (true) {
-    const left = index * 2 + 1;
-    const right = left + 1;
-    if (left >= queue.length) break;
-    const child = right < queue.length && queueLess(queue[right]!, queue[left]!) ? right : left;
-    if (!queueLess(queue[child]!, last)) break;
-    queue[index] = queue[child]!;
-    index = child;
+  /** Whether (cost, index) orders before the entry in `slot`. */
+  private before(cost: number, index: number, slot: number): boolean {
+    const slotCost = this.costs[slot]!;
+    return cost < slotCost || (cost === slotCost && index < this.indexes[slot]!);
   }
-  queue[index] = last;
-  return first;
+  push(index: number, cost: number): void {
+    let slot = this.costs.length;
+    this.costs.push(cost);
+    this.indexes.push(index);
+    while (slot > 0) {
+      const parent = (slot - 1) >> 1;
+      if (!this.before(cost, index, parent)) break;
+      this.costs[slot] = this.costs[parent]!;
+      this.indexes[slot] = this.indexes[parent]!;
+      slot = parent;
+    }
+    this.costs[slot] = cost;
+    this.indexes[slot] = index;
+  }
+  /** Removes the minimum; read it first with topIndex/topCost. */
+  pop(): void {
+    const lastCost = this.costs.pop()!;
+    const lastIndex = this.indexes.pop()!;
+    const length = this.costs.length;
+    if (!length) return;
+    let slot = 0;
+    while (true) {
+      const left = slot * 2 + 1;
+      if (left >= length) break;
+      const right = left + 1;
+      const child =
+        right < length && this.before(this.costs[right]!, this.indexes[right]!, left)
+          ? right
+          : left;
+      // Stop once the moved-down last entry orders before the smaller child.
+      if (this.before(lastCost, lastIndex, child)) break;
+      this.costs[slot] = this.costs[child]!;
+      this.indexes[slot] = this.indexes[child]!;
+      slot = child;
+    }
+    this.costs[slot] = lastCost;
+    this.indexes[slot] = lastIndex;
+  }
+  topIndex(): number {
+    return this.indexes[0]!;
+  }
+  topCost(): number {
+    return this.costs[0]!;
+  }
 }
 
 /**
  * Weighted distance from every cell to the nearest goal, respecting terrain and occupied cells.
  * The reverse edge uses the corresponding forward move cost, so asymmetric uphill costs remain
  * correct. `goalOffsets` can assign e.g. a one-point preference cost to a camp goal.
+ * With `settle`, the search stops once those cells are final: their values are exact, and
+ * other cells may be left unfinished.
  */
 export function getBattleRouteDistanceField(
   map: BattleMap,
   unit: Pick<BattleUnitPosition, 'troopType'>,
   goals: readonly (BattlePosition & { offset?: number })[],
   blockers: readonly PathBlocker[] = [],
+  settle?: readonly BattlePosition[],
 ): number[] {
-  const distances = Array.from(
-    { length: BATTLE_WIDTH * BATTLE_HEIGHT },
-    () => Number.POSITIVE_INFINITY,
-  );
+  const pending = settle
+    ? new Set(
+        settle
+          .filter((position) => isBattlePosition(map, position))
+          .map((position) => battlePositionIndex(map, position.x, position.y)),
+      )
+    : null;
+  const distances = Array.from({ length: map.width * map.height }, () => Number.POSITIVE_INFINITY);
   const goalIndexes = new Set<number>();
-  const queue: CostQueueEntry[] = [];
+  const queue = new IndexCostHeap();
   for (const goal of goals) {
-    if (!isBattlePosition(goal) || battleTerrainAt(map, goal) === 'cliff') continue;
-    const index = battlePositionIndex(goal.x, goal.y);
+    if (!isBattlePosition(map, goal) || battleTerrainAt(map, goal) === 'cliff') continue;
+    const index = battlePositionIndex(map, goal.x, goal.y);
     const offset = Number.isFinite(goal.offset) ? Math.max(0, goal.offset ?? 0) : 0;
     distances[index] = Math.min(distances[index]!, offset);
     goalIndexes.add(index);
-    queuePush(queue, { index, cost: offset });
+    queue.push(index, offset);
   }
-  const blocked = new Set(blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)));
+  const blocked = new Set(
+    blockers.map((blocker) => battlePositionIndex(map, blocker.x, blocker.y)),
+  );
   for (const goalIndex of goalIndexes) blocked.delete(goalIndex);
 
-  while (queue.length) {
-    const currentEntry = queuePop(queue)!;
-    const { index: currentIndex, cost: currentCost } = currentEntry;
+  // This runs once per AI unit over the whole board, so the inner loop inlines
+  // battleStepCost with index arithmetic. The costs are the same: entering a
+  // cell costs its terrain cost, raised to 2 when either side of the step is water.
+  const { width, height, terrain } = map;
+  const entryCost = terrain.map((tile) => terrainMovementCost(unit.troopType, tile));
+  while (queue.size) {
+    const currentIndex = queue.topIndex();
+    const currentCost = queue.topCost();
+    queue.pop();
     if (currentCost !== distances[currentIndex]) continue;
-    const current = { x: currentIndex % BATTLE_WIDTH, y: Math.floor(currentIndex / BATTLE_WIDTH) };
-    for (const direction of DIRECTIONS) {
-      const predecessor = { x: current.x + direction.x, y: current.y + direction.y };
-      if (!isBattlePosition(predecessor)) continue;
-      const predecessorIndex = battlePositionIndex(predecessor.x, predecessor.y);
+    if (pending?.delete(currentIndex) && pending.size === 0) break;
+    const enter = entryCost[currentIndex]!;
+    if (!Number.isFinite(enter)) continue;
+    const x = currentIndex % width;
+    const y = (currentIndex - x) / width;
+    const intoWater = terrain[currentIndex] === 'water';
+    // Same N/E/S/W order as DIRECTIONS.
+    for (let direction = 0; direction < 4; direction++) {
+      const px = direction === 1 ? x + 1 : direction === 3 ? x - 1 : x;
+      const py = direction === 0 ? y - 1 : direction === 2 ? y + 1 : y;
+      if (px < 0 || py < 0 || px >= width || py >= height) continue;
+      const predecessorIndex = py * width + px;
       if (blocked.has(predecessorIndex)) continue;
-      const forwardCost = battleStepCost(map, unit, predecessor, current);
-      if (!Number.isFinite(forwardCost)) continue;
+      const forwardCost =
+        intoWater || terrain[predecessorIndex] === 'water' ? Math.max(2, enter) : enter;
       const candidate = currentCost + forwardCost;
       if (candidate >= distances[predecessorIndex]!) continue;
       distances[predecessorIndex] = candidate;
-      queuePush(queue, { index: predecessorIndex, cost: candidate });
+      queue.push(predecessorIndex, candidate);
     }
   }
   return distances;
@@ -273,14 +321,17 @@ export function getReachableBattleTiles(
   blockers: readonly PathBlocker[] = [],
   stopAfter: readonly BattlePosition[] = [],
 ): ReachableBattleTile[] {
-  if (!isBattlePosition(start) || battleTerrainAt(map, start) === 'cliff' || budget < 0) return [];
-  const blocked = new Set(blockers.map((blocker) => battlePositionIndex(blocker.x, blocker.y)));
+  if (!isBattlePosition(map, start) || battleTerrainAt(map, start) === 'cliff' || budget < 0)
+    return [];
+  const blocked = new Set(
+    blockers.map((blocker) => battlePositionIndex(map, blocker.x, blocker.y)),
+  );
   const stopAfterIndexes = new Set(
     stopAfter
-      .filter(isBattlePosition)
-      .map((position) => battlePositionIndex(position.x, position.y)),
+      .filter((position) => isBattlePosition(map, position))
+      .map((position) => battlePositionIndex(map, position.x, position.y)),
   );
-  const startIndex = battlePositionIndex(start.x, start.y);
+  const startIndex = battlePositionIndex(map, start.x, start.y);
   blocked.delete(startIndex);
   const costs = new Map<number, number>([[startIndex, 0]]);
   const open = new Set<number>([startIndex]);
@@ -305,13 +356,13 @@ export function getReachableBattleTiles(
     // A unit may enter an enemy control zone, but it cannot continue through it.
     if (currentIndex !== startIndex && stopAfterIndexes.has(currentIndex)) continue;
     const current = {
-      x: currentIndex % BATTLE_WIDTH,
-      y: Math.floor(currentIndex / BATTLE_WIDTH),
+      x: currentIndex % map.width,
+      y: Math.floor(currentIndex / map.width),
     };
     for (const direction of DIRECTIONS) {
       const next = { x: current.x + direction.x, y: current.y + direction.y };
-      if (!isBattlePosition(next)) continue;
-      const nextIndex = battlePositionIndex(next.x, next.y);
+      if (!isBattlePosition(map, next)) continue;
+      const nextIndex = battlePositionIndex(map, next.x, next.y);
       if (closed.has(nextIndex) || blocked.has(nextIndex)) continue;
       const step = battleStepCost(map, unit, current, next);
       if (!Number.isFinite(step)) continue;
@@ -326,8 +377,8 @@ export function getReachableBattleTiles(
   return [...costs.entries()]
     .filter(([index, cost]) => index !== startIndex && cost <= budget)
     .map(([index, cost]) => ({
-      x: index % BATTLE_WIDTH,
-      y: Math.floor(index / BATTLE_WIDTH),
+      x: index % map.width,
+      y: Math.floor(index / map.width),
       cost,
     }))
     .sort((a, b) => a.cost - b.cost || a.y - b.y || a.x - b.x);
@@ -342,8 +393,8 @@ export function isBattleAttackInRange(
   if (
     source.side === target.side ||
     range < 0 ||
-    !isBattlePosition(source) ||
-    !isBattlePosition(target) ||
+    !isBattlePosition(map, source) ||
+    !isBattlePosition(map, target) ||
     battleTerrainAt(map, source) === null ||
     battleTerrainAt(map, target) === null
   )

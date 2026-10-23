@@ -9,15 +9,20 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
+  type SVGProps,
   type WheelEvent,
 } from 'react';
-import { V03_ASSETS, resolvePublicAsset, spriteOffsetFromAnchor } from './assets';
+import { V03_ASSETS, resolvePublicAsset } from './assets';
+import { V03_BATTLEFIELD_CANVASES } from './battlefield-canvases.generated';
+import { BattleTerrainPatterns, battleTerrainPatternId } from './BattleTerrainPatterns';
 import {
   BATTLE_VIEW_INSETS,
+  V03_BATTLE_CELL,
+  V03_BATTLE_HALF_CELL,
+  V03_BATTLEFIELD_PADDING,
   battlefieldBounds,
   cameraOrigin,
   clientToViewBoxPoint,
-  diamondVertices,
   fitScale,
   gridToWorld,
   hitTestWorld,
@@ -32,6 +37,7 @@ import {
   type BattlefieldViewBox,
 } from './battlefield-viewport';
 import {
+  battlePortraitPath,
   formatModifier,
   formatTroopCount,
   isLivingBattleUnitVisual,
@@ -46,6 +52,8 @@ export type BattlefieldTerrainVisual = 'plain' | 'forest' | 'hill' | 'water' | '
 
 export interface BattlefieldVisualMap {
   id?: string;
+  /** Canvas battlefield id; its shipped painting is drawn under the grid when there is one. */
+  battlefieldId?: string;
   width: number;
   height: number;
   terrain: readonly BattlefieldTerrainVisual[];
@@ -61,6 +69,14 @@ export interface BattlefieldMapViewProps {
   attackableCells?: readonly GridPoint[];
   tacticTargetCells?: readonly GridPoint[];
   viewport?: BattlefieldViewBox;
+  /**
+   * Painted canvas drawn under the grid, stretched to the board edges. The tiled
+   * terrain then shows at `terrainOpacity` (default 0) on top of it. Omitted, the
+   * map's shipped canvas is used when it has one; `null` forces the tiles.
+   */
+  background?: { href: string; terrainOpacity?: number } | null;
+  /** Faint cell grid; on by default. */
+  showGrid?: boolean;
   /** Enables drag pan, wheel zoom and keyboard camera controls. */
   interactive?: boolean;
   onViewportChange?: (viewport: BattlefieldViewBox) => void;
@@ -74,8 +90,6 @@ export interface BattlefieldMapViewProps {
 }
 
 const BASE_URL = import.meta.env.BASE_URL;
-const GROUND_HREF = resolvePublicAsset(V03_ASSETS.groundInk01.path, BASE_URL);
-const RIDGE_HREF = resolvePublicAsset(V03_ASSETS.ridgePineInk01.path, BASE_URL);
 const TRANSPORT_HREF = resolvePublicAsset(V03_ASSETS.transportCraftInk01.path, BASE_URL);
 const UNIT_HREFS = {
   infantry: resolvePublicAsset(V03_ASSETS.infantryInk01.path, BASE_URL),
@@ -86,7 +100,7 @@ const UNIT_HREFS = {
 function useImageAvailability(path: string): boolean {
   const [readyPath, setReadyPath] = useState<string | null>(null);
   useEffect(() => {
-    if (typeof Image === 'undefined') return;
+    if (!path || typeof Image === 'undefined') return;
     let live = true;
     const image = new Image();
     image.onload = () => {
@@ -137,15 +151,23 @@ interface PanStart {
   viewport: BattlefieldViewBox;
 }
 
-function cellPath(center: Point): string {
-  const vertices = diamondVertices(center);
-  const first = vertices[0];
-  if (!first) return '';
-  return `M ${first.x} ${first.y} ${vertices
-    .slice(1)
-    .map((point) => `L ${point.x} ${point.y}`)
-    .join(' ')} Z`;
+/** Square cell outline, inset so neighbouring highlight strokes do not overlap. */
+function CellRect({
+  center,
+  inset = 0,
+  ...rest
+}: { center: Point; inset?: number } & SVGRectProps) {
+  return (
+    <rect
+      x={center.x - V03_BATTLE_HALF_CELL + inset}
+      y={center.y - V03_BATTLE_HALF_CELL + inset}
+      width={V03_BATTLE_CELL - inset * 2}
+      height={V03_BATTLE_CELL - inset * 2}
+      {...rest}
+    />
+  );
 }
+type SVGRectProps = Omit<SVGProps<SVGRectElement>, 'x' | 'y' | 'width' | 'height'>;
 
 function terrainName(terrain: string, locale: 'en' | 'zh'): string {
   const labels: Record<string, { en: string; zh: string }> = {
@@ -184,35 +206,10 @@ function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' })
   );
 }
 
-function NativeUnitToken({ unit, locale }: { unit: BattleUnitVisual; locale: 'en' | 'zh' }) {
-  const glyph = troopGlyph(unit.troopType);
-  const title = [
-    troopName(unit.troopType, locale),
-    unit.label,
-    unit.strength === undefined ? undefined : String(unit.strength),
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  return (
-    <g transform="translate(0 -30)" aria-label={title}>
-      <path
-        d="M 0 -20 L 18 -9 L 15 11 L 0 20 L -15 11 L -18 -9 Z"
-        fill="#f6f0e3"
-        stroke="#2e2923"
-        strokeWidth="2.5"
-      />
-      <text
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize="17"
-        fontWeight="700"
-        fill="#2e2923"
-      >
-        {glyph}
-      </text>
-    </g>
-  );
-}
+// Token layout inside one 64-unit cell, centered on the cell center.
+const TOKEN_FACE_Y = -5;
+const TOKEN_FACE_RADIUS = 23;
+const TOKEN_SILHOUETTE = 44;
 
 function UnitSprite({
   unit,
@@ -239,9 +236,10 @@ function UnitSprite({
     unit.troopType in UNIT_HREFS
       ? UNIT_HREFS[unit.troopType as keyof typeof UNIT_HREFS]
       : undefined;
-  const unitSize = unit.troopType === 'cavalry' ? V03_ASSETS.cavalryInk01.renderWidth : 84;
-  const unitAnchor = [0.5, 0.86] as const;
-  const spriteOffset = spriteOffsetFromAnchor(unitSize, unitSize, unitAnchor);
+  const portraitHref = unit.portraitKey
+    ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)
+    : undefined;
+  const clipId = `v03-token-face-${unit.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
   const selected = unit.selected;
   const factionStroke = unit.faction === 'player' ? '#376f73' : '#a6493d';
   const localeName = troopName(unit.troopType, locale);
@@ -249,7 +247,7 @@ function UnitSprite({
   const damageText = formatModifier(onWater ? waterIncomingDamageMultiplier : undefined, locale);
   const countLabel =
     unit.strength === undefined ? undefined : formatTroopCount(unit.strength, locale);
-  const countWidth = countLabel ? countLabel.length * 6.4 + 14 : 0;
+  const countWidth = countLabel ? countLabel.length * 5.6 + 10 : 0;
   const details = [
     localeName,
     unit.label,
@@ -286,74 +284,120 @@ function UnitSprite({
       }}
       style={{ cursor: 'pointer', outline: 'none' }}
     >
-      {onWater && transportReady ? (
-        <image
-          href={TRANSPORT_HREF}
-          x={-V03_ASSETS.transportCraftInk01.renderWidth / 2}
-          y={-V03_ASSETS.transportCraftInk01.renderHeight * 0.6}
-          width={V03_ASSETS.transportCraftInk01.renderWidth}
-          height={V03_ASSETS.transportCraftInk01.renderHeight}
-          preserveAspectRatio="none"
-          aria-hidden="true"
+      <clipPath id={clipId}>
+        <circle cx={0} cy={TOKEN_FACE_Y} r={TOKEN_FACE_RADIUS - 2} />
+      </clipPath>
+      {selected ? (
+        <rect
+          x={-V03_BATTLE_HALF_CELL + 2}
+          y={-V03_BATTLE_HALF_CELL + 2}
+          width={V03_BATTLE_CELL - 4}
+          height={V03_BATTLE_CELL - 4}
+          rx={10}
+          fill="#f5c45b"
+          fillOpacity={0.22}
+          stroke="#f5c45b"
+          strokeWidth={4}
         />
       ) : null}
-      {selected ? <circle r={49} fill="none" stroke="#f5c45b" strokeWidth={5} /> : null}
+      {onWater ? (
+        transportReady ? (
+          <image
+            href={TRANSPORT_HREF}
+            x={-31}
+            y={TOKEN_FACE_Y + 6}
+            width={62}
+            height={31}
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          />
+        ) : (
+          <path
+            d={`M -30 ${TOKEN_FACE_Y + 14} Q 0 ${TOKEN_FACE_Y + 40} 30 ${TOKEN_FACE_Y + 14} Z`}
+            fill="#7a5a3a"
+            stroke="#3e2e20"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+        )
+      ) : null}
       <circle
         cx={0}
-        cy={2}
-        r={34}
+        cy={TOKEN_FACE_Y}
+        r={TOKEN_FACE_RADIUS}
         fill="#f6f0e3"
-        fillOpacity={0.9}
         stroke={factionStroke}
-        strokeWidth={selected ? 5 : 3}
+        strokeWidth={selected ? 4 : 3}
       />
-      {imageReady && unitHref ? (
-        <image
-          href={unitHref}
-          x={spriteOffset.x}
-          y={spriteOffset.y}
-          width={unitSize}
-          height={unitSize}
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-        />
-      ) : (
-        <NativeUnitToken unit={unit} locale={locale} />
-      )}
-      {onWater ? (
-        <g transform="translate(0 35)" aria-label={message(locale, 'ui.afloat.139')}>
-          <rect
-            x={-24}
-            y={-10}
-            width={48}
-            height={20}
-            rx={9}
-            fill="#3b7881"
-            stroke="#f8f1df"
-            strokeWidth={2}
+      <g clipPath={`url(#${clipId})`} aria-hidden="true">
+        {imageReady && unitHref ? (
+          <image
+            href={unitHref}
+            x={-TOKEN_SILHOUETTE / 2}
+            y={TOKEN_FACE_Y - TOKEN_SILHOUETTE / 2}
+            width={TOKEN_SILHOUETTE}
+            height={TOKEN_SILHOUETTE}
+            preserveAspectRatio="xMidYMid meet"
           />
+        ) : (
           <text
+            y={TOKEN_FACE_Y}
             textAnchor="middle"
             dominantBaseline="central"
-            fontSize={11}
+            fontSize={20}
             fontWeight="700"
-            fill="#fffaf0"
+            fill="#2e2923"
           >
-            {message(locale, 'ui.afloat.142')}
+            {troopGlyph(unit.troopType)}
           </text>
+        )}
+        {/* A missing portrait leaves the silhouette or glyph underneath visible. */}
+        {portraitHref ? (
+          <image
+            href={portraitHref}
+            x={-TOKEN_FACE_RADIUS}
+            y={TOKEN_FACE_Y - TOKEN_FACE_RADIUS}
+            width={TOKEN_FACE_RADIUS * 2}
+            height={TOKEN_FACE_RADIUS * 2}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        ) : null}
+      </g>
+      <g transform="translate(19 -22)" aria-label={localeName}>
+        <circle r={9.5} fill={factionStroke} stroke="#f8f1df" strokeWidth={1.6} />
+        <text
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={11}
+          fontWeight="700"
+          fill="#fffaf0"
+        >
+          {troopGlyph(unit.troopType)}
+        </text>
+      </g>
+      {onWater ? (
+        <g transform="translate(-19 -22)" aria-label={message(locale, 'ui.afloat.139')}>
+          <circle r={9} fill="#3b7881" stroke="#f8f1df" strokeWidth={1.6} />
+          <path
+            d="M -5 1 q 2.5 -3 5 0 t 5 0"
+            fill="none"
+            stroke="#fffaf0"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+          />
         </g>
       ) : null}
       {countLabel !== undefined ? (
-        <g transform="translate(24 -32)">
+        <g transform={`translate(0 ${TOKEN_FACE_Y + TOKEN_FACE_RADIUS + 4})`}>
           <rect
             x={-countWidth / 2}
-            y={-12}
+            y={-7.5}
             width={countWidth}
-            height={24}
-            rx={10}
+            height={15}
+            rx={7}
             fill="#f7efe0"
             stroke={factionStroke}
-            strokeWidth={2}
+            strokeWidth={1.6}
           />
           <text
             textAnchor="middle"
@@ -385,6 +429,8 @@ export function BattlefieldMapView({
   attackableCells = [],
   tacticTargetCells = [],
   viewport,
+  background,
+  showGrid = true,
   interactive = false,
   onViewportChange,
   locale = 'en',
@@ -405,24 +451,31 @@ export function BattlefieldMapView({
   useEffect(() => {
     setFocusedCell(selectedCell ?? { x: Math.floor(map.width / 2), y: Math.floor(map.height / 2) });
   }, [selectedCell?.x, selectedCell?.y, map.width, map.height]);
-  const groundReady = useImageAvailability(GROUND_HREF);
-  const ridgeReady = useImageAvailability(RIDGE_HREF);
+  const shippedCanvas = map.battlefieldId
+    ? V03_BATTLEFIELD_CANVASES[map.battlefieldId]?.path
+    : undefined;
+  const requestedBackground =
+    background === undefined && shippedCanvas
+      ? { href: resolvePublicAsset(shippedCanvas, BASE_URL) }
+      : (background ?? undefined);
+  // Tiles stay visible until the painting has loaded, and if it never does.
+  const backgroundReady = useImageAvailability(requestedBackground?.href ?? '');
+  const canvasBackground = backgroundReady ? requestedBackground : undefined;
   const transportReady = useImageAvailability(TRANSPORT_HREF);
   const infantryReady = useImageAvailability(UNIT_HREFS.infantry);
   const archerReady = useImageAvailability(UNIT_HREFS.archer);
   const cavalryReady = useImageAvailability(UNIT_HREFS.cavalry);
   const imageAssets = {
-    ground: groundReady,
-    ridge: ridgeReady,
     transport: transportReady,
     infantry: infantryReady,
     archer: archerReady,
     cavalry: cavalryReady,
   };
   const board = useMemo(
-    () => battlefieldBounds(map.width, map.height, 140),
+    () => battlefieldBounds(map.width, map.height, V03_BATTLEFIELD_PADDING),
     [map.width, map.height],
   );
+  const grid = battlefieldBounds(map.width, map.height);
   const view = viewBoxFor(board, viewport);
   const canNavigate = interactive && Boolean(onViewportChange);
   const safeLength = map.width * map.height;
@@ -439,7 +492,7 @@ export function BattlefieldMapView({
     .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
     .join(' ');
   const selectedId = selectedCell ? `${selectedCell.x},${selectedCell.y}` : null;
-  const backgroundId = `v03-ground-${map.id ?? 'map'}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const patternPrefix = `v03-terrain-${map.id ?? 'map'}`.replace(/[^a-zA-Z0-9_-]/g, '-');
 
   const clickCell = (event: MouseEvent<SVGSVGElement>) => {
     if (didPanRef.current) {
@@ -616,143 +669,137 @@ export function BattlefieldMapView({
       }}
     >
       <defs>
-        <pattern id={backgroundId} patternUnits="userSpaceOnUse" width={512} height={512}>
-          {imageAssets.ground ? <image href={GROUND_HREF} width={512} height={512} /> : null}
-        </pattern>
-        <linearGradient id="v03-water-wash" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor="#93b5ae" />
-          <stop offset="1" stopColor="#628d8e" />
-        </linearGradient>
-        <linearGradient id="v03-cliff-wash" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0" stopColor="#777368" />
-          <stop offset="1" stopColor="#4b4b46" />
-        </linearGradient>
+        <BattleTerrainPatterns prefix={patternPrefix} />
       </defs>
+      <rect
+        x={board.left}
+        y={board.top}
+        width={board.width}
+        height={board.height}
+        fill="#d9cfb6"
+        pointerEvents="none"
+      />
+      {canvasBackground ? (
+        <image
+          href={canvasBackground.href}
+          x={grid.left}
+          y={grid.top}
+          width={grid.width}
+          height={grid.height}
+          preserveAspectRatio="none"
+          pointerEvents="none"
+        />
+      ) : null}
       {terrain.map((kind, index) => {
         const x = index % map.width;
         const y = Math.floor(index / map.width);
-        const key = `${x},${y}`;
         const center = gridToWorld({ x, y });
-        const d = cellPath(center);
-        const fill =
-          kind === 'water'
-            ? 'url(#v03-water-wash)'
-            : kind === 'cliff'
-              ? 'url(#v03-cliff-wash)'
-              : kind === 'forest'
-                ? '#a7ad8b'
-                : kind === 'hill'
-                  ? '#c4b894'
-                  : '#eee6d5';
         const description = terrainName(kind, locale);
         return (
-          <g key={key}>
-            <path
-              d={d}
-              fill={kind === 'plain' && imageAssets.ground ? `url(#${backgroundId})` : fill}
-              stroke="#766e5e"
-              strokeOpacity={0.42}
-              strokeWidth={1.8}
-            >
-              <title>{`${description} · ${x + 1},${y + 1}`}</title>
-            </path>
-            {kind === 'water' ? (
-              <path
-                d={d}
-                fill="none"
-                stroke="#d2e0d0"
-                strokeOpacity={0.5}
-                strokeWidth={2}
-                strokeDasharray="2 9"
-              />
-            ) : null}
-            {kind === 'cliff' ? (
-              <g pointerEvents="none">
-                <path
-                  d={`M ${center.x - 29} ${center.y + 8} L ${center.x - 8} ${center.y - 12} L ${center.x + 8} ${center.y + 5} L ${center.x + 25} ${center.y - 11}`}
-                  fill="none"
-                  stroke="#ece2cf"
-                  strokeWidth={3}
-                />
-                <path
-                  d={`M ${center.x - 25} ${center.y + 19} L ${center.x + 25} ${center.y + 19}`}
-                  stroke="#302f2b"
-                  strokeWidth={4}
-                />
-              </g>
-            ) : null}
-            {kind === 'forest' ? (
-              <g fill="#546b55" stroke="#354e42" strokeWidth={1} pointerEvents="none">
-                <circle cx={center.x - 16} cy={center.y - 3} r={11} />
-                <circle cx={center.x} cy={center.y - 11} r={13} />
-                <circle cx={center.x + 16} cy={center.y + 3} r={10} />
-              </g>
-            ) : null}
-            {kind === 'hill' && imageAssets.ridge ? (
-              <image
-                href={RIDGE_HREF}
-                x={center.x - 92}
-                y={center.y - 94}
-                width={184}
-                height={184}
-                preserveAspectRatio="xMidYMid meet"
-                pointerEvents="none"
-              />
-            ) : null}
-            {reachable.has(key) ? (
-              <path
-                d={d}
-                fill="#a4c9a2"
-                fillOpacity={0.32}
-                stroke="#4b8c71"
-                strokeWidth={3}
-                pointerEvents="none"
-              />
-            ) : null}
-            {attackable.has(key) ? (
-              <path
-                d={d}
-                fill="#d8835b"
-                fillOpacity={0.18}
-                stroke="#a94c37"
-                strokeWidth={4}
-                strokeDasharray="8 6"
-                pointerEvents="none"
-              />
-            ) : null}
-            {tacticTargetable.has(key) ? (
-              <path
-                d={d}
-                fill="#9d83b2"
-                fillOpacity={0.2}
-                stroke="#6d4a91"
-                strokeWidth={4}
-                strokeDasharray="3 4"
-                pointerEvents="none"
-              />
-            ) : null}
-            {hoverCell?.x === x && hoverCell?.y === y ? (
-              <path d={d} fill="none" stroke="var(--accent)" strokeWidth={5} pointerEvents="none" />
-            ) : null}
-            {selectedId === key ? (
-              <path
-                d={d}
-                fill="#f5c45b"
-                fillOpacity={0.18}
-                stroke="#946828"
-                strokeWidth={5}
-                pointerEvents="none"
-              />
-            ) : null}
-          </g>
+          <CellRect
+            key={`${x},${y}`}
+            center={center}
+            fill={`url(#${battleTerrainPatternId(patternPrefix, kind)})`}
+            fillOpacity={canvasBackground ? (canvasBackground.terrainOpacity ?? 0) : undefined}
+          >
+            <title>{`${description} · ${x + 1},${y + 1}`}</title>
+          </CellRect>
         );
+      })}
+      {/* Faint grid: one line per cell edge, drawn once instead of per cell. */}
+      <path
+        display={showGrid ? undefined : 'none'}
+        d={[
+          ...Array.from({ length: map.width + 1 }, (_, i) => {
+            const x = grid.left + i * V03_BATTLE_CELL;
+            return `M ${x} ${grid.top} V ${grid.bottom}`;
+          }),
+          ...Array.from({ length: map.height + 1 }, (_, i) => {
+            const y = grid.top + i * V03_BATTLE_CELL;
+            return `M ${grid.left} ${y} H ${grid.right}`;
+          }),
+        ].join(' ')}
+        stroke="#5e5646"
+        strokeOpacity={0.22}
+        strokeWidth={1}
+        fill="none"
+        pointerEvents="none"
+      />
+      {terrain.map((_, index) => {
+        const x = index % map.width;
+        const y = Math.floor(index / map.width);
+        const key = `${x},${y}`;
+        const highlights = [
+          reachable.has(key) ? (
+            <CellRect
+              key="reach"
+              center={gridToWorld({ x, y })}
+              inset={1}
+              fill="#8fbf8d"
+              fillOpacity={0.38}
+              stroke="#4b8c71"
+              strokeOpacity={0.55}
+              strokeWidth={1.2}
+            />
+          ) : null,
+          attackable.has(key) ? (
+            <CellRect
+              key="attack"
+              center={gridToWorld({ x, y })}
+              inset={2}
+              fill="#d8835b"
+              fillOpacity={0.22}
+              stroke="#a94c37"
+              strokeWidth={3}
+              strokeDasharray="7 5"
+            />
+          ) : null,
+          tacticTargetable.has(key) ? (
+            <CellRect
+              key="tactic"
+              center={gridToWorld({ x, y })}
+              inset={2}
+              fill="#9d83b2"
+              fillOpacity={0.24}
+              stroke="#6d4a91"
+              strokeWidth={3}
+              strokeDasharray="3 4"
+            />
+          ) : null,
+          hoverCell?.x === x && hoverCell?.y === y ? (
+            <CellRect
+              key="hover"
+              center={gridToWorld({ x, y })}
+              inset={1.5}
+              fill="none"
+              stroke="var(--accent)"
+              strokeWidth={3.5}
+            />
+          ) : null,
+          selectedId === key ? (
+            <CellRect
+              key="selected"
+              center={gridToWorld({ x, y })}
+              inset={1.5}
+              fill="#f5c45b"
+              fillOpacity={0.2}
+              stroke="#946828"
+              strokeWidth={3.5}
+            />
+          ) : null,
+        ].filter(Boolean);
+        return highlights.length ? (
+          <g key={key} pointerEvents="none">
+            {highlights}
+          </g>
+        ) : null;
       })}
       {routePath ? (
         <path
           d={routePath}
           fill="none"
           stroke="#9c4e37"
-          strokeWidth={9}
+          strokeWidth={6}
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeDasharray="11 8"
@@ -761,12 +808,13 @@ export function BattlefieldMapView({
         />
       ) : null}
       {mapHasFocus ? (
-        <path
-          d={cellPath(gridToWorld(focusedCell))}
+        <CellRect
+          center={gridToWorld(focusedCell)}
+          inset={1.5}
           fill="#d4a94e"
           fillOpacity={0.1}
           stroke="#4d6e87"
-          strokeWidth={5}
+          strokeWidth={3.5}
           strokeDasharray="5 4"
           pointerEvents="none"
           aria-hidden="true"
@@ -804,10 +852,10 @@ export function BattlefieldMapView({
         );
       })}
       <rect
-        x={board.left}
-        y={board.top}
-        width={board.width}
-        height={board.height}
+        x={grid.left}
+        y={grid.top}
+        width={grid.width}
+        height={grid.height}
         fill="none"
         stroke="#4e473d"
         strokeWidth={3}
@@ -824,7 +872,7 @@ export function battleCameraForViewport(
   height = 20,
   pan: Point = { x: 0, y: 0 },
 ) {
-  const bounds = battlefieldBounds(width, height, 140);
+  const bounds = battlefieldBounds(width, height, V03_BATTLEFIELD_PADDING);
   const scale = fitScale(viewportWidth, viewportHeight, bounds, BATTLE_VIEW_INSETS);
   return {
     bounds,

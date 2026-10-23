@@ -386,7 +386,7 @@ describe('playability plan contracts', () => {
     city.loyalty = 100;
     expect(planGovernorMonthlyWork(fresh, city.id, 1).action).not.toBe('develop-farming');
   });
-  it('snaps near legal diamonds and previews a connected legal path', () => {
+  it('snaps near legal cells and previews a connected legal path', () => {
     const tile = { x: 3, y: 4 };
     expect(nearestLegalBattleCell(gridToWorld({ x: 3.8, y: 4 }), [tile])).toEqual(tile);
     expect(nearestLegalBattleCell(gridToWorld({ x: 5, y: 4 }), [tile])).toBe(null);

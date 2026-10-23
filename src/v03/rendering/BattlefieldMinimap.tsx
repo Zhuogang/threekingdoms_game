@@ -22,7 +22,17 @@ export interface BattlefieldMinimapProps {
 
 const WIDTH = 240;
 const HEIGHT = 200;
-const VIEWPORT = { left: 10, top: 10, right: 230, bottom: 190, width: 220, height: 180 };
+const MARGIN = 10;
+
+/** The largest square-celled board area that fits the minimap, centered. */
+function minimapViewport(map: BattlefieldVisualMap) {
+  const cell = Math.min((WIDTH - MARGIN * 2) / map.width, (HEIGHT - MARGIN * 2) / map.height);
+  const width = cell * map.width;
+  const height = cell * map.height;
+  const left = (WIDTH - width) / 2;
+  const top = (HEIGHT - height) / 2;
+  return { left, top, right: left + width, bottom: top + height, width, height };
+}
 
 function terrainFill(terrain: string): string {
   switch (terrain) {
@@ -50,7 +60,7 @@ function terrainLabel(terrain: string, locale: 'en' | 'zh'): string {
   return labels[terrain]?.[locale] ?? terrain;
 }
 
-/** Compact top-down navigator; the large map keeps its 2:1 isometric view. */
+/** Compact top-down navigator for the large battlefield view. */
 export function BattlefieldMinimap({
   map,
   units = [],
@@ -60,6 +70,7 @@ export function BattlefieldMinimap({
   className,
   onNavigate,
 }: BattlefieldMinimapProps) {
+  const VIEWPORT = minimapViewport(map);
   const cellWidth = VIEWPORT.width / map.width;
   const cellHeight = VIEWPORT.height / map.height;
   const clippedViewport = clipPolygonToGrid(viewportPolygon, map.width, map.height);

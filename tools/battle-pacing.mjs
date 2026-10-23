@@ -45,10 +45,27 @@ function appended(before, after) {
   return after;
 }
 try {
-  const { createBattleMap, createTacticalBattle, runBattleAiTurn, advanceBattleDay } =
-    await server.ssrLoadModule(entry);
+  const {
+    createBattleMap,
+    createTacticalBattle,
+    runBattleAiTurn,
+    advanceBattleDay,
+    canvasBattlefieldIds,
+    createCanvasBattleMap,
+  } = await server.ssrLoadModule(entry);
   const distributions = {};
-  for (const regionId of ['xiapi', 'hanzhong', 'shouchun', 'chengdu']) {
+  // Legacy regional templates, then the 48×32 canvas battlefields when the source has them.
+  const templates = [
+    ...['xiapi', 'hanzhong', 'shouchun', 'chengdu'].map((regionId) => ({
+      id: regionId,
+      map: (seed) => createBattleMap({ regionId, seed }),
+    })),
+    ...(canvasBattlefieldIds?.() ?? []).map((id) => ({
+      id,
+      map: (seed) => createCanvasBattleMap(id, { seed }),
+    })),
+  ];
+  for (const { id: regionId, map: templateMap } of templates) {
     const runs = [];
     for (let seed = 0; seed < count; seed++) {
       const roster = (prefix) =>
@@ -63,7 +80,7 @@ try {
       let battle = createTacticalBattle({
         id: `pacing-${seed}`,
         seed,
-        map: createBattleMap({ regionId, seed }),
+        map: templateMap(seed),
         attackerUnits: roster('a'),
         defenderUnits: roster('d'),
         supplies: { attacker: 100000, defender: 100000 },
@@ -123,6 +140,8 @@ try {
       regionId,
       distributions[regionId].firstContactMedian,
       distributions[regionId].lengthMedian,
+      distributions[regionId].lengthP90,
+      runs.filter((run) => !run.outcome || run.outcome.reason === 'dayLimit').length,
     );
   }
   await mkdir(dirname(output), { recursive: true });

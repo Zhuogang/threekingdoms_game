@@ -4,6 +4,7 @@ import { message } from '../../i18n';
 
 import { battleTerrainAt, terrainMovementCost, waterCombatModifiers } from '../../battle';
 import { CITY_GEOGRAPHY } from '../../geography';
+import { OFFICER_IDENTITIES } from '../../content/officerIdentity';
 
 import { getV03CityActionAvailability } from '../../governance/city-actions';
 
@@ -152,10 +153,24 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
           : null;
     return [condition, unitActionStatus(unit)].filter(Boolean).join(' · ');
   };
+  // The token shows the formation's highest-level officer; militia keep the troop silhouette.
+  const unitPortraitKey = (unit: NonNullable<typeof battleState>['units'][number]) => {
+    if (!activeBattle) return undefined;
+    const ids =
+      (unit.side === 'attacker'
+        ? activeBattle.attackerFormationOfficerIds
+        : activeBattle.defenderFormationOfficerIds)[unit.id] ?? [];
+    const leader = ids
+      .map((id) => state.officers.find((officer) => officer.id === id))
+      .filter((officer) => officer !== undefined)
+      .sort((a, b) => b.level - a.level || a.id.localeCompare(b.id))[0];
+    return leader ? OFFICER_IDENTITIES[leader.id]?.portraitKey : undefined;
+  };
   const troopVisuals =
     battleState?.units
       .filter((unit) => unit.troops > 0)
       .map((unit) => ({
+        portraitKey: unitPortraitKey(unit),
         id: unit.id,
         troopType: unit.troopType,
         position: { x: unit.x, y: unit.y },

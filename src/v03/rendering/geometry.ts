@@ -1,13 +1,14 @@
 /**
- * V1 battlefield presentation geometry. Logical rules remain in the battle
+ * Top-down battlefield presentation geometry. Logical rules remain in the battle
  * engine; these helpers only project, hit-test, and fit the supplied board.
  */
 export const V03_BATTLEFIELD_WIDTH = 24;
 export const V03_BATTLEFIELD_HEIGHT = 20;
-export const V03_GROUND_TILE_WIDTH = 128;
-export const V03_GROUND_TILE_HEIGHT = 64;
-export const V03_GROUND_HALF_WIDTH = V03_GROUND_TILE_WIDTH / 2;
-export const V03_GROUND_HALF_HEIGHT = V03_GROUND_TILE_HEIGHT / 2;
+/** One logical cell is a 64×64 world square, matching the painted canvases. */
+export const V03_BATTLE_CELL = 64;
+export const V03_BATTLE_HALF_CELL = V03_BATTLE_CELL / 2;
+/** World margin around the board used by the camera fit and pan limits. */
+export const V03_BATTLEFIELD_PADDING = 24;
 
 export interface Point {
   x: number;
@@ -37,32 +38,22 @@ export interface Insets {
 
 export const BATTLE_VIEW_INSETS: Insets = { left: 18, right: 18, top: 18, bottom: 24 };
 
-/** Grid coordinates identify tile centers. */
+/** Grid coordinates identify cell centers; cell (0, 0) is centered on the origin. */
 export function gridToWorld(
   point: GridPoint,
   origin: Point = { x: 0, y: 0 },
-  tileWidth = V03_GROUND_TILE_WIDTH,
-  tileHeight = V03_GROUND_TILE_HEIGHT,
+  cell = V03_BATTLE_CELL,
 ): Point {
-  return {
-    x: (point.x - point.y) * (tileWidth / 2) + origin.x,
-    y: (point.x + point.y) * (tileHeight / 2) + origin.y,
-  };
+  return { x: point.x * cell + origin.x, y: point.y * cell + origin.y };
 }
 
 /** Returns continuous grid coordinates; it does not round to a cell. */
 export function worldToGrid(
   point: Point,
   origin: Point = { x: 0, y: 0 },
-  tileWidth = V03_GROUND_TILE_WIDTH,
-  tileHeight = V03_GROUND_TILE_HEIGHT,
+  cell = V03_BATTLE_CELL,
 ): Point {
-  const localX = point.x - origin.x;
-  const localY = point.y - origin.y;
-  return {
-    x: localX / tileWidth + localY / tileHeight,
-    y: localY / tileHeight - localX / tileWidth,
-  };
+  return { x: (point.x - origin.x) / cell, y: (point.y - origin.y) / cell };
 }
 
 export function gridToScreen(point: Point, cameraOrigin: Point, scale: number): Point {
@@ -83,19 +74,14 @@ export function screenToGrid(
   return worldToGrid(screenToWorld(point, cameraOrigin, scale), gridOrigin);
 }
 
-/** The full diamond footprint around a projected cell center. */
-export function diamondVertices(
-  center: Point,
-  tileWidth = V03_GROUND_TILE_WIDTH,
-  tileHeight = V03_GROUND_TILE_HEIGHT,
-): Point[] {
-  const halfWidth = tileWidth / 2;
-  const halfHeight = tileHeight / 2;
+/** The square footprint around a cell center, clockwise from the top-left corner. */
+export function cellVertices(center: Point, cell = V03_BATTLE_CELL): Point[] {
+  const half = cell / 2;
   return [
-    { x: center.x, y: center.y - halfHeight },
-    { x: center.x + halfWidth, y: center.y },
-    { x: center.x, y: center.y + halfHeight },
-    { x: center.x - halfWidth, y: center.y },
+    { x: center.x - half, y: center.y - half },
+    { x: center.x + half, y: center.y - half },
+    { x: center.x + half, y: center.y + half },
+    { x: center.x - half, y: center.y + half },
   ];
 }
 
@@ -103,28 +89,21 @@ export function battlefieldBounds(
   width: number,
   height: number,
   padding = 0,
-  tileWidth = V03_GROUND_TILE_WIDTH,
-  tileHeight = V03_GROUND_TILE_HEIGHT,
+  cell = V03_BATTLE_CELL,
 ): BoardBounds {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
     throw new RangeError('Battlefield dimensions must be positive integers.');
   }
-  const corners = [
-    gridToWorld({ x: 0, y: 0 }, { x: 0, y: 0 }, tileWidth, tileHeight),
-    gridToWorld({ x: width - 1, y: 0 }, { x: 0, y: 0 }, tileWidth, tileHeight),
-    gridToWorld({ x: 0, y: height - 1 }, { x: 0, y: 0 }, tileWidth, tileHeight),
-    gridToWorld({ x: width - 1, y: height - 1 }, { x: 0, y: 0 }, tileWidth, tileHeight),
-  ];
-  const left = Math.min(...corners.map((point) => point.x)) - tileWidth / 2 - padding;
-  const right = Math.max(...corners.map((point) => point.x)) + tileWidth / 2 + padding;
-  const top = Math.min(...corners.map((point) => point.y)) - tileHeight / 2 - padding;
-  const bottom = Math.max(...corners.map((point) => point.y)) + tileHeight / 2 + padding;
+  const left = -cell / 2 - padding;
+  const top = -cell / 2 - padding;
+  const right = width * cell - cell / 2 + padding;
+  const bottom = height * cell - cell / 2 + padding;
   return { left, top, right, bottom, width: right - left, height: bottom - top };
 }
 
 /**
  * Fit the board inside a viewport after UI insets. The returned scale is a
- * uniform world-to-screen scale, so the diamond shape is never stretched.
+ * uniform world-to-screen scale, so cells stay square.
  */
 export function fitScale(
   viewportWidth: number,
@@ -160,8 +139,8 @@ export function cameraOrigin(
 }
 
 /**
- * Selects the cell whose projected diamond contains the point. Exact shared
- * edges use a stable row-first tie break; outside-board points return null.
+ * Selects the cell whose square contains the point. Exact shared edges use a
+ * stable row-first tie break; outside-board points return null.
  */
 export function hitTestWorld(
   point: Point,
@@ -178,8 +157,6 @@ export function hitTestWorld(
   for (let y = minY; y <= maxY; y++) {
     for (let x = minX; x <= maxX; x++) {
       if (x < 0 || y < 0 || x >= width || y >= height) continue;
-      // The 2:1 projection turns an axis-aligned half-cell square into the
-      // visible ground diamond, so both continuous grid deltas are bounded.
       if (Math.abs(grid.x - x) <= 0.5 + 1e-9 && Math.abs(grid.y - y) <= 0.5 + 1e-9) {
         candidates.push({ x, y });
       }
@@ -227,7 +204,7 @@ export function routePolyline(
  */
 export function routeBounds(
   points: readonly Point[],
-  padding = V03_GROUND_HALF_WIDTH,
+  padding = V03_BATTLE_HALF_CELL,
 ): BoardBounds | null {
   if (points.length === 0) return null;
   const xs = points.map((point) => point.x);

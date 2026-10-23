@@ -2,7 +2,9 @@ import { performance } from 'node:perf_hooks';
 import { describe, expect, it } from 'vitest';
 import {
   advanceBattleDay,
+  canvasBattlefieldIds,
   createBattleMap,
+  createCanvasBattleMap,
   createTacticalBattle,
   runBattleAiTurn,
   type BattleRegion,
@@ -23,12 +25,14 @@ const troopTypes: BattleTroopType[] = [
   'guard',
 ];
 
-function runBattleDay(seed: number) {
-  const map = createBattleMap({
-    regionId: regions[seed % regions.length]!,
-    approachDirection: (['north', 'east', 'south', 'west'] as const)[seed % 4]!,
-    seed,
-  });
+function runBattleDay(seed: number, canvas?: string) {
+  const map = canvas
+    ? createCanvasBattleMap(canvas, { seed })
+    : createBattleMap({
+        regionId: regions[seed % regions.length]!,
+        approachDirection: (['north', 'east', 'south', 'west'] as const)[seed % 4]!,
+        seed,
+      });
   const roster = (prefix: string) =>
     troopTypes.map((troopType, index) => ({
       id: `${prefix}-${index}`,
@@ -64,6 +68,29 @@ describe('v0.3 tactical performance baseline', () => {
     expect(samples.every((sample) => sample.completedDay.day === 2)).toBe(true);
     console.info(
       JSON.stringify({ benchmark: 'v03-10v10-battle-day', samples: times.length, p95Ms, maxMs }),
+    );
+    expect(p95Ms).toBeLessThan(50);
+  });
+
+  it('keeps a 10v10 48×32 canvas AI battle day below the 50 ms p95 target', () => {
+    const canvases = canvasBattlefieldIds();
+    for (let seed = 1; seed <= 3; seed++) runBattleDay(seed, canvases[0]);
+
+    const samples = Array.from({ length: 30 }, (_, index) =>
+      runBattleDay(index + 101, canvases[index % canvases.length]),
+    );
+    const times = samples.map((sample) => sample.elapsedMs).sort((a, b) => a - b);
+    const p95Ms = times[Math.ceil(times.length * 0.95) - 1]!;
+    const maxMs = times[times.length - 1]!;
+
+    expect(samples.every((sample) => sample.completedDay.day === 2)).toBe(true);
+    console.info(
+      JSON.stringify({
+        benchmark: 'v03-10v10-canvas-battle-day',
+        samples: times.length,
+        p95Ms,
+        maxMs,
+      }),
     );
     expect(p95Ms).toBeLessThan(50);
   });

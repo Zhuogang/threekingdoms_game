@@ -1,0 +1,14 @@
+{
+  "bf01-north-plain": {
+    "source": "docs/v0.3/battlefield-art/bf01-north-plain/attempts/v4.webp",
+    "sourceSha256": "5209581c385344d2ea84f3ae875c85ac413c895a62fd1b81d858b7eec7e431e3",
+    "path": "public/assets/v03/battlefields/bf01-north-plain.webp",
+    "width": 1536,
+    "height": 1024,
+    "quality": 0.9,
+    "bytes": 618278,
+    "sha256": "ff9e0a678961afcaa1d4ef10de7077e343161b07428770bf89116c1a402d558f",
+    "status": "integrated",
+    "encodedOn": "2026-10-23"
+  }
+}

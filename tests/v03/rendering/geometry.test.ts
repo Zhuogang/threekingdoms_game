@@ -4,8 +4,8 @@ import {
   battlefieldBounds,
   cameraOrigin,
   clipPolygonToGrid,
+  cellVertices,
   clientToViewBoxPoint,
-  diamondVertices,
   fitScale,
   gridToScreen,
   gridToWorld,
@@ -19,38 +19,57 @@ import {
   worldToGrid,
 } from '../../../src/v03/rendering/geometry';
 
-describe('v0.3 2:1 battlefield projection and hit testing', () => {
-  it('round trips all 480 logical cell centers through the fixed 2:1 projection', () => {
-    for (let y = 0; y < 20; y++) {
-      for (let x = 0; x < 24; x++) {
-        const world = gridToWorld({ x, y });
-        expect(worldToGrid(world)).toEqual({ x, y });
-        expect(hitTestWorld(world, 24, 20)).toEqual({ x, y });
+describe('v0.3 top-down square battlefield projection and hit testing', () => {
+  it('round trips every cell center of 24×20 and 48×32 boards', () => {
+    for (const [width, height] of [
+      [24, 20],
+      [48, 32],
+    ] as const)
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const world = gridToWorld({ x, y });
+          expect(world).toEqual({ x: x * 64, y: y * 64 });
+          expect(worldToGrid(world)).toEqual({ x, y });
+          expect(hitTestWorld(world, width, height)).toEqual({ x, y });
+        }
       }
-    }
   });
 
-  it('uses stable row-first ownership at a shared diamond vertex', () => {
-    const vertex = diamondVertices(gridToWorld({ x: 1, y: 1 }))[0];
-    expect(vertex).toBeDefined();
-    expect(hitTestWorld(vertex!, 24, 20)).toEqual({ x: 0, y: 0 });
+  it('picks the cell under any point inside its square', () => {
+    const center = gridToWorld({ x: 5, y: 7 });
+    for (const [dx, dy] of [
+      [-31, -31],
+      [31, -31],
+      [31, 31],
+      [-31, 31],
+      [0, 0],
+    ] as const)
+      expect(hitTestWorld({ x: center.x + dx, y: center.y + dy }, 24, 20)).toEqual({ x: 5, y: 7 });
   });
 
-  it('rejects locations beyond the outer diamond boundary', () => {
-    expect(hitTestWorld({ x: -1281, y: -32 }, 24, 20)).toBeNull();
-    expect(hitTestWorld({ x: 1537, y: 672 }, 24, 20)).toBeNull();
+  it('uses stable row-first ownership at a shared cell corner', () => {
+    const corner = cellVertices(gridToWorld({ x: 1, y: 1 }))[0];
+    expect(corner).toEqual({ x: 32, y: 32 });
+    expect(hitTestWorld(corner!, 24, 20)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('rejects locations beyond the outer board edge', () => {
+    expect(hitTestWorld({ x: -33, y: 0 }, 24, 20)).toBeNull();
+    expect(hitTestWorld({ x: 0, y: 1249 }, 24, 20)).toBeNull();
+    expect(hitTestWorld({ x: 1505, y: 0 }, 24, 20)).toBeNull();
     expect(() => battlefieldBounds(0, 20)).toThrow(RangeError);
   });
 
-  it('builds bounds from the full diamond vertices instead of the old rectangular board', () => {
+  it('builds bounds from the square cell edges plus padding', () => {
     expect(battlefieldBounds(24, 20)).toMatchObject({
-      left: -1280,
-      right: 1536,
+      left: -32,
+      right: 1504,
       top: -32,
-      bottom: 1376,
-      width: 2816,
-      height: 1408,
+      bottom: 1248,
+      width: 1536,
+      height: 1280,
     });
+    expect(battlefieldBounds(48, 32, 24)).toMatchObject({ width: 3120, height: 2096 });
   });
 
   it.each([

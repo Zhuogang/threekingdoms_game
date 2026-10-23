@@ -286,7 +286,7 @@ export function getEnemyZoneOfControl(
         battleTerrainAt(state.map, position) === 'cliff'
       )
         continue;
-      controlled.set(battlePositionIndex(position.x, position.y), position);
+      controlled.set(battlePositionIndex(state.map, position.x, position.y), position);
     }
   }
   return [...controlled.values()].sort((a, b) => a.y - b.y || a.x - b.x);
@@ -932,15 +932,28 @@ function chooseAiDestination(
   const enemyCamp = state.map.objectives.find((objective) => objective.owner !== unit.side);
   const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
   const occupied = new Set(
-    livingUnits(state).map((candidate) => battlePositionIndex(candidate.x, candidate.y)),
+    livingUnits(state).map((candidate) => battlePositionIndex(state.map, candidate.x, candidate.y)),
   );
-  const attackPositions = state.map.terrain.flatMap((terrain, index) => {
-    if (terrain === 'cliff' || occupied.has(index)) return [];
-    const position = { x: index % state.map.width, y: Math.floor(index / state.map.width) };
-    return enemies.some((enemy) => manhattanDistance(position, enemy) <= unit.attackRange)
-      ? [position]
-      : [];
-  });
+  // Cells within attack range of any enemy, in row-major order. Walking each
+  // enemy's range diamond gives the same set as scanning the whole board.
+  const { width, height } = state.map;
+  const inRange = new Set<number>();
+  for (const enemy of enemies)
+    for (let dy = -unit.attackRange; dy <= unit.attackRange; dy++) {
+      const span = unit.attackRange - Math.abs(dy);
+      for (let dx = -span; dx <= span; dx++) {
+        const x = enemy.x + dx;
+        const y = enemy.y + dy;
+        if (x >= 0 && y >= 0 && x < width && y < height) inRange.add(y * width + x);
+      }
+    }
+  const attackPositions = [...inRange]
+    .sort((a, b) => a - b)
+    .flatMap((index) =>
+      state.map.terrain[index] === 'cliff' || occupied.has(index)
+        ? []
+        : [{ x: index % width, y: Math.floor(index / width) }],
+    );
   const campThreatened = Boolean(
     ownCamp &&
     enemies.some((enemy) => manhattanDistance(enemy, ownCamp.position) <= AI_CAMP_ALERT_DISTANCE),
@@ -956,19 +969,30 @@ function chooseAiDestination(
     ...(nearbyAttacks.length ? nearbyAttacks : attackPositions),
     ...(enemyCamp ? [{ ...enemyCamp.position, offset: 1 }] : []),
   ];
+  const options = getUnitReachableTiles(state, unit.id).filter((tile) => {
+    const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
+    return !ownCamp || tile.x !== ownCamp.position.x || tile.y !== ownCamp.position.y;
+  });
+  // Only the unit's cell and its move options are scored, so the field can stop there.
   const routeDistance = getBattleRouteDistanceField(
     state.map,
     unit,
     goals,
     otherUnitsAsBlockers(state, unit),
+    [unit, ...options],
   );
-  const options = getUnitReachableTiles(state, unit.id).filter((tile) => {
-    const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
-    return !ownCamp || tile.x !== ownCamp.position.x || tile.y !== ownCamp.position.y;
-  });
+  const scores = new Map<number, number>();
   const score = (position: BattlePosition): number => {
+    const key = battlePositionIndex(state.map, position.x, position.y);
+    const known = scores.get(key);
+    if (known !== undefined) return known;
+    const value = scoreUncached(position);
+    scores.set(key, value);
+    return value;
+  };
+  const scoreUncached = (position: BattlePosition): number => {
     // The route field respects movement cost, terrain barriers, occupied cells and camp offset.
-    const routeCost = routeDistance[battlePositionIndex(position.x, position.y)]!;
+    const routeCost = routeDistance[battlePositionIndex(state.map, position.x, position.y)]!;
     const candidate = { ...unit, ...position };
     const threatened = enemies
       .filter((enemy) => isBattleAttackInRange(state.map, enemy, candidate, enemy.attackRange))
@@ -1140,7 +1164,7 @@ function fieldControlScore(state: V03TacticalBattleState, side: BattleSide): num
   let score = 0;
   for (let y = 0; y < state.map.height; y++)
     for (let x = 0; x < state.map.width; x++) {
-      if (state.map.terrain[battlePositionIndex(x, y)] === 'cliff') continue;
+      if (state.map.terrain[battlePositionIndex(state.map, x, y)] === 'cliff') continue;
       const ownDistance = Math.min(...own.map((unit) => manhattanDistance(unit, { x, y })));
       const enemyDistance = Math.min(...enemy.map((unit) => manhattanDistance(unit, { x, y })));
       if (ownDistance < enemyDistance) score++;

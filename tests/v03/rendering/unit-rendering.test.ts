@@ -40,6 +40,18 @@ describe('battlefield unit presentation', () => {
     expect(html).not.toContain('>0</text>');
   });
 
+  it('shows the leader portrait over the troop glyph and marks the troop type', () => {
+    const html = renderToStaticMarkup(
+      createElement(BattlefieldMapView, {
+        map,
+        units: [{ ...units[0]!, portraitKey: 'guanyu' }],
+      }),
+    );
+    expect(html).toContain('assets/portraits/guanyu-small.webp');
+    expect(html).toContain('>步</text>');
+    expect(html).toContain('url(#v03-terrain-map-water)');
+  });
+
   it.each([BattlefieldMapView, BattlefieldMinimap])(
     '%s omits defeated units while retaining their supplied historical records',
     (View) => {

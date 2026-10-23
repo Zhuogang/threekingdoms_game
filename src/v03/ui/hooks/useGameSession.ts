@@ -1,6 +1,9 @@
 import { useToasts } from './useToasts';
 import { isOfficerCommitted } from '../../governance/commitments';
-import { gridToWorld } from '../../rendering';
+import { gridToWorld, V03_BATTLE_CELL, V03_BATTLEFIELD_PADDING } from '../../rendering';
+
+/** Screen size of one cell when a battle opens. */
+const BATTLE_OPENING_CELL_PIXELS = 44;
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { scenarioById } from '../../content/scenario';
 import {
@@ -24,7 +27,7 @@ import {
   battlefieldBounds,
   battlefieldViewportGridPolygon,
   fitBattlefieldViewport,
-  focusBattlefieldPointsViewport,
+  focusBattlefieldViewport,
   fitCampaignViewport,
   resizeBattlefieldViewport,
   resizeCampaignViewport,
@@ -286,7 +289,7 @@ export function useGameSession() {
     );
   }, [battleState, currentUnit, selectedTacticAvailability, tacticTargets]);
   const battleBounds = battleState
-    ? battlefieldBounds(battleState.map.width, battleState.map.height, 140)
+    ? battlefieldBounds(battleState.map.width, battleState.map.height, V03_BATTLEFIELD_PADDING)
     : null;
   const battleViewportPolygon = useMemo(
     () => (battleViewport ? battlefieldViewportGridPolygon(battleViewport) : []),
@@ -297,18 +300,36 @@ export function useGameSession() {
     const frame = battleMapFrame.current;
     if (!frame) return;
     const identity = `${activeBattle.id}:${battleState.map.mapId}`;
-    const bounds = battlefieldBounds(battleState.map.width, battleState.map.height, 140);
+    const bounds = battlefieldBounds(
+      battleState.map.width,
+      battleState.map.height,
+      V03_BATTLEFIELD_PADDING,
+    );
     const updateViewportForFrame = () => {
       const rect = (frame.querySelector('svg') ?? frame).getBoundingClientRect();
       if (rect.width <= 0 || rect.height <= 0) return;
       const aspect = rect.width / rect.height;
       if (battleViewportIdentity.current !== identity) {
         battleViewportIdentity.current = identity;
-        const points = battleState.units
-          .filter((unit) => unit.troops > 0 && unit.side === battleState.playerSide)
-          .map((unit) => gridToWorld(unit));
+        // Open centered on the player's formations at a zoom where portraits read
+        // clearly (about 44 screen pixels per cell); "Fit" still shows the whole field.
+        const living = battleState.units.filter((unit) => unit.troops > 0);
+        const own = living.filter((unit) => unit.side === battleState.playerSide);
+        const focus = (own.length ? own : living).map((unit) => gridToWorld(unit));
+        const fit = fitBattlefieldViewport(bounds, aspect);
+        const readableWidth = (rect.width / BATTLE_OPENING_CELL_PIXELS) * V03_BATTLE_CELL;
         setBattleViewport(
-          focusBattlefieldPointsViewport(bounds, fitBattlefieldViewport(bounds, aspect), points),
+          focus.length
+            ? focusBattlefieldViewport(
+                bounds,
+                fit,
+                {
+                  x: focus.reduce((sum, point) => sum + point.x, 0) / focus.length,
+                  y: focus.reduce((sum, point) => sum + point.y, 0) / focus.length,
+                },
+                Math.max(1, fit.width / readableWidth),
+              )
+            : fit,
         );
       } else {
         setBattleViewport((viewport) =>

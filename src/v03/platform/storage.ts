@@ -19,24 +19,30 @@ const RECENT_LOG_HISTORY = 1_000;
 const cargo = z.object({ gold: nonnegative, food: nonnegative, troops: nonnegative }).strict();
 const troopType = z.enum(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard']);
 const intent = z.enum(['conquer', 'raid', 'sack']);
+// Bounds of the largest battlefield; validateBattleMap checks each map's own size.
 const battlePosition = z
   .object({
-    x: safeInt.min(0).max(23),
-    y: safeInt.min(0).max(19),
+    x: safeInt.min(0).max(47),
+    y: safeInt.min(0).max(31),
   })
   .strict();
 const battleMap = z
   .object({
     mapId: id,
-    templateVersion: z.literal('v0.3.1'),
+    templateVersion: z.enum(['v0.3.1', 'v0.3.2']),
     regionId: z.enum(['hanzhong', 'shouchun', 'xiapi', 'chengdu']),
+    battlefieldId: id.optional(),
     approachDirection: z.enum(['north', 'east', 'south', 'west']),
     seed: safeInt,
-    width: z.literal(24),
-    height: z.literal(20),
-    terrain: z.array(z.enum(['plain', 'forest', 'hill', 'water', 'cliff'])).length(480),
-    attackerDeployment: z.array(battlePosition).min(10).max(40),
-    defenderDeployment: z.array(battlePosition).min(10).max(40),
+    // 24×20 legacy templates or 48×32 canvases; the exact pairing is checked by validateBattleMap.
+    width: z.union([z.literal(24), z.literal(48)]),
+    height: z.union([z.literal(20), z.literal(32)]),
+    terrain: z
+      .array(z.enum(['plain', 'forest', 'hill', 'water', 'cliff']))
+      .min(480)
+      .max(1536),
+    attackerDeployment: z.array(battlePosition).min(10).max(80),
+    defenderDeployment: z.array(battlePosition).min(10).max(80),
     objectives: z
       .array(
         z
@@ -56,7 +62,7 @@ const battleMap = z
             id,
             kind: z.enum(['river', 'ridge', 'road', 'irrigation']),
             label: z.string().max(200),
-            positions: z.array(battlePosition).max(480),
+            positions: z.array(battlePosition).max(1536),
           })
           .strict(),
       )
@@ -69,8 +75,8 @@ const tacticalUnit = z
     name: z.string().max(160),
     side: z.enum(['attacker', 'defender']),
     troopType,
-    x: safeInt.min(0).max(23),
-    y: safeInt.min(0).max(19),
+    x: safeInt.min(0).max(47),
+    y: safeInt.min(0).max(31),
     troops: nonnegative,
     initialTroops: nonnegative,
     force: z.number().finite().min(0).max(120),
@@ -791,7 +797,10 @@ export function validateV03State(value: unknown): value is V03GameState {
     if (validateBattleMap(battle.map).length > 0) return false;
     if (
       battle.units.some(
-        (unit) => battle.map.terrain[unit.y * battle.map.width + unit.x] === 'cliff',
+        (unit) =>
+          unit.x >= battle.map.width ||
+          unit.y >= battle.map.height ||
+          battle.map.terrain[unit.y * battle.map.width + unit.x] === 'cliff',
       )
     )
       return false;

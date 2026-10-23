@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { battlefieldBounds, gridToWorld, worldToGrid } from '../../../src/v03/rendering/geometry';
+﻿import { describe, expect, it } from 'vitest';
+import {
+  battlefieldBounds,
+  gridToWorld,
+  V03_BATTLEFIELD_PADDING,
+  worldToGrid,
+} from '../../../src/v03/rendering/geometry';
 import {
   battlefieldViewportGridPolygon,
   fitBattlefieldViewport,
@@ -11,10 +16,10 @@ import {
   zoomBattlefieldViewport,
 } from '../../../src/v03/rendering/battlefield-viewport';
 
-const bounds = battlefieldBounds(24, 20, 140);
+const bounds = battlefieldBounds(24, 20, V03_BATTLEFIELD_PADDING);
 
 describe('battlefield camera and minimap geometry', () => {
-  it('fits the full isometric board to the frame aspect ratio', () => {
+  it('fits the full square-grid board to the frame aspect ratio', () => {
     const viewport = fitBattlefieldViewport(bounds, 16 / 9);
     expect(viewport.width / viewport.height).toBeCloseTo(16 / 9);
     expect(viewport.left).toBeLessThan(bounds.left);
@@ -25,12 +30,12 @@ describe('battlefield camera and minimap geometry', () => {
 
   it('zooms toward a pointer while keeping the same world point under it', () => {
     const start = fitBattlefieldViewport(bounds, 16 / 9);
-    const focus = { x: start.left + start.width * 0.72, y: start.top + start.height * 0.31 };
+    const focus = { x: start.left + start.width * 0.62, y: start.top + start.height * 0.41 };
     const zoomed = zoomBattlefieldViewport(start, bounds, focus, 2);
     expect(zoomed.width).toBeCloseTo(start.width / 2);
     expect(zoomed.height).toBeCloseTo(start.height / 2);
-    expect((focus.x - zoomed.left) / zoomed.width).toBeCloseTo(0.72);
-    expect((focus.y - zoomed.top) / zoomed.height).toBeCloseTo(0.31);
+    expect((focus.x - zoomed.left) / zoomed.width).toBeCloseTo(0.62);
+    expect((focus.y - zoomed.top) / zoomed.height).toBeCloseTo(0.41);
   });
 
   it('re-centers at the same zoom and clamps panning at board edges', () => {

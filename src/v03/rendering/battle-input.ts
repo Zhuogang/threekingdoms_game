@@ -1,6 +1,6 @@
 import { worldToGrid, type GridPoint, type Point } from './geometry';
 
-/** A diamond has a half-cell radius. Allow a further half-cell miss at its edge. */
+/** A cell has a half-cell radius. Allow a further ~0.35-cell miss beyond its edge. */
 export function nearestLegalBattleCell(
   world: Point,
   legal: readonly GridPoint[],
@@ -8,8 +8,11 @@ export function nearestLegalBattleCell(
   const point = worldToGrid(world);
   return (
     legal
-      .map((cell) => ({ cell, distance: Math.abs(cell.x - point.x) + Math.abs(cell.y - point.y) }))
-      .filter((entry) => entry.distance <= 1.000001)
+      .map((cell) => ({
+        cell,
+        distance: Math.max(Math.abs(cell.x - point.x), Math.abs(cell.y - point.y)),
+      }))
+      .filter((entry) => entry.distance <= 0.85)
       .sort((a, b) => a.distance - b.distance || a.cell.y - b.cell.y || a.cell.x - b.cell.x)[0]
       ?.cell ?? null
   );
