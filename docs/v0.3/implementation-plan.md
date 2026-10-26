@@ -52,3 +52,16 @@ Stage 2 task 2, step 1 introduces soldier mean experience independently of offic
 - New saves require the experience fields and typed reserve pools. Missing fields are rejected; no old-save conversion is provided. Fractional means survive save/reload.
 
 Remaining approved steps: battle experience awards and level modifiers; then elite art, level display, reinforcement previews and progression reports. The eight naval commanders and portrait-based tower-ship selection are unchanged.
+
+## 2026-10-25: battle experience and soldier level effects
+
+Stage 2 task 2, step 2 implements the previously approved combat progression rules:
+
+- Each battlefield unit persists actual combat casualties dealt and received. Normal attacks, counterattacks, fire, ambush and rockfall count clipped enemy losses. Movement, holding, support tactics and hunger do not count as combat participation by themselves.
+- At campaign battle settlement, a surviving unit that dealt or received combat casualties earns `40 + 80 * min(1, casualtiesDealt / initialTroops) + (won ? 20 : 0)` mean experience. Fractional gains are retained; the per-battle maximum is 140 and the total cap remains 1900. Surviving retreating/losing forces and draws retain the participation and damage portions; eliminated or unengaged units earn nothing.
+- Rewards apply only after the battle ends, through the existing one-time settlement guard, including auto-commanded and NPC battles. In-progress combat counters survive save/reload; no old-save conversion is added.
+- Temporary formations retain each original contingent's experience. Settlement first allocates surviving soldiers, then adds the formation's reward to each surviving contingent with its own cap. The final formation snapshot is recomputed from the resulting soldiers, including individual caps and rounded survivor counts. Unled militia follows the same reward rule and returns its experience to the city.
+- Normal attack and counterattack damage multiply by `1 + 0.02 * (attackerTroopLevel - 1)` and `1 - 0.01 * (defenderTroopLevel - 1)`, together with existing terrain, morale and water modifiers before final casualty rounding. Level 1 is unchanged; level 20 has 1.38 output and 0.81 incoming damage. Attack previews and AI use the same calculation as execution. Damage tactics retain their existing officer-based calculations and receive neither soldier-level multiplier.
+- Officer progression, troop types, naval eligibility, portraits and artwork are unchanged. Elite art, level UI, reinforcement previews and progression reports remain step 3.
+
+Validation covers effective combat statistics, overkill, level boundaries, terrain/water composition, tactic exclusions, defeat/draw/victory rewards, starvation, total caps, real retreat and return, automatic command, temporary formation settlement and save/reload without duplicate rewards.

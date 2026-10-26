@@ -84,3 +84,12 @@ export function applyTroopLoss(pool: TroopPool, survivors: number): void {
   const { taken } = splitTroopPool(pool, survivors);
   Object.assign(pool, taken);
 }
+
+/** Rewards belong to surviving soldiers, never to an empty force or its officer. */
+export function awardTroopExperience(pool: TroopPool, gain: number): void {
+  checkPool(pool);
+  if (!Number.isFinite(gain) || gain < 0)
+    throw new RangeError('Experience gain must be nonnegative.');
+  if (pool.troops > 0)
+    pool.troopExperience = Math.min(MAX_TROOP_EXPERIENCE, pool.troopExperience + gain);
+}

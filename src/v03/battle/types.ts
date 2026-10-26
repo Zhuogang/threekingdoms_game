@@ -112,6 +112,9 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   troops: number;
   initialTroops: number;
   troopExperience: number;
+  /** Effective enemy combat losses only; excludes hunger and other attrition. */
+  combatCasualtiesDealt: number;
+  combatCasualtiesReceived: number;
   force: number;
   intellect: number;
   level: number;

@@ -1,5 +1,6 @@
 import { isCityCommitted } from './governance/commitments';
-import { applyTroopLoss, mergeTroopPools } from './campaign/troop-experience';
+import { applyTroopLoss, awardTroopExperience, mergeTroopPools } from './campaign/troop-experience';
+import { battleExperienceGain } from './battle/experience';
 import { eventTier, isCriticalReport } from './campaign/reports';
 import { resolveSuccessions, resolveAiPrisoners } from './campaign/prisoners';
 import {
@@ -330,6 +331,7 @@ function allocateSurvivors(
   unit: TacticalBattleUnit,
   memberIds: readonly string[],
   officers: V03Officer[],
+  experienceGain: number,
 ): void {
   if (memberIds.length === 0) return;
   const members = memberIds
@@ -350,7 +352,10 @@ function allocateSurvivors(
     share.troops++;
     remainder--;
   }
-  for (const share of shares) applyTroopLoss(share.officer, share.troops);
+  for (const share of shares) {
+    applyTroopLoss(share.officer, share.troops);
+    awardTroopExperience(share.officer, experienceGain);
+  }
 }
 
 function chargeBattleRations(battle: V03BattleState): void {
@@ -408,10 +413,18 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
 
   const attackerGroups = data.units.filter((unit) => unit.side === 'attacker');
   const defenderGroups = data.units.filter((unit) => unit.side === 'defender');
-  for (const unit of attackerGroups)
-    allocateSurvivors(unit, battle.attackerFormationOfficerIds[unit.id] ?? [], state.officers);
-  for (const unit of defenderGroups)
-    allocateSurvivors(unit, battle.defenderFormationOfficerIds[unit.id] ?? [], state.officers);
+  for (const unit of data.units) {
+    const gain = battleExperienceGain(unit, outcome);
+    const membership =
+      unit.side === 'attacker'
+        ? battle.attackerFormationOfficerIds
+        : battle.defenderFormationOfficerIds;
+    const memberIds = membership[unit.id] ?? [];
+    allocateSurvivors(unit, memberIds, state.officers, gain);
+    const members = state.officers.filter((officer) => memberIds.includes(officer.id));
+    if (members.length) unit.troopExperience = mergeTroopPools(...members).troopExperience;
+    else awardTroopExperience(unit, gain);
+  }
 
   const attackerSurvivors = attackerGroups.reduce((sum, unit) => sum + unit.troops, 0);
   const defenderSurvivors = defenderGroups.reduce((sum, unit) => sum + unit.troops, 0);

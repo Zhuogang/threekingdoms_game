@@ -87,6 +87,8 @@ const tacticalUnit = z
     troops: nonnegative,
     initialTroops: nonnegative,
     troopExperience,
+    combatCasualtiesDealt: nonnegative,
+    combatCasualtiesReceived: nonnegative,
     force: z.number().finite().min(0).max(120),
     intellect: z.number().finite().min(0).max(120),
     level: safeInt.min(0).max(5),

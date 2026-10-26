@@ -38,6 +38,7 @@ import {
   type V03TacticalBattleState,
 } from './types';
 import { battlefieldName } from './battlefields/selection';
+import { recordCombatCasualties, troopDamageMultiplier } from './experience';
 
 const DEFAULT_BATTLE_DAY_LIMIT = 30;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
@@ -126,6 +127,8 @@ function makeUnits(
       troops: entry.troops,
       initialTroops: entry.troops,
       troopExperience: entry.troopExperience ?? 0,
+      combatCasualtiesDealt: 0,
+      combatCasualtiesReceived: 0,
       force: entry.force,
       intellect: entry.intellect ?? 40,
       level: entry.level ?? 0,
@@ -431,7 +434,11 @@ function estimateDamage(
   map: V03TacticalBattleState['map'],
 ): { casualties: number; modifiers: ReturnType<typeof waterCombatModifiers> } {
   const modifiers = waterCombatModifiers(map, source, target);
-  const damage = applyWaterDamageModifiers(baseDamage(source, target, map), modifiers);
+  const damage = applyWaterDamageModifiers(
+    baseDamage(source, target, map) *
+      troopDamageMultiplier(source.troopExperience, target.troopExperience),
+    modifiers,
+  );
   return { casualties: casualtyCountAfterWater(target.troops, damage), modifiers };
 }
 
@@ -686,9 +693,8 @@ function attackOneWay(
   source: TacticalBattleUnit,
   target: TacticalBattleUnit,
 ): number {
-  const modifiers = waterCombatModifiers(state.map, source, target);
-  const damage = applyWaterDamageModifiers(baseDamage(source, target, state.map), modifiers);
-  const casualties = casualtyCountAfterWater(target.troops, damage);
+  const { casualties, modifiers } = estimateDamage(source, target, state.map);
+  recordCombatCasualties(source, target, casualties);
   target.troops -= casualties;
   if (target.troops === 0) target.troopExperience = 0;
   if (casualties > 0) {
@@ -787,6 +793,7 @@ function applyTacticDamage(
     target.troops,
     applyWaterDamageModifiers(rawDamage, modifiers),
   );
+  recordCombatCasualties(source, target, casualties);
   target.troops = Math.max(0, target.troops - casualties);
   if (target.troops === 0) target.troopExperience = 0;
   if (casualties > 0)
