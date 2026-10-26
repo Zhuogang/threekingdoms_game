@@ -67,7 +67,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
         heading: 'The field units',
         body: [
           'Infantry holds ground and provides a dependable line. Cavalry moves quickly and can exploit open flanks. Archers attack at range but need friendly troops to protect them.',
-          'Infantry, cavalry and archers are the three base troop types. Every unit uses small squad art on land and a crewed boat on water, retaining its land identity and shared water penalties.',
+          'Infantry, cavalry and archers are the three base troop types. On land, units below 500 troops use small squads and units with 500 or more use large formations. All use the same crewed boat on water, retaining its land identity and shared water penalties.',
           'Unit strength depends on troop count, officer leadership, morale, status, and the actual terrain under the unit. A camp marker is an objective and gives no extra defensive bonus.',
         ],
       },
@@ -205,7 +205,7 @@ const CHINESE: readonly V03WikiArticle[] = [
         heading: '战场部队',
         body: [
           '步兵稳定守线。骑兵机动较快，适合利用开阔侧翼。弓兵可以远程攻击，但需要友军保护。',
-          '基础兵种只有步、骑、弓。陆上统一显示小队，下水显示载兵小船，上岸恢复原兵种图；人数不影响图标大小，水上惩罚统一适用。',
+          '基础兵种只有步、骑、弓。陆上按人数显示编队，下水显示载兵小船，上岸恢复原兵种图；陆上少于 500 人显示小队，500 人及以上显示大队，水上惩罚统一适用。',
           '部队战力受兵力、将领统率、士气、状态以及脚下真实地形影响。营地只是战术目标标记，不额外提供防御加成。',
         ],
       },

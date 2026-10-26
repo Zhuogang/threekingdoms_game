@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { BattlefieldMapView } from '../../../src/v03/rendering/BattlefieldMapView';
 import { BattlefieldMinimap } from '../../../src/v03/rendering/BattlefieldMinimap';
 import { formatTroopCount, type BattleUnitVisual } from '../../../src/v03/rendering/presentation';
+import { UnitIcon } from '../../../src/v03/rendering/UnitIcon';
 
 const map = { width: 2, height: 2, terrain: ['plain', 'water', 'forest', 'hill'] };
 const units: BattleUnitVisual[] = [
@@ -28,10 +29,11 @@ const units: BattleUnitVisual[] = [
 
 describe('battlefield unit presentation', () => {
   it.each(['infantry', 'cavalry', 'archer'])(
-    '%s keeps squad art at all counts and switches only on water',
+    '%s uses current troops for land formations and keeps boats unchanged',
     (troopType) => {
-      for (const strength of [1, 499, 500, 10000]) {
+      for (const strength of [1, 499, 500, 501, 10000, 499]) {
         const unit = { ...units[0]!, troopType, strength, portraitKey: 'guanyu' };
+        const size = strength >= 500 ? 'large' : 'small';
         const render = (x: number) =>
           renderToStaticMarkup(
             createElement(BattlefieldMapView, {
@@ -42,11 +44,24 @@ describe('battlefield unit presentation', () => {
           );
         const land = render(0);
         const water = render(1);
-        expect(land).toContain(`${troopType}-small-ink-02.webp`);
+        expect(land).toContain(`${troopType}-${size}-ink-02.webp`);
         expect(land).not.toContain('boat-transport-ink-02.webp');
         expect(water).toContain('boat-transport-ink-02.webp');
         expect(water).toContain('水上单位');
         expect(water).not.toContain(`${troopType}-small-ink-02.webp`);
+        expect(water).not.toContain(`${troopType}-large-ink-02.webp`);
+        expect(land).toContain('assets/portraits/guanyu-small.webp');
+        const sidebar = (onWater: boolean) =>
+          renderToStaticMarkup(
+            createElement(UnitIcon, {
+              troopType,
+              troops: strength,
+              onWater,
+              locale: 'zh',
+            }),
+          );
+        expect(sidebar(false)).toContain(`${troopType}-${size}-ink-02.webp`);
+        expect(sidebar(true)).toContain('boat-transport-ink-02.webp');
         expect(water).toContain('assets/portraits/guanyu-small.webp');
         expect(render(0)).toBe(land);
         expect(unit.troopType).toBe(troopType);
@@ -74,7 +89,7 @@ describe('battlefield unit presentation', () => {
       }),
     );
     expect(html).toContain('assets/portraits/guanyu-small.webp');
-    expect(html).toContain('infantry-small-ink-02.webp');
+    expect(html).toContain('infantry-large-ink-02.webp');
     expect(html).toContain('data-leader-portrait="guanyu"');
     expect(html).toContain('>步</text>');
     expect(html).toContain('url(#v03-terrain-map-water)');

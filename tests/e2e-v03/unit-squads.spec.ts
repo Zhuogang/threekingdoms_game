@@ -10,65 +10,108 @@ async function loadState(page: Page, state: V03GameState) {
   await expect(page.locator('.v03-battle-main')).toBeVisible();
 }
 
-test('small squads retain portraits, change to boats on water and restore on land', async ({
+for (const troops of [499, 500]) {
+  test(`${troops} troops retain portraits, change to boats and restore the correct formation`, async ({
+    page,
+  }, testInfo) => {
+    const state = reviewBattleState('bf04-wetland-south');
+    const battle = state.battles.find((entry) => entry.active)!;
+    const data = battle.battleData;
+    const unit = data.units.find((entry) => entry.side === data.playerSide && !entry.isMilitia)!;
+    const waterIndex = data.map.terrain.findIndex(
+      (terrain, index) =>
+        terrain === 'water' &&
+        index % data.map.width > 3 &&
+        data.map.terrain[index - 1] === 'plain',
+    );
+    expect(waterIndex).toBeGreaterThan(0);
+    const shore = {
+      x: (waterIndex % data.map.width) - 1,
+      y: Math.floor(waterIndex / data.map.width),
+    };
+    Object.assign(unit, shore, { troops, initialTroops: troops, moved: false, acted: false });
+    // Other units remain in their distant deployment areas.
+    await loadState(page, state);
+    const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
+    const landPath = `/assets/v03/units/${unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-02.webp`;
+    const boatPath = '/assets/v03/units/boat-transport-ink-02.webp';
+    await expect(token).toHaveAttribute('data-unit-art', landPath);
+    await expect(token.locator(`image[href="${landPath}"]`)).toHaveAttribute(
+      'visibility',
+      'visible',
+    );
+    await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
+    await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
+    await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+    await token.click();
+
+    const map = page.locator('.v03-battlefield-map').first();
+    await map.focus();
+    await map.press('ArrowRight');
+    await map.press('Enter');
+    await expect(token).toHaveAttribute('data-unit-art', boatPath);
+    await expect(token.locator(`image[href="${boatPath}"]`)).toHaveAttribute(
+      'visibility',
+      'visible',
+    );
+    await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
+    await expect(page.locator(`.v03-unit-row.selected img[src="${boatPath}"]`)).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-water.png') });
+
+    await submitBattleDay(page);
+    await token.click();
+    await map.focus();
+    await map.press('ArrowLeft');
+    await map.press('Enter');
+    await expect(token).toHaveAttribute('data-unit-art', landPath);
+    await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-land.png') });
+
+    await page.reload();
+    await expect(token).toHaveAttribute('data-unit-art', landPath);
+    await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
+    await page.getByRole('button', { name: /Fit full battlefield|显示全图/, exact: true }).click();
+    await expect(token).toHaveAttribute('data-detail', 'compact');
+    await expect(token.locator(`image[href="${landPath}"]`)).toHaveAttribute(
+      'visibility',
+      'visible',
+    );
+  });
+}
+
+test('casualties below 500 switch the existing formation and sidebar to small art', async ({
   page,
 }, testInfo) => {
-  const state = reviewBattleState('bf04-wetland-south');
-  const battle = state.battles.find((entry) => entry.active)!;
-  const data = battle.battleData;
-  const unit = data.units.find((entry) => entry.side === data.playerSide && !entry.isMilitia)!;
-  const waterIndex = data.map.terrain.findIndex(
-    (terrain, index) =>
-      terrain === 'water' && index % data.map.width > 3 && data.map.terrain[index - 1] === 'plain',
-  );
-  expect(waterIndex).toBeGreaterThan(0);
-  const shore = {
-    x: (waterIndex % data.map.width) - 1,
-    y: Math.floor(waterIndex / data.map.width),
-  };
-  Object.assign(unit, shore, { troops: 700, initialTroops: 700, moved: false, acted: false });
-  // Other units remain in their distant deployment areas.
+  const state = reviewBattleState();
+  const battle = state.battles.find((entry) => entry.active)!.battleData;
+  const unit = battle.units.find((entry) => entry.side === battle.playerSide)!;
+  const enemy = battle.units.find((entry) => entry.side !== battle.playerSide)!;
+  Object.assign(unit, { x: 10, y: 10, troops: 500, initialTroops: 500 });
+  Object.assign(enemy, { x: 11, y: 10, troops: 500, initialTroops: 500 });
+  battle.map.terrain[10 * battle.map.width + 10] = 'plain';
+  battle.map.terrain[10 * battle.map.width + 11] = 'plain';
   await loadState(page, state);
   const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
+  const target = page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`);
+  const largePath = `/assets/v03/units/${unit.troopType}-large-ink-02.webp`;
   const smallPath = `/assets/v03/units/${unit.troopType}-small-ink-02.webp`;
-  const boatPath = '/assets/v03/units/boat-transport-ink-02.webp';
+  await expect(token.locator(`image[href="${largePath}"]`)).toHaveAttribute(
+    'visibility',
+    'visible',
+  );
+  await expect(page.locator(`.v03-unit-row img[src="${largePath}"]`).first()).toBeVisible();
+  await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
+  await token.click();
+  await target.click();
   await expect(token).toHaveAttribute('data-unit-art', smallPath);
   await expect(token.locator(`image[href="${smallPath}"]`)).toHaveAttribute(
     'visibility',
     'visible',
   );
+  await expect(page.locator(`.v03-unit-row.selected img[src="${smallPath}"]`)).toBeVisible();
   await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
-  await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
-  await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
-  await token.click();
-
-  const map = page.locator('.v03-battlefield-map').first();
-  await map.focus();
-  await map.press('ArrowRight');
-  await map.press('Enter');
-  await expect(token).toHaveAttribute('data-unit-art', boatPath);
-  await expect(token.locator(`image[href="${boatPath}"]`)).toHaveAttribute('visibility', 'visible');
-  await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
-  await expect(page.locator(`.v03-unit-row.selected img[src="${boatPath}"]`)).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-water.png') });
-
-  await submitBattleDay(page);
-  await token.click();
-  await map.focus();
-  await map.press('ArrowLeft');
-  await map.press('Enter');
-  await expect(token).toHaveAttribute('data-unit-art', smallPath);
-  await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-land.png') });
-
+  await page.screenshot({ path: testInfo.outputPath('after-casualties.png') });
   await page.reload();
   await expect(token).toHaveAttribute('data-unit-art', smallPath);
-  await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
-  await page.getByRole('button', { name: /Fit full battlefield|显示全图/, exact: true }).click();
-  await expect(token).toHaveAttribute('data-detail', 'compact');
-  await expect(token.locator(`image[href="${smallPath}"]`)).toHaveAttribute(
-    'visibility',
-    'visible',
-  );
 });
 
 test('missing squad images leave readable clickable type markers', async ({ page }) => {

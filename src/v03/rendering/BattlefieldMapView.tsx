@@ -12,7 +12,7 @@ import {
   type SVGProps,
   type WheelEvent,
 } from 'react';
-import { V03_ASSETS, resolvePublicAsset } from './assets';
+import { resolvePublicAsset } from './assets';
 import { unitArtwork } from './unit-art';
 import { V03_BATTLEFIELD_CANVASES } from './battlefield-canvases.generated';
 import { BattleTerrainPatterns, battleTerrainPatternId } from './BattleTerrainPatterns';
@@ -91,13 +91,6 @@ export interface BattlefieldMapViewProps {
 }
 
 const BASE_URL = import.meta.env.BASE_URL;
-const TRANSPORT_HREF = resolvePublicAsset(V03_ASSETS.transportSquadInk02.path, BASE_URL);
-const UNIT_HREFS = {
-  infantry: resolvePublicAsset(V03_ASSETS.infantrySquadInk02.path, BASE_URL),
-  archer: resolvePublicAsset(V03_ASSETS.archerSquadInk02.path, BASE_URL),
-  cavalry: resolvePublicAsset(V03_ASSETS.cavalrySquadInk02.path, BASE_URL),
-};
-
 function useImageAvailability(path: string): boolean {
   const [readyPath, setReadyPath] = useState<string | null>(null);
   useEffect(() => {
@@ -247,8 +240,6 @@ function UnitSprite({
   locale,
   compact,
   attackable,
-  imageReady,
-  transportReady,
   waterAttackMultiplier,
   waterIncomingDamageMultiplier,
   onClick,
@@ -259,8 +250,6 @@ function UnitSprite({
   /** Zoomed out below TOKEN_BADGES_MIN_CELL_PIXELS: squad image without secondary badges. */
   compact: boolean;
   attackable: boolean;
-  imageReady: boolean;
-  transportReady: boolean;
   waterAttackMultiplier?: number;
   waterIncomingDamageMultiplier?: number;
   onClick?: (unitId: string, cell: GridPoint) => void;
@@ -268,13 +257,13 @@ function UnitSprite({
   const { x, y } = gridToWorld(unit.position);
   const onWater = unitIsOnWater(unit, map);
   const displayType = onWater ? 'water' : unit.troopType;
-  const artwork = unitArtwork(unit.troopType, onWater);
+  const artwork = unitArtwork(unit.troopType, onWater, unit.strength);
   const unitHref = artwork ? resolvePublicAsset(artwork.path, BASE_URL) : undefined;
   const portraitHref = unit.portraitKey
     ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)
     : undefined;
   const portraitClip = `v03-leader-${unit.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
-  const artReady = onWater ? transportReady : imageReady;
+  const artReady = useImageAvailability(unitHref ?? '');
   const selected = unit.selected;
   const factionStroke = unit.faction === 'player' ? '#376f73' : '#a6493d';
   const localeName = troopName(displayType, locale);
@@ -552,16 +541,6 @@ export function BattlefieldMapView({
   // Tiles stay visible until the painting has loaded, and if it never does.
   const backgroundReady = useImageAvailability(requestedBackground?.href ?? '');
   const canvasBackground = backgroundReady ? requestedBackground : undefined;
-  const transportReady = useImageAvailability(TRANSPORT_HREF);
-  const infantryReady = useImageAvailability(UNIT_HREFS.infantry);
-  const archerReady = useImageAvailability(UNIT_HREFS.archer);
-  const cavalryReady = useImageAvailability(UNIT_HREFS.cavalry);
-  const imageAssets = {
-    transport: transportReady,
-    infantry: infantryReady,
-    archer: archerReady,
-    cavalry: cavalryReady,
-  };
   const board = useMemo(
     () => battlefieldBounds(map.width, map.height, V03_BATTLEFIELD_PADDING),
     [map.width, map.height],
@@ -938,14 +917,6 @@ export function BattlefieldMapView({
       ))}
       {units.filter(isLivingBattleUnitVisual).map((unit) => {
         const isWater = unitIsOnWater(unit, map);
-        const imageReady =
-          unit.troopType === 'infantry'
-            ? imageAssets.infantry
-            : unit.troopType === 'archer'
-              ? imageAssets.archer
-              : unit.troopType === 'cavalry'
-                ? imageAssets.cavalry
-                : false;
         return (
           <UnitSprite
             key={unit.id}
@@ -954,8 +925,6 @@ export function BattlefieldMapView({
             locale={locale}
             compact={compactTokens}
             attackable={attackable.has(`${unit.position.x},${unit.position.y}`)}
-            imageReady={imageReady}
-            transportReady={isWater && imageAssets.transport}
             waterAttackMultiplier={waterAttackMultiplier}
             waterIncomingDamageMultiplier={waterIncomingDamageMultiplier}
             onClick={onUnitClick}

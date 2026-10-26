@@ -89,6 +89,7 @@ export function BattleSidebar({
                     ) : null}
                     <UnitIcon
                       troopType={unit.troopType}
+                      troops={unit.troops}
                       onWater={battleTerrainAt(battleState.map, unit) === 'water'}
                       locale={locale}
                     />

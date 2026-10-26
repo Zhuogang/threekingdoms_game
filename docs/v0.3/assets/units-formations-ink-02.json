@@ -3,10 +3,10 @@
   "status": "partially-integrated",
   "active": true,
   "generationTool": "built-in image_gen",
-  "scope": "Stage 1 task 1 integrates ordinary infantry, cavalry, archer small squads and the crewed boat. Other formations remain candidates.",
+  "scope": "Stage 1 integrates ordinary infantry, cavalry and archer small/large formations with a 500-troop threshold, plus the crewed boat at all counts. Elite formations and tower warship remain candidates.",
   "artDirection": "Simplified faceless ink army formation symbols. Six-person squads versus approximately hundred-person regiments; not detailed individual portraits.",
   "countNote": "Small formations visibly use six figures. Large formations convey approximately one hundred, not a game-state troop count. Actual counts are symbolic and not used by rules.",
-  "comparisonNote": "Original comparison shows the proposed small/large formation scale difference. Stage 1 integrates only the ordinary small squads and crewed boat; runtime packaging is recorded in unit-squads-runtime.json.",
+  "comparisonNote": "Original comparison shows symbolic six-person and hundred-person formations. Runtime icons are selected by current troop count (below 500 / at least 500), retain a one-cell footprint and keep boats unchanged. Packaging is recorded in unit-squads-runtime.json.",
   "commonPrompt": "Use case: stylized-concept. Asset type: ONE very small abstract Chinese ink-wash battlefield FORMATION ICON for a Three Kingdoms strategy game, from a coherent fourteen-image set.\nUSER CORRECTION IS CRITICAL: this is a distant ARMY/FORMATION SYMBOL, never a detailed portrait or hero illustration. Soldiers should look like tiny economical ink marks, game-map miniatures viewed from far overhead, with NO faces, eyes, fingers, individual armour plates, cloth folds, anatomy study or realistic texture detail. Use simple ink dots for heads, short block/teardrop washes for bodies, a few strokes for weapons. Readable silhouette and spacing matter more than individual detail. Painterly Chinese ink brush, not cartoon clipart, not photorealism, not 3D.\nReference image role: landscape establishes only warm ivory/charcoal/pale ochre/muted sage ink palette. No terrain from reference.\nCamera: same elevated three-quarter strategy-map view about 50 degrees above ground, north-up oblique view with every unit facing screen-right and slightly downward. Soldiers are tiny repeated marks on a coherent oblique ground plane. No horizon, no dramatic perspective.\nComposition: one centered compact regiment; entire formation and all weapons included with generous clear transparent margins. Square transparent canvas. Small and large versions use the SAME uniform, weapons, individual silhouette design, palette, facing and individual scale; only number and footprint change. A six-person squad occupies a visibly smaller area than a hundred-person regiment; DO NOT enlarge the small squad's soldiers into heroes to fill the canvas. No oversized commander, no hero, no banners, no insignia.\nTRUE transparent alpha background. NO paper rectangle, grass, scenery, base disk, ground patch, circle, shadow platform, water puddle, UI, text, number, caption, lettering, border, watermark, decorative frame, blood or enemies.",
   "entries": [
     {
@@ -52,7 +52,8 @@
         "transparentPixels": 968385,
         "alphaBBox": [28, 184, 1248, 1110],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "cavalry-small",
@@ -97,7 +98,8 @@
         "transparentPixels": 999688,
         "alphaBBox": [30, 176, 1241, 1161],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "archer-small",
@@ -142,7 +144,8 @@
         "transparentPixels": 1035718,
         "alphaBBox": [40, 185, 1250, 1149],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "heavy-infantry-small",

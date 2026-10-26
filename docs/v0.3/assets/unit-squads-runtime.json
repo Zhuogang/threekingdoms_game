@@ -1,6 +1,6 @@
 {
   "sourceManifest": "units-formations-ink-02.json",
-  "scope": "Stage 1 task 1: small squads only; boats are the water state of land troops.",
+  "scope": "Stage 1 task 2: below 500 troops uses small squads; 500 or more uses large formations. Boats stay unchanged.",
   "entries": [
     {
       "key": "infantry-small",
@@ -37,6 +37,33 @@
       "width": 256,
       "height": 256,
       "sha256": "f0086c561b0d616497800e681b93c95d7ff9ed22305e41fd5f3d9491277322cc"
+    },
+    {
+      "key": "infantry-large",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/infantry-large.png",
+      "path": "assets/v03/units/infantry-large-ink-02.webp",
+      "sourceCrop": [16, 172, 1254, 1122],
+      "width": 512,
+      "height": 512,
+      "sha256": "6bc0b74f689a5484b26b07f2382740de49cc90b302fc29c35114354a2c514193"
+    },
+    {
+      "key": "cavalry-large",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/cavalry-large.png",
+      "path": "assets/v03/units/cavalry-large-ink-02.webp",
+      "sourceCrop": [18, 164, 1253, 1173],
+      "width": 512,
+      "height": 512,
+      "sha256": "5dc82594c1e927f94d1bd79a695cb4306aed9a53c307cd57fdd03582f47850cf"
+    },
+    {
+      "key": "archer-large",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/archer-large.png",
+      "path": "assets/v03/units/archer-large-ink-02.webp",
+      "sourceCrop": [28, 173, 1254, 1161],
+      "width": 512,
+      "height": 512,
+      "sha256": "19170f3e0664d2616bdb83bddf1c25d38804765fc94eaa487cd6df310678ffbc"
     }
   ]
 }

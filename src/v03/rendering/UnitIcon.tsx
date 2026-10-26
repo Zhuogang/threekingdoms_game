@@ -6,13 +6,15 @@ import { unitArtwork } from './unit-art';
 export function UnitIcon({
   troopType,
   onWater,
+  troops,
   locale,
 }: {
   troopType: string;
   onWater: boolean;
+  troops: number;
   locale: 'en' | 'zh';
 }) {
-  const asset = unitArtwork(troopType, onWater);
+  const asset = unitArtwork(troopType, onWater, troops);
   const path = asset ? resolvePublicAsset(asset.path, import.meta.env.BASE_URL) : undefined;
   const [failedPath, setFailedPath] = useState<string>();
   const kind = onWater ? 'water' : troopType;

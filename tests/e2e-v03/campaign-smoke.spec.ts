@@ -761,6 +761,9 @@ test('keeps generated unit and transport art transparent around the figure', asy
       '/assets/v03/units/archer-small-ink-02.webp',
       '/assets/v03/units/cavalry-small-ink-02.webp',
       '/assets/v03/units/boat-transport-ink-02.webp',
+      '/assets/v03/units/infantry-large-ink-02.webp',
+      '/assets/v03/units/cavalry-large-ink-02.webp',
+      '/assets/v03/units/archer-large-ink-02.webp',
     ];
     return Promise.all(
       paths.map(async (path) => {
