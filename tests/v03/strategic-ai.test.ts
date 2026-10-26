@@ -69,7 +69,7 @@ function fixture(): V03GameState {
       'ye',
       1000,
       90 - index,
-      (['infantry', 'cavalry', 'archer', 'guard', 'elite', 'naval'] as const)[index]!,
+      (['infantry', 'cavalry', 'archer', 'infantry', 'cavalry', 'archer'] as const)[index]!,
     ),
   );
   state.requisitions = [];
@@ -127,7 +127,7 @@ describe('v0.3 strategic rival planning', () => {
     });
     expect(first[0]!.officerIds).toHaveLength(5);
     expect(first[0]!.party.composition).toMatchObject({
-      troopTypes: ['infantry', 'cavalry', 'archer', 'guard', 'elite'],
+      troopTypes: ['infantry', 'cavalry', 'archer', 'infantry', 'cavalry'],
       heavySupplyTrain: true,
     });
     expect(first[0]!.route.routeId).toBe('pingyuan--ye');

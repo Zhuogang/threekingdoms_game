@@ -27,6 +27,32 @@ const units: BattleUnitVisual[] = [
 ];
 
 describe('battlefield unit presentation', () => {
+  it.each(['infantry', 'cavalry', 'archer'])(
+    '%s keeps squad art at all counts and switches only on water',
+    (troopType) => {
+      for (const strength of [1, 499, 500, 10000]) {
+        const unit = { ...units[0]!, troopType, strength, portraitKey: 'guanyu' };
+        const render = (x: number) =>
+          renderToStaticMarkup(
+            createElement(BattlefieldMapView, {
+              map,
+              units: [{ ...unit, position: { x, y: 0 } }],
+              locale: 'zh',
+            }),
+          );
+        const land = render(0);
+        const water = render(1);
+        expect(land).toContain(`${troopType}-small-ink-02.webp`);
+        expect(land).not.toContain('boat-transport-ink-02.webp');
+        expect(water).toContain('boat-transport-ink-02.webp');
+        expect(water).toContain('水上单位');
+        expect(water).not.toContain(`${troopType}-small-ink-02.webp`);
+        expect(water).toContain('assets/portraits/guanyu-small.webp');
+        expect(render(0)).toBe(land);
+        expect(unit.troopType).toBe(troopType);
+      }
+    },
+  );
   it.each(['en', 'zh'] as const)('%s keeps exact small and large troop counts', (locale) => {
     expect([1, 500, 700, 1500, 100_000].map((count) => formatTroopCount(count, locale))).toEqual([
       '1',
@@ -40,7 +66,7 @@ describe('battlefield unit presentation', () => {
     expect(html).not.toContain('>0</text>');
   });
 
-  it('shows the leader portrait over the troop glyph and marks the troop type', () => {
+  it('shows the squad and a separate leader portrait badge', () => {
     const html = renderToStaticMarkup(
       createElement(BattlefieldMapView, {
         map,
@@ -48,6 +74,8 @@ describe('battlefield unit presentation', () => {
       }),
     );
     expect(html).toContain('assets/portraits/guanyu-small.webp');
+    expect(html).toContain('infantry-small-ink-02.webp');
+    expect(html).toContain('data-leader-portrait="guanyu"');
     expect(html).toContain('>步</text>');
     expect(html).toContain('url(#v03-terrain-map-water)');
   });
@@ -76,7 +104,7 @@ describe('battlefield unit presentation', () => {
     expect(html).toContain('opacity:0.3825'); // routed 0.45 × acted 0.85
     expect(html).toContain('fill="#6d4a91"'); // confusion icon
     expect(html).toContain('stroke="#c2412f"'); // attackable ring
-    expect(html).toContain('data-detail="portrait"'); // full detail until the view is measured
+    expect(html).toContain('data-detail="squad"'); // full detail until the view is measured
     const single = renderToStaticMarkup(
       createElement(BattlefieldMapView, { map, units: [{ ...units[0]!, formationSize: 1 }] }),
     );

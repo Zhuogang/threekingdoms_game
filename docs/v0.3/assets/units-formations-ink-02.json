@@ -1,12 +1,12 @@
 {
   "id": "units-formations-ink-02",
-  "status": "draft",
-  "active": false,
+  "status": "partially-integrated",
+  "active": true,
   "generationTool": "built-in image_gen",
-  "scope": "Artwork candidates only; no source code, troop rules or runtime asset registration changed.",
+  "scope": "Stage 1 task 1 integrates ordinary infantry, cavalry, archer small squads and the crewed boat. Other formations remain candidates.",
   "artDirection": "Simplified faceless ink army formation symbols. Six-person squads versus approximately hundred-person regiments; not detailed individual portraits.",
   "countNote": "Small formations visibly use six figures. Large formations convey approximately one hundred, not a game-state troop count. Actual counts are symbolic and not used by rules.",
-  "comparisonNote": "Small and large artwork should use different world render widths to keep individual figures approximately consistent in size; no integration has been made.",
+  "comparisonNote": "Original comparison shows the proposed small/large formation scale difference. Stage 1 integrates only the ordinary small squads and crewed boat; runtime packaging is recorded in unit-squads-runtime.json.",
   "commonPrompt": "Use case: stylized-concept. Asset type: ONE very small abstract Chinese ink-wash battlefield FORMATION ICON for a Three Kingdoms strategy game, from a coherent fourteen-image set.\nUSER CORRECTION IS CRITICAL: this is a distant ARMY/FORMATION SYMBOL, never a detailed portrait or hero illustration. Soldiers should look like tiny economical ink marks, game-map miniatures viewed from far overhead, with NO faces, eyes, fingers, individual armour plates, cloth folds, anatomy study or realistic texture detail. Use simple ink dots for heads, short block/teardrop washes for bodies, a few strokes for weapons. Readable silhouette and spacing matter more than individual detail. Painterly Chinese ink brush, not cartoon clipart, not photorealism, not 3D.\nReference image role: landscape establishes only warm ivory/charcoal/pale ochre/muted sage ink palette. No terrain from reference.\nCamera: same elevated three-quarter strategy-map view about 50 degrees above ground, north-up oblique view with every unit facing screen-right and slightly downward. Soldiers are tiny repeated marks on a coherent oblique ground plane. No horizon, no dramatic perspective.\nComposition: one centered compact regiment; entire formation and all weapons included with generous clear transparent margins. Square transparent canvas. Small and large versions use the SAME uniform, weapons, individual silhouette design, palette, facing and individual scale; only number and footprint change. A six-person squad occupies a visibly smaller area than a hundred-person regiment; DO NOT enlarge the small squad's soldiers into heroes to fill the canvas. No oversized commander, no hero, no banners, no insignia.\nTRUE transparent alpha background. NO paper rectangle, grass, scenery, base disk, ground patch, circle, shadow platform, water puddle, UI, text, number, caption, lettering, border, watermark, decorative frame, blood or enemies.",
   "entries": [
     {
@@ -27,14 +27,10 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1449213,
-        "alphaBBox": [
-          287,
-          449,
-          1002,
-          901
-        ],
+        "alphaBBox": [287, 449, 1002, 901],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "infantry-large",
@@ -54,12 +50,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 968385,
-        "alphaBBox": [
-          28,
-          184,
-          1248,
-          1110
-        ],
+        "alphaBBox": [28, 184, 1248, 1110],
         "coloredFringePixels": 0
       }
     },
@@ -81,14 +72,10 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1401391,
-        "alphaBBox": [
-          256,
-          447,
-          1047,
-          939
-        ],
+        "alphaBBox": [256, 447, 1047, 939],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "cavalry-large",
@@ -108,12 +95,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 999688,
-        "alphaBBox": [
-          30,
-          176,
-          1241,
-          1161
-        ],
+        "alphaBBox": [30, 176, 1241, 1161],
         "coloredFringePixels": 0
       }
     },
@@ -135,14 +117,10 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1401856,
-        "alphaBBox": [
-          267,
-          420,
-          1031,
-          951
-        ],
+        "alphaBBox": [267, 420, 1031, 951],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "archer-large",
@@ -162,12 +140,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1035718,
-        "alphaBBox": [
-          40,
-          185,
-          1250,
-          1149
-        ],
+        "alphaBBox": [40, 185, 1250, 1149],
         "coloredFringePixels": 0
       }
     },
@@ -189,12 +162,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1396270,
-        "alphaBBox": [
-          260,
-          444,
-          1044,
-          936
-        ],
+        "alphaBBox": [260, 444, 1044, 936],
         "coloredFringePixels": 0
       }
     },
@@ -216,12 +184,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1040841,
-        "alphaBBox": [
-          14,
-          174,
-          1248,
-          1048
-        ],
+        "alphaBBox": [14, 174, 1248, 1048],
         "coloredFringePixels": 0
       }
     },
@@ -243,12 +206,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1337990,
-        "alphaBBox": [
-          198,
-          444,
-          1167,
-          1038
-        ],
+        "alphaBBox": [198, 444, 1167, 1038],
         "coloredFringePixels": 0
       }
     },
@@ -270,12 +228,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1043732,
-        "alphaBBox": [
-          80,
-          203,
-          1171,
-          1101
-        ],
+        "alphaBBox": [80, 203, 1171, 1101],
         "coloredFringePixels": 0
       },
       "originalSource": "C:/Users/pengz/.codex/generated_images/01a1656c-41f2-7471-b78b-46e7a84b8622/exec-c437c793-8893-4008-b1f3-ba780889835e.png",
@@ -299,12 +252,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1404408,
-        "alphaBBox": [
-          261,
-          402,
-          1023,
-          930
-        ],
+        "alphaBBox": [261, 402, 1023, 930],
         "coloredFringePixels": 0
       }
     },
@@ -326,12 +274,7 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1081084,
-        "alphaBBox": [
-          30,
-          167,
-          1211,
-          1107
-        ],
+        "alphaBBox": [30, 167, 1211, 1107],
         "coloredFringePixels": 0
       }
     },
@@ -352,14 +295,10 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1401116,
-        "alphaBBox": [
-          269,
-          454,
-          1027,
-          922
-        ],
+        "alphaBBox": [269, 454, 1027, 922],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "warship",
@@ -378,17 +317,13 @@
         "width": 1254,
         "height": 1254,
         "transparentPixels": 1056037,
-        "alphaBBox": [
-          170,
-          241,
-          1145,
-          1170
-        ],
+        "alphaBBox": [170, 241, 1145, 1170],
         "coloredFringePixels": 0
       },
       "previousWarshipSource": "C:/Users/pengz/.codex/generated_images/01a1656c-41f2-7471-b78b-46e7a84b8622/exec-5b3f726d-f838-451c-a8f8-4c7460312865.png",
       "editPrompt": "Use case: precise-object-edit.\nEdit target: the attached watercolour-and-ink warship icon from a Three Kingdoms strategy game.\nUser request: change THIS FINAL SHIP into a LOUCHUAN (楼船), a substantial Chinese timber TOWER WARSHIP, still with NO SOLDIERS or other people.\nKeep the existing warm brown / charcoal / ivory ink-wash palette, economical handmade brush texture, elevated three-quarter view, stern toward bottom-left and bow toward upper-right, square transparent canvas, generous margin, and standalone small-game-icon readability.\nChange the ship's superstructure: replace the prominent tall sail and small low cabin with a clearly recognizable THREE-LEVEL WOODEN FIGHTING TOWER rising out of the central-to-rear deck. A broad sturdy hull, low protected main deck, then TWO clearly stepped upper timber fighting levels with square openings and defensive rails/parapets, topped by a modest low-pitched Chinese roof. The stacked platforms and rooflines must make the multi-level tower silhouette unmistakable. It should read as a military tower vessel, not a passenger junk.\nRemove the large upright sail so the fighting tower is the main silhouette. No need for any sail or mast. Keep hull proportions plausible and the vessel compact, not a floating palace or temple. Just a few brush strokes for openings, roof edges and railings, NOT tiny architectural detail or photorealism.\nNo people anywhere. No soldiers, faces, banners, lettering, symbols, flags, cannon, guns, modern infrastructure, fantasy dragon ornament, ocean, water patch, ground, scenery, frame, UI or watermark.\nEntire vessel inside generous truly transparent alpha margin, no paper rectangle or base. Deliver one transparent tower-warship sprite matching the existing set."
     }
   ],
-  "preview": "docs/v0.3/assets/units-formations-ink-02-comparison.png"
+  "preview": "docs/v0.3/assets/units-formations-ink-02-comparison.png",
+  "runtimeManifest": "unit-squads-runtime.json"
 }

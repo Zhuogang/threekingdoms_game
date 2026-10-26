@@ -166,8 +166,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
           ? activeBattle.attackerFormationOfficerIds
           : activeBattle.defenderFormationOfficerIds)[unit.id] ?? [])
       : [];
-  // The token shows the formation's highest-level officer (then force, then ID);
-  // militia keep the troop silhouette.
+  // A separate portrait badge identifies the leader without covering the squad.
   const unitPortraitKey = (unit: NonNullable<typeof battleState>['units'][number]) => {
     const leader = formationOfficerIds(unit)
       .map((id) => state.officers.find((officer) => officer.id === id))

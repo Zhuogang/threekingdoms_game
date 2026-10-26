@@ -21,9 +21,6 @@ const MOVE_BUDGET: Readonly<Record<BattleTroopType, number>> = {
   infantry: 3,
   cavalry: 5,
   archer: 3,
-  naval: 4,
-  elite: 4,
-  guard: 2,
 };
 
 /** The board size a position helper needs; every battle map carries its own. */
@@ -56,7 +53,6 @@ export function movementBudget(troopType: BattleTroopType): number {
 export function terrainMovementCost(troopType: BattleTroopType, terrain: BattleTerrain): number {
   if (terrain === 'cliff') return Number.POSITIVE_INFINITY;
   if (terrain === 'forest' || terrain === 'hill') {
-    if (troopType === 'elite') return 1;
     if (troopType === 'cavalry') return 3;
     return 2;
   }

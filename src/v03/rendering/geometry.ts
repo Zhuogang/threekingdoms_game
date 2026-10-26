@@ -11,7 +11,7 @@ export const V03_BATTLE_HALF_CELL = V03_BATTLE_CELL / 2;
 export const V03_BATTLEFIELD_PADDING = 24;
 /**
  * Screen size of a cell when the camera opens or focuses a unit: above the
- * 44 px threshold where tokens show portraits instead of compact discs.
+ * 44 px threshold where tokens add portrait and status badges to squad art.
  */
 export const V03_BATTLE_READABLE_CELL_PIXELS = 48;
 

@@ -58,24 +58,24 @@ describe('v0.3 asset loading and sprite contract', () => {
     ).resolves.toEqual({ value: 'unit.webp', usedFallback: false });
   });
 
-  it('keeps V1 image dimensions, alpha policy and anchor offsets explicit', () => {
+  it('keeps squad image dimensions, alpha policy and anchor offsets explicit', () => {
     expect(V03_ASSETS.groundInk01).toMatchObject({
       width: 512,
       height: 512,
       alpha: false,
       anchor: null,
     });
-    expect(V03_ASSETS.infantryInk01).toMatchObject({
+    expect(V03_ASSETS.infantrySquadInk02).toMatchObject({
       width: 256,
       height: 256,
       alpha: true,
-      anchor: [0.5, 0.86],
+      anchor: [0.5, 0.5],
     });
-    expect(V03_ASSETS.transportCraftInk01).toMatchObject({
+    expect(V03_ASSETS.transportSquadInk02).toMatchObject({
       width: 256,
-      height: 128,
+      height: 256,
       alpha: true,
-      anchor: [0.5, 0.6],
+      anchor: [0.5, 0.5],
     });
     expect(spriteOffsetFromAnchor(100, 80, [0.5, 0.86])).toEqual({ x: -50, y: -68.8 });
   });
@@ -88,7 +88,7 @@ describe('v0.3 rule-state presentation', () => {
     terrain: ['plain', 'water', 'plain', 'cliff', 'plain', 'water'],
   };
 
-  it.each(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'])(
+  it.each(['infantry', 'cavalry', 'archer'])(
     '%s uses the same position-driven water state',
     (troopType) => {
       const unit: BattleUnitVisual = {

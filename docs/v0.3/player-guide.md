@@ -56,24 +56,21 @@ Updated October 22, 2026 for the map-first city-window prototype. [Overview](REA
 
 灰色按钮先看理由：权限、阶段、工作点、库存、已有承诺、无合适武将、属性上限均可能造成限制。地图上的“预备兵”和武将“带兵”是不同数字。
 
-### 5. 六类兵种
+### 5. 基础兵种与水上单位
 
 下表是基础行动预算，不等于每次一定能走这么多格。林地、丘陵、水陆边界、占位和敌方控制区都会影响可达格。射程按逻辑格计算，不按画面像素距离。
 
-| 兵种           | 基础移动预算 | 普通攻击射程 | 使用提示                                   |
-| -------------- | ------------ | ------------ | ------------------------------------------ |
-| 步兵 Infantry  | 3            | 1            | 常规近战部队。                             |
-| 骑兵 Cavalry   | 5            | 1            | 平地机动快；林地/丘陵费用较高。            |
-| 弓兵 Archers   | 3            | 3            | 可远射，在正常射程内可从岸上打水中目标。   |
-| 水上部队 Naval | 4            | 1            | 这是兵种名称；没有独占下水权限或水上免罚。 |
-| 精锐 Elite     | 4            | 1            | 林地/丘陵基础移动成本较低。                |
-| 护卫 Guard     | 2            | 1            | 基础移动预算较少。                         |
+| 兵种          | 基础移动预算 | 普通攻击射程 | 使用提示                                 |
+| ------------- | ------------ | ------------ | ---------------------------------------- |
+| 步兵 Infantry | 3            | 1            | 常规近战部队。                           |
+| 骑兵 Cavalry  | 5            | 1            | 平地机动快；林地/丘陵费用较高。          |
+| 弓兵 Archers  | 3            | 3            | 可远射，在正常射程内可从岸上打水中目标。 |
 
 同类武将所部可在战场上合并显示为编队；单位兵力不等于单名武将的完整个人面板。民兵是守军编组的一种，不能使用计策。
 
 ### 6. 战斗操作、计策与水战
 
-战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队底牌是编队里等级最高的武将头像：右上角小旗是势力色，左下角是兵种，右下角"×3"表示编队里有三位武将，下方是兵力数字和兵力条。可攻击的敌军有红圈，混乱或鼓舞的部队左上角有小图标，已行动的部队变灰，溃败的部队半透明。缩得很小时，底牌只显示势力色圆片和兵种字。"网格"按钮可以隐藏格线。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
+战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队主体统一使用水墨小队图，下水后变为载兵小船、上岸恢复；无论人数多少都使用小队。左上角保留编队统领的小头像：右上角小旗是势力色，左下角是兵种，右下角"×3"表示编队里有三位武将，下方是兵力数字和兵力条。可攻击的敌军有红圈，混乱或鼓舞的部队上方有小图标，已行动的部队变灰，溃败的部队半透明。缩得很小时，保留小队图，隐藏头像和次要标记；图片无法加载时显示兵种字。"网格"按钮可以隐藏格线。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
 
 | 计策               | 基础计策点 | 基础条件                                                          |
 | ------------------ | ---------- | ----------------------------------------------------------------- |
@@ -147,18 +144,15 @@ Open **Officers in the city → choose an officer** for assignment, training, re
 
 ### Troops and battlefield actions
 
-Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker enters on the left. The attacker's last route leg picks one of 15 painted battlefields (a few attack directions have their own), and the same leg and direction always give the same field, named in the battle heading. Unit tokens show the formation's highest-level officer with a faction pennant, a troop-type seal, a ×N badge for multi-officer formations, the troop count and a strength bar; attackable enemies have a red ring, confused or inspired units an icon, acted units turn grey and routed units fade. Zoomed far out, tokens become faction discs with the troop glyph; the Grid button hides the grid lines. The painting illustrates the grid; inspect a cell to see whether it counts as plain, forest, hill, water or cliff.
+Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker enters on the left. The attacker's last route leg picks one of 15 painted battlefields (a few attack directions have their own), and the same leg and direction always give the same field, named in the battle heading. Unit tokens show the new ink squad at every troop count, changing to a crewed boat on water and back on land. The highest-level officer appears as a separate portrait badge alongside a faction pennant, a troop-type seal, a ×N badge for multi-officer formations, the troop count and a strength bar; attackable enemies have a red ring, confused or inspired units an icon, acted units turn grey and routed units fade. Zoomed far out, squad art remains while portraits and secondary badges hide; the Grid button hides the grid lines. The painting illustrates the grid; inspect a cell to see whether it counts as plain, forest, hill, water or cliff.
 
 | Type     | Base movement budget | Ordinary range |
 | -------- | -------------------- | -------------- |
 | Infantry | 3                    | 1              |
 | Cavalry  | 5                    | 1              |
 | Archers  | 3                    | 3              |
-| Naval    | 4                    | 1              |
-| Elite    | 4                    | 1              |
-| Guard    | 2                    | 1              |
 
-Budgets are movement points, not guaranteed tiles. Forest/hills cost more for most types; cavalry pays more, elite less. Occupation, enemy zone of control and water affect reachable cells. Formations can group same-type officers. Militia cannot use tactics. Naval is a roster label, with the same water access and penalties as every other type.
+Budgets are movement points, not guaranteed tiles. Forest/hills cost more for most types; cavalry pays more. Occupation, enemy zone of control and water affect reachable cells. Formations can group same-type officers. Militia cannot use tactics. Waterborne units retain their infantry, cavalry or archer identity and share the same water penalties.
 
 Select a living friendly formation, click a highlighted reachable cell to move, then attack an enemy in range or choose a tactic and a legal target. Units normally move once and act once per battle day. Read damage/counterattack/tactic forecasts first. The conditions panel shows weather/next weather, food, range/movement, force/intellect/level and terrain multipliers. Clicking a tile inspects it **and still executes a legal move or attack**.
 

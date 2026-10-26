@@ -15,7 +15,7 @@ export interface BattleUnitVisual {
   label?: string;
   selected?: boolean;
   status?: string;
-  /** Portrait of the formation's highest-level officer; display only. */
+  /** Highest-level officer in this formation; shown beside the squad art. */
   portraitKey?: string;
   /** Troops at the start of the battle, for the strength bar. */
   maxStrength?: number;
@@ -28,24 +28,21 @@ export interface BattleUnitVisual {
   routed?: boolean;
 }
 
-/** Public path of the 128px battle-token portrait for an officer identity. */
-export function battlePortraitPath(portraitKey: string): string {
-  return `assets/portraits/${portraitKey}-small.webp`;
-}
-
 export interface WaterCombatDisplay {
   isOnWater: boolean;
   attackMultiplier?: number;
   incomingDamageMultiplier?: number;
 }
 
+export function battlePortraitPath(portraitKey: string): string {
+  return `assets/portraits/${portraitKey}-small.webp`;
+}
+
 export const TROOP_NAMES: Record<string, { en: string; zh: string; glyph: string }> = {
   infantry: { en: 'Infantry', zh: '步兵', glyph: '步' },
   cavalry: { en: 'Cavalry', zh: '骑兵', glyph: '骑' },
   archer: { en: 'Archer', zh: '弓兵', glyph: '弓' },
-  naval: { en: 'Naval unit', zh: '水上部队', glyph: '舟' },
-  elite: { en: 'Elite', zh: '精锐', glyph: '锐' },
-  guard: { en: 'Guard', zh: '护卫', glyph: '卫' },
+  water: { en: 'Waterborne unit', zh: '水上单位', glyph: '舟' },
 };
 
 export function unitIsOnWater(

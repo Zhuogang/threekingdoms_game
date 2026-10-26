@@ -96,7 +96,7 @@ export function advanceUntilEvent(
   };
 }
 
-export type GroundMovementClass = 'infantry' | 'archer' | 'cavalry' | 'guard' | 'elite' | 'naval';
+export type GroundMovementClass = 'infantry' | 'archer' | 'cavalry';
 
 export interface TravelComposition {
   troopTypes: readonly GroundMovementClass[];

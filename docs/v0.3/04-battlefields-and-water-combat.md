@@ -14,7 +14,7 @@ There is no siege generation, wall/gate state, city-defense phase, climbing or s
 
 ## Commands and forecasts
 
-The six types are infantry, cavalry, archers, naval, elite and guard. Ordinary movement/range and terrain costs live in `battle/rules.ts`; the [player guide](player-guide.md#5-六类兵种) gives current budgets. Same-type officers can form one battlefield unit, and garrison militia has unique membership. Defeated historical units remain in saved battle records but cannot appear as active map/minimap/roster selections.
+The three base types are infantry, cavalry and archers. Waterborne is a terrain-driven presentation state, not a separate troop type. Ordinary movement/range and terrain costs live in `battle/rules.ts`; the [player guide](player-guide.md#5-基础兵种与水上单位) gives current budgets. Same-type officers can form one battlefield unit, and garrison militia has unique membership. Defeated historical units remain in saved battle records but cannot appear as active map/minimap/roster selections.
 
 Move, attack, hold, retreat and all six tactics are implemented: Fire, Confuse, Rally, Raid supplies, Ambush and Rockfall. Basic side-wide costs are 4/3/2/4/3/4 respectively; shared points regenerate two per day, capped at 30. Eligibility depends on officer attributes/level/traits, morale, movement/action status, source terrain, target and points. The UI uses rule queries for costs, rejection reasons, targets and forecasts. See the [tactic table](player-guide.md#6-战斗操作计策与水战), rather than the old v0.2 battle guide.
 
@@ -24,7 +24,7 @@ Damage, counterattack and tactic forecasts share resolution helpers. Current/nex
 
 All six types can enter and leave passable water without a skill, vessel inventory or unlock. A step touching water costs at least two movement points. While standing on water, attack damage is multiplied by **0.75**, incoming troop damage by **1.25**. Source and target water status are evaluated separately; shore→water, water→shore and water→water attacks are legal in normal range. Damaging tactics/counterattacks use the same common water model. Naval has no exemption. Leaving water restores land modifiers.
 
-Normal-hit terrain protection and fire weather/forest modifiers remain separate shared factors. Painting or the naval name does not override these rules. Strategic movement still requires a configured route.
+Normal-hit terrain protection and fire weather/forest modifiers remain separate shared factors. Boat artwork does not override these rules. Strategic movement still requires a configured route.
 
 ## Daily resolution and outcomes
 

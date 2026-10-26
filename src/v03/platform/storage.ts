@@ -18,7 +18,7 @@ const RECENT_ORDER_HISTORY = 500;
 const RECENT_JOURNEY_HISTORY = 500;
 const RECENT_LOG_HISTORY = 1_000;
 const cargo = z.object({ gold: nonnegative, food: nonnegative, troops: nonnegative }).strict();
-const troopType = z.enum(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard']);
+const troopType = z.enum(['infantry', 'cavalry', 'archer']);
 const intent = z.enum(['conquer', 'raid', 'sack']);
 const battlefieldIds = new Set(canvasBattlefieldIds());
 // Campaign battles are fought only on 48×32 canvas battlefields; earlier saves

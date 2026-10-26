@@ -13,6 +13,7 @@ import {
   type WheelEvent,
 } from 'react';
 import { V03_ASSETS, resolvePublicAsset } from './assets';
+import { unitArtwork } from './unit-art';
 import { V03_BATTLEFIELD_CANVASES } from './battlefield-canvases.generated';
 import { BattleTerrainPatterns, battleTerrainPatternId } from './BattleTerrainPatterns';
 import {
@@ -90,11 +91,11 @@ export interface BattlefieldMapViewProps {
 }
 
 const BASE_URL = import.meta.env.BASE_URL;
-const TRANSPORT_HREF = resolvePublicAsset(V03_ASSETS.transportCraftInk01.path, BASE_URL);
+const TRANSPORT_HREF = resolvePublicAsset(V03_ASSETS.transportSquadInk02.path, BASE_URL);
 const UNIT_HREFS = {
-  infantry: resolvePublicAsset(V03_ASSETS.infantryInk01.path, BASE_URL),
-  archer: resolvePublicAsset(V03_ASSETS.archerInk01.path, BASE_URL),
-  cavalry: resolvePublicAsset(V03_ASSETS.cavalryInk01.path, BASE_URL),
+  infantry: resolvePublicAsset(V03_ASSETS.infantrySquadInk02.path, BASE_URL),
+  archer: resolvePublicAsset(V03_ASSETS.archerSquadInk02.path, BASE_URL),
+  cavalry: resolvePublicAsset(V03_ASSETS.cavalrySquadInk02.path, BASE_URL),
 };
 
 function useImageAvailability(path: string): boolean {
@@ -209,13 +210,13 @@ function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' })
 // Token layout inside one 64-unit cell, centered on the cell center (plan §4).
 const TOKEN_FACE_Y = -3;
 const TOKEN_FACE_RADIUS = 26;
-const TOKEN_SILHOUETTE = 48;
-/** Below this many screen pixels per cell, tokens drop to a faction disc and troop glyph. */
-export const TOKEN_PORTRAIT_MIN_CELL_PIXELS = 44;
+const TOKEN_SILHOUETTE = 56;
+/** Below this many screen pixels per cell, tokens hide secondary badges, retaining the squad image. */
+export const TOKEN_BADGES_MIN_CELL_PIXELS = 44;
 
 function ConditionIcon({ condition }: { condition: 'confused' | 'inspired' }) {
   return condition === 'confused' ? (
-    <g transform="translate(-21 -23)" aria-hidden="true">
+    <g transform="translate(0 -27)" aria-hidden="true">
       <circle r={8} fill="#6d4a91" stroke="#f8f1df" strokeWidth={1.5} />
       <path
         d="M 0 0 m -1 0 a 1 1 0 1 1 2 0 a 3 3 0 1 1 -5 -1 a 5 5 0 1 1 8 3"
@@ -226,7 +227,7 @@ function ConditionIcon({ condition }: { condition: 'confused' | 'inspired' }) {
       />
     </g>
   ) : (
-    <g transform="translate(-21 -23)" aria-hidden="true">
+    <g transform="translate(0 -27)" aria-hidden="true">
       <circle r={8} fill="#c58a1f" stroke="#f8f1df" strokeWidth={1.5} />
       <path
         d="M -4 2 L 0 -3 L 4 2 M -4 5.5 L 0 0.5 L 4 5.5"
@@ -255,7 +256,7 @@ function UnitSprite({
   unit: BattleUnitVisual;
   map: BattlefieldVisualMap;
   locale: 'en' | 'zh';
-  /** Zoomed out below TOKEN_PORTRAIT_MIN_CELL_PIXELS: disc and glyph only. */
+  /** Zoomed out below TOKEN_BADGES_MIN_CELL_PIXELS: squad image without secondary badges. */
   compact: boolean;
   attackable: boolean;
   imageReady: boolean;
@@ -266,17 +267,17 @@ function UnitSprite({
 }) {
   const { x, y } = gridToWorld(unit.position);
   const onWater = unitIsOnWater(unit, map);
-  const unitHref =
-    unit.troopType in UNIT_HREFS
-      ? UNIT_HREFS[unit.troopType as keyof typeof UNIT_HREFS]
-      : undefined;
+  const displayType = onWater ? 'water' : unit.troopType;
+  const artwork = unitArtwork(unit.troopType, onWater);
+  const unitHref = artwork ? resolvePublicAsset(artwork.path, BASE_URL) : undefined;
   const portraitHref = unit.portraitKey
     ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)
     : undefined;
-  const clipId = `v03-token-face-${unit.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const portraitClip = `v03-leader-${unit.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const artReady = onWater ? transportReady : imageReady;
   const selected = unit.selected;
   const factionStroke = unit.faction === 'player' ? '#376f73' : '#a6493d';
-  const localeName = troopName(unit.troopType, locale);
+  const localeName = troopName(displayType, locale);
   const attackText = formatModifier(onWater ? waterAttackMultiplier : undefined, locale);
   const damageText = formatModifier(onWater ? waterIncomingDamageMultiplier : undefined, locale);
   const countLabel =
@@ -312,7 +313,8 @@ function UnitSprite({
     <g
       className="v03-unit-token"
       data-unit-id={unit.id}
-      data-detail={compact ? 'compact' : 'portrait'}
+      data-detail={compact ? 'compact' : 'squad'}
+      data-unit-art={unitHref}
       transform={`translate(${x} ${y})`}
       role="button"
       tabIndex={0}
@@ -343,94 +345,66 @@ function UnitSprite({
         />
       ) : null}
       <g style={stateStyle}>
-        {onWater ? (
-          transportReady ? (
-            <image
-              href={TRANSPORT_HREF}
-              x={-31}
-              y={TOKEN_FACE_Y + 8}
-              width={62}
-              height={26}
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            />
-          ) : (
-            <path
-              d={`M -30 ${TOKEN_FACE_Y + 14} Q 0 ${TOKEN_FACE_Y + 40} 30 ${TOKEN_FACE_Y + 14} Z`}
-              fill="#7a5a3a"
-              stroke="#3e2e20"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-          )
+        <circle
+          cx={0}
+          cy={TOKEN_FACE_Y}
+          r={TOKEN_FACE_RADIUS}
+          fill="#f6f0e3"
+          fillOpacity={0.7}
+          stroke={factionStroke}
+          strokeWidth={selected ? 4 : 2}
+        />
+        {unitHref ? (
+          <image
+            href={unitHref}
+            x={-TOKEN_SILHOUETTE / 2}
+            y={TOKEN_FACE_Y - TOKEN_SILHOUETTE / 2}
+            width={TOKEN_SILHOUETTE}
+            height={TOKEN_SILHOUETTE}
+            preserveAspectRatio="xMidYMid meet"
+            visibility={artReady ? 'visible' : 'hidden'}
+            aria-hidden="true"
+          />
         ) : null}
-        {compact ? (
+        {!artReady ? (
+          <text
+            y={TOKEN_FACE_Y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={22}
+            fontWeight="700"
+            fill="#2e2923"
+            aria-hidden="true"
+          >
+            {troopGlyph(displayType)}
+          </text>
+        ) : null}
+        {!compact ? (
           <>
-            <circle
-              cx={0}
-              cy={0}
-              r={24}
-              fill={factionStroke}
-              stroke={selected ? '#f5c45b' : '#f8f1df'}
-              strokeWidth={selected ? 5 : 3}
-            />
-            <text
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={26}
-              fontWeight="700"
-              fill="#fffaf0"
-            >
-              {troopGlyph(unit.troopType)}
-            </text>
-          </>
-        ) : (
-          <>
-            <clipPath id={clipId}>
-              <circle cx={0} cy={TOKEN_FACE_Y} r={TOKEN_FACE_RADIUS - 2} />
-            </clipPath>
-            <circle
-              cx={0}
-              cy={TOKEN_FACE_Y}
-              r={TOKEN_FACE_RADIUS}
-              fill="#f6f0e3"
-              stroke={factionStroke}
-              strokeWidth={selected ? 4 : 3}
-            />
-            <g clipPath={`url(#${clipId})`} aria-hidden="true">
-              {imageReady && unitHref ? (
-                <image
-                  href={unitHref}
-                  x={-TOKEN_SILHOUETTE / 2}
-                  y={TOKEN_FACE_Y - TOKEN_SILHOUETTE / 2}
-                  width={TOKEN_SILHOUETTE}
-                  height={TOKEN_SILHOUETTE}
-                  preserveAspectRatio="xMidYMid meet"
+            {portraitHref ? (
+              <g data-leader-portrait={unit.portraitKey} aria-hidden="true">
+                <clipPath id={portraitClip}>
+                  <circle cx={-21} cy={-21} r={10} />
+                </clipPath>
+                <circle
+                  cx={-21}
+                  cy={-21}
+                  r={11}
+                  fill="#f6f0e3"
+                  stroke={factionStroke}
+                  strokeWidth={2}
                 />
-              ) : (
-                <text
-                  y={TOKEN_FACE_Y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize={22}
-                  fontWeight="700"
-                  fill="#2e2923"
-                >
-                  {troopGlyph(unit.troopType)}
-                </text>
-              )}
-              {/* A missing portrait leaves the silhouette or glyph underneath visible. */}
-              {portraitHref ? (
                 <image
                   href={portraitHref}
-                  x={-TOKEN_FACE_RADIUS}
-                  y={TOKEN_FACE_Y - TOKEN_FACE_RADIUS}
-                  width={TOKEN_FACE_RADIUS * 2}
-                  height={TOKEN_FACE_RADIUS * 2}
+                  x={-31}
+                  y={-31}
+                  width={20}
+                  height={20}
                   preserveAspectRatio="xMidYMid slice"
+                  clipPath={`url(#${portraitClip})`}
                 />
-              ) : null}
-            </g>
+              </g>
+            ) : null}
             {/* Faction pennant, top right. */}
             <g aria-hidden="true">
               <path d="M 21 -31 L 21 -14" stroke="#2e2923" strokeWidth={1.6} />
@@ -451,7 +425,7 @@ function UnitSprite({
                 fontWeight="700"
                 fill="#fffaf0"
               >
-                {troopGlyph(unit.troopType)}
+                {troopGlyph(displayType)}
               </text>
             </g>
             {formationSize > 1 ? (
@@ -514,7 +488,7 @@ function UnitSprite({
               </g>
             ) : null}
           </>
-        )}
+        ) : null}
       </g>
       {attackable ? (
         <circle
@@ -768,7 +742,7 @@ export function BattlefieldMapView({
     return () => observer.disconnect();
   }, [view.width, view.height]);
   const compactTokens =
-    screenScale !== null && screenScale * V03_BATTLE_CELL < TOKEN_PORTRAIT_MIN_CELL_PIXELS;
+    screenScale !== null && screenScale * V03_BATTLE_CELL < TOKEN_BADGES_MIN_CELL_PIXELS;
   return (
     <svg
       ref={svgRef}

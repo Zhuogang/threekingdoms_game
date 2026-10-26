@@ -15,6 +15,11 @@ describe('v0.3 new-campaign setup', () => {
       expect(state.absoluteDay).toBe(0);
       expect(state.factions.find((faction) => faction.id === factionId)?.isPlayer).toBe(true);
       expect(validateV03State(state)).toBe(true);
+      expect([...new Set(state.officers.map((officer) => officer.troopType))].sort()).toEqual([
+        'archer',
+        'cavalry',
+        'infantry',
+      ]);
     });
   }
 });

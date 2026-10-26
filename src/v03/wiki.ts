@@ -67,7 +67,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
         heading: 'The field units',
         body: [
           'Infantry holds ground and provides a dependable line. Cavalry moves quickly and can exploit open flanks. Archers attack at range but need friendly troops to protect them.',
-          'Guard, elite, and naval units remain in the starting roster. Naval is a troop label only: it does not unlock water movement or remove the shared water penalties.',
+          'Infantry, cavalry and archers are the three base troop types. Every unit uses small squad art on land and a crewed boat on water, retaining its land identity and shared water penalties.',
           'Unit strength depends on troop count, officer leadership, morale, status, and the actual terrain under the unit. A camp marker is an objective and gives no extra defensive bonus.',
         ],
       },
@@ -98,7 +98,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
         heading: 'Crossing and fighting in water',
         body: [
           'Every troop type can enter and leave a passable water tile. A move that touches water costs more movement than a move across open ground. A cliff tile cannot be entered.',
-          'While a unit stands on water, its attack damage is multiplied by 0.75 and incoming troop damage by 1.25. The same rule applies to infantry, cavalry, archers, guard, elite, and naval units. Moving back to land restores the normal modifiers.',
+          'While a unit stands on water, its attack damage is multiplied by 0.75 and incoming troop damage by 1.25. The same rule applies to infantry, cavalry and archers. Moving back to land restores the normal modifiers.',
           'A unit on shore can attack a unit in water, and a unit in water can attack a shore unit, when the target is within normal weapon range. Water does not grant immunity.',
           'Strategic water routes still require a configured connection. Being allowed to wade through a battlefield water tile does not let an army cross any river or sea on the campaign map.',
         ],
@@ -205,7 +205,7 @@ const CHINESE: readonly V03WikiArticle[] = [
         heading: '战场部队',
         body: [
           '步兵稳定守线。骑兵机动较快，适合利用开阔侧翼。弓兵可以远程攻击，但需要友军保护。',
-          '开局名册仍保留护卫、精锐和水兵。水兵只是兵种标签，不再解锁下水，也不免除统一水上惩罚。',
+          '基础兵种只有步、骑、弓。陆上统一显示小队，下水显示载兵小船，上岸恢复原兵种图；人数不影响图标大小，水上惩罚统一适用。',
           '部队战力受兵力、将领统率、士气、状态以及脚下真实地形影响。营地只是战术目标标记，不额外提供防御加成。',
         ],
       },
@@ -236,7 +236,7 @@ const CHINESE: readonly V03WikiArticle[] = [
         heading: '涉水与水上交战',
         body: [
           '所有兵种都可以进入和离开可通行水格。移动路径只要涉及水格，就比平地移动消耗更多行动力。峭壁不可进入。',
-          '部队位于水格时，攻击伤害乘以 0.75，受到的兵力伤害乘以 1.25。步兵、骑兵、弓兵、护卫、精锐和水兵使用同一规则。上岸后恢复陆地规则。',
+          '部队位于水格时，攻击伤害乘以 0.75，受到的兵力伤害乘以 1.25。步兵、骑兵和弓兵使用同一规则。上岸后恢复陆地规则。',
           '岸上与水上部队只要处于正常武器射程内就可以互相攻击；水域不会带来免疫。',
           '战略地图行军仍须有已配置的交通路线。允许战场涉水，不代表部队可以在大地图任意横渡江河或海域。',
         ],

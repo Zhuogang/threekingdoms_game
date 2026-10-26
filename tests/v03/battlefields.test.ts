@@ -21,7 +21,7 @@ import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/pl
 import { reviewBattleState } from '../e2e-v03/playability-fixtures';
 import { ROUTE_DEFINITIONS } from '../../src/v03/geography';
 
-const troopTypes: BattleTroopType[] = ['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'];
+const troopTypes: BattleTroopType[] = ['infantry', 'cavalry', 'archer'];
 
 /** Plain reference Dijkstra built only on battleStepCost, for comparison. */
 function referenceField(
@@ -104,7 +104,7 @@ describe('48×32 canvas battlefields', () => {
           force: 60,
         })),
       });
-      expect(battle.units).toHaveLength(12);
+      expect(battle.units).toHaveLength(troopTypes.length * 2);
     }
   });
 

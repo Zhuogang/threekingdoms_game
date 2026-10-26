@@ -24,8 +24,8 @@ export type ApproachDirection = 'north' | 'east' | 'south' | 'west';
 export type BattleSide = 'attacker' | 'defender';
 export type BattleWeather = 'clear' | 'rain' | 'wind';
 
-/** v0.3 retains the current roster, while removing any water privilege. */
-export type BattleTroopType = 'infantry' | 'cavalry' | 'archer' | 'naval' | 'elite' | 'guard';
+/** Land identity persists while the unit is afloat. */
+export type BattleTroopType = 'infantry' | 'cavalry' | 'archer';
 
 export interface BattlePosition {
   x: number;

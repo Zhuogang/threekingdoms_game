@@ -375,10 +375,7 @@ function baseDamage(
         ? 1.2
         : source.troopType === 'archer' && target.troopType === 'infantry'
           ? 1.15
-          : source.troopType === 'elite'
-            ? 1.15
-            : 1;
-  const guard = target.troopType === 'guard' ? 0.8 : 1;
+          : 1;
   const wavering = isWavering(source) ? 0.85 : 1;
   const routedTarget = isRouted(target) ? 1.2 : 1;
   const inspiration = source.status === 'inspired' ? INSPIRED_DAMAGE_MULTIPLIER : 1;
@@ -393,7 +390,6 @@ function baseDamage(
       forceRatio *
       morale *
       matchup *
-      guard *
       terrainDefense *
       wavering *
       routedTarget *

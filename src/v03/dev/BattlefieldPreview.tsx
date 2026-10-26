@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   CANVAS_CELL_TERRAIN,
   canvasBattlefieldIds,
@@ -43,9 +43,9 @@ const TROOPS = [
   'infantry',
   'cavalry',
   'archer',
-  'guard',
-  'elite',
-  'naval',
+  'infantry',
+  'cavalry',
+  'archer',
   'infantry',
 ];
 const PORTRAITS = Object.values(OFFICER_IDENTITIES).map((identity) => identity.portraitKey);

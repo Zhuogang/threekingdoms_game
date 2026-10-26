@@ -70,20 +70,20 @@ const PREVIEW_UNITS: readonly BattleUnitVisual[] = [
     label: '骑兵',
   },
   {
-    id: 'preview-guard',
-    troopType: 'guard',
+    id: 'preview-afloat',
+    troopType: 'infantry',
     position: { x: 12, y: 10 },
     faction: 'opponent',
     strength: 4300,
     label: '渡河中',
   },
   {
-    id: 'preview-elite',
-    troopType: 'elite',
+    id: 'preview-reinforcement',
+    troopType: 'cavalry',
     position: { x: 13, y: 12 },
     faction: 'player',
     strength: 3900,
-    label: '精锐',
+    label: '援军',
   },
 ];
 

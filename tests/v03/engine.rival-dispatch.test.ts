@@ -58,7 +58,9 @@ function prepareRivalMonth() {
       loyalty: 80,
       age: 35,
       troops: 1000,
-      troopType: (['infantry', 'cavalry', 'archer', 'guard', 'elite', 'naval'] as const)[index]!,
+      troopType: (['infantry', 'cavalry', 'archer', 'infantry', 'cavalry', 'archer'] as const)[
+        index
+      ]!,
       experience: 0,
       level: 0,
       governorOfCityId: null,
@@ -67,7 +69,7 @@ function prepareRivalMonth() {
     state.officers.push(officer);
     roster.push(officer);
   }
-  const troopTypes = ['infantry', 'cavalry', 'archer', 'guard', 'elite', 'naval'] as const;
+  const troopTypes = ['infantry', 'cavalry', 'archer', 'infantry', 'cavalry', 'archer'] as const;
   roster.forEach((officer, index) => {
     officer.alive = true;
     officer.factionId = yuan.id;

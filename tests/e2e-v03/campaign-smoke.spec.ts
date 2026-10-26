@@ -757,10 +757,10 @@ test('keeps generated unit and transport art transparent around the figure', asy
   await page.goto('/');
   const samples = await page.evaluate(async () => {
     const paths = [
-      '/assets/v03/units/infantry-ink-01.webp',
-      '/assets/v03/units/archer-ink-01.webp',
-      '/assets/v03/units/cavalry-ink-01.webp',
-      '/assets/v03/units/transport-craft-ink-01.webp',
+      '/assets/v03/units/infantry-small-ink-02.webp',
+      '/assets/v03/units/archer-small-ink-02.webp',
+      '/assets/v03/units/cavalry-small-ink-02.webp',
+      '/assets/v03/units/boat-transport-ink-02.webp',
     ];
     return Promise.all(
       paths.map(async (path) => {
@@ -785,7 +785,11 @@ test('keeps generated unit and transport art transparent around the figure', asy
             alphaAt(0, canvas.height - 1),
             alphaAt(canvas.width - 1, canvas.height - 1),
           ],
-          centerAlpha: alphaAt(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2)),
+          // A formation may have a transparent gap exactly at its center.
+          visiblePixels: data.reduce(
+            (count, value, index) => count + (index % 4 === 3 && value > 128 ? 1 : 0),
+            0,
+          ),
         };
       }),
     );
@@ -794,6 +798,6 @@ test('keeps generated unit and transport art transparent around the figure', asy
     expect(image.width).toBeGreaterThan(0);
     expect(image.height).toBeGreaterThan(0);
     expect(image.corners, image.path).toEqual([0, 0, 0, 0]);
-    expect(image.centerAlpha, image.path).toBeGreaterThan(0);
+    expect(image.visiblePixels, image.path).toBeGreaterThan(image.width * image.height * 0.03);
   }
 });

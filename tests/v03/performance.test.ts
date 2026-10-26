@@ -16,13 +16,13 @@ const troopTypes: BattleTroopType[] = [
   'infantry',
   'archer',
   'cavalry',
-  'guard',
-  'naval',
-  'elite',
   'infantry',
   'archer',
   'cavalry',
-  'guard',
+  'infantry',
+  'archer',
+  'cavalry',
+  'infantry',
 ];
 
 function runBattleDay(seed: number, canvas?: string) {

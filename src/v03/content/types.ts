@@ -1,4 +1,4 @@
-export type TroopType = 'infantry' | 'cavalry' | 'archer' | 'naval' | 'elite' | 'guard';
+export type TroopType = 'infantry' | 'cavalry' | 'archer';
 export type Terrain = 'plain' | 'forest' | 'hill' | 'water' | 'fort' | 'wall' | 'gate';
 export interface Faction {
   id: string;

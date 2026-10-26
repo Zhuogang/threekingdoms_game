@@ -41,7 +41,7 @@ import {
 } from '../../src/v03/battle';
 
 const regions: BattleRegion[] = ['hanzhong', 'shouchun', 'xiapi', 'chengdu'];
-const troopTypes: BattleTroopType[] = ['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'];
+const troopTypes: BattleTroopType[] = ['infantry', 'cavalry', 'archer'];
 const pos = (x: number, y: number): BattlePosition => ({ x, y });
 const index = (map: BattleMap, x: number, y: number) => y * map.width + x;
 
@@ -261,8 +261,8 @@ describe('shared water movement', () => {
     const start = pos(4, 7);
     const end = pos(4, 8);
     const costs = troopTypes.map((troopType) => battleStepCost(map, { troopType }, start, end));
-    expect(costs).toEqual([2, 2, 2, 2, 2, 2]);
-    expect(getReachableBattleTiles(map, { troopType: 'guard' }, start, 2)).toContainEqual({
+    expect(costs).toEqual([2, 2, 2]);
+    expect(getReachableBattleTiles(map, { troopType: 'infantry' }, start, 2)).toContainEqual({
       x: 4,
       y: 8,
       cost: 2,
@@ -483,7 +483,7 @@ describe('water attack and damage rules', () => {
         }
   });
 
-  it('does not give the retained naval troop type a special water exemption', () => {
+  it('does not give the land troop types different water exemptions', () => {
     const map = createBattleMap({ regionId: 'shouchun' });
     const shore = pos(4, 7);
     const water = pos(4, 8);

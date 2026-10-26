@@ -1,0 +1,42 @@
+{
+  "sourceManifest": "units-formations-ink-02.json",
+  "scope": "Stage 1 task 1: small squads only; boats are the water state of land troops.",
+  "entries": [
+    {
+      "key": "infantry-small",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/infantry-small.png",
+      "path": "assets/v03/units/infantry-small-ink-02.webp",
+      "sourceCrop": [275, 437, 1014, 913],
+      "width": 256,
+      "height": 256,
+      "sha256": "70ef42168c79ff8a4211f65a8f43ae954707685392da6ab7ff6ee95e4716e2c0"
+    },
+    {
+      "key": "cavalry-small",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/cavalry-small.png",
+      "path": "assets/v03/units/cavalry-small-ink-02.webp",
+      "sourceCrop": [244, 435, 1059, 951],
+      "width": 256,
+      "height": 256,
+      "sha256": "2a20379cb0ad11e48586f96900039fb6f03aeb90efb3c8e9e1c0540ed56c7c93"
+    },
+    {
+      "key": "archer-small",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/archer-small.png",
+      "path": "assets/v03/units/archer-small-ink-02.webp",
+      "sourceCrop": [255, 408, 1043, 963],
+      "width": 256,
+      "height": 256,
+      "sha256": "ffafce86ee3c4c5ccd57513fc498463bfff0e131e6ef6f8337016b2651eddcf4"
+    },
+    {
+      "key": "boat-transport",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/boat-transport.png",
+      "path": "assets/v03/units/boat-transport-ink-02.webp",
+      "sourceCrop": [257, 442, 1039, 934],
+      "width": 256,
+      "height": 256,
+      "sha256": "f0086c561b0d616497800e681b93c95d7ff9ed22305e41fd5f3d9491277322cc"
+    }
+  ]
+}
