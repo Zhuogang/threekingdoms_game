@@ -147,6 +147,8 @@ export const zh: Record<MessageKey, string> = {
   battleMapFit: '显示全图',
   battleMapFocusUnit: '聚焦选中部队',
   battleMapFocusCamps: '聚焦双方营地',
+  battleMapGrid: '显示网格线',
+  battleMapGridShort: '网格',
   battleMapNoCamps: '没有可聚焦的野战营地。',
   battleDayLabel: '战日',
   tacticChooseTarget: '请点击高亮部队来施展计策。',

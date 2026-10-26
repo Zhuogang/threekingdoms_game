@@ -77,6 +77,8 @@ function livingUnits(state: V03TacticalBattleState, side?: BattleSide): Tactical
 const isWavering = (unit: Pick<TacticalBattleUnit, 'morale'>): boolean =>
   unit.morale < WAVERING_MORALE;
 const isRouted = (unit: Pick<TacticalBattleUnit, 'morale'>): boolean => unit.morale < ROUTED_MORALE;
+/** Whether a unit's morale is below the rout threshold (display and rules share it). */
+export const isBattleUnitRouted = isRouted;
 
 function tacticalSeed(id: string, seed: number): number {
   let hash = (2166136261 ^ (seed >>> 0)) >>> 0;

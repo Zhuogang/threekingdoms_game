@@ -17,6 +17,15 @@ export interface BattleUnitVisual {
   status?: string;
   /** Portrait of the formation's highest-level officer; display only. */
   portraitKey?: string;
+  /** Troops at the start of the battle, for the strength bar. */
+  maxStrength?: number;
+  /** Officers in the formation; tokens show ×N from two upward. */
+  formationSize?: number;
+  /** Already acted this battle day: drawn greyed out. */
+  acted?: boolean;
+  condition?: 'confused' | 'inspired';
+  /** Morale below the rout threshold: drawn semi-transparent. */
+  routed?: boolean;
 }
 
 /** Public path of the 128px battle-token portrait for an officer identity. */

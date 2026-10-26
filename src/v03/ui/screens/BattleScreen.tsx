@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '../kit';
 import { message } from '../../i18n';
 
@@ -49,6 +50,8 @@ export function BattleScreen({
     navigateBattleMinimap,
     localizedOfficerName,
   } = context;
+  // Faint grid lines are on by default and can be hidden (plan §3).
+  const [showGrid, setShowGrid] = useState(true);
   return (
     <section
       className="v03-battle-main"
@@ -99,6 +102,7 @@ export function BattleScreen({
           camps={camps}
           viewport={battleViewport ?? undefined}
           interactive
+          showGrid={showGrid}
           onViewportChange={setBattleViewport}
           selectedCell={currentUnit ? { x: currentUnit.x, y: currentUnit.y } : undefined}
           reachableCells={reachableCells}
@@ -147,6 +151,14 @@ export function BattleScreen({
           </Button>
           <Button type="button" aria-label={t.battleMapFocusCamps} onClick={focusBattleMapCamps}>
             {message(locale, 'ui.camps.124')}
+          </Button>
+          <Button
+            type="button"
+            aria-label={t.battleMapGrid}
+            aria-pressed={showGrid}
+            onClick={() => setShowGrid((value) => !value)}
+          >
+            {t.battleMapGridShort}
           </Button>
         </div>
       </div>

@@ -2,7 +2,12 @@ import { troopName } from '../../rendering/presentation';
 import { terrainLabel, weatherLabel } from '../../i18n/formatters';
 import { message } from '../../i18n';
 
-import { battleTerrainAt, terrainMovementCost, waterCombatModifiers } from '../../battle';
+import {
+  battleTerrainAt,
+  isBattleUnitRouted,
+  terrainMovementCost,
+  waterCombatModifiers,
+} from '../../battle';
 import { CITY_GEOGRAPHY } from '../../geography';
 import { OFFICER_IDENTITIES } from '../../content/officerIdentity';
 
@@ -18,6 +23,8 @@ import {
   focusBattlefieldPointsViewport,
   gridToWorld,
   recenterBattlefieldViewport,
+  V03_BATTLE_CELL,
+  V03_BATTLE_READABLE_CELL_PIXELS,
   zoomBattlefieldViewport,
   zoomCampaignViewport,
 } from '../../rendering';
@@ -153,17 +160,19 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
           : null;
     return [condition, unitActionStatus(unit)].filter(Boolean).join(' · ');
   };
-  // The token shows the formation's highest-level officer; militia keep the troop silhouette.
+  const formationOfficerIds = (unit: NonNullable<typeof battleState>['units'][number]) =>
+    activeBattle
+      ? ((unit.side === 'attacker'
+          ? activeBattle.attackerFormationOfficerIds
+          : activeBattle.defenderFormationOfficerIds)[unit.id] ?? [])
+      : [];
+  // The token shows the formation's highest-level officer (then force, then ID);
+  // militia keep the troop silhouette.
   const unitPortraitKey = (unit: NonNullable<typeof battleState>['units'][number]) => {
-    if (!activeBattle) return undefined;
-    const ids =
-      (unit.side === 'attacker'
-        ? activeBattle.attackerFormationOfficerIds
-        : activeBattle.defenderFormationOfficerIds)[unit.id] ?? [];
-    const leader = ids
+    const leader = formationOfficerIds(unit)
       .map((id) => state.officers.find((officer) => officer.id === id))
       .filter((officer) => officer !== undefined)
-      .sort((a, b) => b.level - a.level || a.id.localeCompare(b.id))[0];
+      .sort((a, b) => b.level - a.level || b.force - a.force || a.id.localeCompare(b.id))[0];
     return leader ? OFFICER_IDENTITIES[leader.id]?.portraitKey : undefined;
   };
   const troopVisuals =
@@ -171,6 +180,11 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       .filter((unit) => unit.troops > 0)
       .map((unit) => ({
         portraitKey: unitPortraitKey(unit),
+        maxStrength: unit.initialTroops,
+        formationSize: formationOfficerIds(unit).length,
+        acted: unit.acted,
+        condition: unit.status === 'normal' ? undefined : unit.status,
+        routed: isBattleUnitRouted(unit),
         id: unit.id,
         troopType: unit.troopType,
         position: { x: unit.x, y: unit.y },
@@ -281,12 +295,19 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
   };
   const focusBattleMapUnit = () => {
     if (!battleBounds || !battleViewport || !currentUnit) return;
+    // Zoom in at least far enough for portraits (V03_BATTLE_READABLE_CELL_PIXELS per cell).
+    const rect = battleMapFrame.current?.querySelector('svg')?.getBoundingClientRect();
+    const fit = fitBattlefieldViewport(battleBounds, battleViewport.width / battleViewport.height);
+    const readable =
+      rect && rect.width > 0
+        ? fit.width / ((rect.width / V03_BATTLE_READABLE_CELL_PIXELS) * V03_BATTLE_CELL)
+        : 2.5;
     setBattleViewport(
       focusBattlefieldViewport(
         battleBounds,
         battleViewport,
         gridToWorld({ x: currentUnit.x, y: currentUnit.y }),
-        2.5,
+        Math.max(2.5, readable),
       ),
     );
   };

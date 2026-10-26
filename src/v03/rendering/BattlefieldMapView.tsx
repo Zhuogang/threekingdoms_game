@@ -206,15 +206,46 @@ function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' })
   );
 }
 
-// Token layout inside one 64-unit cell, centered on the cell center.
-const TOKEN_FACE_Y = -5;
-const TOKEN_FACE_RADIUS = 23;
-const TOKEN_SILHOUETTE = 44;
+// Token layout inside one 64-unit cell, centered on the cell center (plan §4).
+const TOKEN_FACE_Y = -3;
+const TOKEN_FACE_RADIUS = 26;
+const TOKEN_SILHOUETTE = 48;
+/** Below this many screen pixels per cell, tokens drop to a faction disc and troop glyph. */
+export const TOKEN_PORTRAIT_MIN_CELL_PIXELS = 44;
+
+function ConditionIcon({ condition }: { condition: 'confused' | 'inspired' }) {
+  return condition === 'confused' ? (
+    <g transform="translate(-21 -23)" aria-hidden="true">
+      <circle r={8} fill="#6d4a91" stroke="#f8f1df" strokeWidth={1.5} />
+      <path
+        d="M 0 0 m -1 0 a 1 1 0 1 1 2 0 a 3 3 0 1 1 -5 -1 a 5 5 0 1 1 8 3"
+        fill="none"
+        stroke="#fffaf0"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+    </g>
+  ) : (
+    <g transform="translate(-21 -23)" aria-hidden="true">
+      <circle r={8} fill="#c58a1f" stroke="#f8f1df" strokeWidth={1.5} />
+      <path
+        d="M -4 2 L 0 -3 L 4 2 M -4 5.5 L 0 0.5 L 4 5.5"
+        fill="none"
+        stroke="#fffaf0"
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
 
 function UnitSprite({
   unit,
   map,
   locale,
+  compact,
+  attackable,
   imageReady,
   transportReady,
   waterAttackMultiplier,
@@ -224,6 +255,9 @@ function UnitSprite({
   unit: BattleUnitVisual;
   map: BattlefieldVisualMap;
   locale: 'en' | 'zh';
+  /** Zoomed out below TOKEN_PORTRAIT_MIN_CELL_PIXELS: disc and glyph only. */
+  compact: boolean;
+  attackable: boolean;
   imageReady: boolean;
   transportReady: boolean;
   waterAttackMultiplier?: number;
@@ -247,7 +281,12 @@ function UnitSprite({
   const damageText = formatModifier(onWater ? waterIncomingDamageMultiplier : undefined, locale);
   const countLabel =
     unit.strength === undefined ? undefined : formatTroopCount(unit.strength, locale);
-  const countWidth = countLabel ? countLabel.length * 5.6 + 10 : 0;
+  const countWidth = countLabel ? countLabel.length * 5.3 + 9 : 0;
+  const strengthRatio =
+    unit.strength !== undefined && unit.maxStrength && unit.maxStrength > 0
+      ? Math.max(0, Math.min(1, unit.strength / unit.maxStrength))
+      : undefined;
+  const formationSize = unit.formationSize ?? 0;
   const details = [
     localeName,
     unit.label,
@@ -264,10 +303,16 @@ function UnitSprite({
   ]
     .filter(Boolean)
     .join(' · ');
+  // Acted units are greyed and routed ones fade; both still accept clicks.
+  const stateStyle = {
+    filter: unit.acted ? 'grayscale(0.9) brightness(0.92)' : undefined,
+    opacity: (unit.routed ? 0.45 : 1) * (unit.acted ? 0.85 : 1),
+  };
   return (
     <g
       className="v03-unit-token"
       data-unit-id={unit.id}
+      data-detail={compact ? 'compact' : 'portrait'}
       transform={`translate(${x} ${y})`}
       role="button"
       tabIndex={0}
@@ -284,9 +329,6 @@ function UnitSprite({
       }}
       style={{ cursor: 'pointer', outline: 'none' }}
     >
-      <clipPath id={clipId}>
-        <circle cx={0} cy={TOKEN_FACE_Y} r={TOKEN_FACE_RADIUS - 2} />
-      </clipPath>
       {selected ? (
         <rect
           x={-V03_BATTLE_HALF_CELL + 2}
@@ -300,115 +342,190 @@ function UnitSprite({
           strokeWidth={4}
         />
       ) : null}
-      {onWater ? (
-        transportReady ? (
-          <image
-            href={TRANSPORT_HREF}
-            x={-31}
-            y={TOKEN_FACE_Y + 6}
-            width={62}
-            height={31}
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          />
-        ) : (
-          <path
-            d={`M -30 ${TOKEN_FACE_Y + 14} Q 0 ${TOKEN_FACE_Y + 40} 30 ${TOKEN_FACE_Y + 14} Z`}
-            fill="#7a5a3a"
-            stroke="#3e2e20"
-            strokeWidth={2}
-            aria-hidden="true"
-          />
-        )
-      ) : null}
-      <circle
-        cx={0}
-        cy={TOKEN_FACE_Y}
-        r={TOKEN_FACE_RADIUS}
-        fill="#f6f0e3"
-        stroke={factionStroke}
-        strokeWidth={selected ? 4 : 3}
-      />
-      <g clipPath={`url(#${clipId})`} aria-hidden="true">
-        {imageReady && unitHref ? (
-          <image
-            href={unitHref}
-            x={-TOKEN_SILHOUETTE / 2}
-            y={TOKEN_FACE_Y - TOKEN_SILHOUETTE / 2}
-            width={TOKEN_SILHOUETTE}
-            height={TOKEN_SILHOUETTE}
-            preserveAspectRatio="xMidYMid meet"
-          />
-        ) : (
-          <text
-            y={TOKEN_FACE_Y}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize={20}
-            fontWeight="700"
-            fill="#2e2923"
-          >
-            {troopGlyph(unit.troopType)}
-          </text>
-        )}
-        {/* A missing portrait leaves the silhouette or glyph underneath visible. */}
-        {portraitHref ? (
-          <image
-            href={portraitHref}
-            x={-TOKEN_FACE_RADIUS}
-            y={TOKEN_FACE_Y - TOKEN_FACE_RADIUS}
-            width={TOKEN_FACE_RADIUS * 2}
-            height={TOKEN_FACE_RADIUS * 2}
-            preserveAspectRatio="xMidYMid slice"
-          />
+      <g style={stateStyle}>
+        {onWater ? (
+          transportReady ? (
+            <image
+              href={TRANSPORT_HREF}
+              x={-31}
+              y={TOKEN_FACE_Y + 8}
+              width={62}
+              height={26}
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            />
+          ) : (
+            <path
+              d={`M -30 ${TOKEN_FACE_Y + 14} Q 0 ${TOKEN_FACE_Y + 40} 30 ${TOKEN_FACE_Y + 14} Z`}
+              fill="#7a5a3a"
+              stroke="#3e2e20"
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+          )
         ) : null}
+        {compact ? (
+          <>
+            <circle
+              cx={0}
+              cy={0}
+              r={24}
+              fill={factionStroke}
+              stroke={selected ? '#f5c45b' : '#f8f1df'}
+              strokeWidth={selected ? 5 : 3}
+            />
+            <text
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={26}
+              fontWeight="700"
+              fill="#fffaf0"
+            >
+              {troopGlyph(unit.troopType)}
+            </text>
+          </>
+        ) : (
+          <>
+            <clipPath id={clipId}>
+              <circle cx={0} cy={TOKEN_FACE_Y} r={TOKEN_FACE_RADIUS - 2} />
+            </clipPath>
+            <circle
+              cx={0}
+              cy={TOKEN_FACE_Y}
+              r={TOKEN_FACE_RADIUS}
+              fill="#f6f0e3"
+              stroke={factionStroke}
+              strokeWidth={selected ? 4 : 3}
+            />
+            <g clipPath={`url(#${clipId})`} aria-hidden="true">
+              {imageReady && unitHref ? (
+                <image
+                  href={unitHref}
+                  x={-TOKEN_SILHOUETTE / 2}
+                  y={TOKEN_FACE_Y - TOKEN_SILHOUETTE / 2}
+                  width={TOKEN_SILHOUETTE}
+                  height={TOKEN_SILHOUETTE}
+                  preserveAspectRatio="xMidYMid meet"
+                />
+              ) : (
+                <text
+                  y={TOKEN_FACE_Y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={22}
+                  fontWeight="700"
+                  fill="#2e2923"
+                >
+                  {troopGlyph(unit.troopType)}
+                </text>
+              )}
+              {/* A missing portrait leaves the silhouette or glyph underneath visible. */}
+              {portraitHref ? (
+                <image
+                  href={portraitHref}
+                  x={-TOKEN_FACE_RADIUS}
+                  y={TOKEN_FACE_Y - TOKEN_FACE_RADIUS}
+                  width={TOKEN_FACE_RADIUS * 2}
+                  height={TOKEN_FACE_RADIUS * 2}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              ) : null}
+            </g>
+            {/* Faction pennant, top right. */}
+            <g aria-hidden="true">
+              <path d="M 21 -31 L 21 -14" stroke="#2e2923" strokeWidth={1.6} />
+              <path
+                d="M 21 -31 L 32 -27.5 L 21 -24 Z"
+                fill={factionStroke}
+                stroke="#f8f1df"
+                strokeWidth={0.8}
+              />
+            </g>
+            {/* Troop-type seal, bottom left. */}
+            <g transform="translate(-21 12)" aria-label={localeName}>
+              <circle r={8.5} fill={factionStroke} stroke="#f8f1df" strokeWidth={1.5} />
+              <text
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize={10}
+                fontWeight="700"
+                fill="#fffaf0"
+              >
+                {troopGlyph(unit.troopType)}
+              </text>
+            </g>
+            {formationSize > 1 ? (
+              <g transform="translate(21 12)" aria-hidden="true">
+                <rect x={-9} y={-6.5} width={18} height={13} rx={4} fill="#2e2923" />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={9}
+                  fontWeight="700"
+                  fill="#fffaf0"
+                >
+                  ×{formationSize}
+                </text>
+              </g>
+            ) : null}
+            {unit.condition ? <ConditionIcon condition={unit.condition} /> : null}
+            {countLabel !== undefined ? (
+              <g transform="translate(0 20)">
+                <rect
+                  x={-countWidth / 2}
+                  y={-6}
+                  width={countWidth}
+                  height={12}
+                  rx={6}
+                  fill="#f7efe0"
+                  stroke={factionStroke}
+                  strokeWidth={1.4}
+                />
+                <text
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize={9}
+                  fontWeight="700"
+                  fill="#29251f"
+                >
+                  {countLabel}
+                </text>
+              </g>
+            ) : null}
+            {strengthRatio !== undefined ? (
+              <g aria-hidden="true">
+                <rect
+                  x={-20}
+                  y={27.5}
+                  width={40}
+                  height={3.5}
+                  rx={1.5}
+                  fill="#2e2923"
+                  opacity={0.45}
+                />
+                <rect
+                  x={-20}
+                  y={27.5}
+                  width={40 * strengthRatio}
+                  height={3.5}
+                  rx={1.5}
+                  fill={factionStroke}
+                />
+              </g>
+            ) : null}
+          </>
+        )}
       </g>
-      <g transform="translate(19 -22)" aria-label={localeName}>
-        <circle r={9.5} fill={factionStroke} stroke="#f8f1df" strokeWidth={1.6} />
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={11}
-          fontWeight="700"
-          fill="#fffaf0"
-        >
-          {troopGlyph(unit.troopType)}
-        </text>
-      </g>
-      {onWater ? (
-        <g transform="translate(-19 -22)" aria-label={message(locale, 'ui.afloat.139')}>
-          <circle r={9} fill="#3b7881" stroke="#f8f1df" strokeWidth={1.6} />
-          <path
-            d="M -5 1 q 2.5 -3 5 0 t 5 0"
-            fill="none"
-            stroke="#fffaf0"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-          />
-        </g>
-      ) : null}
-      {countLabel !== undefined ? (
-        <g transform={`translate(0 ${TOKEN_FACE_Y + TOKEN_FACE_RADIUS + 4})`}>
-          <rect
-            x={-countWidth / 2}
-            y={-7.5}
-            width={countWidth}
-            height={15}
-            rx={7}
-            fill="#f7efe0"
-            stroke={factionStroke}
-            strokeWidth={1.6}
-          />
-          <text
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize={10}
-            fontWeight="700"
-            fill="#29251f"
-          >
-            {countLabel}
-          </text>
-        </g>
+      {attackable ? (
+        <circle
+          cx={0}
+          cy={compact ? 0 : TOKEN_FACE_Y}
+          r={compact ? 27.5 : TOKEN_FACE_RADIUS + 3.5}
+          fill="none"
+          stroke="#c2412f"
+          strokeWidth={3}
+          aria-hidden="true"
+        />
       ) : null}
       <title>{aria}</title>
     </g>
@@ -634,6 +751,24 @@ export function BattlefieldMapView({
   };
 
   const svgRef = useRef<SVGSVGElement | null>(null);
+  // Screen pixels per world unit; tokens drop to compact discs when cells get small.
+  const [screenScale, setScreenScale] = useState<number | null>(null);
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const measure = () => {
+      const rect = svg.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0)
+        setScreenScale(Math.min(rect.width / view.width, rect.height / view.height));
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, [view.width, view.height]);
+  const compactTokens =
+    screenScale !== null && screenScale * V03_BATTLE_CELL < TOKEN_PORTRAIT_MIN_CELL_PIXELS;
   return (
     <svg
       ref={svgRef}
@@ -843,6 +978,8 @@ export function BattlefieldMapView({
             unit={{ ...unit, isOnWater: isWater }}
             map={map}
             locale={locale}
+            compact={compactTokens}
+            attackable={attackable.has(`${unit.position.x},${unit.position.y}`)}
             imageReady={imageReady}
             transportReady={isWater && imageAssets.transport}
             waterAttackMultiplier={waterAttackMultiplier}

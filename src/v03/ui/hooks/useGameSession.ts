@@ -1,9 +1,12 @@
 import { useToasts } from './useToasts';
 import { isOfficerCommitted } from '../../governance/commitments';
-import { gridToWorld, V03_BATTLE_CELL, V03_BATTLEFIELD_PADDING } from '../../rendering';
+import {
+  gridToWorld,
+  V03_BATTLE_CELL,
+  V03_BATTLE_READABLE_CELL_PIXELS,
+  V03_BATTLEFIELD_PADDING,
+} from '../../rendering';
 
-/** Screen size of one cell when a battle opens. */
-const BATTLE_OPENING_CELL_PIXELS = 44;
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { scenarioById } from '../../content/scenario';
 import {
@@ -317,7 +320,7 @@ export function useGameSession() {
         const own = living.filter((unit) => unit.side === battleState.playerSide);
         const focus = (own.length ? own : living).map((unit) => gridToWorld(unit));
         const fit = fitBattlefieldViewport(bounds, aspect);
-        const readableWidth = (rect.width / BATTLE_OPENING_CELL_PIXELS) * V03_BATTLE_CELL;
+        const readableWidth = (rect.width / V03_BATTLE_READABLE_CELL_PIXELS) * V03_BATTLE_CELL;
         setBattleViewport(
           focus.length
             ? focusBattlefieldViewport(

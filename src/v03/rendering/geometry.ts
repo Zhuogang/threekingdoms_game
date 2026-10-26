@@ -9,6 +9,11 @@ export const V03_BATTLE_CELL = 64;
 export const V03_BATTLE_HALF_CELL = V03_BATTLE_CELL / 2;
 /** World margin around the board used by the camera fit and pan limits. */
 export const V03_BATTLEFIELD_PADDING = 24;
+/**
+ * Screen size of a cell when the camera opens or focuses a unit: above the
+ * 44 px threshold where tokens show portraits instead of compact discs.
+ */
+export const V03_BATTLE_READABLE_CELL_PIXELS = 48;
 
 export interface Point {
   x: number;

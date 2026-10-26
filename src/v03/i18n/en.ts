@@ -149,6 +149,8 @@ export const en = {
   battleMapFit: 'Fit full battlefield',
   battleMapFocusUnit: 'Focus selected unit',
   battleMapFocusCamps: 'Focus both field camps',
+  battleMapGrid: 'Show grid lines',
+  battleMapGridShort: 'Grid',
   battleMapNoCamps: 'No field camps are available to focus.',
   battleDayLabel: 'Battle day',
   tacticChooseTarget: 'Select a highlighted unit to use this tactic.',

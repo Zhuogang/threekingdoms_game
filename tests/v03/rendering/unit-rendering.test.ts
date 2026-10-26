@@ -52,6 +52,47 @@ describe('battlefield unit presentation', () => {
     expect(html).toContain('url(#v03-terrain-map-water)');
   });
 
+  it('draws the plan §4 token parts and states', () => {
+    const html = renderToStaticMarkup(
+      createElement(BattlefieldMapView, {
+        map,
+        attackableCells: [{ x: 0, y: 0 }],
+        units: [
+          {
+            ...units[0]!,
+            strength: 350,
+            maxStrength: 700,
+            formationSize: 3,
+            acted: true,
+            routed: true,
+            condition: 'confused',
+          },
+        ],
+      }),
+    );
+    expect(html).toContain('>×3</text>');
+    expect(html).toContain('width="20"'); // strength bar at 350/700 of 40 units
+    expect(html).toContain('grayscale(0.9)');
+    expect(html).toContain('opacity:0.3825'); // routed 0.45 × acted 0.85
+    expect(html).toContain('fill="#6d4a91"'); // confusion icon
+    expect(html).toContain('stroke="#c2412f"'); // attackable ring
+    expect(html).toContain('data-detail="portrait"'); // full detail until the view is measured
+    const single = renderToStaticMarkup(
+      createElement(BattlefieldMapView, { map, units: [{ ...units[0]!, formationSize: 1 }] }),
+    );
+    expect(single).not.toContain('×');
+    expect(single).not.toContain('grayscale');
+  });
+
+  it('hides the grid lines when asked', () => {
+    const shown = renderToStaticMarkup(createElement(BattlefieldMapView, { map }));
+    const hidden = renderToStaticMarkup(
+      createElement(BattlefieldMapView, { map, showGrid: false }),
+    );
+    expect(shown).not.toContain('display="none"');
+    expect(hidden).toContain('display="none"');
+  });
+
   it.each([BattlefieldMapView, BattlefieldMinimap])(
     '%s omits defeated units while retaining their supplied historical records',
     (View) => {
