@@ -9,7 +9,7 @@ import {
   waterCombatModifiers,
 } from '../../battle';
 import { CITY_GEOGRAPHY } from '../../geography';
-import { OFFICER_IDENTITIES } from '../../content/officerIdentity';
+import { formationLeaderVisual } from '../../rendering/unit-leader';
 
 import { getV03CityActionAvailability } from '../../governance/city-actions';
 
@@ -166,19 +166,11 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
           ? activeBattle.attackerFormationOfficerIds
           : activeBattle.defenderFormationOfficerIds)[unit.id] ?? [])
       : [];
-  // A separate portrait badge identifies the leader without covering the squad.
-  const unitPortraitKey = (unit: NonNullable<typeof battleState>['units'][number]) => {
-    const leader = formationOfficerIds(unit)
-      .map((id) => state.officers.find((officer) => officer.id === id))
-      .filter((officer) => officer !== undefined)
-      .sort((a, b) => b.level - a.level || b.force - a.force || a.id.localeCompare(b.id))[0];
-    return leader ? OFFICER_IDENTITIES[leader.id]?.portraitKey : undefined;
-  };
   const troopVisuals =
     battleState?.units
       .filter((unit) => unit.troops > 0)
       .map((unit) => ({
-        portraitKey: unitPortraitKey(unit),
+        ...formationLeaderVisual(state.officers, formationOfficerIds(unit)),
         maxStrength: unit.initialTroops,
         formationSize: formationOfficerIds(unit).length,
         acted: unit.acted,

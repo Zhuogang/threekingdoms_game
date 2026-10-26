@@ -256,8 +256,8 @@ function UnitSprite({
 }) {
   const { x, y } = gridToWorld(unit.position);
   const onWater = unitIsOnWater(unit, map);
-  const displayType = onWater ? 'water' : unit.troopType;
-  const artwork = unitArtwork(unit.troopType, onWater, unit.strength);
+  const displayType = onWater ? (unit.navalTraining ? 'warship' : 'water') : unit.troopType;
+  const artwork = unitArtwork(unit.troopType, onWater, unit.strength, unit.navalTraining);
   const unitHref = artwork ? resolvePublicAsset(artwork.path, BASE_URL) : undefined;
   const portraitHref = unit.portraitKey
     ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)

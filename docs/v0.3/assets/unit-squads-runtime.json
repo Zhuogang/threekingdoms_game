@@ -1,6 +1,6 @@
 {
   "sourceManifest": "units-formations-ink-02.json",
-  "scope": "Stage 1 task 2: below 500 troops uses small squads; 500 or more uses large formations. Boats stay unchanged.",
+  "scope": "Stage 2 task 1: below 500 troops uses small land squads; 500 or more uses large formations. On water, approved naval commanders use tower warships; all others use crewed boats.",
   "entries": [
     {
       "key": "infantry-small",
@@ -64,6 +64,15 @@
       "width": 512,
       "height": 512,
       "sha256": "19170f3e0664d2616bdb83bddf1c25d38804765fc94eaa487cd6df310678ffbc"
+    },
+    {
+      "key": "warship",
+      "source": "docs/v0.3/assets/generated/units-formations-ink-02/warship.png",
+      "path": "assets/v03/units/warship-ink-02.webp",
+      "sourceCrop": [158, 229, 1157, 1182],
+      "width": 256,
+      "height": 256,
+      "sha256": "4e9775765a656263987c7d704183e0f53cefc783bae364d7e9c4015a15467ad9"
     }
   ]
 }

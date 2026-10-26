@@ -68,7 +68,8 @@ export function BattleSidebar({
           {battleState.units
             .filter((unit) => unit.troops > 0)
             .map((unit) => {
-              const portraitKey = troopVisuals.find((visual) => visual.id === unit.id)?.portraitKey;
+              const visual = troopVisuals.find((visual) => visual.id === unit.id);
+              const portraitKey = visual?.portraitKey;
               return (
                 <Button
                   type="button"
@@ -90,6 +91,7 @@ export function BattleSidebar({
                     <UnitIcon
                       troopType={unit.troopType}
                       troops={unit.troops}
+                      navalTraining={visual?.navalTraining}
                       onWater={battleTerrainAt(battleState.map, unit) === 'water'}
                       locale={locale}
                     />

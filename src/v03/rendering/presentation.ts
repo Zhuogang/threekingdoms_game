@@ -17,6 +17,8 @@ export interface BattleUnitVisual {
   status?: string;
   /** Highest-level officer in this formation; shown beside the squad art. */
   portraitKey?: string;
+  /** The portrait's commanding officer can use tower warships on water. */
+  navalTraining?: boolean;
   /** Troops at the start of the battle, for the strength bar. */
   maxStrength?: number;
   /** Officers in the formation; tokens show ×N from two upward. */
@@ -43,6 +45,7 @@ export const TROOP_NAMES: Record<string, { en: string; zh: string; glyph: string
   cavalry: { en: 'Cavalry', zh: '骑兵', glyph: '骑' },
   archer: { en: 'Archer', zh: '弓兵', glyph: '弓' },
   water: { en: 'Waterborne unit', zh: '水上单位', glyph: '舟' },
+  warship: { en: 'Navy (tower warship)', zh: '水军（楼船）', glyph: '舰' },
 };
 
 export function unitIsOnWater(

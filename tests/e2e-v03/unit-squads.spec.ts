@@ -10,14 +10,33 @@ async function loadState(page: Page, state: V03GameState) {
   await expect(page.locator('.v03-battle-main')).toBeVisible();
 }
 
-for (const troops of [499, 500]) {
-  test(`${troops} troops retain portraits, change to boats and restore the correct formation`, async ({
+for (const [troops, navalCommander] of [
+  [499, false],
+  [500, false],
+  [499, true],
+  [500, true],
+] as const) {
+  test(`${troops} troops with naval commander ${navalCommander} retain portraits, change vessels and restore land art`, async ({
     page,
   }, testInfo) => {
     const state = reviewBattleState('bf04-wetland-south');
     const battle = state.battles.find((entry) => entry.active)!;
     const data = battle.battleData;
     const unit = data.units.find((entry) => entry.side === data.playerSide && !entry.isMilitia)!;
+    if (navalCommander) {
+      // A recruited Zhou Yu commands an otherwise ordinary Cao formation.
+      const officer = state.officers.find((entry) => entry.id === 'zhouyu')!;
+      Object.assign(officer, {
+        factionId: state.playerFactionId,
+        level: 5,
+        location: { kind: 'battle', battleId: battle.id },
+      });
+      const membership =
+        unit.side === 'attacker'
+          ? battle.attackerFormationOfficerIds
+          : battle.defenderFormationOfficerIds;
+      membership[unit.id]!.push(officer.id);
+    }
     const waterIndex = data.map.terrain.findIndex(
       (terrain, index) =>
         terrain === 'water' &&
@@ -34,13 +53,18 @@ for (const troops of [499, 500]) {
     await loadState(page, state);
     const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
     const landPath = `/assets/v03/units/${unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-02.webp`;
-    const boatPath = '/assets/v03/units/boat-transport-ink-02.webp';
+    const boatPath = `/assets/v03/units/${navalCommander ? 'warship' : 'boat-transport'}-ink-02.webp`;
     await expect(token).toHaveAttribute('data-unit-art', landPath);
     await expect(token.locator(`image[href="${landPath}"]`)).toHaveAttribute(
       'visibility',
       'visible',
     );
     await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
+    if (navalCommander)
+      await expect(token.locator('[data-leader-portrait]')).toHaveAttribute(
+        'data-leader-portrait',
+        'zhouyu',
+      );
     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
     await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
     await token.click();
@@ -56,7 +80,16 @@ for (const troops of [499, 500]) {
     );
     await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
     await expect(page.locator(`.v03-unit-row.selected img[src="${boatPath}"]`)).toBeVisible();
+    if (navalCommander) {
+      await expect(page.locator('.v03-unit-row.selected .v03-unit-leader')).toHaveAttribute(
+        'src',
+        '/assets/portraits/zhouyu-small.webp',
+      );
+      await expect(token).toHaveAttribute('aria-label', /水军（楼船）/);
+    }
     await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-water.png') });
+    await page.reload();
+    await expect(token).toHaveAttribute('data-unit-art', boatPath);
 
     await submitBattleDay(page);
     await token.click();

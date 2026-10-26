@@ -29,6 +29,46 @@ const units: BattleUnitVisual[] = [
 
 describe('battlefield unit presentation', () => {
   it.each(['infantry', 'cavalry', 'archer'])(
+    '%s naval commanders keep portraits and restore land formations',
+    (troopType) => {
+      for (const strength of [499, 500]) {
+        const unit = {
+          ...units[0]!,
+          troopType,
+          strength,
+          portraitKey: 'guanyu',
+          navalTraining: true,
+        };
+        for (const onWater of [false, true]) {
+          const expectedArt = onWater
+            ? 'warship'
+            : `${troopType}-${strength >= 500 ? 'large' : 'small'}`;
+          const html = renderToStaticMarkup(
+            createElement(BattlefieldMapView, {
+              map,
+              units: [{ ...unit, position: { x: onWater ? 1 : 0, y: 0 } }],
+              locale: 'zh',
+            }),
+          );
+          expect(html).toContain(`${expectedArt}-ink-02.webp`);
+          expect(html).toContain('assets/portraits/guanyu-small.webp');
+          expect(html).not.toContain('boat-transport-ink-02.webp');
+          if (onWater) expect(html).toContain('水军（楼船）');
+          const sidebar = renderToStaticMarkup(
+            createElement(UnitIcon, {
+              troopType,
+              troops: strength,
+              onWater,
+              navalTraining: true,
+              locale: 'zh',
+            }),
+          );
+          expect(sidebar).toContain(`${expectedArt}-ink-02.webp`);
+        }
+      }
+    },
+  );
+  it.each(['infantry', 'cavalry', 'archer'])(
     '%s uses current troops for land formations and keeps boats unchanged',
     (troopType) => {
       for (const strength of [1, 499, 500, 501, 10000, 499]) {

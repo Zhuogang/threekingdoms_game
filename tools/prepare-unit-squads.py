@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'docs/v0.3/assets/units-formations-ink-02.json'
 data = json.loads(MANIFEST.read_text(encoding='utf-8-sig'))
 keys = ['infantry-small', 'cavalry-small', 'archer-small', 'boat-transport',
-        'infantry-large', 'cavalry-large', 'archer-large']
+        'infantry-large', 'cavalry-large', 'archer-large', 'warship']
 entries = []
 for key in keys:
     entry = next(item for item in data['entries'] if item['key'] == key)
@@ -37,6 +37,6 @@ for key in keys:
     })
 (ROOT / 'docs/v0.3/assets/unit-squads-runtime.json').write_text(
     json.dumps({'sourceManifest': 'units-formations-ink-02.json',
-                'scope': 'Stage 1 task 2: below 500 troops uses small squads; 500 or more uses large formations. Boats stay unchanged.',
+                'scope': 'Stage 2 task 1: below 500 troops uses small land squads; 500 or more uses large formations. On water, approved naval commanders use tower warships; all others use crewed boats.',
                 'entries': entries}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(entries, indent=2))

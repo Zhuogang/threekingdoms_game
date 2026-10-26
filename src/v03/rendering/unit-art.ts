@@ -1,8 +1,8 @@
 import { V03_ASSETS } from './assets';
 
-/** Current surviving troops determine land art; all waterborne units keep the same boat. */
-export function unitArtwork(troopType: string, onWater = false, troops = 0) {
-  if (onWater) return V03_ASSETS.transportSquadInk02;
+/** Troop count determines land art; the commanding officer determines the vessel. */
+export function unitArtwork(troopType: string, onWater = false, troops = 0, navalTraining = false) {
+  if (onWater) return navalTraining ? V03_ASSETS.towerWarshipInk02 : V03_ASSETS.transportSquadInk02;
   const large = Number.isFinite(troops) && troops >= 500;
   switch (troopType) {
     case 'infantry':
