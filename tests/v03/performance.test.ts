@@ -57,7 +57,7 @@ function runBattleDay(seed: number, canvas?: string) {
 }
 
 describe('v0.3 tactical performance baseline', () => {
-  it('keeps a 10v10 24×20 two-sided AI battle day below the 50 ms p95 target', () => {
+  it('keeps a 10v10 AI battle day on the 24×20 test templates below the 50 ms p95 target', () => {
     for (let seed = 1; seed <= 3; seed++) runBattleDay(seed);
 
     const samples = Array.from({ length: 30 }, (_, index) => runBattleDay(index + 101));

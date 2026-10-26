@@ -1,7 +1,11 @@
 import { Button } from '../kit';
 import { message } from '../../i18n';
 
-import { WATER_ATTACK_MULTIPLIER, WATER_INCOMING_DAMAGE_MULTIPLIER } from '../../battle';
+import {
+  WATER_ATTACK_MULTIPLIER,
+  WATER_INCOMING_DAMAGE_MULTIPLIER,
+  battlefieldName,
+} from '../../battle';
 
 import { BattlefieldMapView, BattlefieldMinimap } from '../../rendering';
 
@@ -75,20 +79,7 @@ export function BattleScreen({
       <div className="v03-view-heading">
         <div>
           <span className="v03-kicker">
-            {t.battle} ·{' '}
-            {locale === 'zh'
-              ? {
-                  xiapi: '中原平野',
-                  hanzhong: '西部山地',
-                  shouchun: '江淮水乡',
-                  chengdu: '蜀地丘陵',
-                }[battleState.map.regionId]
-              : {
-                  xiapi: 'Central plains',
-                  hanzhong: 'Western mountains',
-                  shouchun: 'River country',
-                  chengdu: 'Shu hills',
-                }[battleState.map.regionId]}
+            {t.battle} · {battlefieldName(battleState.map.battlefieldId, locale)}
           </span>
           <h1>
             {locationName(

@@ -11,9 +11,8 @@ import {
 import { Buffer } from 'node:buffer';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
-  createBattleMap,
+  createCanvasBattleMap,
   getUnitReachableTiles,
-  type BattleRegion,
   type BattleTactic,
 } from '../../src/v03/battle';
 import { battlefieldBounds, V03_BATTLEFIELD_PADDING } from '../../src/v03/rendering/geometry';
@@ -83,7 +82,7 @@ async function importFile(page: Page, name: string, content: string) {
   });
 }
 
-function createBattleSave(regionId: BattleRegion = 'xiapi'): string {
+function createBattleSave(battlefieldId = 'bf01-north-plain'): string {
   let state: V03GameState = createV03Game('cao', 481516);
   const dispatched = executeV03Command(state, {
     type: 'issueCampaignDirective',
@@ -116,8 +115,7 @@ function createBattleSave(regionId: BattleRegion = 'xiapi'): string {
   for (let day = 0; day < 8; day++) {
     const battle = state.battles.find((entry) => entry.active && entry.attackerFactionId === 'cao');
     if (battle) {
-      const map = createBattleMap({
-        regionId,
+      const map = createCanvasBattleMap(battlefieldId, {
         approachDirection: 'north',
         seed: 481516,
       });
@@ -337,7 +335,7 @@ test('runs reward, equipment, and relief through capital work points and persist
   expect(officer).toMatchObject({ loyalty: 65, force: 95, equipment: 'Fine arms' });
 });
 
-test('renders and resumes a playable 24×20 battle with unit artwork', async ({
+test('renders and resumes a playable 48×32 battle with unit artwork', async ({
   page,
 }, testInfo) => {
   await page.goto('/');
@@ -495,7 +493,7 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   const top = fittedValues[1]!;
   const width = fittedValues[2]!;
   const height = fittedValues[3]!;
-  const boardBounds = battlefieldBounds(24, 20, V03_BATTLEFIELD_PADDING);
+  const boardBounds = battlefieldBounds(48, 32, V03_BATTLEFIELD_PADDING);
   expect(left).toBeLessThanOrEqual(boardBounds.left);
   expect(top).toBeLessThanOrEqual(boardBounds.top);
   expect(left + width).toBeGreaterThanOrEqual(boardBounds.right);
@@ -532,25 +530,21 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   expect(chineseFit[1]! + chineseFit[3]!).toBeGreaterThanOrEqual(boardBounds.bottom);
 });
 
-test('renders all four geographic battlefield templates in the playable view', async ({
-  page,
-}, testInfo) => {
+test('renders painted canvas battlefields in the playable view', async ({ page }, testInfo) => {
   await startCampaign(page);
 
-  for (const region of ['hanzhong', 'shouchun', 'xiapi', 'chengdu'] as const) {
+  for (const [region, name] of [
+    ['bf01-north-plain', 'Northern Plain'],
+    ['bf03-yellow-river-ford', 'Yellow River Ford'],
+    ['bf05-yangtze-crossing', 'Great River Crossing'],
+    ['bf09-gorge', 'Gorge Plank Road'],
+  ] as const) {
     await importFile(page, `${region}-battle.save`, createBattleSave(region));
     await expect(page.locator('.v03-battle-main')).toBeVisible();
-    await expect(page.locator('.v03-view-heading .v03-kicker')).toContainText(
-      {
-        hanzhong: 'Western mountains',
-        shouchun: 'River country',
-        xiapi: 'Central plains',
-        chengdu: 'Shu hills',
-      }[region],
-    );
+    await expect(page.locator('.v03-view-heading .v03-kicker')).toContainText(name);
     await expect(page.locator('.v03-battle-board svg image').first()).toHaveAttribute(
       'href',
-      /(?:units|terrain)\//,
+      new RegExp(`battlefields/${region}\\.webp`),
     );
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await acknowledgeAll(page);

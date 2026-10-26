@@ -4,7 +4,7 @@ Updated October 22, 2026. Branch `hegemony_of_the_three_kindoms_v0.3`, implement
 
 ## Completed
 
-- [x] Core geography, daily travel/logistics, governor autonomy/orders, 24×20 water-capable battles, diplomacy/endings, v3 saves and bilingual Wiki integrated.
+- [x] Core geography, daily travel/logistics, governor autonomy/orders, water-capable battles (now 48×32 painted battlefields), diplomacy/endings, v3 saves and bilingual Wiki integrated.
 - [x] Initial F01–F08 defects and follow-up RV01–RV10 repaired/implemented with regressions. [Per-task ledger](v0.3/playability-review-and-todo.md#rv-completion-ledger).
 - [x] RV validation recorded October 21: 668 passed/one skip; 34 browser cases plus six affected-case reruns; build/typecheck, production, tactical performance, formatting and portrait checks pass.
 - [x] Strategic diagnostic miss and rejected tuning trials documented; user accepted the miss and retained the conservative one-front rival policy.
@@ -14,7 +14,7 @@ Updated October 22, 2026. Branch `hegemony_of_the_three_kindoms_v0.3`, implement
 
 - [x] **V/I/Q — development eligibility:** shared cap 500, direct and governor eligibility, retained save scale and short-run economy checks. See the [playability implementation](v0.3/playability-implementation.md).
 - [ ] **Player:** four campaign sessions, each 12 months and at least three manual battles. Vary house/scenario; report friction and defects with exported saves.
-- [ ] **Player:** real low-end-machine check, covering startup, campaign map, one 24×20 battle, camera/minimap and a long resolution.
+- [ ] **Player:** real low-end-machine check, covering startup, campaign map, one 48×32 battle, camera/minimap and a long resolution.
 - [ ] **Player → A/R/Q:** specific art notes, targeted revisions, runtime review and approval. Seven active generated assets and an inactive paper alternative remain draft. [Workflow](v0.3/06-imagegen-and-artwork.md#next-revision-steps).
 - [ ] **Deferred by user:** push/PR/remote CI. No remote publication or CI pass is claimed.
 

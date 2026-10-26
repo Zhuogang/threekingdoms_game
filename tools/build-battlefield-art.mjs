@@ -820,8 +820,14 @@ function threeGorges(g) {
   g.rect(0, 10, W - 1, 21, '.');
   g.rect(19, 6, 28, 25, '.');
   g.rect(0, 12, W - 1, 19, '~');
-  g.rect(0, 11, W - 1, 11, '=');
-  g.rect(0, 20, W - 1, 20, '=');
+  // As the v1 painting draws them: towpaths on rows 10 and 21, a boulder bank
+  // between path and water; the basin keeps its open beach. All plain ground.
+  g.rect(0, 11, W - 1, 11, '_');
+  g.rect(0, 20, W - 1, 20, '_');
+  g.rect(0, 10, 18, 10, '=');
+  g.rect(29, 10, W - 1, 10, '=');
+  g.rect(0, 21, 18, 21, '=');
+  g.rect(29, 21, W - 1, 21, '=');
   g.ellipse(23.5, 15.5, 2.5, 1.2, '_');
   g.ellipse(22, 7, 2, 1, 'T');
   g.ellipse(25, 24, 2, 1, 'T');
@@ -1276,7 +1282,9 @@ const MAPS = [
     zh: '峡谷栈道（三峡）',
     round: 2,
     build: threeGorges,
-    camps: { a: [5, 10], d: [42, 10] },
+    // Camps at the mouths of the basin: from the map edges, two-cell towpaths
+    // stretched battles to a 15-day median; here the median is 9 days.
+    camps: { a: [14, 10], d: [33, 10] },
     rows: [10, 21],
     target: { plain: 22, forest: 4, hill: 6, water: 25, cliff: 43 },
     about: ['三峡：大江从峡底横贯，两岸是贴崖的纤道，中段一小块河谷盆地。'],
@@ -1284,7 +1292,7 @@ const MAPS = [
       '#': 'towering limestone gorge walls',
       '~': 'the green Yangtze racing through the gorge',
       '=': 'narrow towpaths cut into the cliffs along both banks',
-      _: 'a gravel bar in midstream',
+      _: 'a gravel bar in midstream and boulder banks between the towpaths and the water',
       '.': 'a small riverside basin and gully floors',
       '^': 'small high terraces',
       T: 'clinging trees',

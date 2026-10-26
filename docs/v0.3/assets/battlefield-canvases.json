@@ -47,6 +47,18 @@
     "status": "integrated",
     "encodedOn": "2026-10-23"
   },
+  "bf04-wetland-south": {
+    "source": "docs/v0.3/battlefield-art/bf04-wetland-south/attempts/v1.webp",
+    "sourceSha256": "9b38af9f4880d0191ba21d4140cca6b176a67e8c67a7c3a4fe53d000d43a08ba",
+    "path": "public/assets/v03/battlefields/bf04-wetland-south.webp",
+    "width": 1536,
+    "height": 1024,
+    "quality": 0.9,
+    "bytes": 652984,
+    "sha256": "0d6691710032f828960f59ee1cbc70cabbe7531f73b0bc3ea7934798c82fcc43",
+    "status": "integrated",
+    "encodedOn": "2026-10-26"
+  },
   "bf05-yangtze-bank": {
     "source": "docs/v0.3/battlefield-art/bf05-yangtze-bank/attempts/v1.webp",
     "sourceSha256": "d08b848edb638abe8e98136c69ffc94c4fd10606391cdf2ebb50080b95246ea9",
@@ -95,6 +107,18 @@
     "status": "integrated",
     "encodedOn": "2026-10-23"
   },
+  "bf07-rolling-hills": {
+    "source": "docs/v0.3/battlefield-art/bf07-rolling-hills/attempts/v1.webp",
+    "sourceSha256": "9f3ffa187f6ec5da8338f59ad0ade788a0ad80acbec6beaaafbced8ab65432bc",
+    "path": "public/assets/v03/battlefields/bf07-rolling-hills.webp",
+    "width": 1536,
+    "height": 1024,
+    "quality": 0.9,
+    "bytes": 692856,
+    "sha256": "7ed8246dc076239341187dc05db783c6da9d349f23e28f2b148f8c38ac43025a",
+    "status": "integrated",
+    "encodedOn": "2026-10-26"
+  },
   "bf07-taihang": {
     "source": "docs/v0.3/battlefield-art/bf07-taihang/attempts/v1.webp",
     "sourceSha256": "4ec801984045a522be719aabd2742c2671408d85ce0620f1650cf3232943a11b",
@@ -130,6 +154,18 @@
     "sha256": "0797086e8b02cbd716e244d56241b9a07cbb25d9f2230fd697f47e75cc5b38a7",
     "status": "integrated",
     "encodedOn": "2026-10-23"
+  },
+  "bf09-three-gorges": {
+    "source": "docs/v0.3/battlefield-art/bf09-three-gorges/attempts/v1.webp",
+    "sourceSha256": "4da0042743e1e9b0c5c59286c6039ead29d5f0051056db4e6389f7fc739ae234",
+    "path": "public/assets/v03/battlefields/bf09-three-gorges.webp",
+    "width": 1536,
+    "height": 1024,
+    "quality": 0.9,
+    "bytes": 641880,
+    "sha256": "eb91a349b01e1a4017d0fe36c8fd8c3480af63acdccfa6c8c0debd4222d43896",
+    "status": "integrated",
+    "encodedOn": "2026-10-26"
   },
   "bf10-mountain-pass": {
     "source": "docs/v0.3/battlefield-art/bf10-mountain-pass/attempts/v1.webp",

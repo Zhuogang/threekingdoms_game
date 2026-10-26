@@ -1,4 +1,4 @@
-import { createBattleMap, createCanvasBattleMap, type BattleRegion } from '../../src/v03/battle';
+import { createCanvasBattleMap } from '../../src/v03/battle';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
 import { encodeV03Save } from '../../src/v03/platform/storage';
@@ -12,11 +12,11 @@ export function acknowledgeReports(state: V03GameState): V03GameState {
   return next;
 }
 
-/** A real campaign battle, moved onto a legacy template or, with `canvasId`, a 48×32 canvas. */
-export function reviewBattleState(
-  regionId: BattleRegion = 'xiapi',
-  canvasId?: string,
-): V03GameState {
+/**
+ * A real campaign battle (Puyang → Xiapi). With `battlefieldId`, the battle is
+ * moved onto that canvas; otherwise it keeps the one the campaign selected.
+ */
+export function reviewBattleState(battlefieldId?: string): V03GameState {
   const dispatched = executeV03Command(createV03Game('cao', 481516), {
     type: 'issueCampaignDirective',
     sourceCityId: 'puyang',
@@ -40,9 +40,11 @@ export function reviewBattleState(
   for (let day = 0; day < 8; day++) {
     const battle = state.battles.find((entry) => entry.active);
     if (battle) {
-      const map = canvasId
-        ? createCanvasBattleMap(canvasId, { approachDirection: 'north', seed: 481516 })
-        : createBattleMap({ regionId, approachDirection: 'north', seed: 481516 });
+      if (!battlefieldId) return acknowledgeReports(state);
+      const map = createCanvasBattleMap(battlefieldId, {
+        approachDirection: 'north',
+        seed: 481516,
+      });
       Object.assign(battle, { mapId: map.mapId, mapVersion: map.templateVersion, seed: map.seed });
       battle.battleData.map = map;
       for (const side of ['attacker', 'defender'] as const) {

@@ -18,7 +18,6 @@ import { Buffer } from 'node:buffer';
 import { expect, test, type Page } from '@playwright/test';
 import { createV03Game } from '../../src/v03/initial-state';
 import { battlefieldBounds } from '../../src/v03/rendering/geometry';
-import type { BattleRegion } from '../../src/v03/battle';
 import type { V03GameState } from '../../src/v03/types';
 import {
   asSave,
@@ -486,13 +485,13 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
   }
 });
 
-for (const region of ['xiapi', 'shouchun', 'hanzhong', 'chengdu'] as BattleRegion[])
+for (const region of ['bf01-north-plain', 'bf04-wetland-north', 'bf09-gorge', 'bf08-south-hills'])
   test(`RV02 keeps ${region} fitted and stable throughout the responsive/zoom/language matrix`, async ({
     page,
   }) => {
     test.setTimeout(180_000);
     await loadState(page, reviewBattleState(region));
-    const bounds = battlefieldBounds(24, 20);
+    const bounds = battlefieldBounds(48, 32);
     for (const language of ['en', 'zh'] as const) {
       await locale(page, language);
       for (const zoom of [1, 2])

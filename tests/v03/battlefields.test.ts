@@ -11,6 +11,7 @@ import {
   createTacticalBattle,
   getBattleRouteDistanceField,
   parseCanvasLayout,
+  selectCampaignBattlefield,
   validateBattleMap,
   type BattleMap,
   type BattlePosition,
@@ -18,6 +19,7 @@ import {
 } from '../../src/v03/battle';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import { reviewBattleState } from '../e2e-v03/playability-fixtures';
+import { ROUTE_DEFINITIONS } from '../../src/v03/geography';
 
 const troopTypes: BattleTroopType[] = ['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard'];
 
@@ -144,19 +146,140 @@ describe('48×32 canvas battlefields', () => {
     );
   });
 
-  it('saves and restores a campaign battle on a 48×32 canvas, and still accepts 24×20', () => {
-    for (const state of [
-      reviewBattleState('xiapi', 'bf01-north-plain'),
-      reviewBattleState('xiapi'),
-    ]) {
+  it('saves and restores campaign battles on canvases and rejects 24×20 battles', () => {
+    const selected = reviewBattleState();
+    const moved = reviewBattleState('bf03-yellow-river-ford');
+    for (const state of [selected, moved]) {
       expect(validateV03State(state)).toBe(true);
       expect(decodeV03Save(encodeV03Save(state))).toEqual(state);
     }
-    const canvas = reviewBattleState('xiapi', 'bf01-north-plain');
-    expect(canvas.battles.find((battle) => battle.active)!.battleData.map.width).toBe(48);
-    // A unit outside its map's own bounds is rejected even though 48×32 saves allow x up to 47.
-    const legacy = reviewBattleState('xiapi');
-    legacy.battles.find((battle) => battle.active)!.battleData.units[0]!.x = 30;
+    const map = (state: typeof selected) =>
+      state.battles.find((battle) => battle.active)!.battleData.map;
+    // Puyang → Xiapi is a direction special case: Xiapi is ringed by the Si and Yi rivers.
+    expect(map(selected).battlefieldId).toBe('bf04-wetland-north');
+    expect(map(moved).width).toBe(48);
+    // Earlier saves fought on the 24×20 regional templates are not accepted.
+    const legacy = reviewBattleState();
+    const battle = legacy.battles.find((entry) => entry.active)!;
+    battle.battleData.map = createBattleMap({ regionId: 'xiapi', seed: battle.seed });
+    Object.assign(battle, { mapId: battle.battleData.map.mapId, mapVersion: 'v0.3.1' });
     expect(validateV03State(legacy)).toBe(false);
+  });
+});
+
+describe('campaign battlefield selection', () => {
+  const cities = (id: string) => id.split('--');
+  const label = (to: string, from: string) => `${to}<-${from}`;
+  // Plan §8.
+  const expected: Record<string, string> = {
+    'tianshui<-changan': 'bf06-valley-north',
+    'tianshui<-hanzhong': 'bf09-gorge',
+    'changan<-tianshui': 'bf06-valley-north',
+    'changan<-luoyang': 'bf10-mountain-pass',
+    'changan<-hanzhong': 'bf06-valley-north',
+    'luoyang<-changan': 'bf10-mountain-pass',
+    'luoyang<-chenliu': 'bf10-mountain-pass',
+    'luoyang<-wancheng': 'bf10-mountain-pass',
+    'luoyang<-ye': 'bf03-yellow-river-ford',
+    'luoyang<-jinyang': 'bf03-yellow-river-ford',
+    'jinyang<-luoyang': 'bf07-taihang',
+    'jinyang<-ye': 'bf07-taihang',
+    'ye<-beiping': 'bf01-north-plain',
+    'ye<-pingyuan': 'bf01-north-plain',
+    'ye<-puyang': 'bf03-yellow-river-ford',
+    'ye<-luoyang': 'bf03-yellow-river-ford',
+    'ye<-jinyang': 'bf07-taihang',
+    'beiping<-pingyuan': 'bf01-north-plain',
+    'beiping<-ye': 'bf01-north-plain',
+    'pingyuan<-beihai': 'bf01-north-plain',
+    'pingyuan<-beiping': 'bf01-north-plain',
+    'pingyuan<-ye': 'bf01-north-plain',
+    'pingyuan<-puyang': 'bf03-yellow-river-ford',
+    'beihai<-pingyuan': 'bf01-north-plain',
+    'beihai<-xiapi': 'bf07-rolling-hills',
+    'puyang<-chenliu': 'bf02-central-farmland',
+    'puyang<-xiapi': 'bf02-central-farmland',
+    'puyang<-pingyuan': 'bf03-yellow-river-ford',
+    'puyang<-ye': 'bf03-yellow-river-ford',
+    'chenliu<-puyang': 'bf02-central-farmland',
+    'chenliu<-shouchun': 'bf02-central-farmland',
+    'chenliu<-xuchang': 'bf02-central-farmland',
+    'chenliu<-luoyang': 'bf10-mountain-pass',
+    'xuchang<-chenliu': 'bf02-central-farmland',
+    'xuchang<-shouchun': 'bf02-central-farmland',
+    'xuchang<-wancheng': 'bf07-rolling-hills',
+    'xuchang<-jiangxia': 'bf10-mountain-pass',
+    'xiapi<-shouchun': 'bf04-wetland-north',
+    'xiapi<-jianye': 'bf04-wetland-north',
+    'xiapi<-puyang': 'bf04-wetland-north',
+    'xiapi<-beihai': 'bf04-wetland-north',
+    'shouchun<-xiapi': 'bf04-wetland-north',
+    'shouchun<-chenliu': 'bf04-wetland-north',
+    'shouchun<-xuchang': 'bf04-wetland-north',
+    'shouchun<-jianye': 'bf05-yangtze-crossing',
+    'shouchun<-jiangxia': 'bf08-south-hills',
+    'jianye<-wu': 'bf04-wetland-south',
+    'jianye<-chaisang': 'bf05-yangtze-bank',
+    'jianye<-shouchun': 'bf05-yangtze-crossing',
+    'jianye<-xiapi': 'bf05-yangtze-crossing',
+    'wu<-jianye': 'bf04-wetland-south',
+    'wu<-chaisang': 'bf08-south-hills',
+    'chaisang<-jiangling': 'bf05-yangtze-bank',
+    'chaisang<-jiangxia': 'bf05-yangtze-bank',
+    'chaisang<-jianye': 'bf05-yangtze-bank',
+    'chaisang<-wu': 'bf08-south-hills',
+    'jiangxia<-chaisang': 'bf05-yangtze-bank',
+    'jiangxia<-jiangling': 'bf05-yangtze-bank',
+    'jiangxia<-xiangyang': 'bf06-valley-south',
+    'jiangxia<-shouchun': 'bf08-south-hills',
+    'jiangxia<-xuchang': 'bf10-mountain-pass',
+    'xiangyang<-jiangxia': 'bf06-valley-south',
+    'xiangyang<-wancheng': 'bf06-valley-south',
+    'xiangyang<-jiangling': 'bf08-south-hills',
+    'xiangyang<-hanzhong': 'bf09-gorge',
+    'wancheng<-xiangyang': 'bf06-valley-south',
+    'wancheng<-xuchang': 'bf07-rolling-hills',
+    'wancheng<-luoyang': 'bf10-mountain-pass',
+    'hanzhong<-changan': 'bf09-gorge',
+    'hanzhong<-tianshui': 'bf09-gorge',
+    'hanzhong<-xiangyang': 'bf09-gorge',
+    'hanzhong<-zitong': 'bf10-mountain-pass',
+    'zitong<-chengdu': 'bf08-south-hills',
+    'zitong<-jiangzhou': 'bf08-south-hills',
+    'zitong<-hanzhong': 'bf10-mountain-pass',
+    'chengdu<-jiangzhou': 'bf08-south-hills',
+    'chengdu<-zitong': 'bf08-south-hills',
+    'jiangzhou<-chengdu': 'bf08-south-hills',
+    'jiangzhou<-zitong': 'bf08-south-hills',
+    'jiangzhou<-jiangling': 'bf09-three-gorges',
+    'jiangling<-chaisang': 'bf05-yangtze-bank',
+    'jiangling<-jiangxia': 'bf05-yangtze-bank',
+    'jiangling<-xiangyang': 'bf08-south-hills',
+    'jiangling<-jiangzhou': 'bf09-three-gorges',
+  };
+
+  it('picks the planned battlefield for all 84 route directions', () => {
+    const cases = ROUTE_DEFINITIONS.flatMap((route) => {
+      const [a, b] = cities(route.id) as [string, string];
+      return [
+        [b, a],
+        [a, b],
+      ] as const;
+    });
+    expect(cases).toHaveLength(84);
+    expect(Object.keys(expected)).toHaveLength(84);
+    for (const [to, from] of cases)
+      expect(selectCampaignBattlefield([from, to]), label(to, from)).toBe(
+        expected[label(to, from)],
+      );
+  });
+
+  it('uses only the last leg of a multi-city march', () => {
+    expect(selectCampaignBattlefield(['beiping', 'ye', 'puyang', 'xiapi'])).toBe(
+      'bf04-wetland-north',
+    );
+    expect(selectCampaignBattlefield(['chengdu', 'zitong', 'hanzhong', 'changan'])).toBe(
+      'bf06-valley-north',
+    );
   });
 });

@@ -1,6 +1,6 @@
 # Hegemony of the Three Kingdoms · v0.3
 
-An independent single-player Three Kingdoms strategy game with Chinese/English UI, daily campaign time, historically informed travel estimates, autonomous governors and 24×20 ink-wash field battles. BAYE is a historical reference; v0.3 has its own rules and saves.
+An independent single-player Three Kingdoms strategy game with Chinese/English UI, daily campaign time, historically informed travel estimates, autonomous governors and field battles on 15 hand-painted 48×32 battlefields. BAYE is a historical reference; v0.3 has its own rules and saves.
 
 **Current local version:** branch `hegemony_of_the_three_kindoms_v0.3`, implementation commit `1e02e65`. Documentation checked October 22, 2026. Core feature tracks, the eight initial defect repairs and RV01–RV10 playability tasks are implemented. Player playtests, real low-end-machine testing and draft-art review remain open. Push, PR and remote CI remain deferred.
 
@@ -28,28 +28,28 @@ On the first day, inspect your capital's food, reserve and work points. Recruit 
 | Geography    | 24 historical regional anchors and 42 configured links; straight-line distance, estimated road distance and party ETA are distinct. Hanzhong–Chang'an has a 425 km / 33-day nominal baseline; actual party ETA varies.                                                            |
 | Governors    | Direct capital administration; other cities use formal governors or local stewards. Orders expose available amounts, gaps and dates. Troop-free governor transfers travel and take effect at a month boundary.                                                                    |
 | Capital work | Recruitment/assignment, public order, search, training, feasts, rewards, fine arms, relief and food trading within monthly work points and available stock. Farming/commerce development controls exist but are unavailable in all starting cities under the current value limit. |
-| Battles      | Four regional 24×20 templates, six unit types, six tactics, forecasts, morale, zone of control, camps, AI turns and manual player command.                                                                                                                                        |
+| Battles      | 15 painted 48×32 battlefields (ten terrain types) chosen by the attacker's last route leg and direction; six unit types, six tactics, forecasts, morale, zone of control, camps, AI turns and manual player command.                                                              |
 | Water        | Every unit type may enter passable water. On water, attack ×0.75 and incoming troop damage ×1.25; shore units can attack water units in normal range.                                                                                                                             |
-| Interface    | Ink-wash atlas and oblique battlefield, pan/zoom/Fit/focus/minimaps, exact troop counts, weather/supply/terrain inspection, full order/report lists and bilingual Wiki.                                                                                                           |
+| Interface    | Ink-wash atlas and a draggable top-down battlefield with officer-portrait unit tokens, pan/zoom/Fit/focus/minimaps, exact troop counts, weather/supply/terrain inspection, full order/report lists and bilingual Wiki.                                                            |
 | Recovery     | One browser autosave, portable export/import, in-game Campaign menu/Resume, confirmed replacement and withdrawal, and Retry save after storage failure.                                                                                                                           |
 
 Normal battles last at most 30 days; raids at most 10. At timeout, more surviving troops wins field control; ties favor the defender. Taking the opposing camp can also decide a battle. There is **no siege system**: no walls, gates, siege weapons or city-street phase. City administration and tactical command are separate.
 
-Geographic routes and regional battlefields are documented approximations, not surveyed Han-era maps. Multi-city plan coordination, full future-budget simulation, naval-skill gates, extra save slots and old-save conversion are not included. See [scope and release notes](docs/v0.3/release-notes.md).
+Geographic routes and battlefields are documented approximations inspired by the real terrain, not surveyed Han-era maps. Multi-city plan coordination, full future-budget simulation, naval-skill gates, extra save slots and old-save conversion are not included. See [scope and release notes](docs/v0.3/release-notes.md).
 
 **Known economy limit:** both scenarios start every city with farming and commerce above the current manual-development cap of 100. The development buttons stay disabled until a value falls below that cap. The initial-value/cap mismatch is [recorded for a scoped rules review](docs/next-steps.md#open-now); this documentation pass does not change the economy.
 
 ## Current runtime views
 
-The atlas and Shouchun-template battlefield below are runtime captures after the playability repairs. Battle screenshots use a controlled Xiapi save with substituted regional terrain; the destination title can remain Xiapi. They demonstrate layout, not historical battle placement or final art approval. [All four fields at Fit and working zoom](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures).
+The atlas below is a runtime capture after the playability repairs. The battlefield is a campaign battle from Puyang to Xiapi, which the attack direction places on the Waterlands battlefield (④北). They demonstrate layout, not final art approval. [Battlefield plan and all 15 layouts](docs/v0.3/08-battlefield-canvas-plan.md).
 
 ![v0.3 campaign atlas, compact minimap and capital controls](docs/images/v03-campaign.png)
 
-![v0.3 fitted 24×20 battlefield with battle conditions and tactics](docs/images/v03-battlefield.png)
+![v0.3 48×32 Waterlands battlefield with portrait unit tokens, battle conditions and tactics](docs/images/v03-battlefield.png)
 
 ## Saves
 
-v0.3 uses `hegemony.save`, version 3, ruleset `hegemony-3`. Older saves are rejected without deleting them or replacing the current game. Browser saves belong to the browser profile and address; export before changing profiles, URLs or clearing site data. A different port has separate storage.
+v0.3 uses `hegemony.save`, version 3, ruleset `hegemony-3`. Older saves, including v3 saves with 24×20 battles, are rejected without deleting them or replacing the current game. Browser saves belong to the browser profile and address; export before changing profiles, URLs or clearing site data. A different port has separate storage.
 
 **Campaign menu / 战役菜单** offers Resume and New campaign. Replacing the campaign requires confirmation and offers Export first. Failed imports preserve the current game and drafts; successful imports reset campaign-bound controls. Export downloads a file independently of local saving. If local saving fails, keep the tab open, export a backup and use Retry save after storage is available.
 

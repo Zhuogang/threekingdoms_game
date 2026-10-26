@@ -27,6 +27,12 @@ export const V03_BATTLEFIELD_CANVASES: Readonly<
     height: 1024,
     sha256: 'f1bcdbde102668b5ba6711960fc016a85022fe833737ec4c2272bb678f75d0bd',
   },
+  'bf04-wetland-south': {
+    path: 'assets/v03/battlefields/bf04-wetland-south.webp',
+    width: 1536,
+    height: 1024,
+    sha256: '0d6691710032f828960f59ee1cbc70cabbe7531f73b0bc3ea7934798c82fcc43',
+  },
   'bf05-yangtze-bank': {
     path: 'assets/v03/battlefields/bf05-yangtze-bank.webp',
     width: 1536,
@@ -51,6 +57,12 @@ export const V03_BATTLEFIELD_CANVASES: Readonly<
     height: 1024,
     sha256: '543b3706112c31c884d20191a6c53c16ec13d58fb1ccef7f1115ab616fef25b4',
   },
+  'bf07-rolling-hills': {
+    path: 'assets/v03/battlefields/bf07-rolling-hills.webp',
+    width: 1536,
+    height: 1024,
+    sha256: '7ed8246dc076239341187dc05db783c6da9d349f23e28f2b148f8c38ac43025a',
+  },
   'bf07-taihang': {
     path: 'assets/v03/battlefields/bf07-taihang.webp',
     width: 1536,
@@ -68,6 +80,12 @@ export const V03_BATTLEFIELD_CANVASES: Readonly<
     width: 1536,
     height: 1024,
     sha256: '0797086e8b02cbd716e244d56241b9a07cbb25d9f2230fd697f47e75cc5b38a7',
+  },
+  'bf09-three-gorges': {
+    path: 'assets/v03/battlefields/bf09-three-gorges.webp',
+    width: 1536,
+    height: 1024,
+    sha256: 'eb91a349b01e1a4017d0fe36c8fd8c3480af63acdccfa6c8c0debd4222d43896',
   },
   'bf10-mountain-pass': {
     path: 'assets/v03/battlefields/bf10-mountain-pass.webp',

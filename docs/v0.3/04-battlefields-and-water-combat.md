@@ -1,14 +1,16 @@
 # Field battles, tactics and water combat
 
-Current reference checked October 22, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
+Current reference checked October 25, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
 
 ## Implemented field
 
-Every new battle uses a **24×20 logical grid**, up to ten formations per side, with regional seed/direction/template metadata saved with it. Four templates represent Hanzhong valleys, Shouchun waterways, the lower Yi–Shu/Xiapi plain and Chengdu basin. They are gameplay templates, not historical surveys.
+Every campaign battle is fought on a **48×32 logical grid**, up to ten formations per side, on one of 15 painted battlefields (ten terrain types, five with a second variant). The attacker's last route leg picks the battlefield and five attack directions override it; the same leg and direction always give the same field. The attacker enters on the left and the defender holds the right. Selection is in [selection.ts](../../src/v03/battle/battlefields/selection.ts); the per-battlefield layouts, paintings and selection table are in the [battlefield canvas plan](08-battlefield-canvas-plan.md) and [art kit](battlefield-art/README.md). The battlefields are gameplay terrain inspired by the real geography, not historical surveys.
+
+Each painting follows its 48×32 layout cell by cell; the layout, not the painting, is the rules terrain. The four 24×20 regional templates remain only as rules-test fixtures, and saves with 24×20 battles are not accepted.
 
 Terrain is plain, forest, hill, water or cliff. Cliffs block every troop type; hill is walkable. Occupied cells, movement costs and enemy zone of control determine legal paths. Camps are tactical objectives on ordinary terrain, with no hidden city-defense bonus. Non-routed occupation of an opposing camp can end a battle.
 
-There is no siege generation, wall/gate state, city-defense phase, climbing or siege equipment. Cities are contested by field battles and strategic aftermath.
+There is no siege generation, wall/gate state, city-defense phase, climbing or siege equipment. Cities are contested by field battles and strategic aftermath. Painted walls (a pass wall, a moated manor) are ordinary cliff cells with gates as plain cells; every walled enclosure has at least two gates, and walls are one cell thick so archers can shoot across. Palisades count as forest.
 
 ## Commands and forecasts
 
@@ -32,6 +34,6 @@ Elimination, army rout, opposing camp occupation, withdrawal or the time limit c
 
 ## Source and evidence
 
-Authoritative source: [battle/engine.ts](../../src/v03/battle/engine.ts), [rules.ts](../../src/v03/battle/rules.ts), [maps.ts](../../src/v03/battle/maps.ts), [types.ts](../../src/v03/battle/types.ts); strategic aftermath is in `engine.ts`.
+Authoritative source: [battle/engine.ts](../../src/v03/battle/engine.ts), [rules.ts](../../src/v03/battle/rules.ts), [maps.ts](../../src/v03/battle/maps.ts), [types.ts](../../src/v03/battle/types.ts), [battlefields/](../../src/v03/battle/battlefields/layout.ts); strategic aftermath is in `engine.ts`.
 
 F06/F07 and RV01/RV06/RV08/RV09/RV10 repairs are complete. Recorded tests cover map seeds/directions, six-type shore/water combinations, tactics/forecasts, saved cursors, names, counts and confirmation. [Latest recorded checks](evidence/rv-implementation-2026-10-21/README.md). Human battle feel, long campaigns and low-end performance remain open acceptance, not proven by these tests.

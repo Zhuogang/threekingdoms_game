@@ -1,3 +1,4 @@
+import { BATTLEFIELD_NAMES } from '../battle/battlefields/selection';
 import { troopName } from '../rendering/presentation';
 import type { V03GameState } from '../types';
 import type { V03Locale } from '../wiki';
@@ -185,6 +186,10 @@ export function localizeRoutineBattleLog(
     };
     return finish(`战斗（${match[1]}）在${regions[match[2]!]!}战场开始`);
   }
+  match = core.match(/^Battle (.+) begins at the (.+)\.$/);
+  const battlefield =
+    match && Object.values(BATTLEFIELD_NAMES).find((name) => name.en === match![2]);
+  if (match && battlefield) return finish(`战斗（${match[1]}）在${battlefield.zh}开始`);
   match = core.match(/^(.+)'s fire tactic strikes (.+): (\d+) casualties\.$/);
   if (match) return finish(`${person(match[1]!)}对${person(match[2]!)}施展火计：伤亡 ${match[3]}`);
   match = core.match(/^(.+) ambushes (.+): (\d+) casualties\.$/);

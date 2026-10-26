@@ -2,6 +2,7 @@ import { reconcileV03Rulers } from '../engine';
 import { z } from 'zod';
 import type { V03GameState } from '../types';
 import { validateBattleMap } from '../battle/maps';
+import { canvasBattlefieldIds } from '../battle/battlefields/layout';
 
 const safeInt = z.number().int().safe();
 const nonnegative = safeInt.nonnegative();
@@ -19,7 +20,9 @@ const RECENT_LOG_HISTORY = 1_000;
 const cargo = z.object({ gold: nonnegative, food: nonnegative, troops: nonnegative }).strict();
 const troopType = z.enum(['infantry', 'cavalry', 'archer', 'naval', 'elite', 'guard']);
 const intent = z.enum(['conquer', 'raid', 'sack']);
-// Bounds of the largest battlefield; validateBattleMap checks each map's own size.
+const battlefieldIds = new Set(canvasBattlefieldIds());
+// Campaign battles are fought only on 48×32 canvas battlefields; earlier saves
+// with 24×20 regional battles are not accepted.
 const battlePosition = z
   .object({
     x: safeInt.min(0).max(47),
@@ -29,18 +32,14 @@ const battlePosition = z
 const battleMap = z
   .object({
     mapId: id,
-    templateVersion: z.enum(['v0.3.1', 'v0.3.2']),
+    templateVersion: z.literal('v0.3.2'),
     regionId: z.enum(['hanzhong', 'shouchun', 'xiapi', 'chengdu']),
-    battlefieldId: id.optional(),
+    battlefieldId: id.refine((value) => battlefieldIds.has(value)),
     approachDirection: z.enum(['north', 'east', 'south', 'west']),
     seed: safeInt,
-    // 24×20 legacy templates or 48×32 canvases; the exact pairing is checked by validateBattleMap.
-    width: z.union([z.literal(24), z.literal(48)]),
-    height: z.union([z.literal(20), z.literal(32)]),
-    terrain: z
-      .array(z.enum(['plain', 'forest', 'hill', 'water', 'cliff']))
-      .min(480)
-      .max(1536),
+    width: z.literal(48),
+    height: z.literal(32),
+    terrain: z.array(z.enum(['plain', 'forest', 'hill', 'water', 'cliff'])).length(1536),
     attackerDeployment: z.array(battlePosition).min(10).max(80),
     defenderDeployment: z.array(battlePosition).min(10).max(80),
     objectives: z

@@ -6,14 +6,14 @@ import {
   getBattleTimeoutOutcome,
   advanceBattleDay,
   applyBattleAction,
+  createCanvasBattleMap,
   createTacticalBattle,
   runBattleAiTurn,
-  type BattleRegion,
+  selectCampaignBattlefield,
   type BattleRosterEntry,
   type TacticalBattleUnit,
   type V03TacticalBattleState,
 } from './battle';
-import { createBattleMap } from './battle/maps';
 import { hasTrait } from './content/traits';
 import {
   advanceV03Hegemon,
@@ -222,16 +222,6 @@ function applyTimeline(state: V03GameState, timeline: StrategicTimeline): void {
   state.monthIndex = Math.floor(timeline.absoluteDay / DAYS_PER_MONTH);
   state.journeys = timeline.journeys as V03Journey[];
   state.dayResolution = timeline.dayResolution;
-}
-
-function cityRegion(cityId: string): BattleRegion {
-  if (['hanzhong', 'changan', 'tianshui'].includes(cityId)) return 'hanzhong';
-  if (
-    ['shouchun', 'jianye', 'wu', 'chaisang', 'jiangxia', 'jiangling', 'xiangyang'].includes(cityId)
-  )
-    return 'shouchun';
-  if (['chengdu', 'jiangzhou', 'zitong'].includes(cityId)) return 'chengdu';
-  return 'xiapi';
 }
 
 function approachBetween(
@@ -729,12 +719,16 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
   }
   const defender = rosterFromGroups(defenderGroups, `${journey.id}:defend`);
   const id = `battle-${state.nextId}`;
-  const region = cityRegion(target.id);
-  const map = createBattleMap({
-    regionId: region,
-    approachDirection: approachBetween(journey.sourceCityId, journey.destinationCityId),
-    seed: state.rng + state.nextId,
-  });
+  // The last route leg (and the attack direction) picks the canvas battlefield.
+  const map = createCanvasBattleMap(
+    selectCampaignBattlefield(
+      journey.routeCityIds ?? [journey.sourceCityId, journey.destinationCityId],
+    ),
+    {
+      approachDirection: approachBetween(journey.sourceCityId, journey.destinationCityId),
+      seed: state.rng + state.nextId,
+    },
+  );
   const tactical = createTacticalBattle({
     id,
     map,

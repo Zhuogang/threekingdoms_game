@@ -37,6 +37,7 @@ import {
   type TacticalBattleUnit,
   type V03TacticalBattleState,
 } from './types';
+import { battlefieldName } from './battlefields/selection';
 
 const DEFAULT_BATTLE_DAY_LIMIT = 30;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
@@ -235,7 +236,11 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
     weather,
     nextWeather,
     units,
-    log: [`Battle ${options.id} begins on a ${options.map.regionId} field.`],
+    log: [
+      options.map.battlefieldId
+        ? `Battle ${options.id} begins at the ${battlefieldName(options.map.battlefieldId, 'en') ?? options.map.battlefieldId}.`
+        : `Battle ${options.id} begins on a ${options.map.regionId} field.`,
+    ],
     logEntries: [{ day: 1, index: 0, code: 'log.begin', params: {} }],
     outcome: null,
   };

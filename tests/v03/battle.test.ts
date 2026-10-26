@@ -86,7 +86,7 @@ function hasDeploymentRoute(
 }
 
 describe('v0.3 logical battlefield templates', () => {
-  it('creates four validated 24×20 maps with distinct regional terrain and no siege cells', () => {
+  it('creates the four 24×20 rules-test templates with distinct terrain and no siege cells', () => {
     const maps = regions.map((regionId) => createBattleMap({ regionId, seed: 19 }));
     for (const map of maps) {
       expect(map.width).toBe(BATTLE_WIDTH);

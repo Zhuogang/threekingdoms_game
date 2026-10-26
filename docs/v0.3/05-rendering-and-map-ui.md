@@ -1,12 +1,14 @@
 # Rendering, map controls and UI
 
-Current reference checked October 22, 2026. [Player controls](player-guide.md) · [Runtime screenshots](evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures) · [Original rendering contract](history/design/05-rendering-and-map-ui.md).
+Current reference checked October 25, 2026. [Player controls](player-guide.md) · [Runtime screenshots](evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures) · [Original rendering contract](history/design/05-rendering-and-map-ui.md).
 
 ## Active renderer
 
 v0.3 uses **React and SVG**, not the old Pixi map. Source lives in [src/v03/rendering](../../src/v03/rendering/index.ts) with application wiring in `App.tsx` and `styles.css`. Pure rule queries supply terrain, selection, reachable cells, targets, forecasts, water status and objectives; rendering does not calculate another combat model or advance time.
 
-The battlefield uses 128×64 world-unit diamonds with ground projection `((x-y)×64, (x+y)×32)`. These are world coordinates, not CSS pixels or movement distances. `geometry.ts` and viewport helpers own bounds, inverse picking, camera fit/pan/zoom and viewport polygons. City anchors and party route progression have separate campaign projection helpers.
+The battlefield is a pure 2D, top-down board of 64×64 world-unit squares: cell `(x, y)` is centered at `(64x, 64y)`, so a 48×32 battle is a 3072×2048 world. These are world coordinates, not CSS pixels or movement distances. `geometry.ts` and viewport helpers own bounds, picking, camera fit/pan/zoom and viewport polygons. City anchors and party route progression have separate campaign projection helpers.
+
+Each canvas battlefield draws its shipped painting ([records](assets/battlefield-canvases.json), `public/assets/v03/battlefields/`) under a faint grid; until it loads, or without one, five tiled terrain patterns stand in. A battle opens centered on the player's formations at about 44 screen pixels per cell; Fit shows the whole field. Units are tokens with the formation's highest-level officer portrait, a troop-type badge and the exact troop count; militia show the troop silhouette. In `npm run dev`, `?battlefield-preview=<id>` opens a preview page that overlays any painting attempt on its layout with deployment zones and sample units.
 
 ## Included interface
 

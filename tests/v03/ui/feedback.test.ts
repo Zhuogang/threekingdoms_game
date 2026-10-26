@@ -213,6 +213,7 @@ describe('v0.3 current tactical log vocabulary', () => {
 
   it.each([
     'Battle battle-13 begins on a xiapi field.',
+    'Battle battle-13 begins at the Yellow River Ford.',
     'Cao Cao confuses Guan Yu; the unit will lose its next turn (90% chance).',
     "Guan Yu resists Cao Cao's confusion tactic (90% chance).",
     'Cao Cao rallies Cao Cao: morale +20; next attack +20%; confusion cleared.',

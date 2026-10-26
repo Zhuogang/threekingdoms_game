@@ -73,7 +73,7 @@ Updated October 22, 2026 for the map-first city-window prototype. [Overview](REA
 
 ### 6. 战斗操作、计策与水战
 
-战场固定 24×20，每方最多 10 个编队。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
+战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队底牌是编队里等级最高的武将头像，右上角是兵种，下方是兵力。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
 
 | 计策               | 基础计策点 | 基础条件                                                          |
 | ------------------ | ---------- | ----------------------------------------------------------------- |
@@ -110,7 +110,7 @@ Updated October 22, 2026 for the map-first city-window prototype. [Overview](REA
 | 征兵后武将兵力没变  | 新兵在预备兵；还需“调整兵力”。                                                   |
 | 出征方案为零或很少  | 整支所部、武将是否可用、留守要求、已批准预留、粮食和路线；方案会列出缺口。       |
 | 任命没立刻生效      | 调任人须无兵、抵达，并等合法月界。                                               |
-| 地图部队很小/看不全 | 先 Fit 再缩放、Unit 聚焦；斜俯视不会改变逻辑格数。                               |
+| 地图部队很小/看不全 | 开战时镜头已对准己方部队；Fit 看全图，再缩放或用 Unit 聚焦。                     |
 | 战绩不容易扩大      | 当前战略平衡仍有限；不要把诊断机器人结果当作个人胜率。记录实际体验供下一轮修订。 |
 
 提交问题时附剧本/势力、日期、语言、浏览器/视口、导出存档、复现步骤和预期/实际结果。[玩家测试记录模板](../next-steps.md#player-test-record)。素材仍是草稿；指出具体场景、缩放和遮挡问题有助于定向修改。
@@ -146,6 +146,8 @@ City affairs first asks for an executing officer: recruitment uses force, search
 Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order has its own screen and returns to the selected officer on success. Prisoners have a separate list and individual decision screen. Fine arms is an officer action: **180 gold and one work point**, up to +5 force, capped at 105. There is no separate weapon inventory, manual weapon-use button or siege equipment. Reward costs 100 gold for up to +15 officer loyalty. Relief costs 80 gold/600 food for up to +15 city loyalty and +300 population. Training needs a stationed officer with troops and adds 25 experience/+1 force; a level-up adds two intellect for archers or two more force for other types, within the attribute cap. Either the experience or force training cap can block it. Farming/commerce development costs 80 gold and a work point for one point of improvement, capped at 500; existing values are not rescaled. Buy/sell trades 800 food for 80 gold. These actions share work points and stock/commitment checks. Search, security and feasts provide the other existing city options. Disabled controls explain authority, resources, staffing, stage, commitments and caps.
 
 ### Troops and battlefield actions
+
+Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker enters on the left. The attacker's last route leg picks one of 15 painted battlefields (a few attack directions have their own), and the same leg and direction always give the same field, named in the battle heading. Unit tokens show the formation's highest-level officer, a troop-type badge and the troop count. The painting illustrates the grid; inspect a cell to see whether it counts as plain, forest, hill, water or cliff.
 
 | Type     | Base movement budget | Ordinary range |
 | -------- | -------------------- | -------------- |

@@ -42,9 +42,9 @@ node tools/build-battlefield-art.mjs
 | ⑧ 南方丘陵 | [bf08-south-hills](bf08-south-hills/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf08-south-hills.webp`） |
 | ⑨峡谷 峡谷栈道 | [bf09-gorge](bf09-gorge/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf09-gorge.webp`） |
 | ⑩ 雄关隘口 | [bf10-mountain-pass](bf10-mountain-pass/README.md) | 一 | **v1 已入库**（`public/assets/v03/battlefields/bf10-mountain-pass.webp`） |
-| ④南 水网泽国（江南） | [bf04-wetland-south](bf04-wetland-south/README.md) | 二 | v1 已出图，待审核 |
-| ⑦丘陵 北方山丘（沂蒙、方城） | [bf07-rolling-hills](bf07-rolling-hills/README.md) | 二 | v1 已出图，待审核 |
-| ⑨三峡 峡谷栈道（三峡） | [bf09-three-gorges](bf09-three-gorges/README.md) | 二 | v1 已出图，待审核 |
+| ④南 水网泽国（江南） | [bf04-wetland-south](bf04-wetland-south/README.md) | 二 | **v1 已入库**（`public/assets/v03/battlefields/bf04-wetland-south.webp`） |
+| ⑦丘陵 北方山丘（沂蒙、方城） | [bf07-rolling-hills](bf07-rolling-hills/README.md) | 二 | **v1 已入库**（`public/assets/v03/battlefields/bf07-rolling-hills.webp`） |
+| ⑨三峡 峡谷栈道（三峡） | [bf09-three-gorges](bf09-three-gorges/README.md) | 二 | **v1 已入库**（`public/assets/v03/battlefields/bf09-three-gorges.webp`） |
 
 同一布局的两种变体（④北/④南、⑥北/⑥南）共用格子，只换配色和提示词。
 
