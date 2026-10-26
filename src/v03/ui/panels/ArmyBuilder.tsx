@@ -85,7 +85,7 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
           <label key={officer.id} className="v03-army-officer">
             <Input
               type="checkbox"
-              disabled={committed}
+              disabled={committed || officer.reorganizationDays > 0}
               checked={selectedIds.includes(officer.id)}
               onChange={(event) =>
                 setOfficerIds(
@@ -159,6 +159,12 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
         <StatGrid
           values={[
             { label: context.t.troops, value: preview.troops.toLocaleString() },
+            {
+              label: locale === 'zh' ? '留城伤兵' : 'Wounded staying behind',
+              value: preview.officers
+                .reduce((sum, officer) => sum + officer.wounded, 0)
+                .toLocaleString(),
+            },
             { label: context.t.garrison, value: target?.garrisonTroops.toLocaleString() ?? '—' },
             {
               label: context.t.travel,

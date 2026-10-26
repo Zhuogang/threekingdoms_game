@@ -2,7 +2,7 @@ import { troopLevel, type TroopPool } from '../../campaign/troop-experience';
 import { troopDisplayType, troopExperienceText, troopName } from '../../rendering/presentation';
 import { UnitIcon } from '../../rendering/UnitIcon';
 
-type Troops = TroopPool & { troopType: string };
+type Troops = TroopPool & { troopType: string; wounded?: number; reorganizationDays?: number };
 
 export function TroopProgress({
   unit,
@@ -20,6 +20,16 @@ export function TroopProgress({
         {troopName(troopDisplayType(unit.troopType, unit.troopExperience), locale)} · Lv.{level}
       </span>
       {!compact ? <small>{troopExperienceText(unit.troopExperience, locale)}</small> : null}
+      {(unit.wounded ?? 0) > 0 || (unit.reorganizationDays ?? 0) > 0 ? (
+        <small>
+          {locale === 'zh' ? '可战' : 'Ready'}{' '}
+          {(unit.reorganizationDays ? 0 : unit.troops).toLocaleString()} ·{' '}
+          {locale === 'zh' ? '伤兵' : 'Wounded'} {(unit.wounded ?? 0).toLocaleString()}
+          {unit.reorganizationDays
+            ? ` · ${locale === 'zh' ? '整编剩余' : 'Reorganizing'} ${unit.reorganizationDays} ${locale === 'zh' ? '有效日' : 'city days'}`
+            : ''}
+        </small>
+      ) : null}
     </span>
   );
 }
@@ -59,7 +69,7 @@ export function ReinforcementPreview({
         ))}
       </div>
       <p role="status">
-        {after.troops === 0
+        {after.troops === 0 && (after.wounded ?? 0) === 0
           ? locale === 'zh'
             ? '已全部交回兵池，部队经验清零。'
             : 'All soldiers return to the reserve; this force resets to zero XP.'

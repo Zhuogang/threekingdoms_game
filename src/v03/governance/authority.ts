@@ -244,7 +244,7 @@ export function canAppointGovernor(
       ok: false,
       reason: 'The officer must be available in a friendly city before taking office.',
     };
-  if (officer.troops > 0)
+  if (officer.troops + officer.wounded > 0)
     return { ok: false, reason: 'An officer commanding troops cannot take office until relieved.' };
   return { ok: true, reason: null, city, officer };
 }

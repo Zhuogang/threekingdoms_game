@@ -2,6 +2,10 @@
 
 Updated October 22, 2026 for branch `hegemony_of_the_three_kindoms_v0.3`, implementation `1e02e65`. **The planned core tracks and RV01–RV10 are implemented.** A newly found development-limit mismatch and the outstanding acceptance gates are listed below. [Status](implementation-status.md) · [Features](release-notes.md) · [Original P01–P11 plan](history/implementation-plan-2026-10-21.md).
 
+## 2026-10-26 伤兵机制实施计划
+
+从 `3a53501` 实施的伤兵机制 W0–W6 已完成，W7 自动验证和三组机器短回放通过；实施后复核修复了整编、断粮、粮债、等待改道和快照关联边界，新增 10 个失败后修复的回归用例。当前全量 465 项测试、本轮 12 项中英浏览器回归、构建、UI、格式及链接检查通过。首轮 103 项浏览器分批证据与三个可导入场景保留在[首轮记录](evidence/wounded-system-2026-10-26/README.md)，最新结果见[本轮复核记录](evidence/wounded-review-2026-10-26.md)及[实施计划](10-wounded-system-implementation-plan.md)。[设计](09-wounded-retreat-and-captivity-design.md)数值未改，长期人工平衡试玩待执行。新存档要求 `personnelSchema: 1`，旧档只提供原文导出，不迁移。下列为历史记录。
+
 ## Completed packages
 
 | Packages                 | Result / owner boundary                                                                                                                                                                          |

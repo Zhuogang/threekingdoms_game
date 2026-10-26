@@ -1,3 +1,5 @@
+import { applyCombatDamage } from './experience';
+import { PERSONNEL_RULES } from '../campaign/personnel';
 import {
   battleTerrainAt,
   fireTerrainMultiplier,
@@ -125,6 +127,8 @@ function makeUnits(
       side,
       troopType: entry.troopType,
       troops: entry.troops,
+      wounded: 0,
+      casualtyRemainder: 0,
       initialTroops: entry.troops,
       troopExperience: entry.troopExperience ?? 0,
       initialTroopExperience: entry.troopExperience ?? 0,
@@ -222,6 +226,8 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
   const nextWeather = rollWeather();
   const state: V03TacticalBattleState = {
     schemaVersion: 1,
+    engaged: false,
+    retreatAllowed: { attacker: false, defender: false },
     id: options.id,
     map: structuredClone(options.map),
     playerSide: options.playerSide ?? 'attacker',
@@ -696,8 +702,7 @@ function attackOneWay(
 ): number {
   const { casualties, modifiers } = estimateDamage(source, target, state.map);
   recordCombatCasualties(source, target, casualties);
-  target.troops -= casualties;
-  if (target.troops === 0) target.troopExperience = 0;
+  applyCombatDamage(target, casualties);
   if (casualties > 0) {
     const moraleLoss = Math.min(
       45,
@@ -767,6 +772,7 @@ function performAttack(
   if (!isBattleAttackInRange(state.map, source, target, source.attackRange))
     return `${target.name} is outside the normal attack range.`;
   source.acted = true;
+  state.engaged = true;
   attackOneWay(state, source, target);
   checkImmediateOutcome(state);
   if (
@@ -795,8 +801,7 @@ function applyTacticDamage(
     applyWaterDamageModifiers(rawDamage, modifiers),
   );
   recordCombatCasualties(source, target, casualties);
-  target.troops = Math.max(0, target.troops - casualties);
-  if (target.troops === 0) target.troopExperience = 0;
+  applyCombatDamage(target, casualties);
   if (casualties > 0)
     target.morale = Math.max(
       MIN_MORALE,
@@ -833,6 +838,7 @@ function performTactic(
     return 'Choose a valid target for this tactic.';
 
   state.tacticPoints[source.side] -= tacticCost(source, tactic);
+  if (tactic !== 'rally') state.engaged = true;
   source.acted = true;
   source.moved = true;
   const troopsBefore = target.troops,
@@ -901,21 +907,26 @@ function performTactic(
 }
 
 function performAction(draft: V03TacticalBattleState, action: BattleAction): string | null {
+  if (action.type === 'retreat') {
+    const side = action.side ?? (action.unitId ? unitById(draft, action.unitId)?.side : undefined);
+    if (!side) return 'Select a living unit.';
+    if (side !== draft.playerSide) return 'You can command only your own units.';
+    if (draft.outcome) return 'This battle has ended.';
+    if (checkImmediateOutcome(draft) || resolveRout(draft)) return null;
+    const winner = otherSide(side);
+    draft.outcome = { winner, reason: 'retreat' };
+    append(
+      draft,
+      `${side} forces retreat from the field; ${winner} holds the battlefield.`,
+      'log.retreat',
+      { side, winner },
+    );
+    return null;
+  }
   const unit = unitById(draft, action.unitId);
   if (!unit) return 'Select a living unit.';
   if (unit.side !== draft.playerSide) return 'You can command only your own units.';
   if (draft.outcome) return 'This battle has ended.';
-  if (action.type === 'retreat') {
-    const winner = otherSide(unit.side);
-    draft.outcome = { winner, reason: 'retreat' };
-    append(
-      draft,
-      `${unit.side} forces retreat from the field; ${winner} holds the battlefield.`,
-      'log.retreat',
-      { side: unit.side, winner },
-    );
-    return null;
-  }
   if (unit.status === 'confused') return `${unit.name} is confused and cannot act today.`;
   if (action.type === 'tactic') {
     const target = unitById(draft, action.targetId);
@@ -1085,6 +1096,26 @@ export function runBattleAiTurn(
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   const draft = structuredClone(state);
+  if (checkImmediateOutcome(draft) || resolveRout(draft)) return draft;
+  const current = livingUnits(draft, side).reduce((sum, unit) => sum + unit.troops, 0);
+  const opening = draft.units
+    .filter((unit) => unit.side === side)
+    .reduce((sum, unit) => sum + unit.initialTroops, 0);
+  const enemy = livingUnits(draft, otherSide(side)).reduce((sum, unit) => sum + unit.troops, 0);
+  if (
+    draft.retreatAllowed[side] &&
+    current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
+    current * 100 <= enemy * PERSONNEL_RULES.aiRetreatEnemyPercent
+  ) {
+    draft.outcome = { winner: otherSide(side), reason: 'retreat' };
+    append(
+      draft,
+      `${side} forces retreat from the field; ${otherSide(side)} holds the battlefield.`,
+      'log.retreat',
+      { side, winner: otherSide(side) },
+    );
+    return draft;
+  }
   const order = livingUnits(draft, side).sort((a, b) => {
     const canSupportA = getAvailableBattleTactics(draft, a.id).some(
       (entry) => entry.tactic === 'rally' && entry.allowed,
@@ -1220,6 +1251,11 @@ export function getBattleTimeoutOutcome(
     winner: attackerTroops > defenderTroops ? 'attacker' : 'defender',
     reason: 'dayLimit',
   };
+}
+
+export function getForcedBattleOutcome(state: V03TacticalBattleState): BattleOutcome | null {
+  const draft = structuredClone(state);
+  return checkImmediateOutcome(draft) ?? (resolveRout(draft) ? draft.outcome : null);
 }
 
 function resolveRout(state: V03TacticalBattleState): boolean {

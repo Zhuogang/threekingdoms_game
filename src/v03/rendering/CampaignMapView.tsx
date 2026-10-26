@@ -75,10 +75,7 @@ function CitySymbol({
       className="v03-city-symbol"
       data-city-id={city.id}
       transform={`translate(${city.position.x} ${city.position.y})`}
-      role={onClick ? 'button' : undefined}
       data-campaign-interactive={onClick ? 'true' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      aria-label={label}
       onClick={(event) => {
         event.stopPropagation();
         onClick?.(city.id);
@@ -571,11 +568,21 @@ export function CampaignMapView({
               r={10}
               fill="transparent"
               data-campaign-interactive="true"
-              aria-hidden="true"
+              className="v03-city-anchor"
+              data-city-id={city.id}
+              role="button"
+              tabIndex={0}
+              aria-label={city.name}
               style={{ cursor: 'pointer' }}
               onClick={(event) => {
                 event.stopPropagation();
                 onCityClick(city.id);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onCityClick(city.id);
+                }
               }}
             />
           ))

@@ -1,5 +1,6 @@
 import { scenarioById, SCENARIOS } from './content/scenario';
 import { createReservePools } from './campaign/troop-experience';
+import { createPersonnelDay } from './campaign/personnel';
 import { CITY_GEOGRAPHY_BY_ID, type CityId } from './geography';
 import type { V03City, V03Faction, V03GameState, V03Officer } from './types';
 
@@ -30,6 +31,8 @@ export function createV03Game(
     age: officer.age,
     troops: officer.fate === 'active' && !officer.captive ? officer.troops : 0,
     troopExperience: 0,
+    wounded: 0,
+    reorganizationDays: 0,
     troopType: officer.troopType,
     equipment: officer.equipment === 'Fine arms' ? 'Fine arms' : null,
     experience: officer.experience,
@@ -129,9 +132,12 @@ export function createV03Game(
   const playerCapitalCityId = capitals.get(playerFactionId);
   if (!playerCapitalCityId) throw new Error(`Faction ${playerFactionId} has no capital city.`);
 
-  return {
+  const state: V03GameState = {
     version: 3,
     ruleset: 'hegemony-3',
+    personnelSchema: 1,
+    troopSources: [],
+    personnelDay: { absoluteDay: 0, completed: false, entries: [], rations: [] },
     revision: 0,
     scenarioId: scenario.id,
     seed: seed >>> 0,
@@ -161,6 +167,8 @@ export function createV03Game(
     winnerFactionId: null,
     governanceRevision: 0,
   };
+  state.personnelDay = createPersonnelDay(state);
+  return state;
 }
 
 export function availableV03Scenarios() {

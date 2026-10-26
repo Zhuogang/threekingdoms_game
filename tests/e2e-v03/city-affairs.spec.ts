@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { createV03Game } from '../../src/v03/initial-state';
+import { createReservePools, setReservePool } from '../../src/v03/campaign/troop-experience';
 import { applyV03CityAction } from '../../src/v03/governance/city-actions';
 import type { V03GameState, V03CityAction } from '../../src/v03/types';
 import { asSave } from './playability-fixtures';
@@ -21,6 +22,15 @@ function readyState() {
   const state = createV03Game('cao', 764);
   const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
   Object.assign(city, { gold: 5000, food: 9000, loyalty: 50, reserve: 2000 });
+  city.reservePools = createReservePools();
+  const commander = state.officers.find(
+    (officer) =>
+      officer.alive &&
+      officer.factionId === 'cao' &&
+      officer.location.kind === 'city' &&
+      officer.location.cityId === city.id,
+  )!;
+  setReservePool(city, commander.troopType, { troops: 2000, troopExperience: 0 });
   for (const officer of state.officers.filter((entry) => entry.factionId === 'cao'))
     Object.assign(officer, { loyalty: 50, force: 50, experience: 0, level: 0, equipment: null });
   return state;

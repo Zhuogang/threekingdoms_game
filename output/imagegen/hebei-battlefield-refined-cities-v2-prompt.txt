@@ -1,0 +1,17 @@
+Use case: compositing.
+Asset: revised 1536×1024 Three Kingdoms game battlefield background.
+
+INPUTS:
+Image 1 is the battlefield EDIT TARGET. Keep its terrain layout, camera, framing, road, bridge, river, small blue patch, three mounds and two city center positions fixed.
+Image 2 is the actual existing refined central-plains CITY ICON ASSET from the user's project folder. Use this exact architectural design for BOTH city locations, retaining its elegant ink architectural linework, warm ivory rammed-earth walls, tiled gate towers, inner hall and compact walled town. Do not invent generic hamlets. This is the refined artwork the user explicitly asked to use.
+Image 3 is the original spatial layout map, provided only to lock terrain coordinates and city centers.
+
+REQUESTED CHANGES:
+1. Replace the two crude tiny square courtyard settlements in image 1 with the refined city asset in image 2, carefully scaled to the existing settlement locations, centered at (1136,208) and (368,816). Keep each city within its original 96×96 village bounding box, center unchanged; retain the refined icon's aspect ratio. The icon may retain its original oblique architectural view as an intentional game marker; the TERRAIN remains strictly orthographic top-down. Preserve the actual icon design as faithfully as possible rather than redrawing it into a flat roof plan.
+2. REMOVE the dense squared groves enclosing both cities. Repaint their former footprints as continuous pale open farmland blending seamlessly into surrounding ground, without rectangular dark patches, sharp former grove outlines, or enclosing tree walls. Place only a few isolated bare willows/poplar trees sparsely near the cities; do not form a ring or encircle the towns. City walls must be clearly exposed on all sides. Keep the small riverbank tree strips otherwise unchanged.
+3. Refine the terrain finish into more delicate elegant light Chinese ink wash. Pale warm ivory and straw with restrained ochre, rather than heavy yellow-brown. Reduce coarse paper grain and repetitive patchwork field texture; broad calm playable clearings, only faint dry-brush straight field ridges. Muted blue-grey river, tiny soft river-bank outlines, gentle thin dirt road, short soft upper-left shadows. The detailed city artwork is the visual focal point, ground unobtrusive.
+
+PRESERVE ALL OTHER GEOMETRY: frame 1536×1024 edge to edge. Road exactly y480–511 spanning x0–1535. Small plank bridge x800–831,y480–511. Preserve river's exact narrow stepped meandering footprint and all bends. Preserve 3 low mounds at x544–639,y160–223; x928–1023,y768–831; x640–703,y864–927. No extra roads, scenery or water. Keep battlefield empty and readable for unit tokens.
+
+Traditional Chinese ink-wash with light color, delicate brushwork and gentle natural texture. No terrain perspective, horizon, sky, tilt. No text, letters, labels, seals, signatures, watermarks, grids, frames, borders, paper margins, people, soldiers, horses, carts, flags, tents, banners, modern objects.
+Highest priority for this revision: use the supplied refined city icon artwork and remove enclosing dense city forests.

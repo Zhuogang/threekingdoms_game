@@ -19,6 +19,7 @@ export function BattleOutcome({
 }) {
   const report = event.battleOutcome;
   if (!report) return null;
+  const battle = state.battles.find((entry) => entry.id === event.entityId);
   const names = (ids: string[]) =>
     ids
       .map((id) => {
@@ -31,13 +32,32 @@ export function BattleOutcome({
     <>
       <h2>{copy.title}</h2>
       <p>{copy.detail}</p>
+      {(battle?.rearDispersed ?? 0) > 0 ? (
+        <p>
+          {locale === 'zh' ? '失城后方解散人员' : 'Rear personnel disbanded after city loss'}:{' '}
+          {battle!.rearDispersed}
+        </p>
+      ) : null}
+      {(battle?.foodOverflow ?? 0) > 0 ? (
+        <p>
+          {locale === 'zh' ? '接收城市军粮溢出损失' : 'Food lost to receiving-city capacity'}:{' '}
+          {battle!.foodOverflow}
+        </p>
+      ) : null}
+      {(battle?.populationOutflow ?? 0) > 0 ? (
+        <p>
+          {locale === 'zh' ? '人口容量外流' : 'Population outflow at capacity'}:{' '}
+          {battle!.populationOutflow}
+        </p>
+      ) : null}
       <table>
         <thead>
           <tr>
             <th>{message(locale, 'ui.army.33')}</th>
             <th>{message(locale, 'ui.starting.34')}</th>
             <th>{message(locale, 'ui.surviving.35')}</th>
-            <th>{message(locale, 'ui.casualties.36')}</th>
+            <th>{locale === 'zh' ? '伤兵' : 'Wounded'}</th>
+            <th>{locale === 'zh' ? '永久损失' : 'Permanent losses'}</th>
           </tr>
         </thead>
         <tbody>
@@ -50,8 +70,14 @@ export function BattleOutcome({
               </th>
               <td>{report[side].startingTroops.toLocaleString()}</td>
               <td>{report[side].survivingTroops.toLocaleString()}</td>
+              <td>{report[side].woundedTroops.toLocaleString()}</td>
               <td>
-                {(report[side].startingTroops - report[side].survivingTroops).toLocaleString()}
+                {Math.max(
+                  0,
+                  report[side].startingTroops -
+                    report[side].survivingTroops -
+                    report[side].woundedTroops,
+                ).toLocaleString()}
               </td>
             </tr>
           ))}

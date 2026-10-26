@@ -61,6 +61,10 @@ export function localizeSaveError(message: string, locale: V03Locale): string {
   const routine = localizeRoutineFeedback(message, locale);
   if (routine !== null) return routine;
   if (locale === 'en') return message;
+  if (message.includes('predates the wounded personnel schema'))
+    return '该存档早于伤兵数据结构，无法直接载入。请先导出原始存档，再开始新战役；现有数据未更改。';
+  if (message.includes('newer personnel schema'))
+    return '该存档使用更新的兵员数据结构，请使用兼容版本打开；现有数据未更改。';
   if (message.includes('not valid JSON')) return '该存档不是有效的 JSON 文件。';
   if (message.includes('older version'))
     return '该存档属于旧版本。请开始新的 v0.3 战役；现有数据未更改。';

@@ -1,6 +1,6 @@
 # v0.3 player guide / 中英玩法指南
 
-Updated October 22, 2026 for the map-first city-window prototype. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
+Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
 
 ## 中文玩法指南
 
@@ -87,16 +87,28 @@ Updated October 22, 2026 for the map-first city-window prototype. [Overview](REA
 
 所有兵种可进出可通行水格，不需要水军技能或船库存。涉及水的每步至少花 2 移动点；在水上攻击 ×0.75、受到兵力伤害 ×1.25，上岸恢复陆地规则。岸水互攻只需满足正常射程；峭壁所有兵种均不可进入。战场能涉水不代表大地图能离开配置路线任意渡海。
 
-全部己方战场都提交“结束战斗日”后，全局只推进一天；单场已提交的不要重复操作。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时存活兵力多者胜、平手守方胜；全歼、夺取对方野战营地或撤离可提前结束。营地不是城墙，也不提供隐藏城防倍率。“撤离战场”确认后会放弃整场战斗，取消或 Escape 不会改变战况。
+全部己方战场都提交“结束战斗日”后，全局只推进一天；单场已提交的不要重复操作。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败、夺取对方野战营地或撤退可提前结束。营地不是城墙，也不提供隐藏城防倍率。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
 
 任务分别是占领、突袭和洗劫：突袭胜利后掠取并返程，不夺城；洗劫在夺城基础上破坏和掠夺，会损害城市。需要资源时也要考虑长期损失。
+
+### 伤兵、撤退、被俘与恢复
+
+征兵时确定步、弓或骑，一名武将只带一种基础兵种；可战兵与随将伤兵合计最多 10000。有效战斗减员的 60% 成为伤兵，40% 永久损失，小额伤害累计余数。可战归零是击溃，仍可能有伤兵；只有两者都归零才是全灭并清空兵员经验。5000 精骑全部失去战斗力时，可留下 3000 伤兵；伤兵保留经验，不能在战场行动或治疗。断粮减员是永久损失。
+
+有合法退路时，未接战撤退被俘率为 0%，接战后有序撤退为每将 5%，击溃、士气溃败或失营的被迫溃退为每将 25%。各将独立判定，确认框也显示至少一将被俘的概率；无退路明确显示整军投降。守方失城也按此判定。逃脱者真实行军：有序撤退带走全部随军生还者，被迫溃退只带走三分之二随军伤兵。友城正在交战可城外等待，不自动增援。
+
+新出征自动把旧伤兵留在本城，保留来源和经验。城内有粮、完整驻留一日后，每城按兵种汇总恢复 10% 伤兵并向上取整；首日 3000 恢复 300，约 22 个有效日恢复九成。在途、城外等待和战场上不治疗。留城老兵在原将同城、同势力、未被占用且有容量时自动归队，否则作为独立可用兵源保留；不同兵种不能混补。
+
+将军被俘时随军所部一起被俘，后方旧伤兵不连带改投。招降成功保留兵种和经验，但所部需 10 个己方有粮驻城日整编，期间不能作战或征调；治疗可同时进行，被看押或在途不推进整编。释放、成功交换均真实返乡，由看押城拨付现有粮食内的返程预算，不凭空补粮；无可达归属城时，释放武将并将所部遣散为当地人口。招降、交换每月一次尝试，交换失败双方也计次，失败后仍可释放或处决。处决武将时所部遣散，不成为胜方兵。失城时城内预备兵、旧伤兵及未参战整编人员散编，不自动加入占领军。
+
+所部、预备兵、待归队老兵、伤兵与俘虏均吃粮，骑兵两倍；俘虏由看押方供粮，不另付己方兵饷。在“驻城武将”或武将详情展开“兵员、养伤与遣散”，查看分项和遣散预览；遣散无需工作点，永久移除对应人员与经验。本城武将可“归还全部所部”，花一个工作点腾空武将，伤兵继续在城休养，不免粮。出征、战报和俘虏处置均显示实际可战、伤兵与限制。
 
 ### 7. 镜头、快捷键与存档
 
 - 主地图：滚轮/按钮缩放，拖动或方向键平移，Home/Fit 显示全图，小地图可定位；Tab 后 Enter/空格可选城市。
 - 战场：Fit 全图，Unit 聚焦所选部队，Camps 看营地；小地图移动视口。地图获得焦点后方向键移动格子光标，Enter/空格执行该格操作；Shift+方向键平移镜头，+/- 缩放，Home 全图。
 - 游戏中 F1 打开 Wiki，Escape 关闭 Wiki 或取消确认框。中英切换和读指南不推进时间。
-- 自动存档只有一个；“导出”另存下载文件。“导入”只接受合法 v0.3 存档，不迁移旧版。成功导入清空旧草稿，失败保留本局。
+- 自动存档只有一个；“导出”另存下载文件。“导入”只接受含人员结构标记的合法 v0.3 存档；伤兵功能之前的旧档不兼容、不自动迁移。开始页允许先导出旧档原文，新开确认取消时保留旧档。成功导入清空旧草稿，失败保留本局。
 - 存档属于浏览器配置与地址；换端口、浏览器、隐身窗口或清理网站数据可能看不到原档，先导出。自动保存失败时保持页面打开、导出备份，再重试保存。
 
 ### 8. 常见疑问与反馈
@@ -169,20 +181,32 @@ At level 3, intellect thresholds drop by 10. Cunning can reduce point costs. Use
 
 All types can cross passable water without a naval skill or boat inventory. A step touching water costs at least two movement points. A unit on water deals ×0.75 attack damage and receives ×1.25 troop damage. Shore/water attacks are legal in normal range. Cliffs are impassable for everyone. Tactical water access does not create arbitrary strategic sea routes.
 
-Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more surviving troops wins, defender wins ties. Elimination, an opposing camp capture or withdrawal can end a battle earlier. Camps give no hidden city-defense bonus. Withdrawal confirmation concedes the whole battle; Cancel/Escape preserves state.
+Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout, an opposing camp capture or withdrawal can end a battle earlier. Camps give no hidden city-defense bonus. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
 
 Soldier level is separate from officer level. Mean soldier XP starts at 0, with one level per 100 XP up to level 20 / 1900 XP. Levels 11–20 display heavy infantry, elite cavalry or strong archers; reinforcement can dilute mean XP and return them to ordinary art. The 500-soldier size threshold, leader portraits and commander-based boat/tower-warship selection still apply independently. Officer details, battle details and reserves show mean XP and distance to the next level.
 
-**Set troop count** previews actual before/after counts, levels, experience and formations, including elite downgrades. Experience travels with soldiers and only same-type reserves can reinforce an officer. Normal losses preserve the survivors' mean; annihilation resets it. Battle aftermath lists each original contingent's capped XP gain, level change and promotion, with separate notices for no combat participation and annihilation. Reports retain the historical result after later reinforcements or reloads.
+**Set troop count** previews actual before/after counts, levels, experience and formations, including elite downgrades. Experience travels with healthy and wounded soldiers and only same-type reserves can reinforce an officer. Losses preserve the survivors' mean; having neither healthy nor wounded resets it. Battle aftermath lists each original contingent's capped XP gain, level change and promotion, with separate notices for no combat participation and annihilation. Reports retain the historical result after later reinforcements or reloads.
 
 Capture takes a city after victory. Raid plunders and returns without taking it; Sack combines capture with destructive plunder. Loot and returning survivors still travel. There is no siege phase.
+
+### Wounded troops, retreat and captivity
+
+Recruitment selects infantry, cavalry or archers. Each officer commands one base type, with a combined healthy/wounded capacity of 10,000. Effective combat casualties become 60% wounded and 40% permanent losses, carrying fractional remainders across hits. Zero healthy troops means defeated; remaining wounded keep their XP. Thus 5,000 elite cavalry can leave 3,000 wounded. Wounded cannot act or heal on the field; starvation losses are permanent.
+
+With a valid refuge route, capture risk per officer is 0% before engagement, 5% for an orderly withdrawal after engagement and 25% for forced defeat/rout/camp loss. Officers roll independently; confirmation shows both individual risk and the chance of any capture. No route means explicit surrender. Losing defenders use the same rules. Orderly escape retains all survivors; forced escape retains all healthy and two thirds of field wounded. Returns take real journeys and may wait outside a friendly city in battle without reinforcing it.
+
+Existing wounded stay in the departure city with their source and XP. Each full supplied city day heals 10% of eligible wounded, rounded up after grouping by city/type: 3,000 heals 300 on the first day and about 90% over 22 effective days. Travel, field battles and outside waiting give no treatment. Rear veterans rejoin their original officer only in the same city, under the same house, when uncommitted and within capacity; otherwise they remain a separate usable source.
+
+Captured officers retain their field contingent. Recruitment requires 10 supplied days in a city owned by the army faction before it can fight or transfer; healing proceeds alongside it, while captivity and travel pause reorganization. Release and successful exchange create actual return journeys, funded from the holding city's available food up to the travel budget. Without a reachable home city, release frees the officer and disbands the army into local population. Recruitment/exchange attempts are monthly; refused exchange uses both attempts. Release/execution remain available after refusal. Execution disbands the contingent. Rear reserves, old wounded and undeployed reorganizing troops disperse when their city falls.
+
+Healthy troops, reserves, rear veterans, wounded and prisoners all consume food; cavalry counts twice. The holder feeds prisoners without paying own-army wages. Expand **Personnel, recovery & disbanding** in city officers/details to review counts and disband selected personnel without a work point. Disbanding permanently removes their XP. **Return the whole contingent** in the capital costs one work point and leaves wounded in city care; returning troops does not remove their food cost.
 
 ### Controls, saves, endings and troubleshooting
 
 - Campaign: wheel/buttons zoom, drag/arrows pan, Home/Fit shows the atlas; minimap repositions. Tab/Enter/Space selects cities.
 - Battlefield: Fit shows the field; Unit focuses selection; Camps shows camps. With map focus, arrows move the cell cursor and Enter/Space executes; Shift+arrows pans, +/- zooms, Home fits. Minimap moves the viewport.
 - Wiki: F1 opens during play, Escape closes or cancels a confirmation. Language/camera/help do not change the date.
-- Saves: one autosave per browser profile/address; Export creates a portable backup independently. A different port/browser/private session has separate storage. Keep the tab open and export if saving fails, then Retry save. Only v0.3 imports are accepted; invalid imports preserve the campaign/drafts, valid imports reset transient controls.
+- Saves: one autosave per browser profile/address; Export creates a portable backup independently. A different port/browser/private session has separate storage. Keep the tab open and export if saving fails, then Retry save. Valid v0.3 saves now require the personnel schema marker. Saves from before wounded troops are incompatible; export their raw data from the start screen before replacing them. Cancel preserves the old save. Invalid imports preserve the campaign/drafts; valid imports reset transient controls.
 - Victory: all-city unification or Luoyang plus at least 16 cities held across 12 consecutive monthly boundaries for Hegemon. Protect your capital; losing it can end your campaign.
 
 If time stops, inspect due reports and unfinished player battle submissions. If a march is empty, check whole-officer strength, garrison, food, available officers, reserved stock and route. If recruitment seems ineffective, assign reserve soldiers. If a governor has not changed, check travel and the month boundary. Fit before zooming when a map is confusing.

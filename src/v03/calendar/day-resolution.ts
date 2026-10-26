@@ -105,6 +105,7 @@ export function progressJourneysForDay(timeline: StrategicTimeline): StrategicTi
   const journeys = timeline.journeys.map((journey) => {
     const signatureAtDaybreak = resolution.daybreakJourneySignatures[journey.id];
     if (
+      journey.departedAbsoluteDay > timeline.absoluteDay ||
       signatureAtDaybreak === undefined ||
       signatureAtDaybreak !== journeyMovementSignature(journey)
     ) {

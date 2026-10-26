@@ -298,7 +298,7 @@ export function BattleSidebar({
           <summary>{message(locale, 'ui.more.actions.77')}</summary>
           <Button
             className="v03-retreat-action"
-            disabled={!currentUnit || activeBattle.playerDayComplete}
+            disabled={activeBattle.playerDayComplete}
             onClick={() => setConfirmation('withdraw')}
           >
             {t.retreat}

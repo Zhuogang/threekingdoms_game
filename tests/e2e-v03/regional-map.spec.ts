@@ -123,7 +123,9 @@ for (const locale of ['en', 'zh'] as const) {
     const before = await map.getAttribute('viewBox');
     for (const city of CITY_GEOGRAPHY) {
       const symbol = page.locator(`.v03-city-symbol[data-city-id="${city.id}"]`);
-      const expectedName = await symbol.getAttribute('aria-label');
+      const expectedName = await page
+        .locator(`.v03-city-anchor[data-city-id="${city.id}"]`)
+        .getAttribute('aria-label');
       const anchor = await symbol.evaluate((element) => {
         const matrix = (element as SVGGraphicsElement).getScreenCTM()!;
         return { x: matrix.e, y: matrix.f };

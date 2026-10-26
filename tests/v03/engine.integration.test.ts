@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+// Isolate commanded campaigns; rival dispatch has a dedicated integration suite.
+vi.mock('../../src/v03/strategic-ai', async (original) => ({
+  ...(await original<typeof import('../../src/v03/strategic-ai')>()),
+  planStrategicRivalCampaigns: () => [],
+}));
 import {
   advanceV03,
   applyV03BattleAction,
@@ -18,6 +23,12 @@ const campaignStrength = 700;
 
 function issueCampaign(intent: 'conquer' | 'raid' | 'sack' = 'conquer'): V03GameState {
   const state = createV03Game(playerFaction, 481516);
+  // A tactical-battle fixture needs real defenders now that empty cities do not spawn militia.
+  const target = state.cities.find((city) => city.id === targetCity)!;
+  if (target.garrisonTroops === 0) {
+    target.garrisonTroops = 500;
+    target.population -= 500;
+  }
   const result = executeV03Command(state, {
     type: 'issueCampaignDirective',
     sourceCityId: sourceCity,
@@ -519,6 +530,9 @@ describe('v0.3 strategic engine integration', () => {
       .reduce((sum, o) => sum + o.troops, 0);
     city.cavalryServiceDaysThisMonth = cavalry * 29;
     const militia = 100;
+    city.reserve = 0;
+    for (const pool of Object.values(city.reservePools))
+      Object.assign(pool, { troops: 0, troopExperience: 0 });
     city.garrisonTroops = staffedTroops + militia;
     city.troopServiceDaysThisMonth = (staffedTroops + militia) * 29;
     city.food = 1_000_000;
@@ -544,6 +558,9 @@ describe('v0.3 strategic engine integration', () => {
     for (const city of state.cities) {
       city.garrisonTroops = 0;
       city.troopServiceDaysThisMonth = 0;
+      city.reserve = 0;
+      for (const pool of Object.values(city.reservePools))
+        Object.assign(pool, { troops: 0, troopExperience: 0 });
     }
     for (const officer of state.officers) officer.troops = 0;
     const journey = state.journeys[0]!;
@@ -756,7 +773,7 @@ describe('v0.3 strategic engine integration', () => {
     )!;
     for (const officer of state.officers) {
       if (officer.factionId === target.factionId && officer.id !== defender.id)
-        officer.location = { kind: 'captured', cityId: null };
+        officer.location = { kind: 'captured', cityId: state.playerCapitalCityId };
     }
     defender.location = { kind: 'city', cityId: target.id };
     defender.troops = 1_000;

@@ -7,7 +7,7 @@ const PlaytestMenu = import.meta.env.DEV ? lazy(() => import('../panels/Playtest
 
 import { scenarioById } from '../../content/scenario';
 
-import { loadV03Autosave } from '../../platform/storage';
+import { loadV03Autosave, readV03AutosavePayload } from '../../platform/storage';
 
 import { availableV03Scenarios } from '../../initial-state';
 
@@ -41,6 +41,13 @@ export function StartScreen({ context }: { context: ReturnType<typeof useCampaig
         return null;
       }
     })();
+  const hasStoredPayload = (() => {
+    try {
+      return readV03AutosavePayload() !== null;
+    } catch {
+      return false;
+    }
+  })();
   return (
     <main className="v03-start">
       <section className="v03-start-card" aria-label={message(locale, 'ui.campaign.menu.120')}>
@@ -150,7 +157,9 @@ export function StartScreen({ context }: { context: ReturnType<typeof useCampaig
           <Button
             type="button"
             className="v03-primary"
-            onClick={() => (saved ? setConfirmation('replace') : startCampaign())}
+            onClick={() =>
+              saved || hasStoredPayload ? setConfirmation('replace') : startCampaign()
+            }
           >
             {t.newCampaign}
           </Button>
@@ -181,9 +190,12 @@ export function StartScreen({ context }: { context: ReturnType<typeof useCampaig
           onCancel={() => setConfirmation(null)}
           onConfirm={startCampaign}
         >
-          {state ? (
+          {state || hasStoredPayload ? (
             <Button type="button" onClick={exportSave}>
-              {message(locale, 'ui.export.current.campaign.132')}
+              {message(
+                locale,
+                state ? 'ui.export.current.campaign.132' : 'flow.exportOriginalSave',
+              )}
             </Button>
           ) : null}
         </ConfirmDialog>

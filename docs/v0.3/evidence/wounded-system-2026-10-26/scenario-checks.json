@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-26",
+  "kind": "controlled command scenarios, not human balance acceptance",
+  "observations": [
+    {
+      "scenario": "weak-force-saving-elite",
+      "verified": "5000 elite cavalry: 0 healthy, 3000 wounded, 1240 XP, actual return journey; ally survives"
+    },
+    {
+      "scenario": "captured-elite-reorganization",
+      "verified": "Independent capture, then successful recruitment: 4000 healthy / 600 wounded cavalry retain XP, ten-day army lock"
+    },
+    {
+      "scenario": "multi-officer-withdrawal",
+      "verified": "Two independent 5% rolls; preset seed captures Cao Cao while Xiahou Dun returns. Preview is 9.75% for any capture"
+    }
+  ]
+}

@@ -7,6 +7,7 @@
  * payloads are stable and localization-ready.
  */
 
+import { availableTroops } from './personnel';
 import {
   mergeTroopPools,
   setReservePool,
@@ -179,6 +180,8 @@ export interface V03MonthlyEventOfficer {
   loyalty: number;
   age: number;
   troops: number;
+  wounded: number;
+  reorganizationDays: number;
   alive: boolean;
 }
 
@@ -336,7 +339,11 @@ function applyEvacuation(
     2 * (leader.intellect + leader.force) + Math.floor(city.commerce * 1.5),
   );
   const lootFood = 5 * (leader.intellect + leader.force) + Math.floor(city.farming * 4);
-  const evacuatedTroops = evacuated.reduce((sum, officer) => sum + officer.troops, 0);
+  const evacuatedTroops = evacuated.reduce(
+    (sum, officer) => sum + officer.troops + officer.wounded,
+    0,
+  );
+  const readyTroops = evacuated.reduce((sum, officer) => sum + availableTroops(officer), 0);
   const transferredReserve = city.reserve;
 
   city.loyalty = Math.floor(city.loyalty / 2);
@@ -353,8 +360,8 @@ function applyEvacuation(
     setReservePool(refuge, type, merged);
     setReservePool(city, type, { troops: 0, troopExperience: 0 });
   }
-  city.garrisonTroops = Math.max(0, city.garrisonTroops - evacuatedTroops);
-  refuge.garrisonTroops = Math.min(resourceCap, refuge.garrisonTroops + evacuatedTroops);
+  city.garrisonTroops = Math.max(0, city.garrisonTroops - readyTroops);
+  refuge.garrisonTroops = Math.min(resourceCap, refuge.garrisonTroops + readyTroops);
   refuge.gold = Math.min(resourceCap, refuge.gold + lootGold);
   refuge.food = Math.min(resourceCap, refuge.food + lootFood);
   for (const officer of evacuated) officer.location = { kind: 'city', cityId: refuge.id };

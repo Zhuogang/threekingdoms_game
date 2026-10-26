@@ -18,6 +18,7 @@ import {
   encodeV03Save,
   decodeV03Save,
   V03_MAX_SAVE_BYTES,
+  readV03AutosavePayload,
 } from '../../platform/storage';
 
 import { type CampaignCityVisual, type WorldPolyline } from '../../rendering';
@@ -215,14 +216,17 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
   };
   const exportSave = () => {
-    if (!state) return;
     let url: string | null = null;
     try {
-      const blob = new Blob([encodeV03Save(state)], { type: 'application/json' });
+      const payload = state ? encodeV03Save(state) : readV03AutosavePayload();
+      if (payload === null) return;
+      const blob = new Blob([payload], { type: 'application/json' });
       url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `hegemony-v0.3-${state.scenarioId}-${state.absoluteDay}.save`;
+      link.download = state
+        ? `hegemony-v0.3-${state.scenarioId}-${state.absoluteDay}.save`
+        : 'hegemony-v0.3-original.save';
       document.body.append(link);
       link.click();
       link.remove();

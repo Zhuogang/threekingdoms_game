@@ -22,12 +22,14 @@ import type {
 
 function planRoute(input: PlanRouteInput): OrderRoutePlan | null {
   const source = input.state.cities.find((city) => city.id === input.sourceCityId);
-  if (!source?.factionId) return null;
+  const movingFactionId = input.movingFactionId ?? source?.factionId;
+  if (!source || !movingFactionId) return null;
   const allowedCityIds = new Set<CityId>([
     ...input.state.cities
-      .filter((city) => city.factionId === source.factionId)
+      .filter((city) => city.factionId === movingFactionId)
       .map((city) => city.id as CityId),
     input.targetCityId as CityId,
+    input.sourceCityId as CityId,
   ]);
   const path = findStrategicRoutePath(input.sourceCityId as CityId, input.targetCityId as CityId, {
     allowedCityIds,
@@ -77,7 +79,8 @@ function planParty(input: PlanPartyInput): OrderPartyPlan | null {
         officer.factionId === input.state.playerFactionId &&
         officer.location.kind === 'city' &&
         officer.location.cityId === input.sourceCityId &&
-        officer.troops > 0,
+        officer.troops > 0 &&
+        officer.reorganizationDays === 0,
     )
     .sort((a, b) => {
       const leaderA =

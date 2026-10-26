@@ -110,6 +110,8 @@ export interface BattleRosterEntry {
 export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   name: string;
   troops: number;
+  wounded: number;
+  casualtyRemainder: number;
   initialTroops: number;
   troopExperience: number;
   /** Opening experience retained for the report even if the unit is annihilated. */
@@ -170,6 +172,8 @@ export interface V03BattleLogEntry {
 }
 export interface V03TacticalBattleState {
   schemaVersion: 1;
+  engaged: boolean;
+  retreatAllowed: Record<BattleSide, boolean>;
   id: string;
   map: BattleMap;
   playerSide: BattleSide;
@@ -203,7 +207,8 @@ export interface CreateBattleStateOptions {
 }
 
 export type BattleAction =
-  | { type: 'retreat'; unitId: string }
+  | { type: 'retreat'; unitId: string; side?: never }
+  | { type: 'retreat'; side: BattleSide; unitId?: never }
   | { type: 'tactic'; unitId: string; tactic: BattleTactic; targetId: string }
   | { type: 'move'; unitId: string; x: number; y: number }
   | { type: 'attack'; unitId: string; targetId: string }

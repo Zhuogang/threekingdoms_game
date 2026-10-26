@@ -1,4 +1,5 @@
 import { recruitmentQuote } from '../campaign/recruitment';
+import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
 import type { V03City, V03GameState } from '../types';
 import {
   CITY_MONTHLY_WORK_GOLD_COST,
@@ -213,15 +214,7 @@ export function planGovernorMonthlyWork(
   const city = state.cities.find((entry) => entry.id === cityId);
   if (!city) throw new Error(`Unknown city ${cityId}.`);
   const managerOfficerId = localManager(state, city);
-  const localTroops = state.officers
-    .filter(
-      (officer) =>
-        officer.alive &&
-        officer.factionId === city.factionId &&
-        officer.location.kind === 'city' &&
-        officer.location.cityId === city.id,
-    )
-    .reduce((sum, officer) => sum + officer.troops * (officer.troopType === 'cavalry' ? 2 : 1), 0);
+  const localTroops = cityPersonnelSummary(state, city.id).foodHeadcount;
   const monthlyFoodUpkeep = Math.ceil(localTroops * 0.12);
   const reserves = approvedReserves(state, city.id);
   const protectedFood = Math.max(500, monthlyFoodUpkeep * 2) + reserves.food;
@@ -345,7 +338,8 @@ export function planGovernorMonthlyWork(
           ? 'security'
           : rewardTarget && city.gold >= reserves.gold + GOVERNOR_REWARD_GOLD_COST
             ? ((targetOfficerId = rewardTarget.id), 'reward')
-            : city.reservePools[manager.troopType].troops < 500 && city.population > 1000
+            : availableReserveTroops(state, city.id, manager.troopType) < 500 &&
+                city.population > 1000
               ? 'recruit'
               : city.food >= protectedFood + 800 && city.gold < reserves.gold + 80
                 ? 'sell-food'
@@ -356,13 +350,16 @@ export function planGovernorMonthlyWork(
                     : workUsed === 0 && trainee
                       ? ((targetOfficerId = trainee.id), 'train')
                       : workUsed === 0 &&
-                          manager.troops < 10_000 &&
-                          city.reservePools[manager.troopType].troops - reserves.troops > 1000
+                          manager.reorganizationDays === 0 &&
+                          manager.troops + manager.wounded < 10_000 &&
+                          availableReserveTroops(state, city.id, manager.troopType) -
+                            reserves.troops >
+                            1000
                         ? ((targetOfficerId = manager.id),
                           (targetTroops = Math.min(
-                            10_000,
+                            10_000 - manager.wounded,
                             manager.troops +
-                              city.reservePools[manager.troopType].troops -
+                              availableReserveTroops(state, city.id, manager.troopType) -
                               reserves.troops -
                               1000,
                           )),

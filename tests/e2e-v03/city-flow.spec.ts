@@ -9,10 +9,7 @@ async function state(page: Page): Promise<V03GameState> {
   );
 }
 async function city(page: Page, name: string) {
-  await page
-    .locator('.v03-city-symbol')
-    .filter({ has: page.locator(`text=${name}`) })
-    .click();
+  await page.getByRole('button', { name, exact: true }).click();
 }
 for (const width of [390, 1366, 1920])
   for (const lang of ['en', 'zh']) {

@@ -3,6 +3,7 @@ import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 import { TroopProgress } from './TroopProgress';
+import { CityPersonnelPanel } from './CityPersonnelPanel';
 import { UnitIcon } from '../../rendering/UnitIcon';
 import { officerWorkActions, workLabel, WorkBudget, type CityWorkAction } from './CityWork';
 
@@ -64,6 +65,7 @@ export function CityOfficers({
           <span aria-hidden>→</span>
         </Button>
       ) : null}
+      {!prisoners ? <CityPersonnelPanel context={context} /> : null}
     </section>
   );
 }
@@ -119,6 +121,7 @@ export function OfficerDetail({
               </Button>
             ))}
           </div>
+          <CityPersonnelPanel context={context} officerId={officer.id} />
         </>
       ) : (
         <p className="v03-muted">{message(locale, 'flow.inspectOnly')}</p>

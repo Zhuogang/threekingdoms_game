@@ -4,6 +4,16 @@ import type { V03GameState } from '../types';
 import type { V03Locale } from '../wiki';
 
 const ROUTINE_ZH: Readonly<Record<string, string>> = {
+  'These troops are still reorganizing.': '这批人员仍在整编，暂不能作战或调拨。',
+  'Choose an uncommitted friendly city.': '请选择未被战斗占用的己方城市。',
+  'Choose a positive number of personnel to disband.': '请输入要遣散的人数。',
+  'Choose personnel stationed in this city.': '请选择本城驻留且未被占用的人员。',
+  'The city reserve does not contain those soldiers.': '本城兵池中没有这些人员。',
+  'Choose a stationed officer with personnel.': '请选择仍有健全兵或伤兵的驻城武将。',
+  'No city work points remain.': '本城本月已没有可用工作点。',
+  'The prisoner is still being escorted.': '该俘虏仍在押送途中，抵城后才能处置。',
+  'Choose one of your officers held by this prisoner’s house with a usable return route.':
+    '请选择由对方看押、且双方都有归还路线的己方武将。',
   'Only your directly governed capital accepts city work orders.':
     '只有君主直辖本城接受直接内政命令。',
   'Monthly governor work requires an owned city under autonomous governance.':

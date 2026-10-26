@@ -1,6 +1,7 @@
 import { reconcileV03Rulers } from '../engine';
 import { z } from 'zod';
 import type { V03GameState } from '../types';
+import { PERSONNEL_RULES } from '../campaign/personnel';
 import { validateBattleMap } from '../battle/maps';
 import { canvasBattlefieldIds } from '../battle/battlefields/layout';
 
@@ -85,6 +86,8 @@ const tacticalUnit = z
     x: safeInt.min(0).max(47),
     y: safeInt.min(0).max(31),
     troops: nonnegative,
+    wounded: nonnegative,
+    casualtyRemainder: safeInt.min(0).max(99),
     initialTroops: nonnegative,
     troopExperience,
     initialTroopExperience: troopExperience,
@@ -105,6 +108,8 @@ const tacticalUnit = z
 const tacticalBattle = z
   .object({
     schemaVersion: z.literal(1),
+    engaged: z.boolean(),
+    retreatAllowed: z.object({ attacker: z.boolean(), defender: z.boolean() }).strict(),
     id,
     map: battleMap,
     playerSide: z.enum(['attacker', 'defender']),
@@ -118,7 +123,7 @@ const tacticalBattle = z
     rngState: safeInt.min(0).max(0xffffffff),
     weather: z.enum(['clear', 'rain', 'wind']),
     nextWeather: z.enum(['clear', 'rain', 'wind']),
-    units: z.array(tacticalUnit).min(2).max(20),
+    units: z.array(tacticalUnit).min(1).max(20),
     log: z.array(z.string().max(1000)).max(2000),
     logEntries: z
       .array(
@@ -161,7 +166,14 @@ const location = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('city'), cityId: id }).strict(),
   z.object({ kind: z.literal('journey'), journeyId: id }).strict(),
   z.object({ kind: z.literal('battle'), battleId: id }).strict(),
-  z.object({ kind: z.literal('captured'), cityId: id.nullable() }).strict(),
+  z
+    .object({
+      kind: z.literal('captured'),
+      cityId: id.nullable(),
+      holderFactionId: id.optional(),
+      journeyId: id.optional(),
+    })
+    .strict(),
 ]);
 
 const faction = z
@@ -214,6 +226,8 @@ const city = z
     workPointsUsed: safeInt.min(0).max(3).optional(),
     troopServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
     cavalryServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
+    prisonerServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
+    prisonerCavalryDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
   })
   .strict();
 const officer = z
@@ -229,6 +243,8 @@ const officer = z
     age: nonnegative,
     troops: nonnegative,
     troopType,
+    wounded: nonnegative,
+    reorganizationDays: safeInt.min(0).max(PERSONNEL_RULES.reorganizationDays),
     equipment: z.literal('Fine arms').nullable().optional(),
     troopExperience,
     experience: nonnegative,
@@ -279,6 +295,7 @@ const journey = z
           .object({
             troopTypes: z.array(troopType).max(100),
             cavalryTroops: nonnegative.optional(),
+            woundedTroops: nonnegative.optional(),
             soloOfficer: z.boolean().optional(),
             heavySupplyTrain: z.boolean().optional(),
           })
@@ -336,6 +353,7 @@ const sideReportSchema = z
   .object({
     startingTroops: nonnegative,
     survivingTroops: nonnegative,
+    woundedTroops: nonnegative,
     returned: z.array(id).max(100),
     captured: z.array(id).max(100),
     killed: z.array(id).max(100),
@@ -346,6 +364,7 @@ const sideReportSchema = z
             officerId: id.nullable(),
             troopType,
             survivingTroops: nonnegative,
+            woundedTroops: nonnegative,
             beforeExperience: troopExperience,
             afterExperience: troopExperience,
             participated: z.boolean(),
@@ -439,6 +458,10 @@ const battle = z
     attackerFoodRemainderMicro: nonnegative,
     defenderFoodRemainderMicro: nonnegative,
     foodShortfallDays: nonnegative,
+    lastRationDay: nonnegative.optional(),
+    foodOverflow: nonnegative.optional(),
+    populationOutflow: nonnegative.optional(),
+    rearDispersed: nonnegative.optional(),
     attackerFormationOfficerIds: z.record(id, z.array(id).max(100)),
     defenderFormationOfficerIds: z.record(id, z.array(id).max(100)),
   })
@@ -460,10 +483,63 @@ const dayResolution = z
   .strict()
   .nullable();
 
+const troopSource = z
+  .object({
+    id,
+    cityId: id,
+    factionId: id.nullable(),
+    sourceOfficerId: id.nullable(),
+    autoReturn: z.boolean(),
+    troopType,
+    troops: nonnegative,
+    wounded: nonnegative,
+    troopExperience,
+    reorganizationDays: safeInt.min(0).max(PERSONNEL_RULES.reorganizationDays),
+  })
+  .strict();
+
+const personnelDay = z
+  .object({
+    absoluteDay: nonnegative,
+    completed: z.boolean(),
+    entries: z
+      .array(
+        z
+          .object({
+            recordId: z.string().min(1).max(160),
+            cityId: id,
+            factionId: id.nullable(),
+            holderFactionId: id.nullable(),
+            troopType,
+            troops: nonnegative,
+            wounded: nonnegative,
+            reorganizationDays: safeInt.min(0).max(PERSONNEL_RULES.reorganizationDays),
+            foodAvailable: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(HISTORY_RECORD_LIMIT),
+    rations: z
+      .array(
+        z
+          .object({
+            recordId: z.string().min(1).max(160),
+            troops: nonnegative,
+            wounded: nonnegative,
+          })
+          .strict(),
+      )
+      .max(HISTORY_RECORD_LIMIT),
+  })
+  .strict();
+
 const stateSchema = z
   .object({
     version: z.literal(3),
     ruleset: z.literal('hegemony-3'),
+    personnelSchema: z.literal(1),
+    troopSources: z.array(troopSource).max(HISTORY_RECORD_LIMIT),
+    personnelDay,
     revision: nonnegative,
     scenarioId: id,
     seed: safeInt,
@@ -648,19 +724,35 @@ export function validateV03State(value: unknown): value is V03GameState {
     }
   }
   for (const entry of state.officers) {
-    if (entry.troops === 0 && entry.troopExperience !== 0) return false;
+    if (entry.troops + entry.wounded > PERSONNEL_RULES.capacity) return false;
+    if (
+      entry.troops + entry.wounded === 0 &&
+      (entry.troopExperience !== 0 || entry.reorganizationDays !== 0)
+    )
+      return false;
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
     if (entry.governorOfCityId !== null && !cityIds.has(entry.governorOfCityId)) return false;
     if (entry.location.kind === 'city' && !cityIds.has(entry.location.cityId)) return false;
     if (entry.location.kind === 'journey' && !journeyIds.has(entry.location.journeyId))
       return false;
     if (entry.location.kind === 'battle' && !battleIds.has(entry.location.battleId)) return false;
-    if (
-      entry.location.kind === 'captured' &&
-      entry.location.cityId !== null &&
-      !cityIds.has(entry.location.cityId)
-    )
-      return false;
+    if (entry.location.kind === 'captured') {
+      const location = entry.location;
+      if ((location.cityId !== null) === (location.journeyId !== undefined)) return false;
+      const holdingCity = state.cities.find((cityEntry) => cityEntry.id === location.cityId);
+      const escort = state.journeys.find((journeyEntry) => journeyEntry.id === location.journeyId);
+      const holderId = holdingCity?.factionId ?? escort?.ownerFactionId;
+      if (
+        (!holdingCity && !escort) ||
+        (location.holderFactionId && location.holderFactionId !== holderId)
+      )
+        return false;
+      if (
+        escort &&
+        (!location.holderFactionId || !['outbound', 'returning', 'waiting'].includes(escort.status))
+      )
+        return false;
+    }
     if (entry.governorOfCityId !== null) {
       const governedCity = state.cities.find(
         (cityEntry) => cityEntry.id === entry.governorOfCityId,
@@ -693,6 +785,54 @@ export function validateV03State(value: unknown): value is V03GameState {
       officerAssignments.set(entry.id, assignedBattle.id);
     }
   }
+  if (!unique(state.troopSources)) return false;
+  for (const source of state.troopSources) {
+    const sourceCity = state.cities.find((entry) => entry.id === source.cityId);
+    if (!sourceCity || source.factionId !== sourceCity.factionId) return false;
+    if (source.sourceOfficerId !== null && !officerIds.has(source.sourceOfficerId)) return false;
+    if (source.autoReturn && source.sourceOfficerId === null) return false;
+    if (
+      source.troops + source.wounded === 0 ||
+      !Number.isSafeInteger(source.troops + source.wounded)
+    )
+      return false;
+    if (
+      source.sourceOfficerId !== null &&
+      state.officers.find((entry) => entry.id === source.sourceOfficerId)?.troopType !==
+        source.troopType
+    )
+      return false;
+  }
+  const validPersonnelRecord = (recordId: string) => {
+    if (recordId.startsWith('officer:')) return officerIds.has(recordId.slice(8));
+    if (recordId.startsWith('source:'))
+      return state.troopSources.some((source) => source.id === recordId.slice(7));
+    return false;
+  };
+  if (
+    state.personnelDay.absoluteDay > state.absoluteDay ||
+    !isUnique(state.personnelDay.entries.map((entry) => entry.recordId)) ||
+    !isUnique(state.personnelDay.rations.map((entry) => entry.recordId))
+  )
+    return false;
+  for (const entry of state.personnelDay.entries) {
+    if (!validPersonnelRecord(entry.recordId) || !cityIds.has(entry.cityId)) return false;
+    if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
+    if (entry.holderFactionId !== null && !factionIds.has(entry.holderFactionId)) return false;
+    if (!Number.isSafeInteger(entry.troops + entry.wounded)) return false;
+  }
+  const validRationRecord = (recordId: string) => {
+    if (validPersonnelRecord(recordId)) return true;
+    if (recordId.startsWith('militia:')) return cityIds.has(recordId.slice(8));
+    if (!recordId.startsWith('reserve:')) return false;
+    const parts = recordId.slice(8).split(':');
+    return (
+      parts.length === 2 &&
+      cityIds.has(parts[0]!) &&
+      ['infantry', 'archer', 'cavalry'].includes(parts[1]!)
+    );
+  };
+  if (state.personnelDay.rations.some((entry) => !validRationRecord(entry.recordId))) return false;
   for (const entry of state.journeys) {
     if (
       !factionIds.has(entry.ownerFactionId) ||
@@ -707,6 +847,7 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
     if ((entry.manifest.composition.cavalryTroops ?? 0) > entry.manifest.troopCount) return false;
+    if ((entry.manifest.composition.woundedTroops ?? 0) > entry.manifest.troopCount) return false;
     if (!isUnique(entry.manifest.officerIds)) return false;
     if (entry.manifest.officerIds.some((officerId) => !officerIds.has(officerId))) return false;
     if (
@@ -869,8 +1010,9 @@ export function validateV03State(value: unknown): value is V03GameState {
         .size !== battle.units.filter((unit) => unit.troops > 0).length
     )
       return false;
-    if (battle.units.some((unit) => unit.troops > unit.initialTroops)) return false;
-    if (battle.units.some((unit) => unit.troops === 0 && unit.troopExperience !== 0)) return false;
+    if (battle.units.some((unit) => unit.troops + unit.wounded > unit.initialTroops)) return false;
+    if (battle.units.some((unit) => unit.troops + unit.wounded === 0 && unit.troopExperience !== 0))
+      return false;
     if (entry.resolved !== (battle.outcome !== null)) return false;
     if (
       entry.outcome !== null &&
@@ -1017,7 +1159,7 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       formatVersion?: unknown;
       ruleset?: unknown;
       format?: unknown;
-      state?: { version?: unknown; ruleset?: unknown };
+      state?: { version?: unknown; ruleset?: unknown; personnelSchema?: unknown };
     } | null;
     const recognizedEnvelope =
       candidate &&
@@ -1047,6 +1189,28 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       throw new Error(
         'This save uses an unsupported newer version. Open it with a compatible game version; existing data was left unchanged.',
       );
+    if (
+      recognizedEnvelope &&
+      candidate.format === 'hegemony.save' &&
+      candidate.version === 3 &&
+      candidate.ruleset === 'hegemony-3' &&
+      candidate.state &&
+      typeof candidate.state === 'object' &&
+      candidate.state.version === 3 &&
+      candidate.state.ruleset === 'hegemony-3'
+    ) {
+      if (candidate.state.personnelSchema === undefined)
+        throw new Error(
+          'This save predates the wounded personnel schema. Export the original data and start a new campaign; existing data was left unchanged.',
+        );
+      if (
+        Number.isSafeInteger(candidate.state.personnelSchema) &&
+        (candidate.state.personnelSchema as number) > 1
+      )
+        throw new Error(
+          'This save uses an unsupported newer personnel schema; existing data was left unchanged.',
+        );
+    }
     throw new Error('This file is not a valid hegemony.save v0.3 campaign.');
   }
   if (!validateV03State(parsed.data.state))
@@ -1065,8 +1229,15 @@ export function saveV03Autosave(
 export function loadV03Autosave(
   storage: Pick<Storage, 'getItem'> = localStorage,
 ): V03GameState | null {
-  const payload = storage.getItem(V03_AUTOSAVE_KEY);
+  const payload = readV03AutosavePayload(storage);
   return payload === null ? null : decodeV03Save(payload);
+}
+
+/** Recovery export must work even when the current schema cannot decode the save. */
+export function readV03AutosavePayload(
+  storage: Pick<Storage, 'getItem'> = localStorage,
+): string | null {
+  return storage.getItem(V03_AUTOSAVE_KEY);
 }
 
 function assertSaveSize(payload: string): void {
@@ -1162,7 +1333,10 @@ function compactV03History(source: V03GameState): V03GameState {
     ...eventJourneyIds,
     ...(state.dayResolution?.arrivals ?? []),
     ...state.officers.flatMap((officer) =>
-      officer.location.kind === 'journey' ? [officer.location.journeyId] : [],
+      officer.location.kind === 'journey' ||
+      (officer.location.kind === 'captured' && officer.location.journeyId)
+        ? [officer.location.journeyId!]
+        : [],
     ),
     ...state.cities.flatMap((city) =>
       city.pendingAppointment?.journeyId ? [city.pendingAppointment.journeyId] : [],
@@ -1179,5 +1353,9 @@ function compactV03History(source: V03GameState): V03GameState {
     state.journeys.filter((entry) => entry.status !== 'delivered' && entry.status !== 'cancelled'),
   );
   state.log = state.log.slice(-RECENT_LOG_HISTORY);
+  const journeyOrder = new Map(source.journeys.map((entry, index) => [entry.id, index]));
+  const battleOrder = new Map(source.battles.map((entry, index) => [entry.id, index]));
+  state.journeys.sort((a, b) => journeyOrder.get(a.id)! - journeyOrder.get(b.id)!);
+  state.battles.sort((a, b) => battleOrder.get(a.id)! - battleOrder.get(b.id)!);
   return state;
 }

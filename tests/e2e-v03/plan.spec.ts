@@ -139,7 +139,7 @@ for (const width of [390, 1366, 1920])
       await page.locator('.v03-battle-action-bar summary').click();
       await page
         .getByRole('button', {
-          name: locale === 'zh' ? '撤离战场' : 'Withdraw from battle',
+          name: locale === 'zh' ? '整军撤退' : 'Withdraw from battle',
           exact: true,
         })
         .click();
@@ -207,6 +207,18 @@ for (const locale of ['en', 'zh'] as const)
           })
           .getByRole('button')
           .last()
+          .click();
+      } else {
+        const dialog = page.getByRole('dialog').last();
+        await dialog
+          .getByRole('button', { name: locale === 'zh' ? '取消' : 'Cancel', exact: true })
+          .click();
+        await expect(panel).toBeVisible();
+        await panel.getByRole('button', { name: labels[action][locale], exact: true }).click();
+        await page
+          .getByRole('dialog')
+          .last()
+          .getByRole('button', { name: locale === 'zh' ? '确认' : 'Confirm', exact: true })
           .click();
       }
       await expect(page.locator('.v03-roster')).toBeVisible();

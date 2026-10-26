@@ -1,4 +1,6 @@
 import { Button, Input } from '../kit';
+import { RetreatPreview } from '../panels/RetreatPreview';
+import { previewRetreat } from '../../campaign/battle-aftermath';
 import { message } from '../../i18n';
 import { ReportsInbox } from '../panels/ReportsInbox';
 import { BattleOutcome } from '../panels/BattleOutcome';
@@ -25,7 +27,6 @@ export function GameShell({
     autosaveError,
     feedback,
     setFeedback,
-    currentUnit,
     setConfirmation,
     selectedGeo,
     orderPreviewOrder,
@@ -107,19 +108,27 @@ export function GameShell({
           }}
         />
       ) : null}
-      {confirmation === 'withdraw' && activeBattle && currentUnit ? (
+      {confirmation === 'withdraw' && activeBattle ? (
         <ConfirmDialog
           title={message(locale, 'ui.withdraw.from.battle.61')}
           detail={t.retreatWarning}
+          body={<RetreatPreview state={context.state} battle={activeBattle} locale={locale} />}
           cancelLabel={message(locale, 'ui.cancel.62')}
-          confirmLabel={message(locale, 'ui.confirm.withdrawal.63')}
+          confirmLabel={
+            previewRetreat(context.state, activeBattle, activeBattle.battleData.playerSide).risk ===
+            100
+              ? locale === 'zh'
+                ? '确认投降'
+                : 'Confirm surrender'
+              : message(locale, 'ui.confirm.withdrawal.63')
+          }
           onCancel={() => setConfirmation(null)}
           onConfirm={() => {
             setConfirmation(null);
             dispatch({
               type: 'battleAction',
               battleId: activeBattle.id,
-              action: { type: 'retreat', unitId: currentUnit.id },
+              action: { type: 'retreat', side: activeBattle.battleData.playerSide },
             });
           }}
         />

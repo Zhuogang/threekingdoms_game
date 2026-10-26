@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { advanceV03 } from '../../../src/v03/engine';
 import { createV03Game } from '../../../src/v03/initial-state';
+import { availableTroops, createPersonnelDay } from '../../../src/v03/campaign/personnel';
+import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../../src/v03/platform/storage';
 
 function saveValidationMessage(state: ReturnType<typeof createV03Game>): string {
@@ -13,6 +15,65 @@ function saveValidationMessage(state: ReturnType<typeof createV03Game>): string 
 }
 
 describe('v0.3 monthly campaign event integration', () => {
+  it('keeps reorganizing contingents unavailable when the historical evacuation moves officers', () => {
+    const state = createV03Game('cao', 31021, 'divided-realm-190');
+    state.absoluteDay = 29;
+    const origin = state.cities.find((city) => city.id === 'luoyang')!;
+    const refuge = state.cities.find((city) => city.id === 'changan')!;
+    origin.food = 1_000_000;
+    refuge.food = 1_000_000;
+    const officer = state.officers.find(
+      (entry) =>
+        entry.alive &&
+        entry.factionId === 'dong' &&
+        entry.location.kind === 'city' &&
+        entry.location.cityId === origin.id,
+    )!;
+    expect(officer).toBeDefined();
+    origin.garrisonTroops -= officer.troops;
+    officer.reorganizationDays = 10;
+    officer.wounded = 500;
+    const existingMilitia = Math.max(
+      0,
+      refuge.garrisonTroops -
+        state.officers
+          .filter(
+            (entry) =>
+              entry.alive &&
+              entry.factionId === 'dong' &&
+              entry.location.kind === 'city' &&
+              entry.location.cityId === refuge.id,
+          )
+          .reduce((sum, entry) => sum + availableTroops(entry), 0),
+    );
+    const threat = state.cities.find((city) => city.id === 'chenliu')!;
+    threat.reservePools = createReservePools(100_000);
+    threat.reserve = 100_000;
+    threat.food = 1_000_000;
+    state.personnelDay = createPersonnelDay(state);
+    const result = advanceV03(state, 1);
+    expect(result.error).toBeUndefined();
+    expect(result.state.firedMonthlyEventIds).toContain('dong-burns-luoyang');
+    const moved = result.state.officers.find((entry) => entry.id === officer.id)!;
+    expect(moved).toMatchObject({
+      reorganizationDays: 9,
+      location: { kind: 'city', cityId: refuge.id },
+    });
+    const ready = result.state.officers
+      .filter(
+        (entry) =>
+          entry.alive &&
+          entry.factionId === 'dong' &&
+          entry.location.kind === 'city' &&
+          entry.location.cityId === refuge.id,
+      )
+      .reduce((sum, entry) => sum + availableTroops(entry), 0);
+    expect(result.state.cities.find((city) => city.id === refuge.id)?.garrisonTroops).toBe(
+      ready + existingMilitia,
+    );
+    expect(validateV03State(result.state)).toBe(true);
+  });
+
   it('fires the historical anti-Dong event, persists its invitation and treaties, and round-trips the save', () => {
     const state = createV03Game('cao', 31021, 'divided-realm-190');
     state.absoluteDay = 29;

@@ -100,6 +100,7 @@ export type GroundMovementClass = 'infantry' | 'archer' | 'cavalry';
 
 export interface TravelComposition {
   troopTypes: readonly GroundMovementClass[];
+  woundedTroops?: number;
   cavalryTroops?: number;
   /** Only a standalone officer/courier receives the single-person profile. */
   soloOfficer?: boolean;
@@ -123,9 +124,10 @@ function movementMultiplier(
   composition: TravelComposition,
 ): number {
   const lightCavalryOnly =
-    composition.soloOfficer === true ||
-    (composition.troopTypes.length > 0 &&
-      composition.troopTypes.every((type) => type === 'cavalry'));
+    (composition.woundedTroops ?? 0) === 0 &&
+    (composition.soloOfficer === true ||
+      (composition.troopTypes.length > 0 &&
+        composition.troopTypes.every((type) => type === 'cavalry')));
   let multiplier = lightCavalryOnly
     ? terrain === 'plain'
       ? 1.5

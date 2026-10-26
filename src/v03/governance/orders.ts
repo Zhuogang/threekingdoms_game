@@ -1,4 +1,5 @@
 import { isCityCommitted } from './commitments';
+import { detachWoundedToCity } from '../campaign/personnel';
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
@@ -59,6 +60,7 @@ export interface OrderPartyPlan {
 
 export interface PlanRouteInput {
   state: Readonly<V03GameState>;
+  movingFactionId?: string;
   sourceCityId: string;
   targetCityId: string;
   departureDay: number;
@@ -494,7 +496,11 @@ function selectedOfficerServices(
       let total = 0;
       const selected: typeof officers = [];
       for (const officer of officers.sort((a, b) => a.id.localeCompare(b.id)))
-        if (officer.troops > 0 && total + officer.troops <= request.maxTroops) {
+        if (
+          officer.troops > 0 &&
+          officer.reorganizationDays === 0 &&
+          total + officer.troops <= request.maxTroops
+        ) {
           selected.push(officer);
           total += officer.troops;
         }
@@ -848,6 +854,7 @@ function dispatch(
   nextSource.garrisonTroops -= input.cargo.troops;
   for (const officerId of input.party.officerIds) {
     const officer = next.officers.find((entry) => entry.id === officerId)!;
+    detachWoundedToCity(next, officer.id);
     officer.location = { kind: 'journey', journeyId: journey.id };
   }
   next.journeys.push(structuredClone(journey));

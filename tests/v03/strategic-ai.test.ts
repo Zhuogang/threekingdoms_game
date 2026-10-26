@@ -52,6 +52,8 @@ function officer(
     troopType,
     experience: 0,
     troopExperience: 0,
+    wounded: 0,
+    reorganizationDays: 0,
     level: 0,
     governorOfCityId: null,
     alive: true,
@@ -170,12 +172,12 @@ describe('v0.3 strategic rival planning', () => {
     expect(plansAfterOccupation[0]?.targetCityId).toBe('jinyang');
   });
 
-  it('ranks a zero-garrison independent city as the 500 militia its battle receives', () => {
+  it('ranks an undefended independent city by its actual zero field strength', () => {
     const state = fixture();
     state.cities.find((entry) => entry.id === 'jinyang')!.garrisonTroops = 450;
     state.officers.push(officer('cao-defender', 'cao', 'jinyang', 450));
 
-    expect(planStrategicRivalCampaigns(state)[0]?.targetCityId).toBe('jinyang');
+    expect(planStrategicRivalCampaigns(state)[0]?.targetCityId).toBe('pingyuan');
   });
 
   it('does not give a capital a target-priority bonus', () => {

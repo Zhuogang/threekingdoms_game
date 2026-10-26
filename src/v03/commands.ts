@@ -1,4 +1,5 @@
 import { marchArmy } from './governance/army';
+import { applyCityPersonnelCommand } from './campaign/city-personnel';
 import { decidePrisoner } from './campaign/prisoners';
 import {
   acknowledgeV03Event,
@@ -36,6 +37,9 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
     return { ok: false, state, error: 'This campaign has ended.' };
   }
   switch (command.type) {
+    case 'returnTroops':
+    case 'disband':
+      return applyCityPersonnelCommand(state, command);
     case 'marchArmy':
       return marchArmy(state, command);
     case 'prisonerAction':

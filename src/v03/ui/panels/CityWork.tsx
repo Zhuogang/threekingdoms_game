@@ -2,6 +2,7 @@ import type { TroopType } from '../../types';
 import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
 import { recruitmentQuote } from '../../campaign/recruitment';
+import { availableReserveTroops } from '../../campaign/personnel';
 import { useMemo, useRef, useState } from 'react';
 import { applyV03CityAction } from '../../governance/city-actions';
 import { message } from '../../i18n';
@@ -180,7 +181,7 @@ export function CityWork({
               { label: t.troops, value: officer.troops.toLocaleString() },
               {
                 label: message(locale, 'ui.reserve.soldiers.93'),
-                value: `${troopName(officer.troopType, locale)} ${city.reservePools[officer.troopType].troops.toLocaleString()}`,
+                value: `${troopName(officer.troopType, locale)} ${availableReserveTroops(state, city.id, officer.troopType).toLocaleString()}`,
               },
             ]}
           />
@@ -188,7 +189,7 @@ export function CityWork({
             <Input
               type="number"
               min={0}
-              max={10000}
+              max={10000 - officer.wounded}
               step={100}
               aria-label={`${t.assignmentAmount}: ${displayName(officer, locale)}`}
               value={amount}

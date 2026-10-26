@@ -1,6 +1,6 @@
 # Field battles, tactics and water combat
 
-Current reference checked October 25, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
+Current reference checked October 26, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Wounded/aftermath rules](09-wounded-retreat-and-captivity-design.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
 
 ## Implemented field
 
@@ -30,7 +30,13 @@ Normal-hit terrain protection and fire weather/forest modifiers remain separate 
 
 Each participating player battle submits once per global day; all required player submissions must complete before the world advances once. NPC-only battles are automatic. Save/reload preserves the daily cursor and manual-command authority rejects nonparticipants.
 
-Elimination, army rout, opposing camp occupation, withdrawal or the time limit can decide a field. Normal battles allow 30 days, raids 10. Current timeout policy is `survivor-count`: compare surviving troop totals; ties go to defender. Withdrawal confirmation concedes the whole battle; Cancel/Escape preserves state. Capture changes ownership, Raid loots and returns without occupation, Sack captures and destructively plunders. Returning armies/cargo still travel.
+Elimination, army rout, opposing camp occupation, withdrawal or the time limit can decide a field. Normal battles allow 30 days, raids 10. Current timeout policy is `survivor-count`: compare combat-ready totals; ties go to defender. Capture changes ownership, Raid loots and returns without occupation, Sack captures and destructively plunders. Returning armies/cargo still travel. Empty cities resolve directly without creating free militia or combat XP.
+
+Effective combat loss becomes 60% wounded, with integer remainders carried across hits. Zero healthy troops is defeat; zero healthy and wounded is annihilation. Wounded cannot act or heal in battle and keep their original mean XP. Only actual participants, including new field wounded, earn capped battle XP; old wounded stay behind before deployment and earn no field reward.
+
+Withdraw army is a side-level action requiring no selected unit. Confirmation previews the destination, affected officers, field/rear personnel and capture risk. With a route, each officer independently risks 0% capture before engagement, 5% after engagement or 25% on forced defeat/rout/camp loss. An already forced outcome takes precedence over voluntary withdrawal. No refuge route means explicit surrender. Cancel/Escape changes neither state nor RNG. Orderly escape retains all field survivors; forced escape keeps all healthy and two thirds of wounded. Losing defenders can escape by the same rules. Captured officers retain their actual contingent; rear stock disperses on city loss.
+
+NPC and auto-command armies use the same retreat policy: consider an orderly retreat with a valid route when healthy strength is at most 30% of its opening strength and at most half the enemy's. Existing forced outcomes cannot be downgraded by that policy. Final reports freeze healthy/wounded/permanent loss and XP rather than reading later officer counts.
 
 ## Source and evidence
 

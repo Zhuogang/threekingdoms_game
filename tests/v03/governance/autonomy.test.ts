@@ -62,6 +62,39 @@ function hostileJourney(cityId: string): V03Journey {
 }
 
 describe('v0.3 governor monthly work planning', () => {
+  it('includes rear wounded, reserves and captive cavalry in the food forecast', () => {
+    const { state, cityId } = fixture();
+    const before = planGovernorMonthlyWork(state, cityId, 3);
+    state.troopSources.push({
+      id: 'recovering-cavalry',
+      cityId,
+      factionId: state.playerFactionId,
+      sourceOfficerId: null,
+      autoReturn: false,
+      troopType: 'cavalry',
+      troops: 500,
+      wounded: 1500,
+      troopExperience: 1200,
+      reorganizationDays: 0,
+    });
+    const city = state.cities.find((entry) => entry.id === cityId)!;
+    city.reservePools.archer.troops += 1000;
+    city.reserve += 1000;
+    const prisoner = state.officers.find(
+      (officer) => officer.factionId !== state.playerFactionId && officer.alive,
+    )!;
+    Object.assign(prisoner, {
+      troops: 100,
+      wounded: 900,
+      troopType: 'cavalry',
+      location: { kind: 'captured', cityId },
+    });
+    const after = planGovernorMonthlyWork(state, cityId, 3);
+    // 2000 cavalry + 1000 archers + 1000 captive cavalry = 7000 ration headcount.
+    expect(before.projectedNextMonthFood - after.projectedNextMonthFood).toBe(840);
+    expect(after.protectedFood - before.protectedFood).toBe(1680);
+  });
+
   it.each(['departure', 'capture'] as const)(
     'uses a local acting officer for monthly autonomy when the governor is in %s',
     (absence) => {

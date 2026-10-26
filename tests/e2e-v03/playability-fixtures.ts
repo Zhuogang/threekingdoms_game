@@ -1,6 +1,7 @@
 import { createCanvasBattleMap } from '../../src/v03/battle';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
+import { mergeTroopPools, setReservePool } from '../../src/v03/campaign/troop-experience';
 import { encodeV03Save } from '../../src/v03/platform/storage';
 import type { V03GameState } from '../../src/v03/types';
 
@@ -17,7 +18,11 @@ export function acknowledgeReports(state: V03GameState): V03GameState {
  * moved onto that canvas; otherwise it keeps the one the campaign selected.
  */
 export function reviewBattleState(battlefieldId?: string): V03GameState {
-  const dispatched = executeV03Command(createV03Game('cao', 481516), {
+  const initial = createV03Game('cao', 481516);
+  const defended = initial.cities.find((city) => city.id === 'xiapi')!;
+  defended.garrisonTroops = 500;
+  defended.population -= 500;
+  const dispatched = executeV03Command(initial, {
     type: 'issueCampaignDirective',
     sourceCityId: 'puyang',
     targetCityId: 'xiapi',
@@ -186,7 +191,15 @@ export function governorTransferState(): V03GameState {
   for (const city of state.cities) if (city.governorId === governor.id) city.governorId = null;
   const oldSourceGovernor = state.officers.find((officer) => officer.id === source.governorId);
   if (oldSourceGovernor) oldSourceGovernor.governorOfCityId = null;
-  source.reserve += governor.troops;
+  const oldHome = state.cities.find(
+    (city) => governor.location.kind === 'city' && city.id === governor.location.cityId,
+  );
+  if (oldHome) oldHome.garrisonTroops -= governor.troops;
+  setReservePool(
+    source,
+    governor.troopType,
+    mergeTroopPools(source.reservePools[governor.troopType], governor),
+  );
   governor.troops = 0;
   governor.location = { kind: 'city', cityId: source.id };
   governor.governorOfCityId = source.id;

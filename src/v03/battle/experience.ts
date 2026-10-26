@@ -1,5 +1,18 @@
 import { troopLevel } from '../campaign/troop-experience';
 import type { BattleOutcome, TacticalBattleUnit } from './types';
+import { PERSONNEL_RULES } from '../campaign/personnel';
+
+/** Combat loss means unavailable, not all dead. Keep fractional wounded across attacks. */
+export function applyCombatDamage(unit: TacticalBattleUnit, damage: number): number {
+  if (!Number.isSafeInteger(damage) || damage < 0) throw new RangeError('Invalid combat damage.');
+  const casualties = Math.min(unit.troops, damage);
+  const numerator = casualties * PERSONNEL_RULES.woundedPercent + unit.casualtyRemainder;
+  unit.wounded += Math.floor(numerator / 100);
+  unit.casualtyRemainder = numerator % 100;
+  unit.troops -= casualties;
+  if (unit.troops + unit.wounded === 0) unit.troopExperience = 0;
+  return casualties;
+}
 
 /** Normal attacks and counterattacks only; tactics keep their officer-derived damage. */
 export function troopDamageMultiplier(sourceExperience: number, targetExperience: number): number {
@@ -22,7 +35,7 @@ export function recordCombatCasualties(
 /** Pure reward calculation; campaign settlement applies it once, after allocating survivors. */
 export function battleExperienceGain(unit: TacticalBattleUnit, outcome: BattleOutcome): number {
   if (
-    unit.troops === 0 ||
+    unit.troops + unit.wounded === 0 ||
     unit.initialTroops === 0 ||
     unit.combatCasualtiesDealt + unit.combatCasualtiesReceived === 0
   )

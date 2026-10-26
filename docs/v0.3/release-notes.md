@@ -2,6 +2,14 @@
 
 Local candidate; implementation `1e02e65` on `hegemony_of_the_three_kindoms_v0.3`. Documentation checked October 22, 2026. [How to play](player-guide.md) · [Status and tests](implementation-status.md) · [Open acceptance](../next-steps.md).
 
+## October 26 wounded troops and retreat
+
+Combat casualties now leave 60% wounded; defeated elite troops can survive, return and recover without losing their XP. One officer still commands one base troop type, with healthy and wounded sharing a 10,000-person cap. Full supplied city days heal 10%, and captured armies recruited into a house require ten days of reorganization.
+
+Army withdrawal previews a real refuge and independent capture risk: 0% before engagement, 5% after engagement, 25% on forced defeat, or surrender without a route. Losing defenders can retreat too. Release/exchange create journeys; food includes reserves, rear wounded and prisoners. City panels support returning and disbanding personnel. NPCs use the same availability and retreat rules. See the [bilingual guide](player-guide.md) and [implementation/test record with three scenario saves](evidence/wounded-system-2026-10-26/README.md).
+
+Saves from before the personnel schema are incompatible. The start screen can export their raw data before replacement; cancel keeps the original. Balance parameters still need long player sessions.
+
 ## October 25 battlefield update
 
 Field battles moved from four 24×20 oblique regional templates to **15 hand-painted 48×32 battlefields** on a pure 2D, top-down, draggable board ([plan](08-battlefield-canvas-plan.md), [art kit](battlefield-art/README.md)). Battle rules did not change.

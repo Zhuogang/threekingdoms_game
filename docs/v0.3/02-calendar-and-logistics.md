@@ -1,6 +1,6 @@
 # Daily calendar, journeys and logistics
 
-Current reference checked October 22, 2026. [Player guide](player-guide.md) · [Governance/orders](03-governors-and-authority.md) · [Original design brief](history/design/02-calendar-and-logistics.md).
+Current reference checked October 26, 2026. [Player guide](player-guide.md) · [Governance/orders](03-governors-and-authority.md) · [Wounded rules](09-wounded-retreat-and-captivity-design.md) · [Original design brief](history/design/02-calendar-and-logistics.md).
 
 ## Implemented behavior
 
@@ -13,13 +13,19 @@ Current reference checked October 22, 2026. [Player guide](player-guide.md) · [
 
 ## Travel and provision defaults
 
-Baseline speeds in `calendar/index.ts`: plain 20 km/day, hill 15, mountain 10. Solo-officer or all-cavalry parties can use light-party modifiers; heavy supply trains cap speed according to terrain. Mixed composition, terrain segments and fixed delays determine ETA; do not multiply a road-detour estimate into speed a second time.
+Baseline speeds in `calendar/index.ts`: plain 20 km/day, hill 15, mountain 10. Solo-officer or all-cavalry parties can use light-party modifiers only without wounded; heavy supply trains cap speed according to terrain. Mixed composition, terrain segments and fixed delays determine ETA; do not multiply a road-detour estimate into speed a second time.
 
 Current prototype food rates are city 0.004, travel 0.008 and battle 0.04 per soldier/day. They are design settings, not historical facts or a final balance claim. Previews account for travel/battle/return needs where applicable; cargo food and the party's own rations are distinct ledger roles.
 
 Destination capture, source loss, active battles, capacity and route changes use explicit waiting/return/redirect paths with reports. Coverage of specific paths does not establish every hypothetical sequence; retain an exported save for a newly discovered case.
 
 ## Source, completed repairs and evidence
+
+The personnel day snapshot freezes full-day treatment/reorganization eligibility separately from the battle cursor. Supplied city wounded heal 10% per city/type group with stable proportional allocation, once at day close before monthly settlement. Travel, field participants and outside waiting do not heal; same-day arrivals start on the next full day. Rear sources preserve their own XP and rejoin only under shared availability/capacity checks. Recruitment from captivity locks the army for ten supplied city days.
+
+All physical military personnel consume food: healthy, wounded, ordinary reserves, rear sources and captives. Cavalry counts twice. Captives owe food to their holder, without own-army wages. Each day's city, journey and field responsibility is counted once through splits and transfers; city service remains accumulated for month-end. Battle settlement charges its final day once before distributing remaining food. Opening a battle allocates field and rear budgets rather than emptying the entire city store; retained rear personnel can still heal during the field battle.
+
+Retreat/refuge and release routes explicitly use the moving house's access from the contested/holding city. Battle and prisoner returns depart no earlier than the next day. Released armies receive only food actually available in the holding city, capped at the route budget. Busy friendly destinations wait outside without automatic reinforcement; destination loss can redirect them without rerolling capture. Disbanding reduces future upkeep but never erases already accumulated service days.
 
 Sources: [calendar/index.ts](../../src/v03/calendar/index.ts), [day-resolution.ts](../../src/v03/calendar/day-resolution.ts), [engine.ts](../../src/v03/engine.ts), governance services/orders and shared state.
 

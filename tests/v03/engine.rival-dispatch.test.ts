@@ -63,6 +63,8 @@ function prepareRivalMonth() {
       ]!,
       experience: 0,
       troopExperience: 0,
+      wounded: 0,
+      reorganizationDays: 0,
       level: 0,
       governorOfCityId: null,
       alive: true,
@@ -152,7 +154,10 @@ describe('v0.3 engine rival campaign integration', () => {
 
     const source = state.cities.find((city) => city.id === 'ye')!;
     expect(source.garrisonTroops).toBe(1000);
-    expect(source.food).toBe(expectedPostSettlementFood - journey.manifest.carriedFood);
+    const reserveRations = Math.ceil((source.reserve + source.reservePools.cavalry.troops) * 0.004);
+    expect(source.food).toBe(
+      expectedPostSettlementFood - reserveRations - journey.manifest.carriedFood,
+    );
     for (const officerId of journey.manifest.officerIds) {
       expect(state.officers.find((officer) => officer.id === officerId)?.location).toEqual({
         kind: 'journey',
@@ -202,7 +207,7 @@ describe('v0.3 engine rival campaign integration', () => {
     expect(validateV03State(result)).toBe(true);
   });
 
-  it('resolves a rival campaign against an independent city and captures it from its militia', () => {
+  it('captures an undefended independent city without creating phantom militia', () => {
     let state = prepareRivalMonth();
     state = advanceOneDayAcknowledgingEvents(state);
     const directive = state.directives.find((entry) => entry.status === 'dispatched')!;
@@ -223,7 +228,8 @@ describe('v0.3 engine rival campaign integration', () => {
     const militia = battle?.battleData.units.find(
       (unit) => unit.side === 'defender' && unit.isMilitia,
     );
-    expect(militia?.initialTroops).toBe(500);
+    expect(militia).toBeUndefined();
+    expect(battle?.battleData.units.some((unit) => unit.side === 'defender')).toBe(false);
     expect(state.cities.find((city) => city.id === independentCityId)?.factionId).toBe('yuan');
     expect(validateV03State(state)).toBe(true);
   });

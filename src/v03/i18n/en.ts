@@ -1,4 +1,5 @@
 export const en = {
+  'flow.exportOriginalSave': 'Export original save',
   title: 'Hegemony of the Three Kingdoms',
   subtitle: 'A new Three Kingdoms strategy game · v0.3',
   newCampaign: 'New campaign',
@@ -131,7 +132,8 @@ export const en = {
   exportFailed: 'The save file could not be exported.',
   fileTooLarge: 'This save file exceeds the 16 MiB import limit.',
   retreat: 'Withdraw from battle',
-  retreatWarning: 'This immediately concedes the field and ends this battle.',
+  retreatWarning:
+    'Withdraw the whole army. Check refuge, wounded and capture risks before confirming.',
   retreatOutcome: 'Your forces withdraw; the opposing side holds the field.',
   routeDistance: 'Road distance',
   tactics: 'Tactics',
@@ -379,7 +381,7 @@ export const en = {
     '{source} uses {tactic} on {target}: casualties {casualties}, morale {morale}, food {food}; {success} ({chance}%).',
   'log.retreat': '{side} withdraws; {winner} holds the field.',
   'log.rout': '{side} breaks and retreats; {winner} holds the field.',
-  'log.elimination': '{winner} wins by elimination.',
+  'log.elimination': '{winner} wins by defeating all enemy field troops.',
   'log.camp': '{side} captures the opposing field camp.',
   'log.timeout': '{winner} holds the field at the {limit}-day limit.',
   'log.day': 'Battle day {day} begins.',

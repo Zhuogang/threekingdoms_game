@@ -28,6 +28,7 @@ v0.3 是独立发展的三国策略游戏。BAYE 是历史来源，旧规则复�
 - 外交、六个月同盟、月事件、天下一统和称霸结局；称霸与统一分别统计。
 - 相机/全图/聚焦/小地图、精确兵力数字、战场天气/粮草/地形检查、完整订单和报告列表、中英 Wiki。
 - 单一自动存档、导入/导出、战役菜单与继续、安全替换战役、存储失败重试、撤退确认。
+- 战斗伤兵、保留精锐经验、整军撤退逐将判俘、守方退往友城、俘虏所部整编、自动恢复与完整粮耗；可在城市查看兵员并归还或遣散所部。见[规则](09-wounded-retreat-and-captivity-design.md)和[验证记录](evidence/wounded-system-2026-10-26/README.md)。
 
 **不包含攻城系统**，没有城墙、城门、攻城器或市街阶段。正常战斗上限 30 日，突袭 10 日；到时存活兵力较多者控制战场，平手守方胜。全歼、夺取敌营或撤离等规则可提前结束战斗。
 
@@ -47,6 +48,15 @@ These describe the implemented candidate. Original long design briefs are retain
 | [05 Rendering and map UI](05-rendering-and-map-ui.md)             | React/SVG projection, cameras, minimaps and responsive checks.     |
 | [06 ImageGen and artwork](06-imagegen-and-artwork.md)             | Integrated draft assets, coverage limits and revision process.     |
 | [07 Integration and validation](07-integration-and-validation.md) | Actual entry, save format, scripts and evidence.                   |
+
+## Wounded troops: design and implementation
+
+- [伤兵 撤退 被俘与恢复设计](09-wounded-retreat-and-captivity-design.md)：第一节保留实现前基线，其后是本次规则；玩法已接通，默认参数仍待长期玩家反馈。
+- [伤兵机制实施计划](10-wounded-system-implementation-plan.md)：W0–W6 已实现；W7 完整回归与人工试玩分开记录。见[实际实施与测试](evidence/wounded-system-2026-10-26/README.md)，其中含三个可导入的试玩存档。
+
+本次增加 `personnelSchema: 1`，伤兵功能之前的存档不兼容且不迁移；开始页允许先导出旧档原文，取消新开仍保留原档。
+
+实施后对整编、断粮、俘虏粮账和等待改道的边界再次复核，修复与最新验证见[实施后复核记录](evidence/wounded-review-2026-10-26.md)。
 
 ## Evidence and remaining acceptance
 

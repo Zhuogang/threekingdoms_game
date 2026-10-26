@@ -65,11 +65,9 @@ async function importState(page: Page, state: V03GameState) {
   });
 }
 
-test('RV01 advances the natural Sun day-40 NPC battle from both language interfaces', async ({
-  page,
-}) => {
+test('RV01 advances a natural Sun NPC battle from both language interfaces', async ({ page }) => {
   const state = npcOnlyState();
-  expect(state.absoluteDay).toBe(40);
+  expect(state.battles.some((battle) => battle.active)).toBe(true);
   for (const language of ['en', 'zh'] as const) {
     await loadState(page, state);
     await locale(page, language);
@@ -78,10 +76,10 @@ test('RV01 advances the natural Sun day-40 NPC battle from both language interfa
     await page
       .getByRole('button', { name: language === 'en' ? 'Advance 1 day' : '推进一日', exact: true })
       .click();
-    await expect.poll(async () => (await savedState(page)).absoluteDay).toBe(41);
+    await expect.poll(async () => (await savedState(page)).absoluteDay).toBe(state.absoluteDay + 1);
     await page.reload();
     await expect(page.locator('.v03-campaign-main')).toBeVisible();
-    expect((await savedState(page)).absoluteDay).toBe(41);
+    expect((await savedState(page)).absoluteDay).toBe(state.absoluteDay + 1);
   }
 });
 
@@ -408,7 +406,7 @@ test('RV07 shows reserve/officer results and rejects training at either cap befo
   officer.experience = 0;
   await loadState(page, state);
   await showCityManagement(page);
-  await expect(page.getByText('Reserve soldiers', { exact: true })).toBeVisible();
+  await expect(page.getByRole('term').filter({ hasText: /^Reserve soldiers$/ })).toBeVisible();
   await expect(page.getByText('Population', { exact: true })).toBeVisible();
   await showOfficer(page, officer.name);
   await page.getByRole('button', { name: 'Train', exact: true }).click();
@@ -423,7 +421,7 @@ test('RV07 shows reserve/officer results and rejects training at either cap befo
       async () => (await savedState(page)).cities.find((city) => city.id === capital.id)!.reserve,
     )
     .toBeGreaterThan(capital.reserve);
-  await expect(page.getByText('预备兵', { exact: true })).toBeVisible();
+  await expect(page.getByRole('term').filter({ hasText: /^预备兵$/ })).toBeVisible();
   await expect(page.locator('.v03-window-feedback')).not.toContainText(/recruit|reserve|soldiers/);
 });
 
@@ -447,12 +445,12 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
     await showWithdrawal(page);
     await page
       .getByRole('button', {
-        name: language === 'en' ? 'Withdraw from battle' : '撤离战场',
+        name: language === 'en' ? 'Withdraw from battle' : '整军撤退',
         exact: true,
       })
       .click();
     const dialog = page.getByRole('dialog', {
-      name: language === 'en' ? 'Withdraw from battle?' : '撤离战场？',
+      name: language === 'en' ? 'Withdraw from battle?' : '整军撤退？',
       exact: true,
     });
     await expect(dialog).toBeVisible();
@@ -462,7 +460,7 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
     await expect(dialog).toHaveCount(0);
     await expect(
       page.getByRole('button', {
-        name: language === 'en' ? 'Withdraw from battle' : '撤离战场',
+        name: language === 'en' ? 'Withdraw from battle' : '整军撤退',
         exact: true,
       }),
     ).toBeFocused();
@@ -470,7 +468,7 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
     await showWithdrawal(page);
     await page
       .getByRole('button', {
-        name: language === 'en' ? 'Withdraw from battle' : '撤离战场',
+        name: language === 'en' ? 'Withdraw from battle' : '整军撤退',
         exact: true,
       })
       .click();

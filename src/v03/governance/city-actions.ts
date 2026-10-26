@@ -1,11 +1,12 @@
 import { isCityCommitted, CITY_COMMITTED_REASON } from './commitments';
-import {
-  mergeTroopPools,
-  splitTroopPool,
-  setReservePool,
-  TROOP_TYPES,
-} from '../campaign/troop-experience';
+import { mergeTroopPools, setReservePool, TROOP_TYPES } from '../campaign/troop-experience';
 import { recruitmentQuote } from '../campaign/recruitment';
+import {
+  availableReserveTroops,
+  reinforceFromCity,
+  splitPersonnel,
+  transferRationRecord,
+} from '../campaign/personnel';
 import type { TroopType } from '../content/types';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
 
@@ -242,10 +243,15 @@ function inspectCityAction(
     }
     case 'assign-troops': {
       if (!input.officerId) return fail('Choose a living officer stationed in the capital.');
-      if (!Number.isSafeInteger(input.amount) || input.amount! < 0 || input.amount! > 10_000)
+      if (actor.reorganizationDays > 0) return fail('These troops are still reorganizing.');
+      if (
+        !Number.isSafeInteger(input.amount) ||
+        input.amount! < 0 ||
+        input.amount! + actor.wounded > 10_000
+      )
         return fail('An officer can command 0–10,000 soldiers.');
       const change = input.amount! - actor.troops;
-      if (change > city.reservePools[actor.troopType].troops)
+      if (change > availableReserveTroops(state, city.id, actor.troopType))
         return fail('There are not enough soldiers of this troop type in the city reserve.');
       if (city.garrisonTroops + change < 0)
         return fail('The city garrison does not contain those soldiers.');
@@ -415,25 +421,30 @@ function applyCityAction(
       )
         return fail('Choose a living officer stationed in the capital.');
       const amount = input.amount;
-      if (!Number.isSafeInteger(amount) || amount! < 0 || amount! > 10_000)
+      if (!Number.isSafeInteger(amount) || amount! < 0 || amount! + officer.wounded > 10_000)
         return fail('An officer can command 0–10,000 soldiers.');
       const change = amount! - officer.troops;
-      if (change > city.reservePools[officer.troopType].troops)
+      if (change > availableReserveTroops(next, city.id, officer.troopType))
         return fail('There are not enough soldiers of this troop type in the city reserve.');
       if (city.garrisonTroops + change < 0)
         return fail('The city garrison does not contain those soldiers.');
       const reserve = city.reservePools[officer.troopType];
       if (change >= 0) {
-        const { remaining, taken } = splitTroopPool(reserve, change);
-        Object.assign(officer, mergeTroopPools(officer, taken));
-        setReservePool(city, officer.troopType, remaining);
+        reinforceFromCity(next, officer.id, change);
       } else {
-        const { remaining, taken } = splitTroopPool(officer, -change);
+        const { remaining, taken } = splitPersonnel(officer, -change);
+        transferRationRecord(
+          next,
+          `officer:${officer.id}`,
+          `reserve:${city.id}:${officer.troopType}`,
+          -change,
+          0,
+        );
         Object.assign(officer, remaining);
         const combined = mergeTroopPools(reserve, taken);
         setReservePool(city, officer.troopType, combined);
       }
-      city.garrisonTroops += change;
+      if (change < 0) city.garrisonTroops += change;
       message = `${officer.name} now commands ${amount!.toLocaleString()} soldiers.`;
       break;
     }

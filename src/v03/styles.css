@@ -483,6 +483,7 @@ button:disabled {
   outline-offset: -5px;
 }
 .v03-city-symbol:focus-visible,
+.v03-city-anchor:focus-visible,
 .v03-unit-token:focus-visible,
 .v03-map-frame svg [role='button']:focus-visible {
   filter: drop-shadow(0 0 5px var(--tone-39));

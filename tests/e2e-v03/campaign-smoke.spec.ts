@@ -84,6 +84,9 @@ async function importFile(page: Page, name: string, content: string) {
 
 function createBattleSave(battlefieldId = 'bf01-north-plain'): string {
   let state: V03GameState = createV03Game('cao', 481516);
+  const defended = state.cities.find((city) => city.id === 'xiapi')!;
+  defended.garrisonTroops = 500;
+  defended.population -= 500;
   const dispatched = executeV03Command(state, {
     type: 'issueCampaignDirective',
     sourceCityId: 'puyang',
@@ -663,7 +666,7 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
       await showWithdrawal(page);
       const retreat = page
         .getByRole('button', {
-          name: locale === 'en' ? 'Withdraw from battle' : '撤离战场',
+          name: locale === 'en' ? 'Withdraw from battle' : '整军撤退',
           exact: true,
         })
         .first();
@@ -737,7 +740,7 @@ test('keeps campaign and battlefield controls reachable with 200% browser zoom',
     await showWithdrawal(page);
     const retreat = page
       .getByRole('button', {
-        name: locale === 'en' ? 'Withdraw from battle' : '撤离战场',
+        name: locale === 'en' ? 'Withdraw from battle' : '整军撤退',
         exact: true,
       })
       .first();

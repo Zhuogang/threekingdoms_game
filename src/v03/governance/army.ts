@@ -1,4 +1,5 @@
 import { estimateCampaignSupply } from '../calendar';
+import { detachWoundedToCity } from '../campaign/personnel';
 import type { V03Command, V03GameState } from '../types';
 import { isCityCommitted } from './commitments';
 import { createV03OrderServices } from './services';
@@ -65,6 +66,7 @@ export function marchArmy(
         !officer.alive ||
         officer.factionId !== state.playerFactionId ||
         officer.troops <= 0 ||
+        officer.reorganizationDays > 0 ||
         officer.location.kind !== 'city' ||
         officer.location.cityId !== source.id,
     )
@@ -162,8 +164,10 @@ export function marchArmy(
   const city = next.cities.find((entry) => entry.id === source.id)!;
   city.food -= food;
   city.garrisonTroops -= preview.troops;
-  for (const officer of next.officers.filter((entry) => command.officerIds.includes(entry.id)))
+  for (const officer of next.officers.filter((entry) => command.officerIds.includes(entry.id))) {
+    detachWoundedToCity(next, officer.id);
     officer.location = { kind: 'journey', journeyId: id };
+  }
   next.revision++;
   return { ok: true, state: next, orderId };
 }

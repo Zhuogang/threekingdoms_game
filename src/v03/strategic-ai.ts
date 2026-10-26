@@ -141,7 +141,8 @@ function availableOfficers(
         officer.factionId === factionId &&
         officer.location.kind === 'city' &&
         officer.location.cityId === cityId &&
-        officer.troops > 0,
+        officer.troops > 0 &&
+        officer.reorganizationDays === 0,
     )
     .sort((a, b) => {
       const leaderOrder = Number(b.id === leaderOfficerId) - Number(a.id === leaderOfficerId);
@@ -234,12 +235,12 @@ function expectedBattleDefenderTroops(state: Readonly<V03GameState>, cityId: str
         officer.factionId === target.factionId &&
         officer.location.kind === 'city' &&
         officer.location.cityId === target.id &&
-        officer.troops > 0,
+        officer.troops > 0 &&
+        officer.reorganizationDays === 0,
     )
     .reduce((total, officer) => total + officer.troops, 0);
-  // openBattle supplies a 500-person militia when a city has no staffed
-  // defenders, even when its stored garrison is zero.
-  return Math.max(target.garrisonTroops, staffedTroops, staffedTroops === 0 ? 500 : 0);
+  // Match actual deployed strength; an undefended city receives no free militia.
+  return Math.max(target.garrisonTroops, staffedTroops);
 }
 
 function makeCandidate(

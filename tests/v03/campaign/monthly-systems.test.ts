@@ -44,6 +44,8 @@ function officer(overrides: Partial<V03MonthlyEventOfficer> = {}): V03MonthlyEve
     loyalty: 70,
     age: 30,
     troops: 500,
+    wounded: 0,
+    reorganizationDays: 0,
     alive: true,
     ...overrides,
   };

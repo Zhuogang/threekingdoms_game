@@ -46,6 +46,7 @@ export function ConfirmDialog({
   confirmLabel,
   onCancel,
   onConfirm,
+  body,
   children,
 }: {
   title: string;
@@ -54,6 +55,7 @@ export function ConfirmDialog({
   confirmLabel: string;
   onCancel: () => void;
   onConfirm: () => void;
+  body?: ReactNode;
   children?: ReactNode;
 }) {
   const dialog = useRef<HTMLElement>(null);
@@ -93,6 +95,7 @@ export function ConfirmDialog({
       >
         <h2>{title}</h2>
         <p>{detail}</p>
+        {body}
         <div className="v03-dialog-actions">
           {children}
           <Button type="button" data-dialog-cancel onClick={onCancel}>

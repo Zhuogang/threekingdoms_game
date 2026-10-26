@@ -97,6 +97,7 @@ describe('playability plan contracts', () => {
       unit.troops = 0;
     battle.battleData.outcome = { winner: 'defender', reason: 'elimination' };
     battle.playerDayComplete = true;
+    state.rng = 8; // The remaining commanders are captured by the forced-retreat rolls.
     const next = advanceV03(state, 1).state;
     expect(next.phase).toBe('finished');
     expect(next.factions.find((faction) => faction.id === state.playerFactionId)!.eliminated).toBe(
@@ -292,12 +293,12 @@ describe('playability plan contracts', () => {
     expect(state.factions.find((faction) => faction.id === 'dong')?.eliminated).toBe(true);
     expect(state.cities.some((city) => city.factionId === 'dong')).toBe(false);
   });
-  it('releases prisoners and persists the monthly decision', () => {
+  it('releases prisoners onto a real return journey', () => {
     const { state, prisoner } = prisonerState();
     const result = decidePrisoner(state, 'cao', prisoner.id, 'release');
     expect(result.ok).toBe(true);
     expect(result.state.officers.find((officer) => officer.id === prisoner.id)?.location.kind).toBe(
-      'city',
+      'journey',
     );
     expect(validateV03State(result.state)).toBe(true);
   });
@@ -341,10 +342,14 @@ describe('playability plan contracts', () => {
       state.rng = seed;
       result = decidePrisoner(state, 'cao', prisoner.id, 'exchange', own.id);
     }
-    expect(result.state.officers.find((officer) => officer.id === own.id)?.location).toEqual({
-      kind: 'city',
-      cityId: 'chenliu',
-    });
+    const returned = result.state.officers.find((officer) => officer.id === own.id)!;
+    expect(returned.location.kind).toBe('journey');
+    const journey = result.state.journeys.find(
+      (entry) => returned.location.kind === 'journey' && entry.id === returned.location.journeyId,
+    )!;
+    expect(
+      result.state.cities.find((entry) => entry.id === journey.destinationCityId)?.factionId,
+    ).toBe('cao');
   });
   it('retains the same order through battle and return', () => {
     const state = playtestFixture('battle'),

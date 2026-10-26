@@ -74,6 +74,8 @@ export interface V03City {
   /** Troop-days spent stationed in this city since the last monthly settlement. */
   troopServiceDaysThisMonth?: number;
   cavalryServiceDaysThisMonth?: number;
+  prisonerServiceDaysThisMonth?: number;
+  prisonerCavalryDaysThisMonth?: number;
   /** Absolute month boundary until which raid/sack actions are unavailable. */
   plunderCooldownUntilDay?: number;
 }
@@ -82,7 +84,13 @@ export type V03OfficerLocation =
   | { kind: 'city'; cityId: string }
   | { kind: 'journey'; journeyId: string }
   | { kind: 'battle'; battleId: string }
-  | { kind: 'captured'; cityId: string | null };
+  | {
+      kind: 'captured';
+      cityId: string | null;
+      /** Explicit in transit; city custody can derive this from the city owner. */
+      holderFactionId?: string;
+      journeyId?: string;
+    };
 
 export interface V03Officer {
   id: string;
@@ -95,6 +103,8 @@ export interface V03Officer {
   loyalty: number;
   age: number;
   troops: number;
+  wounded: number;
+  reorganizationDays: number;
   /** Soldier experience; never use the officer's personal experience/level for this. */
   troopExperience: number;
   troopType: TroopType;
@@ -204,6 +214,7 @@ export interface V03DomainEvent {
 export interface V03BattleSideReport {
   startingTroops: number;
   survivingTroops: number;
+  woundedTroops: number;
   returned: string[];
   captured: string[];
   killed: string[];
@@ -215,6 +226,7 @@ export interface V03TroopGrowthReport {
   officerId: string | null;
   troopType: TroopType;
   survivingTroops: number;
+  woundedTroops: number;
   beforeExperience: number;
   afterExperience: number;
   participated: boolean;
@@ -263,6 +275,10 @@ export interface V03BattleState {
   attackerFoodRemainderMicro: number;
   defenderFoodRemainderMicro: number;
   foodShortfallDays: number;
+  lastRationDay?: number;
+  foodOverflow?: number;
+  populationOutflow?: number;
+  rearDispersed?: number;
   attackerFormationOfficerIds: Record<string, string[]>;
   defenderFormationOfficerIds: Record<string, string[]>;
   autoCommand?: boolean;
@@ -273,6 +289,10 @@ export type V03DayResolution = CalendarDayResolution;
 export interface V03GameState {
   version: 3;
   ruleset: 'hegemony-3';
+  /** Personnel/save contract; independent of the public game version. */
+  personnelSchema: 1;
+  troopSources: V03TroopSource[];
+  personnelDay: V03PersonnelDay;
   revision: number;
   scenarioId: string;
   seed: number;
@@ -303,7 +323,43 @@ export interface V03GameState {
   governanceRevision: number;
 }
 
+/** Actual city-held personnel, never a second copy of an officer or reserve pool. */
+export interface V03TroopSource {
+  id: string;
+  cityId: string;
+  factionId: string | null;
+  sourceOfficerId: string | null;
+  autoReturn: boolean;
+  troopType: TroopType;
+  troops: number;
+  wounded: number;
+  troopExperience: number;
+  reorganizationDays: number;
+}
+
+export interface V03PersonnelDayEntry {
+  recordId: string;
+  cityId: string;
+  factionId: string | null;
+  holderFactionId: string | null;
+  troopType: TroopType;
+  troops: number;
+  wounded: number;
+  reorganizationDays: number;
+  foodAvailable: boolean;
+}
+
+/** Daybreak eligibility is independent of the interactive advance cursor. */
+export interface V03PersonnelDay {
+  absoluteDay: number;
+  completed: boolean;
+  entries: V03PersonnelDayEntry[];
+  rations: Array<{ recordId: string; troops: number; wounded: number }>;
+}
+
 export type V03Command =
+  | { type: 'returnTroops'; cityId: string; officerId: string }
+  | { type: 'disband'; cityId: string; recordId: string; troops: number; wounded: number }
   | { type: 'advance'; days: 1 | 10 | 'nextEvent' }
   | { type: 'appointGovernor'; cityId: string; officerId: string | null }
   | {
