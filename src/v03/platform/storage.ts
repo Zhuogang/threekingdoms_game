@@ -87,6 +87,7 @@ const tacticalUnit = z
     troops: nonnegative,
     initialTroops: nonnegative,
     troopExperience,
+    initialTroopExperience: troopExperience,
     combatCasualtiesDealt: nonnegative,
     combatCasualtiesReceived: nonnegative,
     force: z.number().finite().min(0).max(120),
@@ -338,6 +339,20 @@ const sideReportSchema = z
     returned: z.array(id).max(100),
     captured: z.array(id).max(100),
     killed: z.array(id).max(100),
+    troopGrowth: z
+      .array(
+        z
+          .object({
+            officerId: id.nullable(),
+            troopType,
+            survivingTroops: nonnegative,
+            beforeExperience: troopExperience,
+            afterExperience: troopExperience,
+            participated: z.boolean(),
+          })
+          .strict(),
+      )
+      .max(100),
   })
   .strict();
 const event = z

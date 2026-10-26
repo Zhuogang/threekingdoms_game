@@ -28,6 +28,57 @@ const units: BattleUnitVisual[] = [
 ];
 
 describe('battlefield unit presentation', () => {
+  it.each([
+    ['infantry', 'heavy-infantry', '重步兵'],
+    ['cavalry', 'elite-cavalry', '精锐骑兵'],
+    ['archer', 'strong-archer', '强弓兵'],
+  ])(
+    '%s uses elite art from level 11 while preserving size, portraits and vessels',
+    (troopType, elite, name) => {
+      for (const troopExperience of [999.999, 1000, 1900])
+        for (const strength of [499, 500])
+          for (const navalTraining of [false, true])
+            for (const onWater of [false, true]) {
+              const expected = onWater
+                ? navalTraining
+                  ? 'warship'
+                  : 'boat-transport'
+                : `${troopExperience >= 1000 ? elite : troopType}-${strength >= 500 ? 'large' : 'small'}`;
+              const html = renderToStaticMarkup(
+                createElement(BattlefieldMapView, {
+                  map,
+                  units: [
+                    {
+                      ...units[0]!,
+                      troopType,
+                      troopExperience,
+                      strength,
+                      navalTraining,
+                      portraitKey: 'guanyu',
+                      position: { x: onWater ? 1 : 0, y: 0 },
+                    },
+                  ],
+                  locale: 'zh',
+                }),
+              );
+              expect(html).toContain(`${expected}-ink-02.webp`);
+              expect(html).toContain('assets/portraits/guanyu-small.webp');
+              if (!onWater && troopExperience >= 1000) expect(html).toContain(name);
+              expect(
+                renderToStaticMarkup(
+                  createElement(UnitIcon, {
+                    troopType,
+                    troopExperience,
+                    troops: strength,
+                    navalTraining,
+                    onWater,
+                    locale: 'zh',
+                  }),
+                ),
+              ).toContain(`${expected}-ink-02.webp`);
+            }
+    },
+  );
   it.each(['infantry', 'cavalry', 'archer'])(
     '%s naval commanders keep portraits and restore land formations',
     (troopType) => {

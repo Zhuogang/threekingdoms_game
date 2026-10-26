@@ -55,7 +55,9 @@ export function BattleReadout({
             </strong>
           </div>
           <div>
-            <small>{message(locale, 'ui.force.intellect.level.82')}</small>
+            <small>
+              {locale === 'zh' ? '武力 / 智力 / 武将等级' : 'Force / Intellect / Officer level'}
+            </small>
             <strong>
               {currentUnit.force} / {currentUnit.intellect} / {currentUnit.level}
             </strong>

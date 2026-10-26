@@ -167,7 +167,8 @@
         "transparentPixels": 1396270,
         "alphaBBox": [260, 444, 1044, 936],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "heavy-infantry-large",
@@ -189,7 +190,8 @@
         "transparentPixels": 1040841,
         "alphaBBox": [14, 174, 1248, 1048],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "elite-cavalry-small",
@@ -211,7 +213,8 @@
         "transparentPixels": 1337990,
         "alphaBBox": [198, 444, 1167, 1038],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "elite-cavalry-large",
@@ -235,7 +238,8 @@
         "coloredFringePixels": 0
       },
       "originalSource": "C:/Users/pengz/.codex/generated_images/01a1656c-41f2-7471-b78b-46e7a84b8622/exec-c437c793-8893-4008-b1f3-ba780889835e.png",
-      "editPrompt": "Use case: precise-object-edit. Asset type: transparent army-formation sprite.\nEdit target: the attached elite cavalry hundred-person formation. Preserve the existing artwork, every rider, horse, lance, formation, colour, ink wash, simplified style, facing and count.\nONLY repair canvas framing: the current outermost riders and lances touch/cross the left and right canvas edges. Fit the SAME complete formation slightly smaller, about 88% of its existing size, centered within a same-size square transparent canvas, with at least 6% truly transparent breathing room on ALL FOUR sides. Recover any tiny cut tail or lance tip cleanly. No other changes. Do NOT remove ranks or add people. No additional subject, no new background, no text, no paper rectangle, no shadow or base disk. True alpha background. Keep it a hundred-person mass of tiny abstract ink cavalry, not a detailed illustration."
+      "editPrompt": "Use case: precise-object-edit. Asset type: transparent army-formation sprite.\nEdit target: the attached elite cavalry hundred-person formation. Preserve the existing artwork, every rider, horse, lance, formation, colour, ink wash, simplified style, facing and count.\nONLY repair canvas framing: the current outermost riders and lances touch/cross the left and right canvas edges. Fit the SAME complete formation slightly smaller, about 88% of its existing size, centered within a same-size square transparent canvas, with at least 6% truly transparent breathing room on ALL FOUR sides. Recover any tiny cut tail or lance tip cleanly. No other changes. Do NOT remove ranks or add people. No additional subject, no new background, no text, no paper rectangle, no shadow or base disk. True alpha background. Keep it a hundred-person mass of tiny abstract ink cavalry, not a detailed illustration.",
+      "status": "integrated"
     },
     {
       "key": "strong-archer-small",
@@ -257,7 +261,8 @@
         "transparentPixels": 1404408,
         "alphaBBox": [261, 402, 1023, 930],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "strong-archer-large",
@@ -279,7 +284,8 @@
         "transparentPixels": 1081084,
         "alphaBBox": [30, 167, 1211, 1107],
         "coloredFringePixels": 0
-      }
+      },
+      "status": "integrated"
     },
     {
       "key": "boat-transport",

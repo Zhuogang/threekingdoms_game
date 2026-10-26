@@ -49,10 +49,16 @@ for (const [troops, navalCommander] of [
       y: Math.floor(waterIndex / data.map.width),
     };
     Object.assign(unit, shore, { troops, initialTroops: troops, moved: false, acted: false });
+    if (navalCommander) unit.troopExperience = unit.initialTroopExperience = 1000;
     // Other units remain in their distant deployment areas.
     await loadState(page, state);
     const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
-    const landPath = `/assets/v03/units/${unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-02.webp`;
+    const eliteType = {
+      infantry: 'heavy-infantry',
+      cavalry: 'elite-cavalry',
+      archer: 'strong-archer',
+    }[unit.troopType];
+    const landPath = `/assets/v03/units/${navalCommander ? eliteType : unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-02.webp`;
     const boatPath = `/assets/v03/units/${navalCommander ? 'warship' : 'boat-transport'}-ink-02.webp`;
     await expect(token).toHaveAttribute('data-unit-art', landPath);
     await expect(token.locator(`image[href="${landPath}"]`)).toHaveAttribute(

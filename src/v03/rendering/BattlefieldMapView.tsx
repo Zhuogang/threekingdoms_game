@@ -14,6 +14,7 @@ import {
 } from 'react';
 import { resolvePublicAsset } from './assets';
 import { unitArtwork } from './unit-art';
+import { troopLevel } from '../campaign/troop-experience';
 import { V03_BATTLEFIELD_CANVASES } from './battlefield-canvases.generated';
 import { BattleTerrainPatterns, battleTerrainPatternId } from './BattleTerrainPatterns';
 import {
@@ -44,6 +45,8 @@ import {
   isLivingBattleUnitVisual,
   troopGlyph,
   troopName,
+  troopDisplayType,
+  troopExperienceText,
   unitIsOnWater,
   type BattleUnitVisual,
   type CellMarker,
@@ -256,8 +259,18 @@ function UnitSprite({
 }) {
   const { x, y } = gridToWorld(unit.position);
   const onWater = unitIsOnWater(unit, map);
-  const displayType = onWater ? (unit.navalTraining ? 'warship' : 'water') : unit.troopType;
-  const artwork = unitArtwork(unit.troopType, onWater, unit.strength, unit.navalTraining);
+  const displayType = onWater
+    ? unit.navalTraining
+      ? 'warship'
+      : 'water'
+    : troopDisplayType(unit.troopType, unit.troopExperience);
+  const artwork = unitArtwork(
+    unit.troopType,
+    onWater,
+    unit.strength,
+    unit.navalTraining,
+    unit.troopExperience,
+  );
   const unitHref = artwork ? resolvePublicAsset(artwork.path, BASE_URL) : undefined;
   const portraitHref = unit.portraitKey
     ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)
@@ -279,6 +292,10 @@ function UnitSprite({
   const formationSize = unit.formationSize ?? 0;
   const details = [
     localeName,
+    unit.troopExperience === undefined ? undefined : `Lv.${troopLevel(unit.troopExperience)}`,
+    unit.troopExperience === undefined
+      ? undefined
+      : troopExperienceText(unit.troopExperience, locale),
     unit.label,
     unit.strength === undefined ? undefined : String(unit.strength),
     unit.status,

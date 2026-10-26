@@ -2,6 +2,8 @@ import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
+import { TroopProgress } from './TroopProgress';
+import { UnitIcon } from '../../rendering/UnitIcon';
 import { officerWorkActions, workLabel, WorkBudget, type CityWorkAction } from './CityWork';
 
 export function CityOfficers({
@@ -43,6 +45,7 @@ export function CityOfficers({
             >
               <span>
                 <strong>{displayName(officer, locale)}</strong>
+                <TroopProgress unit={officer} locale={locale} compact />
                 <small>
                   {officer.troops.toLocaleString()} {t.troops} · {message(locale, 'ui.force.53')}{' '}
                   {officer.force} · {message(locale, 'ui.intellect.54')} {officer.intellect}
@@ -81,14 +84,18 @@ export function OfficerDetail({
     officer.factionId === state.playerFactionId && city?.factionId === state.playerFactionId;
   return (
     <section className="v03-officer-detail">
+      <div className="v03-troop-summary">
+        <UnitIcon {...officer} onWater={false} locale={locale} />
+        <TroopProgress unit={officer} locale={locale} />
+      </div>
       <StatGrid
         values={[
           { label: t.troops, value: officer.troops.toLocaleString() },
           { label: message(locale, 'ui.loyalty.52'), value: officer.loyalty },
           { label: message(locale, 'ui.force.53'), value: officer.force },
           { label: message(locale, 'ui.intellect.54'), value: officer.intellect },
-          { label: message(locale, 'ui.experience.55'), value: officer.experience },
-          { label: message(locale, 'ui.level.56'), value: officer.level },
+          { label: locale === 'zh' ? '武将经验' : 'Officer XP', value: officer.experience },
+          { label: locale === 'zh' ? '武将等级' : 'Officer level', value: officer.level },
         ]}
       />
       <p>{officer.equipment === 'Fine arms' ? t.fineArmsEquipped : t.noFineArms}</p>

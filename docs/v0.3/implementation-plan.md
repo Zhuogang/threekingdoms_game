@@ -65,3 +65,12 @@ Stage 2 task 2, step 2 implements the previously approved combat progression rul
 - Officer progression, troop types, naval eligibility, portraits and artwork are unchanged. Elite art, level UI, reinforcement previews and progression reports remain step 3.
 
 Validation covers effective combat statistics, overkill, level boundaries, terrain/water composition, tactic exclusions, defeat/draw/victory rewards, starvation, total caps, real retreat and return, automatic command, temporary formation settlement and save/reload without duplicate rewards.
+
+## 2026-10-25: elite art and progression presentation
+
+Stage 2 task 2, step 3 integrates the six previously approved heavy-infantry, elite-cavalry and strong-archer sprites through the existing transparent WebP packaging script. At mean XP 1000 (level 11), the three base troop types switch to their elite display names and art; below that threshold they revert. Current headcount independently selects small (<500) or large (>=500) art. Water always selects the existing commander-based boat/tower-warship rule first. Portraits and troop identity are retained.
+
+- Battlefield map tooltips, sidebar rows/details, officer lists/details, army selection and typed reserve summaries expose soldier progression separately from officer progression. Experience displays retain two decimal places without rounding across a level boundary, include distance to the next level, and show the cap at level 20.
+- Troop assignment previews use the actual pure command result. Before/after formations show count, level, XP and elite/regular changes, including dilution, incoming veterans and assigning zero soldiers. Invalid orders do not show a successful preview.
+- Battle reports store immutable per-original-contingent growth snapshots, plus militia: troop type, surviving count, pre/post experience and participation. The battlefield retains opening experience for annihilated militia. Reports show actual capped XP gains, level changes, elite promotions, no participation and annihilation; later soldier transfers cannot rewrite the result. Save schemas require the new fields; no conversion is added.
+- The existing approved combat growth and level modifiers remain unchanged. Both English and Chinese flows, responsive layouts, the 10/11 and 499/500 boundaries, fallback markers, portraits and vessel switching are covered by targeted rendering, integration and browser verification.

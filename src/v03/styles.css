@@ -1109,6 +1109,44 @@ button:disabled {
   border: 1px solid var(--tone-112);
   border-radius: 6px;
 }
+.v03-troop-progress {
+  display: block;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.v03-troop-progress small {
+  display: block;
+  color: var(--tone-118);
+  font-size: var(--text-xs);
+}
+.v03-troop-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.v03-troop-summary .v03-unit-glyph {
+  flex: 0 0 40px;
+}
+.v03-troop-comparison {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.v03-reinforcement-preview,
+.v03-troop-growth {
+  padding: var(--space-3);
+  margin-block: var(--space-3);
+  border: 1px solid var(--tone-112);
+  border-radius: var(--radius);
+}
+.v03-growth-entry {
+  padding-block: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.v03-growth-entry p {
+  margin-block: var(--space-1);
+}
 .v03-unit-detail p {
   color: var(--tone-122);
   font-size: var(--text-xs);

@@ -6,6 +6,7 @@ import { isCityCommitted } from '../../governance/commitments';
 import { troopName } from '../../rendering/presentation';
 import { Button, Input, Select, Field, StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
+import { TroopProgress } from './TroopProgress';
 
 export function ArmyBuilder({ context }: { context: GameplayContext }) {
   const {
@@ -96,6 +97,7 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
             />
             <span>
               <strong>{displayName(officer, locale)}</strong>
+              <TroopProgress unit={officer} locale={locale} compact />
               <small>
                 {officer.troops.toLocaleString()} · {troopName(officer.troopType, locale)} ·{' '}
                 {message(locale, 'ui.force.intellect.loyalty.23')} {officer.force} /{' '}

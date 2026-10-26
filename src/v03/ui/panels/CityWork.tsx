@@ -8,6 +8,7 @@ import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, Field, Input, StatGrid, Select } from '../kit';
 import { displayName } from '../shared/app-copy-3';
+import { ReinforcementPreview, TroopProgress } from './TroopProgress';
 
 export const cityWorkActions = [
   'develop-farming',
@@ -169,6 +170,11 @@ export function CityWork({
       ) : null}
       {action === 'assign-troops' && officer ? (
         <>
+          <p>{locale === 'zh' ? '同兵种待命兵池' : 'Matching reserve pool'}</p>
+          <TroopProgress
+            unit={{ ...city.reservePools[officer.troopType], troopType: officer.troopType }}
+            locale={locale}
+          />
           <StatGrid
             values={[
               { label: t.troops, value: officer.troops.toLocaleString() },
@@ -195,6 +201,9 @@ export function CityWork({
             />
           </Field>
         </>
+      ) : null}
+      {action === 'assign-troops' && officer && afterOfficer ? (
+        <ReinforcementPreview before={officer} after={afterOfficer} locale={locale} />
       ) : null}
       {changes.length ? <StatGrid values={changes} /> : null}
       {action === 'search' || action === 'feast' || action === 'equip' || action === 'recruit' ? (

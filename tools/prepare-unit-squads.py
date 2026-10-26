@@ -12,7 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / 'docs/v0.3/assets/units-formations-ink-02.json'
 data = json.loads(MANIFEST.read_text(encoding='utf-8-sig'))
 keys = ['infantry-small', 'cavalry-small', 'archer-small', 'boat-transport',
-        'infantry-large', 'cavalry-large', 'archer-large', 'warship']
+        'infantry-large', 'cavalry-large', 'archer-large', 'warship',
+        'heavy-infantry-small', 'heavy-infantry-large',
+        'elite-cavalry-small', 'elite-cavalry-large',
+        'strong-archer-small', 'strong-archer-large']
 entries = []
 for key in keys:
     entry = next(item for item in data['entries'] if item['key'] == key)
@@ -37,6 +40,6 @@ for key in keys:
     })
 (ROOT / 'docs/v0.3/assets/unit-squads-runtime.json').write_text(
     json.dumps({'sourceManifest': 'units-formations-ink-02.json',
-                'scope': 'Stage 2 task 1: below 500 troops uses small land squads; 500 or more uses large formations. On water, approved naval commanders use tower warships; all others use crewed boats.',
+                'scope': 'Level 11+ uses heavy infantry, elite cavalry or strong archers on land. Below 500 troops uses small squads; 500 or more uses large formations. On water, approved naval commanders use tower warships; all others use crewed boats, regardless of level or size.',
                 'entries': entries}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(entries, indent=2))

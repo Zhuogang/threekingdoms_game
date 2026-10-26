@@ -1,6 +1,7 @@
 import { isCityCommitted } from './governance/commitments';
 import { applyTroopLoss, awardTroopExperience, mergeTroopPools } from './campaign/troop-experience';
 import { battleExperienceGain } from './battle/experience';
+import type { V03TroopGrowthReport } from './types';
 import { eventTier, isCriticalReport } from './campaign/reports';
 import { resolveSuccessions, resolveAiPrisoners } from './campaign/prisoners';
 import {
@@ -413,6 +414,10 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
 
   const attackerGroups = data.units.filter((unit) => unit.side === 'attacker');
   const defenderGroups = data.units.filter((unit) => unit.side === 'defender');
+  const troopGrowth: Record<'attacker' | 'defender', V03TroopGrowthReport[]> = {
+    attacker: [],
+    defender: [],
+  };
   for (const unit of data.units) {
     const gain = battleExperienceGain(unit, outcome);
     const membership =
@@ -420,10 +425,35 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         ? battle.attackerFormationOfficerIds
         : battle.defenderFormationOfficerIds;
     const memberIds = membership[unit.id] ?? [];
-    allocateSurvivors(unit, memberIds, state.officers, gain);
     const members = state.officers.filter((officer) => memberIds.includes(officer.id));
+    const beforeExperience = new Map(
+      members.map((officer) => [officer.id, officer.troopExperience]),
+    );
+    allocateSurvivors(unit, memberIds, state.officers, gain);
     if (members.length) unit.troopExperience = mergeTroopPools(...members).troopExperience;
     else awardTroopExperience(unit, gain);
+    const participated = unit.combatCasualtiesDealt + unit.combatCasualtiesReceived > 0;
+    troopGrowth[unit.side].push(
+      ...(members.length
+        ? members.map((officer) => ({
+            officerId: officer.id,
+            troopType: officer.troopType,
+            survivingTroops: officer.troops,
+            beforeExperience: beforeExperience.get(officer.id)!,
+            afterExperience: officer.troopExperience,
+            participated,
+          }))
+        : [
+            {
+              officerId: null,
+              troopType: unit.troopType,
+              survivingTroops: unit.troops,
+              beforeExperience: unit.initialTroopExperience,
+              afterExperience: unit.troopExperience,
+              participated,
+            },
+          ]),
+    );
   }
 
   const attackerSurvivors = attackerGroups.reduce((sum, unit) => sum + unit.troops, 0);
@@ -643,6 +673,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         .filter((officer) => officer.alive && officer.location.kind === 'captured')
         .map((officer) => officer.id),
       killed: officers.filter((officer) => !officer.alive).map((officer) => officer.id),
+      troopGrowth: troopGrowth[side],
     };
   };
   addEvent(

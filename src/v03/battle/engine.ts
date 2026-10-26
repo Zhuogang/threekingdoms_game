@@ -127,6 +127,7 @@ function makeUnits(
       troops: entry.troops,
       initialTroops: entry.troops,
       troopExperience: entry.troopExperience ?? 0,
+      initialTroopExperience: entry.troopExperience ?? 0,
       combatCasualtiesDealt: 0,
       combatCasualtiesReceived: 0,
       force: entry.force,

@@ -112,6 +112,8 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   troops: number;
   initialTroops: number;
   troopExperience: number;
+  /** Opening experience retained for the report even if the unit is annihilated. */
+  initialTroopExperience: number;
   /** Effective enemy combat losses only; excludes hunger and other attrition. */
   combatCasualtiesDealt: number;
   combatCasualtiesReceived: number;

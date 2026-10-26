@@ -1,5 +1,7 @@
 import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
+import { TroopProgress } from './TroopProgress';
+import { UnitIcon } from '../../rendering/UnitIcon';
 import { getCityCapabilities } from '../../governance/authority';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -22,12 +24,30 @@ export function CityAffairs({
   const direct = city.id === state.playerCapitalCityId && city.governanceMode === 'ruler';
   return (
     <section className="v03-city-affairs">
+      <h3>{message(locale, 'ui.reserve.soldiers.93')}</h3>
+      <div className="v03-troop-comparison">
+        {TROOP_TYPES.map((type) => (
+          <div className="v03-troop-summary" key={type}>
+            <UnitIcon
+              troopType={type}
+              {...city.reservePools[type]}
+              onWater={false}
+              locale={locale}
+            />
+            <span>
+              <strong>
+                {troopName(type, locale)} · {city.reservePools[type].troops.toLocaleString()}
+              </strong>
+              <TroopProgress
+                unit={{ ...city.reservePools[type], troopType: type }}
+                locale={locale}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
       <StatGrid
         values={[
-          ...TROOP_TYPES.map((type) => ({
-            label: `${troopName(type, locale)} · ${message(locale, 'ui.reserve.soldiers.93')}`,
-            value: city.reservePools[type].troops.toLocaleString(),
-          })),
           { label: message(locale, 'flow.farming'), value: city.farming },
           { label: message(locale, 'flow.commerce'), value: city.commerce },
           { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },

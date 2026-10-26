@@ -1,4 +1,5 @@
 import { message } from '../i18n';
+import { troopLevel } from '../campaign/troop-experience';
 import type { GridPoint } from './geometry';
 
 export type TroopVisualKind = string;
@@ -12,6 +13,7 @@ export interface BattleUnitVisual {
   /** Optional, and expected to be derived from the battle rules snapshot. */
   isOnWater?: boolean;
   strength?: number;
+  troopExperience?: number;
   label?: string;
   selected?: boolean;
   status?: string;
@@ -44,6 +46,9 @@ export const TROOP_NAMES: Record<string, { en: string; zh: string; glyph: string
   infantry: { en: 'Infantry', zh: '步兵', glyph: '步' },
   cavalry: { en: 'Cavalry', zh: '骑兵', glyph: '骑' },
   archer: { en: 'Archer', zh: '弓兵', glyph: '弓' },
+  'heavy-infantry': { en: 'Heavy infantry', zh: '重步兵', glyph: '重' },
+  'elite-cavalry': { en: 'Elite cavalry', zh: '精锐骑兵', glyph: '精' },
+  'strong-archer': { en: 'Strong archers', zh: '强弓兵', glyph: '强' },
   water: { en: 'Waterborne unit', zh: '水上单位', glyph: '舟' },
   warship: { en: 'Navy (tower warship)', zh: '水军（楼船）', glyph: '舰' },
 };
@@ -69,6 +74,40 @@ export function waterCombatDisplay(
 export function troopName(troopType: string, locale: 'en' | 'zh'): string {
   const name = TROOP_NAMES[troopType];
   return name?.[locale] ?? troopType;
+}
+
+/** Display stage only: the three base troop types and naval eligibility never change. */
+export function troopDisplayType(troopType: string, experience = 0): string {
+  if (troopLevel(experience) < 11) return troopType;
+  return (
+    (
+      { infantry: 'heavy-infantry', cavalry: 'elite-cavalry', archer: 'strong-archer' } as Record<
+        string,
+        string
+      >
+    )[troopType] ?? troopType
+  );
+}
+
+export function formatTroopExperience(experience: number, locale: 'en' | 'zh'): string {
+  // Avoid displaying 1000 experience while a fractional mean still belongs to level 10.
+  return (Math.floor(experience * 100) / 100).toLocaleString(locale, { maximumFractionDigits: 2 });
+}
+
+export function troopExperienceText(experience: number, locale: 'en' | 'zh'): string {
+  const level = troopLevel(experience);
+  const remaining = (Math.ceil((level * 100 - experience) * 100) / 100).toLocaleString(locale, {
+    maximumFractionDigits: 2,
+  });
+  return `${locale === 'zh' ? '兵员经验' : 'Soldier XP'} ${formatTroopExperience(experience, locale)} / 1,900 · ${
+    level === 20
+      ? locale === 'zh'
+        ? '已满级'
+        : 'Max level'
+      : locale === 'zh'
+        ? `距下一级 ${remaining}`
+        : `${remaining} to next level`
+  }`;
 }
 
 export function troopGlyph(troopType: string): string {

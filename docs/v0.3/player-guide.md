@@ -171,6 +171,10 @@ All types can cross passable water without a naval skill or boat inventory. A st
 
 Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more surviving troops wins, defender wins ties. Elimination, an opposing camp capture or withdrawal can end a battle earlier. Camps give no hidden city-defense bonus. Withdrawal confirmation concedes the whole battle; Cancel/Escape preserves state.
 
+Soldier level is separate from officer level. Mean soldier XP starts at 0, with one level per 100 XP up to level 20 / 1900 XP. Levels 11–20 display heavy infantry, elite cavalry or strong archers; reinforcement can dilute mean XP and return them to ordinary art. The 500-soldier size threshold, leader portraits and commander-based boat/tower-warship selection still apply independently. Officer details, battle details and reserves show mean XP and distance to the next level.
+
+**Set troop count** previews actual before/after counts, levels, experience and formations, including elite downgrades. Experience travels with soldiers and only same-type reserves can reinforce an officer. Normal losses preserve the survivors' mean; annihilation resets it. Battle aftermath lists each original contingent's capped XP gain, level change and promotion, with separate notices for no combat participation and annihilation. Reports retain the historical result after later reinforcements or reloads.
+
 Capture takes a city after victory. Raid plunders and returns without taking it; Sack combines capture with destructive plunder. Loot and returning survivors still travel. There is no siege phase.
 
 ### Controls, saves, endings and troubleshooting

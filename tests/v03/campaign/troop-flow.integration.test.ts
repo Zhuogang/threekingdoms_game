@@ -216,6 +216,20 @@ describe('campaign veteran flow', () => {
       });
     }
     expect(state.cities.find((c) => c.id === 'xiapi')!.garrisonExperience).toBe(750 + defenderGain);
+    const report = state.events.find(
+      (e) => e.entityId === battle.id && e.battleOutcome,
+    )!.battleOutcome!;
+    expect(report.attacker.troopGrowth[0]).toMatchObject({
+      officerId: officerIds[0],
+      beforeExperience: 1200,
+      afterExperience: 1200 + attackerGain,
+      participated: true,
+    });
+    expect(report.defender.troopGrowth[0]).toMatchObject({
+      officerId: null,
+      beforeExperience: 750,
+      afterExperience: 750 + defenderGain,
+    });
     const repeated = applyV03BattleAction(state, battle.id, {
       type: 'retreat',
       unitId: attacker.id,
@@ -342,6 +356,15 @@ describe('campaign veteran flow', () => {
       expect(finished.state.officers.find((o) => o.id === original.id)).toMatchObject({
         troops: original.troops,
         troopExperience: Math.min(1900, original.troopExperience + gain),
+      });
+    const report = finished.state.events.find((e) => e.battleOutcome)?.battleOutcome!;
+    for (const original of originals)
+      expect(
+        report.attacker.troopGrowth.find((entry) => entry.officerId === original.id),
+      ).toMatchObject({
+        beforeExperience: original.troopExperience,
+        afterExperience: Math.min(1900, original.troopExperience + gain),
+        participated: true,
       });
     const originalIds = new Set(ids);
     for (const officer of finished.state.officers.filter(

@@ -67,7 +67,9 @@ const ENGLISH: readonly V03WikiArticle[] = [
         heading: 'The field units',
         body: [
           'Infantry holds ground and provides a dependable line. Cavalry moves quickly and can exploit open flanks. Archers attack at range but need friendly troops to protect them.',
-          'Infantry, cavalry and archers are the three base troop types. On land, units below 500 troops use small squads and units with 500 or more use large formations. All use the same crewed boat on water, retaining its land identity and shared water penalties.',
+          'Infantry, cavalry and archers remain the three base troop types. Soldier level is independent of officer level: levels 1–10 use ordinary art; levels 11–20 use heavy infantry, elite cavalry or strong archers. Below 500 troops uses small squads; 500 or more uses large formations. On water, the approved naval commanders use tower warships and others use crewed boats, regardless of soldier level or size.',
+          'The officer detail and battlefield show soldier level, mean XP and XP to the next level. New recruits have zero XP; reinforcement mixes experience by headcount and can downgrade an elite force. The assignment preview shows both formations, counts, levels and experience before confirmation. Veterans returning to the matching reserve pool retain their experience.',
+          'Survivors that caused or received combat casualties gain 40 participation XP, up to 80 damage XP relative to starting troop count, and 20 victory XP after battle; each battle awards at most 140 and total XP is capped at 1900. Each level above 1 adds 2% normal/counterattack damage and reduces incoming normal/counterattack damage by 1%; tactics receive no level multiplier. Growth reports preserve each original contingent’s XP and level change, promotion, or annihilation even after later reinforcement.',
           'Unit strength depends on troop count, officer leadership, morale, status, and the actual terrain under the unit. A camp marker is an objective and gives no extra defensive bonus.',
         ],
       },
@@ -205,7 +207,9 @@ const CHINESE: readonly V03WikiArticle[] = [
         heading: '战场部队',
         body: [
           '步兵稳定守线。骑兵机动较快，适合利用开阔侧翼。弓兵可以远程攻击，但需要友军保护。',
-          '基础兵种只有步、骑、弓。陆上按人数显示编队，下水显示载兵小船，上岸恢复原兵种图；陆上少于 500 人显示小队，500 人及以上显示大队，水上惩罚统一适用。',
+          '基础兵种仍只有步、骑、弓。部队等级独立于武将等级：1–10 级使用普通图，11–20 级分别使用重步兵、精锐骑兵、强弓兵图；少于 500 人用小队，500 人及以上用大队。下水后按既定主将资格使用楼船或载兵小船，部队等级和人数不改变船型。',
+          '武将详情和战场显示兵员等级、平均经验及距下一级经验。新兵经验为零，补兵按人数平均经验，可能使精锐降回普通；确认前会预览人数、等级、经验和图标变化。交回兵池的老兵保留经验，只能补入同兵种部队。',
+          '造成或承受过有效战斗伤亡的幸存部队，战后获得 40 点参战经验、按战果与开战人数计算的最多 80 点经验，以及胜方 20 点经验；每战最多 140 点，总经验上限 1900。每升一级，普攻与反击伤害增加 2%，承受普攻与反击伤害减少 1%，计策不叠加等级倍率。成长战报保存各原部队当时的经验、等级变化、精锐晋升或全灭清零，之后补兵不会改写旧战报。',
           '部队战力受兵力、将领统率、士气、状态以及脚下真实地形影响。营地只是战术目标标记，不额外提供防御加成。',
         ],
       },

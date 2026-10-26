@@ -11,6 +11,7 @@ import { tacticLabel, localizeTacticReason } from '../shared/app-copy-2';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { BattleConditions } from './BattleConditions';
+import { TroopProgress } from './TroopProgress';
 export function BattleSidebar({
   context,
 }: {
@@ -90,6 +91,7 @@ export function BattleSidebar({
                     ) : null}
                     <UnitIcon
                       troopType={unit.troopType}
+                      troopExperience={unit.troopExperience}
                       troops={unit.troops}
                       navalTraining={visual?.navalTraining}
                       onWater={battleTerrainAt(battleState.map, unit) === 'water'}
@@ -98,6 +100,7 @@ export function BattleSidebar({
                   </span>
                   <span>
                     <strong>{localizedOfficerName(unit.name)}</strong>
+                    <TroopProgress unit={unit} locale={locale} compact />
                     <small>
                       {unit.troops.toLocaleString()} · {unit.morale}% · {unitBattleStatus(unit)}
                     </small>
@@ -165,6 +168,7 @@ export function BattleSidebar({
         {currentUnit ? (
           <div className="v03-card v03-unit-detail">
             <strong>{localizedOfficerName(currentUnit.name)}</strong>
+            <TroopProgress unit={currentUnit} locale={locale} />
             <p>
               {currentUnit.troops.toLocaleString()} {message(locale, 'ui.troops.75')} ·{' '}
               {currentUnit.morale}% {message(locale, 'ui.morale.4')} ·{' '}

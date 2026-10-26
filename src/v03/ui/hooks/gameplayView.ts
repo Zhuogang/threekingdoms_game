@@ -1,4 +1,4 @@
-import { troopName } from '../../rendering/presentation';
+import { troopDisplayType, troopName } from '../../rendering/presentation';
 import { terrainLabel, weatherLabel } from '../../i18n/formatters';
 import { message } from '../../i18n';
 
@@ -120,7 +120,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         .filter((officer) => Boolean(officer))
         .map((officer) => displayName(officer!, locale));
       return leaders.length
-        ? `${troopName(unit.troopType, locale)} · ${leaders.join(', ')}`
+        ? `${troopName(troopDisplayType(unit.troopType, unit.troopExperience), locale)} · ${leaders.join(', ')}`
         : message(locale, 'ui.militia.393');
     }
     return localizeV03PersonOrFormationName(name, locale, state);
@@ -189,6 +189,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         routed: isBattleUnitRouted(unit),
         id: unit.id,
         troopType: unit.troopType,
+        troopExperience: unit.troopExperience,
         position: { x: unit.x, y: unit.y },
         faction: unit.side === battleState.playerSide ? 'player' : 'opponent',
         strength: unit.troops,

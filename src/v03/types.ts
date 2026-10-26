@@ -207,6 +207,17 @@ export interface V03BattleSideReport {
   returned: string[];
   captured: string[];
   killed: string[];
+  troopGrowth: V03TroopGrowthReport[];
+}
+
+/** Immutable per-contingent aftermath; later reinforcement cannot rewrite this report. */
+export interface V03TroopGrowthReport {
+  officerId: string | null;
+  troopType: TroopType;
+  survivingTroops: number;
+  beforeExperience: number;
+  afterExperience: number;
+  participated: boolean;
 }
 
 export interface V03BattleOutcomeReport {

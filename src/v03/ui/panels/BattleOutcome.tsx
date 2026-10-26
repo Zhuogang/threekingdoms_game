@@ -4,6 +4,7 @@ import type { V03Locale } from '../../wiki';
 import { Button } from '../kit';
 import { displayName, absoluteDateLabel } from '../shared/app-copy-3';
 import { formatEvent } from '../../i18n/events';
+import { TroopGrowthReport } from './TroopGrowthReport';
 
 export function BattleOutcome({
   event,
@@ -72,6 +73,7 @@ export function BattleOutcome({
           <p>
             {message(locale, 'ui.killed.43')}: {names(report[side].killed)}
           </p>
+          <TroopGrowthReport entries={report[side].troopGrowth} state={state} locale={locale} />
         </div>
       ))}
       <p>
