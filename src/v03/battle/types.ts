@@ -32,13 +32,6 @@ export interface BattlePosition {
   y: number;
 }
 
-export interface BattleObjective {
-  id: string;
-  kind: 'camp';
-  owner: BattleSide;
-  position: BattlePosition;
-}
-
 export interface BattleLandmark {
   id: string;
   kind: 'river' | 'ridge' | 'road' | 'irrigation';
@@ -61,7 +54,6 @@ export interface BattleMap {
   terrain: BattleTerrain[];
   attackerDeployment: BattlePosition[];
   defenderDeployment: BattlePosition[];
-  objectives: BattleObjective[];
   landmarks: BattleLandmark[];
 }
 
@@ -160,7 +152,7 @@ export interface BattleTacticForecast {
 
 export interface BattleOutcome {
   winner: BattleSide | null;
-  reason: 'elimination' | 'camp' | 'dayLimit' | 'retreat' | 'rout';
+  reason: 'elimination' | 'dayLimit' | 'retreat' | 'rout';
 }
 
 /** Plain JSON-safe battle state; no functions, Maps or rendering objects are stored. */

@@ -28,8 +28,6 @@ import {
   predictBattleTactic,
   getBattleTimeoutOutcome,
   isBattleAttackInRange,
-  objectiveAt,
-  objectiveDefenseMultiplier,
   validateBattleMap,
   validateBattleUnits,
   waterCombatModifiers,
@@ -97,7 +95,7 @@ describe('v0.3 logical battlefield templates', () => {
       expect(validateBattleMap(map)).toEqual([]);
       expect(map.terrain).not.toContain('wall');
       expect(map.terrain).not.toContain('gate');
-      expect(map.objectives.map((objective) => objective.kind)).toEqual(['camp', 'camp']);
+      expect(map).not.toHaveProperty('objectives');
     }
     expect(new Set(maps.map((map) => map.terrain.join(','))).size).toBe(maps.length);
   });
@@ -110,7 +108,7 @@ describe('v0.3 logical battlefield templates', () => {
       }
   });
 
-  it('keeps all deployment cells and both camps connected across 20 seeds and four approaches', () => {
+  it('keeps all deployment cells connected across 20 seeds and four approaches', () => {
     for (const regionId of regions)
       for (let seed = 0; seed < 20; seed++)
         for (const approachDirection of ['north', 'east', 'south', 'west'] as const) {
@@ -135,8 +133,6 @@ describe('v0.3 logical battlefield templates', () => {
           }
           for (const position of [...map.attackerDeployment, ...map.defenderDeployment])
             expect(reached.has(index(map, position.x, position.y))).toBe(true);
-          for (const objective of map.objectives)
-            expect(reached.has(index(map, objective.position.x, objective.position.y))).toBe(true);
         }
   });
 
@@ -162,18 +158,13 @@ describe('v0.3 logical battlefield templates', () => {
     expect(validateBattleMap(other)).toEqual([]);
   });
 
-  it('keeps deployment zones separated and positions the camps as plain objective overlays', () => {
+  it('keeps deployment zones separated', () => {
     const map = createBattleMap({ regionId: 'xiapi', approachDirection: 'north' });
     expect(
       map.attackerDeployment.some((a) =>
         map.defenderDeployment.some((d) => a.x === d.x && a.y === d.y),
       ),
     ).toBe(false);
-    for (const camp of map.objectives) {
-      expect(battleTerrainAt(map, camp.position)).toBe('plain');
-      expect(objectiveDefenseMultiplier(map, camp.position)).toBe(1);
-      expect(objectiveAt(map, camp.position)?.id).toBe(camp.id);
-    }
   });
 
   it('preserves both a water crossing and a land alternative across 20 seeds and four approaches', () => {
@@ -193,16 +184,14 @@ describe('v0.3 logical battlefield templates', () => {
         }
   });
 
-  it('uses the underlying land terrain at a camp and adds no camp defense bonus', () => {
+  it('uses the underlying terrain for defense', () => {
     const source = createBattleMap({ regionId: 'hanzhong' });
-    const camp = source.objectives[0]!;
+    const cell = pos(1, 9);
     const terrain = [...source.terrain];
-    terrain[index(source, camp.position.x, camp.position.y)] = 'hill';
+    terrain[index(source, cell.x, cell.y)] = 'hill';
     const map = { ...source, terrain };
-    expect(objectiveAt(map, camp.position)?.id).toBe(camp.id);
-    expect(battleTerrainAt(map, camp.position)).toBe('hill');
-    expect(battleTerrainDefenseMultiplier(map, camp.position)).toBe(0.8);
-    expect(objectiveDefenseMultiplier(map, camp.position)).toBe(1);
+    expect(battleTerrainAt(map, cell)).toBe('hill');
+    expect(battleTerrainDefenseMultiplier(map, cell)).toBe(0.8);
   });
 });
 
@@ -690,22 +679,34 @@ describe('serializable tactical battle operations', () => {
           }
   });
 
-  it('lets a unit capture the enemy camp and ends the battle immediately', () => {
+  it('treats former enemy objective cells as ordinary movement without ending battle', () => {
     const state = battle();
     state.units[0]!.x = 21;
     state.units[0]!.y = 9;
     state.units[1]!.x = 20;
     state.units[1]!.y = 6;
-    const camp = state.map.objectives.find((objective) => objective.owner === 'defender')!;
+    const cell = pos(22, 9);
     const result = applyBattleAction(state, {
       type: 'move',
       unitId: 'a1',
-      x: camp.position.x,
-      y: camp.position.y,
+      x: cell.x,
+      y: cell.y,
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.outcome).toEqual({ winner: 'attacker', reason: 'camp' });
+    expect(result.state.outcome).toBeNull();
+    expect(result.state.units[0]).toMatchObject(cell);
+  });
+
+  it('allows movement through a former friendly objective without a hidden blocked cell', () => {
+    const state = battle();
+    state.units[0]!.x = 2;
+    state.units[0]!.y = 9;
+    expect(getUnitReachableTiles(state, 'a1')).toContainEqual(expect.objectContaining(pos(1, 9)));
+    const result = applyBattleAction(state, { type: 'move', unitId: 'a1', x: 1, y: 9 });
+    expect(result.ok).toBe(true);
+    expect(result.state.units[0]).toMatchObject(pos(1, 9));
+    expect(result.state.outcome).toBeNull();
   });
 
   it('declares elimination after a killing attack and does not counterattack a destroyed unit', () => {
@@ -759,10 +760,6 @@ describe('serializable tactical battle operations', () => {
     const state = battle();
     state.map.terrain = Array.from({ length: state.map.width * state.map.height }, () => 'cliff');
     for (let x = 1; x <= 22; x++) state.map.terrain[index(state.map, x, 10)] = 'water';
-    state.map.objectives = [
-      { id: 'attacker-camp', kind: 'camp', owner: 'attacker', position: pos(1, 10) },
-      { id: 'defender-camp', kind: 'camp', owner: 'defender', position: pos(22, 10) },
-    ];
     state.units[0]!.x = 2;
     state.units[0]!.y = 10;
     state.units[1]!.x = 12;
@@ -923,13 +920,9 @@ describe('serializable tactical battle operations', () => {
     }
   });
 
-  it('redirects an advancing AI unit to defend its threatened camp', () => {
+  it('pursues enemy units even when they move behind the formation', () => {
     const state = battle();
     state.map.terrain = Array.from({ length: state.map.width * state.map.height }, () => 'plain');
-    state.map.objectives = [
-      { id: 'attacker-camp', kind: 'camp', owner: 'attacker', position: pos(1, 9) },
-      { id: 'defender-camp', kind: 'camp', owner: 'defender', position: pos(22, 9) },
-    ];
     state.units[0]!.x = 10;
     state.units[0]!.y = 10;
     state.units[1]!.x = 4;

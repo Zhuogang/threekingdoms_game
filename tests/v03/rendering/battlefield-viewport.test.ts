@@ -72,15 +72,15 @@ describe('battlefield camera and minimap geometry', () => {
     expect(resizedFit.width / resized.width).toBeCloseTo(2.25);
   });
 
-  it('frames two camps together and maps the view box into minimap grid coordinates', () => {
+  it('frames two points together and maps the view box into minimap grid coordinates', () => {
     const current = fitBattlefieldViewport(bounds, 16 / 9);
-    const camps = [gridToWorld({ x: 2, y: 2 }), gridToWorld({ x: 21, y: 17 })];
-    const focused = focusBattlefieldPointsViewport(bounds, current, camps, 140);
-    for (const camp of camps) {
-      expect(camp.x).toBeGreaterThanOrEqual(focused.left);
-      expect(camp.x).toBeLessThanOrEqual(focused.left + focused.width);
-      expect(camp.y).toBeGreaterThanOrEqual(focused.top);
-      expect(camp.y).toBeLessThanOrEqual(focused.top + focused.height);
+    const points = [gridToWorld({ x: 2, y: 2 }), gridToWorld({ x: 21, y: 17 })];
+    const focused = focusBattlefieldPointsViewport(bounds, current, points, 140);
+    for (const point of points) {
+      expect(point.x).toBeGreaterThanOrEqual(focused.left);
+      expect(point.x).toBeLessThanOrEqual(focused.left + focused.width);
+      expect(point.y).toBeGreaterThanOrEqual(focused.top);
+      expect(point.y).toBeLessThanOrEqual(focused.top + focused.height);
     }
     const polygon = battlefieldViewportGridPolygon(focused);
     expect(polygon).toHaveLength(4);

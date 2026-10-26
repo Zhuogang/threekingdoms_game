@@ -134,12 +134,6 @@ export function formatModifier(
   return message(locale, 'ui.text.153', { p0: percent });
 }
 
-export interface CellMarker {
-  id?: string;
-  position: GridPoint;
-  label?: string;
-}
-
 export interface CampaignCityVisual {
   info?: string;
   id: string;

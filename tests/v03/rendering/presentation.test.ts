@@ -65,13 +65,13 @@ describe('v0.3 asset loading and sprite contract', () => {
       alpha: false,
       anchor: null,
     });
-    expect(V03_ASSETS.infantrySquadInk02).toMatchObject({
-      width: 256,
-      height: 256,
+    expect(V03_ASSETS.infantrySquadInk04).toMatchObject({
+      width: 512,
+      height: 512,
       alpha: true,
       anchor: [0.5, 0.5],
     });
-    expect(V03_ASSETS.transportSquadInk02).toMatchObject({
+    expect(V03_ASSETS.transportSquadInk03).toMatchObject({
       width: 256,
       height: 256,
       alpha: true,

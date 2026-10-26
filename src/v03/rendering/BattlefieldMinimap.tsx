@@ -7,13 +7,12 @@ import {
   type Point,
 } from './geometry';
 import type { BattlefieldVisualMap } from './BattlefieldMapView';
-import { isLivingBattleUnitVisual, type BattleUnitVisual, type CellMarker } from './presentation';
+import { isLivingBattleUnitVisual, type BattleUnitVisual } from './presentation';
 import type { KeyboardEvent, PointerEvent } from 'react';
 
 export interface BattlefieldMinimapProps {
   map: BattlefieldVisualMap;
   units?: readonly BattleUnitVisual[];
-  camps?: readonly CellMarker[];
   viewportPolygon?: readonly Point[];
   locale?: 'en' | 'zh';
   className?: string;
@@ -64,7 +63,6 @@ function terrainLabel(terrain: string, locale: 'en' | 'zh'): string {
 export function BattlefieldMinimap({
   map,
   units = [],
-  camps = [],
   viewportPolygon = [],
   locale = 'en',
   className,
@@ -169,18 +167,6 @@ export function BattlefieldMinimap({
           >
             <title>{terrainLabel(terrain, locale)}</title>
           </rect>
-        );
-      })}
-      {camps.map((camp, index) => {
-        const point = minimapPoint(camp.position, map.width, map.height, VIEWPORT);
-        return (
-          <path
-            key={camp.id ?? `camp-${index}`}
-            d={`M ${point.x} ${point.y - 3} l 3 5 h -6 Z`}
-            fill="#e7c174"
-            stroke="#524632"
-            strokeWidth="1"
-          />
         );
       })}
       {units.filter(isLivingBattleUnitVisual).map((unit) => {

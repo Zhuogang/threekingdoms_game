@@ -51,18 +51,6 @@ const battleMap = z
     terrain: z.array(z.enum(['plain', 'forest', 'hill', 'water', 'cliff'])).length(1536),
     attackerDeployment: z.array(battlePosition).min(10).max(80),
     defenderDeployment: z.array(battlePosition).min(10).max(80),
-    objectives: z
-      .array(
-        z
-          .object({
-            id,
-            kind: z.literal('camp'),
-            owner: z.enum(['attacker', 'defender']),
-            position: battlePosition,
-          })
-          .strict(),
-      )
-      .length(2),
     landmarks: z
       .array(
         z
@@ -144,7 +132,7 @@ const tacticalBattle = z
     outcome: z
       .object({
         winner: z.enum(['attacker', 'defender']).nullable(),
-        reason: z.enum(['elimination', 'camp', 'dayLimit', 'retreat', 'rout']),
+        reason: z.enum(['elimination', 'dayLimit', 'retreat', 'rout']),
       })
       .strict()
       .nullable(),

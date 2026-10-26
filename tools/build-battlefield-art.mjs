@@ -946,7 +946,6 @@ const MAPS = [
     zh: '北方旷野',
     round: 1,
     build: northPlain,
-    camps: { a: [5, 15], d: [42, 15] },
     target: { plain: 82, forest: 8, hill: 6, water: 4, cliff: 0 },
     about: [
       '河北、鲁北平原：麦田、土路、杨柳、小河。界桥之战一类的正面会战。',
@@ -974,7 +973,6 @@ const MAPS = [
     zh: '中原沃野',
     round: 1,
     build: centralFarmland,
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 67, forest: 12, hill: 8, water: 13, cliff: 0 },
     about: [
       '黄淮平原：一条两岸有土堤的运河斜穿全图，两条驿道各有一座桥过河。',
@@ -1000,7 +998,6 @@ const MAPS = [
     zh: '黄河津渡',
     round: 1,
     build: yellowRiverFord,
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 55, forest: 8, hill: 12, water: 25, cliff: 0 },
     about: [
       '白马津、孟津一类的黄河渡口：浑黄大河竖贯中间，河心三块沙洲，两岸大堤只在两处渡口断开。',
@@ -1026,7 +1023,6 @@ const MAPS = [
     zh: '水网泽国（淮泗）',
     round: 1,
     build: (g) => wetland(g, false),
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 45, forest: 15, hill: 10, water: 30, cliff: 0 },
     about: [
       '淮河—泗水下游：网状水道、湖塘、芦苇荡、圩田，陆地被切成几块，靠桥和堤相连。',
@@ -1051,7 +1047,6 @@ const MAPS = [
     zh: '水网泽国（江南）',
     round: 2,
     build: (g) => wetland(g, true),
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 45, forest: 15, hill: 10, water: 30, cliff: 0 },
     about: ['太湖平原：与 ④北 同一布局，换成稻田、竹林和江南水乡。'],
     legend: {
@@ -1074,7 +1069,6 @@ const MAPS = [
     zh: '大江·沿江',
     round: 1,
     build: yangtzeBank,
-    camps: { a: [5, 20], d: [42, 20] },
     rows: [14, 23],
     target: { plain: 35, forest: 12, hill: 8, water: 38, cliff: 7 },
     about: [
@@ -1103,7 +1097,6 @@ const MAPS = [
     zh: '大江·渡江',
     round: 1,
     build: yangtzeCrossing,
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 40, forest: 15, hill: 10, water: 25, cliff: 10 },
     about: [
       '从北面攻建业：大江竖贯，中间一条长长的江心洲，两侧各 3 格水。',
@@ -1129,7 +1122,6 @@ const MAPS = [
     zh: '河谷川地（渭水）',
     round: 1,
     build: riverValley,
-    camps: { a: [5, 18], d: [42, 10] },
     rows: { a: [13, 22], d: [6, 14] },
     target: { plain: 49, forest: 10, hill: 22, water: 10, cliff: 9 },
     about: [
@@ -1157,7 +1149,6 @@ const MAPS = [
     zh: '河谷川地（汉水）',
     round: 1,
     build: (g) => riverValley(g, true),
-    camps: { a: [5, 18], d: [42, 10] },
     rows: { a: [13, 22], d: [6, 14] },
     target: { plain: 49, forest: 10, hill: 22, water: 10, cliff: 9 },
     about: ['汉水谷地：与 ⑥北 同一布局，换成稻田、绿色山坡；城池一角是襄阳。'],
@@ -1182,7 +1173,6 @@ const MAPS = [
     zh: '北方山丘（太行）',
     round: 1,
     build: (g) => northHills(g, false),
-    camps: { a: [5, 16], d: [42, 16] },
     rows: [13, 19],
     target: { plain: 35, forest: 10, hill: 35, water: 5, cliff: 15 },
     about: [
@@ -1208,7 +1198,6 @@ const MAPS = [
     zh: '北方山丘（沂蒙、方城）',
     round: 2,
     build: (g) => northHills(g, true),
-    camps: { a: [5, 16], d: [42, 16] },
     rows: [12, 20],
     target: { plain: 35, forest: 12, hill: 45, water: 3, cliff: 5 },
     about: ['沂蒙丘陵、方城隘口：与 ⑦太行 同一走向，谷道更宽、岩壁更少、坡更缓。'],
@@ -1231,7 +1220,6 @@ const MAPS = [
     zh: '南方丘陵',
     round: 1,
     build: southHills,
-    camps: { a: [5, 16], d: [42, 16] },
     target: { plain: 40, forest: 25, hill: 25, water: 8, cliff: 2 },
     about: [
       '巴蜀、荆门丘陵：圆丘散布，丘间水田，竹林成片，一条溪流蜿蜒穿过。',
@@ -1257,7 +1245,6 @@ const MAPS = [
     zh: '峡谷栈道',
     round: 1,
     build: gorge,
-    camps: { a: [4, 19], d: [43, 11] },
     rows: [9, 22],
     target: { plain: 22, forest: 8, hill: 15, water: 10, cliff: 45 },
     about: [
@@ -1284,7 +1271,6 @@ const MAPS = [
     build: threeGorges,
     // Camps at the mouths of the basin: from the map edges, two-cell towpaths
     // stretched battles to a 15-day median; here the median is 9 days.
-    camps: { a: [14, 10], d: [33, 10] },
     rows: [10, 21],
     target: { plain: 22, forest: 4, hill: 6, water: 25, cliff: 43 },
     about: ['三峡：大江从峡底横贯，两岸是贴崖的纤道，中段一小块河谷盆地。'],
@@ -1307,7 +1293,6 @@ const MAPS = [
     zh: '雄关隘口',
     round: 1,
     build: mountainPass,
-    camps: { a: [5, 15], d: [42, 15] },
     target: { plain: 40, forest: 10, hill: 25, water: 0, cliff: 25 },
     about: [
       '潼关、虎牢关、剑门关：上下两山夹峙，一道关墙横断山口；大路上是 3 格宽的主城门，南面另有一座 2 格宽的侧门。关前缓坡，关后营地。',
@@ -1346,14 +1331,11 @@ function validate(map, cells) {
   const errors = [];
   const passable = (x, y) => CLASSES[cells[y][x]].logic !== 'cliff';
   for (const side of ['a', 'd']) {
-    const [x, y] = map.camps[side];
-    if (!passable(x, y) || CLASSES[cells[y][x]].logic === 'water')
-      errors.push(`camp ${side} is not on dry ground`);
     if (deployCells(map, cells, side).cells.length < 10)
       errors.push(`deployment ${side} has fewer than 10 cells`);
   }
   const seen = new Set();
-  const queue = [map.camps.a];
+  const queue = [deployCells(map, cells, 'a').cells[0]];
   while (queue.length) {
     const [x, y] = queue.pop();
     const key = y * W + x;
@@ -1361,8 +1343,7 @@ function validate(map, cells) {
     seen.add(key);
     queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
   }
-  if (!seen.has(map.camps.d[1] * W + map.camps.d[0])) errors.push('camps are not connected');
-  // No sealed pockets: every passable cell can be reached from the camps.
+  // No sealed pockets: every passable cell can be reached from deployment.
   let sealed = 0;
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) if (passable(x, y) && !seen.has(y * W + x)) sealed++;
@@ -1376,7 +1357,7 @@ function validate(map, cells) {
         errors.push(`wall is thicker than one cell at ${x},${y}`);
   // Closing every gate must not cut off any ground behind a wall, unless it has two gates.
   const closed = new Set();
-  const flood = [map.camps.a];
+  const flood = [deployCells(map, cells, 'a').cells[0]];
   while (flood.length) {
     const [x, y] = flood.pop();
     const key = y * W + x;
@@ -1537,8 +1518,6 @@ function readme(map, cells, used) {
   const a = deployCells(map, cells, 'a');
   const d = deployCells(map, cells, 'd');
   const shown = cells.map((row) => [...row]);
-  shown[map.camps.a[1]][map.camps.a[0]] = 'a';
-  shown[map.camps.d[1]][map.camps.d[0]] = 'd';
   const legend = [...used]
     .map(
       (c) =>
@@ -1560,7 +1539,7 @@ ${map.about.map((line) => `- ${line}`).join('\n')}
 
 ## 格子布局（48×32）
 
-x 0–47 从左到右，y 0–31 从上到下。攻方在左，守方在右。\`a\`/\`d\` 是攻方、守方营地。
+x 0–47 从左到右，y 0–31 从上到下。攻方在左，守方在右。
 
 \`\`\`
 ${shown.map((row) => row.join('')).join('\n')}
@@ -1595,10 +1574,8 @@ ${prompt(map, used)}
 const GAME_LAYOUTS = 'src/v03/battle/battlefields/layouts.generated.ts';
 function gameLayoutEntry(map, cells) {
   const rows = (side) => (Array.isArray(map.rows) ? map.rows : (map.rows?.[side] ?? [11, 20]));
-  const point = ([x, y]) => `{ x: ${x}, y: ${y} }`;
   return `  {
     id: '${map.id}',
-    camps: { attacker: ${point(map.camps.a)}, defender: ${point(map.camps.d)} },
     deploymentRows: { attacker: [${rows('a').join(', ')}], defender: [${rows('d').join(', ')}] },
     rows: [
 ${cells.map((row) => `      '${row.join('')}',`).join('\n')}

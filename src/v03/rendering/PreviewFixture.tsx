@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { BattlefieldMapView } from './BattlefieldMapView';
 import { BattlefieldMinimap } from './BattlefieldMinimap';
 import type { BattlefieldVisualMap } from './BattlefieldMapView';
-import type { BattleUnitVisual, CellMarker } from './presentation';
+import type { BattleUnitVisual } from './presentation';
 
 function previewMap(): BattlefieldVisualMap {
   const width = 24;
@@ -87,11 +87,6 @@ const PREVIEW_UNITS: readonly BattleUnitVisual[] = [
   },
 ];
 
-const PREVIEW_CAMPS: readonly CellMarker[] = [
-  { id: 'player-camp', position: { x: 2, y: 2 }, label: 'Player camp' },
-  { id: 'opponent-camp', position: { x: 21, y: 17 }, label: 'Opponent camp' },
-];
-
 /** Import this component into the v0.3 app to preview rendering with stable data. */
 export function V03RenderingFixture({ locale = 'en' }: { locale?: 'en' | 'zh' }) {
   const map = useMemo(previewMap, []);
@@ -137,7 +132,6 @@ export function V03RenderingFixture({ locale = 'en' }: { locale?: 'en' | 'zh' })
         <BattlefieldMapView
           map={map}
           units={units}
-          camps={PREVIEW_CAMPS}
           selectedCell={selectedCell}
           reachableCells={[
             { x: 10, y: 8 },
@@ -175,7 +169,6 @@ export function V03RenderingFixture({ locale = 'en' }: { locale?: 'en' | 'zh' })
         <BattlefieldMinimap
           map={map}
           units={units}
-          camps={PREVIEW_CAMPS}
           viewportPolygon={viewportPolygon}
           locale={locale}
           onNavigate={setSelectedCell}

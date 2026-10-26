@@ -87,7 +87,7 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 所有兵种可进出可通行水格，不需要水军技能或船库存。涉及水的每步至少花 2 移动点；在水上攻击 ×0.75、受到兵力伤害 ×1.25，上岸恢复陆地规则。岸水互攻只需满足正常射程；峭壁所有兵种均不可进入。战场能涉水不代表大地图能离开配置路线任意渡海。
 
-全部己方战场都提交“结束战斗日”后，全局只推进一天；单场已提交的不要重复操作。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败、夺取对方野战营地或撤退可提前结束。营地不是城墙，也不提供隐藏城防倍率。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
+全部己方战场都提交“结束战斗日”后，全局只推进一天；单场已提交的不要重复操作。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败或撤退可提前结束。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
 
 任务分别是占领、突袭和洗劫：突袭胜利后掠取并返程，不夺城；洗劫在夺城基础上破坏和掠夺，会损害城市。需要资源时也要考虑长期损失。
 
@@ -95,7 +95,7 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 征兵时确定步、弓或骑，一名武将只带一种基础兵种；可战兵与随将伤兵合计最多 10000。有效战斗减员的 60% 成为伤兵，40% 永久损失，小额伤害累计余数。可战归零是击溃，仍可能有伤兵；只有两者都归零才是全灭并清空兵员经验。5000 精骑全部失去战斗力时，可留下 3000 伤兵；伤兵保留经验，不能在战场行动或治疗。断粮减员是永久损失。
 
-有合法退路时，未接战撤退被俘率为 0%，接战后有序撤退为每将 5%，击溃、士气溃败或失营的被迫溃退为每将 25%。各将独立判定，确认框也显示至少一将被俘的概率；无退路明确显示整军投降。守方失城也按此判定。逃脱者真实行军：有序撤退带走全部随军生还者，被迫溃退只带走三分之二随军伤兵。友城正在交战可城外等待，不自动增援。
+有合法退路时，未接战撤退被俘率为 0%，接战后有序撤退为每将 5%，击溃或士气溃败的被迫溃退为每将 25%。各将独立判定，确认框也显示至少一将被俘的概率；无退路明确显示整军投降。守方失城也按此判定。逃脱者真实行军：有序撤退带走全部随军生还者，被迫溃退只带走三分之二随军伤兵。友城正在交战可城外等待，不自动增援。
 
 新出征自动把旧伤兵留在本城，保留来源和经验。城内有粮、完整驻留一日后，每城按兵种汇总恢复 10% 伤兵并向上取整；首日 3000 恢复 300，约 22 个有效日恢复九成。在途、城外等待和战场上不治疗。留城老兵在原将同城、同势力、未被占用且有容量时自动归队，否则作为独立可用兵源保留；不同兵种不能混补。
 
@@ -106,7 +106,8 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 ### 7. 镜头、快捷键与存档
 
 - 主地图：滚轮/按钮缩放，拖动或方向键平移，Home/Fit 显示全图，小地图可定位；Tab 后 Enter/空格可选城市。
-- 战场：Fit 全图，Unit 聚焦所选部队，Camps 看营地；小地图移动视口。地图获得焦点后方向键移动格子光标，Enter/空格执行该格操作；Shift+方向键平移镜头，+/- 缩放，Home 全图。
+- 战场显示：“放大战场”铺满窗口，“全屏”进入浏览器全屏；“显示面板”可分别切换指令栏、小地图、操作提示、全局顶栏和战场列表。退出放大恢复原布局，Escape 优先取消当前操作/弹窗。隐藏指令栏时，底部仍有托管、结束战斗日及更多行动中的撤退。
+- 战场：Fit 全图，Unit 聚焦所选部队；小地图移动视口。地图获得焦点后方向键移动格子光标，Enter/空格执行该格操作；Shift+方向键平移镜头，+/- 缩放，Home 全图。
 - 游戏中 F1 打开 Wiki，Escape 关闭 Wiki 或取消确认框。中英切换和读指南不推进时间。
 - 自动存档只有一个；“导出”另存下载文件。“导入”只接受含人员结构标记的合法 v0.3 存档；伤兵功能之前的旧档不兼容、不自动迁移。开始页允许先导出旧档原文，新开确认取消时保留旧档。成功导入清空旧草稿，失败保留本局。
 - 存档属于浏览器配置与地址；换端口、浏览器、隐身窗口或清理网站数据可能看不到原档，先导出。自动保存失败时保持页面打开、导出备份，再重试保存。
@@ -181,7 +182,7 @@ At level 3, intellect thresholds drop by 10. Cunning can reduce point costs. Use
 
 All types can cross passable water without a naval skill or boat inventory. A step touching water costs at least two movement points. A unit on water deals ×0.75 attack damage and receives ×1.25 troop damage. Shore/water attacks are legal in normal range. Cliffs are impassable for everyone. Tactical water access does not create arbitrary strategic sea routes.
 
-Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout, an opposing camp capture or withdrawal can end a battle earlier. Camps give no hidden city-defense bonus. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
+Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout or withdrawal can end a battle earlier. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
 
 Soldier level is separate from officer level. Mean soldier XP starts at 0, with one level per 100 XP up to level 20 / 1900 XP. Levels 11–20 display heavy infantry, elite cavalry or strong archers; reinforcement can dilute mean XP and return them to ordinary art. The 500-soldier size threshold, leader portraits and commander-based boat/tower-warship selection still apply independently. Officer details, battle details and reserves show mean XP and distance to the next level.
 
@@ -193,7 +194,7 @@ Capture takes a city after victory. Raid plunders and returns without taking it;
 
 Recruitment selects infantry, cavalry or archers. Each officer commands one base type, with a combined healthy/wounded capacity of 10,000. Effective combat casualties become 60% wounded and 40% permanent losses, carrying fractional remainders across hits. Zero healthy troops means defeated; remaining wounded keep their XP. Thus 5,000 elite cavalry can leave 3,000 wounded. Wounded cannot act or heal on the field; starvation losses are permanent.
 
-With a valid refuge route, capture risk per officer is 0% before engagement, 5% for an orderly withdrawal after engagement and 25% for forced defeat/rout/camp loss. Officers roll independently; confirmation shows both individual risk and the chance of any capture. No route means explicit surrender. Losing defenders use the same rules. Orderly escape retains all survivors; forced escape retains all healthy and two thirds of field wounded. Returns take real journeys and may wait outside a friendly city in battle without reinforcing it.
+With a valid refuge route, capture risk per officer is 0% before engagement, 5% for an orderly withdrawal after engagement and 25% for forced defeat or rout. Officers roll independently; confirmation shows both individual risk and the chance of any capture. No route means explicit surrender. Losing defenders use the same rules. Orderly escape retains all survivors; forced escape retains all healthy and two thirds of field wounded. Returns take real journeys and may wait outside a friendly city in battle without reinforcing it.
 
 Existing wounded stay in the departure city with their source and XP. Each full supplied city day heals 10% of eligible wounded, rounded up after grouping by city/type: 3,000 heals 300 on the first day and about 90% over 22 effective days. Travel, field battles and outside waiting give no treatment. Rear veterans rejoin their original officer only in the same city, under the same house, when uncommitted and within capacity; otherwise they remain a separate usable source.
 
@@ -204,7 +205,8 @@ Healthy troops, reserves, rear veterans, wounded and prisoners all consume food;
 ### Controls, saves, endings and troubleshooting
 
 - Campaign: wheel/buttons zoom, drag/arrows pan, Home/Fit shows the atlas; minimap repositions. Tab/Enter/Space selects cities.
-- Battlefield: Fit shows the field; Unit focuses selection; Camps shows camps. With map focus, arrows move the cell cursor and Enter/Space executes; Shift+arrows pans, +/- zooms, Home fits. Minimap moves the viewport.
+- Battlefield display: Expand battlefield fills the window; Fullscreen enters native fullscreen when allowed. Show panels toggles commands, minimap, help, top bar and battle list. Restore layout restores prior settings. With commands hidden, the compact bar retains auto-command, End battle day and More actions → Withdraw.
+- Battlefield: Fit shows the field; Unit focuses selection. With map focus, arrows move the cell cursor and Enter/Space executes; Shift+arrows pans, +/- zooms, Home fits. Minimap moves the viewport.
 - Wiki: F1 opens during play, Escape closes or cancels a confirmation. Language/camera/help do not change the date.
 - Saves: one autosave per browser profile/address; Export creates a portable backup independently. A different port/browser/private session has separate storage. Keep the tab open and export if saving fails, then Retry save. Valid v0.3 saves now require the personnel schema marker. Saves from before wounded troops are incompatible; export their raw data from the start screen before replacing them. Cancel preserves the old save. Invalid imports preserve the campaign/drafts; valid imports reset transient controls.
 - Victory: all-city unification or Luoyang plus at least 16 cities held across 12 consecutive monthly boundaries for Hegemon. Protect your capital; losing it can end your campaign.

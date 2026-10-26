@@ -28,16 +28,18 @@ On the first day, inspect your capital's food, reserve and work points. Recruit 
 | Geography    | 24 historical regional anchors and 42 configured links; straight-line distance, estimated road distance and party ETA are distinct. Hanzhong–Chang'an has a 425 km / 33-day nominal baseline; actual party ETA varies.                                                            |
 | Governors    | Direct capital administration; other cities use formal governors or local stewards. Orders expose available amounts, gaps and dates. Troop-free governor transfers travel and take effect at a month boundary.                                                                    |
 | Capital work | Recruitment/assignment, public order, search, training, feasts, rewards, fine arms, relief and food trading within monthly work points and available stock. Farming/commerce development controls exist but are unavailable in all starting cities under the current value limit. |
-| Battles      | 15 painted 48×32 battlefields (ten terrain types) chosen by the attacker's last route leg and direction; six unit types, six tactics, forecasts, morale, zone of control, camps, AI turns and manual player command.                                                              |
+| Battles      | 15 painted 48×32 battlefields (ten terrain types) chosen by the attacker's last route leg and direction; six unit types, six tactics, forecasts, morale, zone of control, AI turns and manual player command.                                                                     |
 | Water        | Every unit type may enter passable water. On water, attack ×0.75 and incoming troop damage ×1.25; shore units can attack water units in normal range.                                                                                                                             |
 | Interface    | Ink-wash atlas and a draggable top-down battlefield with officer-portrait unit tokens, pan/zoom/Fit/focus/minimaps, exact troop counts, weather/supply/terrain inspection, full order/report lists and bilingual Wiki.                                                            |
 | Recovery     | One browser autosave, portable export/import, in-game Campaign menu/Resume, confirmed replacement and withdrawal, and Retry save after storage failure.                                                                                                                           |
 
-Normal battles last at most 30 days; raids at most 10. At timeout, more surviving troops wins field control; ties favor the defender. Taking the opposing camp can also decide a battle. There is **no siege system**: no walls, gates, siege weapons or city-street phase. City administration and tactical command are separate.
+Normal battles last at most 30 days; raids at most 10. At timeout, more surviving troops wins field control; ties favor the defender. There is **no siege system**: no walls, gates, siege weapons or city-street phase. City administration and tactical command are separate.
 
 Geographic routes and battlefields are documented approximations inspired by the real terrain, not surveyed Han-era maps. Multi-city plan coordination, full future-budget simulation, naval-skill gates, extra save slots and old-save conversion are not included. See [scope and release notes](docs/v0.3/release-notes.md).
 
 **Known economy limit:** both scenarios start every city with farming and commerce above the current manual-development cap of 100. The development buttons stay disabled until a value falls below that cap. The initial-value/cap mismatch is [recorded for a scoped rules review](docs/next-steps.md#open-now); this documentation pass does not change the economy.
+
+Battlefield controls in the upper right provide **Expand battlefield / 放大战场**, **Fullscreen / 全屏** and **Show panels / 显示面板**. Toggle commands, minimap, help, top bar and battle list independently; hidden commands retain a compact action bar. [Display rules and validation](docs/v0.3/11-battle-display-and-camp-removal.md).
 
 ## Current runtime views
 

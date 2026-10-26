@@ -16,12 +16,12 @@ describe('v0.3 inspection uses the combat effect sources', () => {
     ['hill', 0.8],
     ['water', 1],
     ['cliff', 1],
-  ])('reports existing %s defense without a camp bonus', (terrain, expected) => {
+  ])('reports existing %s defense from the terrain rules', (terrain, expected) => {
     const map = createBattleMap({ regionId: 'xiapi', approachDirection: 'north', seed: 17 });
-    const camp = map.objectives[0]!.position;
-    map.terrain[camp.y * 24 + camp.x] = terrain;
+    const cell = { x: 1, y: 9 };
+    map.terrain[cell.y * 24 + cell.x] = terrain;
     expect(terrainDefenseMultiplier(terrain)).toBe(expected);
-    expect(battleTerrainDefenseMultiplier(map, camp)).toBe(expected);
+    expect(battleTerrainDefenseMultiplier(map, cell)).toBe(expected);
     expect(fireTerrainMultiplier(terrain)).toBe(terrain === 'forest' ? 1.4 : 1);
   });
 

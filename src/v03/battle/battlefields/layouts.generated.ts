@@ -4,7 +4,6 @@ import type { CanvasBattlefieldLayout } from './layout';
 export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   {
     id: 'bf01-north-plain',
-    camps: { attacker: { x: 5, y: 15 }, defender: { x: 42, y: 15 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '.........................~......................',
@@ -43,7 +42,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf02-central-farmland',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '....TTTTTT....^~~~^......................~......',
@@ -82,7 +80,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf03-yellow-river-ford',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '..................^^~~~~~~~~^^..................',
@@ -121,7 +118,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf04-wetland-north',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '............~...............~...................',
@@ -160,7 +156,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf04-wetland-south',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '............~...............~...................',
@@ -199,7 +194,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf05-yangtze-bank',
-    camps: { attacker: { x: 5, y: 20 }, defender: { x: 42, y: 20 } },
     deploymentRows: { attacker: [14, 23], defender: [14, 23] },
     rows: [
       '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
@@ -238,7 +232,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf05-yangtze-crossing',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '.................__~~~~~~~~~~###................',
@@ -277,7 +270,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf06-valley-north',
-    camps: { attacker: { x: 5, y: 18 }, defender: { x: 42, y: 10 } },
     deploymentRows: { attacker: [13, 22], defender: [6, 14] },
     rows: [
       '################################################',
@@ -316,7 +308,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf06-valley-south',
-    camps: { attacker: { x: 5, y: 18 }, defender: { x: 42, y: 10 } },
     deploymentRows: { attacker: [13, 22], defender: [6, 14] },
     rows: [
       '################################################',
@@ -355,7 +346,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf07-taihang',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [13, 19], defender: [13, 19] },
     rows: [
       '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
@@ -394,7 +384,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf07-rolling-hills',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [12, 20], defender: [12, 20] },
     rows: [
       '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
@@ -433,7 +422,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf08-south-hills',
-    camps: { attacker: { x: 5, y: 16 }, defender: { x: 42, y: 16 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '................................................',
@@ -472,7 +460,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf09-gorge',
-    camps: { attacker: { x: 4, y: 19 }, defender: { x: 43, y: 11 } },
     deploymentRows: { attacker: [9, 22], defender: [9, 22] },
     rows: [
       '################################################',
@@ -511,7 +498,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf09-three-gorges',
-    camps: { attacker: { x: 14, y: 10 }, defender: { x: 33, y: 10 } },
     deploymentRows: { attacker: [10, 21], defender: [10, 21] },
     rows: [
       '################################################',
@@ -550,7 +536,6 @@ export const CANVAS_BATTLEFIELD_LAYOUTS: readonly CanvasBattlefieldLayout[] = [
   },
   {
     id: 'bf10-mountain-pass',
-    camps: { attacker: { x: 5, y: 15 }, defender: { x: 42, y: 15 } },
     deploymentRows: { attacker: [11, 20], defender: [11, 20] },
     rows: [
       '^^^^^^^^^^^^^^^^^^^^^^^^^^######################',

@@ -241,7 +241,7 @@ class IndexCostHeap {
 /**
  * Weighted distance from every cell to the nearest goal, respecting terrain and occupied cells.
  * The reverse edge uses the corresponding forward move cost, so asymmetric uphill costs remain
- * correct. `goalOffsets` can assign e.g. a one-point preference cost to a camp goal.
+ * correct. `goalOffsets` can assign a preference cost to a destination.
  * With `settle`, the search stops once those cells are final: their values are exact, and
  * other cells may be left unfinished.
  */

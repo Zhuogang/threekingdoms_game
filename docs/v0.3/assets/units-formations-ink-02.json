@@ -1,7 +1,7 @@
 {
   "id": "units-formations-ink-02",
-  "status": "partially-integrated",
-  "active": true,
+  "status": "archived",
+  "active": false,
   "generationTool": "built-in image_gen",
   "scope": "Stage 1 integrates ordinary infantry, cavalry and archer small/large formations with a 500-troop threshold, plus the crewed boat at all counts. Stage 2 task 1 integrates the tower warship for formations led by the eight approved naval commanders. Elite formations remain candidates.",
   "artDirection": "Simplified faceless ink army formation symbols. Six-person squads versus approximately hundred-person regiments; not detailed individual portraits.",
@@ -335,5 +335,6 @@
     }
   ],
   "preview": "docs/v0.3/assets/units-formations-ink-02-comparison.png",
-  "runtimeManifest": "unit-squads-runtime.json"
+  "runtimeManifest": "unit-squads-runtime.json",
+  "supersededBy": "units-readable-ink-03.json"
 }

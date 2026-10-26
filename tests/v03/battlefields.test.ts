@@ -77,6 +77,7 @@ describe('48×32 canvas battlefields', () => {
       expect([map.width, map.height]).toEqual([CANVAS_BATTLE_WIDTH, CANVAS_BATTLE_HEIGHT]);
       expect(map.terrain).toHaveLength(48 * 32);
       expect(map.battlefieldId).toBe(id);
+      expect(map).not.toHaveProperty('objectives');
       // The two middle columns of each zone fill first; outer columns only after them.
       for (const [cells, middle] of [
         [map.attackerDeployment, [12, 13]],
@@ -126,7 +127,7 @@ describe('48×32 canvas battlefields', () => {
       const troopType = troopTypes[mapIndex % troopTypes.length]!;
       const goals = [
         ...map.defenderDeployment.slice(0, 4),
-        { ...map.objectives[1]!.position, offset: 1 },
+        { ...map.defenderDeployment[5]!, offset: 1 },
       ];
       const blockers = map.attackerDeployment.slice(4, 9);
       const expected = referenceField(map, troopType, goals, blockers);

@@ -1,4 +1,5 @@
 import { Button, Input } from '../kit';
+import { useBattleDisplay } from '../hooks/useBattleDisplay';
 import { RetreatPreview } from '../panels/RetreatPreview';
 import { previewRetreat } from '../../campaign/battle-aftermath';
 import { message } from '../../i18n';
@@ -18,6 +19,7 @@ export function GameShell({
 }: {
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
 }) {
+  const display = useBattleDisplay(context.isBattleView);
   const {
     t,
     locale,
@@ -43,7 +45,37 @@ export function GameShell({
     displayedWikiArticle,
   } = context;
   return (
-    <main className="v03-shell">
+    <main
+      ref={display.root}
+      className={`v03-shell${context.isBattleView ? ' v03-battle-shell' : ''}${display.expanded && context.isBattleView ? ' v03-battle-expanded' : ''}`}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || event.defaultPrevented) return;
+        if (
+          context.confirmation ||
+          context.showWiki ||
+          context.showReports ||
+          (event.target as Element).closest('[role="dialog"]')
+        )
+          return;
+        const menu = (event.target as Element).closest<HTMLDetailsElement>('details[open]');
+        if (menu) {
+          event.preventDefault();
+          menu.open = false;
+          menu.querySelector('summary')?.focus();
+          return;
+        }
+        if (context.isBattleView && (context.selectedTactic || context.inspectedCell)) {
+          event.preventDefault();
+          context.setSelectedTactic(null);
+          context.setInspectedCell(null);
+          return;
+        }
+        if (display.expanded && !display.fullscreen) {
+          event.preventDefault();
+          display.leave();
+        }
+      }}
+    >
       {context.showReports ? <ReportsInbox context={context} /> : null}
       {(() => {
         const event = context.state.events.find(
@@ -67,7 +99,7 @@ export function GameShell({
         ) : null;
       })()}
 
-      <TopBar context={{ ...context }} />
+      {!context.isBattleView || display.panels.topbar ? <TopBar context={{ ...context }} /> : null}
       {autosaveError ? (
         <div className="v03-alert" role="alert">
           {t.savingFailed}{' '}
@@ -85,6 +117,7 @@ export function GameShell({
         </div>
       ) : null}
       <Workspace
+        display={display}
         context={{
           ...context,
           selectedGeo: selectedGeo!,

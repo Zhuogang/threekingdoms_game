@@ -58,8 +58,8 @@ for (const [troops, navalCommander] of [
       cavalry: 'elite-cavalry',
       archer: 'strong-archer',
     }[unit.troopType];
-    const landPath = `/assets/v03/units/${navalCommander ? eliteType : unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-02.webp`;
-    const boatPath = `/assets/v03/units/${navalCommander ? 'warship' : 'boat-transport'}-ink-02.webp`;
+    const landPath = `/assets/v03/units/${navalCommander ? eliteType : unit.troopType}-${troops >= 500 ? 'large' : 'small'}-ink-04.webp`;
+    const boatPath = `/assets/v03/units/${navalCommander ? 'warship' : 'boat-transport'}-ink-03.webp`;
     await expect(token).toHaveAttribute('data-unit-art', landPath);
     await expect(token.locator(`image[href="${landPath}"]`)).toHaveAttribute(
       'visibility',
@@ -131,8 +131,8 @@ test('casualties below 500 switch the existing formation and sidebar to small ar
   await loadState(page, state);
   const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
   const target = page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`);
-  const largePath = `/assets/v03/units/${unit.troopType}-large-ink-02.webp`;
-  const smallPath = `/assets/v03/units/${unit.troopType}-small-ink-02.webp`;
+  const largePath = `/assets/v03/units/${unit.troopType}-large-ink-04.webp`;
+  const smallPath = `/assets/v03/units/${unit.troopType}-small-ink-04.webp`;
   await expect(token.locator(`image[href="${largePath}"]`)).toHaveAttribute(
     'visibility',
     'visible',
@@ -153,8 +153,77 @@ test('casualties below 500 switch the existing formation and sidebar to small ar
   await expect(token).toHaveAttribute('data-unit-art', smallPath);
 });
 
+test('one- and three-person sprites keep their foreground person at identical size and position', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/');
+  const measurements = await page.evaluate(async () => {
+    const read = async (path: string) => {
+      const image = new Image();
+      image.src = path;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(image, 0, 0);
+      return {
+        width: canvas.width,
+        height: canvas.height,
+        pixels: ctx.getImageData(0, 0, canvas.width, canvas.height).data,
+      };
+    };
+    const measurements = [];
+    for (const family of [
+      'infantry',
+      'heavy-infantry',
+      'cavalry',
+      'elite-cavalry',
+      'archer',
+      'strong-archer',
+    ]) {
+      const single = await read(`/assets/v03/units/${family}-small-ink-04.webp`);
+      const group = await read(`/assets/v03/units/${family}-large-ink-04.webp`);
+      let unchanged = 0,
+        changed = 0,
+        additional = 0;
+      for (let index = 0; index < single.pixels.length; index += 4) {
+        if (single.pixels[index + 3] === 255) {
+          if (
+            single.pixels[index] === group.pixels[index] &&
+            single.pixels[index + 1] === group.pixels[index + 1] &&
+            single.pixels[index + 2] === group.pixels[index + 2]
+          )
+            unchanged++;
+          else changed++;
+        }
+        if (single.pixels[index + 3] === 0 && group.pixels[index + 3]! > 200) additional++;
+      }
+      measurements.push({
+        family,
+        sameFrame: single.width === group.width && single.height === group.height,
+        unchanged,
+        changed,
+        additional,
+      });
+    }
+    return measurements;
+  });
+  await testInfo.attach('person-pixel-measurements', {
+    body: JSON.stringify(measurements, null, 2),
+    contentType: 'application/json',
+  });
+  for (const result of measurements) {
+    expect(result.sameFrame, result.family).toBe(true);
+    // Ink includes translucent strokes; require a nonempty opaque sample, then match all of it.
+    expect(result.unchanged, result.family).toBeGreaterThan(0);
+    expect(result.changed, result.family).toBe(0);
+    expect(result.additional, result.family).toBeGreaterThan(1000);
+  }
+});
+
 test('missing squad images leave readable clickable type markers', async ({ page }) => {
-  await page.route('**/assets/v03/units/*-ink-02.webp', (route) => route.abort());
+  await page.route('**/assets/v03/units/*.webp', (route) => route.abort());
   await loadState(page, reviewBattleState());
   const token = page.locator('.v03-unit-token').first();
   await expect(token.locator('image[visibility="hidden"]')).toHaveCount(1);

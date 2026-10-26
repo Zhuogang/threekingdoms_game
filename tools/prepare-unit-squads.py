@@ -1,4 +1,4 @@
-"""Package the approved formations as transparent, padded runtime WebP icons.
+"""Archive-only ink-02 packer. Current icons use prepare-unit-icons.mjs.
 
 Run with Python + Pillow. Originals and their generation prompts stay in docs.
 """
@@ -38,7 +38,7 @@ for key in keys:
         'sourceCrop': list(bounds), 'width': size, 'height': size,
         'sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
     })
-(ROOT / 'docs/v0.3/assets/unit-squads-runtime.json').write_text(
+(ROOT / 'docs/v0.3/assets/unit-squads-ink-02-runtime.json').write_text(
     json.dumps({'sourceManifest': 'units-formations-ink-02.json',
                 'scope': 'Level 11+ uses heavy infantry, elite cavalry or strong archers on land. Below 500 troops uses small squads; 500 or more uses large formations. On water, approved naval commanders use tower warships; all others use crewed boats, regardless of level or size.',
                 'entries': entries}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

@@ -36,7 +36,6 @@ export const CANVAS_CELL_TERRAIN: Readonly<Record<string, BattleTerrain>> = {
 
 export interface CanvasBattlefieldLayout {
   id: string;
-  camps: { attacker: BattlePosition; defender: BattlePosition };
   /** Inclusive deployment rows; columns are fixed at x 10–13 and x 34–37. */
   deploymentRows: { attacker: readonly number[]; defender: readonly number[] };
   rows: readonly string[];
@@ -150,20 +149,6 @@ export function createCanvasBattleMap(
     terrain,
     attackerDeployment: deploymentCells(terrain, 'attacker', layout.deploymentRows.attacker),
     defenderDeployment: deploymentCells(terrain, 'defender', layout.deploymentRows.defender),
-    objectives: [
-      {
-        id: 'attacker-camp',
-        kind: 'camp',
-        owner: 'attacker',
-        position: { ...layout.camps.attacker },
-      },
-      {
-        id: 'defender-camp',
-        kind: 'camp',
-        owner: 'defender',
-        position: { ...layout.camps.defender },
-      },
-    ],
     landmarks: [],
   };
   const errors = validateBattleMap(map);

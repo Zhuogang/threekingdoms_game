@@ -151,10 +151,6 @@ function deploymentPositions(direction: ApproachDirection): BattlePosition[] {
   return offsets.map((offset, index) => edgePosition(direction, index < 5 ? 2 : 3, offset));
 }
 
-function campPosition(direction: ApproachDirection): BattlePosition {
-  return edgePosition(direction, 1, 9);
-}
-
 function safeDeployment(
   positions: readonly BattlePosition[],
   terrain: readonly BattleTerrain[],
@@ -192,22 +188,18 @@ function makeLandmarks(region: BattleRegion, terrain: readonly BattleTerrain[]):
   return landmarks;
 }
 
-/** Builds a fixed 24×20 region map with row-major logic terrain and explicit objectives. */
+/** Builds a fixed 24×20 region map with row-major logic terrain. */
 export function createBattleMap(options: BattleMapOptions): BattleMap {
   const approachDirection = options.approachDirection ?? 'west';
   const seed = Number.isFinite(options.seed) ? Math.trunc(options.seed!) : 1;
   const terrain = createRegionalTerrain(options.regionId, seed);
   const attackerDeployment = deploymentPositions(approachDirection);
   const defenderDeployment = deploymentPositions(opposite(approachDirection));
-  const attackerCamp = campPosition(approachDirection);
-  const defenderCamp = campPosition(opposite(approachDirection));
 
   // The entering forces get clear land staging areas even when a river or ridge
   // crosses a map from the north or south. These are still ordinary plain cells.
   for (const position of [...attackerDeployment, ...defenderDeployment])
     writeTerrain(terrain, position.x, position.y, 'plain');
-  writeTerrain(terrain, attackerCamp.x, attackerCamp.y, 'plain');
-  writeTerrain(terrain, defenderCamp.x, defenderCamp.y, 'plain');
 
   if (!safeDeployment(attackerDeployment, terrain) || !safeDeployment(defenderDeployment, terrain))
     throw new Error(
@@ -225,10 +217,6 @@ export function createBattleMap(options: BattleMapOptions): BattleMap {
     terrain,
     attackerDeployment,
     defenderDeployment,
-    objectives: [
-      { id: 'attacker-camp', kind: 'camp', owner: 'attacker', position: attackerCamp },
-      { id: 'defender-camp', kind: 'camp', owner: 'defender', position: defenderCamp },
-    ],
     landmarks: makeLandmarks(options.regionId, terrain),
   };
 }
@@ -239,23 +227,7 @@ export function battleTerrainAt(map: BattleMap, position: BattlePosition): Battl
   return map.terrain[battlePositionIndex(map, position.x, position.y)] ?? null;
 }
 
-export function objectiveAt(
-  map: BattleMap,
-  position: BattlePosition,
-): BattleMap['objectives'][number] | null {
-  return (
-    map.objectives.find(
-      (objective) => objective.position.x === position.x && objective.position.y === position.y,
-    ) ?? null
-  );
-}
-
-/** Camps are objective overlays. Their tile never grants additional terrain defense. */
-export function objectiveDefenseMultiplier(_map: BattleMap, _position: BattlePosition): number {
-  return 1;
-}
-
-/** Ordinary terrain defense only; the camp overlay never changes this value. */
+/** Ordinary terrain defense. */
 export function battleTerrainDefenseMultiplier(map: BattleMap, position: BattlePosition): number {
   return terrainDefenseMultiplier(battleTerrainAt(map, position));
 }
@@ -311,21 +283,6 @@ export function validateBattleMap(map: BattleMap): string[] {
     }
   }
 
-  if (map.objectives.length !== 2 || map.objectives.some((objective) => objective.kind !== 'camp'))
-    errors.push('Battlefield must define two camp objectives and no siege structures.');
-  if (new Set(map.objectives.map((objective) => objective.id)).size !== map.objectives.length)
-    errors.push('Objective IDs must be unique.');
-  const campIndexes = indexList(map.objectives.map((objective) => objective.position));
-  if (new Set(campIndexes).size !== campIndexes.length) errors.push('Camp positions overlap.');
-  if (campIndexes.some((index) => attackers.includes(index) || defenders.includes(index)))
-    errors.push('A camp objective overlaps a deployment zone.');
-  for (const camp of map.objectives) {
-    const tile = battleTerrainAt(map, camp.position);
-    if (!tile) errors.push(`Camp ${camp.id} is outside the battlefield.`);
-    else if (tile === 'water' || tile === 'cliff')
-      errors.push(`Camp ${camp.id} must sit on passable land.`);
-  }
-
   const start = map.attackerDeployment.find(
     (position) =>
       Number.isInteger(position.x) &&
@@ -338,7 +295,7 @@ export function validateBattleMap(map: BattleMap): string[] {
   );
   if (start) {
     // Every non-cliff terrain cell is traversable for every unit type. This checks the
-    // connected components of the shared map graph, including all spawns and camps;
+    // connected components of the shared map graph, including all spawns;
     // the path service separately accounts for asymmetric movement costs.
     const reachable = new Set<number>([battlePositionIndex(map, start.x, start.y)]);
     const queue = [start];
@@ -367,7 +324,6 @@ export function validateBattleMap(map: BattleMap): string[] {
     const requiredPositions = [
       ...map.attackerDeployment.map((position) => ['attacker deployment', position] as const),
       ...map.defenderDeployment.map((position) => ['defender deployment', position] as const),
-      ...map.objectives.map((objective) => [`camp ${objective.id}`, objective.position] as const),
     ];
     for (const [label, position] of requiredPositions) {
       if (

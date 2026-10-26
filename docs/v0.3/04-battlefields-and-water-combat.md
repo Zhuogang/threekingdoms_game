@@ -8,7 +8,7 @@ Every campaign battle is fought on a **48×32 logical grid**, up to ten formatio
 
 Each painting follows its 48×32 layout cell by cell; the layout, not the painting, is the rules terrain. The four 24×20 regional templates remain only as rules-test fixtures, and saves with 24×20 battles are not accepted.
 
-Terrain is plain, forest, hill, water or cliff. Cliffs block every troop type; hill is walkable. Occupied cells, movement costs and enemy zone of control determine legal paths. Camps are tactical objectives on ordinary terrain, with no hidden city-defense bonus. Non-routed occupation of an opposing camp can end a battle.
+Terrain is plain, forest, hill, water or cliff. Cliffs block every troop type; hill is walkable. Occupied cells, movement costs and enemy zone of control determine legal paths.
 
 There is no siege generation, wall/gate state, city-defense phase, climbing or siege equipment. Cities are contested by field battles and strategic aftermath. Painted walls (a pass wall, a moated manor) are ordinary cliff cells with gates as plain cells; every walled enclosure has at least two gates, and walls are one cell thick so archers can shoot across. Palisades count as forest.
 
@@ -30,11 +30,11 @@ Normal-hit terrain protection and fire weather/forest modifiers remain separate 
 
 Each participating player battle submits once per global day; all required player submissions must complete before the world advances once. NPC-only battles are automatic. Save/reload preserves the daily cursor and manual-command authority rejects nonparticipants.
 
-Elimination, army rout, opposing camp occupation, withdrawal or the time limit can decide a field. Normal battles allow 30 days, raids 10. Current timeout policy is `survivor-count`: compare combat-ready totals; ties go to defender. Capture changes ownership, Raid loots and returns without occupation, Sack captures and destructively plunders. Returning armies/cargo still travel. Empty cities resolve directly without creating free militia or combat XP.
+Elimination, army rout, withdrawal or the time limit can decide a field. Normal battles allow 30 days, raids 10. Current timeout policy is `survivor-count`: compare combat-ready totals; ties go to defender. Capture changes ownership, Raid loots and returns without occupation, Sack captures and destructively plunders. Returning armies/cargo still travel. Empty cities resolve directly without creating free militia or combat XP.
 
 Effective combat loss becomes 60% wounded, with integer remainders carried across hits. Zero healthy troops is defeat; zero healthy and wounded is annihilation. Wounded cannot act or heal in battle and keep their original mean XP. Only actual participants, including new field wounded, earn capped battle XP; old wounded stay behind before deployment and earn no field reward.
 
-Withdraw army is a side-level action requiring no selected unit. Confirmation previews the destination, affected officers, field/rear personnel and capture risk. With a route, each officer independently risks 0% capture before engagement, 5% after engagement or 25% on forced defeat/rout/camp loss. An already forced outcome takes precedence over voluntary withdrawal. No refuge route means explicit surrender. Cancel/Escape changes neither state nor RNG. Orderly escape retains all field survivors; forced escape keeps all healthy and two thirds of wounded. Losing defenders can escape by the same rules. Captured officers retain their actual contingent; rear stock disperses on city loss.
+Withdraw army is a side-level action requiring no selected unit. Confirmation previews the destination, affected officers, field/rear personnel and capture risk. With a route, each officer independently risks 0% capture before engagement, 5% after engagement or 25% on forced defeat or rout. An already forced outcome takes precedence over voluntary withdrawal. No refuge route means explicit surrender. Cancel/Escape changes neither state nor RNG. Orderly escape retains all field survivors; forced escape keeps all healthy and two thirds of wounded. Losing defenders can escape by the same rules. Captured officers retain their actual contingent; rear stock disperses on city loss.
 
 NPC and auto-command armies use the same retreat policy: consider an orderly retreat with a valid route when healthy strength is at most 30% of its opening strength and at most half the enemy's. Existing forced outcomes cannot be downgraded by that policy. Final reports freeze healthy/wounded/permanent loss and XP rather than reading later officer counts.
 

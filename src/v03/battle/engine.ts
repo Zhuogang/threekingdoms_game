@@ -44,7 +44,6 @@ import { recordCombatCasualties, troopDamageMultiplier } from './experience';
 
 const DEFAULT_BATTLE_DAY_LIMIT = 30;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
-const AI_CAMP_ALERT_DISTANCE = 6;
 export const BATTLE_TACTIC_POINT_CAP = 30;
 export const BATTLE_TACTIC_POINT_REGEN = 2;
 export const BATTLE_TACTIC_COST: Readonly<Record<BattleTactic, number>> = {
@@ -277,7 +276,6 @@ export function getUnitReachableTiles(
 ): ReturnType<typeof getReachableBattleTiles> {
   const unit = unitById(state, unitId);
   if (!unit || unit.status === 'confused' || unit.moved || unit.acted || state.outcome) return [];
-  const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
   const enemyZone = getEnemyZoneOfControl(state, otherSide(unit.side));
   if (enemyZone.some((position) => position.x === unit.x && position.y === unit.y)) return [];
   return getReachableBattleTiles(
@@ -287,7 +285,7 @@ export function getUnitReachableTiles(
     movementBudget(unit.troopType),
     otherUnitsAsBlockers(state, unit),
     enemyZone,
-  ).filter((tile) => !ownCamp || tile.x !== ownCamp.position.x || tile.y !== ownCamp.position.y);
+  );
 }
 
 /** Orthogonal enemy control, including across a water edge, as specified for v0.3. */
@@ -362,19 +360,6 @@ function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | n
       { winner },
     );
     return state.outcome;
-  }
-  for (const objective of state.map.objectives) {
-    const occupier = livingUnits(state).find(
-      (unit) =>
-        !isRouted(unit) && unit.x === objective.position.x && unit.y === objective.position.y,
-    );
-    if (occupier && occupier.side !== objective.owner) {
-      state.outcome = { winner: occupier.side, reason: 'camp' };
-      append(state, `${occupier.side} captures the opposing field camp.`, 'log.camp', {
-        side: occupier.side,
-      });
-      return state.outcome;
-    }
   }
   return null;
 }
@@ -701,6 +686,7 @@ function attackOneWay(
   target: TacticalBattleUnit,
 ): number {
   const { casualties, modifiers } = estimateDamage(source, target, state.map);
+  state.engaged = true;
   recordCombatCasualties(source, target, casualties);
   applyCombatDamage(target, casualties);
   if (casualties > 0) {
@@ -772,7 +758,6 @@ function performAttack(
   if (!isBattleAttackInRange(state.map, source, target, source.attackRange))
     return `${target.name} is outside the normal attack range.`;
   source.acted = true;
-  state.engaged = true;
   attackOneWay(state, source, target);
   checkImmediateOutcome(state);
   if (
@@ -961,8 +946,6 @@ function chooseAiDestination(
   unit: TacticalBattleUnit,
 ): BattlePosition | null {
   const enemies = livingUnits(state, otherSide(unit.side));
-  const enemyCamp = state.map.objectives.find((objective) => objective.owner !== unit.side);
-  const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
   const occupied = new Set(
     livingUnits(state).map((candidate) => battlePositionIndex(state.map, candidate.x, candidate.y)),
   );
@@ -986,25 +969,8 @@ function chooseAiDestination(
         ? []
         : [{ x: index % width, y: Math.floor(index / width) }],
     );
-  const campThreatened = Boolean(
-    ownCamp &&
-    enemies.some((enemy) => manhattanDistance(enemy, ownCamp.position) <= AI_CAMP_ALERT_DISTANCE),
-  );
-  const nearbyAttacks =
-    campThreatened && ownCamp
-      ? attackPositions.filter(
-          (position) => manhattanDistance(position, ownCamp.position) <= AI_CAMP_ALERT_DISTANCE,
-        )
-      : attackPositions;
-  // Closing to an actual firing position prevents two camp guards waiting forever.
-  const goals = [
-    ...(nearbyAttacks.length ? nearbyAttacks : attackPositions),
-    ...(enemyCamp ? [{ ...enemyCamp.position, offset: 1 }] : []),
-  ];
-  const options = getUnitReachableTiles(state, unit.id).filter((tile) => {
-    const ownCamp = state.map.objectives.find((objective) => objective.owner === unit.side);
-    return !ownCamp || tile.x !== ownCamp.position.x || tile.y !== ownCamp.position.y;
-  });
+  const goals = attackPositions;
+  const options = getUnitReachableTiles(state, unit.id);
   // Only the unit's cell and its move options are scored, so the field can stop there.
   const routeDistance = getBattleRouteDistanceField(
     state.map,
@@ -1023,7 +989,7 @@ function chooseAiDestination(
     return value;
   };
   const scoreUncached = (position: BattlePosition): number => {
-    // The route field respects movement cost, terrain barriers, occupied cells and camp offset.
+    // The route field respects movement cost, terrain barriers, occupied cells.
     const routeCost = routeDistance[battlePositionIndex(state.map, position.x, position.y)]!;
     const candidate = { ...unit, ...position };
     const threatened = enemies

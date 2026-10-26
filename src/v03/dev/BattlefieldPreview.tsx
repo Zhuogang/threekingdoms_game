@@ -26,7 +26,7 @@ import {
 
 /**
  * Dev-only battlefield preview (`npm run dev`, then `?battlefield-preview`).
- * Shows a layout on the real battle renderer with deployment zones, camps and
+ * Shows a layout on the real battle renderer with deployment zones and
  * sample tokens, optionally over a painted attempt from docs/v0.3/battlefield-art.
  */
 const ATTEMPTS = import.meta.glob('/docs/v0.3/battlefield-art/*/attempts/*.{webp,png}', {
@@ -138,14 +138,8 @@ export default function BattlefieldPreview() {
 
   const layout = canvasBattlefieldLayout(id);
   const symbols = layout ? new Set(layout.rows.join('')) : new Set<string>();
-  const camps = map.objectives.map((objective) => ({
-    id: objective.id,
-    position: objective.position,
-    label: objective.id,
-  }));
   const units = showUnits ? sampleUnits(map) : [];
   const label: CSSProperties = { display: 'flex', alignItems: 'center', gap: 6 };
-
   return (
     <div
       style={{
@@ -161,7 +155,6 @@ export default function BattlefieldPreview() {
         <BattlefieldMapView
           map={map}
           units={units}
-          camps={camps}
           reachableCells={showZones ? map.attackerDeployment : []}
           attackableCells={showZones ? map.defenderDeployment : []}
           viewport={viewport ?? undefined}
@@ -246,7 +239,6 @@ export default function BattlefieldPreview() {
         <BattlefieldMinimap
           map={map}
           units={units}
-          camps={camps}
           viewportPolygon={viewport ? battlefieldViewportGridPolygon(viewport) : []}
           locale="zh"
           onNavigate={(cell) =>

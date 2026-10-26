@@ -6,6 +6,9 @@ import { BattlefieldMinimap } from '../../../src/v03/rendering/BattlefieldMinima
 import { formatTroopCount, type BattleUnitVisual } from '../../../src/v03/rendering/presentation';
 import { UnitIcon } from '../../../src/v03/rendering/UnitIcon';
 
+const artVersion = (key: string) =>
+  ['warship', 'boat-transport'].includes(key) ? 'ink-03' : 'ink-04';
+
 const map = { width: 2, height: 2, terrain: ['plain', 'water', 'forest', 'hill'] };
 const units: BattleUnitVisual[] = [
   {
@@ -61,7 +64,7 @@ describe('battlefield unit presentation', () => {
                   locale: 'zh',
                 }),
               );
-              expect(html).toContain(`${expected}-ink-02.webp`);
+              expect(html).toContain(`${expected}-${artVersion(expected)}.webp`);
               expect(html).toContain('assets/portraits/guanyu-small.webp');
               if (!onWater && troopExperience >= 1000) expect(html).toContain(name);
               expect(
@@ -75,7 +78,7 @@ describe('battlefield unit presentation', () => {
                     locale: 'zh',
                   }),
                 ),
-              ).toContain(`${expected}-ink-02.webp`);
+              ).toContain(`${expected}-${artVersion(expected)}.webp`);
             }
     },
   );
@@ -101,9 +104,9 @@ describe('battlefield unit presentation', () => {
               locale: 'zh',
             }),
           );
-          expect(html).toContain(`${expectedArt}-ink-02.webp`);
+          expect(html).toContain(`${expectedArt}-${artVersion(expectedArt)}.webp`);
           expect(html).toContain('assets/portraits/guanyu-small.webp');
-          expect(html).not.toContain('boat-transport-ink-02.webp');
+          expect(html).not.toContain('boat-transport-ink-03.webp');
           if (onWater) expect(html).toContain('水军（楼船）');
           const sidebar = renderToStaticMarkup(
             createElement(UnitIcon, {
@@ -114,7 +117,7 @@ describe('battlefield unit presentation', () => {
               locale: 'zh',
             }),
           );
-          expect(sidebar).toContain(`${expectedArt}-ink-02.webp`);
+          expect(sidebar).toContain(`${expectedArt}-${artVersion(expectedArt)}.webp`);
         }
       }
     },
@@ -135,12 +138,12 @@ describe('battlefield unit presentation', () => {
           );
         const land = render(0);
         const water = render(1);
-        expect(land).toContain(`${troopType}-${size}-ink-02.webp`);
-        expect(land).not.toContain('boat-transport-ink-02.webp');
-        expect(water).toContain('boat-transport-ink-02.webp');
+        expect(land).toContain(`${troopType}-${size}-ink-04.webp`);
+        expect(land).not.toContain('boat-transport-ink-03.webp');
+        expect(water).toContain('boat-transport-ink-03.webp');
         expect(water).toContain('水上单位');
-        expect(water).not.toContain(`${troopType}-small-ink-02.webp`);
-        expect(water).not.toContain(`${troopType}-large-ink-02.webp`);
+        expect(water).not.toContain(`${troopType}-small-ink-04.webp`);
+        expect(water).not.toContain(`${troopType}-large-ink-04.webp`);
         expect(land).toContain('assets/portraits/guanyu-small.webp');
         const sidebar = (onWater: boolean) =>
           renderToStaticMarkup(
@@ -151,8 +154,8 @@ describe('battlefield unit presentation', () => {
               locale: 'zh',
             }),
           );
-        expect(sidebar(false)).toContain(`${troopType}-${size}-ink-02.webp`);
-        expect(sidebar(true)).toContain('boat-transport-ink-02.webp');
+        expect(sidebar(false)).toContain(`${troopType}-${size}-ink-04.webp`);
+        expect(sidebar(true)).toContain('boat-transport-ink-03.webp');
         expect(water).toContain('assets/portraits/guanyu-small.webp');
         expect(render(0)).toBe(land);
         expect(unit.troopType).toBe(troopType);
@@ -180,7 +183,7 @@ describe('battlefield unit presentation', () => {
       }),
     );
     expect(html).toContain('assets/portraits/guanyu-small.webp');
-    expect(html).toContain('infantry-large-ink-02.webp');
+    expect(html).toContain('infantry-large-ink-04.webp');
     expect(html).toContain('data-leader-portrait="guanyu"');
     expect(html).toContain('>步</text>');
     expect(html).toContain('url(#v03-terrain-map-water)');

@@ -1,4 +1,5 @@
-import { Button, Input } from '../kit';
+import { Button } from '../kit';
+import { BattleActionBar } from './BattleActionBar';
 import { BattleLog } from './BattleLog';
 import { message } from '../../i18n';
 
@@ -41,7 +42,6 @@ export function BattleSidebar({
     setSelectedTactic,
     selectedTacticAvailability,
     tacticTargets,
-    setConfirmation,
     activeBattles,
     setViewMode,
     troopVisuals,
@@ -268,44 +268,7 @@ export function BattleSidebar({
         </Button>
         <BattleLog context={context} />
       </div>
-      <div className="v03-battle-action-bar">
-        <label className="v03-field">
-          <Input
-            type="checkbox"
-            checked={Boolean(activeBattle.autoCommand)}
-            onChange={(event) =>
-              dispatch({
-                type: 'setBattleAutoCommand',
-                battleId: activeBattle.id,
-                enabled: event.target.checked,
-              })
-            }
-          />
-          {message(locale, 'ui.let.officers.command.76')}
-        </label>
-        <Button
-          className="v03-primary v03-block"
-          disabled={activeBattle.playerDayComplete}
-          onClick={() =>
-            activeBattle.autoCommand
-              ? dispatch({ type: 'advance', days: 1 })
-              : context.requestEndBattleDay()
-          }
-        >
-          {activeBattle.playerDayComplete ? t.battleDaySubmitted : t.advanceBattle}
-        </Button>
-        <details>
-          <summary>{message(locale, 'ui.more.actions.77')}</summary>
-          <Button
-            className="v03-retreat-action"
-            disabled={activeBattle.playerDayComplete}
-            onClick={() => setConfirmation('withdraw')}
-          >
-            {t.retreat}
-          </Button>
-          <p>{t.retreatWarning}</p>
-        </details>
-      </div>
+      <BattleActionBar context={context} />
     </div>
   );
 }

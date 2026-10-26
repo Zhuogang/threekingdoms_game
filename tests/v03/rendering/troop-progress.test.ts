@@ -35,9 +35,9 @@ describe('troop progression presentation', () => {
         createElement(ReinforcementPreview, { before: officer, after, locale }),
       );
       expect(html).toContain(`Lv.13 → Lv.${expectedLevel}`);
-      expect(html).toContain('elite-cavalry-large-ink-02.webp');
+      expect(html).toContain('elite-cavalry-large-ink-04.webp');
       if (expectedLevel! < 11) {
-        expect(html).toContain('cavalry-large-ink-02.webp');
+        expect(html).toContain('cavalry-large-ink-04.webp');
         expect(html).toContain(locale === 'zh' ? '精锐 → 普通' : 'Elite → Regular');
       }
     }
@@ -104,28 +104,47 @@ describe('troop progression presentation', () => {
     );
     expect(html).toContain('Lv.10 → Lv.11');
     expect(html).toContain('晋升精锐');
-    expect(html).toContain('elite-cavalry-small-ink-02.webp');
+    expect(html).toContain('elite-cavalry-small-ink-04.webp');
     expect(html).toContain('已满级');
     expect(html).toContain('(+10)');
     expect(html).toContain('全灭，部队经验清零');
     expect(html).toContain('未实际交战，无经验奖励');
   });
 
-  it('ships all six approved elite assets with manifest-matching bytes and alpha', () => {
-    const keys = [
-      'heavyInfantrySquadInk02',
-      'heavyInfantryFormationInk02',
-      'eliteCavalrySquadInk02',
-      'eliteCavalryFormationInk02',
-      'strongArcherSquadInk02',
-      'strongArcherFormationInk02',
-    ] as const;
-    for (const key of keys) {
-      const asset = V03_ASSETS[key];
+  it('ships fourteen readable icons with matching runtime bytes and source prompt records', () => {
+    const runtime = JSON.parse(readFileSync('docs/v0.3/assets/unit-squads-runtime.json', 'utf8'));
+    const source = JSON.parse(readFileSync(`docs/v0.3/assets/${runtime.sourceManifest}`, 'utf8'));
+    const assets = Object.values(V03_ASSETS).filter((asset) =>
+      runtime.entries.some((entry: { path: string }) => entry.path === asset.path),
+    );
+    expect(assets).toHaveLength(14);
+    expect(source.entries).toHaveLength(14);
+    for (const asset of assets) {
+      const entry = runtime.entries.find((entry: { path: string }) => entry.path === asset.path);
+      expect(entry).toBeDefined();
+      expect(asset.promptId).toBe(entry.promptId ?? source.id);
+      expect(source.entries.some((item: { key: string }) => item.key === entry.key)).toBe(true);
       const bytes = readFileSync(`public/${asset.path}`);
       expect(createHash('sha256').update(bytes).digest('hex')).toBe(asset.sha256);
+      expect(entry.sha256).toBe(asset.sha256);
       expect(bytes.subarray(8, 12).toString()).toBe('WEBP');
       expect(asset.alpha).toBe(true);
+    }
+  });
+  it('one- and three-person icons keep the exact same figure pixels, scale and front position', () => {
+    const runtime = JSON.parse(readFileSync('docs/v0.3/assets/unit-squads-runtime.json', 'utf8'));
+    const singles = runtime.entries.filter((entry: { count?: number }) => entry.count === 1);
+    expect(singles).toHaveLength(6);
+    for (const single of singles) {
+      const group = runtime.entries.find(
+        (entry: { key: string }) => entry.key === single.key.replace('-small', '-large'),
+      );
+      expect(group.count).toBe(3);
+      expect(group.source).toBe(single.source);
+      expect(group.personSha256).toBe(single.personSha256);
+      expect(group.personSize).toEqual(single.personSize);
+      expect([group.width, group.height]).toEqual([single.width, single.height]);
+      expect(group.layout.at(-1)).toEqual(single.layout[0]);
     }
   });
 });

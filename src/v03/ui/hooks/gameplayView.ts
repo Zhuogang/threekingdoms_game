@@ -20,7 +20,6 @@ import {
   fitBattlefieldViewport,
   fitCampaignViewport,
   focusBattlefieldViewport,
-  focusBattlefieldPointsViewport,
   gridToWorld,
   recenterBattlefieldViewport,
   V03_BATTLE_CELL,
@@ -197,15 +196,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         selected: unit.id === selectedUnitId,
         status: `${unit.morale}% ${message(locale, 'ui.morale.4')} · ${unitBattleStatus(unit)}`,
       })) ?? [];
-  const camps =
-    battleState?.map.objectives.map((objective) => ({
-      id: objective.id,
-      position: objective.position,
-      label: message(locale, 'ui.field.camp.5', {
-        p0: objective.owner === battleState.playerSide ? '己方' : '敌方',
-        p1: objective.owner,
-      }),
-    })) ?? [];
   const inspectionPosition =
     inspectedCell ?? (currentUnit ? { x: currentUnit.x, y: currentUnit.y } : null);
   const inspectionTerrain =
@@ -314,20 +304,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       ),
     );
   };
-  const focusBattleMapCamps = () => {
-    if (!battleBounds || !battleViewport || !battleState?.map.objectives.length) {
-      setFeedback({ key: 'battleMapNoCamps' });
-      return;
-    }
-    setBattleViewport(
-      focusBattlefieldPointsViewport(
-        battleBounds,
-        battleViewport,
-        battleState.map.objectives.map((objective) => gridToWorld(objective.position)),
-        190,
-      ),
-    );
-  };
   const navigateBattleMinimap = (cell: { x: number; y: number }) => {
     if (!battleBounds || !battleViewport) return;
     setBattleViewport(recenterBattlefieldViewport(battleViewport, battleBounds, gridToWorld(cell)));
@@ -370,7 +346,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     unitActionStatus,
     unitBattleStatus,
     troopVisuals,
-    camps,
     inspectionPosition,
     inspectionTerrain,
     inspectionModifiers,
@@ -386,7 +361,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     fitBattleMap,
     zoomBattleMap,
     focusBattleMapUnit,
-    focusBattleMapCamps,
     navigateBattleMinimap,
   };
 }

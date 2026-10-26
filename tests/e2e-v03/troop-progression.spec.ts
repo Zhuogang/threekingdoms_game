@@ -34,8 +34,8 @@ for (const locale of ['zh', 'en'] as const) {
       await expect(preview).toContainText(`Lv.13 → Lv.${level}`);
     }
     await expect(preview).toContainText(locale === 'zh' ? '精锐 → 普通' : 'Elite → Regular');
-    await expect(preview.locator('img[src$="elite-cavalry-large-ink-02.webp"]')).toBeVisible();
-    await expect(preview.locator('img[src$="/cavalry-large-ink-02.webp"]')).toBeVisible();
+    await expect(preview.locator('img[src$="elite-cavalry-large-ink-04.webp"]')).toBeVisible();
+    await expect(preview.locator('img[src$="/cavalry-large-ink-04.webp"]')).toBeVisible();
     await page.screenshot({ path: info.outputPath('reinforcement-preview.png') });
     await expectStableShell(page);
     await confirmWork(page);
@@ -117,7 +117,7 @@ for (const [type, elite] of [
       });
       await load(page, state);
       const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
-      const path = `/assets/v03/units/${kind}-${size}-ink-02.webp`;
+      const path = `/assets/v03/units/${kind}-${size}-ink-04.webp`;
       await expect(token).toHaveAttribute('data-unit-art', path);
       await expect(token.locator(`image[href="${path}"]`)).toHaveAttribute('visibility', 'visible');
       await expect(token.locator('[data-leader-portrait] image')).toBeVisible();

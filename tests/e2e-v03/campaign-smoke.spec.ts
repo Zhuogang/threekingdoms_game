@@ -346,7 +346,7 @@ test('renders and resumes a playable 48×32 battle with unit artwork', async ({
   await expect(page.locator('.v03-campaign-main')).toBeVisible();
   await importFile(page, 'battle.save', createBattleSave());
   await expect(page.locator('.v03-battle-main')).toBeVisible();
-  await expect(page.locator('.v03-battle-board svg')).toBeVisible();
+  await expect(page.locator('.v03-battle-board > .v03-battlefield-map')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await acknowledgeAll(page);
   const endBattleDay = page
@@ -365,7 +365,9 @@ test('renders and resumes a playable 48×32 battle with unit artwork', async ({
   await expect(battleDay).toContainText('2 / 30');
   await page.reload();
   await expect(page.locator('.v03-battle-day')).toContainText('Battle day 2 / 30');
-  expect(await page.locator('.v03-battle-board svg image').count()).toBeGreaterThan(0);
+  expect(
+    await page.locator('.v03-battle-board > .v03-battlefield-map image').count(),
+  ).toBeGreaterThan(0);
 });
 
 const tacticLabels: Record<BattleTactic, string> = {
@@ -448,15 +450,11 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   await page.getByRole('button', { name: 'Focus selected unit', exact: true }).click();
   const focused = await map.getAttribute('viewBox');
   expect(focused).not.toBe(zoomed);
-  await page.getByRole('button', { name: 'Focus both field camps', exact: true }).click();
-  const campsFocused = await map.getAttribute('viewBox');
-  expect(campsFocused).not.toBe(focused);
-  // On the square board the two camps span nearly the whole field, and a wide
-  // frame shows the full board width until about 1.6× zoom. Zoom in past that
-  // before checking that the minimap and keyboard can still move the camera.
+  await expect(page.getByRole('button', { name: /field camps/i })).toHaveCount(0);
+  // Zoom before checking minimap and keyboard navigation.
   for (let step = 0; step < 3; step++)
     await page.getByRole('button', { name: 'Zoom in battlefield', exact: true }).click();
-  const campsZoomed = await map.getAttribute('viewBox');
+  const beforeNavigation = await map.getAttribute('viewBox');
 
   // The battlefield shell clips its contents and the viewport observer updates
   // while the page scrolls. Scroll the SVG directly, then use its live client
@@ -478,7 +476,7 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
     positionedMiniBox.y + positionedMiniBox.height * 0.78,
   );
   const minimapNavigated = await map.getAttribute('viewBox');
-  expect(minimapNavigated).not.toBe(campsZoomed);
+  expect(minimapNavigated).not.toBe(beforeNavigation);
 
   await minimap.focus();
   await page.keyboard.press('Shift+ArrowLeft');
@@ -545,10 +543,9 @@ test('renders painted canvas battlefields in the playable view', async ({ page }
     await importFile(page, `${region}-battle.save`, createBattleSave(region));
     await expect(page.locator('.v03-battle-main')).toBeVisible();
     await expect(page.locator('.v03-view-heading .v03-kicker')).toContainText(name);
-    await expect(page.locator('.v03-battle-board svg image').first()).toHaveAttribute(
-      'href',
-      new RegExp(`battlefields/${region}\\.webp`),
-    );
+    await expect(
+      page.locator('.v03-battle-board > .v03-battlefield-map image').first(),
+    ).toHaveAttribute('href', new RegExp(`battlefields/${region}\\.webp`));
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     await acknowledgeAll(page);
     await page.screenshot({
@@ -651,7 +648,7 @@ test('keeps campaign and battlefield controls reachable at 390, 1366, and 1920px
     for (const width of widths) {
       await page.setViewportSize({ width, height: 900 });
       await expect(page.locator('.v03-battle-main')).toBeVisible();
-      await expect(page.locator('.v03-battle-board svg')).toBeVisible();
+      await expect(page.locator('.v03-battle-board > .v03-battlefield-map')).toBeVisible();
       const fit = page.getByRole('button', {
         name: locale === 'en' ? 'Fit full battlefield' : '显示全图',
         exact: true,
@@ -760,14 +757,14 @@ test('keeps generated unit and transport art transparent around the figure', asy
   await page.goto('/');
   const samples = await page.evaluate(async () => {
     const paths = [
-      '/assets/v03/units/infantry-small-ink-02.webp',
-      '/assets/v03/units/archer-small-ink-02.webp',
-      '/assets/v03/units/cavalry-small-ink-02.webp',
-      '/assets/v03/units/boat-transport-ink-02.webp',
-      '/assets/v03/units/warship-ink-02.webp',
-      '/assets/v03/units/infantry-large-ink-02.webp',
-      '/assets/v03/units/cavalry-large-ink-02.webp',
-      '/assets/v03/units/archer-large-ink-02.webp',
+      '/assets/v03/units/infantry-small-ink-04.webp',
+      '/assets/v03/units/archer-small-ink-04.webp',
+      '/assets/v03/units/cavalry-small-ink-04.webp',
+      '/assets/v03/units/boat-transport-ink-03.webp',
+      '/assets/v03/units/warship-ink-03.webp',
+      '/assets/v03/units/infantry-large-ink-04.webp',
+      '/assets/v03/units/cavalry-large-ink-04.webp',
+      '/assets/v03/units/archer-large-ink-04.webp',
     ];
     return Promise.all(
       paths.map(async (path) => {

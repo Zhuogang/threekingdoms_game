@@ -1,5 +1,19 @@
 # v0.3 implementation and acceptance status
 
+## 2026-10-26 作战图标 1 人／3 人调整
+
+六种陆上外观已改用 ink-04：少于 500 人显示 1 个代表人物，500 人及以上显示 3 个。每组使用同一张单兵底图、相同画布、单兵尺寸和前景位置，只增加两名后排人物；人物不会随人数档位缩放。两种船只继续使用 ink-03。59 项渲染检查和本轮 14 个浏览器用例通过（像素用例修正水墨半透明素材的样本门槛后单独重跑通过）；构建通过，40/56/112px 对比及游戏截图已复核。见[来源、完整提示词、排列参数与验证说明](assets/units-count-ink-04.md)。
+
+## 2026-10-26 作战图标可读性
+
+14 张 ink-03 图标已由内置 image_gen 重生成并接入：三人/五人代表图替代六人/百人密集阵列，圆盾、方盾、马匹、马铠和弓的轮廓更突出。兵种、500 人、Lv.11 和船型选择规则保持不变。已完成 40/56px 尺寸对比及游戏截图复核，58 项渲染检查、13 项浏览器用例、构建、UI 和格式检查通过。见[单位清单、提示词与对比](assets/units-readable-ink-03.md)。
+
+## 2026-10-26 战场显示与营地移除
+
+已实现战场使用窗口宽度、铺满窗口、原生全屏、五类面板独立开关与悬浮小地图；隐藏指令栏后保留核心操作，退出恢复原布局。营地从数据、胜负、AI、渲染和当前说明中移除。首轮全量规则/集成检查及新增通行回归、45 个不同浏览器用例、构建、UI 与格式检查通过；桌面和窄屏截图已复核。详见[本轮实施记录](11-battle-display-and-camp-removal.md)。
+
+实施后复核已修复迟到全屏授权、Escape 优先级、AI 普通攻击漏记接战及高缩放小地图遮挡四个问题。新增 19 项规则回归，全量 485 项通过；本轮 17 个相关浏览器用例通过，构建和静态检查通过。详见[复核记录](11-battle-display-and-camp-removal.md#2026-10-26-实施后复核)。
+
 ## 2026-10-26 伤兵机制
 
 伤兵机制 W0–W6 已实现，W7 自动验证及三组机器短回放完成；实施后边界复核也已完成。整编绕过、微量断粮、日末击溃、俘虏粮债、等待改道、中立供粮及快照关联已修复，新增 10 个回归用例。当前全量 465 项单元／集成、本轮 12 项相关中英浏览器、构建、UI、格式和本地文件链接检查通过。首轮 103 个浏览器分批证据与试玩存档保留在[首轮记录](evidence/wounded-system-2026-10-26/README.md)，最新修复和范围见[复核记录](evidence/wounded-review-2026-10-26.md)及[分阶段进度](10-wounded-system-implementation-plan.md)。新存档仍为 `personnelSchema: 1`，旧档可原文导出，不迁移。设计参数未改，长期人工平衡和真实低端机验收仍待执行；下文保留历史版本证据。
@@ -15,7 +29,7 @@ The October 23–25 battlefield redesign (P0–P7) is tracked in the [battlefiel
 | G Geography           | 24 anchors, 42 estimated links, distance/profile/ETA labels, multi-hop travel and anchor-sensitivity report.                                                                                 | Approximate anchors/roads/generalized rivers; not historical GIS reconstruction.                                                                            |
 | L Calendar/logistics  | Daily clock/cursor, fixed-point food, service accounting, reservations, cargo delivery, arrivals/return and month boundaries.                                                                | New long-session edge cases need player evidence; do not extrapolate focused tests to every route-failure sequence.                                         |
 | V Governors           | Direct capital, monthly autonomous work, boundary appointments, troop-free travel/handover, plans/answers/recall and shared work/stock eligibility.                                          | Development now uses a shared 500-point cap; seeded and loaded values retain their scale. No multi-city coordination or stochastic future-budget simulator. |
-| B Battles             | 15 painted 48×32 battlefields by route/direction, six types/tactics, ZOC/morale/camps, common water, forecasts/AI, saved submissions and aftermath.                                          | Human battle feel and campaign pacing are not certified by automated passes.                                                                                |
+| B Battles             | 15 painted 48×32 battlefields by route/direction, six types/tactics, ZOC/morale, common water, forecasts/AI, saved submissions and aftermath.                                                | Human battle feel and campaign pacing are not certified by automated passes.                                                                                |
 | R UI/rendering        | Top-down React/SVG battlefield with portrait tokens, camera/minimap controls, stable fitting, exact living-unit counts, full inboxes, bilingual feedback/Wiki, conditions and confirmations. | Real low-end hardware, broader manual readability and long-session usability remain open.                                                                   |
 | A Artwork             | Seven active generated definitions and one inactive paper alternative, documented source/hash/anchors and native fallback.                                                                   | All draft. Dedicated full figure art covers infantry/archer/cavalry; the other types use native identities. Revisions/approval are open.                    |
 | I Integration/storage | New entry/save namespace, strict associations/limits, autosave/export/import recovery, Campaign menu/Resume and safe transient reset.                                                        | Very long human campaigns still need field exposure.                                                                                                        |

@@ -68,7 +68,7 @@ describe('v0.3 campaign diagnostic outcome reporting', () => {
           attackerJourneyId: 'journey-repulse',
           resolved: true,
           outcome: 'defender',
-          battleData: { outcome: { reason: 'camp' } },
+          battleData: { outcome: { reason: 'elimination' } },
         },
         {
           id: 'battle-active',
@@ -268,7 +268,7 @@ describe('v0.3 campaign diagnostic outcome reporting', () => {
           foodShortfallDays: 2,
           battleData: {
             day: 3,
-            outcome: { winner: 'attacker', reason: 'camp' },
+            outcome: { winner: 'attacker', reason: 'elimination' },
             units: [
               { side: 'attacker', initialTroops: 1_000, troops: 600 },
               { side: 'defender', initialTroops: 1_000, troops: 550 },

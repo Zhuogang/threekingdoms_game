@@ -2,6 +2,10 @@
 
 Local candidate; implementation `1e02e65` on `hegemony_of_the_three_kindoms_v0.3`. Documentation checked October 22, 2026. [How to play](player-guide.md) · [Status and tests](implementation-status.md) · [Open acceptance](../next-steps.md).
 
+## October 26 battlefield display and camp removal
+
+The battle view uses the window width, with Expand battlefield and native Fullscreen controls. Show panels toggles commands, minimap, help, top bar and battle list; hidden commands leave a compact action bar. The minimap floats inside the battlefield. Restore layout returns to the prior settings. Camps, occupation victory, camp camera targets and camp AI goals have been removed. Battles resolve through defeat, rout, withdrawal or the time limit. No save migration is included. [Implementation record](11-battle-display-and-camp-removal.md).
+
 ## October 26 wounded troops and retreat
 
 Combat casualties now leave 60% wounded; defeated elite troops can survive, return and recover without losing their XP. One officer still commands one base troop type, with healthy and wounded sharing a 10,000-person cap. Full supplied city days heal 10%, and captured armies recruited into a house require ten days of reorganization.

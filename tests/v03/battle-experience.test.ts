@@ -90,7 +90,9 @@ describe('soldier combat experience', () => {
       expect(a!.combatCasualtiesDealt).toBe(1000 - d!.troops);
       expect(d!.combatCasualtiesReceived).toBe(a!.combatCasualtiesDealt);
       expect(a!.combatCasualtiesDealt).toBeGreaterThan(0);
-      expect(battleExperienceGain(a!, { winner: 'attacker', reason: 'camp' })).toBeGreaterThan(60);
+      expect(
+        battleExperienceGain(a!, { winner: 'attacker', reason: 'elimination' }),
+      ).toBeGreaterThan(60);
     },
   );
 
@@ -106,7 +108,7 @@ describe('soldier combat experience', () => {
       });
       expect(result.ok).toBe(true);
       for (const unit of result.state.units)
-        expect(battleExperienceGain(unit, { winner: unit.side, reason: 'camp' })).toBe(0);
+        expect(battleExperienceGain(unit, { winner: unit.side, reason: 'elimination' })).toBe(0);
     },
   );
 
@@ -149,15 +151,15 @@ describe('soldier combat experience', () => {
     const unit = battlefield().units[0]!;
     unit.troops = 100;
     unit.combatCasualtiesDealt = 500;
-    expect(battleExperienceGain(unit, { winner: 'attacker', reason: 'camp' })).toBe(100);
+    expect(battleExperienceGain(unit, { winner: 'attacker', reason: 'elimination' })).toBe(100);
     expect(battleExperienceGain(unit, { winner: 'defender', reason: 'retreat' })).toBe(80);
     expect(battleExperienceGain(unit, { winner: null, reason: 'dayLimit' })).toBe(80);
     unit.combatCasualtiesDealt = 0;
     unit.combatCasualtiesReceived = 900;
     expect(battleExperienceGain(unit, { winner: 'defender', reason: 'retreat' })).toBe(40);
-    expect(battleExperienceGain(unit, { winner: 'attacker', reason: 'camp' })).toBe(60);
+    expect(battleExperienceGain(unit, { winner: 'attacker', reason: 'elimination' })).toBe(60);
     unit.combatCasualtiesDealt = 10000;
-    const gain = battleExperienceGain(unit, { winner: 'attacker', reason: 'camp' });
+    const gain = battleExperienceGain(unit, { winner: 'attacker', reason: 'elimination' });
     expect(gain).toBe(140);
     unit.troopExperience = 1890;
     awardTroopExperience(unit, gain);

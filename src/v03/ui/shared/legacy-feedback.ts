@@ -205,8 +205,6 @@ export function localizeBattleLogLine(
   match = line.match(/^(attacker|defender) wins by elimination\.$/);
   if (match) return `${side(match[1]!)}因歼灭敌军而获胜。`;
   if (line === 'Both armies are eliminated.') return '双方部队均已全灭。';
-  match = line.match(/^(attacker|defender) captures the opposing field camp\.$/);
-  if (match) return `${side(match[1]!)}夺取了敌方营地。`;
   match = line.match(
     /^(attacker|defender) forces retreat from the field; (attacker|defender) holds the battlefield\.$/,
   );

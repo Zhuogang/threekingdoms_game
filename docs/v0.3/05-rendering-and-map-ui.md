@@ -1,19 +1,29 @@
 # Rendering, map controls and UI
 
-Current reference checked October 25, 2026. [Player controls](player-guide.md) · [Runtime screenshots](evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures) · [Original rendering contract](history/design/05-rendering-and-map-ui.md).
+Current reference checked October 26, 2026. [Player controls](player-guide.md) · [Runtime screenshots](evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures) · [Original rendering contract](history/design/05-rendering-and-map-ui.md).
 
 ## Active renderer
 
-v0.3 uses **React and SVG**, not the old Pixi map. Source lives in [src/v03/rendering](../../src/v03/rendering/index.ts) with application wiring in `App.tsx` and `styles.css`. Pure rule queries supply terrain, selection, reachable cells, targets, forecasts, water status and objectives; rendering does not calculate another combat model or advance time.
+v0.3 uses **React and SVG**, not the old Pixi map. Source lives in [src/v03/rendering](../../src/v03/rendering/index.ts) with application wiring in `App.tsx` and `styles.css`. Pure rule queries supply terrain, selection, reachable cells, targets, forecasts, water status and terrain effects; rendering does not calculate another combat model or advance time.
 
 The battlefield is a pure 2D, top-down board of 64×64 world-unit squares: cell `(x, y)` is centered at `(64x, 64y)`, so a 48×32 battle is a 3072×2048 world. These are world coordinates, not CSS pixels or movement distances. `geometry.ts` and viewport helpers own bounds, picking, camera fit/pan/zoom and viewport polygons. City anchors and party route progression have separate campaign projection helpers.
 
 Each canvas battlefield draws its shipped painting ([records](assets/battlefield-canvases.json), `public/assets/v03/battlefields/`) under a faint grid; until it loads, or without one, five tiled terrain patterns stand in. A battle opens, and Unit focuses, at 48 screen pixels per cell or more; Fit shows the whole field. Each unit token shows the matching ink formation, with the formation's highest-level officer in a separate corner portrait (ties by force, then ID; militia have no portrait), a faction pennant, a troop-type seal, a ×N badge for multi-officer formations, the exact troop count and a strength bar against starting troops. Attackable enemies get a red ring; confused and inspired units an icon; units that have acted are greyed and routed units fade. Below 44 screen pixels per cell squad art remains, while portraits and secondary badges hide. On water the squad is replaced by a tower warship when its portrait commander is Zhou Yu, Cheng Pu, Huang Gai, Han Dang, Gan Ning, Guan Yu, Sun Ce or Lu Su; everyone else, including militia, uses a crewed boat; returning to land restores the base troop art. The sidebar shows squad art alongside the officer portrait. Current surviving strength below 500 uses small squads; 500 or more uses large formations. Both occupy one tactical cell. Vessel choice is independent of troop count. Eligibility is immediate and follows officer identity across factions, with no fee, training order or date unlock. Mixed formations use the same highest-level commander as their portrait, not any subordinate. This stage changes vessel presentation only; water combat modifiers remain unchanged. See [runtime art records](assets/unit-squads-runtime.json). The faint grid can be hidden with the Grid camera button. In `npm run dev`, `?battlefield-preview=<id>` opens a preview page that overlays any painting attempt on its layout with deployment zones and sample units.
 
+## Readable unit icons (October 26)
+
+Land icons now use the ink-04 set: one figure for small squads and three for large squads. Each pair reuses exactly the same normalized single-figure pixels, canvas size and front position; adding people never shrinks them. The low boat and tower warship retain ink-03 art. Heavy infantry, elite cavalry and strong archers retain their Lv.11 threshold; size still changes at 500 troops. The low crewed boat and two-deck tower warship keep their commander-based selection. See the [complete unit inventory, prompts and actual-size comparison](assets/units-count-ink-04.md).
+
+## Battlefield display (October 26)
+
+Battle mode uses the available window width. **Expand battlefield / 放大战场** fills the window and initially hides the command panel, top bar, battle list and help. **Fullscreen / 全屏** requests native fullscreen; embedded browsers that decline it retain window expansion. **Show panels / 显示面板** independently toggles commands, minimap, help, top bar and battle list. The minimap floats over the map with width capped at 30% of the main canvas, and help starts collapsed. Restore layout or Escape exits window expansion and restores prior panel settings; leaving native fullscreen does the same. Confirmation dialogs take precedence, followed by closing the focused menu, canceling inspection/tactics (including sidebar or hidden-command focus), and restoring the layout. Pending fullscreen requests cannot override Restore, navigation or closing the game shell.
+
+When commands are hidden, a compact bar keeps auto-command, End battle day and More actions → Withdraw available. Display changes do not advance the campaign. Camps have been removed from rules, AI goals, map data, map/minimap markers and camera controls. No old-save migration was added. [Implementation and validation](11-battle-display-and-camp-removal.md).
+
 ## Included interface
 
 - Campaign pan/zoom/Fit, route and travel labels, city/governance symbols, journey/status overlays and compact minimap.
-- Battlefield Fit/Unit/Camps controls, keyboard cell navigation/orders, camera navigation, minimap viewport/pan and native selection/reachability/attack/water overlays.
+- Battlefield Fit/Unit controls, keyboard cell navigation/orders, camera navigation, minimap viewport/pan and native selection/reachability/attack/water overlays.
 - Exact locale troop counts, living-only interaction, weather/food/unit/tile inspection, complete player orders/reports and contextual Wiki links.
 - Accessible confirmation dialogs with focus/Escape behavior, safe campaign menu/resume, localized officer/formation labels and routine feedback.
 - Manifest-backed raster artwork with native rendering fallbacks; hill/cliff/water identity comes from logical terrain, not a painted impression.

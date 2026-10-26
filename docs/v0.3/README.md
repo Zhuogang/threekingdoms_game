@@ -6,6 +6,8 @@ v0.3 是独立发展的三国策略游戏。BAYE 是历史来源，旧规则复�
 
 10 月 22 日可玩性与界面计划的实现、规则变更和新验证记录见[实施台账](playability-implementation.md)。
 
+2026-10-26：[战场放大／全屏、独立面板开关与营地移除](11-battle-display-and-camp-removal.md)。
+
 ## 从这里开始
 
 | 目的                           | 文档                                                                                                         |
@@ -23,7 +25,7 @@ v0.3 是独立发展的三国策略游戏。BAYE 是历史来源，旧规则复�
 - 内部按日，30 日/月；推进一日、一旬或到下个事件。行军、运输、调任和返程有实际在途状态、口粮与交付。
 - 君主本城直辖；其余城市由太守或地方班底自治。可征调金粮兵、下达出征令，按方案接受、缩减、等待或取消；任免在月界生效，跨城候选人无兵旅行后就任。
 - 本城有工作点预算、征募/编兵、搜索、治安、训练、宴饮、赏赐、精良兵器、赈济和买卖粮食。农业/商业发展按钮存在，但两个剧本的所有城市开局值均高于当前 100 上限，开局不可用；[数值与上限待核对](../next-steps.md#open-now)。
-- 48×32 的手绘战场 15 张（10 种地形，其中 5 种有两个变体），按进攻方最后一段路线和进攻方向选图，详见[战场计划](08-battlefield-canvas-plan.md)；六类兵种、六种计策、士气、控制区、野战营地、预览与 AI。自治不影响玩家临阵指挥。
+- 48×32 的手绘战场 15 张（10 种地形，其中 5 种有两个变体），按进攻方最后一段路线和进攻方向选图，详见[战场计划](08-battlefield-canvas-plan.md)；六类兵种、六种计策、士气、控制区、预览与 AI。自治不影响玩家临阵指挥。
 - 所有兵种可进入可通行水格；在水上攻击 ×0.75、承受兵力伤害 ×1.25，岸上可按正常射程攻击水上单位。没有水军技能门槛。
 - 外交、六个月同盟、月事件、天下一统和称霸结局；称霸与统一分别统计。
 - 相机/全图/聚焦/小地图、精确兵力数字、战场天气/粮草/地形检查、完整订单和报告列表、中英 Wiki。
@@ -44,7 +46,7 @@ These describe the implemented candidate. Original long design briefs are retain
 | [01 Geography and routes](01-geography-and-routes.md)             | Anchors, road estimates, party ETA and research limits.            |
 | [02 Calendar and logistics](02-calendar-and-logistics.md)         | Daily sequencing, food, cargo, travel and return.                  |
 | [03 Governors and authority](03-governors-and-authority.md)       | Capital work, autonomy, appointments, requests and commitments.    |
-| [04 Battlefields and water](04-battlefields-and-water-combat.md)  | Maps, unit/tactic rules, water, camps and outcomes.                |
+| [04 Battlefields and water](04-battlefields-and-water-combat.md)  | Maps, unit/tactic rules, water and outcomes.                       |
 | [05 Rendering and map UI](05-rendering-and-map-ui.md)             | React/SVG projection, cameras, minimaps and responsive checks.     |
 | [06 ImageGen and artwork](06-imagegen-and-artwork.md)             | Integrated draft assets, coverage limits and revision process.     |
 | [07 Integration and validation](07-integration-and-validation.md) | Actual entry, save format, scripts and evidence.                   |

@@ -11,10 +11,15 @@ import {
 import { BattlefieldMapView, BattlefieldMinimap } from '../../rendering';
 
 import type { GameplayContext } from '../hooks/gameplayView';
+import type { BattleDisplay } from '../hooks/useBattleDisplay';
+import { BattleDisplayControls } from '../panels/BattleDisplayControls';
+import { BattleActionBar } from '../panels/BattleActionBar';
 
 export function BattleScreen({
   context,
+  display,
 }: {
+  display: BattleDisplay;
   context: GameplayContext & {
     state: NonNullable<GameplayContext['state']>;
     battleState: NonNullable<GameplayContext['battleState']>;
@@ -29,7 +34,6 @@ export function BattleScreen({
     activeBattle,
     battleMapFrame,
     troopVisuals,
-    camps,
     battleViewport,
     setBattleViewport,
     currentUnit,
@@ -45,7 +49,6 @@ export function BattleScreen({
     zoomBattleMap,
     fitBattleMap,
     focusBattleMapUnit,
-    focusBattleMapCamps,
     battleViewportPolygon,
     navigateBattleMinimap,
     localizedOfficerName,
@@ -56,7 +59,8 @@ export function BattleScreen({
     <section
       className="v03-battle-main"
       onKeyDown={(event) => {
-        if ((event.target as HTMLElement).matches('input,select,textarea')) return;
+        // Map shortcuts must not intercept Tab or typing in display controls.
+        if (!(event.target as Element).closest('.v03-battlefield-map')) return;
         if (event.key === 'Tab' && !event.shiftKey) {
           event.preventDefault();
           context.nextReadyUnit();
@@ -72,10 +76,6 @@ export function BattleScreen({
         if (event.key.toLowerCase() === 'e') {
           event.preventDefault();
           context.requestEndBattleDay();
-        }
-        if (event.key === 'Escape') {
-          context.setSelectedTactic(null);
-          context.setInspectedCell(null);
         }
       }}
     >
@@ -94,12 +94,12 @@ export function BattleScreen({
         <div className="v03-battle-day">
           {t.battleDayLabel} {battleState.day} / {battleState.dayLimit}
         </div>
+        <BattleDisplayControls display={display} locale={locale} />
       </div>
       <div ref={battleMapFrame} className="v03-battle-board">
         <BattlefieldMapView
           map={battleState.map}
           units={troopVisuals}
-          camps={camps}
           viewport={battleViewport ?? undefined}
           interactive
           showGrid={showGrid}
@@ -131,47 +131,47 @@ export function BattleScreen({
             });
           }}
         />
-        <div className="v03-battle-camera-controls" role="group" aria-label={t.battleMapCamera}>
-          <Button type="button" aria-label={t.battleMapZoomOut} onClick={() => zoomBattleMap(0.8)}>
-            −
-          </Button>
-          <Button type="button" aria-label={t.battleMapZoomIn} onClick={() => zoomBattleMap(1.25)}>
-            +
-          </Button>
-          <Button type="button" aria-label={t.battleMapFit} onClick={fitBattleMap}>
-            {message(locale, 'ui.fit.74')}
-          </Button>
-          <Button
-            type="button"
-            aria-label={t.battleMapFocusUnit}
-            disabled={!currentUnit}
-            onClick={focusBattleMapUnit}
-          >
-            {message(locale, 'ui.unit.123')}
-          </Button>
-          <Button type="button" aria-label={t.battleMapFocusCamps} onClick={focusBattleMapCamps}>
-            {message(locale, 'ui.camps.124')}
-          </Button>
-          <Button
-            type="button"
-            aria-label={t.battleMapGrid}
-            aria-pressed={showGrid}
-            onClick={() => setShowGrid((value) => !value)}
-          >
-            {t.battleMapGridShort}
-          </Button>
-        </div>
+        {display.panels.minimap ? (
+          <div className="v03-battle-minimap-overlay">
+            <BattlefieldMinimap
+              map={battleState.map}
+              units={troopVisuals}
+              viewportPolygon={battleViewportPolygon}
+              locale={locale}
+              className="v03-battlefield-minimap"
+              onNavigate={navigateBattleMinimap}
+            />
+          </div>
+        ) : null}
       </div>
-      <div className="v03-battle-lower">
-        <BattlefieldMinimap
-          map={battleState.map}
-          units={troopVisuals}
-          camps={camps}
-          viewportPolygon={battleViewportPolygon}
-          locale={locale}
-          className="v03-battlefield-minimap"
-          onNavigate={navigateBattleMinimap}
-        />
+      <div className="v03-battle-camera-controls" role="group" aria-label={t.battleMapCamera}>
+        <Button type="button" aria-label={t.battleMapZoomOut} onClick={() => zoomBattleMap(0.8)}>
+          −
+        </Button>
+        <Button type="button" aria-label={t.battleMapZoomIn} onClick={() => zoomBattleMap(1.25)}>
+          +
+        </Button>
+        <Button type="button" aria-label={t.battleMapFit} onClick={fitBattleMap}>
+          {message(locale, 'ui.fit.74')}
+        </Button>
+        <Button
+          type="button"
+          aria-label={t.battleMapFocusUnit}
+          disabled={!currentUnit}
+          onClick={focusBattleMapUnit}
+        >
+          {message(locale, 'ui.unit.123')}
+        </Button>
+        <Button
+          type="button"
+          aria-label={t.battleMapGrid}
+          aria-pressed={showGrid}
+          onClick={() => setShowGrid((value) => !value)}
+        >
+          {t.battleMapGridShort}
+        </Button>
+      </div>
+      {display.panels.help ? (
         <div className="v03-battle-help">
           <strong>{currentUnit ? localizedOfficerName(currentUnit.name) : t.selectUnit}</strong>
           <p>{t.moveHelp}</p>
@@ -179,7 +179,8 @@ export function BattleScreen({
           <p>{t.waterRule}</p>
           <small>{t.dayLimit.replace('30', String(battleState.dayLimit))}</small>
         </div>
-      </div>
+      ) : null}
+      {!display.panels.commands ? <BattleActionBar context={context} compact /> : null}
     </section>
   );
 }

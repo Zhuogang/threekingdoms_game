@@ -92,8 +92,7 @@ export function retreatDestination(state: V03GameState, battle: V03BattleState, 
 export function retreatRisk(battle: V03BattleState, hasRoute: boolean): number {
   if (!hasRoute) return 100;
   const reason = getForcedBattleOutcome(battle.battleData)?.reason;
-  if (reason === 'elimination' || reason === 'rout' || reason === 'camp')
-    return PERSONNEL_RULES.forcedCapturePercent;
+  if (reason === 'elimination' || reason === 'rout') return PERSONNEL_RULES.forcedCapturePercent;
   return battle.battleData.engaged ? PERSONNEL_RULES.orderlyCapturePercent : 0;
 }
 
@@ -133,7 +132,7 @@ export function settleBattlePersonnel(
   const city = state.cities.find((entry) => entry.id === original.destinationCityId)!;
   const outcome = battle.battleData.outcome!;
   const occupied = outcome.winner === 'attacker' && battle.intent !== 'raid';
-  const forced = ['elimination', 'rout', 'camp'].includes(outcome.reason);
+  const forced = ['elimination', 'rout'].includes(outcome.reason);
   const putFood = (food: number) => {
     battle.foodOverflow = (battle.foodOverflow ?? 0) + Math.max(0, city.food + food - 9_999_999);
     city.food = Math.min(9_999_999, city.food + food);

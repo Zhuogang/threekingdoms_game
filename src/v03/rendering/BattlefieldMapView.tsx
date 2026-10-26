@@ -49,7 +49,6 @@ import {
   troopExperienceText,
   unitIsOnWater,
   type BattleUnitVisual,
-  type CellMarker,
 } from './presentation';
 
 export type BattlefieldTerrainVisual = 'plain' | 'forest' | 'hill' | 'water' | 'cliff' | string;
@@ -66,7 +65,6 @@ export interface BattlefieldVisualMap {
 export interface BattlefieldMapViewProps {
   map: BattlefieldVisualMap;
   units?: readonly BattleUnitVisual[];
-  camps?: readonly CellMarker[];
   route?: readonly GridPoint[];
   selectedCell?: GridPoint;
   reachableCells?: readonly (GridPoint & { cost?: number })[];
@@ -175,32 +173,6 @@ function terrainName(terrain: string, locale: 'en' | 'zh'): string {
     cliff: { en: 'Impassable cliff', zh: '不可通行峭壁' },
   };
   return labels[terrain]?.[locale] ?? terrain;
-}
-
-function CampSymbol({ camp, locale }: { camp: CellMarker; locale: 'en' | 'zh' }) {
-  const center = gridToWorld(camp.position);
-  const { x, y } = center;
-  return (
-    <g
-      transform={`translate(${x} ${y})`}
-      aria-label={camp.label ?? message(locale, 'ui.field.camp.objective.138')}
-    >
-      <ellipse
-        cx="0"
-        cy="9"
-        rx="27"
-        ry="12"
-        fill="#e6d9bd"
-        fillOpacity="0.72"
-        stroke="#716346"
-        strokeWidth="2"
-      />
-      <path d="M -17 6 L 0 -13 L 17 6 Z" fill="#e9dcc1" stroke="#554b3d" strokeWidth="2" />
-      <path d="M 0 -13 L 0 7" stroke="#554b3d" strokeWidth="2" />
-      <path d="M 1 -14 L 11 -20 L 11 -11 Z" fill="#a34e3b" stroke="#6c3b31" strokeWidth="1.5" />
-      <title>{camp.label ?? message(locale, 'ui.field.camp.objective.138')}</title>
-    </g>
-  );
 }
 
 // Token layout inside one 64-unit cell, centered on the cell center (plan §4).
@@ -519,7 +491,6 @@ function UnitSprite({
 export function BattlefieldMapView({
   map,
   units = [],
-  camps = [],
   route = [],
   selectedCell,
   reachableCells = [],
@@ -925,13 +896,6 @@ export function BattlefieldMapView({
           aria-hidden="true"
         />
       ) : null}
-      {camps.map((camp, index) => (
-        <CampSymbol
-          key={camp.id ?? `${camp.position.x}-${camp.position.y}-${index}`}
-          camp={camp}
-          locale={locale}
-        />
-      ))}
       {units.filter(isLivingBattleUnitVisual).map((unit) => {
         const isWater = unitIsOnWater(unit, map);
         return (

@@ -1,4 +1,5 @@
 import { Button } from '../kit';
+import type { BattleDisplay } from '../hooks/useBattleDisplay';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { BattleScreen } from '../screens/BattleScreen';
@@ -6,8 +7,10 @@ import { CampaignScreen } from '../screens/CampaignScreen';
 import { SidePanel } from './SidePanel';
 export function Workspace({
   context,
+  display,
 }: {
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
+  display: BattleDisplay;
 }) {
   const {
     isBattleView,
@@ -24,8 +27,10 @@ export function Workspace({
     orderPreviewSourceCity,
   } = context;
   return (
-    <section className={`v03-workspace ${isBattleView ? 'battle-layout' : 'map-first-layout'}`}>
-      {isBattleView ? (
+    <section
+      className={`v03-workspace ${isBattleView ? `battle-layout${display.panels.rail ? ' has-battle-rail' : ''}${display.panels.commands ? ' has-battle-commands' : ''}` : 'map-first-layout'}`}
+    >
+      {isBattleView && display.panels.rail ? (
         <aside className="v03-rail">
           <Button
             type="button"
@@ -63,12 +68,13 @@ export function Workspace({
       ) : null}
       {isBattleView && battleState && activeBattle ? (
         <BattleScreen
+          display={display}
           context={{ ...context, battleState: battleState!, activeBattle: activeBattle! }}
         />
       ) : (
         <CampaignScreen context={{ ...context }} />
       )}
-      {isBattleView ? (
+      {isBattleView && display.panels.commands ? (
         <SidePanel
           context={{
             ...context,

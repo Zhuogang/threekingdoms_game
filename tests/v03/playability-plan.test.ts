@@ -70,7 +70,6 @@ describe('playability plan contracts', () => {
       'retreat',
       'rout',
       'elimination',
-      'camp',
       'timeout',
       'day',
       'shortage',

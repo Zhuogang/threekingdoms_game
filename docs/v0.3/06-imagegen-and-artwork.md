@@ -2,6 +2,14 @@
 
 Current reference checked October 22, 2026. [Asset manifest](assets/manifest.json) · [Generation provenance and prompts](assets/provenance.md) · [Original art brief](history/design/06-imagegen-and-artwork.md).
 
+## October 26 one-/three-person revision
+
+Land icons now use one person or three copies of the same single-person sprite at an identical scale. Six single-person sources were edited with built-in image_gen and packaged as twelve fixed-size land icons; ink-03 vessels continue unchanged. [Prompts, sources and actual-size comparison](assets/units-count-ink-04.md).
+
+## October 26 readable unit icons (first iteration)
+
+Fourteen ink-03 unit images replace the dense formation textures with bold three-/five-person symbols and simplified vessels. All were generated individually with built-in image_gen, packaged with native transparency, and inspected at 40/56px. [Inventory, complete prompts, source images and comparison](assets/units-readable-ink-03.md). The ink-02 set remains an inactive archive.
+
 ## What is integrated
 
 Seven original runtime asset definitions are integrated: ground material, pine ridge prop, infantry, archer, cavalry, transport craft and campaign background. An eighth manifest entry, `campaign-paper-wash-02`, is an **inactive review alternative**, not the active atlas. All eight entries remain `draft`. Technical integration and human approval are separate states.
@@ -18,7 +26,7 @@ Seven original runtime asset definitions are integrated: ground material, pine r
 
 ## Coverage and visual limits
 
-Infantry, archers and cavalry have separate figure sprites. Guard, elite and naval retain native identity badges rather than dedicated full figure art. The shared craft indicates water transport; it is not a purchased vessel or special unit ability. Forest/camp/other terrain also use native graphics where the raster set is incomplete. A complete regional texture/prop pack and all six dedicated figure variants are not delivered assets.
+Infantry, archers and cavalry have separate figure sprites. Guard, elite and naval retain native identity badges rather than dedicated full figure art. The shared craft indicates water transport; it is not a purchased vessel or special unit ability. Forest/other terrain also use native graphics where the raster set is incomplete. A complete regional texture/prop pack and all six dedicated figure variants are not delivered assets.
 
 Painted river/mountain washes are illustrative; exact city anchors, logical terrain, routes and water penalties belong to data/native overlays. Neither the active background nor the alternate paper proves ancient geographic accuracy.
 
