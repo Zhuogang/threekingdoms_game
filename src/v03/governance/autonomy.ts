@@ -1,3 +1,4 @@
+import { recruitmentQuote } from '../campaign/recruitment';
 import type { V03City, V03GameState } from '../types';
 import {
   CITY_MONTHLY_WORK_GOLD_COST,
@@ -220,7 +221,7 @@ export function planGovernorMonthlyWork(
         officer.location.kind === 'city' &&
         officer.location.cityId === city.id,
     )
-    .reduce((sum, officer) => sum + officer.troops, 0);
+    .reduce((sum, officer) => sum + officer.troops * (officer.troopType === 'cavalry' ? 2 : 1), 0);
   const monthlyFoodUpkeep = Math.ceil(localTroops * 0.12);
   const reserves = approvedReserves(state, city.id);
   const protectedFood = Math.max(500, monthlyFoodUpkeep * 2) + reserves.food;
@@ -344,7 +345,7 @@ export function planGovernorMonthlyWork(
           ? 'security'
           : rewardTarget && city.gold >= reserves.gold + GOVERNOR_REWARD_GOLD_COST
             ? ((targetOfficerId = rewardTarget.id), 'reward')
-            : city.reserve < 500 && city.population > 1000
+            : city.reservePools[manager.troopType].troops < 500 && city.population > 1000
               ? 'recruit'
               : city.food >= protectedFood + 800 && city.gold < reserves.gold + 80
                 ? 'sell-food'
@@ -356,11 +357,14 @@ export function planGovernorMonthlyWork(
                       ? ((targetOfficerId = trainee.id), 'train')
                       : workUsed === 0 &&
                           manager.troops < 10_000 &&
-                          city.reserve - reserves.troops > 1000
+                          city.reservePools[manager.troopType].troops - reserves.troops > 1000
                         ? ((targetOfficerId = manager.id),
                           (targetTroops = Math.min(
                             10_000,
-                            manager.troops + city.reserve - reserves.troops - 1000,
+                            manager.troops +
+                              city.reservePools[manager.troopType].troops -
+                              reserves.troops -
+                              1000,
                           )),
                           'assign-troops')
                         : city.farming < 500 && city.farming <= city.commerce
@@ -389,18 +393,20 @@ export function planGovernorMonthlyWork(
     );
 
   const goldCost =
-    action === 'restore-loyalty' ||
-    action === 'develop-farming' ||
-    action === 'develop-commerce' ||
-    action === 'buy-food'
-      ? CITY_MONTHLY_WORK_GOLD_COST
-      : action === 'reward'
-        ? GOVERNOR_REWARD_GOLD_COST
-        : action === 'relieve'
-          ? GOVERNOR_RELIEF_GOLD_COST
-          : action === 'equip'
-            ? GOVERNOR_EQUIPMENT_GOLD_COST
-            : 0;
+    action === 'recruit'
+      ? recruitmentQuote(city, manager.force, manager.troopType).gold
+      : action === 'restore-loyalty' ||
+          action === 'develop-farming' ||
+          action === 'develop-commerce' ||
+          action === 'buy-food'
+        ? CITY_MONTHLY_WORK_GOLD_COST
+        : action === 'reward'
+          ? GOVERNOR_REWARD_GOLD_COST
+          : action === 'relieve'
+            ? GOVERNOR_RELIEF_GOLD_COST
+            : action === 'equip'
+              ? GOVERNOR_EQUIPMENT_GOLD_COST
+              : 0;
   const foodCost = action === 'relieve' ? GOVERNOR_RELIEF_FOOD_COST : 0;
   if (goldCost > 0 && city.gold < reserves.gold + goldCost)
     return noWork(
@@ -502,7 +508,7 @@ export function planGovernorMonthlyWork(
         : action === 'security'
           ? 'Public order is below 70%; the city uses a work point to restore loyalty.'
           : action === 'recruit'
-            ? `The city reserve is below 500; recruitment converts local population into up to ${Math.max(0, Math.min(city.population - 1000, 300 + manager.force * 5))} reserve troops.`
+            ? `The city reserve is below 500; recruitment converts local population into up to ${recruitmentQuote(city, manager.force, manager.troopType).troops} reserve troops.`
             : action === 'buy-food'
               ? 'The next-month food forecast is below the protected reserve and farming is capped; the city buys 800 food.'
               : action === 'sell-food'
@@ -578,7 +584,8 @@ export function applyGovernorMonthlyWork(
   const applied = applyGovernorCityAction(state as V03GameState, {
     cityId: city.id,
     action: plan.action,
-    officerId: plan.targetOfficerId ?? undefined,
+    troopType: state.officers.find((o) => o.id === plan.managerOfficerId)?.troopType ?? 'infantry',
+    officerId: plan.targetOfficerId ?? plan.managerOfficerId ?? undefined,
     amount: plan.targetTroops ?? undefined,
   });
   if (!applied.ok)

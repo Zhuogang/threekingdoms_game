@@ -422,6 +422,32 @@ describe('v0.3 calendar and journey progression', () => {
     expect(hungryStep.journey.accumulatedFoodShortfall).toBe(7);
   });
 
+  it('charges cavalry twice the actual daily marching food of infantry', () => {
+    const create = (cavalryTroops: number) =>
+      createJourney({
+        id: `rations-${cavalryTroops}`,
+        executionId: 'ration-check',
+        ownerFactionId: 'test',
+        route: ROUTE_BY_ID.get('changan--hanzhong')!,
+        sourceCityId: 'hanzhong',
+        destinationCityId: 'changan',
+        departureAbsoluteDay: 0,
+        manifest: {
+          officerIds: [],
+          troopCount: 1000,
+          composition: { troopTypes: cavalryTroops ? ['cavalry'] : ['infantry'], cavalryTroops },
+          carriedFood: 100,
+          cargo: {},
+        },
+      });
+    const footDay = advanceJourneyOneDay(create(0)).journey;
+    const horseDay = advanceJourneyOneDay(create(1000)).journey;
+    const mixedDay = advanceJourneyOneDay(create(500)).journey;
+    expect(footDay.consumedFood).toBe(8);
+    expect(horseDay.consumedFood).toBe(16);
+    expect(mixedDay.consumedFood).toBe(12);
+  });
+
   it('carries fractional daily rations without reporting starvation when stock covers them', () => {
     const route = ROUTE_BY_ID.get('changan--hanzhong')!;
     let journey = createJourney({

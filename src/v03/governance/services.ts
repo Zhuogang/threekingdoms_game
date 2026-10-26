@@ -108,6 +108,9 @@ function planParty(input: PlanPartyInput): OrderPartyPlan | null {
   const troopTypes = selected.map((officer) => officer.troopType);
   const composition: TravelComposition = {
     troopTypes,
+    cavalryTroops: selected
+      .filter((o) => o.troopType === 'cavalry')
+      .reduce((sum, o) => sum + o.troops, 0),
     heavySupplyTrain: input.kind === 'campaign',
   };
   return { officerIds: selected.map((officer) => officer.id), troopCount, composition };

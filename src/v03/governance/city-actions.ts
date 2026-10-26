@@ -1,4 +1,12 @@
 import { isCityCommitted, CITY_COMMITTED_REASON } from './commitments';
+import {
+  mergeTroopPools,
+  splitTroopPool,
+  setReservePool,
+  TROOP_TYPES,
+} from '../campaign/troop-experience';
+import { recruitmentQuote } from '../campaign/recruitment';
+import type { TroopType } from '../content/types';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
 
 export interface V03CityActionInput {
@@ -6,6 +14,7 @@ export interface V03CityActionInput {
   action: V03CityAction;
   officerId?: string;
   amount?: number;
+  troopType?: TroopType;
 }
 
 export interface V03CityActionResult {
@@ -66,6 +75,7 @@ export function applySharedCityWorkEffect(
     | 'buy-food'
     | 'sell-food',
   manager: Pick<V03Officer, 'force' | 'intellect'> = { force: 0, intellect: 0 },
+  troopType: TroopType = 'infantry',
 ): V03City | null {
   const city: V03City = { ...source };
   if (
@@ -79,10 +89,15 @@ export function applySharedCityWorkEffect(
   if (action === 'buy-food' && city.food + 800 > RESOURCE_CAP) return null;
   if (action === 'sell-food' && (city.food < 800 || city.gold + 80 > RESOURCE_CAP)) return null;
   if (action === 'recruit') {
-    const gain = Math.max(0, Math.min(city.population - 1000, 300 + manager.force * 5));
-    if (gain <= 0 || city.reserve + gain > RESOURCE_CAP) return null;
+    const { troops: gain, gold } = recruitmentQuote(city, manager.force, troopType);
+    if (gain <= 0 || city.reserve + gain > RESOURCE_CAP || city.gold < gold) return null;
+    city.gold -= gold;
     city.population -= gain;
-    city.reserve += gain;
+    setReservePool(
+      city,
+      troopType,
+      mergeTroopPools(city.reservePools[troopType], { troops: gain, troopExperience: 0 }),
+    );
     city.loyalty = Math.max(0, city.loyalty - 2);
   } else if (action === 'security')
     city.loyalty = Math.min(100, city.loyalty + 8 + Math.floor(manager.intellect / 20));
@@ -214,10 +229,15 @@ function inspectCityAction(
     case 'feast':
       break;
     case 'recruit': {
-      const gain = Math.max(0, Math.min(city.population - 1000, 300 + actor.force * 5));
+      const kind = input.troopType ?? 'infantry';
+      if (!TROOP_TYPES.includes(kind))
+        return fail('Choose infantry, archers or cavalry to recruit.');
+      const { troops: gain, gold } = recruitmentQuote(city, actor.force, kind);
+      if (city.gold < gold) return fail('The city cannot afford this recruitment.');
       if (gain <= 0)
         return fail('The city has no recruitable population beyond its protected 1,000 residents.');
       if (city.reserve + gain > RESOURCE_CAP) return fail('The city reserve is at capacity.');
+      goldCost = gold;
       break;
     }
     case 'assign-troops': {
@@ -225,7 +245,8 @@ function inspectCityAction(
       if (!Number.isSafeInteger(input.amount) || input.amount! < 0 || input.amount! > 10_000)
         return fail('An officer can command 0–10,000 soldiers.');
       const change = input.amount! - actor.troops;
-      if (change > city.reserve) return fail('There are not enough soldiers in the city reserve.');
+      if (change > city.reservePools[actor.troopType].troops)
+        return fail('There are not enough soldiers of this troop type in the city reserve.');
       if (city.garrisonTroops + change < 0)
         return fail('The city garrison does not contain those soldiers.');
       garrisonDecrease = Math.max(0, -change);
@@ -361,11 +382,20 @@ function applyCityAction(
       break;
     }
     case 'recruit': {
-      const gain = Math.max(0, Math.min(city.population - 1000, 300 + actor.force * 5));
+      const kind = input.troopType ?? 'infantry';
+      if (!TROOP_TYPES.includes(kind))
+        return fail('Choose infantry, archers or cavalry to recruit.');
+      const { troops: gain, gold } = recruitmentQuote(city, actor.force, kind);
+      if (city.gold < gold) return fail('The city cannot afford this recruitment.');
       if (gain <= 0)
         return fail('The city has no recruitable population beyond its protected 1,000 residents.');
       if (city.reserve + gain > RESOURCE_CAP) return fail('The city reserve is at capacity.');
-      const updated = applySharedCityWorkEffect(city, input.action, actor);
+      const updated = applySharedCityWorkEffect(
+        city,
+        input.action,
+        actor,
+        input.troopType ?? 'infantry',
+      );
       if (!updated)
         return fail('The capital cannot complete recruitment with its current reserves.');
       Object.assign(city, updated);
@@ -388,12 +418,22 @@ function applyCityAction(
       if (!Number.isSafeInteger(amount) || amount! < 0 || amount! > 10_000)
         return fail('An officer can command 0–10,000 soldiers.');
       const change = amount! - officer.troops;
-      if (change > city.reserve) return fail('There are not enough soldiers in the city reserve.');
+      if (change > city.reservePools[officer.troopType].troops)
+        return fail('There are not enough soldiers of this troop type in the city reserve.');
       if (city.garrisonTroops + change < 0)
         return fail('The city garrison does not contain those soldiers.');
-      city.reserve -= change;
+      const reserve = city.reservePools[officer.troopType];
+      if (change >= 0) {
+        const { remaining, taken } = splitTroopPool(reserve, change);
+        Object.assign(officer, mergeTroopPools(officer, taken));
+        setReservePool(city, officer.troopType, remaining);
+      } else {
+        const { remaining, taken } = splitTroopPool(officer, -change);
+        Object.assign(officer, remaining);
+        const combined = mergeTroopPools(reserve, taken);
+        setReservePool(city, officer.troopType, combined);
+      }
       city.garrisonTroops += change;
-      officer.troops = amount!;
       message = `${officer.name} now commands ${amount!.toLocaleString()} soldiers.`;
       break;
     }
@@ -426,7 +466,12 @@ function applyCityAction(
       break;
     }
     case 'security': {
-      const updated = applySharedCityWorkEffect(city, input.action, actor);
+      const updated = applySharedCityWorkEffect(
+        city,
+        input.action,
+        actor,
+        input.troopType ?? 'infantry',
+      );
       if (!updated) return fail('The capital cannot complete this security action.');
       Object.assign(city, updated);
       message = `${actor.name} restored public order; city loyalty is now ${city.loyalty}%.`;
@@ -476,7 +521,12 @@ function applyCityAction(
       if (city.gold < 80) return fail('The capital needs 80 gold to buy food.');
       if (city.food + 800 > RESOURCE_CAP)
         return fail('The granary has no room for another 800 food.');
-      const updated = applySharedCityWorkEffect(city, input.action, actor);
+      const updated = applySharedCityWorkEffect(
+        city,
+        input.action,
+        actor,
+        input.troopType ?? 'infantry',
+      );
       if (!updated) return fail('The capital cannot complete this market purchase.');
       Object.assign(city, updated);
       message = 'Merchants delivered 800 food for 80 gold.';

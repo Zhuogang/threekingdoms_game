@@ -1,8 +1,12 @@
-import { useMemo, useRef } from 'react';
+import type { TroopType } from '../../types';
+import { TROOP_TYPES } from '../../campaign/troop-experience';
+import { troopName } from '../../rendering/presentation';
+import { recruitmentQuote } from '../../campaign/recruitment';
+import { useMemo, useRef, useState } from 'react';
 import { applyV03CityAction } from '../../governance/city-actions';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
-import { Button, Field, Input, StatGrid } from '../kit';
+import { Button, Field, Input, StatGrid, Select } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 
 export const cityWorkActions = [
@@ -65,10 +69,11 @@ export function CityWork({
   onChangeOfficer?: () => void;
 }) {
   const { state, selectedCity: city, locale, t } = context;
+  const [troopType, setTroopType] = useState<TroopType>('infantry');
   const officer = state.officers.find((entry) => entry.id === officerId);
   const amount = officer ? (context.troopAssignments[officer.id] ?? officer.troops) : undefined;
-  const input = { cityId: city?.id ?? '', action, officerId, amount };
-  const availability = context.capitalAvailability(action, officerId, amount);
+  const input = { cityId: city?.id ?? '', action, officerId, amount, troopType };
+  const availability = context.capitalAvailability(action, officerId, amount, troopType);
   const submitted = useRef(false);
   // The existing pure command effect returns a new state. Preview deterministic changes only;
   // searches remain unknown until the player confirms, and no preview is dispatched or saved.
@@ -80,9 +85,10 @@ export function CityWork({
             action,
             officerId,
             amount,
+            troopType,
           })
         : null,
-    [state, city?.id, action, officerId, amount],
+    [state, city?.id, action, officerId, amount, troopType],
   );
   if (!city) return null;
   const afterCity = preview?.ok ? preview.state.cities.find((entry) => entry.id === city.id) : null;
@@ -120,6 +126,37 @@ export function CityWork({
         {message(locale, 'flow.reviewWork')}
       </p>
       <WorkBudget context={context} />
+      {action === 'recruit' ? (
+        <>
+          <Field label={locale === 'zh' ? '招募兵种' : 'Recruit troop type'}>
+            <Select
+              aria-label={locale === 'zh' ? '招募兵种' : 'Recruit troop type'}
+              value={troopType}
+              onChange={(event) => setTroopType(event.target.value as TroopType)}
+            >
+              {TROOP_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {troopName(type, locale)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {officer ? (
+            <StatGrid
+              values={[
+                {
+                  label: locale === 'zh' ? '预计招募' : 'Soldiers recruited',
+                  value: recruitmentQuote(city, officer.force, troopType).troops.toLocaleString(),
+                },
+                {
+                  label: locale === 'zh' ? '招募费用' : 'Recruitment gold',
+                  value: recruitmentQuote(city, officer.force, troopType).gold.toLocaleString(),
+                },
+              ]}
+            />
+          ) : null}
+        </>
+      ) : null}
       {isCityWork(action) && officer ? (
         <div className="v03-row v03-assigned-officer">
           <strong>
@@ -137,7 +174,7 @@ export function CityWork({
               { label: t.troops, value: officer.troops.toLocaleString() },
               {
                 label: message(locale, 'ui.reserve.soldiers.93'),
-                value: city.reserve.toLocaleString(),
+                value: `${troopName(officer.troopType, locale)} ${city.reservePools[officer.troopType].troops.toLocaleString()}`,
               },
             ]}
           />
@@ -166,7 +203,7 @@ export function CityWork({
       <p className="v03-muted">{message(locale, 'flow.workCost')}</p>
       {!availability.ok ? (
         <p className="v03-action-reason" role="status">
-          {context.capitalReason(action, officerId, amount)}
+          {context.capitalReason(action, officerId, amount, troopType)}
         </p>
       ) : null}
       <Button

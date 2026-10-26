@@ -1,3 +1,4 @@
+import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { describe, expect, it } from 'vitest';
 import {
   decodeV03Save,
@@ -65,7 +66,9 @@ function sampleState(): V03GameState {
         gold: 500,
         food: 700,
         reserve: 0,
+        reservePools: createReservePools(0),
         garrisonTroops: 1000,
+        garrisonExperience: 0,
         governorId: null,
         pendingAppointment: null,
         governanceMode: 'ruler',
@@ -83,7 +86,9 @@ function sampleState(): V03GameState {
         gold: 600,
         food: 800,
         reserve: 0,
+        reservePools: createReservePools(0),
         garrisonTroops: 1200,
+        garrisonExperience: 0,
         governorId: null,
         pendingAppointment: null,
         governanceMode: 'steward',
@@ -103,6 +108,7 @@ function sampleState(): V03GameState {
         troops: 0,
         troopType: 'infantry',
         experience: 0,
+        troopExperience: 0,
         level: 0,
         governorOfCityId: null,
         alive: true,
@@ -120,6 +126,7 @@ function sampleState(): V03GameState {
         troops: 0,
         troopType: 'infantry',
         experience: 0,
+        troopExperience: 0,
         level: 0,
         governorOfCityId: null,
         alive: true,

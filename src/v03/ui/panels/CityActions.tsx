@@ -1,4 +1,8 @@
-import { ActionButton, Input } from '../kit';
+import { useState } from 'react';
+import type { TroopType } from '../../types';
+import { TROOP_TYPES } from '../../campaign/troop-experience';
+import { troopName } from '../../rendering/presentation';
+import { ActionButton, Input, Select } from '../kit';
 import { message } from '../../i18n';
 
 import { displayName } from '../shared/app-copy-3';
@@ -9,6 +13,7 @@ export function CityActions({
 }: {
   context: GameplayContext & { selectedCity: NonNullable<GameplayContext['selectedCity']> };
 }) {
+  const [recruitType, setRecruitType] = useState<TroopType>('infantry');
   const {
     t,
     directWorkRemaining,
@@ -73,15 +78,27 @@ export function CityActions({
       >
         {t.search}
       </ActionButton>
+      <Select
+        aria-label={locale === 'zh' ? '招募兵种' : 'Recruit troop type'}
+        value={recruitType}
+        onChange={(event) => setRecruitType(event.target.value as TroopType)}
+      >
+        {TROOP_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {troopName(type, locale)}
+          </option>
+        ))}
+      </Select>
       <ActionButton
         type="button"
-        disabled={!capitalAvailability('recruit').ok}
-        title={capitalReason('recruit')}
+        disabled={!capitalAvailability('recruit', undefined, undefined, recruitType).ok}
+        title={capitalReason('recruit', undefined, undefined, recruitType)}
         onClick={() =>
           dispatch({
             type: 'cityAction',
             cityId: selectedCity.id,
             action: 'recruit',
+            troopType: recruitType,
           })
         }
       >

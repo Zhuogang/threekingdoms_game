@@ -502,7 +502,12 @@ function selectedOfficerServices(
         ? {
             officerIds: selected.map((officer) => officer.id),
             troopCount: total,
-            composition: { troopTypes: selected.map((officer) => officer.troopType) },
+            composition: {
+              cavalryTroops: selected
+                .filter((o) => o.troopType === 'cavalry')
+                .reduce((sum, o) => sum + o.troops, 0),
+              troopTypes: selected.map((officer) => officer.troopType),
+            },
           }
         : null;
     },
@@ -651,6 +656,12 @@ function previewCampaign(
   const supplyFor = (troops: number) => {
     const supply = estimateCampaignSupply({
       troopCount: troops,
+      cavalryTroops: party
+        ? Math.min(
+            troops,
+            Math.ceil(((party.composition.cavalryTroops ?? 0) * troops) / party.troopCount),
+          )
+        : 0,
       outboundDays: route!.estimatedDays,
       battleDays: input.intent === 'raid' ? 10 : 30,
       returnDays,
@@ -1145,6 +1156,7 @@ function directiveJourneyInput(
   if (!route) return null;
   const supply = estimateCampaignSupply({
     troopCount: troops,
+    cavalryTroops: party.composition.cavalryTroops,
     outboundDays: route.estimatedDays,
     battleDays: order.intent === 'raid' ? 10 : 30,
     returnDays: route.estimatedDays,

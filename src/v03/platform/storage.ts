@@ -6,6 +6,14 @@ import { canvasBattlefieldIds } from '../battle/battlefields/layout';
 
 const safeInt = z.number().int().safe();
 const nonnegative = safeInt.nonnegative();
+const troopExperience = z.number().finite().min(0).max(1900);
+const troopPool = z
+  .object({ troops: nonnegative, troopExperience })
+  .strict()
+  .refine((pool) => pool.troops > 0 || pool.troopExperience === 0);
+const reservePools = z
+  .object({ infantry: troopPool, archer: troopPool, cavalry: troopPool })
+  .strict();
 const id = z.string().min(1).max(120);
 // A byte cap bounds JSON parsing before Zod walks an imported file. Collection
 // limits remain generous enough for long campaigns and are secondary guards.
@@ -78,6 +86,7 @@ const tacticalUnit = z
     y: safeInt.min(0).max(31),
     troops: nonnegative,
     initialTroops: nonnegative,
+    troopExperience,
     force: z.number().finite().min(0).max(120),
     intellect: z.number().finite().min(0).max(120),
     level: safeInt.min(0).max(5),
@@ -188,7 +197,9 @@ const city = z
     gold: nonnegative,
     food: nonnegative,
     reserve: nonnegative,
+    reservePools,
     garrisonTroops: nonnegative,
+    garrisonExperience: troopExperience,
     governorId: id.nullable(),
     pendingAppointment: z
       .object({ governorId: id.nullable(), effectiveDay: nonnegative, journeyId: id.optional() })
@@ -199,6 +210,7 @@ const city = z
     workMonthIndex: nonnegative.optional(),
     workPointsUsed: safeInt.min(0).max(3).optional(),
     troopServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
+    cavalryServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
   })
   .strict();
 const officer = z
@@ -215,6 +227,7 @@ const officer = z
     troops: nonnegative,
     troopType,
     equipment: z.literal('Fine arms').nullable().optional(),
+    troopExperience,
     experience: nonnegative,
     level: safeInt.min(0).max(20),
     governorOfCityId: id.nullable(),
@@ -262,6 +275,7 @@ const journey = z
         composition: z
           .object({
             troopTypes: z.array(troopType).max(100),
+            cavalryTroops: nonnegative.optional(),
             soloOfficer: z.boolean().optional(),
             heavySupplyTrain: z.boolean().optional(),
           })
@@ -563,6 +577,12 @@ export function validateV03State(value: unknown): value is V03GameState {
     if (state.phase !== 'finished') return false;
   }
   for (const entry of state.cities) {
+    if (
+      entry.reserve !==
+      Object.values(entry.reservePools).reduce((sum, pool) => sum + pool.troops, 0)
+    )
+      return false;
+    if (entry.garrisonTroops === 0 && entry.garrisonExperience !== 0) return false;
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
     if (
       (entry.workMonthIndex === undefined) !== (entry.workPointsUsed === undefined) ||
@@ -611,6 +631,7 @@ export function validateV03State(value: unknown): value is V03GameState {
     }
   }
   for (const entry of state.officers) {
+    if (entry.troops === 0 && entry.troopExperience !== 0) return false;
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
     if (entry.governorOfCityId !== null && !cityIds.has(entry.governorOfCityId)) return false;
     if (entry.location.kind === 'city' && !cityIds.has(entry.location.cityId)) return false;
@@ -668,6 +689,7 @@ export function validateV03State(value: unknown): value is V03GameState {
       entry.segmentWaitDays.length !== entry.routeSnapshot.length
     )
       return false;
+    if ((entry.manifest.composition.cavalryTroops ?? 0) > entry.manifest.troopCount) return false;
     if (!isUnique(entry.manifest.officerIds)) return false;
     if (entry.manifest.officerIds.some((officerId) => !officerIds.has(officerId))) return false;
     if (
@@ -831,6 +853,7 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
     if (battle.units.some((unit) => unit.troops > unit.initialTroops)) return false;
+    if (battle.units.some((unit) => unit.troops === 0 && unit.troopExperience !== 0)) return false;
     if (entry.resolved !== (battle.outcome !== null)) return false;
     if (
       entry.outcome !== null &&

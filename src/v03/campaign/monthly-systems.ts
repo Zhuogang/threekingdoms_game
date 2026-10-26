@@ -7,6 +7,13 @@
  * payloads are stable and localization-ready.
  */
 
+import {
+  mergeTroopPools,
+  setReservePool,
+  TROOP_TYPES,
+  type ReservePools,
+} from './troop-experience';
+
 export const V03_ALLIANCE_DURATION_MONTHS = 6;
 export const V03_HEGEMON_CITIES = 16;
 export const V03_HEGEMON_HOLD_MONTHS = 12;
@@ -151,6 +158,7 @@ export interface V03MonthlyEventCity {
   gold: number;
   food: number;
   reserve: number;
+  reservePools: ReservePools;
   /** Officer troop total stationed in this city; reserve is stored separately. */
   garrisonTroops: number;
   neighbors: string[];
@@ -335,9 +343,17 @@ function applyEvacuation(
   city.farming = Math.floor(city.farming / 2);
   city.commerce = Math.floor(city.commerce / 2);
   city.population = Math.min(city.population, Math.max(500, Math.floor(city.population * 0.92)));
-  city.reserve = 0;
+  for (const type of TROOP_TYPES) {
+    const merged = mergeTroopPools(refuge.reservePools[type], city.reservePools[type]);
+    merged.troops = Math.min(
+      merged.troops,
+      resourceCap - (refuge.reserve - refuge.reservePools[type].troops),
+    );
+    if (!merged.troops) merged.troopExperience = 0;
+    setReservePool(refuge, type, merged);
+    setReservePool(city, type, { troops: 0, troopExperience: 0 });
+  }
   city.garrisonTroops = Math.max(0, city.garrisonTroops - evacuatedTroops);
-  refuge.reserve = Math.min(resourceCap, refuge.reserve + transferredReserve);
   refuge.garrisonTroops = Math.min(resourceCap, refuge.garrisonTroops + evacuatedTroops);
   refuge.gold = Math.min(resourceCap, refuge.gold + lootGold);
   refuge.food = Math.min(resourceCap, refuge.food + lootFood);
@@ -489,13 +505,17 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
     const city = chooseCity(owned);
     if (!city) return null;
     const stolen = Math.floor(city.gold * 0.12);
-    const reserveLost = Math.floor(city.reserve * 0.06);
+    const reserveBefore = city.reserve;
     city.gold -= stolen;
-    city.reserve = Math.floor(city.reserve * 0.94);
+    for (const type of TROOP_TYPES) {
+      const pool = city.reservePools[type];
+      const troops = Math.floor(pool.troops * 0.94);
+      setReservePool(city, type, { troops, troopExperience: troops ? pool.troopExperience : 0 });
+    }
     city.loyalty = boundedInt(city.loyalty - 2, 0, 100);
     return makeEvent(monthIndex, 'bandits', [city.id], {
       goldLost: stolen,
-      reserveLost,
+      reserveLost: reserveBefore - city.reserve,
       loyaltyLoss: 2,
     });
   });

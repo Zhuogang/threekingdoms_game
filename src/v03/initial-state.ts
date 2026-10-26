@@ -1,4 +1,5 @@
 import { scenarioById, SCENARIOS } from './content/scenario';
+import { createReservePools } from './campaign/troop-experience';
 import { CITY_GEOGRAPHY_BY_ID, type CityId } from './geography';
 import type { V03City, V03Faction, V03GameState, V03Officer } from './types';
 
@@ -28,6 +29,7 @@ export function createV03Game(
     loyalty: officer.loyalty,
     age: officer.age,
     troops: officer.fate === 'active' && !officer.captive ? officer.troops : 0,
+    troopExperience: 0,
     troopType: officer.troopType,
     equipment: officer.equipment === 'Fine arms' ? 'Fine arms' : null,
     experience: officer.experience,
@@ -94,6 +96,8 @@ export function createV03Game(
       gold: city.gold,
       food: city.food,
       reserve: city.reserve,
+      reservePools: createReservePools(city.reserve / 2, city.reserve / 4, city.reserve / 4),
+      garrisonExperience: 0,
       garrisonTroops: officers.reduce(
         (total, officer) =>
           total +
@@ -111,6 +115,7 @@ export function createV03Game(
       workMonthIndex: 0,
       workPointsUsed: 0,
       troopServiceDaysThisMonth: 0,
+      cavalryServiceDaysThisMonth: 0,
       plunderCooldownUntilDay: 0,
     };
   });

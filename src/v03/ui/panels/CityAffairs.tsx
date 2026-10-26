@@ -1,3 +1,5 @@
+import { TROOP_TYPES } from '../../campaign/troop-experience';
+import { troopName } from '../../rendering/presentation';
 import { getCityCapabilities } from '../../governance/authority';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -22,6 +24,10 @@ export function CityAffairs({
     <section className="v03-city-affairs">
       <StatGrid
         values={[
+          ...TROOP_TYPES.map((type) => ({
+            label: `${troopName(type, locale)} · ${message(locale, 'ui.reserve.soldiers.93')}`,
+            value: city.reservePools[type].troops.toLocaleString(),
+          })),
           { label: message(locale, 'flow.farming'), value: city.farming },
           { label: message(locale, 'flow.commerce'), value: city.commerce },
           { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },

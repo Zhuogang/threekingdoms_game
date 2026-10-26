@@ -167,6 +167,9 @@ function buildParty(
   }
   if (troopCount <= 0) return null;
   const composition: TravelComposition = {
+    cavalryTroops: selected
+      .filter((o) => o.troopType === 'cavalry')
+      .reduce((sum, o) => sum + o.troops, 0),
     troopTypes: selected.map((officer) => officer.troopType),
     heavySupplyTrain: true,
   };
@@ -283,6 +286,7 @@ function makeCandidate(
   try {
     supply = services.estimateSupply({
       troopCount: party.troopCount,
+      cavalryTroops: party.composition.cavalryTroops,
       outboundDays: route.estimatedDays,
       battleDays: CAMPAIGN_BATTLE_RESERVE_DAYS,
       returnDays: route.estimatedDays,

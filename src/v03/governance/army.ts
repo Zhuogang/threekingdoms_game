@@ -14,7 +14,12 @@ export function armyPreview(
 ) {
   const officers = state.officers.filter((officer) => officerIds.includes(officer.id));
   const troops = officers.reduce((sum, officer) => sum + officer.troops, 0);
-  const composition = { troopTypes: [...new Set(officers.map((officer) => officer.troopType))] };
+  const composition = {
+    troopTypes: [...new Set(officers.map((officer) => officer.troopType))],
+    cavalryTroops: officers
+      .filter((o) => o.troopType === 'cavalry')
+      .reduce((sum, o) => sum + o.troops, 0),
+  };
   const route = createV03OrderServices().planRoute({
     state,
     sourceCityId,
@@ -27,6 +32,7 @@ export function armyPreview(
   const food = route
     ? estimateCampaignSupply({
         troopCount: troops,
+        cavalryTroops: composition.cavalryTroops,
         outboundDays: route.estimatedDays,
         battleDays: intent === 'raid' ? 10 : 30,
         returnDays: route.estimatedDays,

@@ -1,3 +1,4 @@
+import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { describe, expect, it } from 'vitest';
 import type { TravelComposition } from '../../../src/v03/calendar';
 import {
@@ -48,7 +49,9 @@ function fixture(): V03GameState {
         gold: 1000,
         food: 5000,
         reserve: 0,
+        reservePools: createReservePools(0),
         garrisonTroops: 3000,
+        garrisonExperience: 0,
         governorId: null,
         pendingAppointment: null,
         governanceMode: 'ruler',
@@ -66,7 +69,9 @@ function fixture(): V03GameState {
         gold: 500,
         food: 600,
         reserve: 0,
+        reservePools: createReservePools(0),
         garrisonTroops: 0,
+        garrisonExperience: 0,
         governorId: null,
         pendingAppointment: null,
         governanceMode: 'governor',
@@ -84,7 +89,9 @@ function fixture(): V03GameState {
         gold: 500,
         food: 600,
         reserve: 0,
+        reservePools: createReservePools(0),
         garrisonTroops: 0,
+        garrisonExperience: 0,
         governorId: null,
         pendingAppointment: null,
         governanceMode: 'steward',
@@ -104,6 +111,7 @@ function fixture(): V03GameState {
         troops: 1000,
         troopType: 'infantry',
         experience: 0,
+        troopExperience: 0,
         level: 0,
         governorOfCityId: null,
         alive: true,
@@ -121,6 +129,7 @@ function fixture(): V03GameState {
         troops: 900,
         troopType: 'archer',
         experience: 0,
+        troopExperience: 0,
         level: 0,
         governorOfCityId: null,
         alive: true,
@@ -138,6 +147,7 @@ function fixture(): V03GameState {
         troops: 1100,
         troopType: 'cavalry',
         experience: 0,
+        troopExperience: 0,
         level: 0,
         governorOfCityId: null,
         alive: true,

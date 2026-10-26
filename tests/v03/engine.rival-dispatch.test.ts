@@ -62,6 +62,7 @@ function prepareRivalMonth() {
         index
       ]!,
       experience: 0,
+      troopExperience: 0,
       level: 0,
       governorOfCityId: null,
       alive: true,
@@ -107,10 +108,11 @@ describe('v0.3 engine rival campaign integration', () => {
   it('dispatches a deterministic independent-city conquest at month settlement with exact accounting and a valid save', () => {
     const initial = prepareRivalMonth();
     const initialSource = initial.cities.find((city) => city.id === 'ye')!;
+    initialSource.cavalryServiceDaysThisMonth = 2000 * 29;
     const expectedPostSettlementFood =
       initialSource.food +
       Math.floor(initialSource.farming * 2.2 + initialSource.population / 80) -
-      Math.ceil(6000 * 0.12);
+      Math.ceil(8000 * 0.12);
 
     const first = advanceV03(initial, 1);
     const second = advanceV03(initial, 1);
@@ -141,6 +143,7 @@ describe('v0.3 engine rival campaign integration', () => {
     expect(journey.manifest.carriedFood).toBe(
       estimateCampaignSupply({
         troopCount: 5000,
+        cavalryTroops: 1000,
         outboundDays: journey.expectedArrivalDay - journey.departedAbsoluteDay,
         battleDays: 30,
         returnDays: journey.expectedArrivalDay - journey.departedAbsoluteDay,

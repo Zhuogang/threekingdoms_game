@@ -125,6 +125,7 @@ function makeUnits(
       troopType: entry.troopType,
       troops: entry.troops,
       initialTroops: entry.troops,
+      troopExperience: entry.troopExperience ?? 0,
       force: entry.force,
       intellect: entry.intellect ?? 40,
       level: entry.level ?? 0,
@@ -150,6 +151,13 @@ function rosterError(roster: readonly BattleRosterEntry[], side: BattleSide): st
     if (!unit.id.trim()) return `${side} units need stable IDs.`;
     if (!Number.isInteger(unit.troops) || unit.troops < 1)
       return `${unit.name} needs at least one soldier.`;
+    if (
+      unit.troopExperience !== undefined &&
+      (!Number.isFinite(unit.troopExperience) ||
+        unit.troopExperience < 0 ||
+        unit.troopExperience > 1900)
+    )
+      return `${unit.name} has invalid soldier experience.`;
     if (!Number.isFinite(unit.force) || unit.force < 0 || unit.force > 120)
       return `${unit.name} has an invalid force value.`;
     if (
@@ -682,6 +690,7 @@ function attackOneWay(
   const damage = applyWaterDamageModifiers(baseDamage(source, target, state.map), modifiers);
   const casualties = casualtyCountAfterWater(target.troops, damage);
   target.troops -= casualties;
+  if (target.troops === 0) target.troopExperience = 0;
   if (casualties > 0) {
     const moraleLoss = Math.min(
       45,
@@ -779,6 +788,7 @@ function applyTacticDamage(
     applyWaterDamageModifiers(rawDamage, modifiers),
   );
   target.troops = Math.max(0, target.troops - casualties);
+  if (target.troops === 0) target.troopExperience = 0;
   if (casualties > 0)
     target.morale = Math.max(
       MIN_MORALE,

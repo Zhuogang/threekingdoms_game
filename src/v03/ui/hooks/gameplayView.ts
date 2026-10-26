@@ -29,7 +29,7 @@ import {
   zoomCampaignViewport,
 } from '../../rendering';
 
-import type { V03CityAction, V03GameState } from '../../types';
+import type { V03CityAction, V03GameState, TroopType } from '../../types';
 
 import { localizeAppMessage, CAMPAIGN_BOUNDS, dateLabel } from '../shared/app-copy-2';
 import { displayName, journeyPosition } from '../shared/app-copy-3';
@@ -69,15 +69,26 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     setBattleViewport,
     battleViewport,
   } = context;
-  const capitalAvailability = (action: V03CityAction, officerId?: string, amount?: number) =>
+  const capitalAvailability = (
+    action: V03CityAction,
+    officerId?: string,
+    amount?: number,
+    troopType?: TroopType,
+  ) =>
     getV03CityActionAvailability(state, {
       cityId: selectedCity?.id ?? '',
       action,
       officerId,
       amount,
+      troopType,
     });
-  const capitalReason = (action: V03CityAction, officerId?: string, amount?: number) => {
-    const result = capitalAvailability(action, officerId, amount);
+  const capitalReason = (
+    action: V03CityAction,
+    officerId?: string,
+    amount?: number,
+    troopType?: TroopType,
+  ) => {
+    const result = capitalAvailability(action, officerId, amount, troopType);
     return result.reason ? localizeAppMessage(result.reason, locale, state) : undefined;
   };
   const selectedFaction = state.factions.find((faction) => faction.id === state.playerFactionId);

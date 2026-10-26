@@ -95,6 +95,8 @@ export interface BattleRosterEntry {
   name: string;
   troopType: BattleTroopType;
   troops: number;
+  /** Optional for standalone battle creation; campaign rosters always supply this. */
+  troopExperience?: number;
   force: number;
   /** Officer-derived combat attributes; omitted only by isolated rules tests. */
   intellect?: number;
@@ -109,6 +111,7 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   name: string;
   troops: number;
   initialTroops: number;
+  troopExperience: number;
   force: number;
   intellect: number;
   level: number;

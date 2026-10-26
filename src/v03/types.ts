@@ -1,4 +1,5 @@
 import type { TroopType } from './content/types';
+import type { ReservePools } from './campaign/troop-experience';
 import type { BattleAction, V03TacticalBattleState } from './battle';
 import type { V03CoalitionInvitation, V03TimedAlliance } from './campaign/monthly-systems';
 import type { Journey as CalendarJourney } from './calendar';
@@ -59,7 +60,11 @@ export interface V03City {
   gold: number;
   food: number;
   reserve: number;
+  /** Typed unassigned soldier pools, including veterans returned by officers. */
+  reservePools: ReservePools;
   garrisonTroops: number;
+  /** Average experience of unled garrison soldiers only; officer troops are excluded. */
+  garrisonExperience: number;
   governorId: string | null;
   pendingAppointment: V03PendingAppointment | null;
   governanceMode: V03GovernanceMode;
@@ -68,6 +73,7 @@ export interface V03City {
   workPointsUsed?: number;
   /** Troop-days spent stationed in this city since the last monthly settlement. */
   troopServiceDaysThisMonth?: number;
+  cavalryServiceDaysThisMonth?: number;
   /** Absolute month boundary until which raid/sack actions are unavailable. */
   plunderCooldownUntilDay?: number;
 }
@@ -89,6 +95,8 @@ export interface V03Officer {
   loyalty: number;
   age: number;
   troops: number;
+  /** Soldier experience; never use the officer's personal experience/level for this. */
+  troopExperience: number;
   troopType: TroopType;
   /** Fine arms add a persistent +5 force bonus; omitted is accepted in earlier v3 saves. */
   equipment?: 'Fine arms' | null;
@@ -291,6 +299,7 @@ export type V03Command =
       type: 'cityAction';
       cityId: string;
       action: V03CityAction;
+      troopType?: TroopType;
       officerId?: string;
       amount?: number;
     }

@@ -715,11 +715,13 @@ describe('serializable tactical battle operations', () => {
     state.units[1]!.x = 4;
     state.units[1]!.y = 8;
     state.units[1]!.troops = 1;
+    state.units[1]!.troopExperience = 1900;
     const result = applyBattleAction(state, { type: 'attack', unitId: 'a1', targetId: 'd1' });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.outcome).toEqual({ winner: 'attacker', reason: 'elimination' });
     expect(result.state.units[0]!.troops).toBe(1000);
+    expect(result.state.units[1]!.troopExperience).toBe(0);
   });
 
   it('runs a stable AI turn without advancing time, then advances exactly one battle day', () => {

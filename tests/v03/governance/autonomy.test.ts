@@ -1,3 +1,4 @@
+import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
 import {
@@ -176,6 +177,7 @@ describe('v0.3 governor monthly work planning', () => {
     manager.troops = 0;
     city.food = 10_000;
     city.reserve = 1000;
+    city.reservePools = createReservePools(0, 0, 1000);
     city.loyalty = 60;
     city.gold = 0;
     let plan = planGovernorMonthlyWork(state, cityId, 3);
@@ -186,10 +188,12 @@ describe('v0.3 governor monthly work planning', () => {
 
     city.loyalty = 80;
     city.reserve = 0;
+    city.reservePools = createReservePools();
+    city.gold = 1000;
     plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({
       action: 'recruit',
-      goldCost: 0,
+      goldCost: 600,
       reasonCode: 'reserve-recruitment',
     });
     result = applyGovernorMonthlyWork(state, plan);
@@ -198,6 +202,7 @@ describe('v0.3 governor monthly work planning', () => {
     expect(result.city?.population).toBeLessThan(city.population);
 
     city.reserve = 1000;
+    city.reservePools = createReservePools(0, 0, 1000);
     city.population = 1000;
     manager.troops = 5000;
     city.garrisonTroops = 5000;
@@ -236,6 +241,7 @@ describe('v0.3 governor monthly work planning', () => {
     city.commerce = 500;
     city.loyalty = 80;
     city.reserve = 1000;
+    city.reservePools = createReservePools(0, 0, 1000);
     city.gold = 1000;
     for (const officer of local) officer.loyalty = 100;
 
@@ -282,6 +288,7 @@ describe('v0.3 governor monthly work planning', () => {
       officer.troops = 0;
     }
     city.reserve = 5000;
+    city.reservePools = createReservePools(0, 0, 5000);
     city.garrisonTroops = 0;
     plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({
@@ -305,6 +312,7 @@ describe('v0.3 governor monthly work planning', () => {
     rewardCity.commerce = 500;
     rewardCity.loyalty = 80;
     rewardCity.reserve = 1000;
+    rewardCity.reservePools = createReservePools(0, 0, 1000);
     rewardOfficer.troops = 0;
     rewardOfficer.loyalty = 40;
     for (const officer of rewarded.state.officers.filter(
@@ -359,6 +367,7 @@ describe('v0.3 governor monthly work planning', () => {
     equipmentCity.commerce = 500;
     equipmentCity.loyalty = 80;
     equipmentCity.reserve = 1000;
+    equipmentCity.reservePools = createReservePools(0, 0, 1000);
     equipmentCity.gold = 1000;
     for (const officer of equipped.state.officers.filter(
       (entry) => entry.location.kind === 'city' && entry.location.cityId === equipped.cityId,

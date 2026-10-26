@@ -1,3 +1,4 @@
+import { createReservePools } from '../../src/v03/campaign/troop-experience';
 import { describe, expect, it, vi } from 'vitest';
 import { createV03Game } from '../../src/v03/initial-state';
 import { createV03OrderServices } from '../../src/v03/governance/services';
@@ -20,7 +21,9 @@ function city(id: string, factionId: string | null, garrisonTroops: number, food
     gold: 10000,
     food,
     reserve: 0,
+    reservePools: createReservePools(0),
     garrisonTroops,
+    garrisonExperience: 0,
     governorId: null,
     pendingAppointment: null,
     governanceMode: factionId ? 'steward' : 'steward',
@@ -48,6 +51,7 @@ function officer(
     troops,
     troopType,
     experience: 0,
+    troopExperience: 0,
     level: 0,
     governorOfCityId: null,
     alive: true,
@@ -148,6 +152,7 @@ describe('v0.3 strategic rival planning', () => {
     expect(plans).toHaveLength(1);
     expect(estimateSupply).toHaveBeenCalledWith({
       troopCount: plans[0]!.requestedTroops,
+      cavalryTroops: 2000,
       outboundDays: plans[0]!.route.estimatedDays,
       battleDays: 30,
       returnDays: plans[0]!.route.estimatedDays,

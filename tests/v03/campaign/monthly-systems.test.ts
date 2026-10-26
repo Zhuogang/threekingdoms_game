@@ -1,3 +1,4 @@
+import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { describe, expect, it } from 'vitest';
 import {
   V03_ALLIANCE_DURATION_MONTHS,
@@ -29,6 +30,7 @@ function city(overrides: Partial<V03MonthlyEventCity> = {}): V03MonthlyEventCity
     garrisonTroops: 0,
     neighbors: [],
     ...overrides,
+    reservePools: overrides.reservePools ?? createReservePools(overrides.reserve ?? 0),
   };
 }
 
@@ -199,6 +201,11 @@ describe('v0.3 monthly event resolver', () => {
       commerce: 80,
       loyalty: 80,
       reserve: 700,
+      reservePools: {
+        infantry: { troops: 400, troopExperience: 1200 },
+        archer: { troops: 200, troopExperience: 900 },
+        cavalry: { troops: 100, troopExperience: 1600 },
+      },
       garrisonTroops: 500,
     });
     const changan = city({ id: 'changan', factionId: 'dong', reserve: 100, garrisonTroops: 100 });
@@ -231,10 +238,16 @@ describe('v0.3 monthly event resolver', () => {
       commerce: 40,
       loyalty: 40,
       reserve: 0,
+      reservePools: createReservePools(0),
       garrisonTroops: 0,
     });
     expect(result.cities[1]).toMatchObject({
       reserve: 800,
+      reservePools: {
+        infantry: { troops: 500, troopExperience: 960 },
+        archer: { troops: 200, troopExperience: 900 },
+        cavalry: { troops: 100, troopExperience: 1600 },
+      },
       garrisonTroops: 600,
       gold: 1_420,
       food: 5_990,

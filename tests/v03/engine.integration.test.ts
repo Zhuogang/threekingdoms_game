@@ -507,6 +507,17 @@ describe('v0.3 strategic engine integration', () => {
           officer.location.cityId === city.id,
       )
       .reduce((sum, officer) => sum + officer.troops, 0);
+    const cavalry = state.officers
+      .filter(
+        (o) =>
+          o.alive &&
+          o.factionId === city.factionId &&
+          o.location.kind === 'city' &&
+          o.location.cityId === city.id &&
+          o.troopType === 'cavalry',
+      )
+      .reduce((sum, o) => sum + o.troops, 0);
+    city.cavalryServiceDaysThisMonth = cavalry * 29;
     const militia = 100;
     city.garrisonTroops = staffedTroops + militia;
     city.troopServiceDaysThisMonth = (staffedTroops + militia) * 29;
@@ -517,7 +528,7 @@ describe('v0.3 strategic engine integration', () => {
 
     const result = advanceV03(state, 1);
     const settledCity = result.state.cities.find((entry) => entry.id === city.id)!;
-    const foodUpkeep = Math.ceil((staffedTroops + militia) * 0.12);
+    const foodUpkeep = Math.ceil((staffedTroops + militia + cavalry) * 0.12);
     const harvest = Math.floor(city.farming * 2.2 + city.population / 80);
 
     expect(result.state.absoluteDay).toBe(30);
@@ -627,6 +638,11 @@ describe('v0.3 strategic engine integration', () => {
     city.governanceMode = 'governor';
     city.garrisonTroops = 0;
     city.reserve = 0;
+    city.reservePools = {
+      infantry: { troops: 0, troopExperience: 0 },
+      archer: { troops: 0, troopExperience: 0 },
+      cavalry: { troops: 0, troopExperience: 0 },
+    };
     city.population = 1_000;
     city.farming = 0;
     city.commerce = 100;

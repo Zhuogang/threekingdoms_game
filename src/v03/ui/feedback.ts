@@ -14,6 +14,10 @@ const ROUTINE_ZH: Readonly<Record<string, string>> = {
   'The city cannot afford or benefit from loyalty recovery.': '城市金钱不足，或民心已无需恢复。',
   'This improvement is already at its current limit.': '此项发展已达到当前上限。',
   'The capital needs 80 unreserved gold for this work.': '此项工作需要 80 未预留的金钱。',
+  'The city cannot afford this recruitment.': '城中金钱不足，无法招募此兵种。',
+  'There are not enough soldiers of this troop type in the city reserve.':
+    '待命兵池中该兵种人数不足。',
+  'Choose infantry, archers or cavalry to recruit.': '请选择招募步兵、弓兵或骑兵。',
   'The city has no recruitable population beyond its protected 1,000 residents.':
     '城市须保留 1,000 居民，目前没有可征募人口。',
   'The city reserve is at capacity.': '城市预备兵已达到容量上限。',

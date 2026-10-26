@@ -100,6 +100,7 @@ export type GroundMovementClass = 'infantry' | 'archer' | 'cavalry';
 
 export interface TravelComposition {
   troopTypes: readonly GroundMovementClass[];
+  cavalryTroops?: number;
   /** Only a standalone officer/courier receives the single-person profile. */
   soloOfficer?: boolean;
   heavySupplyTrain?: boolean;
@@ -411,7 +412,7 @@ export function advanceJourneyOneDay(journey: Journey): JourneyStepResult {
       );
     });
   const dailyChargeMicro =
-    updated.manifest.troopCount *
+    (updated.manifest.troopCount + (updated.manifest.composition.cavalryTroops ?? 0)) *
     Math.round(PILOT_LOGISTICS_RATES.travelFoodPerTroopDay * 1_000_000);
   const rationMicro = updated.supplyRemainderMicro + dailyChargeMicro;
   const rationWholeFood = Math.floor(rationMicro / 1_000_000);
@@ -440,6 +441,7 @@ export const PILOT_LOGISTICS_RATES = {
 
 export interface SupplyEstimateInput {
   troopCount: number;
+  cavalryTroops?: number;
   outboundDays: number;
   battleDays: number;
   returnDays: number;
@@ -459,15 +461,19 @@ export function estimateCampaignSupply(input: SupplyEstimateInput): SupplyEstima
   for (const [name, value] of Object.entries(input)) {
     if (
       name !== 'rateOverrides' &&
+      !(name === 'cavalryTroops' && value === undefined) &&
       (typeof value !== 'number' || !Number.isFinite(value) || value < 0)
     ) {
       throw new Error(`${name} must be a non-negative number.`);
     }
   }
+  if ((input.cavalryTroops ?? 0) > input.troopCount)
+    throw new Error('Cavalry cannot exceed total troops.');
+  const foodTroops = input.troopCount + (input.cavalryTroops ?? 0);
   const rates = { ...PILOT_LOGISTICS_RATES, ...input.rateOverrides };
-  const outboundFood = input.troopCount * input.outboundDays * rates.travelFoodPerTroopDay;
-  const battleReserveFood = input.troopCount * input.battleDays * rates.battleFoodPerTroopDay;
-  const returnFood = input.troopCount * input.returnDays * rates.travelFoodPerTroopDay;
+  const outboundFood = foodTroops * input.outboundDays * rates.travelFoodPerTroopDay;
+  const battleReserveFood = foodTroops * input.battleDays * rates.battleFoodPerTroopDay;
+  const returnFood = foodTroops * input.returnDays * rates.travelFoodPerTroopDay;
   const totalFood = Math.ceil(outboundFood + battleReserveFood + returnFood);
   return {
     outboundFood,

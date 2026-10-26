@@ -125,6 +125,7 @@ export function decidePrisoner(
   if (action === 'execute') {
     officer.alive = false;
     officer.troops = 0;
+    officer.troopExperience = 0;
   }
   if (action === 'release') {
     officer.location = { kind: 'city', cityId: home?.id ?? holdingCityId };
