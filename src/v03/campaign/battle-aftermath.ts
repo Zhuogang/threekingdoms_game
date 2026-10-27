@@ -104,6 +104,7 @@ export function previewRetreat(state: V03GameState, battle: V03BattleState, side
   const officers = state.officers.filter(
     (officer) =>
       officer.alive &&
+      factionId !== null &&
       officer.factionId === factionId &&
       ((officer.location.kind === 'battle' && officer.location.battleId === battle.id) ||
         (side === 'defender' &&
@@ -147,6 +148,7 @@ export function settleBattlePersonnel(
       .filter(
         (officer) =>
           officer.alive &&
+          (side === 'attacker' || battle.defenderFactionId !== null) &&
           officer.factionId ===
             (side === 'attacker' ? battle.attackerFactionId : battle.defenderFactionId) &&
           ((officer.location.kind === 'battle' && officer.location.battleId === battle.id) ||

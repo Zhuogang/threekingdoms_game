@@ -116,6 +116,10 @@ export function localizedEvent(
         en: 'An officer came of age and improved force and intellect.',
         zh: '一名武將成年，統率與智力有所提升。',
       },
+      'officer-debut': {
+        en: 'New local officers are available to find and recruit through city searches.',
+        zh: '新人物已在当地登场，可通过城务搜索招募。',
+      },
       festival: {
         en: 'A city held a festival, spending gold to improve public support.',
         zh: '城市舉辦節慶，花費金錢提升民心。',

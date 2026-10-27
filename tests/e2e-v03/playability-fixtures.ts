@@ -1,3 +1,4 @@
+import { preparePuyangArmy } from '../v03/helpers/army-fixture';
 import { createCanvasBattleMap } from '../../src/v03/battle';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
@@ -19,6 +20,7 @@ export function acknowledgeReports(state: V03GameState): V03GameState {
  */
 export function reviewBattleState(battlefieldId?: string): V03GameState {
   const initial = createV03Game('cao', 481516);
+  preparePuyangArmy(initial);
   const defended = initial.cities.find((city) => city.id === 'xiapi')!;
   defended.garrisonTroops = 500;
   defended.population -= 500;
@@ -70,7 +72,7 @@ export function reviewBattleState(battlefieldId?: string): V03GameState {
 }
 
 export function npcOnlyState(): V03GameState {
-  let state = createV03Game('sun', 610301, 'divided-realm-190');
+  let state = createV03Game('sun', 610301, 'guandu-200');
   for (let step = 0; step < 80; step++) {
     state = acknowledgeReports(state);
     if (

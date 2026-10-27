@@ -232,7 +232,7 @@ describe('playability plan contracts', () => {
     );
     expect(
       executeV03Command(state, { type: 'cityAction', cityId: 'chenliu', action: 'develop-farming' })
-        .error,
+        .error ?? '',
     ).not.toMatch(/planning/);
   });
   it.each(['attacker', 'defender', 'draw'] as const)(

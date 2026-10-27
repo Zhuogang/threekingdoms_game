@@ -2908,3 +2908,177 @@ th small {
     width: 90px;
   }
 }
+
+/* Officers: fixed footprints and surname fallback keep every view usable without images. */
+.v03-officer-portrait {
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--tone-22);
+  background: var(--paper);
+}
+.v03-officer-portrait img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.v03-portrait-fallback {
+  padding: var(--space-1);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.v03-officer-portrait.v03-unit-leader {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+.v03-unit-leader .v03-portrait-fallback {
+  padding: 0;
+  font-size: var(--text-xs);
+  line-height: 1.1;
+  max-width: 100%;
+}
+.v03-ruler-card > .v03-officer-portrait {
+  width: 48px;
+  height: 60px;
+  grid-row: span 3;
+}
+.v03-city-roster-group {
+  margin-bottom: var(--space-6);
+  min-width: 0;
+}
+.v03-city-roster-group .v03-step-choice {
+  min-width: 0;
+}
+.v03-city-roster-group .v03-step-choice > span:nth-child(2) {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v03-officer-status {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  background: var(--paper);
+  border: 1px solid var(--tone-22);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+}
+.v03-officer-profile {
+  container-type: inline-size;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v03-profile-hero {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+  margin-bottom: var(--space-6);
+}
+.v03-profile-hero > .v03-officer-portrait {
+  width: 160px;
+  height: 160px;
+}
+.v03-profile-hero h3 {
+  margin-top: 0;
+  font-size: var(--text-title);
+}
+.v03-officer-profile .v03-stat-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: var(--space-3);
+  background: var(--paper);
+}
+.v03-officer-profile .v03-stat-grid > div {
+  min-width: 0;
+}
+.v03-profile-sources {
+  margin: var(--space-6) 0;
+  font-size: var(--text-sm);
+}
+.v03-profile-sources summary {
+  cursor: pointer;
+}
+.v03-profile-sources a {
+  color: var(--accent);
+}
+.v03-profile-visit {
+  margin-top: var(--space-3);
+}
+.v03-directory-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+.v03-directory-filters label {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.v03-directory-filters input,
+.v03-directory-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.v03-directory-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: var(--space-3);
+}
+.v03-directory-card {
+  min-width: 0;
+  gap: var(--space-3);
+  justify-content: start;
+  text-align: left;
+}
+.v03-directory-card > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+.v03-directory-card small {
+  color: var(--tone-5);
+  font-weight: normal;
+}
+.v03-directory-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.v03-officer-directory .v03-window-header > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 480px) {
+  .v03-profile-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v03-profile-hero > .v03-officer-portrait {
+    width: 128px;
+    height: 128px;
+  }
+  .v03-officer-profile .v03-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 540px) {
+  .v03-directory-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v03-directory-pagination {
+    gap: var(--space-2);
+  }
+  .v03-directory-card {
+    padding: var(--space-3);
+  }
+}

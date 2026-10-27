@@ -4,7 +4,7 @@ import { hasNavalTraining } from '../../../src/v03/content/naval-commanders';
 import { formationLeaderVisual } from '../../../src/v03/rendering/unit-leader';
 
 describe('historical naval commanders', () => {
-  it('grants immediate eligibility to exactly the eight approved officers in a new game', () => {
+  it('preserves the original eight and enables the available R4 addition in the 190 opening', () => {
     const state = createV03Game('cao', 1234);
     expect(
       state.officers
@@ -12,7 +12,17 @@ describe('historical naval commanders', () => {
         .map((o) => o.id)
         .sort(),
     ).toEqual(
-      ['zhouyu', 'chengpu', 'huanggai', 'handang', 'ganning', 'guanyu', 'sunce', 'lusu'].sort(),
+      [
+        'zhouyu',
+        'chengpu',
+        'huanggai',
+        'handang',
+        'ganning',
+        'guanyu',
+        'sunce',
+        'lusu',
+        'zhoutai',
+      ].sort(),
     );
     expect(hasNavalTraining(undefined)).toBe(false);
     expect(hasNavalTraining('militia')).toBe(false);

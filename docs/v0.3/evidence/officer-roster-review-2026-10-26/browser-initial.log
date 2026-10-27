@@ -1,0 +1,127 @@
+[WebServer] (node:41360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 36 tests using 1 worker
+
+(node:488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-320 (8.4s)
+  ok  2 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-390 (5.7s)
+  ok  3 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-1366 (6.0s)
+  ok  4 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom zh (5.7s)
+  ok  5 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate zh (4.4s)
+  ok  6 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-320 (4.9s)
+  ok  7 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-390 (4.9s)
+  ok  8 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-1366 (4.8s)
+  ok  9 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom en (4.5s)
+  ok 10 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate en (3.8s)
+  ok 11 tests\e2e-v03\officer-directory.spec.ts:216:1 › serving and local free officers are grouped and a free profile exposes no army commands (3.1s)
+  ok 12 tests\e2e-v03\officer-directory.spec.ts:292:1 › new commander portraits resolve on the battlefield and sidebar and fall back together (5.3s)
+  ok 13 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-zh (3.2s)
+  ok 14 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-zh (3.1s)
+  ok 15 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-zh (5.0s)
+  ok 16 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-zh (2.0s)
+  ok 17 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-en (2.9s)
+  ok 18 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-en (3.1s)
+  ok 19 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-en (4.8s)
+  ok 20 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-en (1.8s)
+  ok 21 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-zh (2.9s)
+  ok 22 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-zh (4.5s)
+  ok 23 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-zh (4.7s)
+  ok 24 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-en (3.2s)
+  ok 25 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-en (4.4s)
+  ok 26 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-en (4.5s)
+  ok 27 tests\e2e-v03\officer-review.spec.ts:32:3 › reviewed affiliation explanation fits at 320px without changing the campaign zh (3.0s)
+  x  28 tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload zh (15.1s)
+(node:12712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 29 tests\e2e-v03\officer-review.spec.ts:32:3 › reviewed affiliation explanation fits at 320px without changing the campaign en (3.5s)
+  x  30 tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload en (16.1s)
+(node:35676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 31 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (zh) (7.7s)
+  ok 32 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (zh) (7.2s)
+  ok 33 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (zh) (9.8s)
+  ok 34 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (en) (6.3s)
+  ok 35 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (en) (6.7s)
+  ok 36 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (en) (8.7s)
+
+
+  1) tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload zh
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: '健康兵', exact: true }) }).getByRole('definition')
+    Expected: "659"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: '健康兵', exact: true }) }).getByRole('definition') with timeout 10000ms
+      - waiting for locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: '健康兵', exact: true }) }).getByRole('definition')
+
+
+      85 |         has: page.getByRole('term', { name: locale === 'zh' ? '伤兵' : 'Wounded', exact: true }),
+      86 |       });
+    > 87 |       await expect(healthy.getByRole('definition')).toHaveText(current.troops.toLocaleString());
+         |                                                     ^
+      88 |       await expect(wounded.getByRole('definition')).toHaveText(current.wounded.toLocaleString());
+      89 |       expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(before);
+      90 |       await page.screenshot({
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\officer-review.spec.ts:87:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\officer-review-profile-fol-f31f4-ounds-across-save-reload-zh\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\officer-review-profile-fol-f31f4-ounds-across-save-reload-zh\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\officer-review-profile-fol-f31f4-ounds-across-save-reload-zh\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\officer-review-profile-fol-f31f4-ounds-across-save-reload-zh\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload en
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: 'Healthy soldiers', exact: true }) }).getByRole('definition')
+    Expected: "659"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: 'Healthy soldiers', exact: true }) }).getByRole('definition') with timeout 10000ms
+      - waiting for locator('.v03-officer-profile .v03-stat-grid').last().locator('div').filter({ has: getByRole('term', { name: 'Healthy soldiers', exact: true }) }).getByRole('definition')
+
+
+      85 |         has: page.getByRole('term', { name: locale === 'zh' ? '伤兵' : 'Wounded', exact: true }),
+      86 |       });
+    > 87 |       await expect(healthy.getByRole('definition')).toHaveText(current.troops.toLocaleString());
+         |                                                     ^
+      88 |       await expect(wounded.getByRole('definition')).toHaveText(current.wounded.toLocaleString());
+      89 |       expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(before);
+      90 |       await page.screenshot({
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\officer-review.spec.ts:87:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\officer-review-profile-fol-1448b-ounds-across-save-reload-en\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\officer-review-profile-fol-1448b-ounds-across-save-reload-en\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\officer-review-profile-fol-1448b-ounds-across-save-reload-en\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\officer-review-profile-fol-1448b-ounds-across-save-reload-en\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload zh
+    tests\e2e-v03\officer-review.spec.ts:50:3 › profile follows actual battle wounds across save reload en
+  34 passed (3.5m)

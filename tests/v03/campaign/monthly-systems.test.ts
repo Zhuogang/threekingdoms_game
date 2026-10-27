@@ -315,4 +315,50 @@ describe('v0.3 monthly event resolver', () => {
       expect.objectContaining({ key: 'come-of-age', entityIds: ['officer'] }),
     );
   });
+
+  it('freezes dead and unknown ages, and skips a year whose growth checkpoint already committed', () => {
+    const input = monthlyInput({
+      monthIndex: 12,
+      officers: [
+        officer({ id: 'dead', alive: false, age: 17 }),
+        officer({ id: 'unknown', age: null }),
+        officer({ id: 'young', age: 17 }),
+      ],
+    });
+    const first = resolveV03MonthlyEvents(input);
+    expect(first.officers.find((officer) => officer.id === 'dead')!.age).toBe(17);
+    expect(first.officers.find((officer) => officer.id === 'unknown')!.age).toBe(null);
+    expect(first.officers.find((officer) => officer.id === 'young')!.age).toBe(18);
+    const repeated = resolveV03MonthlyEvents({
+      ...input,
+      officers: first.officers,
+      lastOfficerGrowthYear: 191,
+    });
+    expect(repeated.officers.find((officer) => officer.id === 'young')!.age).toBe(18);
+    expect(repeated.events.filter((event) => event.key === 'come-of-age')).toHaveLength(0);
+  });
+
+  it('retains force above 100 from fine arms and never lowers an already capped trained value', () => {
+    const result = resolveV03MonthlyEvents(
+      monthlyInput({
+        monthIndex: 12,
+        officers: [
+          officer({ id: 'equipped', age: 17, force: 101, intellect: 97, equipment: 'Fine arms' }),
+          officer({ id: 'capped', age: 17, force: 105, intellect: 100, equipment: 'Fine arms' }),
+        ],
+      }),
+    );
+    expect(result.officers.find((officer) => officer.id === 'equipped')).toMatchObject({
+      age: 18,
+      force: 104,
+      intellect: 99,
+      equipment: 'Fine arms',
+    });
+    expect(result.officers.find((officer) => officer.id === 'capped')).toMatchObject({
+      age: 18,
+      force: 105,
+      intellect: 100,
+      equipment: 'Fine arms',
+    });
+  });
 });

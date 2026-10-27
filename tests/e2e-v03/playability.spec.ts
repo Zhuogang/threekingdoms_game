@@ -65,7 +65,9 @@ async function importState(page: Page, state: V03GameState) {
   });
 }
 
-test('RV01 advances a natural Sun NPC battle from both language interfaces', async ({ page }) => {
+test('RV01 advances a natural Guandu Sun NPC battle from both language interfaces', async ({
+  page,
+}) => {
   const state = npcOnlyState();
   expect(state.battles.some((battle) => battle.active)).toBe(true);
   for (const language of ['en', 'zh'] as const) {
@@ -409,9 +411,13 @@ test('RV07 shows reserve/officer results and rejects training at either cap befo
   await expect(page.getByRole('term').filter({ hasText: /^Reserve soldiers$/ })).toBeVisible();
   await expect(page.getByText('Population', { exact: true })).toBeVisible();
   await showOfficer(page, officer.name);
-  await page.getByRole('button', { name: 'Train', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Confirm order', exact: true })).toBeDisabled();
-  await expect(page.locator('.v03-action-reason')).toContainText('training limit');
+  await expect(page.getByRole('button', { name: 'Train', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Train', exact: true })).toHaveAttribute(
+    'title',
+    /training limit/,
+  );
+  await expect(page.locator('.v03-work-detail')).toHaveCount(0);
+  expect(await savedState(page)).toEqual(state);
   await showCityManagement(page);
   await locale(page, 'zh');
   await page.getByRole('button', { name: '征募士兵', exact: true }).click();

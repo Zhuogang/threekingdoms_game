@@ -185,10 +185,11 @@ test('officer training returns to the selected officer; exhausted work stays blo
     ).toBe(count * 25);
   }
   const exhausted = await current(page);
-  await page.getByRole('button', { name: 'Train', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Confirm order', exact: true })).toBeDisabled();
-  await expect(page.locator('.v03-action-reason')).toContainText('monthly work points');
-  await page.keyboard.press('Escape');
+  const train = page.getByRole('button', { name: 'Train', exact: true });
+  await expect(train).toBeDisabled();
+  await expect(train).toHaveAttribute('title', /monthly work points/);
+  await expect(page.locator('.v03-officer-detail')).toContainText('0/3');
+  await expect(page.locator('.v03-work-detail')).toHaveCount(0);
   await expect(page.locator('.v03-officer-detail')).toBeVisible();
   expect(await current(page)).toEqual(exhausted);
 });

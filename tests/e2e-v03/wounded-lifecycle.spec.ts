@@ -32,6 +32,11 @@ for (const locale of ['zh', 'en'] as const) {
       (city) => prisoner.location.kind === 'city' && city.id === prisoner.location.cityId,
     )!;
     home.garrisonTroops -= prisoner.troops;
+    if (home.governorId === prisoner.id) {
+      home.governorId = null;
+      home.governanceMode = 'steward';
+      prisoner.governorOfCityId = null;
+    }
     Object.assign(prisoner, {
       troops: 1000,
       wounded: 2000,

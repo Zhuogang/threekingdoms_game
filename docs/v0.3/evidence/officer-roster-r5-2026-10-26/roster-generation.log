@@ -1,0 +1,26 @@
+{
+  "catalogue": 98,
+  "additions": 45,
+  "scenarios": [
+    {
+      "scenarioId": "divided-realm-190",
+      "counts": {
+        "serving": 34,
+        "free": 35,
+        "deceased": 0,
+        "pending": 29
+      }
+    },
+    {
+      "scenarioId": "guandu-200",
+      "counts": {
+        "serving": 50,
+        "free": 16,
+        "deceased": 15,
+        "pending": 17
+      }
+    }
+  ],
+  "docPath": "docs/v0.3/13-officer-roster-data.md",
+  "evidencePath": "docs/v0.3/evidence/officer-roster-r5-2026-10-26/roster-audit.json"
+}

@@ -1,0 +1,34 @@
+[WebServer] (node:48912) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 25 tests using 1 worker
+
+(node:52376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\e2e-v03\city-affairs.spec.ts:168:1 › officer training returns to the selected officer; exhausted work stays blocked with a reason (8.1s)
+  ok  2 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-zh (3.8s)
+  ok  3 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-zh (3.8s)
+  ok  4 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-zh (5.7s)
+  ok  5 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-en (3.3s)
+  ok  6 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-en (3.2s)
+  ok  7 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-en (5.2s)
+  ok  8 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-zh (3.2s)
+  ok  9 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-zh (5.0s)
+  ok 10 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-zh (4.9s)
+  ok 11 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-en (3.1s)
+  ok 12 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-en (4.6s)
+  ok 13 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-en (4.7s)
+  ok 14 tests\e2e-v03\playability.spec.ts:68:1 › RV01 advances a natural Guandu Sun NPC battle from both language interfaces (8.9s)
+  ok 15 tests\e2e-v03\playability.spec.ts:396:1 › RV07 shows reserve/officer results and rejects training at either cap before submission (4.4s)
+  ok 16 tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander false retain portraits, change vessels and restore land art (21.2s)
+  ok 17 tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander false retain portraits, change vessels and restore land art (19.1s)
+  ok 18 tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander true retain portraits, change vessels and restore land art (19.4s)
+  ok 19 tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander true retain portraits, change vessels and restore land art (19.9s)
+  ok 20 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (zh) (6.2s)
+  ok 21 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (zh) (6.5s)
+  ok 22 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (zh) (8.7s)
+  ok 23 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (en) (5.7s)
+  ok 24 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (en) (5.9s)
+  ok 25 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (en) (8.8s)
+
+  25 passed (3.4m)

@@ -1,0 +1,21 @@
+warning: in the working copy of 'public/fonts/NotoSerifSC-OFL.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'public/fonts/SourceSans3-OFL.txt', CRLF will be replaced by LF the next time Git touches it
+warning: in the working copy of 'tools/subset-fonts.py', CRLF will be replaced by LF the next time Git touches it
+{
+  "localLinks": 205,
+  "sourceFingerprints": 49,
+  "regressionFingerprints": 17,
+  "identities": 98,
+  "cityAccounts": 48,
+  "controlledFlows": 36,
+  "chronologySeeds": 24,
+  "replays": 24,
+  "days": 2160,
+  "saveRoundTrips": 3705,
+  "battleRecords": 225,
+  "unitIntegration": 659,
+  "developerBrowserCasesCovered": 36,
+  "finalBrowserRerun": 4,
+  "production": 15,
+  "unchangedBaselineFormatFailures": 40
+}

@@ -107,8 +107,11 @@ describe.each([
       let day = 0;
       day < 30 && state.cities.find((city) => city.id === targetCityId)?.governorId !== officerId;
       day++
-    )
+    ) {
       state = advanceOneDay(state);
+      if (state.absoluteDay < 30)
+        expect(state.officers.find((officer) => officer.id === officerId)!.troops).toBe(0);
+    }
 
     expect(state.absoluteDay).toBe(30);
     expect(state.cities.find((city) => city.id === targetCityId)).toMatchObject({
@@ -120,7 +123,6 @@ describe.each([
       factionId: 'cao',
       location: { kind: 'city', cityId: targetCityId },
       governorOfCityId: targetCityId,
-      troops: 0,
     });
     expect(validateV03State(state)).toBe(true);
     expect(decodeV03Save(encodeV03Save(state))).toEqual(state);

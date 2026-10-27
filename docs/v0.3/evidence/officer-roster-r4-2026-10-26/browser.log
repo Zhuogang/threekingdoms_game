@@ -1,0 +1,21 @@
+[WebServer] (node:19488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:22580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-320 (8.6s)
+  ok  2 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-390 (5.5s)
+  ok  3 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-1366 (5.6s)
+  ok  4 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom zh (5.0s)
+  ok  5 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate zh (4.1s)
+  ok  6 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-320 (4.9s)
+  ok  7 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-390 (4.9s)
+  ok  8 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-1366 (5.4s)
+  ok  9 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom en (5.1s)
+  ok 10 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate en (3.7s)
+  ok 11 tests\e2e-v03\officer-directory.spec.ts:216:1 › serving and local free officers are grouped and a free profile exposes no army commands (3.1s)
+  ok 12 tests\e2e-v03\officer-directory.spec.ts:292:1 › new commander portraits resolve on the battlefield and sidebar and fall back together (5.7s)
+
+  12 passed (1.1m)

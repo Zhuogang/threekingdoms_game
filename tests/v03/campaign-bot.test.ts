@@ -1,3 +1,4 @@
+import { preparePuyangArmy } from './helpers/army-fixture';
 import { describe, expect, it } from 'vitest';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
@@ -61,6 +62,7 @@ describe('v0.3 deterministic campaign diagnostic bot', () => {
 
   it('ranks independent targets using the 500 militia that battle resolution adds', () => {
     const state = createV03Game('cao', 610301);
+    preparePuyangArmy(state);
     const candidates = listAdjacentCampaignCandidates(state, ROUTE_DEFINITIONS);
     const independent = candidates.find(
       (candidate) =>

@@ -1,3 +1,5 @@
+import { createV03Game } from '../../../src/v03/initial-state';
+import { createPersonnelDay } from '../../../src/v03/campaign/personnel';
 import { createReservePools } from '../../../src/v03/campaign/troop-experience';
 import { describe, expect, it } from 'vitest';
 import {
@@ -11,144 +13,68 @@ import {
 import type { V03GameState } from '../../../src/v03/types';
 
 function sampleState(): V03GameState {
-  return {
-    version: 3,
-    ruleset: 'hegemony-3',
-    personnelSchema: 1,
-    troopSources: [],
-    personnelDay: { absoluteDay: 0, completed: false, entries: [], rations: [] },
+  const state = createV03Game('cao', 19);
+  Object.assign(state, {
     revision: 5,
-    scenarioId: 'divided-realm-190',
-    seed: 19,
-    playerFactionId: 'cao',
-    startYear: 190,
     absoluteDay: 30,
     monthIndex: 1,
     rng: 99,
-    alliances: [],
-    coalitionInvitations: [],
-    firedMonthlyEventIds: [],
-    lastAllianceBreakMonthByFaction: {},
-    hegemon: { factionId: null, months: 0 },
     nextId: 7,
-    phase: 'planning',
     playerCapitalCityId: 'xuchang',
-    factions: [
-      {
-        id: 'cao',
-        name: 'Cao Cao',
-        chinese: '曹',
-        leaderOfficerId: 'caocao',
-        color: '#53778d',
-        capitalCityId: 'xuchang',
-        isPlayer: true,
-        eliminated: false,
-      },
-      {
-        id: 'yuan',
-        name: 'Yuan Shao',
-        chinese: '袁',
-        leaderOfficerId: 'yuanshao',
-        color: '#93824b',
-        capitalCityId: 'ye',
-        isPlayer: false,
-        eliminated: false,
-      },
-    ],
-    cities: [
-      {
-        id: 'xuchang',
-        name: 'Xuchang',
-        chinese: '许昌',
-        region: 'Central',
-        factionId: 'cao',
-        population: 5000,
-        farming: 60,
-        commerce: 60,
-        loyalty: 70,
-        gold: 500,
-        food: 700,
-        reserve: 0,
-        reservePools: createReservePools(0),
-        garrisonTroops: 1000,
-        garrisonExperience: 0,
-        governorId: null,
-        pendingAppointment: null,
-        governanceMode: 'ruler',
-      },
-      {
-        id: 'ye',
-        name: 'Ye',
-        chinese: '邺',
-        region: 'North',
-        factionId: 'yuan',
-        population: 6000,
-        farming: 70,
-        commerce: 60,
-        loyalty: 70,
-        gold: 600,
-        food: 800,
-        reserve: 0,
-        reservePools: createReservePools(0),
-        garrisonTroops: 1200,
-        garrisonExperience: 0,
-        governorId: null,
-        pendingAppointment: null,
-        governanceMode: 'steward',
-      },
-    ],
-    officers: [
-      {
-        id: 'caocao',
-        name: 'Cao Cao',
-        chinese: '曹操',
-        factionId: 'cao',
-        location: { kind: 'city', cityId: 'xuchang' },
-        force: 80,
-        intellect: 98,
-        loyalty: 100,
-        age: 35,
-        troops: 0,
-        troopType: 'infantry',
-        experience: 0,
-        troopExperience: 0,
-        wounded: 0,
-        reorganizationDays: 0,
-        level: 0,
-        governorOfCityId: null,
-        alive: true,
-      },
-      {
-        id: 'yuanshao',
-        name: 'Yuan Shao',
-        chinese: '袁绍',
-        factionId: 'yuan',
-        location: { kind: 'city', cityId: 'ye' },
-        force: 70,
-        intellect: 75,
-        loyalty: 100,
-        age: 40,
-        troops: 0,
-        troopType: 'infantry',
-        experience: 0,
-        troopExperience: 0,
-        wounded: 0,
-        reorganizationDays: 0,
-        level: 0,
-        governorOfCityId: null,
-        alive: true,
-      },
-    ],
-    journeys: [],
-    requisitions: [],
-    directives: [],
-    battles: [],
-    dayResolution: null,
-    events: [],
-    log: [],
-    winnerFactionId: null,
-    governanceRevision: 0,
-  };
+  });
+  const cao = state.officers.find((officer) => officer.id === 'caocao')!;
+  const yuan = state.officers.find((officer) => officer.id === 'yuanshao')!;
+  cao.location = { kind: 'city', cityId: 'xuchang' };
+  cao.troops = 0;
+  yuan.troops = 0;
+  state.officers = [
+    cao,
+    yuan,
+    ...state.officers.filter((officer) => officer.id !== cao.id && officer.id !== yuan.id),
+  ];
+  const caoFaction = state.factions.find((faction) => faction.id === 'cao')!;
+  const yuanFaction = state.factions.find((faction) => faction.id === 'yuan')!;
+  caoFaction.capitalCityId = 'xuchang';
+  state.factions = [
+    caoFaction,
+    yuanFaction,
+    ...state.factions.filter((faction) => faction.id !== 'cao' && faction.id !== 'yuan'),
+  ];
+  const xuchang = state.cities.find((city) => city.id === 'xuchang')!;
+  const ye = state.cities.find((city) => city.id === 'ye')!;
+  Object.assign(xuchang, {
+    population: 5000,
+    farming: 60,
+    commerce: 60,
+    loyalty: 70,
+    gold: 500,
+    food: 700,
+    reserve: 0,
+    reservePools: createReservePools(0),
+    garrisonTroops: 1000,
+    governanceMode: 'ruler',
+    governorId: null,
+  });
+  Object.assign(ye, {
+    population: 6000,
+    farming: 70,
+    commerce: 60,
+    loyalty: 70,
+    gold: 600,
+    food: 800,
+    reserve: 0,
+    reservePools: createReservePools(0),
+    garrisonTroops: 1200,
+  });
+  state.cities.find((city) => city.id === 'chenliu')!.governanceMode = 'steward';
+  state.officers.find((officer) => officer.id === 'caoren')!.governorOfCityId = null;
+  state.cities = [
+    xuchang,
+    ye,
+    ...state.cities.filter((city) => city.id !== 'xuchang' && city.id !== 'ye'),
+  ];
+  state.personnelDay = createPersonnelDay(state);
+  return state;
 }
 
 function sampleJourney(): V03GameState['journeys'][number] {

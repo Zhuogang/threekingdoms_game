@@ -17,6 +17,8 @@ function fixture(): V03GameState {
     version: 3,
     ruleset: 'hegemony-3',
     personnelSchema: 1,
+    officerRosterVersion: 1,
+    lastOfficerDebutYear: 190,
     troopSources: [],
     personnelDay: { absoluteDay: 0, completed: false, entries: [], rations: [] },
     revision: 0,

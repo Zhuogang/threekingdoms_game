@@ -1,8 +1,10 @@
 import { scenarioById, SCENARIOS } from './content/scenario';
+import { officerRosterPlan, createOpeningOfficer } from './campaign/officer-lifecycle';
+import { OFFICER_ROSTER_VERSION } from './content/officer-roster-setups';
 import { createReservePools } from './campaign/troop-experience';
 import { createPersonnelDay } from './campaign/personnel';
 import { CITY_GEOGRAPHY_BY_ID, type CityId } from './geography';
-import type { V03City, V03Faction, V03GameState, V03Officer } from './types';
+import type { V03City, V03Faction, V03GameState } from './types';
 
 export const DEFAULT_V03_SCENARIO_ID = 'divided-realm-190';
 
@@ -17,52 +19,22 @@ export function createV03Game(
   if (!scenario.factions.some((faction) => faction.id === playerFactionId))
     throw new Error(`Faction ${playerFactionId} is not available in this scenario.`);
 
-  const officers: V03Officer[] = scenario.officers.map((officer) => ({
-    id: officer.id,
-    name: officer.name,
-    chinese: officer.chinese,
-    factionId: officer.factionId,
-    location: officer.captive
-      ? { kind: 'captured', cityId: officer.cityId }
-      : { kind: 'city', cityId: officer.cityId },
-    force: officer.force,
-    intellect: officer.intellect,
-    loyalty: officer.loyalty,
-    age: officer.age,
-    troops: officer.fate === 'active' && !officer.captive ? officer.troops : 0,
-    troopExperience: 0,
-    wounded: 0,
-    reorganizationDays: 0,
-    troopType: officer.troopType,
-    equipment: officer.equipment === 'Fine arms' ? 'Fine arms' : null,
-    experience: officer.experience,
-    level: officer.level,
-    governorOfCityId: null,
-    alive: officer.fate === 'active',
-  }));
-
-  const capitals = new Map<string, string>();
+  const roster = officerRosterPlan(scenario.id)?.opening;
+  if (!roster) throw new Error('Missing officer roster configuration: ' + scenario.id);
+  const officers = roster.officers
+    .filter((officer) => officer.status !== 'pending')
+    .map(createOpeningOfficer);
+  const capitals = new Map(roster.factions.map((faction) => [faction.id, faction.capitalCityId]));
   const factions: V03Faction[] = scenario.factions.map((faction) => {
-    const leader =
-      officers.find((officer) => officer.name === faction.leader && officer.alive) ??
-      officers.find((officer) => officer.factionId === faction.id && officer.alive);
-    if (!leader || leader.location.kind !== 'city')
-      throw new Error(`Could not locate the living ruler for ${faction.name}.`);
-    const rulerCityId = leader.location.cityId;
-    const capital = scenario.cities.find(
-      (city) => city.id === rulerCityId && city.factionId === faction.id,
-    );
-    const fallback = scenario.cities.find((city) => city.factionId === faction.id);
-    if (!capital && !fallback) throw new Error(`Faction ${faction.id} has no starting city.`);
-    const capitalCityId = capital?.id ?? fallback!.id;
-    capitals.set(faction.id, capitalCityId);
+    const opening = roster.factions.find((entry) => entry.id === faction.id)!;
+    const leader = officers.find((officer) => officer.id === opening.leaderOfficerId)!;
     return {
       id: faction.id,
       name: faction.name,
       chinese: leader.chinese,
       leaderOfficerId: leader.id,
       color: faction.color,
-      capitalCityId,
+      capitalCityId: opening.capitalCityId,
       isPlayer: faction.id === playerFactionId,
       eliminated: false,
     };
@@ -71,15 +43,18 @@ export function createV03Game(
   const cities: V03City[] = scenario.cities.map((city) => {
     const geo = CITY_GEOGRAPHY_BY_ID.get(city.id as CityId);
     if (!geo) throw new Error(`Missing historical geography for ${city.id}.`);
+    const opening = roster.cities.find((entry) => entry.id === city.id)!;
+    const governorId = opening.governorId;
+    const additions = opening.reserveAdditions;
     const governanceMode =
       city.factionId === null
         ? 'steward'
         : capitals.get(city.factionId) === city.id
           ? 'ruler'
-          : city.governorId &&
+          : governorId &&
               officers.some(
                 (officer) =>
-                  officer.id === city.governorId &&
+                  officer.id === governorId &&
                   officer.alive &&
                   officer.location.kind === 'city' &&
                   officer.location.cityId === city.id,
@@ -98,8 +73,12 @@ export function createV03Game(
       loyalty: city.loyalty,
       gold: city.gold,
       food: city.food,
-      reserve: city.reserve,
-      reservePools: createReservePools(city.reserve / 2, city.reserve / 4, city.reserve / 4),
+      reserve: city.reserve + additions.infantry + additions.archer + additions.cavalry,
+      reservePools: createReservePools(
+        city.reserve / 2 + additions.infantry,
+        city.reserve / 4 + additions.archer,
+        city.reserve / 4 + additions.cavalry,
+      ),
       garrisonExperience: 0,
       garrisonTroops: officers.reduce(
         (total, officer) =>
@@ -112,11 +91,13 @@ export function createV03Game(
             : 0),
         0,
       ),
-      governorId: governanceMode === 'governor' ? city.governorId : null,
+      governorId: governanceMode === 'governor' ? governorId : null,
       pendingAppointment: null,
       governanceMode,
       workMonthIndex: 0,
       workPointsUsed: 0,
+      autoSearchesThisMonth: 0,
+      autoAssignmentsThisMonth: 0,
       troopServiceDaysThisMonth: 0,
       cavalryServiceDaysThisMonth: 0,
       plunderCooldownUntilDay: 0,
@@ -136,6 +117,8 @@ export function createV03Game(
     version: 3,
     ruleset: 'hegemony-3',
     personnelSchema: 1,
+    officerRosterVersion: OFFICER_ROSTER_VERSION,
+    lastOfficerDebutYear: scenario.year,
     troopSources: [],
     personnelDay: { absoluteDay: 0, completed: false, entries: [], rations: [] },
     revision: 0,

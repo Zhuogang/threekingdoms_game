@@ -1,4 +1,5 @@
 import { recoverPersonnelDay } from './campaign/personnel-recovery';
+import { planOfficerDebuts } from './campaign/officer-lifecycle';
 import { isCityCommitted } from './governance/commitments';
 import { applyTroopLoss, mergeTroopPools } from './campaign/troop-experience';
 import { battleExperienceGain } from './battle/experience';
@@ -706,12 +707,14 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
       entry.alive &&
       entry.location.kind === 'city' &&
       entry.location.cityId === target.id &&
+      target.factionId !== null &&
       entry.factionId === target.factionId,
   ))
     detachWoundedToCity(state, officer.id);
   const defenders = state.officers.filter(
     (officer) =>
       officer.alive &&
+      target.factionId !== null &&
       officer.factionId === target.factionId &&
       officer.location.kind === 'city' &&
       officer.location.cityId === target.id &&
@@ -1656,7 +1659,7 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     if (
       city.factionId === null ||
       isCityCommitted(next, city.id) ||
-      city.governanceMode === 'ruler'
+      (city.governanceMode === 'ruler' && city.factionId === next.playerFactionId)
     )
       continue;
     const quota = cityWorkQuota(next, city);
@@ -1671,6 +1674,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
       Object.assign(city, work.city);
       if (work.state) {
         next.officers = work.state.officers;
+        next.troopSources = work.state.troopSources;
+        next.personnelDay = work.state.personnelDay;
         next.rng = work.state.rng;
         next.nextId = work.state.nextId;
         next.log = work.state.log;
@@ -1692,6 +1697,7 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
   const systems = resolveV03MonthlyEvents({
     monthIndex: governed.monthIndex,
     startYear: governed.startYear,
+    lastOfficerGrowthYear: governed.lastOfficerDebutYear,
     playerFactionId: governed.playerFactionId,
     rng: governed.rng,
     firedEventIds: governed.firedMonthlyEventIds,
@@ -1727,6 +1733,7 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
       intellect: officer.intellect,
       loyalty: officer.loyalty,
       age: officer.age,
+      equipment: officer.equipment,
       troops: officer.troops,
       wounded: officer.wounded,
       reorganizationDays: officer.reorganizationDays,
@@ -1896,6 +1903,27 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
         shortage: shortages.has(city.id),
       };
     });
+  const debuts = planOfficerDebuts(refreshed);
+  refreshed.officers.push(...debuts.officers);
+  for (const notice of debuts.notices) {
+    addEvent(
+      refreshed,
+      'campaignEvent',
+      'New officers appeared',
+      JSON.stringify({
+        key: 'officer-debut',
+        entityIds: notice.officerIds,
+        values: { year: notice.year },
+      }),
+      null,
+      effectiveDay,
+    );
+    const noticeEvent = refreshed.events.at(-1)!;
+    noticeEvent.code = 'officer.debut';
+    noticeEvent.params = { year: notice.year, officerIds: notice.officerIds.join(',') };
+    noticeEvent.tier = 'notice';
+  }
+  refreshed.lastOfficerDebutYear = debuts.throughYear;
   refreshed.revision++;
   return refreshed;
 }
@@ -2018,7 +2046,13 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
       return current;
     },
     settleMonth: (current, year, month) => {
+      // Movement may deliver a party on the month boundary. Consume those arrivals
+      // before replacing the old journey statuses, or the final refresh misses them.
+      const previousJourneys = structuredClone(state.journeys);
       applyTimeline(state, current);
+      if (state.personnelDay.absoluteDay !== state.absoluteDay)
+        state.personnelDay = createPersonnelDay(state);
+      handleArrivals(state, previousJourneys);
       state = settleMonth(state, year, month);
       const completed = completeMonthSettlement({
         ...current,

@@ -8,6 +8,17 @@ import {
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../../src/v03/platform/storage';
 import type { V03GameState } from '../../../src/v03/types';
 
+function setFixtureGovernor(state: V03GameState, cityId: string, officerId: string | null): void {
+  const city = state.cities.find((city) => city.id === cityId)!;
+  if (city.governorId && city.governorId !== officerId) {
+    const prior = state.officers.find((officer) => officer.id === city.governorId);
+    if (prior) prior.governorOfCityId = null;
+  }
+  city.governorId = officerId;
+  if (officerId)
+    state.officers.find((officer) => officer.id === officerId)!.governorOfCityId = cityId;
+}
+
 function acknowledgeEvents(state: V03GameState): V03GameState {
   let next = state;
   for (const event of next.events.filter((entry) => !entry.acknowledged)) {
@@ -25,7 +36,7 @@ function advanceOneDay(state: V03GameState): V03GameState {
 describe('v0.3 governor appointment journeys', () => {
   it('transfers a troop-free officer by route and appoints them only after arrival and a month boundary', () => {
     let state = createV03Game('cao', 21);
-    const officer = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.troops = 0;
     officer.location = { kind: 'city', cityId: 'chenliu' };
     const source = state.cities.find((entry) => entry.id === 'chenliu')!;
@@ -35,7 +46,7 @@ describe('v0.3 governor appointment journeys', () => {
     source.governanceMode = 'governor';
     officer.governorOfCityId = source.id;
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
-    target.governorId = null;
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
 
     const issued = executeV03Command(state, {
@@ -119,7 +130,7 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('replaces an outbound transfer without teleporting the former candidate or vacating its source early', () => {
     let state = createV03Game('cao', 24);
-    const former = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const former = state.officers.find((entry) => entry.id === 'caohong')!;
     former.troops = 0;
     former.location = { kind: 'city', cityId: 'chenliu' };
     for (const city of state.cities) {
@@ -137,9 +148,9 @@ describe('v0.3 governor appointment journeys', () => {
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const currentTargetGovernor = state.officers.find((entry) => entry.id === target.governorId);
     if (currentTargetGovernor) currentTargetGovernor.governorOfCityId = null;
-    target.governorId = null;
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
-    const replacement = state.officers.find((entry) => entry.id === 'chengyu')!;
+    const replacement = state.officers.find((entry) => entry.id === 'yuejin')!;
     for (const city of state.cities) {
       if (city.governorId === replacement.id) {
         city.governorId = null;
@@ -202,7 +213,7 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('starts a route-based return when a delivered candidate is replaced before the boundary', () => {
     let state = createV03Game('cao', 27);
-    const former = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const former = state.officers.find((entry) => entry.id === 'caohong')!;
     former.troops = 0;
     former.location = { kind: 'city', cityId: 'chenliu' };
     for (const city of state.cities) {
@@ -220,7 +231,7 @@ describe('v0.3 governor appointment journeys', () => {
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const currentTargetGovernor = state.officers.find((entry) => entry.id === target.governorId);
     if (currentTargetGovernor) currentTargetGovernor.governorOfCityId = null;
-    target.governorId = null;
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
     const issued = executeV03Command(state, {
       type: 'appointGovernor',
@@ -235,7 +246,7 @@ describe('v0.3 governor appointment journeys', () => {
       kind: 'city',
       cityId: target.id,
     };
-    const replacement = state.officers.find((entry) => entry.id === 'chengyu')!;
+    const replacement = state.officers.find((entry) => entry.id === 'yuejin')!;
     for (const city of state.cities) {
       if (city.governorId === replacement.id) {
         city.governorId = null;
@@ -283,7 +294,7 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('retries a late arrival next month and explains the delay without changing current governance', () => {
     const state = createV03Game('cao', 25);
-    const officer = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.troops = 0;
     officer.location = { kind: 'city', cityId: 'chenliu' };
     for (const city of state.cities) {
@@ -299,7 +310,7 @@ describe('v0.3 governor appointment journeys', () => {
     source.governanceMode = 'governor';
     officer.governorOfCityId = source.id;
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
-    target.governorId = null;
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
     const issued = executeV03Command(state, {
       type: 'appointGovernor',
@@ -327,7 +338,7 @@ describe('v0.3 governor appointment journeys', () => {
   it('clears a captured candidate and preserves the city’s current governance so another can be chosen', () => {
     const state = createV03Game('cao', 26);
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
-    const candidate = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const candidate = state.officers.find((entry) => entry.id === 'caohong')!;
     const incumbent = state.officers.find(
       (entry) =>
         entry.id !== candidate.id && entry.factionId === state.playerFactionId && entry.alive,
@@ -342,7 +353,7 @@ describe('v0.3 governor appointment journeys', () => {
     incumbent.governorOfCityId = target.id;
     incumbent.location = { kind: 'city', cityId: target.id };
     incumbent.troops = 0;
-    target.governorId = incumbent.id;
+    setFixtureGovernor(state, target.id, incumbent.id);
     target.governanceMode = 'governor';
     candidate.troops = 0;
     candidate.location = { kind: 'city', cityId: target.id };
@@ -376,7 +387,7 @@ describe('v0.3 governor appointment journeys', () => {
     const state = createV03Game('cao', 28);
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const incumbentId = target.governorId;
-    const candidate = state.officers.find((entry) => entry.id === 'chengyu')!;
+    const candidate = state.officers.find((entry) => entry.id === 'yuejin')!;
     for (const city of state.cities) {
       if (city.governorId !== candidate.id) continue;
       city.governorId = null;
@@ -411,7 +422,7 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('requests a safe return when an appointed city is captured before the candidate arrives', () => {
     let state = createV03Game('cao', 27);
-    const candidate = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const candidate = state.officers.find((entry) => entry.id === 'caohong')!;
     for (const city of state.cities) {
       if (city.governorId !== candidate.id) continue;
       city.governorId = null;
@@ -423,7 +434,7 @@ describe('v0.3 governor appointment journeys', () => {
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const formerGovernor = state.officers.find((entry) => entry.id === target.governorId);
     if (formerGovernor) formerGovernor.governorOfCityId = null;
-    target.governorId = null;
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
 
     const appointed = executeV03Command(state, {
@@ -465,11 +476,12 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('keeps a local appointment pending until settlement without creating a journey', () => {
     let state = createV03Game('cao', 22);
-    const officer = state.officers.find((entry) => entry.id === 'chengyu')!;
+    const officer = state.officers.find((entry) => entry.id === 'yuejin')!;
     officer.troops = 0;
     officer.governorOfCityId = null;
     const target = state.cities.find((entry) => entry.id === 'puyang')!;
-    target.governorId = null;
+    officer.location = { kind: 'city', cityId: target.id };
+    setFixtureGovernor(state, target.id, null);
     target.governanceMode = 'steward';
 
     const result = executeV03Command(state, {
@@ -496,7 +508,7 @@ describe('v0.3 governor appointment journeys', () => {
 
   it('rejects a transfer for an officer with troops without changing the command state', () => {
     const state = createV03Game('cao', 23);
-    const officer = state.officers.find((entry) => entry.id === 'xunyu')!;
+    const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.location = { kind: 'city', cityId: 'chenliu' };
     officer.troops = 400;
     const result = executeV03Command(state, {

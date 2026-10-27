@@ -20,6 +20,7 @@ import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
 import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
 import type { V03GameState } from '../../src/v03/types';
+import { preparePuyangArmy } from '../v03/helpers/army-fixture';
 
 const AUTOSAVE_KEY = 'hegemony-v0.3:autosave';
 
@@ -84,6 +85,7 @@ async function importFile(page: Page, name: string, content: string) {
 
 function createBattleSave(battlefieldId = 'bf01-north-plain'): string {
   let state: V03GameState = createV03Game('cao', 481516);
+  preparePuyangArmy(state);
   const defended = state.cities.find((city) => city.id === 'xiapi')!;
   defended.garrisonTroops = 500;
   defended.population -= 500;

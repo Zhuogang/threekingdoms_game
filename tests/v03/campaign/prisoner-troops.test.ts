@@ -13,6 +13,9 @@ function fixture() {
     (city) => prisoner.location.kind === 'city' && city.id === prisoner.location.cityId,
   )!;
   home.garrisonTroops -= prisoner.troops;
+  home.governorId = null;
+  home.governanceMode = 'steward';
+  prisoner.governorOfCityId = null;
   Object.assign(prisoner, {
     troops: 1800,
     wounded: 1200,

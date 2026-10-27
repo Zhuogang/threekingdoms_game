@@ -1,7 +1,10 @@
 import { message } from '../../i18n';
+import { lazy, Suspense, useState } from 'react';
+import { officerCopy } from '../shared/officer-view';
+const OfficerDirectory = lazy(() => import('../panels/OfficerDirectory'));
 
 import { Button } from '../kit';
-import { Flag, ScrollText, Handshake, X } from 'lucide-react';
+import { Flag, ScrollText, Handshake, BookUser, X } from 'lucide-react';
 import { displayName } from '../shared/app-copy-3';
 
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -12,6 +15,7 @@ export function CampaignScreen({
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
 }) {
   const { t, state, locale } = context;
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   const open = (tab: 'orders' | 'diplomacy') => {
     context.setCampaignTab(tab);
     context.setCampaignWindowOpen(true);
@@ -39,6 +43,10 @@ export function CampaignScreen({
         <CampaignMap context={context} />
       </div>
       <footer className="v03-campaign-dock">
+        <Button onClick={() => setDirectoryOpen(true)}>
+          <BookUser size={18} />
+          {officerCopy[locale].directory}
+        </Button>
         <Button onClick={() => context.focusCampaignCity(state.playerCapitalCityId)}>
           <Flag size={18} />
           {t.rulerCapital}
@@ -64,6 +72,19 @@ export function CampaignScreen({
           </Button>
         ))}
       </footer>
+      {directoryOpen ? (
+        <Suspense fallback={null}>
+          <OfficerDirectory
+            state={state}
+            locale={locale}
+            onClose={() => setDirectoryOpen(false)}
+            onVisitCity={(id) => {
+              setDirectoryOpen(false);
+              context.focusCampaignCity(id);
+            }}
+          />
+        </Suspense>
+      ) : null}
       {context.marchNotice ? (
         <div className="v03-march-notice" role="status">
           <Flag size={22} />

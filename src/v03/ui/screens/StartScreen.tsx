@@ -1,6 +1,6 @@
 import { Button, Select } from '../kit';
 import { message } from '../../i18n';
-import { OFFICER_IDENTITIES } from '../../content/officerIdentity';
+import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { createV03Game } from '../../initial-state';
 import { lazy, Suspense } from 'react';
 const PlaytestMenu = import.meta.env.DEV ? lazy(() => import('../panels/PlaytestMenu')) : null;
@@ -116,18 +116,12 @@ export function StartScreen({ context }: { context: ReturnType<typeof useCampaig
                   sun: '江东勇进，凭借水乡稳步扩张。',
                   yuan: '北方大族，兵强粮足。',
                   dong: '控制朝廷，四面受敌。',
-                  yan: '幽州边地，骑兵骁勇。',
+                  yan: '据守益州，凭借山川屏障发展内政。',
                   ma: '西凉骑将，立足西部山地。',
                 };
                 return (
                   <>
-                    <img
-                      src={`${import.meta.env.BASE_URL}assets/portraits/${OFFICER_IDENTITIES[ruler.id]?.portraitKey ?? ruler.id}.webp`}
-                      alt=""
-                      onError={(event) => {
-                        event.currentTarget.style.display = 'none';
-                      }}
-                    />
+                    <OfficerPortrait id={ruler.id} locale={locale} size={256} eager />
                     <strong>{locale === 'zh' ? ruler.chinese : faction.name}</strong>
                     <small>
                       {cities

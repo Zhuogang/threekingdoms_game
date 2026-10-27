@@ -1,3 +1,4 @@
+import { preparePuyangArmy } from '../helpers/army-fixture';
 import { describe, expect, it } from 'vitest';
 import { executeV03Command } from '../../../src/v03/commands';
 import { createV03Game } from '../../../src/v03/initial-state';
@@ -31,23 +32,25 @@ function advanceUntil(state: V03GameState, done: (s: V03GameState) => boolean) {
 function campaign(
   setup?: (state: V03GameState) => void,
   requestedTroops = 700,
-  officerIds?: string[],
+  officerIds?: string[] | (() => string[]),
 ) {
   const state = createV03Game('cao', 481516);
+  preparePuyangArmy(state);
   for (const officer of state.officers) if (officer.troops > 0) officer.troopExperience = 1200;
   const target = state.cities.find((c) => c.id === 'xiapi')!;
   target.garrisonTroops = 600;
   target.garrisonExperience = 750;
   setup?.(state);
+  const selectedOfficerIds = typeof officerIds === 'function' ? officerIds() : officerIds;
   const dispatched = executeV03Command(
     state,
-    officerIds
+    selectedOfficerIds
       ? {
           type: 'marchArmy',
           sourceCityId: 'puyang',
           targetCityId: 'xiapi',
           intent: 'conquer',
-          officerIds,
+          officerIds: selectedOfficerIds,
         }
       : {
           type: 'issueCampaignDirective',
@@ -70,6 +73,7 @@ function campaign(
 describe('campaign veteran flow', () => {
   it('preserves troop type and fractional experience through a friendly requisition and reload', () => {
     let state = createV03Game('cao', 481516);
+    preparePuyangArmy(state);
     for (const officer of state.officers)
       if (officer.troops > 0) officer.troopExperience = 1066.6666666666667;
     const request = executeV03Command(state, {
@@ -301,31 +305,39 @@ describe('campaign veteran flow', () => {
   });
 
   it('keeps distinct original experience and per-contingent caps when a temporary merged unit wins', () => {
+    const fixtureVeterans = new Set<string>();
     const state = campaign(
       (s) => {
-        const base = s.officers.find((o) => o.id === 'caocao')!;
         for (const officer of s.officers.filter(
           (o) => o.location.kind === 'city' && o.location.cityId === 'puyang',
         )) {
           officer.troops = 0;
           officer.troopExperience = 0;
         }
-        for (let i = 0; i < 12; i++)
-          s.officers.push({
-            ...structuredClone(base),
-            id: `veteran-${i.toString().padStart(2, '0')}`,
+        const veterans = s.officers
+          .filter(
+            (officer) =>
+              officer.alive && officer.factionId === null && officer.troopType === 'infantry',
+          )
+          .slice(0, 12);
+        expect(veterans).toHaveLength(12);
+        veterans.forEach((officer, i) => {
+          fixtureVeterans.add(officer.id);
+          Object.assign(officer, {
+            factionId: 'cao',
+            location: { kind: 'city', cityId: 'puyang' },
             troops: 1000,
-            troopType: 'infantry',
             troopExperience: i === 0 || i % 2 ? 1899 : 300,
             governorOfCityId: null,
-            location: { kind: 'city', cityId: 'puyang' },
           });
-        const source = s.cities.find((c) => c.id === 'puyang')!;
-        source.garrisonTroops = 14000;
-        source.food = 1000000;
+        });
+
+        const source = s.cities.find((city) => city.id === 'puyang')!;
+        source.garrisonTroops = 16_000;
+        source.food = 1_000_000;
       },
       12000,
-      Array.from({ length: 12 }, (_, i) => `veteran-${i.toString().padStart(2, '0')}`),
+      () => Array.from(fixtureVeterans),
     );
     const battle = state.battles.find((b) => b.active)!;
     const membership = battle.attackerFormationOfficerIds;
@@ -368,7 +380,7 @@ describe('campaign veteran flow', () => {
       });
     const originalIds = new Set(ids);
     for (const officer of finished.state.officers.filter(
-      (o) => o.id.startsWith('veteran-') && !originalIds.has(o.id),
+      (o) => fixtureVeterans.has(o.id) && !originalIds.has(o.id),
     ))
       expect(officer.troopExperience).toBe(
         state.officers.find((o) => o.id === officer.id)!.troopExperience,

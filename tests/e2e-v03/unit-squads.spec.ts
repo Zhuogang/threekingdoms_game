@@ -72,7 +72,10 @@ for (const [troops, navalCommander] of [
         'zhouyu',
       );
     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
-    await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+    await expect(page.locator('.v03-unit-leader img').first()).toHaveJSProperty(
+      'naturalWidth',
+      128,
+    );
     await token.click();
 
     const map = page.locator('.v03-battlefield-map').first();
@@ -87,7 +90,7 @@ for (const [troops, navalCommander] of [
     await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
     await expect(page.locator(`.v03-unit-row.selected img[src="${boatPath}"]`)).toBeVisible();
     if (navalCommander) {
-      await expect(page.locator('.v03-unit-row.selected .v03-unit-leader')).toHaveAttribute(
+      await expect(page.locator('.v03-unit-row.selected .v03-unit-leader img')).toHaveAttribute(
         'src',
         '/assets/portraits/zhouyu-small.webp',
       );

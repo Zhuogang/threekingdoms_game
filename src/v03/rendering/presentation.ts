@@ -1,6 +1,7 @@
 import { message } from '../i18n';
 import { troopLevel } from '../campaign/troop-experience';
 import type { GridPoint } from './geometry';
+import { officerPortraitPath } from './officer-portraits';
 
 export type TroopVisualKind = string;
 export type FactionVisualKind = 'player' | 'opponent' | string;
@@ -39,7 +40,7 @@ export interface WaterCombatDisplay {
 }
 
 export function battlePortraitPath(portraitKey: string): string {
-  return `assets/portraits/${portraitKey}-small.webp`;
+  return officerPortraitPath(portraitKey, 128) ?? 'assets/portraits/garrison-small.webp';
 }
 
 export const TROOP_NAMES: Record<string, { en: string; zh: string; glyph: string }> = {

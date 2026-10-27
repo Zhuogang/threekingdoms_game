@@ -1,0 +1,24 @@
+[WebServer] (node:47348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:46624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\production-v03\city-art.spec.ts:3:1 › city paintings and the active campaign background load under the production subpath (2.5s)
+  ok  2 tests\production-v03\officer-directory.spec.ts:5:1 › new portraits and the lazy directory load from the production subpath (4.0s)
+  ok  3 tests\production-v03\release.spec.ts:14:1 › production release serves v0.3 under a subpath and restores its campaign save (3.6s)
+  ok  4 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/cao (4.6s)
+  ok  5 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/liu (4.0s)
+  ok  6 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/sun (4.2s)
+  ok  7 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/yuan (3.8s)
+  ok  8 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/dong (4.3s)
+  ok  9 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes divided-realm-190/yan (3.9s)
+  ok 10 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/cao (4.2s)
+  ok 11 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/yuan (3.9s)
+  ok 12 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/liu (4.1s)
+  ok 13 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/sun (3.6s)
+  ok 14 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/yan (3.8s)
+  ok 15 tests\production-v03\roster-matrix.spec.ts:10:5 › production roster starts, exports and resumes guandu-200/ma (3.7s)
+
+  15 passed (1.1m)

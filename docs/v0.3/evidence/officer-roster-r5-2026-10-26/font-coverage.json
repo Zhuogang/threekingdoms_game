@@ -1,0 +1,16 @@
+{
+  "officers": 98,
+  "nameCharacters": 149,
+  "missing": "",
+  "rareCharacters": "祎叡恪瑾瓒懿谡琬",
+  "files": {
+    "source-sans-3.woff2": {
+      "bytes": 16456,
+      "sha256": "897b2acf1c74e730305309b337c60f4713c3dfde4fd374762a8f11eda61d92e7"
+    },
+    "noto-serif-sc.woff2": {
+      "bytes": 440376,
+      "sha256": "c3dbaba9f6aadcf6ae17cf1e01bded11fe9138ab005a115e26991ac574afa5be"
+    }
+  }
+}

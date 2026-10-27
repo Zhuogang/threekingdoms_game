@@ -1,3 +1,4 @@
+import { preparePuyangArmy } from './helpers/army-fixture';
 import { describe, expect, it, vi } from 'vitest';
 // Isolate commanded campaigns; rival dispatch has a dedicated integration suite.
 vi.mock('../../src/v03/strategic-ai', async (original) => ({
@@ -23,6 +24,7 @@ const campaignStrength = 700;
 
 function issueCampaign(intent: 'conquer' | 'raid' | 'sack' = 'conquer'): V03GameState {
   const state = createV03Game(playerFaction, 481516);
+  preparePuyangArmy(state);
   // A tactical-battle fixture needs real defenders now that empty cities do not spawn militia.
   const target = state.cities.find((city) => city.id === targetCity)!;
   if (target.garrisonTroops === 0) {
@@ -764,20 +766,49 @@ describe('v0.3 strategic engine integration', () => {
     expect(delivered.state.requisitions[0]?.status).toBe('delivered');
   });
 
+  it.each(['conquer', 'raid', 'sack'] as const)(
+    'does not enlist or capture neutral local officers during %s',
+    (intent) => {
+      let state = issueCampaign(intent);
+      const residents = state.officers
+        .filter(
+          (officer) =>
+            officer.alive &&
+            officer.factionId === null &&
+            officer.location.kind === 'city' &&
+            officer.location.cityId === targetCity,
+        )
+        .map((officer) => officer.id);
+      expect(residents.length).toBeGreaterThan(0);
+      state = advanceUntilBattle(state);
+      const battle = activeBattle(state);
+      expect(Object.values(battle.defenderFormationOfficerIds).flat()).toEqual([]);
+      for (const id of residents)
+        expect(state.officers.find((officer) => officer.id === id)!.location).toEqual({
+          kind: 'city',
+          cityId: targetCity,
+        });
+      state = forceBattleOutcome(state, 'attacker');
+      for (const id of residents)
+        expect(state.officers.find((officer) => officer.id === id)).toMatchObject({
+          alive: true,
+          factionId: null,
+          location: { kind: 'city', cityId: targetCity },
+        });
+      expect(validateV03State(state)).toBe(true);
+    },
+  );
+
   it('uses distinct roster ids for a staffed infantry formation and unstaffed militia', () => {
     let state = issueCampaign();
     const target = state.cities.find((city) => city.id === targetCity)!;
     target.garrisonTroops = 1_100;
-    const defender = state.officers.find(
-      (officer) => officer.alive && officer.factionId === target.factionId,
-    )!;
-    for (const officer of state.officers) {
-      if (officer.factionId === target.factionId && officer.id !== defender.id)
-        officer.location = { kind: 'captured', cityId: state.playerCapitalCityId };
-    }
+    // A staffed force belongs to an actual defending faction, not neutral residents.
+    target.factionId = 'yuan';
+    const defender = state.officers.find((officer) => officer.id === 'guotu')!;
+    defender.factionId = 'yuan';
     defender.location = { kind: 'city', cityId: target.id };
     defender.troops = 1_000;
-    defender.troopType = 'infantry';
     state = advanceUntilBattle(state);
     const battle = activeBattle(state);
     const defenderUnits = battle.battleData.units.filter((unit) => unit.side === 'defender');

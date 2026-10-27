@@ -1,0 +1,12 @@
+
+> hegemony-of-the-three-kingdoms@0.3.0 test
+> vitest run --maxWorkers=1
+
+
+ RUN  v4.1.11 C:/Users/pengz/Documents/GitHub/threekingdoms_game
+
+
+ Test Files  46 passed (46)
+      Tests  590 passed (590)
+   Start at  21:32:15
+   Duration  62.70s (transform 5.40s, setup 0ms, import 18.39s, tests 19.83s, environment 9ms)

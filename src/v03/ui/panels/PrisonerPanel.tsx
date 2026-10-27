@@ -7,6 +7,7 @@ import {
   prisonerReturnPlan,
 } from '../../campaign/prisoners';
 import { TroopProgress } from './TroopProgress';
+import { OfficerProfile } from './OfficerProfile';
 import { Button, Select, Panel } from '../kit';
 import { ConfirmDialog, displayName } from '../shared/app-copy-3';
 
@@ -49,6 +50,7 @@ export function PrisonerPanel({
       officer.alive &&
       (!officerId || officer.id === officerId) &&
       officer.location.kind === 'captured' &&
+      !officer.location.journeyId &&
       officer.location.cityId === selectedCity?.id,
   );
   if (!prisoners.length) return null;
@@ -65,6 +67,7 @@ export function PrisonerPanel({
         );
         return (
           <article className="v03-order-card" key={officer.id}>
+            {officerId ? <OfficerProfile state={state} id={officer.id} locale={locale} /> : null}
             <strong>{displayName(officer, locale)}</strong>
             <p>
               {message(locale, 'ui.loyalty.52')} {officer.loyalty} ·{' '}

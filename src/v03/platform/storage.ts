@@ -1,4 +1,6 @@
 import { reconcileV03Rulers } from '../engine';
+import { validateOfficerRosterState } from '../campaign/officer-lifecycle';
+import { OFFICER_ROSTER_VERSION } from '../content/officer-roster-setups';
 import { z } from 'zod';
 import type { V03GameState } from '../types';
 import { PERSONNEL_RULES } from '../campaign/personnel';
@@ -212,6 +214,8 @@ const city = z
     plunderCooldownUntilDay: nonnegative.optional(),
     workMonthIndex: nonnegative.optional(),
     workPointsUsed: safeInt.min(0).max(3).optional(),
+    autoSearchesThisMonth: safeInt.min(0).max(1).optional(),
+    autoAssignmentsThisMonth: safeInt.min(0).max(1).optional(),
     troopServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
     cavalryServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
     prisonerServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
@@ -228,7 +232,7 @@ const officer = z
     force: nonnegative,
     intellect: nonnegative,
     loyalty: nonnegative,
-    age: nonnegative,
+    age: nonnegative.nullable(),
     troops: nonnegative,
     troopType,
     wounded: nonnegative,
@@ -526,6 +530,8 @@ const stateSchema = z
     version: z.literal(3),
     ruleset: z.literal('hegemony-3'),
     personnelSchema: z.literal(1),
+    officerRosterVersion: z.literal(OFFICER_ROSTER_VERSION),
+    lastOfficerDebutYear: safeInt.min(100).max(3000),
     troopSources: z.array(troopSource).max(HISTORY_RECORD_LIMIT),
     personnelDay,
     revision: nonnegative,
@@ -575,6 +581,7 @@ export function validateV03State(value: unknown): value is V03GameState {
   const parsed = stateSchema.safeParse(value);
   if (!parsed.success) return false;
   const state = parsed.data;
+  if (!validateOfficerRosterState(state)) return false;
   const unique = (items: Array<{ id: string }>) =>
     new Set(items.map((item) => item.id)).size === items.length;
   if (!unique(state.factions) || !unique(state.cities) || !unique(state.officers)) return false;
@@ -668,6 +675,11 @@ export function validateV03State(value: unknown): value is V03GameState {
     if (
       (entry.workMonthIndex === undefined) !== (entry.workPointsUsed === undefined) ||
       (entry.workMonthIndex !== undefined && entry.workMonthIndex > state.monthIndex)
+    )
+      return false;
+    if (
+      (entry.autoSearchesThisMonth ?? 0) + (entry.autoAssignmentsThisMonth ?? 0) >
+      (entry.workPointsUsed ?? 0)
     )
       return false;
     // Work already spent in this month does not become invalid if officers
@@ -1147,7 +1159,12 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       formatVersion?: unknown;
       ruleset?: unknown;
       format?: unknown;
-      state?: { version?: unknown; ruleset?: unknown; personnelSchema?: unknown };
+      state?: {
+        version?: unknown;
+        ruleset?: unknown;
+        personnelSchema?: unknown;
+        officerRosterVersion?: unknown;
+      };
     } | null;
     const recognizedEnvelope =
       candidate &&
@@ -1197,6 +1214,21 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       )
         throw new Error(
           'This save uses an unsupported newer personnel schema; existing data was left unchanged.',
+        );
+      if (
+        candidate.state.officerRosterVersion === undefined ||
+        (Number.isSafeInteger(candidate.state.officerRosterVersion) &&
+          (candidate.state.officerRosterVersion as number) < OFFICER_ROSTER_VERSION)
+      )
+        throw new Error(
+          'This save uses an older officer roster. Export the original data and start a new campaign; existing data was left unchanged.',
+        );
+      if (
+        Number.isSafeInteger(candidate.state.officerRosterVersion) &&
+        (candidate.state.officerRosterVersion as number) > OFFICER_ROSTER_VERSION
+      )
+        throw new Error(
+          'This save uses an unsupported newer officer roster version; existing data was left unchanged.',
         );
     }
     throw new Error('This file is not a valid hegemony.save v0.3 campaign.');

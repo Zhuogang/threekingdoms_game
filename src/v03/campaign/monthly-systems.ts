@@ -8,6 +8,7 @@
  */
 
 import { availableTroops } from './personnel';
+import { OFFICER_MATURITY_GAIN } from '../content/officer-timeline';
 import {
   mergeTroopPools,
   setReservePool,
@@ -178,7 +179,8 @@ export interface V03MonthlyEventOfficer {
   force: number;
   intellect: number;
   loyalty: number;
-  age: number;
+  age: number | null;
+  equipment?: 'Fine arms' | null;
   troops: number;
   wounded: number;
   reorganizationDays: number;
@@ -220,6 +222,8 @@ export interface V03MonthlyEventsInput {
   /** Index of the month that has just begun at this month boundary. */
   monthIndex: number;
   startYear: number;
+  /** Defaults to the previous year for standalone rule callers. */
+  lastOfficerGrowthYear?: number;
   playerFactionId: string;
   rng: number;
   firedEventIds: readonly string[];
@@ -541,18 +545,33 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
     freeOfficer.location = { kind: 'city', cityId: destination.id };
     return makeEvent(monthIndex, 'wandering-officer', [freeOfficer.id, destination.id]);
   });
-  systemic(null, month === 1, () => {
+  systemic(null, month === 1 && year > (input.lastOfficerGrowthYear ?? year - 1), () => {
     for (const officer of officers) {
-      officer.age++;
+      if (officer.alive && officer.age !== null) officer.age++;
     }
     const matured = officers
       .filter((officer) => officer.alive && officer.age === 18)
       .sort((a, b) => a.id.localeCompare(b.id));
     for (const officer of matured) {
-      officer.force = boundedInt(officer.force + 3, 0, 100);
-      officer.intellect = boundedInt(officer.intellect + 2, 0, 100);
+      // Add to current values; training/levels and persistent equipment are never replaced.
+      const previousForce = officer.force;
+      const previousIntellect = officer.intellect;
+      officer.force = Math.max(
+        officer.force,
+        Math.min(
+          officer.equipment === 'Fine arms' ? 105 : 100,
+          officer.force + OFFICER_MATURITY_GAIN.force,
+        ),
+      );
+      officer.intellect = Math.max(
+        officer.intellect,
+        Math.min(100, officer.intellect + OFFICER_MATURITY_GAIN.intellect),
+      );
       events.push(
-        makeEvent(monthIndex, 'come-of-age', [officer.id], { forceGain: 3, intellectGain: 2 }),
+        makeEvent(monthIndex, 'come-of-age', [officer.id], {
+          forceGain: officer.force - previousForce,
+          intellectGain: officer.intellect - previousIntellect,
+        }),
       );
     }
     return null;

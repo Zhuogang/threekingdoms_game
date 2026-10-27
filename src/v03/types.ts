@@ -68,9 +68,11 @@ export interface V03City {
   governorId: string | null;
   pendingAppointment: V03PendingAppointment | null;
   governanceMode: V03GovernanceMode;
-  /** Work slots spent by direct ruler-city orders in the active campaign month. */
+  /** Shared manual/autonomous work budget and automatic talent limits for this month. */
   workMonthIndex?: number;
   workPointsUsed?: number;
+  autoSearchesThisMonth?: number;
+  autoAssignmentsThisMonth?: number;
   /** Troop-days spent stationed in this city since the last monthly settlement. */
   troopServiceDaysThisMonth?: number;
   cavalryServiceDaysThisMonth?: number;
@@ -101,7 +103,7 @@ export interface V03Officer {
   force: number;
   intellect: number;
   loyalty: number;
-  age: number;
+  age: number | null;
   troops: number;
   wounded: number;
   reorganizationDays: number;
@@ -291,6 +293,10 @@ export interface V03GameState {
   ruleset: 'hegemony-3';
   /** Personnel/save contract; independent of the public game version. */
   personnelSchema: 1;
+  /** Binds both roster data and chronology; older rosters require a new campaign. */
+  officerRosterVersion: 1;
+  /** Last year whose growth and scheduled appearances committed together. */
+  lastOfficerDebutYear: number;
   troopSources: V03TroopSource[];
   personnelDay: V03PersonnelDay;
   revision: number;

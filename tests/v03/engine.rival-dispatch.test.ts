@@ -6,7 +6,6 @@ import { acknowledgeV03Event, advanceV03 } from '../../src/v03/engine';
 import { createV03Game } from '../../src/v03/initial-state';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import type { V03TacticalBattleState } from '../../src/v03/battle';
-import type { V03Officer } from '../../src/v03/types';
 
 function prepareRivalMonth() {
   const state = createV03Game('cao', 731);
@@ -39,46 +38,15 @@ function prepareRivalMonth() {
   state.factions.find((faction) => faction.id === state.playerFactionId)!.capitalCityId = target.id;
   yuan.capitalCityId = source.id;
 
-  const leader = state.officers.find((officer) => officer.id === yuan.leaderOfficerId)!;
-  const roster: V03Officer[] = [leader];
-  for (const officer of state.officers) {
-    if (roster.length >= 6) break;
-    if (officer.factionId === yuan.id && officer.id !== leader.id) roster.push(officer);
-  }
-  while (roster.length < 6) {
-    const index = roster.length;
-    const officer: V03Officer = {
-      id: `rival-test-officer-${index}`,
-      name: `Rival Officer ${index}`,
-      chinese: `测试将领${index}`,
-      factionId: yuan.id,
-      location: { kind: 'city', cityId: source.id },
-      force: 70 + index,
-      intellect: 60,
-      loyalty: 80,
-      age: 35,
-      troops: 1000,
-      troopType: (['infantry', 'cavalry', 'archer', 'infantry', 'cavalry', 'archer'] as const)[
-        index
-      ]!,
-      experience: 0,
-      troopExperience: 0,
-      wounded: 0,
-      reorganizationDays: 0,
-      level: 0,
-      governorOfCityId: null,
-      alive: true,
-    };
-    state.officers.push(officer);
-    roster.push(officer);
-  }
-  const troopTypes = ['infantry', 'cavalry', 'archer', 'infantry', 'cavalry', 'archer'] as const;
-  roster.forEach((officer, index) => {
+  // A controlled recruited roster with two of each actual base type; never convert an officer's type.
+  const roster = ['yuanshao', 'yanliang', 'guotu', 'yuejin', 'tianfeng', 'jushou'].map((id) =>
+    state.officers.find((officer) => officer.id === id)!,
+  );
+  roster.forEach((officer) => {
     officer.alive = true;
     officer.factionId = yuan.id;
     officer.location = { kind: 'city', cityId: source.id };
     officer.troops = 1000;
-    officer.troopType = troopTypes[index]!;
     officer.governorOfCityId = null;
   });
   for (const officer of state.officers) {
@@ -129,8 +97,8 @@ describe('v0.3 engine rival campaign integration', () => {
       sourceCityId: 'ye',
       intent: 'conquer',
       status: 'dispatched',
-      requestedTroops: 5000,
-      proposedTroops: 5000,
+      requestedTroops: 5500,
+      proposedTroops: 5500,
       earliestDepartureDay: 30,
     });
     expect(state.cities.find((city) => city.id === directive.targetCityId)?.factionId).toBeNull();
@@ -139,13 +107,21 @@ describe('v0.3 engine rival campaign integration', () => {
     if (!journey) throw new Error('Rival directive did not retain its created journey.');
     expect(journey.kind).toBe('campaign');
     expect(journey.ownerFactionId).toBe('yuan');
-    expect(journey.manifest.troopCount).toBe(5000);
-    expect(journey.manifest.officerIds).toHaveLength(5);
-    expect(new Set(journey.manifest.officerIds).size).toBe(5);
+    expect(journey.manifest.troopCount).toBe(5500);
+    expect(journey.manifest.officerIds).toHaveLength(6);
+    expect(new Set(journey.manifest.officerIds).size).toBe(6);
+    expect(
+      journey.manifest.officerIds.some(
+        (id) => initial.officers.find((officer) => officer.id === id)!.troops === 0,
+      ),
+    ).toBe(true);
     expect(journey.manifest.carriedFood).toBe(
       estimateCampaignSupply({
-        troopCount: 5000,
-        cavalryTroops: 1000,
+        troopCount: 5500,
+        cavalryTroops: journey.manifest.officerIds.reduce((sum, id) => {
+          const officer = state.officers.find((officer) => officer.id === id)!;
+          return sum + (officer.troopType === 'cavalry' ? officer.troops : 0);
+        }, 0),
         outboundDays: journey.expectedArrivalDay - journey.departedAbsoluteDay,
         battleDays: 30,
         returnDays: journey.expectedArrivalDay - journey.departedAbsoluteDay,
@@ -154,7 +130,10 @@ describe('v0.3 engine rival campaign integration', () => {
 
     const source = state.cities.find((city) => city.id === 'ye')!;
     expect(source.garrisonTroops).toBe(1000);
-    const reserveRations = Math.ceil((source.reserve + source.reservePools.cavalry.troops) * 0.004);
+    // Reserve upkeep is paid before monthly autonomy transfers soldiers into a new army.
+    const reserveRations = Math.ceil(
+      (initialSource.reserve + initialSource.reservePools.cavalry.troops) * 0.004,
+    );
     expect(source.food).toBe(
       expectedPostSettlementFood - reserveRations - journey.manifest.carriedFood,
     );

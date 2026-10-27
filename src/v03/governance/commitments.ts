@@ -32,4 +32,16 @@ export function isOfficerCommitted(
 }
 
 export const CITY_COMMITTED_REASON = 'This city is committed to an active battle.';
+
+export function isOfficerReservedForOrder(
+  state: Pick<V03GameState, 'directives'>,
+  officerId: string,
+): boolean {
+  return state.directives.some(
+    (order) =>
+      order.journeyId === null &&
+      ['accepted', 'reserved', 'dispatched'].includes(order.status) &&
+      order.officerIds?.includes(officerId),
+  );
+}
 export const OFFICER_COMMITTED_REASON = 'This officer is committed to an active battle.';

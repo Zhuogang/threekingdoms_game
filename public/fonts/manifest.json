@@ -1,15 +1,17 @@
 {
   "source": "https://github.com/google/fonts",
   "corpus": "src/v03/**/*.ts and tsx",
-  "characterCount": 1120,
+  "characterCount": 1366,
+  "officerNameCharacterCount": 149,
+  "officerNamesCovered": true,
   "files": {
     "source-sans-3.woff2": {
-      "bytes": 16168,
-      "sha256": "35bfea21d7338c5962eeed9934f17692d0fe988f33ce36c70b689be7282e9b89"
+      "bytes": 16456,
+      "sha256": "897b2acf1c74e730305309b337c60f4713c3dfde4fd374762a8f11eda61d92e7"
     },
     "noto-serif-sc.woff2": {
-      "bytes": 356272,
-      "sha256": "9251f0444f16db9fe94edde194d9017a6655026cf8a95e813cb9a78a65b57db6"
+      "bytes": 440376,
+      "sha256": "c3dbaba9f6aadcf6ae17cf1e01bded11fe9138ab005a115e26991ac574afa5be"
     }
   }
 }

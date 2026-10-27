@@ -61,6 +61,10 @@ export function localizeSaveError(message: string, locale: V03Locale): string {
   const routine = localizeRoutineFeedback(message, locale);
   if (routine !== null) return routine;
   if (locale === 'en') return message;
+  if (message.includes('older officer roster'))
+    return '该存档使用旧人物名册，无法直接载入。请先导出原始存档，再开始新战役；现有数据未更改。';
+  if (message.includes('newer officer roster'))
+    return '该存档使用更新的人物名册，请使用兼容版本打开；现有数据未更改。';
   if (message.includes('predates the wounded personnel schema'))
     return '该存档早于伤兵数据结构，无法直接载入。请先导出原始存档，再开始新战役；现有数据未更改。';
   if (message.includes('newer personnel schema'))
@@ -112,6 +116,8 @@ export function localizeAppMessage(
     'Choose a living target.': '请选择一支存活的目标部队。',
     'That cell is blocked, impassable, or beyond movement range.':
       '该格被阻挡、无法通行或超出移动范围。',
+    'No local free officer is available to search for.': '本城暂无可搜索招募的在野人物。',
+    'This officer is reserved for an approved order.': '此武将已被批准的命令预留。',
     'This officer is already completely loyal.': '此武将的忠诚已满。',
     'This officer already has fine arms.': '此武将已配备精良兵器。',
     'This officer has reached the fine-arms force limit.': '此武将已达到精良兵器的武力上限。',

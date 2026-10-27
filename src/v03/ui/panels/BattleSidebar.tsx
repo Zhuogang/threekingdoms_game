@@ -3,8 +3,7 @@ import { BattleActionBar } from './BattleActionBar';
 import { BattleLog } from './BattleLog';
 import { message } from '../../i18n';
 
-import { battlePortraitPath } from '../../rendering/presentation';
-import { resolvePublicAsset } from '../../rendering/assets';
+import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { UnitIcon } from '../../rendering/UnitIcon';
 import { battleTerrainAt } from '../../battle';
 
@@ -80,13 +79,10 @@ export function BattleSidebar({
                 >
                   <span className="v03-unit-art-pair">
                     {portraitKey ? (
-                      <img
+                      <OfficerPortrait
+                        id={portraitKey}
+                        locale={locale}
                         className="v03-unit-leader"
-                        src={resolvePublicAsset(
-                          battlePortraitPath(portraitKey),
-                          import.meta.env.BASE_URL,
-                        )}
-                        alt=""
                       />
                     ) : null}
                     <UnitIcon

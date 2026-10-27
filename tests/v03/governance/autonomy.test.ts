@@ -20,6 +20,14 @@ function fixture(): { state: V03GameState; cityId: string } {
   officer.governorOfCityId = city.id;
   city.governorId = officer.id;
   city.governanceMode = 'governor';
+  // A local search candidate is configured explicitly by search-specific cases.
+  for (const resident of state.officers)
+    if (
+      resident.factionId === null &&
+      resident.location.kind === 'city' &&
+      resident.location.cityId === city.id
+    )
+      resident.location = { kind: 'city', cityId: 'xiangyang' };
   city.farming = 25;
   city.commerce = 75;
   city.gold = 1000;
@@ -303,7 +311,11 @@ describe('v0.3 governor monthly work planning', () => {
     expect(result.state?.rng).not.toBe(state.rng);
 
     state.officers = state.officers.filter((officer) => officer.id !== 'local-neutral');
-    for (const officer of local) officer.troops = 0;
+    // Training is optional once every local officer already has an army.
+    for (const officer of local) {
+      officer.troops = 1000;
+      officer.experience = 10_000;
+    }
     manager.experience = 90;
     manager.force = 50;
     manager.troops = 1000;
@@ -318,20 +330,23 @@ describe('v0.3 governor monthly work planning', () => {
     for (const officer of local) {
       officer.force = 100;
       officer.experience = 10_000;
-      officer.troops = 0;
+      officer.troops = 1000;
     }
     city.reserve = 5000;
     city.reservePools = createReservePools(0, 0, 5000);
-    city.garrisonTroops = 0;
+    city.garrisonTroops = local.length * 1000;
     plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({
       action: 'assign-troops',
       targetOfficerId: manager.id,
-      targetTroops: 4000,
+      targetTroops: 5000,
     });
     result = applyGovernorMonthlyWork(state, plan);
-    expect(result.state?.officers.find((officer) => officer.id === manager.id)?.troops).toBe(4000);
-    expect(result.city).toMatchObject({ reserve: 1000, garrisonTroops: 4000 });
+    expect(result.state?.officers.find((officer) => officer.id === manager.id)?.troops).toBe(5000);
+    expect(result.city).toMatchObject({
+      reserve: 1000,
+      garrisonTroops: city.garrisonTroops + 4000,
+    });
   });
 
   it('ports legacy officer rewards, relief, and fine arms within protected monthly budgets', () => {
@@ -411,6 +426,13 @@ describe('v0.3 governor monthly work planning', () => {
       officer.force = 100;
     }
     equipmentOfficer.force = 102;
+    for (const officer of equipped.state.officers)
+      if (
+        officer.factionId === equipmentCity.factionId &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === equipmentCity.id
+      )
+        officer.troops = 1000;
 
     const equipmentPlan = planGovernorMonthlyWork(equipped.state, equipped.cityId, 3);
     expect(equipmentPlan).toMatchObject({

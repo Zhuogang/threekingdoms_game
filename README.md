@@ -6,6 +6,8 @@ An independent single-player Three Kingdoms strategy game with Chinese/English U
 
 [中文玩法指南](docs/v0.3/player-guide.md#中文玩法指南) · [English player guide](docs/v0.3/player-guide.md#english-player-guide) · [What changed in v0.3](docs/v0.3/release-notes.md) · [Current status](docs/v0.3/implementation-status.md) · [All documentation](docs/README.md)
 
+October 26 roster expansion: all 98 officers now have scenario-aware availability, annual appearances, recruitment, typed armies, portraits and directory profiles. [R1–R5 integration validation](docs/v0.3/evidence/officer-roster-r5-2026-10-26/README.md) covers both scenarios and all houses, casualty and water workflows, saves and production hosting under a subpath. Campaign balance playtests remain open.
+
 ## Start playing
 
 Requires Node.js 22.12 or newer.

@@ -67,6 +67,8 @@ export function CityAffairs({
                 key={action}
                 className="v03-step-choice"
                 aria-label={workLabel(context, action)}
+                disabled={action === 'search' && !context.capitalAvailability('search').ok}
+                title={action === 'search' ? context.capitalReason('search') : undefined}
                 onClick={() => onWork(action)}
               >
                 <strong>{workLabel(context, action)}</strong>

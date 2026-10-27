@@ -13,6 +13,7 @@ import {
   type WheelEvent,
 } from 'react';
 import { resolvePublicAsset } from './assets';
+import { officerPortraitFallback } from './officer-portraits';
 import { unitArtwork } from './unit-art';
 import { troopLevel } from '../campaign/troop-experience';
 import { V03_BATTLEFIELD_CANVASES } from './battlefield-canvases.generated';
@@ -248,6 +249,7 @@ function UnitSprite({
     ? resolvePublicAsset(battlePortraitPath(unit.portraitKey), BASE_URL)
     : undefined;
   const portraitClip = `v03-leader-${unit.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const [failedPortrait, setFailedPortrait] = useState<string>();
   const artReady = useImageAvailability(unitHref ?? '');
   const selected = unit.selected;
   const factionStroke = unit.faction === 'player' ? '#376f73' : '#a6493d';
@@ -372,15 +374,27 @@ function UnitSprite({
                   stroke={factionStroke}
                   strokeWidth={2}
                 />
-                <image
-                  href={portraitHref}
-                  x={-31}
-                  y={-31}
-                  width={20}
-                  height={20}
-                  preserveAspectRatio="xMidYMid slice"
-                  clipPath={`url(#${portraitClip})`}
-                />
+                <text
+                  x={-21}
+                  y={-18}
+                  textAnchor="middle"
+                  fontSize={locale === 'zh' ? 8 : 5}
+                  fill="#2e2923"
+                >
+                  {officerPortraitFallback(unit.portraitKey!, locale)}
+                </text>
+                {failedPortrait !== portraitHref ? (
+                  <image
+                    href={portraitHref}
+                    x={-31}
+                    y={-31}
+                    width={20}
+                    height={20}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath={`url(#${portraitClip})`}
+                    onError={() => setFailedPortrait(portraitHref)}
+                  />
+                ) : null}
               </g>
             ) : null}
             {/* Faction pennant, top right. */}

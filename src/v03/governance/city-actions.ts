@@ -1,4 +1,4 @@
-import { isCityCommitted, CITY_COMMITTED_REASON } from './commitments';
+import { isCityCommitted, isOfficerReservedForOrder, CITY_COMMITTED_REASON } from './commitments';
 import { mergeTroopPools, setReservePool, TROOP_TYPES } from '../campaign/troop-experience';
 import { recruitmentQuote } from '../campaign/recruitment';
 import {
@@ -39,6 +39,7 @@ export const GOVERNOR_RELIEF_FOOD_COST = 600;
 const RESOURCE_CAP = 9_999_999;
 
 function localOfficers(state: Readonly<V03GameState>, city: V03City): V03Officer[] {
+  if (city.factionId === null) return [];
   return state.officers
     .filter(
       (officer) =>
@@ -51,6 +52,7 @@ function localOfficers(state: Readonly<V03GameState>, city: V03City): V03Officer
 }
 
 export function cityWorkQuota(state: Readonly<V03GameState>, city: V03City): number {
+  if (city.factionId === null) return 0;
   const staffed = state.officers.filter(
     (officer) =>
       officer.alive &&
@@ -63,6 +65,27 @@ export function cityWorkQuota(state: Readonly<V03GameState>, city: V03City): num
 
 export function cityWorkUsedThisMonth(state: Readonly<V03GameState>, city: V03City): number {
   return city.workMonthIndex === state.monthIndex ? (city.workPointsUsed ?? 0) : 0;
+}
+
+export function automaticTalentWorkUsed(
+  state: Readonly<V03GameState>,
+  city: V03City,
+  kind: 'search' | 'assign',
+): number {
+  if (city.workMonthIndex !== state.monthIndex) return 0;
+  return (kind === 'search' ? city.autoSearchesThisMonth : city.autoAssignmentsThisMonth) ?? 0;
+}
+
+export function localSearchCandidates(state: Readonly<V03GameState>, cityId: string): V03Officer[] {
+  return state.officers
+    .filter(
+      (officer) =>
+        officer.alive &&
+        officer.factionId === null &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === cityId,
+    )
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 export function applySharedCityWorkEffect(
@@ -144,11 +167,13 @@ function useWorkPoint(state: V03GameState, city: V03City): void {
   if (city.workMonthIndex !== state.monthIndex) {
     city.workMonthIndex = state.monthIndex;
     city.workPointsUsed = 0;
+    city.autoSearchesThisMonth = 0;
+    city.autoAssignmentsThisMonth = 0;
   }
   city.workPointsUsed = previous + 1;
 }
 
-function committedCityStock(state: Readonly<V03GameState>, cityId: string) {
+export function committedCityStock(state: Readonly<V03GameState>, cityId: string) {
   const reserved = { gold: 0, food: 0, troops: 0 };
   const outstanding = (order: { sourceCityId: string; journeyId: string | null; status: string }) =>
     order.sourceCityId === cityId &&
@@ -171,29 +196,57 @@ export function getV03CityActionAvailability(
   state: Readonly<V03GameState>,
   input: V03CityActionInput,
 ): V03CityActionAvailability {
-  return inspectCityAction(state, input, false);
+  return inspectCityAction(state, input, 'player');
+}
+
+type CityWorkAuthority = 'player' | 'governor' | { npcFactionId: string };
+
+/** Internal planner query, with the same capital ownership guard as execution. */
+export function getAutomaticCityActionAvailability(
+  state: Readonly<V03GameState>,
+  input: V03CityActionInput,
+  npcFactionId?: string,
+): V03CityActionAvailability {
+  return inspectCityAction(state, input, npcFactionId ? { npcFactionId } : 'governor');
 }
 
 function inspectCityAction(
   state: Readonly<V03GameState>,
   input: V03CityActionInput,
-  governorExecution: boolean,
+  authority: CityWorkAuthority,
 ): V03CityActionAvailability {
   const city = state.cities.find((entry) => entry.id === input.cityId);
   const fail = (reason: string): V03CityActionAvailability => ({ ok: false, reason });
-  const authorized = governorExecution
-    ? Boolean(
-        city &&
-        city.id !== state.playerCapitalCityId &&
-        city.factionId !== null &&
-        city.governanceMode !== 'ruler',
-      )
-    : Boolean(
-        city &&
-        city.id === state.playerCapitalCityId &&
-        city.factionId === state.playerFactionId &&
-        city.governanceMode === 'ruler',
-      );
+  const governorExecution = authority !== 'player';
+  const npcFaction =
+    typeof authority === 'object'
+      ? state.factions.find((faction) => faction.id === authority.npcFactionId)
+      : undefined;
+  const authorized =
+    typeof authority === 'object'
+      ? Boolean(
+          city &&
+          npcFaction &&
+          !npcFaction.eliminated &&
+          npcFaction.id !== state.playerFactionId &&
+          !npcFaction.isPlayer &&
+          city.factionId === npcFaction.id &&
+          city.id === npcFaction.capitalCityId &&
+          city.governanceMode === 'ruler',
+        )
+      : governorExecution
+        ? Boolean(
+            city &&
+            city.id !== state.playerCapitalCityId &&
+            city.factionId !== null &&
+            city.governanceMode !== 'ruler',
+          )
+        : Boolean(
+            city &&
+            city.id === state.playerCapitalCityId &&
+            city.factionId === state.playerFactionId &&
+            city.governanceMode === 'ruler',
+          );
   if (!city || !authorized)
     return fail(
       governorExecution
@@ -226,6 +279,11 @@ function inspectCityAction(
       goldCost = 80;
       break;
     case 'search':
+      if (!localSearchCandidates(state, city.id).length)
+        return fail('No local free officer is available to search for.');
+      if (governorExecution && automaticTalentWorkUsed(state, city, 'search') >= 1)
+        return fail('This city has already attempted its automatic talent search this month.');
+      break;
     case 'security':
     case 'feast':
       break;
@@ -243,6 +301,8 @@ function inspectCityAction(
     }
     case 'assign-troops': {
       if (!input.officerId) return fail('Choose a living officer stationed in the capital.');
+      if (isOfficerReservedForOrder(state, actor.id))
+        return fail('This officer is reserved for an approved order.');
       if (actor.reorganizationDays > 0) return fail('These troops are still reorganizing.');
       if (
         !Number.isSafeInteger(input.amount) ||
@@ -251,8 +311,23 @@ function inspectCityAction(
       )
         return fail('An officer can command 0–10,000 soldiers.');
       const change = input.amount! - actor.troops;
+      if (
+        governorExecution &&
+        actor.troops + actor.wounded === 0 &&
+        change > 0 &&
+        automaticTalentWorkUsed(state, city, 'assign') >= 1
+      )
+        return fail('This city has already assigned its first automatic army this month.');
       if (change > availableReserveTroops(state, city.id, actor.troopType))
         return fail('There are not enough soldiers of this troop type in the city reserve.');
+      if (
+        governorExecution &&
+        change > 0 &&
+        change >
+          availableReserveTroops(state, city.id, actor.troopType) -
+            committedCityStock(state, city.id).troops
+      )
+        return fail('These soldiers are reserved for an approved order.');
       if (city.garrisonTroops + change < 0)
         return fail('The city garrison does not contain those soldiers.');
       garrisonDecrease = Math.max(0, -change);
@@ -321,7 +396,7 @@ export function applyV03CityAction(
   state: V03GameState,
   input: V03CityActionInput,
 ): V03CityActionResult {
-  return applyCityAction(state, input, false);
+  return applyCityAction(state, input, 'player');
 }
 
 /** Trusted monthly-autonomy entry point; it shares the same action effects and quota checks. */
@@ -329,15 +404,24 @@ export function applyGovernorCityAction(
   state: V03GameState,
   input: V03CityActionInput,
 ): V03CityActionResult {
-  return applyCityAction(state, input, true);
+  return applyCityAction(state, input, 'governor');
+}
+
+/** Trusted monthly NPC-capital entry; never accepts a player command bypass flag. */
+export function applyNpcCapitalCityAction(
+  state: V03GameState,
+  factionId: string,
+  input: V03CityActionInput,
+): V03CityActionResult {
+  return applyCityAction(state, input, { npcFactionId: factionId });
 }
 
 function applyCityAction(
   state: V03GameState,
   input: V03CityActionInput,
-  governorExecution: boolean,
+  authority: CityWorkAuthority,
 ): V03CityActionResult {
-  const availability = inspectCityAction(state, input, governorExecution);
+  const availability = inspectCityAction(state, input, authority);
   if (!availability.ok) return { ok: false, state, error: availability.reason! };
   const sourceCity = state.cities.find((city) => city.id === input.cityId)!;
   const manager = officerForAction(state, sourceCity, input.officerId)!;
@@ -345,6 +429,10 @@ function applyCityAction(
   const next = structuredClone(state);
   const city = next.cities.find((entry) => entry.id === input.cityId)!;
   const actor = next.officers.find((entry) => entry.id === manager.id)!;
+  const firstAssignment =
+    input.action === 'assign-troops' &&
+    actor.troops + actor.wounded === 0 &&
+    (input.amount ?? 0) > 0;
   const fail = (error: string): V03CityActionResult => ({ ok: false, state, error });
   let message: string;
 
@@ -367,15 +455,7 @@ function applyCityAction(
       break;
     }
     case 'search': {
-      const candidate = next.officers
-        .filter(
-          (officer) =>
-            officer.alive &&
-            officer.factionId === null &&
-            officer.location.kind === 'city' &&
-            officer.location.cityId === city.id,
-        )
-        .sort((a, b) => a.id.localeCompare(b.id));
+      const candidate = localSearchCandidates(next, city.id);
       const foundOfficer = candidate.length
         ? candidate[nextRandom(next, candidate.length)]
         : undefined;
@@ -558,6 +638,10 @@ function applyCityAction(
   }
 
   useWorkPoint(next, city);
+  if (authority !== 'player' && input.action === 'search')
+    city.autoSearchesThisMonth = (city.autoSearchesThisMonth ?? 0) + 1;
+  if (authority !== 'player' && firstAssignment)
+    city.autoAssignmentsThisMonth = (city.autoAssignmentsThisMonth ?? 0) + 1;
   next.revision++;
   next.log.push(`${city.name} city work: ${input.action} (${message})`);
   return { ok: true, state: next, message };

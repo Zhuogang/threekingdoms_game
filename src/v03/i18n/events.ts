@@ -18,6 +18,20 @@ export function formatEvent(
       : message(locale, 'ui.independent.10');
   };
   const p = event.params ?? {};
+  if (event.code === 'officer.debut') {
+    const names = String(p.officerIds ?? '')
+      .split(',')
+      .filter(Boolean)
+      .map((id) => name(id, 'officers'))
+      .join(locale === 'zh' ? '、' : ', ');
+    return {
+      title: locale === 'zh' ? '人才登场' : 'New local officers',
+      detail:
+        locale === 'zh'
+          ? `${p.year}年：${names}已在当地登场，可通过城务搜索招募。`
+          : `${p.year}: ${names} appeared locally and can be recruited through city searches.`,
+    };
+  }
   if (event.code === 'battle.outcome' && event.battleOutcome) {
     const report = event.battleOutcome;
     const city = name(report.cityId, 'cities');
