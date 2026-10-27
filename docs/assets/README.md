@@ -1,6 +1,6 @@
 # Asset records and version scope
 
-The active v0.3 art source of truth is its [manifest](../v0.3/assets/manifest.json), [provenance](../v0.3/assets/provenance.md) and [art status/workflow](../v0.3/06-imagegen-and-artwork.md). Generated v0.3 assets remain draft; older visual approvals do not change that status.
+Current v0.3 runtime art is indexed by its [art status/workflow](../v0.3/06-imagegen-and-artwork.md) and family manifests: [campaign background](../v0.3/assets/campaign-china-full-ink-01.json), [city markers](../v0.3/assets/cities-front-ink-01.json), [city detail paintings](../v0.3/assets/cities-regional-ink-02.json), [units](../v0.3/assets/unit-squads-runtime.json) and [battlefield canvases](../v0.3/assets/battlefield-canvases.json). The original [manifest](../v0.3/assets/manifest.json) is an inactive unit-art archive; retired terrain/map files were removed on October 26. [Historical provenance](../v0.3/assets/provenance.md) preserves dated prompts and hashes. Technical integration does not imply human style approval.
 
 The [98-person v0.3 portrait inventory](v0.3-portraits/asset-inventory.md) records the October 22, 2026 portrait delivery, reused images, revised age/identity variants, source prompts and full contact sheet. Its [runtime manifest](../../public/assets/v03/portraits/manifest.json) indexes both sizes without overwriting the earlier scenario portraits.
 

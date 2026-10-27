@@ -6,6 +6,7 @@ import { isCityCommitted } from '../../governance/commitments';
 import { displayName } from '../shared/app-copy-3';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { GovernancePanel } from './GovernancePanel';
+import { CityIllustration } from '../shared/CityIllustration';
 
 export function CityPanel({
   context,
@@ -18,6 +19,7 @@ export function CityPanel({
   const { state, selectedCity, t, locale } = context;
   return (
     <>
+      <CityIllustration city={selectedCity} />
       <div className="v03-city-head">
         <div
           className="v03-city-seal"

@@ -1,6 +1,6 @@
 # ImageGen artwork: integrated drafts and revision workflow
 
-Current reference checked October 22, 2026. [Asset manifest](assets/manifest.json) · [Generation provenance and prompts](assets/provenance.md) · [Original art brief](history/design/06-imagegen-and-artwork.md).
+Current reference checked October 26, 2026. [Asset manifest](assets/manifest.json) · [Generation provenance and prompts](assets/provenance.md) · [Original art brief](history/design/06-imagegen-and-artwork.md).
 
 ## October 26 one-/three-person revision
 
@@ -10,27 +10,26 @@ Land icons now use one person or three copies of the same single-person sprite a
 
 Fourteen ink-03 unit images replace the dense formation textures with bold three-/five-person symbols and simplified vessels. All were generated individually with built-in image_gen, packaged with native transparency, and inspected at 40/56px. [Inventory, complete prompts, source images and comparison](assets/units-readable-ink-03.md). The ink-02 set remains an inactive archive.
 
-## What is integrated
+## Current runtime artwork
 
-Seven original runtime asset definitions are integrated: ground material, pine ridge prop, infantry, archer, cavalry, transport craft and campaign background. An eighth manifest entry, `campaign-paper-wash-02`, is an **inactive review alternative**, not the active atlas. All eight entries remain `draft`. Technical integration and human approval are separate states.
+| Asset class               | Active artwork                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------------- |
+| Campaign background       | One 3260×2340 China-wide ink painting, shared by map and minimap.                       |
+| Campaign city markers     | Eight small frontal city icons.                                                         |
+| City detail illustrations | Eight 512×512 regional paintings, using the same city-to-region mapping as map markers. |
+| Land units                | Twelve fixed-scale ink-04 one-/three-person icons.                                      |
+| Vessels                   | Two ink-03 icons: transport boat and tower warship.                                     |
+| Battlefields              | Fifteen painted 48×32 canvases; terrain and movement remain rule data.                  |
 
-| Asset class             | Current runtime specification                                          |
-| ----------------------- | ---------------------------------------------------------------------- |
-| Ground                  | 512×512 opaque material.                                               |
-| Ridge                   | 512×512 alpha; normalized anchor (0.5, 0.84).                          |
-| Infantry/archer/cavalry | 256×256 alpha; foot anchor (0.5, 0.86).                                |
-| Transport craft         | 256×128 alpha; anchor (0.5, 0.60).                                     |
-| Campaign backgrounds    | 1000×1000 opaque; one active original, one inactive paper alternative. |
+City overviews pair an uncropped building silhouette with faction/status information, followed by resources and actions. Narrow screens stack the illustration above the summary. Only transparent safety padding is outside the display frame. Image failure preserves the frame with a city-character fallback, and all actions remain available. Eight regional styles cover all 24 scenario cities; Xiangyang now shares the river style with Jiangling, Jiangxia and Chaisang. Shouchun and Xiapi use the water-city style, without changing their geographic or battle data. [Detail painting provenance](assets/cities-regional-ink-02.json) · [Map-marker provenance](assets/cities-front-ink-01.json).
 
-`src/v03/rendering/assets.ts` supplies runtime paths, dimensions, draw sizes, anchors and native fallbacks. The manifest/provenance retains source files, prompt IDs, hashes and validation notes. No artwork was generated, revised or approved in the October 22 documentation pass.
+City overview layout follows its actual container width, including CSS/browser zoom: below 600px the illustration and actions stack; below 400px resources use two columns, with long numbers wrapping inside each cell. Slow or corrupt images keep the same frame; opening the city again retries loading. Unknown city IDs fall back to plains art, including IDs that match Object.prototype names.
 
-## Coverage and visual limits
+## Retired artwork removed October 26
 
-Infantry, archers and cavalry have separate figure sprites. Guard, elite and naval retain native identity badges rather than dedicated full figure art. The shared craft indicates water transport; it is not a purchased vessel or special unit ability. Forest/other terrain also use native graphics where the raster set is incomplete. A complete regional texture/prop pack and all six dedicated figure variants are not delivered assets.
+At the user's request, six unused terrain images and five old campaign backgrounds/candidates were removed from public assets. The six corresponding v0.3 source PNGs and obsolete SVG basemap generator were also removed. Their runtime definitions and legacy manifest entries were deleted; historical prompts and dated test records remain documentation only. The old ink-01 unit records in [manifest.json](assets/manifest.json) are an inactive archive.
 
-Painted river/mountain washes are illustrative; exact city anchors, logical terrain, routes and water penalties belong to data/native overlays. Neither the active background nor the alternate paper proves ancient geographic accuracy.
-
-After RV02/RV06, the [nine runtime captures](evidence/rv-implementation-2026-10-21/README.md#fresh-runtime-captures) establish framing and provide review material. They do not approve style, small-size legibility, every overlapping formation or true low-end performance. Earlier v0.2 portrait/profile approvals do not approve the v0.3 asset set.
+The active China-wide painting, city art, battlefield canvases and terrain rules remain in use. Dedicated native terrain overlays continue to show exact gameplay terrain. Technical integration and human style approval remain separate states.
 
 ## Next revision steps
 

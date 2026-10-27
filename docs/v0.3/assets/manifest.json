@@ -4,57 +4,6 @@
   "status": "draft",
   "assets": [
     {
-      "id": "ground-material-ink-01",
-      "category": "material",
-      "path": "public/assets/v03/terrain/material-ground-ink-01.webp",
-      "source": "generated/ground-ink-source.png",
-      "width": 512,
-      "height": 512,
-      "alpha": false,
-      "anchor": null,
-      "renderWidth": 512,
-      "renderHeight": 512,
-      "footprint": null,
-      "maxOverflow": 0,
-      "mirrorable": true,
-      "variantSeed": null,
-      "substitute": null,
-      "promptId": "v03-ground-ink-01",
-      "sha256": "9e25dbd26f49e40f65fa82490bd2d5373652f13d662762d3904315564828614b",
-      "status": "draft",
-      "validation": {
-        "dimensions": "512x512",
-        "seamCheck": "opposite boundary mean absolute RGB difference 1.46/255 after feathering and WebP encoding",
-        "intendedUse": "low-contrast ground texture only; river and terrain boundaries remain program controlled"
-      }
-    },
-    {
-      "id": "ridge-pine-ink-01",
-      "category": "terrain-prop",
-      "path": "public/assets/v03/terrain/prop-ridge-pine-ink-01.webp",
-      "source": "generated/ridge-pine-ink-source.png",
-      "width": 512,
-      "height": 512,
-      "alpha": true,
-      "anchor": [0.5, 0.84],
-      "renderWidth": 224,
-      "renderHeight": 224,
-      "footprint": [2, 1],
-      "maxOverflow": 0,
-      "mirrorable": true,
-      "variantSeed": null,
-      "substitute": null,
-      "promptId": "v03-ridge-pine-ink-01",
-      "sha256": "2e75a3c0d49654081f503b9faf228b1c99a5c03301e54e272eec31a929b2b266",
-      "status": "draft",
-      "validation": {
-        "dimensions": "512x512",
-        "alphaBBox": [50, 240, 466, 430],
-        "anchorPixel": [256, 430],
-        "notes": "low ridge candidate; decorative only and does not imply impassability"
-      }
-    },
-    {
       "id": "infantry-ink-01",
       "category": "unit",
       "path": "public/assets/v03/units/infantry-ink-01.webp",
@@ -156,60 +105,8 @@
         "alphaBBox": [53, 44, 202, 115],
         "notes": "shared empty ferry marker; no naval-skill or combat-rule implication"
       }
-    },
-    {
-      "id": "campaign-map-ink-01",
-      "category": "map-background",
-      "path": "public/assets/v03/maps/campaign-ink-map-01.webp",
-      "source": "generated/campaign-ink-atlas-02-source.png",
-      "width": 1000,
-      "height": 1000,
-      "alpha": false,
-      "anchor": null,
-      "renderWidth": 1000,
-      "renderHeight": 1000,
-      "footprint": null,
-      "maxOverflow": 0,
-      "mirrorable": false,
-      "variantSeed": null,
-      "substitute": "native paper wash with exact geography overlays",
-      "promptId": "v03-campaign-ink-atlas-02",
-      "sha256": "cf8312f8ed9c210b72b424b08e699c4f0d3631504748f3fcca131c11aacf6207",
-      "status": "draft",
-      "validation": {
-        "dimensions": "1000x1000",
-        "sourceDimensions": "1254x1254",
-        "bytes": 85930,
-        "guide": "campaign-layout-guide-v01.png uses the canonical 1000x1000 projection and exact 24 city anchors; river/ridge corridors are illustrative because G supplied no control-line API",
-        "notes": "atmospheric wash only; exact rivers, mountain lines, cities, labels and routes remain program overlays; second of two distinct candidates selected for lower contrast and more label-safe open plains"
-      }
-    },
-    {
-      "id": "campaign-paper-wash-02",
-      "category": "map-background",
-      "path": "public/assets/v03/maps/campaign-paper-wash-02.webp",
-      "source": "generated/campaign-paper-wash-02-source.png",
-      "width": 1000,
-      "height": 1000,
-      "alpha": false,
-      "anchor": null,
-      "renderWidth": 1000,
-      "renderHeight": 1000,
-      "footprint": null,
-      "maxOverflow": 0,
-      "mirrorable": false,
-      "variantSeed": null,
-      "substitute": "native paper wash with exact geography overlays",
-      "promptId": "v03-campaign-paper-wash-02",
-      "sha256": "6dc01b07a5dc024e0208b7f85c4030904b98b6226b75ae69a710c789fb84b94c",
-      "status": "draft",
-      "validation": {
-        "dimensions": "1000x1000",
-        "sourceDimensions": "1254x1254",
-        "bytes": 128428,
-        "alpha": false,
-        "notes": "review-only paper substrate; no location-specific river, ridge or city placement; exact geographic content stays program controlled"
-      }
     }
-  ]
+  ],
+  "active": false,
+  "scope": "Inactive ink-01 unit-art archive. Retired terrain and campaign-map candidates removed 2026-10-26. Current land units, vessels, city art and map have separate manifests."
 }

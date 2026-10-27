@@ -2,6 +2,10 @@
 
 Local candidate; implementation `1e02e65` on `hegemony_of_the_three_kindoms_v0.3`. Documentation checked October 22, 2026. [How to play](player-guide.md) · [Status and tests](implementation-status.md) · [Open acceptance](../next-steps.md).
 
+## October 26 city detail artwork and asset cleanup
+
+City overview/detail panels now show eight regional city paintings. They share the map marker’s region selection across all 24 cities; Xiangyang uses river art. Desktop layouts place the illustration beside the house information, while narrow layouts stack them. Missing images retain the city-character fallback and working actions. Six unused terrain images, five old map/background candidates and their obsolete source/generation files were removed. The active map, battlefield paintings and terrain rules are unchanged.
+
 ## October 26 battlefield display and camp removal
 
 The battle view uses the window width, with Expand battlefield and native Fullscreen controls. Show panels toggles commands, minimap, help, top bar and battle list; hidden commands leave a compact action bar. The minimap floats inside the battlefield. Restore layout returns to the prior settings. Camps, occupation victory, camp camera targets and camp AI goals have been removed. Battles resolve through defeat, rout, withdrawal or the time limit. No save migration is included. [Implementation record](11-battle-display-and-camp-removal.md).

@@ -4,6 +4,7 @@ import { isCityCommitted } from '../../governance/commitments';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
+import { CityIllustration } from '../shared/CityIllustration';
 
 export function CityOverview({
   context,
@@ -63,11 +64,9 @@ export function CityOverview({
   };
   return (
     <div className="v03-city-overview">
-      <div className="v03-city-summary">
-        <div className="v03-city-emblem" style={{ borderColor: owner?.color }}>
-          {city.chinese.slice(0, 1)}
-        </div>
-        <div>
+      <div className="v03-city-hero">
+        <CityIllustration city={city} />
+        <div className="v03-city-summary" style={{ borderColor: owner?.color }}>
           <strong>
             {owner ? displayName(owner, locale) : message(locale, 'ui.independent.10')}
           </strong>

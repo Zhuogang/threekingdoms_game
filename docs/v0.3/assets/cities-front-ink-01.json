@@ -143,5 +143,5 @@
       "sha256": "4a2727a176b0b1dee02e7619f248e5f69f56cc4c5700b7b572e1a02d7a67aae0"
     }
   ],
-  "scope": "Active small frontal campaign-map city icons. Regional variants affect artwork only; detailed regional city illustrations remain preserved for future city interface use."
+  "scope": "Active small frontal campaign-map city icons. Detailed regional city paintings are integrated in city overview/detail panels; both use the shared region mapping in campaign-city-art.ts."
 }

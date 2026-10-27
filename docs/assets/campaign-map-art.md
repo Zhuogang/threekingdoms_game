@@ -1,5 +1,7 @@
 # Campaign map ink painting
 
+The earlier campaign background described below was removed on 2026-10-26. This is a historical record; the active map is the China-wide v0.3 painting.
+
 Generated with the built-in imagegen tool on 2026-10-20 for the requested 中式水墨画 visual style.
 
 - Runtime asset: `public/assets/maps/han-realm-ink.webp`, 2000 × 1440, WebP quality 86.

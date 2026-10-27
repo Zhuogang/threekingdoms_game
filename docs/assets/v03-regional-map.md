@@ -1,5 +1,7 @@
 # v0.3 regional campaign map
 
+Historical reference: the old regional SVG background and its generator were removed on 2026-10-26. The current runtime uses the China-wide ink painting; the projection and geographic rules continue independently.
+
 The main map follows the approved 16:10 regional preview. The previous wider
 preview's geographic width and height were each reduced to two thirds, around
 114° E, 33.5° N. All 24 scenario city anchors remain inside the frame with space
@@ -26,13 +28,4 @@ kilometres, travel estimates, city actions or combat rules.
 - The original square ink artwork is retained as a separate asset; the regional
   map uses the geographically aligned SVG background.
 
-To regenerate offline, place the two input GeoJSON files in a directory as
-`ne_50m_land.json` and `ne_50m_rivers_lake_centerlines.json`, then run:
-
-```powershell
-node tools/build-v03-campaign-basemap.mjs <geojson-directory>
-```
-
-The generator imports the runtime projection, clips the geometry to the world,
-and prints the resulting SHA-256. Update the registered asset hash if the
-generated file changes. No external map service is used at runtime.
+The former offline SVG generator has been removed together with this retired background. The reference links above document its original geographic sources.

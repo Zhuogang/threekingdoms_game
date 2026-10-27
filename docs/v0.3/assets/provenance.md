@@ -1,6 +1,8 @@
 # v0.3 image provenance
 
-Generated with Codex's built-in ImageGen tool on 2026-10-21. All items below are original game-art candidates. Full generated PNGs are retained in [`generated/`](generated/); runtime WebP files are in `public/assets/v03/` and are indexed in [`manifest.json`](manifest.json). Candidates remain `draft` until reviewed in the integrated, playable game.
+October 26 retirement note: the old terrain material/prop and campaign-map candidates described below, including six dedicated source PNGs, have been removed at the user’s request. Their prompts and hashes below are historical provenance, not available runtime assets. Current art is listed in [art status](../06-imagegen-and-artwork.md); active background, city and unit families each have a separate manifest.
+
+The original candidates below were generated with Codex's built-in ImageGen tool on 2026-10-21. This document retains their historical prompts and hashes. Surviving originals are in [`generated/`](generated/); the old unit-art subset is indexed in the inactive [`manifest.json`](manifest.json). Retired terrain/map source and runtime files are no longer retained in the working tree.
 
 The runtime pipeline only crops transparent safety padding, resizes with Lanczos, places the contact point on the V1 anchor, and encodes WebP. It does not add any terrain or combat meaning. The ground material uses a feathered wrap seam; its opposite-edge mean absolute RGB difference is 1.46/255 after final WebP encoding. Transparent unit and prop files retain alpha.
 

@@ -15,23 +15,23 @@ import {
 } from '../../../src/v03/rendering/presentation';
 
 describe('v0.3 asset loading and sprite contract', () => {
-  it('registers the regional campaign atlas with the 16:10 projection contract', () => {
-    expect(V03_ASSETS.campaignMapRegional).toMatchObject({
+  it('registers the active China campaign painting', () => {
+    expect(V03_ASSETS.campaignMapChinaInk01).toMatchObject({
       category: 'map-background',
-      path: 'assets/v03/maps/campaign-regional-map.svg',
-      width: 1600,
-      height: 1000,
+      path: 'assets/v03/maps/campaign-china-full-ink-01.webp',
+      width: 3260,
+      height: 2340,
       alpha: false,
       status: 'integrated',
     });
-    expect(resolvePublicAsset(V03_ASSETS.campaignMapRegional.path, '/campaign/')).toBe(
-      '/campaign/assets/v03/maps/campaign-regional-map.svg',
+    expect(resolvePublicAsset(V03_ASSETS.campaignMapChinaInk01.path, '/campaign/')).toBe(
+      '/campaign/assets/v03/maps/campaign-china-full-ink-01.webp',
     );
   });
 
   it('resolves asset paths under the configured app base and rejects traversal', () => {
-    expect(resolvePublicAsset(V03_ASSETS.groundInk01.path, '/campaign/')).toBe(
-      '/campaign/assets/v03/terrain/material-ground-ink-01.webp',
+    expect(resolvePublicAsset(V03_ASSETS.infantrySquadInk04.path, '/campaign/')).toBe(
+      '/campaign/assets/v03/units/infantry-small-ink-04.webp',
     );
     expect(resolvePublicAsset('/assets/v03/units/infantry-ink-01.webp', '/')).toBe(
       '/assets/v03/units/infantry-ink-01.webp',
@@ -59,12 +59,6 @@ describe('v0.3 asset loading and sprite contract', () => {
   });
 
   it('keeps squad image dimensions, alpha policy and anchor offsets explicit', () => {
-    expect(V03_ASSETS.groundInk01).toMatchObject({
-      width: 512,
-      height: 512,
-      alpha: false,
-      anchor: null,
-    });
     expect(V03_ASSETS.infantrySquadInk04).toMatchObject({
       width: 512,
       height: 512,

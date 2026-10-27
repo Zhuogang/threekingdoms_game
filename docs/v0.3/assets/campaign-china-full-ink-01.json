@@ -83,7 +83,11 @@
     "terrain": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer",
     "terrainDocumentation": "https://help.arcgis.com/en/data-appliance/4.0/help/world/content/world_shaded_relief.htm",
     "coastAndRivers": "https://www.naturalearthdata.com/downloads/50m-physical-vectors/",
-    "style": "public/assets/maps/han-realm-ink.webp",
     "georeferencingNote": "Modern physical geography reference with artistic generalization; not a reconstruction of Han-period waterways."
+  },
+  "historicalStyleReference": {
+    "assetId": "han-realm-ink",
+    "removedOn": "2026-10-26",
+    "note": "Original style guide was retired at the user’s request. The surviving source and master above remain available as references for future edits."
   }
 }
