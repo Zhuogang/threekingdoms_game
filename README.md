@@ -50,11 +50,19 @@ If time stops, check the Inbox for critical reports and unfinished manual battle
 
 ## Runtime views
 
-These retained screenshots show earlier v0.3 layouts; newer city statistics and action screens are described above. They are layout examples, not final artwork approval.
+Captured from the current game on **October 28, 2026**, at 1440×960. The campaign and city views use a new 190 Cao Cao campaign; the battlefield shows a seeded Puyang → Xiapi engagement on Waterlands.
 
-![v0.3 campaign atlas](docs/images/v03-campaign.png)
+**Campaign:** the map-first layout with city markers and the bottom navigation dock.
 
-![v0.3 Waterlands battlefield](docs/images/v03-battlefield.png)
+![Current v0.3 campaign map and navigation dock](docs/images/v03-campaign-2026-10-28.png)
+
+**City:** Chenliu's overview, showing all eight city statistics and the main action entries.
+
+![Current Chenliu city overview with farming, commerce, population, reserves and public order](docs/images/v03-city-2026-10-28.png)
+
+**Battle:** current unit artwork and wounded readouts, a floating minimap, expansion/fullscreen controls and manual orders.
+
+![Current Waterlands battlefield with formation sprites, wounded counts and display controls](docs/images/v03-battlefield-2026-10-28.png)
 
 ## Development and validation
 

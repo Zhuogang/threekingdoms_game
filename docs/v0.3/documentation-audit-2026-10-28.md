@@ -23,8 +23,12 @@ Authoritative checks used [city actions](../../src/v03/governance/city-actions.t
 ## Checks and boundaries
 
 - Fresh current unit/integration run: `npm test -- --maxWorkers=1 --reporter=json --outputFile=.artifacts/docs-maintenance/current-tests.json` — **820 passed, 0 failed**. The ignored report is a local output, not a portable evidence attachment.
-- Local reference check: **105 Markdown documents, 1,330 local file/image/heading references, 0 errors**. The initial scan found **51 dead references**, all retired/optional source links in archives; those references were preserved as historical paths. External website availability was not part of this local audit.
+- Local reference check after refreshing the README screenshots: **105 Markdown documents, 1,331 local file/image/heading references, 0 errors**. The initial scan found **51 dead references**, all retired/optional source links in archives; those references were preserved as historical paths. External website availability was not part of this local audit.
 - The earlier October 28 implementation checks covered six ordinary-transfer browser cases, two governor-transfer cases and four multi-battle recovery cases across Chinese/English, including narrow layouts and reload. Those were focused runs; this documentation pass does not claim a new full browser/production or hardware run.
 - `npm run build`, Prettier checks for all changed Markdown/in-game help, and `git diff --check` passed. Old build sizes, timings, art counts and RV totals in dated evidence are not current-tree measurements.
 
 Long player sessions, actual low-end hardware testing and final artwork approval remain open. Push, PR and remote CI remain deferred. [Current status](implementation-status.md) and [next steps](../next-steps.md) retain those acceptance boundaries.
+
+## Runtime-view correction
+
+The first cleanup retained outdated README screenshots. These were subsequently replaced with three fresh 1440×960 captures of the current campaign map, Chenliu city overview and a seeded Puyang → Xiapi Waterlands engagement. Filenames include `2026-10-28`; the old captures remain untouched. The map uses its normal playable-region framing. Two isolated browser capture checks passed, with the campaign/city capture rechecked after framing adjustment; the city has eight statistics and the battle uses current unit artwork, wounded readouts, floating minimap and display controls without the removed Camps button. All three images were visually inspected.
