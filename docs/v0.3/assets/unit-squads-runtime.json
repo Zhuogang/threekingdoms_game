@@ -1,0 +1,302 @@
+{
+  "sourceManifest": "units-count-ink-04.json",
+  "scope": "One person below 500 troops; three identical-scale instances at 500+. Both use the same single-person sprite and canvas size. Level and vessel selection rules are unchanged.",
+  "entries": [
+    {
+      "key": "infantry-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+      "path": "assets/v03/units/infantry-small-ink-04.webp",
+      "sourceCrop": [101, 146, 1246, 1177],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 294],
+      "personSha256": "90c172c24cdbee62a3e1ad86c767fe18325bdd2e64bd5b2730c9694a0ba8ef1d",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "a7297a35e0c020965a249f6841fca6be33d67393904da4f83a1428694daafba0"
+    },
+    {
+      "key": "infantry-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+      "path": "assets/v03/units/infantry-large-ink-04.webp",
+      "sourceCrop": [101, 146, 1246, 1177],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 294],
+      "personSha256": "90c172c24cdbee62a3e1ad86c767fe18325bdd2e64bd5b2730c9694a0ba8ef1d",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "16e2fef91f80b05918a9cfc97a7652f711e0d515c65c103e161965d21b4b03b7"
+    },
+    {
+      "key": "heavy-infantry-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/heavy-infantry.png",
+      "path": "assets/v03/units/heavy-infantry-small-ink-04.webp",
+      "sourceCrop": [242, 15, 1053, 1199],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [224, 327],
+      "personSha256": "d083fb984ca38c7ef670b6ed5a4778059adc71d7f393223b2289555205d261b7",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "1bc86c96ea836478a9908efe9724db4ec527b2097e0b0df5f6add9ff22ff6f91"
+    },
+    {
+      "key": "heavy-infantry-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/heavy-infantry.png",
+      "path": "assets/v03/units/heavy-infantry-large-ink-04.webp",
+      "sourceCrop": [242, 15, 1053, 1199],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [224, 327],
+      "personSha256": "d083fb984ca38c7ef670b6ed5a4778059adc71d7f393223b2289555205d261b7",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "a4e49e54a91df28d900be5c3d434560c60bd7f1a72b160d1a851a28423a33a8c"
+    },
+    {
+      "key": "cavalry-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/cavalry.png",
+      "path": "assets/v03/units/cavalry-small-ink-04.webp",
+      "sourceCrop": [16, 167, 1239, 1177],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 270],
+      "personSha256": "f458ac2af881628d37ceec2f025a77b69218fec18725c7824a303540b85ff12a",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "d74b70ed96c71f4f5204ba84a10210dd1b6bb881990b34bcd4864271af3367de"
+    },
+    {
+      "key": "cavalry-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/cavalry.png",
+      "path": "assets/v03/units/cavalry-large-ink-04.webp",
+      "sourceCrop": [16, 167, 1239, 1177],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 270],
+      "personSha256": "f458ac2af881628d37ceec2f025a77b69218fec18725c7824a303540b85ff12a",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "5a9cfb282e0a3c132bca1c7db7ecce30ea22e7ccec45a470bb9f6a010f2f5aa5"
+    },
+    {
+      "key": "elite-cavalry-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/elite-cavalry.png",
+      "path": "assets/v03/units/elite-cavalry-small-ink-04.webp",
+      "sourceCrop": [17, 82, 1238, 1176],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 293],
+      "personSha256": "be288627b319e8d2f86b05366b5fce6004508f784c18abb0614e86e82b9a1f46",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "3ea2104227415936c774a4ab45963cbb3a715a647bcddfd24fb3409c861ab8f2"
+    },
+    {
+      "key": "elite-cavalry-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/elite-cavalry.png",
+      "path": "assets/v03/units/elite-cavalry-large-ink-04.webp",
+      "sourceCrop": [17, 82, 1238, 1176],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [327, 293],
+      "personSha256": "be288627b319e8d2f86b05366b5fce6004508f784c18abb0614e86e82b9a1f46",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "72e6f883a316cc2307b9918cc1b97aecba9a8b1f8cca1c0f826c41f89ec074ed"
+    },
+    {
+      "key": "archer-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+      "path": "assets/v03/units/archer-small-ink-04.webp",
+      "sourceCrop": [115, 17, 1228, 1211],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [305, 327],
+      "personSha256": "aae7d9815f65edcaa53a985beb9002cf905c2de5558853002d88b97123e59cbb",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "85b048f8bf4852f1f6abc2ee5835ce1c66bee587ea0447cc3e509a7c8b942e8b"
+    },
+    {
+      "key": "archer-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+      "path": "assets/v03/units/archer-large-ink-04.webp",
+      "sourceCrop": [115, 17, 1228, 1211],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [305, 327],
+      "personSha256": "aae7d9815f65edcaa53a985beb9002cf905c2de5558853002d88b97123e59cbb",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "3d64151170b1153a2a0463c2c531e63d273a79b847a5b541300e99dfc774b8b8"
+    },
+    {
+      "key": "strong-archer-small",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/strong-archer.png",
+      "path": "assets/v03/units/strong-archer-small-ink-04.webp",
+      "sourceCrop": [123, 13, 1226, 1213],
+      "count": 1,
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [301, 327],
+      "personSha256": "7d50d0bfaa9e4e30306d39e007670048e16f05c58436350b7da1f53c1a45f678",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "f5eb9839142f83ce1d1534ab3263ff9fbe5f77186f3f287fc6d8c3b429bb6910"
+    },
+    {
+      "key": "strong-archer-large",
+      "source": "docs/v0.3/assets/generated/units-count-ink-04/strong-archer.png",
+      "path": "assets/v03/units/strong-archer-large-ink-04.webp",
+      "sourceCrop": [123, 13, 1226, 1213],
+      "count": 3,
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "personSize": [301, 327],
+      "personSha256": "7d50d0bfaa9e4e30306d39e007670048e16f05c58436350b7da1f53c1a45f678",
+      "promptId": "units-count-ink-04",
+      "width": 512,
+      "height": 512,
+      "sha256": "d042963fa111302e5066ace9986fc71a60d0a133ef7ddd8be55e5fdcc3ee5102"
+    },
+    {
+      "key": "boat-transport",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/boat-transport.png",
+      "path": "assets/v03/units/boat-transport-ink-03.webp",
+      "sourceCrop": [10, 158, 1244, 1125],
+      "width": 256,
+      "height": 256,
+      "sha256": "f7184c9e8968544e635f2210b41631e4e7d4ff6adce6884f80309218203cebf4",
+      "promptId": "units-readable-ink-03"
+    },
+    {
+      "key": "warship",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/warship.png",
+      "path": "assets/v03/units/warship-ink-03.webp",
+      "sourceCrop": [52, 203, 1227, 1081],
+      "width": 256,
+      "height": 256,
+      "sha256": "c3a9192f15c492ab1dadfbbb481d821d23ae0f3a272ac554137d9aa1ed8a4f31",
+      "promptId": "units-readable-ink-03"
+    }
+  ]
+}

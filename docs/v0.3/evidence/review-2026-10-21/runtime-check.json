@@ -1,0 +1,37 @@
+{
+  "reviewedCommit": "01e65ef",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "campaignLayout": {
+    "frame": {
+      "x": 89,
+      "y": 169,
+      "width": 926,
+      "height": 926
+    },
+    "minimap": {
+      "x": 80,
+      "y": 160,
+      "width": 924,
+      "height": 924
+    },
+    "newCampaignButtons": 0
+  },
+  "npcOnlyBattle": {
+    "absoluteDay": 40,
+    "playerFaction": "sun",
+    "activeBattles": [
+      {
+        "id": "battle-13",
+        "attacker": "dong",
+        "defender": null
+      }
+    ],
+    "uiError": "This is not the player-controlled side.×",
+    "campaignClockDisabled": [true, true, true],
+    "engineAdvanceAccepted": true,
+    "nextEngineDay": 41
+  }
+}

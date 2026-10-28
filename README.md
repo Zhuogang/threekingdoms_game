@@ -1,204 +1,82 @@
-# Hegemony of the Three Kingdoms
+# Hegemony of the Three Kingdoms · v0.3
 
-### 三国霸业重制 · v0.2
+A single-player Three Kingdoms strategy game with Chinese/English UI, a daily campaign, autonomous governors, travelling armies and field battles on 15 painted 48×32 maps. The game has two scenarios (190 and 200), six playable houses per scenario, 24 cities and a 98-officer catalog with scenario-specific availability and annual appearances.
 
-**Build a kingdom. Command its officers. Unite a divided realm.**
+**Local playable candidate. Documentation checked October 28, 2026 against the current working tree.** Player balance sessions, real low-end hardware testing and final artwork approval remain open. Older commit IDs and test totals in dated records describe those snapshots.
 
-A single-player, turn-based strategy game for desktop web browsers, inspired by **《三国霸业》 (Baye)** and rebuilt with **TypeScript, React, and PixiJS**. This is a learning project: readable game rules, reproducible saves, and a modern bilingual interface are the foundation for future expansion.
+[中文玩法指南](docs/v0.3/player-guide.md#中文玩法指南) · [English player guide](docs/v0.3/player-guide.md#english-player-guide) · [Release notes](docs/v0.3/release-notes.md) · [Implementation status](docs/v0.3/implementation-status.md) · [Documentation index](docs/README.md)
 
-![Current v0.2 ink-wash campaign map with city architecture variants (Chinese)](docs/images/campaign-ink-zh.png)
+## Start playing
 
-## Play in a few minutes
+Requires Node.js **22.12 or newer**. From the repository root:
 
-Requires **Node.js 24 LTS** (minimum 22.12) and a modern browser with WebGL enabled. Chrome is the currently tested browser.
-
-```sh
+```powershell
 npm ci
 npm run dev
 ```
 
-Open the local address printed in the terminal, normally **http://127.0.0.1:5173/**. On Windows, after installing dependencies, double-click **`Start-Hegemony.cmd`**. Keep the terminal open while playing. The former `Start-Baye.cmd` launcher still works.
+Keep the server terminal running and open the URL Vite prints, normally `http://127.0.0.1:5173/`. Use `npm run dev -- --port 5173 --strictPort` to keep a fixed address. Ctrl+C stops the server; an open browser tab alone does not keep the game server running.
 
-Choose a ruler and select **Raise your banner**. Open **Wiki** from the top bar or any dialog, or press **F1**, for the complete English/Chinese guide. Use **Eng / 中文** in the top bar or any dialog to change language immediately, even in battle. Your browser remembers the choice.
+A valid autosave opens automatically. Otherwise select a scenario and house, then **New campaign**. Use the in-game **Menu** for language, export/import, help and the Campaign menu. The Campaign menu offers Resume or a confirmed new campaign. **F1** opens the field guide.
 
-## What is new in v0.2?
+Start by opening your capital's **City affairs**, recruiting into reserve, and assigning soldiers from **Officers in the city → officer → Set troop count**. **March out** selects whole officer contingents and provisions. Advance one day, ten days or to the next event; acknowledge critical reports and submit each manual battlefield's day when prompted. The [player guide](docs/v0.3/player-guide.md) explains the complete sequence.
 
-- **Deeper battles:** counterattacks, tactic points with Raid supplies, Ambush and Rockfall, zone of control, morale states, flanking, officer capture, supply days, weather forecasts, walls and gates, a threat overlay, and a post-battle recap. A stronger tactical AI drives rivals and auto-resolve.
-- **Plunder:** squeeze your own city, raid an enemy city, or sack one you conquer, with exact previews of the cost and loot.
-- **Living campaign:** persuasion odds, prisoner release or execution, officer levels and traits, unrest and departures, alliance odds and coalitions, rival personalities, and historical and everyday events.
-- **More ways to play:** a second scenario (**The eve of Guandu**, 200 AD), Story / Standard / Warlord difficulty, an opening truce, optional aging, fog of war on rival cities, a Hegemon victory, and an adviser with first-campaign goals.
-- **In-game Wiki:** 12 searchable English/Chinese chapters explain troop types, equipment, battles, city management and common questions. Open it from the top bar, any dialog or **F1**.
-- **Chinese ink-wash visuals:** a painted campaign atlas with larger, varied city symbols; regional battlefield terrain, connected river banks, walls and gates; and illustrated infantry, cavalry and archers.
-- **Old saves still load.** Version 1 saves migrate to version 2 without drawing any randomness.
+## Current gameplay
 
-Start with the [v0.2 summary](docs/v0.2-summary.md). The [v0.2 rules](docs/v0.2-rules.md) list every rule with its constants, and the [v0.2 notes](docs/v0.2-notes.md) list deviations and the balance evidence. What is still open is in [next steps](docs/next-steps.md). Difficulty never gives rivals extra resources or combat bonuses.
+| System                   | Behavior                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time and work            | 30-day months; each owned city refreshes to **2 work points every 10 game days**, independent of officer count. Unused points do not accumulate. Execution still needs an eligible local officer.                                                                                                                                                   |
+| City management          | Farming/commerce development, recruitment, search, public order, training, feasts, rewards, fine arms, relief and food trade. Development caps at **500**, retaining existing values. The city overview shows farming, commerce, population, reserves and public order alongside gold, food and garrison.                                           |
+| Free preparations        | Troop assignment, contingent returns, rewards, equipment and ordinary officer transfers use no work points. Their resource, authority and availability rules still apply. Capital moves and appointments do not refund spent work.                                                                                                                  |
+| Group actions            | Feast, reward and fine-arms screens support checkboxes and select-all. A feast uses 1 point for the group; rewards cost 100 gold/person and fine arms 180 gold/person. Preview the total and actual effects; invalid or unaffordable groups do not partially execute.                                                                               |
+| Ordinary transfers       | **Source city → City affairs → Transfer officers** moves selected ordinary officers and all healthy/wounded personnel to another friendly city. Provisions and ETA are previewed; arrival stations them immediately, without a governor appointment or monthly wait.                                                                                |
+| Governance               | The ruler's capital is directly administered; other cities use governors or local stewards. Cross-city appointees carry their contingents and take office at a legal monthly boundary after arrival. A ruler's effective appointment also moves the capital. Conquest reports lead to personal rule, governor appointment or a deferred Inbox task. |
+| Orders and travel        | Actual outbound, waiting, return and redirected journeys; reserved stock, food consumption and arrival delivery. Governor campaign plans retain accept/reduce/wait/cancel decisions. In-transit transfers appear in **Marches & orders**.                                                                                                           |
+| Battles                  | Three base troop types with elite presentation, six tactics, morale, control zones, damage forecasts, manual/automatic command and universal water access. Movement opens the unit action menu. After one field ends, unfinished player battles remain reachable; a fully submitted day can resume with **Advance 1 day**.                          |
+| Prisoners and succession | A captured ruler is succeeded immediately. Recruiting that captive lowers the former house's remaining officers and cities by 10 loyalty; execution does not. Surviving houses display the current ruler's name.                                                                                                                                    |
+| Interface and recovery   | Ink-wash maps, pan/zoom/Fit/focus/minimaps, battlefield expansion/fullscreen and panel toggles, officer directory, bilingual help, one autosave and portable export/import.                                                                                                                                                                         |
 
-![Current v0.2 Hanzhong battlefield with ink-painted Qinling–Daba ridges and combat-unit illustrations (English)](docs/images/battle-ink-en.png)
+Normal battles last at most 30 battle days; raids at most 10. At timeout, more combat-ready troops wins; ties favor the defender. All troop types can enter passable water: attack ×0.75 and incoming troop damage ×1.25. There is **no siege system or camp-capture victory**.
 
-The screenshots above show the current v0.2 campaign and tactical views. Battlefield scenery reflects each city's broad regional setting on the game's tactical grid.
+Routes are historically informed gameplay estimates, not surveyed Han-era roads. There are 42 configured links; a party's ETA depends on its composition and route snapshot. Human campaign balance, multi-city coordinated planning, extra save slots and old-save conversion are outside the current delivery or remain unaccepted. See [scope and release notes](docs/v0.3/release-notes.md).
 
-## What was in v0.1?
+## Saves and recovery
 
-| System          | Playable features                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Campaign        | One authored 190 AD scenario, 24 connected cities, six playable rulers, 52 officers                                             |
-| City management | Farming, commerce, fortifications, recruitment, troop assignment, training, provisions, rewards, and governor appointments      |
-| Statecraft      | Search for talent, recruit officers, persuade rivals, scout cities, sow dissent, and negotiate alliances                        |
-| Armies          | Transfer officers and supplies, queue marches, defend cities, and capture territory                                             |
-| Tactical combat | 12 × 10 battlefields, six troop types, rivers and terrain, weather, morale, provisions, Fire, Rally, and Confuse                |
-| Opponents       | Deterministic campaign and battle AI using the same resource and command rules                                                  |
-| Persistence     | Autosave after successful commands, three manual slots, portable JSON import/export, and mid-battle continuation                |
-| Presentation    | Procedural PixiJS maps, English / Simplified Chinese, responsive panels, reduced-motion setting, and optional synthesized sound |
-| Campaign ending | Unify all 24 cities to win; losing your last city ends the campaign                                                             |
+Saves use `hegemony.save`, version 3, ruleset `hegemony-3`, with the current personnel and officer-roster schemas. Older versions, earlier roster/personnel schemas and 24×20 battle saves are rejected without deleting their original data. Compatible current saves retain work already spent and pending travel/governance decisions.
 
-No account, server backend, API key, remote art service, or reference files are required to play.
+Browser storage belongs to the **profile and address**, including the port. Export before switching browsers, ports or clearing site data. Failed imports preserve the current campaign. If autosaving fails, keep the tab open, export a backup, then use **Retry save**. Exporting a file does not imply that browser autosaving succeeded.
 
-## Your first campaign
+If time stops, check the Inbox for critical reports and unfinished manual battles. If every remaining field has submitted, **Advance 1 day** completes the shared day once. [Troubleshooting](docs/v0.3/player-guide.md#8-常见疑问与反馈).
 
-1. **Start with Cao Cao** for a balanced position, or Liu Yan for a quieter western start.
-2. **Select one of your cities and an available officer.** Each officer can receive one main assignment per month.
-3. **Develop the economy.** Farms supply food; commerce and population support gold income. Soldiers consume food and pay every month.
-4. **Build an army.** Recruitment adds city reserves; **Muster** assigns soldiers to an available officer.
-5. **Plan a march to an adjacent city.** Orders resolve when you **Advance month**. Battles involving your forces open the tactical map.
-6. **Move, attack, or use a tactic.** You can click the map or use the side-panel controls. Capture the enemy camp, defeat their army, or hold out as defender for 30 days.
+## Runtime views
 
-Drag the map to pan, scroll to zoom, and double-click to reset. The city index provides a text alternative for selecting cities. Open **Wiki** for step-by-step guidance.
+Captured from the current game on **October 28, 2026**, at 1440×960. The campaign and city views use a new 190 Cao Cao campaign; the battlefield shows a seeded Puyang → Xiapi engagement on Waterlands.
 
-## In-game Wiki / 游戏百科
+**Campaign:** the map-first layout with city markers and the bottom navigation dock.
 
-Open **Wiki** from the top bar or any dialog header, or press **F1**, during setup, campaign planning or battle. Press **Esc** to return to the same screen or unfinished order form. Reading, searching and switching chapters do not issue game orders or advance the turn.
+![Current v0.3 campaign map and navigation dock](docs/images/v03-campaign-2026-10-28.png)
 
-- **Search in either language:** English and Chinese searches work regardless of the selected interface language; use **Eng / 中文** to switch while reading.
-- **Look up practical rules:** illustrated troop movement/range tables, tactic costs, equipment effects and city-order prices. The numeric tables read the current rules directly.
-- **Follow the beginner flow:** learn to recruit reserves, assign soldiers with Muster, leave commanders available for marching, move and attack, and manage monthly food and pay.
-- **Find blocked-command explanations:** check confusion, morale, action availability, terrain, local resources and peace agreements. Fine arms is a passive Might upgrade; weapons shown in troop illustrations identify the troop type.
+**City:** Chenliu's overview, showing all eight city statistics and the main action entries.
 
-| English chapter                    | 中文章节           |
-| ---------------------------------- | ------------------ |
-| Getting started                    | 新手入门           |
-| Troop types                        | 兵种详解           |
-| Equipment and weapons              | 装备与武器         |
-| Battle controls                    | 战斗操作           |
-| Tactics and tactic points          | 计策与计策点       |
-| Terrain, weather and morale        | 地形、天气与士气   |
-| City management and economy        | 内政与经济         |
-| Officers, loyalty and training     | 武将、忠诚与训练   |
-| Marches, supplies and transfers    | 出征、军粮与运输   |
-| Diplomacy, scouting and prisoners  | 外交、侦察与俘虏   |
-| Saving, settings and accessibility | 存档、设置与易用性 |
-| Common questions                   | 常见问题           |
+![Current Chenliu city overview with farming, commerce, population, reserves and public order](docs/images/v03-city-2026-10-28.png)
 
-Wiki text and illustrations are bundled with the game; no external Wiki service or account is needed. On narrow screens the chapter list scrolls, and tables can be swiped horizontally.
+**Battle:** current unit artwork and wounded readouts, a floating minimap, expansion/fullscreen controls and manual orders.
 
-**中文：** 点击顶栏或对话框内的 **Wiki**，或按 **F1**，即可查阅以上 12 个章节。可用中文或英文搜索，阅读时随时切换语言；按 **Esc** 返回原界面，尚未确认的表单输入会保留。说明包括操作步骤、兵种克制、装备效果、内政费用，以及按钮变灰或部队不能行动时的排查方法。
+![Current Waterlands battlefield with formation sprites, wounded counts and display controls](docs/images/v03-battlefield-2026-10-28.png)
 
-![The in-game Chinese Wiki, showing troop types and movement/range](docs/images/wiki-zh.png)
+## Development and validation
 
-## Readable maps, recognizable commanders
-
-The campaign map uses Chinese ink-wash landscape art with enlarged city symbols: Luoyang and Chang'an have imperial precincts, Ye has a larger compound, and Pingyuan uses modest houses. Battles combine regional ink-painted hills and groves with the saved terrain grid. Infantry, cavalry and archer miniatures have distinct silhouettes, while faction crests, strength counts and action marks remain visible.
-
-Open **Settings** to choose **Compact**, **Comfortable** (default), or **Large**. The preference applies immediately to text, controls, and map presentation and stays with your browser. In battle, use **Fit battlefield** for an overview, **Readable tiles** for larger units, and **Center selected unit** to find your commander. Larger tiles can require panning on a laptop.
-
-All **53 named officers across the two scenarios have distinct illustrated headshots**, including Ma Chao in Guandu. Banners show family names and current allegiance; six shared troop symbols identify Infantry, Cavalry, Archers, Marines, Vanguard, and Guard. The **Troops & banners legend** explains the symbols and action states. **Next ready commander** cycles through commanders who can still act. Enemy commander portraits and full names are available in the battle sidebar.
-
-![The officer portrait collection](docs/images/officer-headshots.jpg)
-
-Choose **Cautious**, **Balanced**, or **Aggressive** rivals when starting a campaign, or change the setting during campaign planning. This changes how readily all rivals start wars, including against each other. It supplies no combat or resource bonuses. The **Monthly report** summarizes battles, alliance expirations, and recruitment near your borders; select a city event to focus its location.
-
-## Saving your progress
-
-**All progress saved** means the latest snapshot has committed to IndexedDB, including the current battle, RNG state, pending armies, and monthly continuation. Saving starts when a command is accepted. If a write fails, **Retry save** retries the latest in-memory state; failed writes preserve the previous committed save.
-
-Use **Save and load** for three manual snapshots and JSON backups. An invalid import leaves the current game intact. Language switching never changes campaign data.
-
-Saves belong to the current browser profile and website address. Export a JSON backup before clearing browser data or changing browsers, ports, or hosting addresses. Use one active campaign tab at a time; concurrent-tab conflict resolution and cloud synchronization are not implemented.
-
-The rename preserves the original remake's `baye-atlas` database and `baye.*` preferences. v0.2 saves use the `baye.save` format version 2 and the `baye-atlas-2` ruleset; version 1 saves and their `baye-*.json` downloads still load and are migrated automatically. Binary saves from the legacy game are not supported.
-
-## Develop and test
-
-```sh
-npm run dev              # Vite development server
-npm test                 # Simulation, save validation, and translation regressions
-npm run test:e2e         # Full game, language, and storage browser journeys
-npm run build            # Strict TypeScript check and production dist/
-npm run test:production  # Test dist/ under /hegemony/, including reload and battle continuation
-npm run test:perf        # Auto-resolve benchmark: 10-versus-10 battles under 50 ms
-npm run test:fps         # Opt-in frame-rate check, also with a slowed CPU and software graphics
-npm run preview          # Preview the production build
-npm run format:check     # Source and documentation formatting
-npm run validate:portraits # Coverage, provenance, dimensions, checksums, and payload budget
-npm run diagnostics:ai   # Fixed 180-campaign rival-policy comparison (writes .artifacts/)
-npm run diagnostics:ai -- --bot --scenario=divided-realm-190,guandu-200 # 36 bot campaigns
-node tools/tuning-sweep.mjs # Controlled 48-month balance experiments
-npm audit                # Known dependency advisories
+```powershell
+npm test -- --maxWorkers=1
+npm run build
+npm run lint:ui
+npm run test:e2e
 ```
 
-Run `npm run build` before `npm run test:production`. Local browser tests use installed **Google Chrome**. GitHub Actions uses Playwright Chromium on Linux. To use Chromium locally instead, run `npx playwright install chromium` and set `CI=1` in your shell before the browser commands.
+The [developer guide](docs/v0.3/development.md) covers isolated browser-test ports, production subpaths, assets and save invariants. [Current status](docs/v0.3/implementation-status.md) distinguishes local automated checks from player acceptance; [next steps](docs/next-steps.md) lists the remaining work. Historical test counts and timings are kept with their dates, not presented as measurements of the latest tree.
 
-The [v0.2 summary](docs/v0.2-summary.md) lists the current checks and results; the v0.1 [validation record](docs/archive/validation.md) is kept for history. Passing tests are evidence of the tested behavior, not a guarantee of zero bugs or perfectly balanced campaigns.
+## Attribution and history
 
-## Architecture you can learn from
+Original generated artwork has [provenance](docs/v0.3/assets/provenance.md) and an [asset manifest](docs/v0.3/assets/manifest.json); portrait sources are recorded in [portrait credits](docs/assets/portrait-credits.md). Artwork does not determine terrain, movement or combat rules.
 
-```text
-React controls / PixiJS map
-          │ GameCommand
-          ▼
-     app/session.ts
-          │
-          ▼
-  Pure TypeScript simulation
-   campaign.ts ↔ battle.ts
-          │ new GameState
-          ├──► autosave queue ──► IndexedDB
-          └──► React + PixiJS ──► localized presentation
-```
-
-- **Rules are independent of rendering.** The engine validates commands, applies them atomically, and uses saved seeded randomness. A failed command changes nothing.
-- **Interruption is data.** A saved battle contains the monthly queue and cursor, so reloading does not repeat casualties or income.
-- **Language is presentation.** English canonical messages stay compatible with existing saves; Chinese catalogs translate the interface and history at display time.
-- **The browser is the platform layer.** Storage, file downloads, and audio are separate from the simulation. React manages accessible controls; PixiJS draws the atlas and battlefield.
-
-| Read next                                           | Purpose                                                                 |
-| --------------------------------------------------- | ----------------------------------------------------------------------- |
-| [Documentation index](docs/README.md)               | Every document, sorted into current, reference and history              |
-| [v0.2 summary](docs/v0.2-summary.md)                | What v0.2 is, how it was built, and how well it is tested               |
-| [Next steps](docs/next-steps.md)                    | To-do list, design decisions, and what comes next                       |
-| [v0.2 rules](docs/v0.2-rules.md)                    | Every rule added or changed in v0.2, with constants                     |
-| [v0.2 notes](docs/v0.2-notes.md)                    | Deviations from the plan and balance evidence                           |
-| [Implementation and rules](docs/implementation.md)  | Command costs, economy, AI, tactical formulas, and a guided source tour |
-| [Architecture](docs/architecture.md)                | Original design decisions and tradeoffs                                 |
-| [Portrait credits](docs/assets/portrait-credits.md) | Original artwork provenance and officer identity mapping                |
-
-## Static hosting
-
-Run `npm run build` and serve **only `dist/`** from any static HTTP(S) host. Relative asset paths support deployment in a subdirectory. Opening `dist/index.html` directly through `file://` is unsupported. There is no service worker or offline-installation guarantee.
-
-The GitHub Actions workflow runs formatting, unit tests, portrait validation, compilation, the isolated auto-resolve performance benchmark, gameplay browser tests, and production browser tests when this branch is pushed. Frame-rate checks and balance diagnostics run separately. No deployment is included.
-
-## Credits and relationship to 三国霸业
-
-**Main reference:** [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main). Thank you to **erduoniba and the project's contributors** for sharing the Baye source and making this learning remake possible.
-
-This is an unofficial learning remake of Baye's campaign-and-battle structure, with an authored scenario and ruleset. It does not claim exact legacy formulas, content, mod compatibility, or official affiliation. Original ink-wash map, terrain and troop artwork is combined with code-drawn city symbols, tactical overlays and synthesized sounds; the new runtime includes no copied legacy sprites, portraits, libraries, music, or executables. See the [campaign-map](docs/assets/campaign-map-art.md), [battlefield](docs/assets/battlefield-art.md) and [combat-unit](docs/assets/combat-unit-art.md) artwork records for provenance and prompts.
-
-The headshots are original imagined historical illustrations created for this project using OpenAI's built-in image generation tool. They are artistic interpretations rather than authenticated contemporary likenesses. See the [portrait provenance and prompt records](docs/assets/portrait-credits.md).
-
-The reference repository is not required to build or play this standalone remake. Installed dependencies, build output, browser reports, and local QA artifacts are ignored by Git.
-
-Further work is tracked in [next steps](docs/next-steps.md): the human playtests and real low-end hardware check explicitly deferred for v0.2, Firefox/Safari coverage, fuller accessibility testing, and richer authored content. The [validation record](docs/v0.2-validation.md) documents the completed implementation, measured balance exceptions and automated checks. Multiplayer, mobile-first controls, cloud saves, and mod support are out of scope.
-
-## 中文快速开始
-
-本项目是以《三国霸业》为灵感的学习型网页重制作品，英文名为 **Hegemony of the Three Kingdoms**，当前版本 **v0.2**。v0.2 新增反击、战术点与更多战术、掠夺、第二剧本“官渡前夜”、难度预设、霸主胜利、迷雾、武将特性与随机事件；旧版本存档仍可读取。详见 [v0.2 规则](docs/v0.2-rules.md)。
-
-- 安装 Node.js，运行 `npm ci`，再运行 `npm run dev`，打开终端显示的网址。
-- Windows 用户安装依赖后，也可双击 `Start-Hegemony.cmd`。
-- 随时通过 **Eng / 中文** 切换语言；选择势力后发展城池、招募武将、编组军队，逐步统一天下。
-- 顶栏和所有对话框均有 **Wiki** 入口，也可按 **F1** 打开完整中英百科。12 个章节涵盖新手流程、六类兵种、装备、战斗与计策、地形士气、内政收支、武将、后勤、外交俘虏、存档及常见问题；可用中文或英文搜索。按 **Esc** 返回原界面，尚未确认的表单会保留。
-- 每次成功操作都会自动存档，战斗中也可续玩；请在“存档与读档”中导出 JSON 作为备份。
-- 在“设置”选择紧凑、舒适或大字显示。战斗中可使用“适应战场”“清晰格子”“居中所选部队”和“下一位可行动武将”。
-- 两个剧本的全部 53 位具名武将拥有独立头像，包括官渡剧本的马超；旗帜标明姓氏与当前势力，六种兵种图标和行动标记可在图例中查看。
-- 开局或战役规划阶段可选择谨慎、均衡、激进的对手。此设置影响开战意愿，不增加战斗属性或资源；“月度军报”展示已发生的战事、盟约到期与边境募兵。
-- 主要参考与致谢：[erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app/tree/main)。感谢 erduoniba 及项目贡献者开源分享《三国霸业》源码。此版本采用自编场景和规则，并非对原版全部内容与公式的逐项复刻。
+BAYE is a historical reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This is an independent redesign, not an official BAYE or San10WPK product. No optional reference checkout is required to build or play. Previous versions and superseded designs remain in the [documentation archive](docs/archive/README.md).

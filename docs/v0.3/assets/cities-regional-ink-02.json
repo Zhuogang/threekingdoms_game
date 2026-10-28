@@ -1,0 +1,167 @@
+{
+  "status": "integrated",
+  "active": true,
+  "intendedUse": "Regional illustrations in city overview/detail panels. Region selection is shared with campaign-map city icons.",
+  "generationTool": "built-in image_gen",
+  "commonPrompt": "Use case: stylized-concept. Asset type: ONE transparent city map sprite for an original Three Kingdoms strategy game, part of a cohesive regional city family.\nReference image 1 is the game's China-wide ink-wash map, STYLE AND PALETTE ONLY. Reference image 2 is the game's infantry sprite, STYLE AND SMALL-SIZE READABILITY ONLY. Do not reproduce the map, soldier, weapon, lettering or UI.\nStyle: elegant traditional Chinese ink-wash architectural illustration, charcoal dry-brush contours, warm ivory/off-white earth walls, diluted warm grey washes, dark grey tiled roofs, muted sage vegetation, tiny restrained pale ochre/wood accents. Match the map's painted brushwork and the troop's readable silhouette. Softer and quieter than a glossy realistic 3D building render.\nShared camera: high oblique bird's-eye three-quarter map view, consistent 2:1 isometric ground plane, show the front and right walls and some inner roofs. Entrance faces lower right. Entire miniature city visible, centered, no cropped walls. Architecture occupies about 70-78% canvas width and 50-60% height; keep the silhouette compact with only 3-6 dominant building masses so it remains identifiable at 64-96 pixels.\nLate-Han / Three Kingdoms INSPIRED architecture; these are regional artistic interpretations, not archaeological reconstructions. Give the requested regional character through wall form, roofs, vegetation and one simple local feature, not excessive scenery.\nSquare 1024px or larger. Genuine fully TRANSPARENT ALPHA around the whole object, including upper and lower margins. Any painted paper grain is inside buildings only. No paper rectangle, opaque tile, solid ground disk, pedestal, badge, circular icon border, checkerboard graphic or drop-shadow rectangle.\nNo people, troops, flags, faction insignia, text, labels, symbols, seal, calligraphy, grid, UI or watermark. No European castles, fantasy spikes, gold Forbidden City roofs, Japanese torii, grand Buddhist pagodas, modern landmarks, shiny 3D surfaces or saturated colors. No distant landscape; only a tiny attached ground/contact wash. Keep the full art 10% inside canvas edges.\nSubject: ",
+  "styleReferences": [
+    "public/assets/v03/maps/campaign-china-full-ink-01.webp",
+    "public/assets/v03/units/infantry-ink-01.webp"
+  ],
+  "entries": [
+    {
+      "key": "imperial",
+      "label": "帝都宫城",
+      "cities": "洛阳、长安",
+      "subject": "Imperial capital: broad imposing rammed-earth enclosure, Han-inspired timber gate tower, dominant dignified palace hall and two flanking halls; axial courtyard, dark grey tile roofs, subtle faded wood-red accents. Wide stately silhouette, no gold roofs. Emphasize palace roof hierarchy and a strong monumental gate.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-imperial-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-imperial-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [21, 286, 1249, 981],
+        "transparentPixels": 960829,
+        "drawBox": [32, 186.44951140065146, 448, 253.55048859934854],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "9905b4453c164cc72904c48a49685c231fa4a46392729d95338e6ad80c95aba9"
+    },
+    {
+      "key": "plains",
+      "label": "中原城郭",
+      "cities": "邺、陈留、许昌",
+      "subject": "Central plains county/prefectural city: compact rectangular rammed-earth walls, a practical roofed gatehouse, an administrative hall and three clustered grey-tile houses. Level ground, open little courtyard, orderly low roofline. Visual identity: balanced square wall silhouette and simple dense town roofs.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-plains-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-plains-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [11, 206, 1253, 1056],
+        "transparentPixels": 922789,
+        "drawBox": [32, 133.39774557165862, 448, 306.6022544283414],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "fa029f669156dd25fbd881c6b743e66cf77783b25aa38062e08103d7a03e7ab9"
+    },
+    {
+      "key": "frontier",
+      "label": "北方边塞",
+      "cities": "北平、晋阳",
+      "subject": "Northern frontier fortified town: thick weathered earth walls, two square military watchtowers, a modest timber gate, low utilitarian tiled barracks. Dry grey earth and very sparse scrub. Strong austere defensive silhouette, heavier walls than buildings, no snow and no Great Wall extending away.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-frontier-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-frontier-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [29, 284, 1239, 1018],
+        "transparentPixels": 1003218,
+        "drawBox": [32, 168.23801652892564, 448, 271.76198347107436],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "84bb1d21024b6f248b62754e913b6b05cc8e4e8dfdf1a0e895d5babdc6ad0e59"
+    },
+    {
+      "key": "loess",
+      "label": "陇右土城",
+      "cities": "天水及西北地区",
+      "subject": "Northwestern loess-region walled town: pale ochre-grey rammed-earth walls following a slight low earthen terrace, a squat timber watchgate and compact simple timber/earth buildings with dark tiled roofs. Weathered dry-brush erosion texture, sparse small shrubs. Distinctive soft earth tones and low rounded earth-wall forms; no desert fantasy domes or cave-house stereotype.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-loess-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-loess-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [5, 248, 1249, 1044],
+        "transparentPixels": 970194,
+        "drawBox": [32, 153.33762057877811, 448, 286.6623794212219],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "0b7ce4f4b71ede389d9477cd563d57f88ce7b38bcb7dfa738caf14fb0c9b3797"
+    },
+    {
+      "key": "basin",
+      "label": "巴蜀平原城",
+      "cities": "成都、梓潼",
+      "subject": "Sichuan basin town: low complete earthen city wall, welcoming timber gate, clustered grey-tile courtyards, a few slender bamboo clumps and one delicate irrigation rill at the side, calm level enclosure and open garden courtyard. Muted sage vegetation, broad low roof silhouette; not a mountain fortress or modern Chengdu landmark.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-basin-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-basin-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [7, 261, 1250, 990],
+        "transparentPixels": 998242,
+        "drawBox": [32, 177.255028157683, 448, 262.744971842317],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "1aaadee2f6267fa83d1c587258a00bcf54c1ac24548483efe7293e4c674d6e14"
+    },
+    {
+      "key": "mountain",
+      "label": "山地关城",
+      "cities": "汉中、江州",
+      "subject": "Mountain-valley fortified city: a compact walled town built on TWO low stepped rocky terraces, sturdy gate between short stone-footed earth walls, two timber watchtowers and three tiled buildings stepping gently uphill. Small irregular rock ledge attached closely to the wall, a few sparse pines. Strong stepped silhouette. NO tall mountain backdrop, floating island or huge cliff pedestal.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-mountain-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-mountain-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [39, 183, 1248, 1074],
+        "transparentPixels": 860852,
+        "drawBox": [32, 109.83622828784121, 448, 330.1637717121588],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "d4a918f7d2ab6158369dbf0631c91f52a6a89a541c4a1c787240df5226e05fe3"
+    },
+    {
+      "key": "river",
+      "label": "江汉江城",
+      "cities": "襄阳、江陵、江夏、柴桑",
+      "subject": "Middle Yangtze riverside city: a compact three-sided walled town and dark timber gate, small inner tiled hall and warehouses, one short wooden quay along the near-right wall and ONE modest empty river skiff. A few pale celadon ink water strokes hugging the quay only, mostly transparent space. Distinctive river frontage and quay, not a giant naval base.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-river-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-river-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [35, 228, 1236, 1072],
+        "transparentPixels": 870308,
+        "drawBox": [32, 125.16902581182347, 448, 314.8309741881765],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "8a5b747ea57489b3475a0733da0bf7457e2e01e6d4650f2fd5073491fd2146be"
+    },
+    {
+      "key": "jiangnan",
+      "label": "江南水城",
+      "cities": "建业、吴、寿春、下邳（水城风格）",
+      "subject": "Lower Yangtze waterside city: a low walled compound with a refined timber gate, clustered dark-grey tile roofs, one narrow canal entering the side and a small simple low TIMBER FOOTBRIDGE, a little willow-like foliage. Very restrained celadon water and sage leaves. Distinctive canal/bridge and dense low roof cluster. No later-period white horse-head walls, ornate stone arched tourist bridges or pagodas.",
+      "source": "docs/v0.3/assets/generated/cities-regional-02/city-jiangnan-ink-02-source.png",
+      "path": "public/assets/v03/cities/city-jiangnan-ink-02.webp",
+      "width": 512,
+      "height": 512,
+      "alpha": true,
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [39, 277, 1237, 992],
+        "transparentPixels": 1027171,
+        "drawBox": [32, 172.62103505843072, 448, 267.3789649415693],
+        "anchor": [0.5, 0.859375]
+      },
+      "sha256": "f9e3aef06bf568e826185dff0e925679181d9b1958011bc6272249a9547dc342"
+    }
+  ],
+  "coverage": "Regional style candidates, not archaeological reconstructions or approved per-city historical identities.",
+  "scope": "Integrated 2026-10-26. Eight detail paintings use the same geographic matching as frontal map markers; decorative artwork carries no city statistics or battle rules."
+}

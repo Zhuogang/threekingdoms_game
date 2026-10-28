@@ -1,5 +1,7 @@
 # Battlefield ink artwork and regional settings
 
+The four old terrain sprite files described below were removed on 2026-10-26. Current battles use the painted v0.3 battlefield canvases and native terrain overlays; this document records the earlier artwork only.
+
 Visual follow-up, 2026-10-20. The tactical renderer uses Chinese ink-painted terrain, connected river banks, dry gravel crossings, continuous walls, open gates and tented camps. Region descriptions are bilingual. Army banners retain faction colors.
 
 The subsequent [combat unit art pass](combat-unit-art.md) adds matching infantry, cavalry and archer miniatures, with asset provenance and its own validation results.

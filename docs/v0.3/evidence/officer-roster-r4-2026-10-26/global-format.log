@@ -1,0 +1,46 @@
+
+> hegemony-of-the-three-kingdoms@0.3.0 format:check
+> prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json
+
+Checking formatting...
+[warn] docs/assets/v0.3-portraits/asset-inventory.md
+[warn] docs/assets/v0.3-portraits/generated/caozhen.json
+[warn] docs/assets/v0.3-portraits/generated/chengpu.json
+[warn] docs/assets/v0.3-portraits/generated/chenqun.json
+[warn] docs/assets/v0.3-portraits/generated/fazheng.json
+[warn] docs/assets/v0.3-portraits/generated/handang.json
+[warn] docs/assets/v0.3-portraits/generated/huangquan.json
+[warn] docs/assets/v0.3-portraits/generated/huangzhong.json
+[warn] docs/assets/v0.3-portraits/generated/jushou.json
+[warn] docs/assets/v0.3-portraits/generated/lusu.json
+[warn] docs/assets/v0.3-portraits/generated/lvmeng.json
+[warn] docs/assets/v0.3-portraits/generated/machao.json
+[warn] docs/assets/v0.3-portraits/generated/pangde.json
+[warn] docs/assets/v0.3-portraits/generated/sunquan.json
+[warn] docs/assets/v0.3-portraits/generated/weiyan.json
+[warn] docs/assets/v0.3-portraits/generated/xuchu.json
+[warn] docs/assets/v0.3-portraits/generated/xuhuang.json
+[warn] docs/assets/v0.3-portraits/generated/xusheng.json
+[warn] docs/assets/v0.3-portraits/generated/yanyan.json
+[warn] docs/assets/v0.3-portraits/generated/zhangsong.json
+[warn] docs/assets/v0.3-portraits/three_kingdoms_portrait_master_assets_98.json
+[warn] docs/assets/v0.3-portraits/三国霸业_8人重绘版完整Prompts.md
+[warn] docs/assets/v0.3-portraits/三国霸业_人物辨识度规范表_全98人.md
+[warn] docs/assets/v0.3-portraits/三国霸业_全98人立绘Prompts_含已有与新增.md
+[warn] docs/v0.3/battlefield-art/bf01-north-plain/README.md
+[warn] docs/v0.3/battlefield-art/bf02-central-farmland/README.md
+[warn] docs/v0.3/battlefield-art/bf03-yellow-river-ford/README.md
+[warn] docs/v0.3/battlefield-art/bf04-wetland-north/README.md
+[warn] docs/v0.3/battlefield-art/bf04-wetland-south/README.md
+[warn] docs/v0.3/battlefield-art/bf05-yangtze-bank/README.md
+[warn] docs/v0.3/battlefield-art/bf05-yangtze-crossing/README.md
+[warn] docs/v0.3/battlefield-art/bf06-valley-north/README.md
+[warn] docs/v0.3/battlefield-art/bf06-valley-south/README.md
+[warn] docs/v0.3/battlefield-art/bf07-rolling-hills/README.md
+[warn] docs/v0.3/battlefield-art/bf07-taihang/README.md
+[warn] docs/v0.3/battlefield-art/bf08-south-hills/README.md
+[warn] docs/v0.3/battlefield-art/bf09-gorge/README.md
+[warn] docs/v0.3/battlefield-art/bf09-three-gorges/README.md
+[warn] docs/v0.3/battlefield-art/bf10-mountain-pass/README.md
+[warn] docs/v0.3/battlefield-art/README.md
+[warn] Code style issues found in 40 files. Run Prettier with --write to fix.

@@ -1,0 +1,112 @@
+{
+  "contractVersion": "v1",
+  "gameVersion": "0.3",
+  "status": "draft",
+  "assets": [
+    {
+      "id": "infantry-ink-01",
+      "category": "unit",
+      "path": "public/assets/v03/units/infantry-ink-01.webp",
+      "source": "generated/infantry-ink-01-source.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "anchor": [0.5, 0.86],
+      "renderWidth": 84,
+      "renderHeight": 84,
+      "footprint": [1, 1],
+      "maxOverflow": 0,
+      "mirrorable": false,
+      "variantSeed": null,
+      "substitute": null,
+      "promptId": "v03-infantry-ink-01",
+      "sha256": "0d01c949b9dba13be34c16fda5b2067ca3c837fc6858e59e5099ffe8a42d3925",
+      "status": "draft",
+      "validation": {
+        "dimensions": "256x256",
+        "alphaBBox": [33, 31, 231, 220],
+        "anchorPixel": [128, 220],
+        "notes": "spear-and-shield infantry silhouette"
+      }
+    },
+    {
+      "id": "archer-ink-01",
+      "category": "unit",
+      "path": "public/assets/v03/units/archer-ink-01.webp",
+      "source": "generated/archer-ink-01-source.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "anchor": [0.5, 0.86],
+      "renderWidth": 84,
+      "renderHeight": 84,
+      "footprint": [1, 1],
+      "maxOverflow": 0,
+      "mirrorable": false,
+      "variantSeed": null,
+      "substitute": null,
+      "promptId": "v03-archer-ink-01",
+      "sha256": "3269b57d39582f483cbe74e62db4211ceb2d542f71be39f2bae917ebd2970c2a",
+      "status": "draft",
+      "validation": {
+        "dimensions": "256x256",
+        "alphaBBox": [69, 24, 215, 220],
+        "anchorPixel": [128, 220],
+        "notes": "drawn bow remains fully visible; facing right; no in-image text"
+      }
+    },
+    {
+      "id": "cavalry-ink-01",
+      "category": "unit",
+      "path": "public/assets/v03/units/cavalry-ink-01.webp",
+      "source": "generated/cavalry-ink-01-source.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true,
+      "anchor": [0.5, 0.86],
+      "renderWidth": 104,
+      "renderHeight": 104,
+      "footprint": [1, 1],
+      "maxOverflow": 0,
+      "mirrorable": false,
+      "variantSeed": null,
+      "substitute": null,
+      "promptId": "v03-cavalry-ink-01",
+      "sha256": "3509d7571cd879ce9301ea8b6d9f1f8c4ef5af8ab2ff0a84e12f07283c13f7a1",
+      "status": "draft",
+      "validation": {
+        "dimensions": "256x256",
+        "alphaBBox": [27, 25, 228, 220],
+        "anchorPixel": [128, 220],
+        "notes": "full horse and lancer included; horse is not standing directly on water"
+      }
+    },
+    {
+      "id": "transport-craft-ink-01",
+      "category": "transport",
+      "path": "public/assets/v03/units/transport-craft-ink-01.webp",
+      "source": "generated/transport-craft-ink-source.png",
+      "width": 256,
+      "height": 128,
+      "alpha": true,
+      "anchor": [0.5, 0.6],
+      "renderWidth": 132,
+      "renderHeight": 66,
+      "footprint": [1, 0.5],
+      "maxOverflow": 0,
+      "mirrorable": true,
+      "variantSeed": null,
+      "substitute": null,
+      "promptId": "v03-transport-craft-ink-01",
+      "sha256": "feab4ef19cdc01933962858f2fb11fdf871728abd7e653b0eef6c78223f96a5f",
+      "status": "draft",
+      "validation": {
+        "dimensions": "256x128",
+        "alphaBBox": [53, 44, 202, 115],
+        "notes": "shared empty ferry marker; no naval-skill or combat-rule implication"
+      }
+    }
+  ],
+  "active": false,
+  "scope": "Inactive ink-01 unit-art archive. Retired terrain and campaign-map candidates removed 2026-10-26. Current land units, vessels, city art and map have separate manifests."
+}

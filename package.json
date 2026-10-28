@@ -1,29 +1,31 @@
 {
   "name": "hegemony-of-the-three-kingdoms",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
-    "test:perf": "vitest run --config vitest.perf.config.ts",
+    "test:perf:v03": "vitest run tests/v03/performance.test.ts",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:production": "playwright test --config playwright.production.config.ts",
-    "test:fps": "playwright test --config playwright.fps.config.ts",
+    "test:e2e": "playwright test --config playwright.v03.config.ts",
+    "test:production": "playwright test --config playwright.production-v03.config.ts",
     "validate:portraits": "node tools/validate-portraits.mjs",
-    "diagnostics:ai": "node tools/ai-diagnostics.mjs",
-    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json",
-    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.config.ts playwright.production.config.ts playwright.fps.config.ts vitest.perf.config.ts .prettierrc.json"
+    "prepare:portraits:v03": "node tools/prepare-portraits-v03.mjs",
+    "validate:portraits:v03": "node tools/validate-portraits-v03.mjs",
+    "diagnostics:ai": "node tools/v03-campaign-diagnostics.mjs",
+    "format": "prettier --write src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",
+    "format:check": "prettier --check src tests tools docs README.md index.html package.json tsconfig.json vite.config.ts playwright.v03.config.ts playwright.production-v03.config.ts .prettierrc.json",
+    "diagnostics:battles": "node tools/battle-pacing.mjs",
+    "lint:ui": "node tools/lint-ui.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
-    "pixi.js": "^8.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^4.0.0"

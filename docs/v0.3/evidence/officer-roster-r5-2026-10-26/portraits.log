@@ -1,0 +1,5 @@
+
+> hegemony-of-the-three-kingdoms@0.3.0 validate:portraits:v03
+> node tools/validate-portraits-v03.mjs
+
+PASS: 98 unique identities, 196 checked WebP renditions, 1.73 MiB; source provenance, reuse hashes and aliases verified.

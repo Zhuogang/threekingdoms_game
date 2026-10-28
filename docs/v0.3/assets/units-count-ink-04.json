@@ -1,0 +1,261 @@
+{
+  "id": "units-count-ink-04",
+  "generationTool": "built-in image_gen",
+  "status": "integrated",
+  "active": true,
+  "canvasSize": 512,
+  "personScale": 0.64,
+  "direction": "One person / three persons; all instances reuse the same normalized single-figure pixels at the same scale. Keep the front instance in the same position.",
+  "subjects": [
+    {
+      "key": "infantry",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/infantry-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One ordinary infantryman with a ROUND SHIELD and long spear.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-791e0282-6c37-44f4-9dee-ed56436d221a.png"
+    },
+    {
+      "key": "heavy-infantry",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/heavy-infantry.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/heavy-infantry-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One heavy infantryman in dark armour holding a TALL RECTANGULAR SHIELD and a spear.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-ad2218ea-8c05-438f-b021-6b586c6597fb.png"
+    },
+    {
+      "key": "cavalry",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/cavalry.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/cavalry-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One ordinary cavalryman on ONE dark brown horse, carrying a long lance. Complete horse and rider.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-4baa34cd-fb56-4b8f-a3a2-462051561bfd.png"
+    },
+    {
+      "key": "elite-cavalry",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/elite-cavalry.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/elite-cavalry-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One elite armoured cavalryman on ONE armoured horse, with complete horse barding and lance.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-e8fc7c57-aaa8-4326-8d08-f917f41142a3.png"
+    },
+    {
+      "key": "archer",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/archer-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One ordinary light archer drawing ONE large curved wooden bow. No spear or shield.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-17a65c73-5a31-4949-be6f-3f2a2d970a3f.png"
+    },
+    {
+      "key": "strong-archer",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/strong-archer.png",
+      "reference": "C:/Users/pengz/Documents/GitHub/threekingdoms_game/docs/v0.3/assets/generated/units-readable-ink-03/strong-archer-small.png",
+      "prompt": "Use case: precise-object-edit. Asset type: ONE transparent single-soldier strategy-game sprite.\nEdit target: the supplied three-person icon. Keep its Chinese ink-brush style, charcoal/ivory/ochre palette, clothing, helmet, equipment and screen-right facing. Extract and reconstruct ONLY THE FRONTMOST SINGLE SOLDIER (or one mounted rider AND his single horse), with the full body, feet and complete weapon visible. REMOVE every other soldier, extra head, extra limb, extra horse and stray weapon. The result must contain EXACTLY ONE person. Reconstruct occluded parts cleanly. Keep broad readable outlines and featureless face; simplify fine texture for a 40–56px map icon. No new props, banners, scenery, ground disk, shadow, text, border or watermark.\nCenter the complete isolated single figure on a square canvas with a little clear margin. True transparent alpha background; no paper rectangle. We will reuse this exact same sprite at an identical per-person scale for one- and three-person formation displays; do not draw a group.\nSubject: One veteran strong archer in dark armour drawing ONE thick large recurved longbow. No spear or shield.",
+      "source": "C:\\Users\\pengz\\.codex\\generated_images\\01a1767c-3426-7b60-976e-c5901b9affdc\\exec-cd3a5266-0ff6-4aa8-85dc-e8684d135598.png"
+    }
+  ],
+  "entries": [
+    {
+      "key": "infantry-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "infantry-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "heavy-infantry-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/heavy-infantry.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "heavy-infantry-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/heavy-infantry.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "cavalry-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/cavalry.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "cavalry-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/cavalry.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "elite-cavalry-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/elite-cavalry.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "elite-cavalry-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/elite-cavalry.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "archer-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "archer-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "strong-archer-small",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/strong-archer.png",
+      "layout": [
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "strong-archer-large",
+      "path": "docs/v0.3/assets/generated/units-count-ink-04/strong-archer.png",
+      "layout": [
+        {
+          "x": 0.34,
+          "y": 0.38
+        },
+        {
+          "x": 0.66,
+          "y": 0.38
+        },
+        {
+          "x": 0.5,
+          "y": 0.62
+        }
+      ],
+      "promptId": "units-count-ink-04"
+    },
+    {
+      "key": "boat-transport",
+      "reuse": {
+        "key": "boat-transport",
+        "source": "docs/v0.3/assets/generated/units-readable-ink-03/boat-transport.png",
+        "path": "assets/v03/units/boat-transport-ink-03.webp",
+        "sourceCrop": [10, 158, 1244, 1125],
+        "width": 256,
+        "height": 256,
+        "sha256": "f7184c9e8968544e635f2210b41631e4e7d4ff6adce6884f80309218203cebf4",
+        "promptId": "units-readable-ink-03"
+      }
+    },
+    {
+      "key": "warship",
+      "reuse": {
+        "key": "warship",
+        "source": "docs/v0.3/assets/generated/units-readable-ink-03/warship.png",
+        "path": "assets/v03/units/warship-ink-03.webp",
+        "sourceCrop": [52, 203, 1227, 1081],
+        "width": 256,
+        "height": 256,
+        "sha256": "c3a9192f15c492ab1dadfbbb481d821d23ae0f3a272ac554137d9aa1ed8a4f31",
+        "promptId": "units-readable-ink-03"
+      }
+    }
+  ]
+}

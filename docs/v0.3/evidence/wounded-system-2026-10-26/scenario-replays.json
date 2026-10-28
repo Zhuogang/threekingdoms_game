@@ -1,0 +1,50 @@
+{
+  "kind": "automated short replays; human balance acceptance remains pending",
+  "observations": [
+    {
+      "scenario": "weak-force-saving-elite",
+      "returnDays": 14,
+      "after22SuppliedCityDays": {
+        "healthy": 2709,
+        "wounded": 291,
+        "meanXp": 1240
+      },
+      "saveReloadVerifiedAfterEveryDay": true
+    },
+    {
+      "scenario": "captured-elite-reorganization",
+      "calendarAdvancesIncludingRecruitmentDay": 11,
+      "healthy": 4393,
+      "wounded": 207,
+      "remainingReorganizationDays": 0,
+      "meanXp": 1240
+    },
+    {
+      "scenario": "multi-officer-withdrawal",
+      "perOfficerPercent": 5,
+      "anyCapturePercent": 9.750000000000004,
+      "outcomes": [
+        {
+          "id": "caocao",
+          "healthy": 4000,
+          "wounded": 600,
+          "location": {
+            "kind": "captured",
+            "cityId": "ye"
+          }
+        },
+        {
+          "id": "xiahoudun",
+          "healthy": 2000,
+          "wounded": 0,
+          "location": {
+            "kind": "journey",
+            "journeyId": "divided-realm-190:army:1:return"
+          }
+        }
+      ],
+      "previewDoesNotRoll": true,
+      "saveReloadVerified": true
+    }
+  ]
+}

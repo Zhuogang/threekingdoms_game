@@ -1,0 +1,485 @@
+[WebServer] (node:42024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 151 tests using 1 worker
+
+(node:20400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok   1 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 390 en (11.7s)
+  ok   2 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 390 zh (8.5s)
+  ok   3 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 1366 en (8.3s)
+  ok   4 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 1366 zh (8.5s)
+  ok   5 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 1920 en (8.7s)
+  ok   6 tests\e2e-v03\assigned-orders.spec.ts:49:5 › assign city work, review supplies, and diplomatic actions 1920 zh (8.0s)
+  ok   7 tests\e2e-v03\assigned-orders.spec.ts:168:3 › supply proposal reduce returns to requests and follows existing rules (3.9s)
+  ok   8 tests\e2e-v03\assigned-orders.spec.ts:168:3 › supply proposal wait returns to requests and follows existing rules (3.5s)
+  ok   9 tests\e2e-v03\assigned-orders.spec.ts:168:3 › supply proposal cancel returns to requests and follows existing rules (3.7s)
+  ok  10 tests\e2e-v03\assigned-orders.spec.ts:211:1 › coalition invitation confirmation returns to diplomacy and keeps coalition rules (2.9s)
+  ok  11 tests\e2e-v03\assigned-orders.spec.ts:236:1 › campaign requisitions also review before creating a directive (3.5s)
+  ok  12 tests\e2e-v03\assigned-orders.spec.ts:275:1 › a declined alliance returns with its result and finished campaigns block diplomacy (5.8s)
+  ok  13 tests\e2e-v03\battle-display.spec.ts:31:1 › Chinese battlefield fills a wide window and each panel can be toggled without changing the game (15.4s)
+  ok  14 tests\e2e-v03\battle-display.spec.ts:71:1 › native fullscreen includes withdrawal dialogs and restores the previous layout when exited (9.3s)
+  ok  15 tests\e2e-v03\battle-display.spec.ts:102:1 › fullscreen denial keeps window expansion usable, keyboard focus and battle switching work (10.3s)
+  ok  16 tests\e2e-v03\battle-display.spec.ts:133:1 › Escape closes display and action menus before restoring an expanded layout (7.3s)
+  ok  17 tests\e2e-v03\battle-display.spec.ts:160:1 › Escape cancels a tactic from sidebar focus and after hiding commands without leaving expansion (9.8s)
+  ok  18 tests\e2e-v03\battle-display.spec.ts:183:3 › a delayed fullscreen grant cannot undo restore (5.3s)
+  ok  19 tests\e2e-v03\battle-display.spec.ts:183:3 › a delayed fullscreen grant cannot undo campaign (6.3s)
+  ok  20 tests\e2e-v03\battle-display.spec.ts:183:3 › a delayed fullscreen grant cannot undo menu (6.0s)
+  ok  21 tests\e2e-v03\battle-display.spec.ts:183:3 › a delayed fullscreen grant cannot undo toggle (5.5s)
+  ok  22 tests\e2e-v03\battle-display.spec.ts:233:1 › native fullscreen and optional panels remain inside a window at 200% zoom (9.5s)
+  ok  23 tests\e2e-v03\battle-display.spec.ts:263:3 › expanded mobile battlefield keeps map and essential actions within the window (en) (9.4s)
+  ok  24 tests\e2e-v03\battle-display.spec.ts:263:3 › expanded mobile battlefield keeps map and essential actions within the window (zh) (8.5s)
+  ok  25 tests\e2e-v03\campaign-smoke.spec.ts:235:1 › starts a campaign, loads the atlas, advances time, saves and rejects invalid imports (4.4s)
+  ok  26 tests\e2e-v03\campaign-smoke.spec.ts:285:1 › runs reward, equipment, and relief through capital work points and persists the results (3.4s)
+  ok  27 tests\e2e-v03\campaign-smoke.spec.ts:343:1 › renders and resumes a playable 48×32 battle with unit artwork (9.3s)
+  ok  28 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Fire attack through the battlefield controls (6.0s)
+  ok  29 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Rally through the battlefield controls (6.1s)
+  ok  30 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Confuse through the battlefield controls (6.0s)
+  ok  31 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Raid supplies through the battlefield controls (5.9s)
+  ok  32 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Ambush through the battlefield controls (6.0s)
+  ok  33 tests\e2e-v03\campaign-smoke.spec.ts:393:3 › exposes and executes Rockfall through the battlefield controls (6.0s)
+  ok  34 tests\e2e-v03\campaign-smoke.spec.ts:417:1 › battle camera, minimap, keyboard orders, feedback, and Chinese labels stay connected (14.1s)
+  ok  35 tests\e2e-v03\campaign-smoke.spec.ts:536:1 › renders painted canvas battlefields in the playable view (18.3s)
+  ok  36 tests\e2e-v03\campaign-smoke.spec.ts:561:1 › opens the wiki in English and Chinese while keeping the campaign available (3.5s)
+  ok  37 tests\e2e-v03\campaign-smoke.spec.ts:601:1 › keeps campaign and battlefield controls reachable at 390, 1366, and 1920px in English and Chinese (24.2s)
+  ok  38 tests\e2e-v03\campaign-smoke.spec.ts:690:1 › keeps campaign and battlefield controls reachable with 200% browser zoom (12.3s)
+  ok  39 tests\e2e-v03\campaign-smoke.spec.ts:758:1 › keeps generated unit and transport art transparent around the figure (1.7s)
+  ok  40 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 390 en (5.5s)
+  ok  41 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 390 zh (5.7s)
+  ok  42 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 1366 en (5.7s)
+  ok  43 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 1366 zh (5.9s)
+  ok  44 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 1920 en (7.0s)
+  ok  45 tests\e2e-v03\city-affairs.spec.ts:51:5 › nested city affairs and officer orders 1920 zh (7.2s)
+  ok  46 tests\e2e-v03\city-affairs.spec.ts:143:1 › each city task returns to affairs and retains the existing rule result (1.1m)
+  x   47 tests\e2e-v03\city-affairs.spec.ts:168:1 › officer training returns to the selected officer; exhausted work stays blocked with a reason (45.8s)
+(node:46688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  48 tests\e2e-v03\city-art-review.spec.ts:59:1 › city layout responds to its actual width at 200 percent zoom above the viewport breakpoint (2.8s)
+  ok  49 tests\e2e-v03\city-art-review.spec.ts:79:3 › 320px city view contains large stocks and all actions en (2.9s)
+  ok  50 tests\e2e-v03\city-art-review.spec.ts:79:3 › 320px city view contains large stocks and all actions zh (3.5s)
+  ok  51 tests\e2e-v03\city-art-review.spec.ts:93:1 › slow and corrupt city images keep the same frame and actions; reopening retries (2.7s)
+  ok  52 tests\e2e-v03\city-art.spec.ts:16:5 › all regional city paintings load and fit 1366 zh (6.0s)
+  ok  53 tests\e2e-v03\city-art.spec.ts:16:5 › all regional city paintings load and fit 1366 en (5.5s)
+  ok  54 tests\e2e-v03\city-art.spec.ts:16:5 › all regional city paintings load and fit 390 zh (5.0s)
+  ok  55 tests\e2e-v03\city-art.spec.ts:16:5 › all regional city paintings load and fit 390 en (5.0s)
+  ok  56 tests\e2e-v03\city-art.spec.ts:65:1 › missing city art preserves actions and another city still loads its illustration (2.9s)
+  ok  57 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 390 en (3.6s)
+  ok  58 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 390 zh (3.8s)
+  ok  59 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 1366 en (4.5s)
+  ok  60 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 1366 zh (4.7s)
+  ok  61 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 1920 en (7.0s)
+  ok  62 tests\e2e-v03\city-flow.spec.ts:16:5 › map to city to march and back 1920 zh (7.1s)
+  ok  63 tests\e2e-v03\city-flow.spec.ts:106:1 › cancel and failed march keep the city workflow and do not spend resources (3.1s)
+  ok  64 tests\e2e-v03\city-flow.spec.ts:126:1 › enemy city opens an attack plan from the nearest friendly city (2.3s)
+  ok  65 tests\e2e-v03\city-flow.spec.ts:136:1 › city window and return controls fit at 200 percent zoom; F1 opens accessible help (2.3s)
+  ok  66 tests\e2e-v03\city-flow.spec.ts:156:1 › changing source resets officer selection and returns to the selected city (2.6s)
+  ok  67 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-320 (5.6s)
+  ok  68 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-390 (5.6s)
+  ok  69 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles zh-1366 (5.4s)
+  ok  70 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom zh (5.5s)
+  ok  71 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate zh (4.1s)
+  ok  72 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-320 (4.5s)
+  ok  73 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-390 (4.7s)
+  ok  74 tests\e2e-v03\officer-directory.spec.ts:49:5 › 98-person directory and reference-only profiles en-1366 (5.0s)
+  ok  75 tests\e2e-v03\officer-directory.spec.ts:135:3 › compound surnames survive blocked portraits and narrow zoom en (5.4s)
+  ok  76 tests\e2e-v03\officer-directory.spec.ts:177:3 › captivity and city permissions remain accurate en (4.0s)
+  ok  77 tests\e2e-v03\officer-directory.spec.ts:216:1 › serving and local free officers are grouped and a free profile exposes no army commands (3.2s)
+  ok  78 tests\e2e-v03\officer-directory.spec.ts:292:1 › new commander portraits resolve on the battlefield and sidebar and fall back together (6.1s)
+  ok  79 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-zh (3.4s)
+  ok  80 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-zh (3.3s)
+  ok  81 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-zh (5.3s)
+  ok  82 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-zh (2.2s)
+  ok  83 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-en (3.2s)
+  ok  84 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-en (3.3s)
+  ok  85 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-en (5.2s)
+  ok  86 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-en (2.0s)
+  ok  87 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-zh (3.2s)
+  ok  88 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-zh (5.1s)
+  ok  89 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-zh (5.1s)
+  ok  90 tests\e2e-v03\officer-recruitment.spec.ts:24:3 › disables an empty local search and explains why without spending work-en (3.4s)
+  ok  91 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC capital army through monthly play, preserving typed reserves and authority-en (4.6s)
+  ok  92 tests\e2e-v03\officer-recruitment.spec.ts:59:5 › organizes an NPC local army through monthly play, preserving typed reserves and authority-en (4.8s)
+  ok  93 tests\e2e-v03\personnel-save.spec.ts:7:3 › keeps and exports a rejected pre-personnel save before replacement (en) (3.0s)
+  ok  94 tests\e2e-v03\personnel-save.spec.ts:7:3 › keeps and exports a rejected pre-personnel save before replacement (zh) (2.9s)
+  ok  95 tests\e2e-v03\plan.spec.ts:47:1 › all named fixtures load through the development Campaign menu (11.3s)
+  ok  96 tests\e2e-v03\plan.spec.ts:63:1 › rival combat permits real city work and diplomacy in EN/ZH (6.1s)
+  ok  97 tests\e2e-v03\plan.spec.ts:82:1 › capital army dispatch uses selected officers directly and keeps its order (2.7s)
+  ok  98 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 390 en (10.6s)
+  ok  99 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 390 zh (13.6s)
+  ok 100 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 1366 en (13.0s)
+  ok 101 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 1366 zh (16.9s)
+  ok 102 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 1920 en (14.8s)
+  ok 103 tests\e2e-v03\plan.spec.ts:96:5 › baseline screens 1920 zh (17.0s)
+  ok 104 tests\e2e-v03\plan.spec.ts:170:3 › prisoner decisions through the city panel en (16.3s)
+  ok 105 tests\e2e-v03\plan.spec.ts:170:3 › prisoner decisions through the city panel zh (18.1s)
+  x  106 tests\e2e-v03\playability.spec.ts:68:1 › RV01 advances a natural Sun NPC battle from both language interfaces (794ms)
+(node:58248) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 107 tests\e2e-v03\playability.spec.ts:87:3 › RV01 submits only required player battles (player and NPC) (6.9s)
+  ok 108 tests\e2e-v03\playability.spec.ts:87:3 › RV01 submits only required player battles (two player) (11.6s)
+  ok 109 tests\e2e-v03\playability.spec.ts:103:1 › RV03 resumes without replacing a save, confirms a new campaign, and reopens finished campaigns (12.2s)
+  ok 110 tests\e2e-v03\playability.spec.ts:149:1 › RV03 clears successful-import drafts and preserves them on failed import (6.3s)
+  ok 111 tests\e2e-v03\playability.spec.ts:188:3 › RV03 exports during local-save failure and retries storage without losing the campaign (en) (5.1s)
+  ok 112 tests\e2e-v03\playability.spec.ts:188:3 › RV03 exports during local-save failure and retries storage without losing the campaign (zh) (5.1s)
+  ok 113 tests\e2e-v03\playability.spec.ts:223:1 › RV07 completes recruit, assign and march through the visible capital controls in EN/ZH (13.1s)
+  ok 114 tests\e2e-v03\playability.spec.ts:287:1 › RV04 exposes every player decision and the full report backlog without rival controls (5.4s)
+  ok 115 tests\e2e-v03\playability.spec.ts:319:1 › RV05 transfers a troop-free incumbent through the actual governor controls (3.7s)
+  ok 116 tests\e2e-v03\playability.spec.ts:346:1 › RV06 presents living small forces accurately and removes defeated units from interaction (4.4s)
+  ok 117 tests\e2e-v03\playability.spec.ts:372:1 › RV05 preserves an explicitly pending dismissal after reload (5.2s)
+  x  118 tests\e2e-v03\playability.spec.ts:394:1 › RV07 shows reserve/officer results and rejects training at either cap before submission (45.8s)
+(node:41228) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 119 tests\e2e-v03\playability.spec.ts:428:1 › RV09 and RV10 expose current conditions and make withdrawal cancelable in both languages (22.3s)
+  ok 120 tests\e2e-v03\playability.spec.ts:487:3 › RV02 keeps bf01-north-plain fitted and stable throughout the responsive/zoom/language matrix (25.2s)
+  ok 121 tests\e2e-v03\playability.spec.ts:487:3 › RV02 keeps bf04-wetland-north fitted and stable throughout the responsive/zoom/language matrix (24.3s)
+  ok 122 tests\e2e-v03\playability.spec.ts:487:3 › RV02 keeps bf09-gorge fitted and stable throughout the responsive/zoom/language matrix (22.5s)
+  ok 123 tests\e2e-v03\playability.spec.ts:487:3 › RV02 keeps bf08-south-hills fitted and stable throughout the responsive/zoom/language matrix (22.9s)
+  ok 124 tests\e2e-v03\playability.spec.ts:566:1 › RV02 keeps the atlas minimap compact inside its stable main frame (4.0s)
+  ok 125 tests\e2e-v03\regional-map.spec.ts:31:3 › campaign canvas fills the available stage without stretching the map (en) (2.8s)
+  ok 126 tests\e2e-v03\regional-map.spec.ts:117:3 › all city anchors remain clickable and the camera survives city windows (en) (13.7s)
+  ok 127 tests\e2e-v03\regional-map.spec.ts:31:3 › campaign canvas fills the available stage without stretching the map (zh) (3.1s)
+  ok 128 tests\e2e-v03\regional-map.spec.ts:117:3 › all city anchors remain clickable and the camera survives city windows (zh) (14.2s)
+  ok 129 tests\e2e-v03\regional-map.spec.ts:166:1 › loads frontal city art and pans across the China-wide ink canvas (5.0s)
+  ok 130 tests\e2e-v03\troop-progression.spec.ts:15:3 › previews dilution and persists the actual troop downgrade zh (6.2s)
+  ok 131 tests\e2e-v03\troop-progression.spec.ts:53:3 › reports real battle promotion and preserves growth after reload zh (7.8s)
+  ok 132 tests\e2e-v03\troop-progression.spec.ts:15:3 › previews dilution and persists the actual troop downgrade en (5.8s)
+  ok 133 tests\e2e-v03\troop-progression.spec.ts:53:3 › reports real battle promotion and preserves growth after reload en (7.4s)
+  ok 134 tests\e2e-v03\troop-progression.spec.ts:99:3 › infantry renders the elite threshold, size threshold and downgrade with portraits (22.2s)
+  ok 135 tests\e2e-v03\troop-progression.spec.ts:99:3 › cavalry renders the elite threshold, size threshold and downgrade with portraits (26.3s)
+  ok 136 tests\e2e-v03\troop-progression.spec.ts:99:3 › archer renders the elite threshold, size threshold and downgrade with portraits (25.1s)
+  ok 137 tests\e2e-v03\typed-recruitment.spec.ts:9:3 › recruits explicitly typed reserves with visible prices and persistent experience zh (9.6s)
+  ok 138 tests\e2e-v03\typed-recruitment.spec.ts:9:3 › recruits explicitly typed reserves with visible prices and persistent experience en (9.6s)
+  x  139 tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander false retain portraits, change vessels and restore land art (16.0s)
+(node:34540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  140 tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander false retain portraits, change vessels and restore land art (16.9s)
+(node:21284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  141 tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander true retain portraits, change vessels and restore land art (18.0s)
+(node:35520) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  142 tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander true retain portraits, change vessels and restore land art (17.7s)
+(node:56020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 143 tests\e2e-v03\unit-squads.spec.ts:120:1 › casualties below 500 switch the existing formation and sidebar to small art (10.7s)
+  ok 144 tests\e2e-v03\unit-squads.spec.ts:156:1 › one- and three-person sprites keep their foreground person at identical size and position (1.8s)
+  ok 145 tests\e2e-v03\unit-squads.spec.ts:225:1 › missing squad images leave readable clickable type markers (5.9s)
+  ok 146 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (zh) (6.5s)
+  ok 147 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (zh) (6.8s)
+  ok 148 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (zh) (11.5s)
+  ok 149 tests\e2e-v03\wounded-lifecycle.spec.ts:26:3 › recruits a captive elite army only after confirmation and keeps its reorganization lock (en) (7.6s)
+  ok 150 tests\e2e-v03\wounded-lifecycle.spec.ts:96:3 › recovers elite wounded at 390px, cancels disbanding, then returns the contingent without losing rear XP (en) (6.6s)
+  ok 151 tests\e2e-v03\wounded-lifecycle.spec.ts:177:3 › previews whole-army risk without rolling, then retreats with wounded and keeps the report on reload (en) (10.0s)
+
+
+  1) tests\e2e-v03\city-affairs.spec.ts:168:1 › officer training returns to the selected officer; exhausted work stays blocked with a reason
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.click: Test timeout of 45000ms exceeded.
+    Browser logs:
+
+    <launching> C:\Program Files\Google\Chrome\Application\chrome.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,AvoidCorsURLLoaderRestartOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\Users\pengz\AppData\Local\Temp\playwright_chromiumdev_profile-43wOAk --remote-debugging-pipe --no-startup-window
+    <launched> pid=12352
+    [pid=12352][err] [12352:11120:1026/214026.747:ERROR:components\device_event_log\device_event_log_impl.cc:211] [21:40:26.747] USB: usb_service_win.cc:346 Failed to parse device interface GUID:
+    [pid=12352][err] [12352:15644:1026/214027.321:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=12352][err] [12352:15644:1026/214048.359:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=12352][err] [12352:15644:1026/214139.841:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=12352][err] [12352:15644:1026/214302.063:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=12352][err] [12352:11120:1026/214423.247:ERROR:chrome\browser\ui\views\user_education\impl\browser_user_education_interface_impl.cc:186] Attempting to show IPH IPH_ExtensionsZeroStatePromo before browser initialization complete; IPH will not be shown.
+    [pid=12352][err] [12352:15644:1026/214551.442:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=12352][err] [12352:11120:1026/214708.799:ERROR:chrome\browser\ui\views\user_education\impl\browser_user_education_interface_impl.cc:186] Attempting to show IPH IPH_ExtensionsZeroStatePromo before browser initialization complete; IPH will not be shown.
+    [pid=12352] <gracefully close start>
+    Call log:
+      - waiting for getByRole('button', { name: 'Train', exact: true })
+        - locator resolved to <button disabled type="button" aria-label="Train" title="The capital has used its 3 monthly work points." class="v03-button button-secondary button-md v03-step-choice">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        80 × waiting for element to be visible, enabled and stable
+           - element is not enabled
+         - retrying click action
+           - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      186 |   }
+      187 |   const exhausted = await current(page);
+    > 188 |   await page.getByRole('button', { name: 'Train', exact: true }).click();
+          |                                                                  ^
+      189 |   await expect(page.getByRole('button', { name: 'Confirm order', exact: true })).toBeDisabled();
+      190 |   await expect(page.locator('.v03-action-reason')).toContainText('monthly work points');
+      191 |   await page.keyboard.press('Escape');
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\city-affairs.spec.ts:188:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\city-affairs-officer-train-47e08-stays-blocked-with-a-reason\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\city-affairs-officer-train-47e08-stays-blocked-with-a-reason\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\city-affairs-officer-train-47e08-stays-blocked-with-a-reason\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\city-affairs-officer-train-47e08-stays-blocked-with-a-reason\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests\e2e-v03\playability.spec.ts:68:1 › RV01 advances a natural Sun NPC battle from both language interfaces
+
+    Error: Complete the day in every active player battle before advancing the world.
+
+       at playability-fixtures.ts:88
+
+      86 |       return state;
+      87 |     const advanced = executeV03Command(state, { type: 'advance', days: 1 });
+    > 88 |     if (!advanced.ok) throw new Error(advanced.error);
+         |                             ^
+      89 |     state = advanced.state;
+      90 |   }
+      91 |   throw new Error('The natural Sun fixture did not reach an NPC-only battle.');
+        at npcOnlyState (C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\playability-fixtures.ts:88:29)
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\playability.spec.ts:69:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\playability-RV01-advances--0e505-om-both-language-interfaces\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\playability-RV01-advances--0e505-om-both-language-interfaces\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\playability-RV01-advances--0e505-om-both-language-interfaces\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\playability-RV01-advances--0e505-om-both-language-interfaces\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests\e2e-v03\playability.spec.ts:394:1 › RV07 shows reserve/officer results and rejects training at either cap before submission
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.click: Test timeout of 45000ms exceeded.
+    Browser logs:
+
+    <launching> C:\Program Files\Google\Chrome\Application\chrome.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,AvoidCorsURLLoaderRestartOnRedirect,Translate,AutoDeElevate,OptimizationHints,NetworkTimeServiceQuerying,AimEnabled,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\Users\pengz\AppData\Local\Temp\playwright_chromiumdev_profile-YLqaGU --remote-debugging-pipe --no-startup-window
+    <launched> pid=54752
+    [pid=54752][err] [54752:51804:1026/215410.833:ERROR:components\device_event_log\device_event_log_impl.cc:211] [21:54:10.833] USB: usb_service_win.cc:346 Failed to parse device interface GUID:
+    [pid=54752][err] [54752:25428:1026/215411.391:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=54752][err] [54752:25428:1026/215433.868:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=54752][err] [54752:25428:1026/215527.826:ERROR:google_apis\gcm\engine\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+    [pid=54752] <gracefully close start>
+    Call log:
+      - waiting for getByRole('button', { name: 'Train', exact: true })
+        - locator resolved to <button disabled type="button" aria-label="Train" title="This officer has reached the current training limit." class="v03-button button-secondary button-md v03-step-choice">…</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not enabled
+        - retrying click action
+          - waiting 100ms
+        81 × waiting for element to be visible, enabled and stable
+           - element is not enabled
+         - retrying click action
+           - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      410 |   await expect(page.getByText('Population', { exact: true })).toBeVisible();
+      411 |   await showOfficer(page, officer.name);
+    > 412 |   await page.getByRole('button', { name: 'Train', exact: true }).click();
+          |                                                                  ^
+      413 |   await expect(page.getByRole('button', { name: 'Confirm order', exact: true })).toBeDisabled();
+      414 |   await expect(page.locator('.v03-action-reason')).toContainText('training limit');
+      415 |   await showCityManagement(page);
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\playability.spec.ts:412:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\playability-RV07-shows-res-eac67-ither-cap-before-submission\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\playability-RV07-shows-res-eac67-ither-cap-before-submission\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\playability-RV07-shows-res-eac67-ither-cap-before-submission\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\playability-RV07-shows-res-eac67-ither-cap-before-submission\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander false retain portraits, change vessels and restore land art
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('.v03-unit-leader').first()
+    Expected: 128
+    Received: undefined
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('.v03-unit-leader').first() with timeout 10000ms
+      - waiting for locator('.v03-unit-leader').first()
+        23 × locator resolved to <span aria-hidden="true" data-portrait-id="xiahouyuan" class="v03-officer-portrait v03-unit-leader">…</span>
+           - unexpected value "undefined"
+
+
+      73 |       );
+      74 |     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
+    > 75 |     await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+         |                                                            ^
+      76 |     await token.click();
+      77 |
+      78 |     const map = page.locator('.v03-battlefield-map').first();
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\unit-squads.spec.ts:75:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-499-troops-wit-15ed5-essels-and-restore-land-art\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\unit-squads-499-troops-wit-15ed5-essels-and-restore-land-art\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-499-troops-wit-15ed5-essels-and-restore-land-art\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\unit-squads-499-troops-wit-15ed5-essels-and-restore-land-art\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander false retain portraits, change vessels and restore land art
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('.v03-unit-leader').first()
+    Expected: 128
+    Received: undefined
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('.v03-unit-leader').first() with timeout 10000ms
+      - waiting for locator('.v03-unit-leader').first()
+        23 × locator resolved to <span aria-hidden="true" data-portrait-id="xiahouyuan" class="v03-officer-portrait v03-unit-leader">…</span>
+           - unexpected value "undefined"
+
+
+      73 |       );
+      74 |     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
+    > 75 |     await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+         |                                                            ^
+      76 |     await token.click();
+      77 |
+      78 |     const map = page.locator('.v03-battlefield-map').first();
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\unit-squads.spec.ts:75:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-500-troops-wit-f5833-essels-and-restore-land-art\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\unit-squads-500-troops-wit-f5833-essels-and-restore-land-art\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-500-troops-wit-f5833-essels-and-restore-land-art\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\unit-squads-500-troops-wit-f5833-essels-and-restore-land-art\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander true retain portraits, change vessels and restore land art
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('.v03-unit-leader').first()
+    Expected: 128
+    Received: undefined
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('.v03-unit-leader').first() with timeout 10000ms
+      - waiting for locator('.v03-unit-leader').first()
+        23 × locator resolved to <span aria-hidden="true" data-portrait-id="zhouyu" class="v03-officer-portrait v03-unit-leader">…</span>
+           - unexpected value "undefined"
+
+
+      73 |       );
+      74 |     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
+    > 75 |     await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+         |                                                            ^
+      76 |     await token.click();
+      77 |
+      78 |     const map = page.locator('.v03-battlefield-map').first();
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\unit-squads.spec.ts:75:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-499-troops-wit-cd8a9-essels-and-restore-land-art\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\unit-squads-499-troops-wit-cd8a9-essels-and-restore-land-art\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-499-troops-wit-cd8a9-essels-and-restore-land-art\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\unit-squads-499-troops-wit-cd8a9-essels-and-restore-land-art\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander true retain portraits, change vessels and restore land art
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('.v03-unit-leader').first()
+    Expected: 128
+    Received: undefined
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('.v03-unit-leader').first() with timeout 10000ms
+      - waiting for locator('.v03-unit-leader').first()
+        23 × locator resolved to <span aria-hidden="true" data-portrait-id="zhouyu" class="v03-officer-portrait v03-unit-leader">…</span>
+           - unexpected value "undefined"
+
+
+      73 |       );
+      74 |     await expect(page.locator('.v03-unit-leader').first()).toBeVisible();
+    > 75 |     await expect(page.locator('.v03-unit-leader').first()).toHaveJSProperty('naturalWidth', 128);
+         |                                                            ^
+      76 |     await token.click();
+      77 |
+      78 |     const map = page.locator('.v03-battlefield-map').first();
+        at C:\Users\pengz\Documents\GitHub\threekingdoms_game\tests\e2e-v03\unit-squads.spec.ts:75:60
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-500-troops-wit-81dfc-essels-and-restore-land-art\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\v03\unit-squads-500-troops-wit-81dfc-essels-and-restore-land-art\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\v03\unit-squads-500-troops-wit-81dfc-essels-and-restore-land-art\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\v03\unit-squads-500-troops-wit-81dfc-essels-and-restore-land-art\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    tests\e2e-v03\city-affairs.spec.ts:168:1 › officer training returns to the selected officer; exhausted work stays blocked with a reason
+    tests\e2e-v03\playability.spec.ts:68:1 › RV01 advances a natural Sun NPC battle from both language interfaces
+    tests\e2e-v03\playability.spec.ts:394:1 › RV07 shows reserve/officer results and rejects training at either cap before submission
+    tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander false retain portraits, change vessels and restore land art
+    tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander false retain portraits, change vessels and restore land art
+    tests\e2e-v03\unit-squads.spec.ts:19:3 › 499 troops with naval commander true retain portraits, change vessels and restore land art
+    tests\e2e-v03\unit-squads.spec.ts:19:3 › 500 troops with naval commander true retain portraits, change vessels and restore land art
+  144 passed (22.9m)

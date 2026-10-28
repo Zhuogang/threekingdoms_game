@@ -20,10 +20,8 @@
     "src",
     "tests",
     "vite.config.ts",
-    "playwright.config.ts",
-    "playwright.production.config.ts",
-    "playwright.fps.config.ts",
-    "vitest.perf.config.ts"
+    "playwright.v03.config.ts",
+    "playwright.production-v03.config.ts"
   ],
   "exclude": ["baye-fmj-app-main", "node_modules", "dist"]
 }

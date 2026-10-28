@@ -1,0 +1,384 @@
+export type AssetAnchor = readonly [x: number, y: number];
+export type AssetCategory =
+  'material' | 'terrain-prop' | 'unit' | 'transport' | 'map-background' | 'city';
+
+export interface V03AssetDefinition {
+  id: string;
+  category: AssetCategory;
+  path: string;
+  width: number;
+  height: number;
+  alpha: boolean;
+  anchor: AssetAnchor | null;
+  renderWidth: number;
+  renderHeight: number;
+  status: 'draft' | 'reviewed' | 'approved' | 'integrated';
+  promptId: string;
+  sha256: string;
+}
+
+/** Runtime art shipped with the v0.3 rendering track. */
+export const V03_ASSETS = {
+  infantrySquadInk04: {
+    id: 'infantry-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/infantry-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: 'a7297a35e0c020965a249f6841fca6be33d67393904da4f83a1428694daafba0',
+  },
+  cavalrySquadInk04: {
+    id: 'cavalry-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/cavalry-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: 'd74b70ed96c71f4f5204ba84a10210dd1b6bb881990b34bcd4864271af3367de',
+  },
+  archerSquadInk04: {
+    id: 'archer-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/archer-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '85b048f8bf4852f1f6abc2ee5835ce1c66bee587ea0447cc3e509a7c8b942e8b',
+  },
+  transportSquadInk03: {
+    id: 'boat-transport-ink-03',
+    category: 'transport',
+    path: 'assets/v03/units/boat-transport-ink-03.webp',
+    width: 256,
+    height: 256,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-readable-ink-03',
+    sha256: 'f7184c9e8968544e635f2210b41631e4e7d4ff6adce6884f80309218203cebf4',
+  },
+  towerWarshipInk03: {
+    id: 'warship-ink-03',
+    category: 'transport',
+    path: 'assets/v03/units/warship-ink-03.webp',
+    width: 256,
+    height: 256,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-readable-ink-03',
+    sha256: 'c3a9192f15c492ab1dadfbbb481d821d23ae0f3a272ac554137d9aa1ed8a4f31',
+  },
+  infantryFormationInk04: {
+    id: 'infantry-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/infantry-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '16e2fef91f80b05918a9cfc97a7652f711e0d515c65c103e161965d21b4b03b7',
+  },
+  cavalryFormationInk04: {
+    id: 'cavalry-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/cavalry-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '5a9cfb282e0a3c132bca1c7db7ecce30ea22e7ccec45a470bb9f6a010f2f5aa5',
+  },
+  archerFormationInk04: {
+    id: 'archer-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/archer-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '3d64151170b1153a2a0463c2c531e63d273a79b847a5b541300e99dfc774b8b8',
+  },
+  heavyInfantrySquadInk04: {
+    id: 'heavy-infantry-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/heavy-infantry-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '1bc86c96ea836478a9908efe9724db4ec527b2097e0b0df5f6add9ff22ff6f91',
+  },
+  heavyInfantryFormationInk04: {
+    id: 'heavy-infantry-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/heavy-infantry-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: 'a4e49e54a91df28d900be5c3d434560c60bd7f1a72b160d1a851a28423a33a8c',
+  },
+  eliteCavalrySquadInk04: {
+    id: 'elite-cavalry-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/elite-cavalry-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '3ea2104227415936c774a4ab45963cbb3a715a647bcddfd24fb3409c861ab8f2',
+  },
+  eliteCavalryFormationInk04: {
+    id: 'elite-cavalry-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/elite-cavalry-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: '72e6f883a316cc2307b9918cc1b97aecba9a8b1f8cca1c0f826c41f89ec074ed',
+  },
+  strongArcherSquadInk04: {
+    id: 'strong-archer-small-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/strong-archer-small-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: 'f5eb9839142f83ce1d1534ab3263ff9fbe5f77186f3f287fc6d8c3b429bb6910',
+  },
+  strongArcherFormationInk04: {
+    id: 'strong-archer-large-ink-04',
+    category: 'unit',
+    path: 'assets/v03/units/strong-archer-large-ink-04.webp',
+    width: 512,
+    height: 512,
+    alpha: true,
+    anchor: [0.5, 0.5],
+    renderWidth: 56,
+    renderHeight: 56,
+    status: 'integrated',
+    promptId: 'units-count-ink-04',
+    sha256: 'd042963fa111302e5066ace9986fc71a60d0a133ef7ddd8be55e5fdcc3ee5102',
+  },
+  campaignMapChinaInk01: {
+    id: 'campaign-china-full-ink-01',
+    category: 'map-background',
+    path: 'assets/v03/maps/campaign-china-full-ink-01.webp',
+    width: 3260,
+    height: 2340,
+    alpha: false,
+    anchor: null,
+    renderWidth: 3260,
+    renderHeight: 2340,
+    status: 'integrated',
+    promptId: 'campaign-china-full-ink-01',
+    sha256: 'bbb11a347763df002c2b35db8c20d77b724bdf593d555e317ceaa41e64203a74',
+  },
+} as const satisfies Record<string, V03AssetDefinition>;
+
+/** Small frontal city art; detailed city illustrations remain separate candidates. */
+export const V03_CITY_ICONS = {
+  imperial: {
+    id: 'city-front-imperial-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-imperial-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 80,
+    renderHeight: 60,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '6a4215c748b689d84768f7666049a2270865275a6a136fb649b7b4889fd02043',
+  },
+  plains: {
+    id: 'city-front-plains-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-plains-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '254b8a5b79e8eff2e95228fde51af860dcf132402f9852add2fc52b1fb35983c',
+  },
+  frontier: {
+    id: 'city-front-frontier-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-frontier-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '87ee16e03f588d3be7a3f7eb3b70bb3985c86a1e1cef8e7f4e3626b33f77ebb5',
+  },
+  loess: {
+    id: 'city-front-loess-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-loess-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: 'e77dcaff34af8430420ab7bfb6877986c8ee16097c854758a8133eee8e6f968d',
+  },
+  basin: {
+    id: 'city-front-basin-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-basin-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: 'b8c4eb9b541aa7347f400cd874d60f396ab3282da81d1cfa846795faf9466b87',
+  },
+  mountain: {
+    id: 'city-front-mountain-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-mountain-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '2f46d01d206948050ece6a7e9e5a4ce0ba3ce792da3b657c2e0e3147120320dd',
+  },
+  river: {
+    id: 'city-front-river-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-river-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '1238ea2c71b05ce8bb25f7595964fa5553a5356e16529c23b547da76861ec3aa',
+  },
+  jiangnan: {
+    id: 'city-front-jiangnan-01',
+    category: 'city',
+    path: 'assets/v03/cities/city-front-jiangnan-01.webp',
+    width: 256,
+    height: 192,
+    alpha: true,
+    anchor: [0.5, 0.90625],
+    renderWidth: 64,
+    renderHeight: 48,
+    status: 'integrated',
+    promptId: 'cities-front-ink-01',
+    sha256: '4a2727a176b0b1dee02e7619f248e5f69f56cc4c5700b7b572e1a02d7a67aae0',
+  },
+} as const satisfies Record<string, V03AssetDefinition>;
+
+export function resolvePublicAsset(path: string, baseUrl = '/'): string {
+  const normalizedPath = path.replace(/^\/+/, '');
+  if (!normalizedPath || normalizedPath.split('/').some((part) => part === '..' || part === '.')) {
+    throw new RangeError('Asset path must be a non-empty public-relative path.');
+  }
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return `${normalizedBase}${normalizedPath}`;
+}
+
+export interface AssetLoadResult<T> {
+  value: T;
+  usedFallback: boolean;
+  error?: unknown;
+}
+
+/** A small injectable loader wrapper so callers can release failed textures cleanly. */
+export async function loadAssetOrFallback<T>(
+  path: string,
+  load: (path: string) => Promise<T>,
+  fallback: (error: unknown) => T | Promise<T>,
+): Promise<AssetLoadResult<T>> {
+  try {
+    return { value: await load(path), usedFallback: false };
+  } catch (error) {
+    return { value: await fallback(error), usedFallback: true, error };
+  }
+}
+
+export function spriteOffsetFromAnchor(
+  renderWidth: number,
+  renderHeight: number,
+  anchor: AssetAnchor,
+): { x: number; y: number } {
+  return { x: -renderWidth * anchor[0], y: -renderHeight * anchor[1] };
+}

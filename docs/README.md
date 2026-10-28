@@ -1,47 +1,30 @@
 # Documentation
 
-## Start here
+Updated October 28, 2026 against the current working tree. **v0.3 is the active game.** This pass updates documentation; dated implementation/evidence records retain their original source IDs and measurements.
 
-| Document                           | What it is for                                                         |
-| ---------------------------------- | ---------------------------------------------------------------------- |
-| [v0.2-summary.md](v0.2-summary.md) | What v0.2 is, how it was built, and how well it is tested              |
-| [next-steps.md](next-steps.md)     | The to-do list, open and settled design decisions, and what comes next |
+## For players
 
-Implementation details and current evidence:
+| Read                                                | Purpose                                                                                 |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [Project README](../README.md)                      | Install, launch, version identity, features and screenshots.                            |
+| [v0.3 overview](v0.3/README.md)                     | Scope and navigation in Chinese/English.                                                |
+| [Player guide / 中英玩法指南](v0.3/player-guide.md) | First campaign, governors, economy, weapons, units, tactics, water, controls and saves. |
+| [v0.3 release notes](v0.3/release-notes.md)         | New systems, inherited features, completed repairs and exclusions.                      |
+| [Current status](v0.3/implementation-status.md)     | Implemented work, recorded tests and remaining human gates.                             |
+| [Next steps](next-steps.md)                         | Only current-version open work and how to report playtests.                             |
 
-- [v0.2 improvement plan](v0.2-improvement-plan.md): agent assignments, dependencies, acceptance criteria and Ma Chao's imagegen workflow.
-- [v0.2 validation record](v0.2-validation.md): implementation status, automated results and remaining release gates.
-- [v0.2 human playtest](v0.2-playtest.md): four-session checklist, findings, visual review and real low-end hardware evidence.
+## For contributors
 
-## Current reference
+Start with the [developer guide](v0.3/development.md), then the [decisions/contracts](v0.3/00-decisions-and-contracts.md) and relevant [system reference](v0.3/README.md#system-references). Current maintenance handoff is in the [implementation plan](v0.3/implementation-plan.md). The [RV completion ledger](v0.3/playability-review-and-todo.md#rv-completion-ledger) retains task acceptance history.
 
-| Document                                                 | What it is for                                                                                                                            |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [v0.2-rules.md](v0.2-rules.md)                           | Every rule v0.2 added or changed, with its constants                                                                                      |
-| [v0.2-notes.md](v0.2-notes.md)                           | Deviations from the plan, and the balance evidence with targets                                                                           |
-| [implementation.md](implementation.md)                   | How the code fits together: commands, economy, AI, battle formulas, and a source tour                                                     |
-| [architecture.md](architecture.md)                       | The original design proposal and its tradeoffs                                                                                            |
-| [reference-baseline.md](reference-baseline.md)           | Findings from the original Baye source. Its links point into a local `baye-fmj-app-main` checkout, which the repository does not include. |
-| [assets/portrait-credits.md](assets/portrait-credits.md) | Portrait provenance and the officer identity mapping                                                                                      |
+## Evidence, art and history
 
-## History
+- [Current implementation and validation](v0.3/implementation-status.md): latest recorded scope and checks. [RV screenshots and checks](v0.3/evidence/rv-implementation-2026-10-21/README.md) describe the October 21 candidate.
+- [Campaign diagnostic evidence](v0.3/evidence/README.md): generation-time fingerprints, rejected balance trials and the accepted diagnostic miss.
+- [Art status and revision workflow](v0.3/06-imagegen-and-artwork.md), [manifest](v0.3/assets/manifest.json), [provenance](v0.3/assets/provenance.md): integrated draft assets and review boundaries.
+- [Shared/legacy asset records](assets/README.md): portrait provenance and older visual work, with their version scope.
+- [v0.3 history](v0.3/history/README.md): initial audit, original design briefs and superseded planning snapshots. Findings there are dated observations, not automatically current defects.
+- [v0.1/v0.2 archive](archive/README.md): previous rules, implementation guides, tests, plans and version-specific deferrals.
+- [October 28 documentation audit](v0.3/documentation-audit-2026-10-28.md): current rules, cleanup and link checks. The [October 22 audit](v0.3/documentation-audit-2026-10-22.md) retains the earlier reorganization.
 
-Finished plans and records, kept for their reasoning and evidence. They are not updated.
-
-| Document                                                                               | What it records                                                                                          |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| [archive/gameplay-improvement-plan.md](archive/gameplay-improvement-plan.md)           | The v0.2 plan: tasks, the §6 balance targets and playtest checklist, the §7 decisions and the §8 backlog |
-| [archive/v0.2-review.md](archive/v0.2-review.md)                                       | The v0.2 review: every finding, the fixes, tracks T1–T5, and the R1–R8 task cards                        |
-| [archive/v0.1-improvement-plan.md](archive/v0.1-improvement-plan.md)                   | The v0.1 improvement plan                                                                                |
-| [archive/v0.1-improvement-acceptance.md](archive/v0.1-improvement-acceptance.md)       | How v0.1 met that plan                                                                                   |
-| [archive/validation.md](archive/validation.md)                                         | v0.1 release validation                                                                                  |
-| [archive/validation-baseline-2026-10-19.md](archive/validation-baseline-2026-10-19.md) | v0.1 measurements before its improvements                                                                |
-| [archive/validation-browser-2026-10-19.md](archive/validation-browser-2026-10-19.md)   | v0.1 browser evidence                                                                                    |
-| [archive/ai-balance.md](archive/ai-balance.md)                                         | v0.1 rival-policy measurements                                                                           |
-| [archive/roadmap.md](archive/roadmap.md)                                               | The original rebuild milestones                                                                          |
-
-## Data
-
-- `ai-diagnostics/` and `validation-evidence/` hold the v0.1 measurement files that the archived records cite.
-- `images/` holds the screenshots and portrait sheet used by the README and those records.
-- New diagnostics are written to `.artifacts/`, which Git ignores.
+Historical evidence JSON, screenshots, hashes and prompt/source records are retained in place. `ai-diagnostics/` and `validation-evidence/` are old measurement collections; v0.3 evidence lives under `v0.3/evidence/`. New working output normally belongs in ignored `.artifacts/`.

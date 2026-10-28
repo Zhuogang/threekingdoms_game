@@ -1,0 +1,596 @@
+{
+  "source": "https://w.atwiki.jp/sangokushi11/pages/148.html",
+  "accessed": "2026-10-26",
+  "kind": "fan-transcribed-san11-game-settings",
+  "scope": "Factual date fields only; historical evidence takes priority. Not a runtime dependency.",
+  "entries": [
+    {
+      "id": "caocao",
+      "birthYear": 155,
+      "deathYear": 220,
+      "debutYear": 184
+    },
+    {
+      "id": "xiahoudun",
+      "birthYear": 156,
+      "deathYear": 220,
+      "debutYear": 184
+    },
+    {
+      "id": "xunyu",
+      "birthYear": 163,
+      "deathYear": 212,
+      "debutYear": 184
+    },
+    {
+      "id": "caoren",
+      "birthYear": 168,
+      "deathYear": 223,
+      "debutYear": 187
+    },
+    {
+      "id": "xiahouyuan",
+      "birthYear": 162,
+      "deathYear": 219,
+      "debutYear": 184
+    },
+    {
+      "id": "chengyu",
+      "birthYear": 141,
+      "deathYear": 220,
+      "debutYear": 184
+    },
+    {
+      "id": "yujin",
+      "birthYear": 159,
+      "deathYear": 221,
+      "debutYear": 184
+    },
+    {
+      "id": "liubei",
+      "birthYear": 161,
+      "deathYear": 223,
+      "debutYear": 184
+    },
+    {
+      "id": "guanyu",
+      "birthYear": 162,
+      "deathYear": 219,
+      "debutYear": 184
+    },
+    {
+      "id": "zhangfei",
+      "birthYear": 167,
+      "deathYear": 221,
+      "debutYear": 184
+    },
+    {
+      "id": "jianyong",
+      "birthYear": 164,
+      "deathYear": 225,
+      "debutYear": 184
+    },
+    {
+      "id": "sunjian",
+      "birthYear": 156,
+      "deathYear": 192,
+      "debutYear": 184
+    },
+    {
+      "id": "sunce",
+      "birthYear": 175,
+      "deathYear": 200,
+      "debutYear": 189
+    },
+    {
+      "id": "huanggai",
+      "birthYear": 154,
+      "deathYear": 218,
+      "debutYear": 184
+    },
+    {
+      "id": "chengpu",
+      "birthYear": 151,
+      "deathYear": 216,
+      "debutYear": 184
+    },
+    {
+      "id": "handang",
+      "birthYear": 156,
+      "deathYear": 225,
+      "debutYear": 184
+    },
+    {
+      "id": "zuzhao",
+      "birthYear": 155,
+      "deathYear": 190,
+      "debutYear": 184
+    },
+    {
+      "id": "yuanshao",
+      "birthYear": 154,
+      "deathYear": 202,
+      "debutYear": 184
+    },
+    {
+      "id": "yanliang",
+      "birthYear": 160,
+      "deathYear": 200,
+      "debutYear": 184
+    },
+    {
+      "id": "wenchou",
+      "birthYear": 161,
+      "deathYear": 200,
+      "debutYear": 184
+    },
+    {
+      "id": "zhanghe",
+      "birthYear": 167,
+      "deathYear": 231,
+      "debutYear": 184
+    },
+    {
+      "id": "tianfeng",
+      "birthYear": 162,
+      "deathYear": 200,
+      "debutYear": 184
+    },
+    {
+      "id": "jushou",
+      "birthYear": 156,
+      "deathYear": 201,
+      "debutYear": 184
+    },
+    {
+      "id": "guotu",
+      "birthYear": 155,
+      "deathYear": 205,
+      "debutYear": 184
+    },
+    {
+      "id": "dongzhuo",
+      "birthYear": 139,
+      "deathYear": 192,
+      "debutYear": 184
+    },
+    {
+      "id": "lubu",
+      "birthYear": 156,
+      "deathYear": 198,
+      "debutYear": 184
+    },
+    {
+      "id": "jiaxu",
+      "birthYear": 147,
+      "deathYear": 223,
+      "debutYear": 184
+    },
+    {
+      "id": "liru",
+      "birthYear": 150,
+      "deathYear": 192,
+      "debutYear": 184
+    },
+    {
+      "id": "lijue",
+      "birthYear": 148,
+      "deathYear": 198,
+      "debutYear": 184
+    },
+    {
+      "id": "guosi",
+      "birthYear": 146,
+      "deathYear": 197,
+      "debutYear": 184
+    },
+    {
+      "id": "huaxiong",
+      "birthYear": 155,
+      "deathYear": 190,
+      "debutYear": 184
+    },
+    {
+      "id": "zhangliao",
+      "birthYear": 169,
+      "deathYear": 222,
+      "debutYear": 188
+    },
+    {
+      "id": "liuyan",
+      "birthYear": 132,
+      "deathYear": 194,
+      "debutYear": 184
+    },
+    {
+      "id": "liuzhang",
+      "birthYear": 162,
+      "deathYear": 219,
+      "debutYear": 184
+    },
+    {
+      "id": "zhangren",
+      "birthYear": 169,
+      "deathYear": 214,
+      "debutYear": 188
+    },
+    {
+      "id": "yanyan",
+      "birthYear": 151,
+      "deathYear": 222,
+      "debutYear": 184
+    },
+    {
+      "id": "wuyi",
+      "birthYear": 165,
+      "deathYear": 237,
+      "debutYear": 185
+    },
+    {
+      "id": "huangquan",
+      "birthYear": 167,
+      "deathYear": 240,
+      "debutYear": 186
+    },
+    {
+      "id": "zhaoyun",
+      "birthYear": 168,
+      "deathYear": 229,
+      "debutYear": 187
+    },
+    {
+      "id": "taishici",
+      "birthYear": 166,
+      "deathYear": 209,
+      "debutYear": 185
+    },
+    {
+      "id": "dianwei",
+      "birthYear": 160,
+      "deathYear": 197,
+      "debutYear": 184
+    },
+    {
+      "id": "xuchu",
+      "birthYear": 169,
+      "deathYear": 226,
+      "debutYear": 189
+    },
+    {
+      "id": "xuhuang",
+      "birthYear": 165,
+      "deathYear": 228,
+      "debutYear": 188
+    },
+    {
+      "id": "ganning",
+      "birthYear": 174,
+      "deathYear": 222,
+      "debutYear": 193
+    },
+    {
+      "id": "huangzhong",
+      "birthYear": 148,
+      "deathYear": 222,
+      "debutYear": 184
+    },
+    {
+      "id": "weiyan",
+      "birthYear": 175,
+      "deathYear": 234,
+      "debutYear": 194
+    },
+    {
+      "id": "zhouyu",
+      "birthYear": 175,
+      "deathYear": 210,
+      "debutYear": 189
+    },
+    {
+      "id": "lusu",
+      "birthYear": 172,
+      "deathYear": 217,
+      "debutYear": 191
+    },
+    {
+      "id": "fazheng",
+      "birthYear": 176,
+      "deathYear": 220,
+      "debutYear": 195
+    },
+    {
+      "id": "zhangsong",
+      "birthYear": 170,
+      "deathYear": 212,
+      "debutYear": 189
+    },
+    {
+      "id": "chenqun",
+      "birthYear": 167,
+      "deathYear": 235,
+      "debutYear": 186
+    },
+    {
+      "id": "maliang",
+      "birthYear": 149,
+      "deathYear": 211,
+      "debutYear": 184
+    },
+    {
+      "id": "machao",
+      "birthYear": 176,
+      "deathYear": 226,
+      "debutYear": 189
+    },
+    {
+      "id": "xunyou",
+      "birthYear": 157,
+      "deathYear": 214,
+      "debutYear": 184
+    },
+    {
+      "id": "guojia",
+      "birthYear": 170,
+      "deathYear": 207,
+      "debutYear": 189
+    },
+    {
+      "id": "simayi",
+      "birthYear": 179,
+      "deathYear": 251,
+      "debutYear": 198
+    },
+    {
+      "id": "caohong",
+      "birthYear": 169,
+      "deathYear": 232,
+      "debutYear": 188
+    },
+    {
+      "id": "yuejin",
+      "birthYear": 159,
+      "deathYear": 218,
+      "debutYear": 188
+    },
+    {
+      "id": "lidian",
+      "birthYear": 174,
+      "deathYear": 216,
+      "debutYear": 189
+    },
+    {
+      "id": "pangde",
+      "birthYear": 170,
+      "deathYear": 219,
+      "debutYear": 184
+    },
+    {
+      "id": "manchong",
+      "birthYear": 170,
+      "deathYear": 242,
+      "debutYear": 189
+    },
+    {
+      "id": "caopi",
+      "birthYear": 187,
+      "deathYear": 226,
+      "debutYear": 200
+    },
+    {
+      "id": "caozhen",
+      "birthYear": 185,
+      "deathYear": 231,
+      "debutYear": 204
+    },
+    {
+      "id": "dengai",
+      "birthYear": 197,
+      "deathYear": 264,
+      "debutYear": 216
+    },
+    {
+      "id": "simashi",
+      "birthYear": 208,
+      "deathYear": 255,
+      "debutYear": 222
+    },
+    {
+      "id": "caorui",
+      "birthYear": 205,
+      "deathYear": 239,
+      "debutYear": 219
+    },
+    {
+      "id": "zhugeliang",
+      "birthYear": 181,
+      "deathYear": 234,
+      "debutYear": 208
+    },
+    {
+      "id": "pangtong",
+      "birthYear": 179,
+      "deathYear": 214,
+      "debutYear": 208
+    },
+    {
+      "id": "maliang_shu",
+      "birthYear": 187,
+      "deathYear": 222,
+      "debutYear": 206
+    },
+    {
+      "id": "masu",
+      "birthYear": 190,
+      "deathYear": 228,
+      "debutYear": 209
+    },
+    {
+      "id": "wangping",
+      "birthYear": 192,
+      "deathYear": 248,
+      "debutYear": 216
+    },
+    {
+      "id": "jiangwei",
+      "birthYear": 202,
+      "deathYear": 264,
+      "debutYear": 225
+    },
+    {
+      "id": "jiangwan",
+      "birthYear": 188,
+      "deathYear": 246,
+      "debutYear": 207
+    },
+    {
+      "id": "feiyi",
+      "birthYear": 193,
+      "deathYear": 253,
+      "debutYear": 212
+    },
+    {
+      "id": "liaohua",
+      "birthYear": 170,
+      "deathYear": 264,
+      "debutYear": 184
+    },
+    {
+      "id": "guanping",
+      "birthYear": 186,
+      "deathYear": 219,
+      "debutYear": 200
+    },
+    {
+      "id": "liushan",
+      "birthYear": 207,
+      "deathYear": 271,
+      "debutYear": 221
+    },
+    {
+      "id": "sunquan",
+      "birthYear": 182,
+      "deathYear": 252,
+      "debutYear": 196
+    },
+    {
+      "id": "zhangzhao",
+      "birthYear": 156,
+      "deathYear": 236,
+      "debutYear": 194
+    },
+    {
+      "id": "lvmeng",
+      "birthYear": 178,
+      "deathYear": 219,
+      "debutYear": 193
+    },
+    {
+      "id": "luxun",
+      "birthYear": 183,
+      "deathYear": 245,
+      "debutYear": 202
+    },
+    {
+      "id": "zhugejin",
+      "birthYear": 174,
+      "deathYear": 241,
+      "debutYear": 195
+    },
+    {
+      "id": "lingtong",
+      "birthYear": 189,
+      "deathYear": 237,
+      "debutYear": 203
+    },
+    {
+      "id": "zhoutai",
+      "birthYear": 171,
+      "deathYear": 225,
+      "debutYear": 189
+    },
+    {
+      "id": "zhuran",
+      "birthYear": 182,
+      "deathYear": 249,
+      "debutYear": 196
+    },
+    {
+      "id": "xusheng",
+      "birthYear": 177,
+      "deathYear": 234,
+      "debutYear": 196
+    },
+    {
+      "id": "dingfeng",
+      "birthYear": 190,
+      "deathYear": 271,
+      "debutYear": 207
+    },
+    {
+      "id": "zhugeke",
+      "birthYear": 203,
+      "deathYear": 253,
+      "debutYear": 217
+    },
+    {
+      "id": "gongsunzan",
+      "birthYear": 152,
+      "deathYear": 199,
+      "debutYear": 184
+    },
+    {
+      "id": "taoqian",
+      "birthYear": 132,
+      "deathYear": 194,
+      "debutYear": 184
+    },
+    {
+      "id": "liubiao",
+      "birthYear": 142,
+      "deathYear": 208,
+      "debutYear": 184
+    },
+    {
+      "id": "yuanshu",
+      "birthYear": 155,
+      "deathYear": 199,
+      "debutYear": 184
+    },
+    {
+      "id": "hansui",
+      "birthYear": 142,
+      "deathYear": 215,
+      "debutYear": 184
+    },
+    {
+      "id": "zhanglu",
+      "birthYear": 163,
+      "deathYear": 237,
+      "debutYear": 184
+    },
+    {
+      "id": "chengong",
+      "birthYear": 154,
+      "deathYear": 198,
+      "debutYear": 184
+    },
+    {
+      "id": "gaoshun",
+      "birthYear": 162,
+      "deathYear": 198,
+      "debutYear": 186
+    },
+    {
+      "id": "kongrong",
+      "birthYear": 153,
+      "deathYear": 208,
+      "debutYear": 184
+    },
+    {
+      "id": "xuyou",
+      "birthYear": 155,
+      "deathYear": 204,
+      "debutYear": 184
+    }
+  ]
+}

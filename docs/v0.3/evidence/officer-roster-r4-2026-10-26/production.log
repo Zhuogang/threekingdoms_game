@@ -1,0 +1,12 @@
+[WebServer] (node:30876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:27824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\production-v03\city-art.spec.ts:3:1 › city paintings and the active campaign background load under the production subpath (2.7s)
+  ok 2 tests\production-v03\officer-directory.spec.ts:5:1 › new portraits and the lazy directory load from the production subpath (3.9s)
+  ok 3 tests\production-v03\release.spec.ts:14:1 › production release serves v0.3 under a subpath and restores its campaign save (3.4s)
+
+  3 passed (17.5s)

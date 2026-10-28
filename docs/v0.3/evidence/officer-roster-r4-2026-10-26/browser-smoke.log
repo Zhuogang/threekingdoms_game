@@ -1,0 +1,12 @@
+[WebServer] (node:59100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:12004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\e2e-v03\campaign-smoke.spec.ts:235:1 › starts a campaign, loads the atlas, advances time, saves and rejects invalid imports (8.1s)
+  ok 2 tests\e2e-v03\campaign-smoke.spec.ts:285:1 › runs reward, equipment, and relief through capital work points and persists the results (4.1s)
+  ok 3 tests\e2e-v03\campaign-smoke.spec.ts:343:1 › renders and resumes a playable 48×32 battle with unit artwork (10.3s)
+
+  3 passed (30.0s)

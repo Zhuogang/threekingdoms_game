@@ -1,0 +1,26 @@
+Use case: sketch-to-render.
+Asset type: finished terrain background for a top-down 2D Three Kingdoms strategy battlefield, intended for unit tokens to be overlaid.
+
+EDIT TARGET: the supplied 1536×1024 color-coded layout map. This is a hard spatial mask, NOT a style reference. Repaint within its existing regions. Preserve EXACT positions, silhouettes, boundaries, dimensions, count, and extent of EVERY colored feature. No reshaping, smoothing, rounding, translating, enlarging, adding paths, or inventing features. Even the angular, stepped edges in the map are deliberate: retain their precise footprints and make them convincing through material texture INSIDE each footprint. Keep the same 1536×1024 framing, all terrain edge to edge.
+
+SCENE: Hebei plain, northern China, late Eastern Han around 190 AD; dry early winter, light loess dust, quiet farmland. Camera strictly orthographic straight overhead at 90 degrees: roofs and ground seen from directly above. No perspective, horizon, sky, isometric view, visible front elevations.
+
+Replace colors according to this exact legend:
+BEIGE background = calm, flat, open winter wheat fields with pale straw stubble, very faint straight agricultural ridges. Avoid a grid pattern. Very low contrast for gameplay readability.
+BROWN horizontal strip = ONE packed dirt road, perfectly matching its original horizontal strip across the complete frame, left edge to right edge. Restrained fine wheel-worn texture, gentle ink edging, no extra lanes, no side roads, no forks.
+DARK BROWN small square at the river crossing = ONE tiny plank bridge, occupying exactly that square, horizontal across the river. Plank texture stays inside footprint.
+BLUE = ONE narrow shallow river from the top edge to bottom edge, preserving every exact stepped meander and width of the layout. Soft grey-blue water and subtle bank ink lines. The separate tiny blue region near the top is ONE tiny pond, keep exact footprint. Do not add water.
+DARK GREEN = TWO groves of bare willows and poplars. Their collective canopy/branch footprints must be clipped to the original green region boundaries, including their rectangular extents; no stray trees outside. Fine overhead branching in dull grey-green and warm grey, winter bare branches, no lush foliage, no tall side-view trees.
+RED-BROWN = TWO small villages, each nestled within its corresponding grove. Build compact rammed-earth courtyard walls and grey-tile roof plans, all strictly confined to their red-brown original rectangles. Preserve outer village footprints exactly. No enclosing shape larger than the red-brown zone.
+OLIVE = THREE low gentle earth mounds, very slight raised ground with subtle soft contour shading, preserving their original individual sizes, outlines and positions. No rocky hills or mountains.
+
+STYLE: traditional Chinese ink-wash painting with light color, 水墨淡彩, gongbi-xieyi mix. Soft brush texture and subtle rice-paper grain throughout the entire frame, gentle restrained ink outlines along roads, banks, village walls. Muted ochre, warm grey-brown, pale straw yellow, dull grey-green trees, soft grey-blue water. Light upper left with very soft short shadows kept inside existing feature footprints. Finished delicate painterly terrain, not colored blocks. No visible diagram colors.
+
+READABILITY: Keep open ground calm, flat and low contrast. Clear exact feature boundaries, even restrained detail density throughout, uniform exposure edge to edge, no vignette or dark corners.
+FORBIDDEN: text, letters, labels, seals, signatures, watermarks, grid lines, borders, frames, scroll edges, paper margins, compass, legend, people, soldiers, horses, carts, flags, tents, banners, modern objects, distant hills, mountains, perspective, tilt. Do not add decorative scenery.
+
+Highest priority: spatial registration to the source mask. Repaint the supplied image without redesigning its layout. Output 1536×1024 landscape.
+
+Refinement priorities for this render: The field texture must be EXTREMELY faint, nearly uniform pale straw wash with only wisps of straight ridges, no dark field divisions, no patchwork rectangles, no coarse high contrast grain. The trees and buildings should be delicate small overhead plans, no side-facing architecture. The three mounds must be overhead gently shaded ground surfaces, not frontal drawings of conical hills. Texture is soft, restrained, elegant ink-wash with light color.
+
+Pixel registration guide (coordinates in the 1536×1024 source; rectangles use x,y,width,height): horizontal road (0,480,1536,32); tiny bridge (800,480,32,32). Top-right village (1088,160,96,96), bottom-left village (320,768,96,96). The outer grove regions are the source green shapes around these villages plus the small source green strips beside the river; preserve the gaps and cutouts exactly. Mounds: (544,160,96,64), (928,768,96,64), (640,864,64,64). Keep each mound's shading inside that footprint and very low. River is exactly 32 px wide along most of its length, and retains source right-angle turns and small top blue patch; do not widen it. Render all source regions at their original pixel footprints. Do not add features outside masks.

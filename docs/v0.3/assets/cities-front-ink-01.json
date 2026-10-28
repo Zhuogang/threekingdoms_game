@@ -1,0 +1,147 @@
+{
+  "status": "integrated",
+  "active": true,
+  "generationTool": "built-in image_gen",
+  "intendedUse": "Small frontal campaign-map city icons; 32-48px target display.",
+  "commonPrompt": "Use case: stylized-concept. Asset type: one SMALL ABSTRACT FRONT-ELEVATION CITY MAP ICON, for 32 to 48 PIXEL display in a Three Kingdoms game.\nThis is NOT a miniature town illustration. It is a bold, compact, almost pictographic FRONT VIEW of a city gate and very short wall wings. STRICT front elevation, centered and symmetrical or nearly symmetrical, zero isometric perspective, no visible courtyard, no bird's-eye view, no city block, no whole settlement.\nReference image is the ink map: PALETTE and INK MEDIUM only. Preserve its charcoal grey ink, warm ivory and pale ochre, occasional muted sage or celadon. Use a few broad confident hand-painted ink lines and 2-4 flat diluted wash shapes. Painterly edges but very simple masses. Quiet enough to match the map, with stronger silhouette for tiny display. Prefer large readable shapes over detail.\nOnly 3 to 5 primary silhouette masses, one dark gate opening, no individual roof tiles, bricks, windows, railings, foliage detail or complex architecture. The type must remain readable as a single thumbnail at 32px. Modest Late-Han-inspired roof forms, no exaggerated pagoda curls.\nSquare transparent canvas; artwork centered, filling about 75% width and 55% height. TRUE alpha background with clear margins; no paper rectangle, ground patch, base disk, UI frame, circle, shield, badge, text, labels, seals or watermark. No people, flags, distant terrain, city name or 3D gloss.\nSubject: ",
+  "styleReference": "public/assets/v03/maps/campaign-china-full-ink-01.webp",
+  "entries": [
+    {
+      "key": "imperial",
+      "label": "帝都",
+      "subject": "Broad symmetrical imperial gate with a simple double-tier grey roof and two SHORT flanking watchtowers. One large central rectangular dark gate, ivory wall, one tiny muted cinnabar accent. Three roof masses maximum. NO palace behind it.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-imperial-01-source.png",
+      "path": "public/assets/v03/cities/city-front-imperial-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [48, 405, 1207, 879],
+        "transparentPixels": 1192207
+      },
+      "sha256": "6a4215c748b689d84768f7666049a2270865275a6a136fb649b7b4889fd02043"
+    },
+    {
+      "key": "plains",
+      "label": "中原",
+      "subject": "A simple squat central grey-roof gatehouse and two short straight earthen wall wings. One clear dark rectangular gateway. Symmetrical, balanced, only ONE main roof.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-plains-01-source.png",
+      "path": "public/assets/v03/cities/city-front-plains-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [55, 403, 1199, 903],
+        "transparentPixels": 1189176
+      },
+      "sha256": "254b8a5b79e8eff2e95228fde51af860dcf132402f9852add2fc52b1fb35983c"
+    },
+    {
+      "key": "frontier",
+      "label": "边塞",
+      "subject": "Two stout SQUARE crenellated earth watchtowers flanking a plain dark central gateway, connected by low battlements. No tiled roof on the towers. Bold military silhouette.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-frontier-01-source.png",
+      "path": "public/assets/v03/cities/city-front-frontier-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [38, 397, 1216, 889],
+        "transparentPixels": 1141204
+      },
+      "sha256": "87ee16e03f588d3be7a3f7eb3b70bb3985c86a1e1cef8e7f4e3626b33f77ebb5"
+    },
+    {
+      "key": "loess",
+      "label": "陇右",
+      "subject": "Low ochre-grey rammed-earth gate with two slightly tapered rounded wall ends and a small simple flat timber cap over the gateway. Modest earthy silhouette, no stone blocks, no houses behind.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-loess-01-source.png",
+      "path": "public/assets/v03/cities/city-front-loess-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [43, 419, 1211, 903],
+        "transparentPixels": 1189083
+      },
+      "sha256": "e77dcaff34af8430420ab7bfb6877986c8ee16097c854758a8133eee8e6f968d"
+    },
+    {
+      "key": "basin",
+      "label": "巴蜀",
+      "subject": "One simple gently pitched grey-roof gatehouse, ivory short wall wings, ONE tiny bamboo sprig on a single side. Gate occupies most of silhouette; bamboo only two strokes, not foliage scene.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-basin-01-source.png",
+      "path": "public/assets/v03/cities/city-front-basin-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [55, 351, 1198, 929],
+        "transparentPixels": 1124462
+      },
+      "sha256": "b8c4eb9b541aa7347f400cd874d60f396ab3282da81d1cfa846795faf9466b87"
+    },
+    {
+      "key": "mountain",
+      "label": "山城",
+      "subject": "One compact grey-roof gateway with short terraced wall wings on a VERY LOW uneven stone footing, just two coarse stone shapes. Stepped lower outline conveys hill fort, no mountain behind.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-mountain-01-source.png",
+      "path": "public/assets/v03/cities/city-front-mountain-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [48, 393, 1207, 969],
+        "transparentPixels": 1182956
+      },
+      "sha256": "2f46d01d206948050ece6a7e9e5a4ce0ba3ce792da3b657c2e0e3147120320dd"
+    },
+    {
+      "key": "river",
+      "label": "江汉",
+      "subject": "One plain grey-roof river gate between short ivory walls, a single short horizontal timber quay stroke under one side and TWO pale celadon ripples beneath. NO boat, warehouses or scenery.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-river-01-source.png",
+      "path": "public/assets/v03/cities/city-front-river-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [58, 384, 1198, 946],
+        "transparentPixels": 1184655
+      },
+      "sha256": "1238ea2c71b05ce8bb25f7595964fa5553a5356e16529c23b547da76861ec3aa"
+    },
+    {
+      "key": "jiangnan",
+      "label": "江南",
+      "subject": "One simple elegant grey-roof gate with low short wall wings, a tiny low wooden bridge shape across TWO pale celadon canal strokes at the base. NO extra buildings or willow tree.",
+      "source": "docs/v0.3/assets/generated/cities-front-01/city-front-jiangnan-01-source.png",
+      "path": "public/assets/v03/cities/city-front-jiangnan-01.webp",
+      "width": 256,
+      "height": 192,
+      "alpha": true,
+      "anchor": [0.5, 0.90625],
+      "validation": {
+        "sourceDimensions": [1254, 1254],
+        "alphaBBox": [52, 343, 1202, 999],
+        "transparentPixels": 1072782
+      },
+      "sha256": "4a2727a176b0b1dee02e7619f248e5f69f56cc4c5700b7b572e1a02d7a67aae0"
+    }
+  ],
+  "scope": "Active small frontal campaign-map city icons. Detailed regional city paintings are integrated in city overview/detail panels; both use the shared region mapping in campaign-city-art.ts."
+}

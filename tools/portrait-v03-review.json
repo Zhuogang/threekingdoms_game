@@ -1,0 +1,42 @@
+{
+  "revised": [
+    "chengpu",
+    "handang",
+    "jushou",
+    "guotu",
+    "zhangliao",
+    "yanyan",
+    "huangquan",
+    "xuchu",
+    "xuhuang",
+    "huangzhong",
+    "weiyan",
+    "lusu",
+    "fazheng",
+    "zhangsong",
+    "chenqun",
+    "machao"
+  ],
+  "aliases": {
+    "zumao": "zuzhao",
+    "mateng": "maliang"
+  },
+  "notes": {
+    "chengpu": "Age 50–60 and grey beard required; current 190 portrait is 36.",
+    "handang": "Age 45–55; current 190 portrait is 34.",
+    "jushou": "Age 40–50; current portrait too youthful.",
+    "guotu": "Narrow calculating face required instead of round friendly courtier.",
+    "zhangliao": "Mature elite commander and short beard required.",
+    "yanyan": "Age 55–65 with grey beard instead of 45-year-old variant.",
+    "huangquan": "Age 35–45 and moustache; current image is a clean-shaven youth.",
+    "xuchu": "Heavy beard required instead of minimal stubble.",
+    "xuhuang": "Seasoned 30–40 face and short beard.",
+    "huangzhong": "Elder 55–65 with grey beard; current image is early forties.",
+    "weiyan": "Mature 30–40 harsh face and rough beard.",
+    "lusu": "Adult 30–40 strategist and small moustache.",
+    "fazheng": "Adult 30–40 political adviser and small beard.",
+    "zhangsong": "Eccentric awkward features; avoid generic handsome scholar.",
+    "chenqun": "Adult formal minister and trim moustache.",
+    "machao": "Add the specified yellow frontier scarf."
+  }
+}

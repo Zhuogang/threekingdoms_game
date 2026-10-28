@@ -1,0 +1,5 @@
+
+> hegemony-of-the-three-kingdoms@0.3.0 lint:ui
+> node tools/lint-ui.mjs
+
+UI tokens, type scale, control kit and module-size checks passed.

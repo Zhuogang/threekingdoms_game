@@ -1,0 +1,132 @@
+{
+  "sourceManifest": "units-readable-ink-03.json",
+  "scope": "Readable representative squads: three figures below 500 troops and five at 500+. Level 11+ selects heavy infantry, elite cavalry or strong archers. Vessel selection still follows the commander.",
+  "entries": [
+    {
+      "key": "infantry-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/infantry-small.png",
+      "path": "assets/v03/units/infantry-small-ink-03.webp",
+      "sourceCrop": [34, 41, 1246, 1221],
+      "width": 256,
+      "height": 256,
+      "sha256": "274a69462488844f1092c3fd650dec3d55f9f0119781e55a7c89c7debc3a518d"
+    },
+    {
+      "key": "infantry-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/infantry-large.png",
+      "path": "assets/v03/units/infantry-large-ink-03.webp",
+      "sourceCrop": [15, 142, 1239, 1152],
+      "width": 512,
+      "height": 512,
+      "sha256": "59bdde8150d6232259bacd8bcfe6f7ef511862ae0efc01bc754fc52524b9a36f"
+    },
+    {
+      "key": "heavy-infantry-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/heavy-infantry-small.png",
+      "path": "assets/v03/units/heavy-infantry-small-ink-03.webp",
+      "sourceCrop": [45, 15, 1211, 1223],
+      "width": 256,
+      "height": 256,
+      "sha256": "d83183abc50b1ffcc0d58bef3640a040ec87049e593c96705e5f10b85a5cfcd0"
+    },
+    {
+      "key": "heavy-infantry-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/heavy-infantry-large.png",
+      "path": "assets/v03/units/heavy-infantry-large-ink-03.webp",
+      "sourceCrop": [24, 95, 1242, 1196],
+      "width": 512,
+      "height": 512,
+      "sha256": "d959d060e5b3a4c65cf8018f5f83307578ce4959f87cfc223c54a6c874b70da1"
+    },
+    {
+      "key": "cavalry-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/cavalry-small.png",
+      "path": "assets/v03/units/cavalry-small-ink-03.webp",
+      "sourceCrop": [7, 88, 1250, 1196],
+      "width": 256,
+      "height": 256,
+      "sha256": "5494cb67573cd1fdc66fb80c10fc87b8911dac0fc56e817ef62619e85b037a57"
+    },
+    {
+      "key": "cavalry-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/cavalry-large.png",
+      "path": "assets/v03/units/cavalry-large-ink-03.webp",
+      "sourceCrop": [13, 141, 1242, 1165],
+      "width": 512,
+      "height": 512,
+      "sha256": "17068dbb52a3a8bdba4058e9a97e66af6e672fe9679c2382e7dad2d4c6ee51db"
+    },
+    {
+      "key": "elite-cavalry-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/elite-cavalry-small.png",
+      "path": "assets/v03/units/elite-cavalry-small-ink-03.webp",
+      "sourceCrop": [14, 87, 1251, 1206],
+      "width": 256,
+      "height": 256,
+      "sha256": "c55a3349df23d08ea92725c6be285fac07708e351b436cc87ab1782d81626a31"
+    },
+    {
+      "key": "elite-cavalry-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/elite-cavalry-large.png",
+      "path": "assets/v03/units/elite-cavalry-large-ink-03.webp",
+      "sourceCrop": [9, 135, 1251, 1171],
+      "width": 512,
+      "height": 512,
+      "sha256": "88a6a33fcaa6bd0de64e63a51a29303b69f7d134a87cf7f3210fe13477907812"
+    },
+    {
+      "key": "archer-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/archer-small.png",
+      "path": "assets/v03/units/archer-small-ink-03.webp",
+      "sourceCrop": [58, 7, 1249, 1247],
+      "width": 256,
+      "height": 256,
+      "sha256": "cd389be6a7d6b96358d08c2b59d8c05f812f15551c38239317c09d45f185d922"
+    },
+    {
+      "key": "archer-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/archer-large.png",
+      "path": "assets/v03/units/archer-large-ink-03.webp",
+      "sourceCrop": [45, 44, 1247, 1211],
+      "width": 512,
+      "height": 512,
+      "sha256": "fcb2f72beb1dbfa884f3089c64e44fe73b6adc8a96ce48091bdc79401defbdd1"
+    },
+    {
+      "key": "strong-archer-small",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/strong-archer-small.png",
+      "path": "assets/v03/units/strong-archer-small-ink-03.webp",
+      "sourceCrop": [16, 10, 1254, 1243],
+      "width": 256,
+      "height": 256,
+      "sha256": "cdeb341f6e4ea5d67bcb9fab428358841f48008e8e69fe24940d54957deb5c37"
+    },
+    {
+      "key": "strong-archer-large",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/strong-archer-large.png",
+      "path": "assets/v03/units/strong-archer-large-ink-03.webp",
+      "sourceCrop": [21, 29, 1251, 1222],
+      "width": 512,
+      "height": 512,
+      "sha256": "e14020c6c32ce6d3f90d8277307c2cfaaee136f3db2432e2bb20bb685a3c8c3b"
+    },
+    {
+      "key": "boat-transport",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/boat-transport.png",
+      "path": "assets/v03/units/boat-transport-ink-03.webp",
+      "sourceCrop": [10, 158, 1244, 1125],
+      "width": 256,
+      "height": 256,
+      "sha256": "f7184c9e8968544e635f2210b41631e4e7d4ff6adce6884f80309218203cebf4"
+    },
+    {
+      "key": "warship",
+      "source": "docs/v0.3/assets/generated/units-readable-ink-03/warship.png",
+      "path": "assets/v03/units/warship-ink-03.webp",
+      "sourceCrop": [52, 203, 1227, 1081],
+      "width": 256,
+      "height": 256,
+      "sha256": "c3a9192f15c492ab1dadfbbb481d821d23ae0f3a272ac554137d9aa1ed8a4f31"
+    }
+  ]
+}

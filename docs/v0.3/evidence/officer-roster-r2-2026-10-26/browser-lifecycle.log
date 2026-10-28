@@ -1,0 +1,17 @@
+[WebServer] (node:53120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:42836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-zh (5.6s)
+  ok 2 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-zh (3.6s)
+  ok 3 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-zh (5.3s)
+  ok 4 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-zh (2.2s)
+  ok 5 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play divided-realm-190-en (3.2s)
+  ok 6 tests\e2e-v03\officer-lifecycle.spec.ts:20:5 › loads the complete R2 opening and continues play guandu-200-en (3.3s)
+  ok 7 tests\e2e-v03\officer-lifecycle.spec.ts:40:3 › annual appearance survives reload and displays a localized notice-en (5.1s)
+  ok 8 tests\e2e-v03\officer-lifecycle.spec.ts:81:3 › rejects an old roster save with a readable recovery message and preserves its data-en (2.0s)
+
+  8 passed (38.6s)

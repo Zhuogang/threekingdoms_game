@@ -1,0 +1,159 @@
+
+ RUN  v4.1.11 C:/Users/pengz/Documents/GitHub/threekingdoms_game
+
+ ❯ tests/v03/officer-lifecycle.integration.test.ts (19 tests | 2 failed) 3777ms
+     × reports only actual maturity gains at the equipment/stat limits (104 force) 58ms
+     × reports only actual maturity gains at the equipment/stat limits (105 force) 45ms
+ ❯ tests/v03/officer-expansion.review.test.ts (8 tests | 7 failed) 163ms
+     × rejects changing a new officer’s fixed troop type in divided-realm-190 46ms
+     × rejects changing a new officer’s fixed troop type in guandu-200 6ms
+     × rejects a deceased opening record retaining troops 5ms
+     × rejects a deceased opening record retaining wounded 7ms
+     × explains unmodeled opening houses without changing current affiliation (zh) 37ms
+     × explains unmodeled opening houses without changing current affiliation (en) 9ms
+     × reads live battle casualties, including a defeated pure-wounded unit, without mutating settlement records 33ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: save identity and life invariants > rejects changing a new officer’s fixed troop type in divided-realm-190
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: save identity and life invariants > rejects changing a new officer’s fixed troop type in guandu-200
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/v03/officer-expansion.review.test.ts:15:37
+     13|     const state = createV03Game('cao', 19, scenario);
+     14|     state.officers.find((officer) => officer.id === 'caohong')!.troopT…
+     15|     expect(validateV03State(state)).toBe(false);
+       |                                     ^
+     16|     expect(() => decodeV03Save(encodeV03Save(state))).toThrow();
+     17|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: save identity and life invariants > rejects a deceased opening record retaining troops
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: save identity and life invariants > rejects a deceased opening record retaining wounded
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/v03/officer-expansion.review.test.ts:21:37
+     19|     const state = createV03Game('cao', 19, 'guandu-200');
+     20|     state.officers.find((officer) => officer.id === 'gaoshun')![field]…
+     21|     expect(validateV03State(state)).toBe(false);
+       |                                     ^
+     22|   });
+     23|   it('still accepts a living pure-wounded new officer and legitimate c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: honest profile information > explains unmodeled opening houses without changing current affiliation (zh)
+AssertionError: expected '<link rel="preload" as="image" href="…' to contain '原势力未独立建模'
+
+Expected: "原势力未独立建模"
+Received: "<link rel="preload" as="image" href="/assets/v03/portraits/gongsunzan.webp"/><section class="v03-officer-profile" data-officer-id="gongsunzan" data-status="serving"><div class="v03-profile-hero"><span class="v03-officer-portrait " data-portrait-id="gongsunzan" aria-hidden="true"><span class="v03-portrait-fallback">公孙</span><img src="/assets/v03/portraits/gongsunzan.webp" alt="" width="256" height="256" loading="eager" decoding="async"/></span><div><h3>公孙瓒</h3><p>Gongsun Zan</p><span class="v03-officer-status">在职</span><p>姓氏: 公孙</p><p class="v03-muted">人物名册用于查阅；任官、编兵与出征仍从所属城池按正常权限办理。</p></div></div><dl class="v03-stat-grid"><div><dt>年龄（虚岁）</dt><dd>39</dd></div><div><dt>所属势力</dt><dd>曹操</dd></div><div><dt>当前位置</dt><dd>北平</dd></div><div><dt>基础兵种</dt><dd>骑兵</dd></div><div><dt>登场年份</dt><dd>184</dd></div><div><dt>楼船展示资格</dt><dd>无</dd></div></dl><h4>当前能力</h4><dl class="v03-stat-grid"><div><dt>武力</dt><dd>84</dd></div><div><dt>智力</dt><dd>68</dd></div><div><dt>健康兵</dt><dd>0</dd></div><div><dt>伤兵</dt><dd>0</dd></div><div><dt>武将经验</dt><dd>0</dd></div><div><dt>武将等级</dt><dd>0</dd></div><div><dt>忠诚</dt><dd>88</dd></div><div><dt>装备</dt><dd>—</dd></div></dl><details class="v03-profile-sources"><summary>年表依据</summary><p>生年: 152 · 游戏参考</p><p>年表参考卒年: 199</p><p>史料缺失时采用已标注的游戏参考；参考卒年只用于开局判断，不决定本局命运。</p><p>早年为郡吏并统幽州骑，取184；199年易京败亡，生年不详。 史料缺失的生年采用三国志11参考值，非史实断言。</p><ul><li><a href="https://zh.wikisource.org/zh-hans/三國志/卷08" target="_blank" rel="noreferrer">史料 1</a></li><li><a href="https://w.atwiki.jp/sangokushi11/pages/148.html" target="_blank" rel="noreferrer">游戏参考 2</a></li></ul></details></section>"
+
+ ❯ tests/v03/officer-expansion.review.test.ts:38:18
+     36|     officer.factionId = 'cao';
+     37|     const html = renderToStaticMarkup(createElement(OfficerProfile, { …
+     38|     expect(html).toContain(locale === 'zh' ? '原势力未独立建模' : 'Original ho…
+       |                  ^
+     39|     expect(html).toContain(locale === 'zh' ? '开局安排' : 'Opening arrange…
+     40|     expect(officerDossier(state, officer.id)!.runtime!.factionId).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: honest profile information > explains unmodeled opening houses without changing current affiliation (en)
+AssertionError: expected '<link rel="preload" as="image" href="…' to contain 'Original house is not modeled separat…'
+
+Expected: "Original house is not modeled separately"
+Received: "<link rel="preload" as="image" href="/assets/v03/portraits/gongsunzan.webp"/><section class="v03-officer-profile" data-officer-id="gongsunzan" data-status="serving"><div class="v03-profile-hero"><span class="v03-officer-portrait " data-portrait-id="gongsunzan" aria-hidden="true"><span class="v03-portrait-fallback">Gongsun</span><img src="/assets/v03/portraits/gongsunzan.webp" alt="" width="256" height="256" loading="eager" decoding="async"/></span><div><h3>Gongsun Zan</h3><p>公孙瓒</p><span class="v03-officer-status">Serving</span><p>Surname: Gongsun</p><p class="v03-muted">This directory is for inspection. Appointments, armies and marches retain normal city permissions.</p></div></div><dl class="v03-stat-grid"><div><dt>Age (nominal)</dt><dd>39</dd></div><div><dt>Faction</dt><dd>Cao Cao</dd></div><div><dt>Current location</dt><dd>Beiping</dd></div><div><dt>Base troop type</dt><dd>Cavalry</dd></div><div><dt>Appearance year</dt><dd>184</dd></div><div><dt>Tower-warship eligibility</dt><dd>No</dd></div></dl><h4>Current abilities</h4><dl class="v03-stat-grid"><div><dt>Force</dt><dd>84</dd></div><div><dt>Intellect</dt><dd>68</dd></div><div><dt>Healthy soldiers</dt><dd>0</dd></div><div><dt>Wounded</dt><dd>0</dd></div><div><dt>Officer XP</dt><dd>0</dd></div><div><dt>Officer level</dt><dd>0</dd></div><div><dt>Loyalty</dt><dd>88</dd></div><div><dt>Equipment</dt><dd>—</dd></div></dl><details class="v03-profile-sources"><summary>Timeline sources</summary><p>Born: 152 · Game reference</p><p>Reference death year: 199</p><p>Marked game references fill missing historical dates. Reference deaths affect openings only, never a running campaign.</p><ul><li><a href="https://zh.wikisource.org/zh-hans/三國志/卷08" target="_blank" rel="noreferrer">Historical source 1</a></li><li><a href="https://w.atwiki.jp/sangokushi11/pages/148.html" target="_blank" rel="noreferrer">Game reference 2</a></li></ul></details></section>"
+
+ ❯ tests/v03/officer-expansion.review.test.ts:38:18
+     36|     officer.factionId = 'cao';
+     37|     const html = renderToStaticMarkup(createElement(OfficerProfile, { …
+     38|     expect(html).toContain(locale === 'zh' ? '原势力未独立建模' : 'Original ho…
+       |                  ^
+     39|     expect(html).toContain(locale === 'zh' ? '开局安排' : 'Opening arrange…
+     40|     expect(officerDossier(state, officer.id)!.runtime!.factionId).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/v03/officer-expansion.review.test.ts > officer expansion review: honest profile information > reads live battle casualties, including a defeated pure-wounded unit, without mutating settlement records
+AssertionError: expected '<link rel="preload" as="image" href="…' to match /Healthy soldiers<\/dt>…/dt><dd[^>]*>0<\
+
+- Expected:
+/Healthy soldiers<\/dt><dd[^>]*>0<\/dd>/
+
++ Received:
+"<link rel=\"preload\" as=\"image\" href=\"/assets/portraits/caocao.webp\"/><section class=\"v03-officer-profile\" data-officer-id=\"caocao\" data-status=\"serving\"><div class=\"v03-profile-hero\"><span class=\"v03-officer-portrait \" data-portrait-id=\"caocao\" aria-hidden=\"true\"><span class=\"v03-portrait-fallback\">Cao</span><img src=\"/assets/portraits/caocao.webp\" alt=\"\" width=\"256\" height=\"256\" loading=\"eager\" decoding=\"async\"/></span><div><h3>Cao Cao</h3><p>曹操</p><span class=\"v03-officer-status\">Serving</span><p>Surname: Cao</p><p class=\"v03-muted\">This directory is for inspection. Appointments, armies and marches retain normal city permissions.</p></div></div><dl class=\"v03-stat-grid\"><div><dt>Age (nominal)</dt><dd>36</dd></div><div><dt>Faction</dt><dd>Cao Cao</dd></div><div><dt>Current location</dt><dd>In battle</dd></div><div><dt>Base troop type</dt><dd>Cavalry</dd></div><div><dt>Appearance year</dt><dd>174</dd></div><div><dt>Tower-warship eligibility</dt><dd>No</dd></div></dl><h4>Current abilities</h4><dl class=\"v03-stat-grid\"><div><dt>Force</dt><dd>82</dd></div><div><dt>Intellect</dt><dd>94</dd></div><div><dt>Healthy soldiers</dt><dd>700</dd></div><div><dt>Wounded</dt><dd>0</dd></div><div><dt>Officer XP</dt><dd>0</dd></div><div><dt>Officer level</dt><dd>0</dd></div><div><dt>Loyalty</dt><dd>88</dd></div><div><dt>Equipment</dt><dd>—</dd></div></dl><details class=\"v03-profile-sources\"><summary>Timeline sources</summary><p>Born: 155</p><p>Reference death year: 220</p><p>Marked game references fill missing historical dates. Reference deaths affect openings only, never a running campaign.</p><ul><li><a href=\"https://zh.wikisource.org/zh-hans/三國志/卷01\" target=\"_blank\" rel=\"noreferrer\">Historical source 1</a></li></ul></details></section>"
+
+ ❯ tests/v03/officer-expansion.review.test.ts:51:18
+     49|     const before = structuredClone(state);
+     50|     const html = renderToStaticMarkup(createElement(OfficerProfile, { …
+     51|     expect(html).toMatch(/Healthy soldiers<\/dt><dd[^>]*>0<\/dd>/);
+       |                  ^
+     52|     expect(html).toMatch(new RegExp('Wounded<\\/dt><dd[^>]*>' + unit.w…
+     53|     expect(officer.troops).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/v03/officer-lifecycle.integration.test.ts > R2 adulthood retains actual training and equipment > reports only actual maturity gains at the equipment/stat limits (104 force)
+AssertionError: expected { forceGain: 3, intellectGain: 2 } to match object { forceGain: 1, intellectGain: +0 }
+
+- Expected
++ Received
+
+  {
+-   "forceGain": 1,
+-   "intellectGain": 0,
++   "forceGain": 3,
++   "intellectGain": 2,
+  }
+
+ ❯ tests/v03/officer-lifecycle.integration.test.ts:297:45
+    295|     const after = advanceV03(state, 1).state;
+    296|     const event = after.events.find((entry) => entry.detail.includes('…
+    297|     expect(JSON.parse(event.detail).values).toMatchObject({ forceGain:…
+       |                                             ^
+    298|     expect(get(after, 'sunce').force).toBe(105);
+    299|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/v03/officer-lifecycle.integration.test.ts > R2 adulthood retains actual training and equipment > reports only actual maturity gains at the equipment/stat limits (105 force)
+AssertionError: expected { forceGain: 3, intellectGain: 2 } to match object { forceGain: +0, intellectGain: +0 }
+
+- Expected
++ Received
+
+  {
+-   "forceGain": 0,
+-   "intellectGain": 0,
++   "forceGain": 3,
++   "intellectGain": 2,
+  }
+
+ ❯ tests/v03/officer-lifecycle.integration.test.ts:297:45
+    295|     const after = advanceV03(state, 1).state;
+    296|     const event = after.events.find((entry) => entry.detail.includes('…
+    297|     expect(JSON.parse(event.detail).values).toMatchObject({ forceGain:…
+       |                                             ^
+    298|     expect(get(after, 'sunce').force).toBe(105);
+    299|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  9 failed | 18 passed (27)
+   Start at  22:24:21
+   Duration  8.58s (transform 2.30s, setup 0ms, import 3.47s, tests 3.94s, environment 0ms)
