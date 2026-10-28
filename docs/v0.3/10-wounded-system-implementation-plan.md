@@ -1,5 +1,7 @@
 # 伤兵机制实施计划
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 日期：2026-10-26。实现基线：`3a53501`。规则来源：[伤兵 撤退 被俘与恢复设计草案](09-wounded-retreat-and-captivity-design.md)，包括其玩家体验与本轮设计、技术复核。
 
 **状态：W0–W6 已实现，W7 自动验证与三组机器短回放已完成；实施后边界复核已完成，长期人工平衡试玩待执行。** 当前全量 465 项单元／集成通过，本轮 12 个相关中英浏览器用例通过；构建、UI、格式和文档链接检查通过。首轮的 103 个浏览器用例分批结果、截图与试玩存档保留在[首轮记录](evidence/wounded-system-2026-10-26/README.md)，最新修复与验证见[实施后复核](evidence/wounded-review-2026-10-26.md)。

@@ -5,6 +5,7 @@ import { localizedEvent } from '../shared/app-copy-2';
 import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 import { BattleOutcome } from './BattleOutcome';
+import { pendingCityGovernance } from '../../governance/conquest';
 
 export function ReportsInbox({ context }: { context: GameplayContext }) {
   const { state, locale, dispatch, setShowReports } = context;
@@ -45,12 +46,32 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
       >
         <header>
           <h2>
-            {message(locale, 'ui.reports.114')} ({reports.length})
+            {message(locale, 'ui.reports.114')} (
+            {new Set([...reports, ...pendingCityGovernance(state)].map((event) => event.id)).size})
           </h2>
           <Button aria-label={context.t.close} onClick={() => setShowReports(false)}>
             ×
           </Button>
         </header>
+        {pendingCityGovernance(state).map((event) => (
+          <article className="v03-governance-pending" key={event.id}>
+            <strong>
+              {locale === 'zh' ? '新城治理待办' : 'City governance pending'} ·{' '}
+              {displayName(
+                state.cities.find((city) => city.id === event.battleOutcome!.cityId)!,
+                locale,
+              )}
+            </strong>
+            <Button
+              onClick={() => {
+                context.setCityGovernanceEventId(event.id);
+                setShowReports(false);
+              }}
+            >
+              {locale === 'zh' ? '安排治理' : 'Choose governance'}
+            </Button>
+          </article>
+        ))}
         {reports.map((event) => {
           const copy = localizedEvent(event, state, locale);
           return (

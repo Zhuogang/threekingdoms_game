@@ -80,6 +80,13 @@ export function getV03AllianceChance(state: V03GameState, targetFactionId: strin
   return Math.max(5, Math.min(90, chance));
 }
 
+export function hasProposedV03AllianceThisMonth(
+  state: V03GameState,
+  targetFactionId: string,
+): boolean {
+  return state.lastAllianceProposalMonthByTarget?.[targetFactionId] === state.monthIndex;
+}
+
 export function proposeV03Alliance(
   state: V03GameState,
   targetFactionId: string,
@@ -93,8 +100,15 @@ export function proposeV03Alliance(
     isV03AllianceActive(state.alliances, state.playerFactionId, targetFactionId, state.monthIndex)
   )
     return { ok: false, state, error: 'An alliance with this ruler is already active.' };
+  if (hasProposedV03AllianceThisMonth(state, targetFactionId))
+    return {
+      ok: false,
+      state,
+      error: 'You can propose an alliance to this faction again next month.',
+    };
 
   const next = clone(state);
+  (next.lastAllianceProposalMonthByTarget ??= {})[targetFactionId] = next.monthIndex;
   const chance = getV03AllianceChance(next, targetFactionId);
   const accepted = nextRandom(next, 100) < chance;
   if (accepted) {
@@ -169,6 +183,7 @@ export function breakV03Alliance(
       ),
   );
   next.lastAllianceBreakMonthByFaction[next.playerFactionId] = next.monthIndex;
+  (next.lastAllianceProposalMonthByTarget ??= {})[targetFactionId] = next.monthIndex;
   addDiplomacyEvent(next, targetFactionId, 'Alliance broken', 'broken');
   next.revision++;
   return { ok: true, state: next, message: 'The alliance has ended.' };

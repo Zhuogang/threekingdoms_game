@@ -1,5 +1,7 @@
 # 武将扩容设计与实施计划
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 2026-10-26。状态：R1–R5 自动化实现验收已完成。98 人数据、生命周期、招募及编兵已接通，R4 新增统一头像、98 人名册和人物资料界面，R5 完成各势力集成回归。190 年创建 69 位在世人物，200 年创建 66 位在世人物及 15 条死亡记录；未登场者只在资料名册中展示，不创建世界对象。保留两个剧本各自六势力，局内命运不受参考卒年强制决定。逐人数据见[人物年表及开局配置](13-officer-roster-data.md)，证据见 [R5 验证记录](evidence/officer-roster-r5-2026-10-26/README.md)。长期平衡与真实低端机试玩仍待人工验收。
 
 目标是把现有头像名册对应的 98 位人物完整纳入人物库。每个剧本只启用当年在世、达到登场条件的人，其余进入待登场安排。人物库覆盖 98 人，不代表 190 年或 200 年开局同时有 98 位可用武将。

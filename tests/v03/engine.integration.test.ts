@@ -687,9 +687,9 @@ describe('v0.3 strategic engine integration', () => {
     expect(advanced.daysAdvanced).toBe(1);
     expect(advanced.state.battles.some((entry) => entry.active)).toBe(true);
     const settledCity = advanced.state.cities.find((entry) => entry.id === city.id)!;
-    expect(settledCity.farming).toBe(1);
+    expect(settledCity.farming).toBe(40);
     expect(settledCity.workMonthIndex).toBe(1);
-    expect(settledCity.workPointsUsed).toBe(1);
+    expect(settledCity.workPointsUsed).toBe(2);
   });
 
   it('does not deliver requisition cargo to a city captured before arrival', () => {

@@ -1,18 +1,14 @@
 import type { V03Command, V03GameState } from '../types';
 import { isCityCommitted } from '../governance/commitments';
 import {
-  applyV03CityAction,
-  cityWorkQuota,
-  cityWorkUsedThisMonth,
-} from '../governance/city-actions';
-import {
   detachWoundedToCity,
   personnelCount,
   retainPersonnel,
   splitPersonnel,
   transferDayRecord,
+  transferRationRecord,
 } from './personnel';
-import { applyTroopLoss, TROOP_TYPES } from './troop-experience';
+import { applyTroopLoss, mergeTroopPools, setReservePool, TROOP_TYPES } from './troop-experience';
 
 export function applyCityPersonnelCommand(
   state: V03GameState,
@@ -40,42 +36,66 @@ export function applyCityPersonnelCommand(
         entry.location.kind === 'city' &&
         entry.location.cityId === city.id,
     );
-    if (!officer || personnelCount(officer) === 0)
+    const hasReturningSource = state.troopSources.some(
+      (source) =>
+        source.cityId === city.id &&
+        source.factionId === city.factionId &&
+        source.sourceOfficerId === command.officerId &&
+        source.autoReturn,
+    );
+    if (!officer || (personnelCount(officer) === 0 && !hasReturningSource))
       return fail('Choose a stationed officer with personnel.');
-    if (city.id !== state.playerCapitalCityId)
-      return fail('Only your directly governed capital accepts city work orders.');
-    if (officer.reorganizationDays === 0) {
-      const result = applyV03CityAction(state, {
-        cityId: city.id,
-        action: 'assign-troops',
-        officerId: officer.id,
-        amount: 0,
-      });
-      if (!result.ok) return result;
-      const source = detachWoundedToCity(result.state, officer.id);
-      if (source) source.autoReturn = false;
-      return result;
-    }
-    if (cityWorkUsedThisMonth(state, city) >= cityWorkQuota(state, city))
-      return fail('No city work points remain.');
+    const cancelAutoReturn = (next: V03GameState) => {
+      for (const source of next.troopSources)
+        if (
+          source.cityId === city.id &&
+          source.factionId === city.factionId &&
+          source.sourceOfficerId === officer.id
+        )
+          source.autoReturn = false;
+    };
     const next = structuredClone(state),
       target = next.officers.find((entry) => entry.id === officer.id)!;
     const targetCity = next.cities.find((entry) => entry.id === city.id)!;
-    const split = splitPersonnel(target, target.troops, target.wounded);
-    const id = `troop-source-${next.nextId++}`;
-    transferDayRecord(next, `officer:${target.id}`, `source:${id}`, target.troops, target.wounded);
-    next.troopSources.push({
-      ...split.taken,
-      id,
-      cityId: city.id,
-      factionId: city.factionId,
-      sourceOfficerId: target.id,
-      autoReturn: false,
-      troopType: target.troopType,
-    });
-    Object.assign(target, split.remaining);
-    targetCity.workPointsUsed = cityWorkUsedThisMonth(state, city) + 1;
-    targetCity.workMonthIndex = next.monthIndex;
+    if (target.reorganizationDays === 0) {
+      const { remaining, taken } = splitPersonnel(target, target.troops);
+      transferRationRecord(
+        next,
+        `officer:${target.id}`,
+        `reserve:${city.id}:${target.troopType}`,
+        target.troops,
+        0,
+      );
+      targetCity.garrisonTroops -= target.troops;
+      setReservePool(
+        targetCity,
+        target.troopType,
+        mergeTroopPools(targetCity.reservePools[target.troopType], taken),
+      );
+      Object.assign(target, remaining);
+      detachWoundedToCity(next, target.id);
+    } else if (personnelCount(target) > 0) {
+      const split = splitPersonnel(target, target.troops, target.wounded);
+      const id = `troop-source-${next.nextId++}`;
+      transferDayRecord(
+        next,
+        `officer:${target.id}`,
+        `source:${id}`,
+        target.troops,
+        target.wounded,
+      );
+      next.troopSources.push({
+        ...split.taken,
+        id,
+        cityId: city.id,
+        factionId: city.factionId,
+        sourceOfficerId: target.id,
+        autoReturn: false,
+        troopType: target.troopType,
+      });
+      Object.assign(target, split.remaining);
+    }
+    cancelAutoReturn(next);
     next.revision++;
     return { ok: true, state: next };
   }

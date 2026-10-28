@@ -110,10 +110,23 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
     setFeedback('');
     setState(result.state);
+    if (command.type === 'advance' || command.type === 'completeBattleDay')
+      context.setBattleActionMenu(null);
     if (command.type === 'advance') context.setMarchNotice(null);
     if (command.type === 'battleAction') {
       const battle = result.state.battles.find((entry) => entry.id === command.battleId);
       const acted = battle?.battleData.units.find((unit) => unit.id === command.action.unitId);
+      context.setBattleActionMenu(
+        command.action.type === 'move' &&
+          battle?.active &&
+          !battle.autoCommand &&
+          !battle.playerDayComplete &&
+          acted &&
+          !acted.acted &&
+          acted.side === battle.battleData.playerSide
+          ? { battleId: battle.id, unitId: acted.id, day: battle.battleData.day }
+          : null,
+      );
       if (acted?.acted) {
         const nextUnit = battle?.battleData.units.find(
           (unit) => unit.side === battle.battleData.playerSide && unit.troops > 0 && !unit.acted,
@@ -155,6 +168,9 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     return result;
   };
   const replaceCampaign = (fresh: V03GameState) => {
+    context.setBattleActionMenu(null);
+    context.setCityGovernanceEventId(null);
+    context.setDeferredGovernanceIds([]);
     context.setCampaignWindowOpen(false);
     context.setMarchNotice(null);
     setShowReports(false);
@@ -376,12 +392,14 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
                 campaign: '行军',
                 requisition: '资源调运',
                 appointment: '太守赴任',
+                transfer: '武将调动',
                 return: '返程队伍',
               }[journey.kind]
             : {
                 campaign: 'Campaign',
                 requisition: 'Supply transport',
                 appointment: 'Governor transfer',
+                transfer: 'Officer transfer',
                 return: 'Returning party',
               }[journey.kind];
         const status =

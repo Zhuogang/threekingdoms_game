@@ -14,6 +14,7 @@ import type { GameplayContext } from '../hooks/gameplayView';
 import type { BattleDisplay } from '../hooks/useBattleDisplay';
 import { BattleDisplayControls } from '../panels/BattleDisplayControls';
 import { BattleActionBar } from '../panels/BattleActionBar';
+import { BattleUnitMenu } from '../panels/BattleUnitMenu';
 
 export function BattleScreen({
   context,
@@ -143,6 +144,10 @@ export function BattleScreen({
             />
           </div>
         ) : null}
+        <BattleUnitMenu
+          key={`${context.battleActionMenu?.battleId}:${context.battleActionMenu?.unitId}:${context.battleActionMenu?.day}`}
+          context={context}
+        />
       </div>
       <div className="v03-battle-camera-controls" role="group" aria-label={t.battleMapCamera}>
         <Button type="button" aria-label={t.battleMapZoomOut} onClick={() => zoomBattleMap(0.8)}>

@@ -48,13 +48,15 @@ export function ConfirmDialog({
   onConfirm,
   body,
   children,
+  confirmDisabled = false,
 }: {
   title: string;
   detail: string;
   cancelLabel: string;
   confirmLabel: string;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | boolean;
+  confirmDisabled?: boolean;
   body?: ReactNode;
   children?: ReactNode;
 }) {
@@ -79,8 +81,9 @@ export function ConfirmDialog({
             onCancel();
           }
           if (event.key !== 'Tab') return;
-          const controls =
-            dialog.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+          const controls = dialog.current?.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), select:not(:disabled), input:not(:disabled)',
+          );
           if (!controls?.length) return;
           const first = controls[0]!;
           const last = controls[controls.length - 1]!;
@@ -104,10 +107,11 @@ export function ConfirmDialog({
           <Button
             type="button"
             className="v03-primary"
+            disabled={confirmDisabled}
             onClick={() => {
               if (!submitted.current) {
                 submitted.current = true;
-                onConfirm();
+                if (onConfirm() === false) submitted.current = false;
               }
             }}
           >

@@ -1,5 +1,18 @@
 # v0.3 implementation and acceptance status
 
+## Current candidate · October 28, 2026
+
+Checked against the working tree, including the recent noncombat and battle-flow changes. The earlier milestone sections below retain their original dates and test counts.
+
+- Implemented: fixed two-point ten-day city budgets; free preparation actions; group feast/reward/equipment; retained-contingent governor handovers and capital synchronization; conquest governance prompts; ordinary multi-officer transfers; ruler-captive recruitment consequences and current-ruler faction names; city overview statistics; battle action menus and multi-battle day recovery.
+- Fresh documentation-pass check: **820/820 unit/integration tests passed** with one worker. [Audit and commands](documentation-audit-2026-10-28.md).
+- Recent focused implementation browser checks cover six ordinary-transfer cases, two governor-transfer cases and four multi-battle recovery cases across EN/ZH. These were targeted runs, not a fresh full browser/production/hardware certification. Build, UI lint and changed-file formatting passed during implementation.
+- Still open: long player campaigns, real low-end hardware testing and final art approval. Push/PR/remote CI remain deferred.
+
+[Current rules](player-guide.md) · [Release notes](release-notes.md) · [Open work](../next-steps.md)
+
+## Dated implementation milestones
+
 ## 2026-10-26 武将扩容整体复核：完成
 
 复核 R1–R5 的数据、生命周期、归属、招募编兵、头像资料与存储及战斗衔接。已补齐固定基础兵种和已故记录零兵员的保存校验；资料页说明未建模的开局势力，不把甘宁、刘表的后续关系倒推到 190 年初，并标注推算、争议、游戏参考及玩法近似年份。战中资料改读战场当前健康兵／伤兵，合编时明确标注编队合计，查阅不修改战后分配记录；成年成长报告按实际增量显示能力上限处的 0／部分成长。
@@ -80,7 +93,7 @@ R1–R4 已完成，R5 尚未开始。新增仅含 98 人身份与 128／256px �
 
 伤兵机制 W0–W6 已实现，W7 自动验证及三组机器短回放完成；实施后边界复核也已完成。整编绕过、微量断粮、日末击溃、俘虏粮债、等待改道、中立供粮及快照关联已修复，新增 10 个回归用例。当前全量 465 项单元／集成、本轮 12 项相关中英浏览器、构建、UI、格式和本地文件链接检查通过。首轮 103 个浏览器分批证据与试玩存档保留在[首轮记录](evidence/wounded-system-2026-10-26/README.md)，最新修复和范围见[复核记录](evidence/wounded-review-2026-10-26.md)及[分阶段进度](10-wounded-system-implementation-plan.md)。新存档仍为 `personnelSchema: 1`，旧档可原文导出，不迁移。设计参数未改，长期人工平衡和真实低端机验收仍待执行；下文保留历史版本证据。
 
-Documentation checked October 22, 2026. Active branch: `hegemony_of_the_three_kindoms_v0.3`; implementation commit: `1e02e65`. **Core implementation, F01–F08 and RV01–RV10 are complete with recorded automated evidence.** This is a local playable candidate; human acceptance is not complete. [Features](release-notes.md) · [How to play](player-guide.md) · [Open work](../next-steps.md).
+The scope below is maintained against the October 28 working tree. Dated validation sections refer to their original candidates. **Core implementation, F01–F08 and RV01–RV10 are complete with recorded automated evidence.** This is a local playable candidate; human acceptance is not complete. [Features](release-notes.md) · [How to play](player-guide.md) · [Open work](../next-steps.md).
 
 The October 23–25 battlefield redesign (P0–P7) is tracked in the [battlefield canvas plan](08-battlefield-canvas-plan.md). The subsequent October 22 playability/UI implementation is tracked in the [new implementation ledger](playability-implementation.md), including current automated results and unchanged human gates. The validation counts below describe the earlier RV candidate.
 
@@ -90,10 +103,10 @@ The October 23–25 battlefield redesign (P0–P7) is tracked in the [battlefiel
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | G Geography           | 24 anchors, 42 estimated links, distance/profile/ETA labels, multi-hop travel and anchor-sensitivity report.                                                                                 | Approximate anchors/roads/generalized rivers; not historical GIS reconstruction.                                                                            |
 | L Calendar/logistics  | Daily clock/cursor, fixed-point food, service accounting, reservations, cargo delivery, arrivals/return and month boundaries.                                                                | New long-session edge cases need player evidence; do not extrapolate focused tests to every route-failure sequence.                                         |
-| V Governors           | Direct capital, monthly autonomous work, boundary appointments, troop-free travel/handover, plans/answers/recall and shared work/stock eligibility.                                          | Development now uses a shared 500-point cap; seeded and loaded values retain their scale. No multi-city coordination or stochastic future-budget simulator. |
-| B Battles             | 15 painted 48×32 battlefields by route/direction, six types/tactics, ZOC/morale, common water, forecasts/AI, saved submissions and aftermath.                                                | Human battle feel and campaign pacing are not certified by automated passes.                                                                                |
+| V Governors           | Direct capital, two-point ten-day work budgets, retained-contingent handovers, ordinary officer transfers, plans/answers and protected resources.                                            | Development now uses a shared 500-point cap; seeded and loaded values retain their scale. No multi-city coordination or stochastic future-budget simulator. |
+| B Battles             | 15 painted 48×32 battlefields by route/direction, three base troop types and six tactics, ZOC/morale, common water, forecasts/AI, saved submissions and aftermath.                           | Human battle feel and campaign pacing are not certified by automated passes.                                                                                |
 | R UI/rendering        | Top-down React/SVG battlefield with portrait tokens, camera/minimap controls, stable fitting, exact living-unit counts, full inboxes, bilingual feedback/Wiki, conditions and confirmations. | Real low-end hardware, broader manual readability and long-session usability remain open.                                                                   |
-| A Artwork             | Seven active generated definitions and one inactive paper alternative, documented source/hash/anchors and native fallback.                                                                   | All draft. Dedicated full figure art covers infantry/archer/cavalry; the other types use native identities. Revisions/approval are open.                    |
+| A Artwork             | Painted atlas, city art, 15 battlefields, unit/vessel sprites and officer portraits with provenance and native fallbacks.                                                                    | Final player art approval and targeted revisions remain open; see the current art manifests rather than earlier asset counts.                               |
 | I Integration/storage | New entry/save namespace, strict associations/limits, autosave/export/import recovery, Campaign menu/Resume and safe transient reset.                                                        | Very long human campaigns still need field exposure.                                                                                                        |
 | Q Validation          | Unit/integration/browser/production/performance checks, diagnostics and preserved evidence.                                                                                                  | Four user sessions, real low-end test and art acceptance remain outstanding; remote CI deferred.                                                            |
 
@@ -101,15 +114,15 @@ Detailed rules: [numbered system references](README.md#system-references). Full 
 
 ## Closed repairs
 
-| Milestone | Completed scope                                                                                                                                     |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F01–F03   | Small-party fixed-point rations; arrival-only, once-only loot; undelivered full-store cargo accounting.                                             |
-| F04–F06   | Stop at event/month boundaries, battle-created returns move next day, unique officer/militia formation identities.                                  |
-| F07–F08   | Reject nonparticipant battle commands; validate save cross-references and unique active associations.                                               |
-| RV01–RV02 | Participant-only clock/UI battle gating; stable main frames, compact minimaps, Fit geometry and Resume observer.                                    |
-| RV03–RV05 | Campaign recovery/import/save feedback; complete player inbox/report backlog; troop-free incumbent transfers and correct appointment states/labels. |
-| RV06–RV08 | Living-unit selection/counts, economy/stat/help/availability, bilingual routine results/rejections/logs/formation names.                            |
-| RV09–RV10 | Shared-rule tactical condition inspection and cancelable, focus-safe whole-battle withdrawal.                                                       |
+| Milestone | Completed scope                                                                                                                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F01–F03   | Small-party fixed-point rations; arrival-only, once-only loot; undelivered full-store cargo accounting.                                                                                     |
+| F04–F06   | Stop at event/month boundaries, battle-created returns move next day, unique officer/militia formation identities.                                                                          |
+| F07–F08   | Reject nonparticipant battle commands; validate save cross-references and unique active associations.                                                                                       |
+| RV01–RV02 | Participant-only clock/UI battle gating; stable main frames, compact minimaps, Fit geometry and Resume observer.                                                                            |
+| RV03–RV05 | Campaign recovery/import/save feedback; complete player inbox/report backlog; incumbent-transfer discovery and correct appointment states/labels; later changes allow retained contingents. |
+| RV06–RV08 | Living-unit selection/counts, economy/stat/help/availability, bilingual routine results/rejections/logs/formation names.                                                                    |
+| RV09–RV10 | Shared-rule tactical condition inspection and cancelable, focus-safe whole-battle withdrawal.                                                                                               |
 
 [RV completion ledger](playability-review-and-todo.md#rv-completion-ledger) records exact criteria and ownership. The [initial audit of 33ad2fc](history/implementation-audit-33ad2fc.md) and pre-repair screenshot/clock reproductions are historical records. They must not be presented as current blockers.
 

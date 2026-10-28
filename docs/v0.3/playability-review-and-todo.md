@@ -1,5 +1,7 @@
 # v0.3 playability review and scoped to-do list
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 Originally reviewed October 21, 2026 against `01e65ef` on branch `v0.3`; proposed tasks were saved in `91c9623`. **RV01–RV10 are now implemented in the local candidate.** The original findings and acceptance cards below remain as the historical baseline; their line references describe the pre-repair source. Current implementation and acceptance evidence are recorded in the completion ledger below.
 
 The follow-up repairs remove the reproduced campaign clock lock and map sizing failures, and expose existing campaign and battle mechanics more clearly. They preserve the core systems and original F01–F08 fixes. Human acceptance remains separate from automated completion.

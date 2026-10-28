@@ -1,6 +1,6 @@
 # Documentation
 
-Updated October 22, 2026. **v0.3 is the active game**, on branch `hegemony_of_the_three_kindoms_v0.3`. Implemented source: `1e02e65`. This documentation pass changes no game code or assets.
+Updated October 28, 2026 against the current working tree. **v0.3 is the active game.** This pass updates documentation; dated implementation/evidence records retain their original source IDs and measurements.
 
 ## For players
 
@@ -19,12 +19,12 @@ Start with the [developer guide](v0.3/development.md), then the [decisions/contr
 
 ## Evidence, art and history
 
-- [RV validation and runtime screenshots](v0.3/evidence/rv-implementation-2026-10-21/README.md): latest recorded implementation checks.
+- [Current implementation and validation](v0.3/implementation-status.md): latest recorded scope and checks. [RV screenshots and checks](v0.3/evidence/rv-implementation-2026-10-21/README.md) describe the October 21 candidate.
 - [Campaign diagnostic evidence](v0.3/evidence/README.md): generation-time fingerprints, rejected balance trials and the accepted diagnostic miss.
 - [Art status and revision workflow](v0.3/06-imagegen-and-artwork.md), [manifest](v0.3/assets/manifest.json), [provenance](v0.3/assets/provenance.md): integrated draft assets and review boundaries.
 - [Shared/legacy asset records](assets/README.md): portrait provenance and older visual work, with their version scope.
 - [v0.3 history](v0.3/history/README.md): initial audit, original design briefs and superseded planning snapshots. Findings there are dated observations, not automatically current defects.
 - [v0.1/v0.2 archive](archive/README.md): previous rules, implementation guides, tests, plans and version-specific deferrals.
-- [Documentation audit](v0.3/documentation-audit-2026-10-22.md): this reorganization, source checks and validation boundaries.
+- [October 28 documentation audit](v0.3/documentation-audit-2026-10-28.md): current rules, cleanup and link checks. The [October 22 audit](v0.3/documentation-audit-2026-10-22.md) retains the earlier reorganization.
 
 Historical evidence JSON, screenshots, hashes and prompt/source records are retained in place. `ai-diagnostics/` and `validation-evidence/` are old measurement collections; v0.3 evidence lives under `v0.3/evidence/`. New working output normally belongs in ignored `.artifacts/`.

@@ -346,6 +346,7 @@ export function settleBattlePersonnel(
       (officer) => officer.location.kind === 'captured' && officer.location.cityId === city.id,
     )) {
       if (prisoner.factionId === city.factionId) {
+        if (prisoner.capturedRulerFactionId) prisoner.capturedRulerFactionId = null;
         prisoner.location = { kind: 'city', cityId: city.id };
         if (prisoner.reorganizationDays === 0) city.garrisonTroops += prisoner.troops;
       } else if (prisoner.location.kind === 'captured') delete prisoner.location.holderFactionId;

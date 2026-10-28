@@ -1,4 +1,5 @@
 import { reconcileV03Rulers } from '../engine';
+import { capturedRulerFaction } from '../campaign/prisoners';
 import { validateOfficerRosterState } from '../campaign/officer-lifecycle';
 import { OFFICER_ROSTER_VERSION } from '../content/officer-roster-setups';
 import { z } from 'zod';
@@ -213,6 +214,7 @@ const city = z
     governanceMode: z.enum(['ruler', 'governor', 'steward']),
     plunderCooldownUntilDay: nonnegative.optional(),
     workMonthIndex: nonnegative.optional(),
+    workPeriodIndex: nonnegative.optional(),
     workPointsUsed: safeInt.min(0).max(3).optional(),
     autoSearchesThisMonth: safeInt.min(0).max(1).optional(),
     autoAssignmentsThisMonth: safeInt.min(0).max(1).optional(),
@@ -244,12 +246,13 @@ const officer = z
     governorOfCityId: id.nullable(),
     alive: z.boolean(),
     prisonerActionMonth: nonnegative.optional(),
+    capturedRulerFactionId: id.nullable().optional(),
   })
   .strict();
 const journey = z
   .object({
     id,
-    kind: z.enum(['requisition', 'campaign', 'appointment', 'return']),
+    kind: z.enum(['requisition', 'campaign', 'appointment', 'transfer', 'return']),
     intent: intent.optional(),
     returnRequested: z.boolean().optional(),
     executionId: id,
@@ -546,6 +549,7 @@ const stateSchema = z
     coalitionInvitations: z.array(coalitionInvitation).max(100),
     firedMonthlyEventIds: z.array(id).max(100),
     lastAllianceBreakMonthByFaction: z.record(id, nonnegative),
+    lastAllianceProposalMonthByTarget: z.record(id, nonnegative).optional(),
     hegemon: z.object({ factionId: id.nullable(), months: safeInt.min(0).max(12) }).strict(),
     nextId: nonnegative,
     phase: z.enum(['planning', 'battle', 'finished']),
@@ -643,6 +647,12 @@ export function validateV03State(value: unknown): value is V03GameState {
     Object.entries(state.lastAllianceBreakMonthByFaction).some(
       ([factionId, month]) => !factionIds.has(factionId) || month > state.monthIndex,
     ) ||
+    Object.entries(state.lastAllianceProposalMonthByTarget ?? {}).some(
+      ([factionId, month]) =>
+        !factionIds.has(factionId) ||
+        factionId === state.playerFactionId ||
+        month > state.monthIndex,
+    ) ||
     (state.hegemon.factionId === null) !== (state.hegemon.months === 0)
   )
     return false;
@@ -678,8 +688,16 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
     if (
-      (entry.autoSearchesThisMonth ?? 0) + (entry.autoAssignmentsThisMonth ?? 0) >
-      (entry.workPointsUsed ?? 0)
+      entry.workPeriodIndex !== undefined &&
+      (entry.workMonthIndex === undefined ||
+        entry.workPeriodIndex > Math.floor(state.absoluteDay / 10) ||
+        Math.floor(entry.workPeriodIndex / 3) !== entry.workMonthIndex)
+    )
+      return false;
+    // Talent limits remain monthly even when the ten-day work budget refreshes.
+    if (
+      ((entry.autoSearchesThisMonth ?? 0) > 0 || (entry.autoAssignmentsThisMonth ?? 0) > 0) &&
+      entry.workMonthIndex === undefined
     )
       return false;
     // Work already spent in this month does not become invalid if officers
@@ -731,6 +749,14 @@ export function validateV03State(value: unknown): value is V03GameState {
     )
       return false;
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
+    if (
+      entry.capturedRulerFactionId != null &&
+      (!factionIds.has(entry.capturedRulerFactionId) ||
+        entry.capturedRulerFactionId !== entry.factionId ||
+        !entry.alive ||
+        entry.location.kind !== 'captured')
+    )
+      return false;
     if (entry.governorOfCityId !== null && !cityIds.has(entry.governorOfCityId)) return false;
     if (entry.location.kind === 'city' && !cityIds.has(entry.location.cityId)) return false;
     if (entry.location.kind === 'journey' && !journeyIds.has(entry.location.journeyId))
@@ -1276,6 +1302,11 @@ function assertSaveSize(payload: string): void {
  */
 function compactV03History(source: V03GameState): V03GameState {
   const state = structuredClone(source);
+  for (const officer of state.officers) {
+    if (officer.capturedRulerFactionId !== undefined) continue;
+    const factionId = capturedRulerFaction(state, officer);
+    if (factionId) officer.capturedRulerFactionId = factionId;
+  }
   const keepRecentOrPinned = <T extends { id: string }>(
     entries: T[],
     recentCount: number,
@@ -1296,7 +1327,10 @@ function compactV03History(source: V03GameState): V03GameState {
   // Filter in place order so interleaved pending and acknowledged reports remain
   // chronological in the saved campaign timeline.
   const retainedEvents = state.events.filter(
-    (event) => !event.acknowledged || recentAcknowledgedEventIds.has(event.id),
+    (event) =>
+      !event.acknowledged ||
+      event.params?.governancePending === true ||
+      recentAcknowledgedEventIds.has(event.id),
   );
   const eventBattleIds = new Set(
     retainedEvents

@@ -1,6 +1,7 @@
 import {
   isCityCommitted,
   isOfficerCommitted,
+  isOfficerReservedForOrder,
   CITY_COMMITTED_REASON,
   OFFICER_COMMITTED_REASON,
 } from './commitments';
@@ -203,7 +204,7 @@ export function estimateRequisition(
 
 export function canAppointGovernor(
   state: Pick<V03GameState, 'playerFactionId' | 'playerCapitalCityId' | 'cities' | 'officers'> &
-    Partial<Pick<V03GameState, 'battles' | 'journeys'>>,
+    Partial<Pick<V03GameState, 'battles' | 'journeys' | 'directives' | 'requisitions'>>,
   cityId: string,
   officerId: string | null,
 ): { ok: boolean; reason: string | null; city?: V03City; officer?: V03Officer } {
@@ -244,7 +245,23 @@ export function canAppointGovernor(
       ok: false,
       reason: 'The officer must be available in a friendly city before taking office.',
     };
-  if (officer.troops + officer.wounded > 0)
-    return { ok: false, reason: 'An officer commanding troops cannot take office until relieved.' };
+  if (location.cityId !== cityId) {
+    if (isOfficerReservedForOrder({ directives: state.directives ?? [] }, officer.id))
+      return { ok: false, reason: 'This officer is reserved for an approved order.' };
+    const reserved = [...(state.requisitions ?? []), ...(state.directives ?? [])]
+      .filter(
+        (order) =>
+          order.sourceCityId === currentCity.id &&
+          order.journeyId === null &&
+          ['accepted', 'reserved', 'dispatched'].includes(order.status),
+      )
+      .reduce(
+        (sum, order) => sum + ('proposed' in order ? order.proposed.troops : order.proposedTroops),
+        0,
+      );
+    const departing = officer.reorganizationDays > 0 ? 0 : officer.troops;
+    if (currentCity.garrisonTroops - departing < reserved)
+      return { ok: false, reason: 'These soldiers are reserved for an approved order.' };
+  }
   return { ok: true, reason: null, city, officer };
 }

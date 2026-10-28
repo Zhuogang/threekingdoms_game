@@ -30,7 +30,7 @@ export function createV03Game(
     const leader = officers.find((officer) => officer.id === opening.leaderOfficerId)!;
     return {
       id: faction.id,
-      name: faction.name,
+      name: leader.name,
       chinese: leader.chinese,
       leaderOfficerId: leader.id,
       color: faction.color,
@@ -98,6 +98,7 @@ export function createV03Game(
       workPointsUsed: 0,
       autoSearchesThisMonth: 0,
       autoAssignmentsThisMonth: 0,
+      workPeriodIndex: 0,
       troopServiceDaysThisMonth: 0,
       cavalryServiceDaysThisMonth: 0,
       plunderCooldownUntilDay: 0,

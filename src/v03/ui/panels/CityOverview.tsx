@@ -87,9 +87,16 @@ export function CityOverview({
       <StatGrid
         values={[
           { label: t.garrison, value: troops.toLocaleString() },
+          {
+            label: message(locale, 'ui.reserve.soldiers.93'),
+            value: city.reserve.toLocaleString(),
+          },
           { label: t.food, value: (field?.defenderFood ?? city.food).toLocaleString() },
           { label: t.gold, value: city.gold.toLocaleString() },
-          { label: t.loyalty, value: `${city.loyalty}%` },
+          { label: message(locale, 'flow.farming'), value: city.farming.toLocaleString() },
+          { label: message(locale, 'flow.commerce'), value: city.commerce.toLocaleString() },
+          { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },
+          { label: message(locale, 'flow.publicOrder'), value: `${city.loyalty}%` },
         ]}
       />
       <div className="v03-city-actions-grid">

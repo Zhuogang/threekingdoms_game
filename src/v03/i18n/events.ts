@@ -18,6 +18,14 @@ export function formatEvent(
       : message(locale, 'ui.independent.10');
   };
   const p = event.params ?? {};
+  if (event.code === 'city.governance')
+    return {
+      title: locale === 'zh' ? '城市治理已安排' : 'City governance arranged',
+      detail:
+        locale === 'zh'
+          ? `${name(p.cityId, 'cities')}：${p.choice === 'self' ? '君主亲治，已切换君主本城。' : `已选择${name(p.officerId, 'officers')}任太守；跨城调任以到达和任职时间为准。`}`
+          : `${name(p.cityId, 'cities')}: ${p.choice === 'self' ? 'the ruler now governs personally; the ruler’s capital has moved.' : `${name(p.officerId, 'officers')} was chosen as governor; transfers take effect after arrival and the appointment date.`}`,
+    };
   if (event.code === 'officer.debut') {
     const names = String(p.officerIds ?? '')
       .split(',')
@@ -89,7 +97,7 @@ export function formatEvent(
     };
     return {
       title: message(locale, 'ui.prisoner.decision.173'),
-      detail: `${name(p.officerId, 'officers')} · ${p.accepted ? actions[String(p.action)] : message(locale, 'ui.refused.174')}`,
+      detail: `${name(p.officerId, 'officers')} · ${p.accepted ? actions[String(p.action)] : message(locale, 'ui.refused.174')}${p.accepted && p.rulerDefection ? (locale === 'zh' ? `。${name(p.formerFactionId, 'factions')}的其余在世武将忠诚下降 ${p.officerLoyaltyLoss} 点，所属城池民心下降 ${p.cityLoyaltyLoss} 点，最低为 0。` : `. ${name(p.formerFactionId, 'factions')}: remaining living officers lose ${p.officerLoyaltyLoss} loyalty and owned cities lose ${p.cityLoyaltyLoss} loyalty, floored at zero.`) : ''}`,
     };
   }
   if (event.code === 'battleReady') {

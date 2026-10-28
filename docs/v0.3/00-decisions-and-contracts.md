@@ -1,6 +1,6 @@
 # v0.3 decisions and implementation contracts
 
-Current reference checked October 22, 2026 against `1e02e65`. [Overview](README.md) · [Implementation status](implementation-status.md) · [Original decision/design record](history/design/00-decisions-and-contracts.md). The historical record retains the original discussion; the table below states what the current game uses.
+Current reference checked October 28, 2026 against the working tree. [Overview](README.md) · [Implementation status](implementation-status.md) · [Original decision/design record](history/design/00-decisions-and-contracts.md). Dated records retain earlier decisions; the table and updates below state current behavior.
 
 ## Confirmed product decisions
 
@@ -18,13 +18,21 @@ Current reference checked October 22, 2026 against `1e02e65`. [Overview](README.
 | D10 | No siege; all units may fight on water                                             | No wall/gate/engine/street phase. Water attack ×0.75, incoming troop damage ×1.25; shore attacks work in range. These multipliers are implementation defaults, not historical measurements.                                                                                                       |
 | D11 | Timeout field control by surviving troops, defender ties                           | `survivor-count`: normal limit 30 battle days, raid 10; earlier outcome conditions still apply.                                                                                                                                                                                                   |
 
-Additional confirmed choices: legacy tactic costs/chances and officer combat attributes were ported; governor reward/fine-arms/relief use the approved legacy rules within current budgets; governor transfers remain troop-free. The conservative rival policy and measured strategic diagnostic miss are retained. Art stays draft; player sessions/real low-end checks remain open. Push/PR/remote CI are deferred.
+Additional confirmed choices: legacy tactic costs/chances and officer combat attributes were ported; governor reward/fine-arms/relief use shared city budgets. Governor transfers carry their contingents; ordinary officers have a separate transfer command without taking office. The conservative rival policy and measured strategic diagnostic miss are retained. Art stays draft; player sessions/real low-end checks remain open. Push/PR/remote CI are deferred.
+
+## October 28 operating rules
+
+Each owned city refreshes to two work points every ten actual game days, independent of staffing; unused points do not accumulate. Assignment, contingent returns, rewards, fine arms and ordinary transfers use no points. Appointments and capital changes preserve spent work. Income and office handovers remain monthly.
+
+Feasts, rewards and fine arms support group selection with atomic cost validation. Ordinary officer transfers carry healthy/wounded contingents to a friendly city and station them on arrival. Cross-city governors wait for the legal handover; a ruler's effective appointment moves the capital. Conquest reports lead to an immediate/local governance choice or a deferred Inbox task.
+
+Manual movement opens the unit action menu. Finishing one battlefield preserves and exposes the others; if all remaining fields already submitted, Advance 1 day can finish the shared day once, including after reload. The [governance](03-governors-and-authority.md) and [battle](04-battlefields-and-water-combat.md) references describe these boundaries.
 
 ## October 22 playability refinements
 
 Q1: battle commitments block only the contested city and participating officers/troops; unrelated administration and diplomacy continue. The `phase` field remains a serialized world cursor.
 
-Q2/Q2b: a captured ruler remains a prisoner and the most loyal free officer succeeds (stable officer ID breaks ties). A house is eliminated when no free officer remains. Holders may release, recruit, exchange one for one, or execute once per prisoner per month. Recruitment uses loyalty; exchange uses a simple saved-RNG acceptance check. Execution has no additional penalty.
+Q2/Q2b, with later refinements: a captured ruler remains a prisoner and the most loyal free officer succeeds (stable officer ID breaks ties). A house is eliminated when no free officer remains. Recruitment/exchange attempts are monthly, including a refused exchange; release and execution remain available afterward. Recruiting a captive ruler lowers the former house's other living officers and owned cities by 10 loyalty, floored at zero. Execution has no additional loyalty penalty. Surviving houses display the current ruler's name.
 
 Q3: one tactical formation per officer, at most ten per side including separate militia; overflow joins the weakest matching type. Q4 retains manual command by default with optional reversible automatic command. Q5 keeps governor proposal answers while capital marches dispatch chosen officers directly. Q6 retires legacy code behind `v0.2-final`. Q7 bundles Source Sans 3 and a game-character subset of Noto Serif SC.
 
@@ -36,7 +44,7 @@ The economic scale stays intact, with farming/commerce development capped at 500
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C1 Geography        | `src/v03/geography/`: anchors, route estimates, versioned inputs. Artwork does not set distance.                                                                        |
 | C2 Time/travel      | `calendar/`, `engine.ts`: absolute day, route snapshots, food/cargo, daily cursor. Renderer does not advance time.                                                      |
-| C3 Authority/orders | `governance/`: appointments, capabilities, monthly work, preview/answer and stock reservations. UI calls shared eligibility.                                            |
+| C3 Authority/orders | `governance/`: appointments, ordinary transfers, capabilities, ten-day work budgets, preview/answer and stock reservations. UI calls shared eligibility.                |
 | C4 Battle           | `battle/`: logical terrain, movement/ZOC, targeting, forecasts, tactics, morale, outcomes. Same helpers feed inspection and resolution.                                 |
 | C5 Presentation/art | `rendering/`, `styles.css`, asset manifest: projection, cameras, hit tests, layers, native fallbacks. Units use foot anchors; painting cannot add hidden terrain rules. |
 | C6 Save/application | `types.ts`, `commands.ts`, `App.tsx`, `platform/storage.ts`: serializable state and validated command/save boundary.                                                    |

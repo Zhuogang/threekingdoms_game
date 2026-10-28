@@ -15,9 +15,11 @@ import {
   automaticTalentWorkUsed,
   committedCityStock,
   getAutomaticCityActionAvailability,
+  hasTrainingBenefit,
   localSearchCandidates,
   cityWorkQuota,
-  cityWorkUsedThisMonth,
+  cityActionWorkCost,
+  cityWorkUsedThisPeriod,
 } from './city-actions';
 
 export type GovernorWorkAction =
@@ -161,7 +163,12 @@ export function planGovernorMonthlyWork(
   const nextHarvest = Math.floor(city.farming * (nextMonth === 9 ? 4 : 2.2) + city.population / 80);
   const projectedNextMonthFood = Math.min(RESOURCE_CAP, city.food + nextHarvest - upkeep);
   const candidates = localSearchCandidates(state, city.id);
-  const workUsed = cityWorkUsedThisMonth(state, city);
+  const workUsed = cityWorkUsedThisPeriod(state, city);
+  const awaitingAppointment = new Set(
+    state.cities.flatMap((entry) =>
+      entry.pendingAppointment?.governorId ? [entry.pendingAppointment.governorId] : [],
+    ),
+  );
   const plan: GovernorMonthlyWorkPlan = {
     cityId,
     month: settledMonth,
@@ -234,8 +241,7 @@ export function planGovernorMonthlyWork(
       'city-threatened',
       'Monthly work is paused while a hostile force threatens the city.',
     );
-  if (workUsed >= cityWorkQuota(state, city))
-    return stop('monthly-work-spent', 'The city has used all work points staffed for this month.');
+  const workSpent = workUsed >= cityWorkQuota(state, city);
 
   let failure = '';
   function offer(
@@ -292,7 +298,7 @@ export function planGovernorMonthlyWork(
     }
     Object.assign(plan, {
       action,
-      workPoints: 1,
+      workPoints: cityActionWorkCost(action),
       goldCost,
       foodCost,
       reasonCode,
@@ -309,17 +315,19 @@ export function planGovernorMonthlyWork(
     return true;
   }
   const none = () =>
-    stop(
-      failure.includes('reserved')
-        ? 'approved-order-reserve'
-        : failure
-          ? 'insufficient-budget'
-          : 'development-capped',
-      failure || plan.reason,
-    );
+    workSpent
+      ? stop('monthly-work-spent', 'The city has used all work points for this ten-day period.')
+      : stop(
+          failure.includes('reserved')
+            ? 'approved-order-reserve'
+            : failure
+              ? 'insufficient-budget'
+              : 'development-capped',
+          failure || plan.reason,
+        );
 
   // Urgent safety work is never displaced by optional recruitment or development.
-  if (projectedNextMonthFood < protectedFood) {
+  if (!workSpent && projectedNextMonthFood < protectedFood) {
     if (
       city.farming < 500 &&
       offer('develop-farming', 'food-security', 'Food security requires farming.')
@@ -329,7 +337,7 @@ export function planGovernorMonthlyWork(
       return plan;
     return none();
   }
-  if (city.loyalty < 60) {
+  if (!workSpent && city.loyalty < 60) {
     if (
       offer(
         'relieve',
@@ -372,6 +380,7 @@ export function planGovernorMonthlyWork(
               officer.troops === 0 &&
               officer.wounded === 0 &&
               officer.reorganizationDays === 0 &&
+              !awaitingAppointment.has(officer.id) &&
               !isOfficerReservedForOrder(state, officer.id),
           )
           .sort(
@@ -430,37 +439,40 @@ export function planGovernorMonthlyWork(
     offer('sell-food', 'market-balance', 'Sell surplus food to fund city work.')
   )
     return plan;
-  if (workUsed === 0) {
+  // Existing reserves already eat city rations. Refill stationed contingents before
+  // optional training, including non-governors and after another monthly action.
+  for (const officer of [...local].sort(
+    (a, b) => a.troops + a.wounded - b.troops - b.wounded || a.id.localeCompare(b.id),
+  )) {
     if (
-      local.some((officer) => officer.loyalty < 92) &&
-      offer('feast', 'officer-loyalty', 'Improve local officer loyalty.')
+      officer.troops + officer.wounded === 0 ||
+      officer.reorganizationDays > 0 ||
+      awaitingAppointment.has(officer.id) ||
+      isOfficerReservedForOrder(state, officer.id)
     )
-      return plan;
-    const trainee = local
-      .filter(
-        (officer) =>
-          officer.troops > 0 &&
-          officer.experience < 10_000 &&
-          officer.force < (officer.equipment === 'Fine arms' ? 105 : 100),
-      )
-      .sort((a, b) => a.experience - b.experience || a.id.localeCompare(b.id))[0];
-    if (trainee && offer('train', 'officer-training', 'Train a local officer.', trainee.id))
-      return plan;
+      continue;
     const ready =
-      availableReserveTroops(state, city.id, manager.troopType) - reserves.troops - 1000;
+      availableReserveTroops(state, city.id, officer.troopType) - reserves.troops - 1000;
+    const amount = Math.min(10_000 - officer.wounded, officer.troops + ready);
     if (
-      manager.troops > 0 &&
-      manager.reorganizationDays === 0 &&
       ready > 0 &&
-      manager.troops + manager.wounded < 10_000 &&
+      amount > officer.troops &&
       offer(
         'assign-troops',
         'troop-organization',
-        'Reinforce the manager while protecting a 1,000-soldier reserve.',
-        manager.id,
-        Math.min(10_000 - manager.wounded, manager.troops + ready),
+        'Reinforce a stationed officer while protecting a 1,000-soldier same-type reserve.',
+        officer.id,
+        amount,
+        officer.troopType,
       )
     )
+      return plan;
+  }
+  if (workUsed === 0) {
+    const trainee = local
+      .filter((officer) => officer.troops > 0 && hasTrainingBenefit(officer))
+      .sort((a, b) => a.experience - b.experience || a.id.localeCompare(b.id))[0];
+    if (trainee && offer('train', 'officer-training', 'Train a local officer.', trainee.id))
       return plan;
   }
   const sectors =
@@ -473,7 +485,6 @@ export function planGovernorMonthlyWork(
     .filter((officer) => officer.equipment !== 'Fine arms' && officer.force < 105)
     .sort((a, b) => b.troops - a.troops || b.force - a.force || a.id.localeCompare(b.id))[0];
   if (
-    workUsed === 0 &&
     equipmentTarget &&
     offer('equip', 'equipment-issue', 'Issue fine arms to a local officer.', equipmentTarget.id)
   )

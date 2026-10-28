@@ -19,7 +19,7 @@ import {
   type BattleTactic,
 } from '../../battle';
 
-import { cityWorkQuota, cityWorkUsedThisMonth } from '../../governance/city-actions';
+import { cityWorkQuota, cityWorkUsedThisPeriod } from '../../governance/city-actions';
 import { createV03OrderServices } from '../../governance/services';
 
 import { loadV03Autosave, saveV03Autosave } from '../../platform/storage';
@@ -71,6 +71,13 @@ export function useGameSession() {
   const [viewMode, setViewMode] = useState<'campaign' | 'battle'>('campaign');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [selectedTactic, setSelectedTactic] = useState<BattleTactic | null>(null);
+  const [battleActionMenu, setBattleActionMenu] = useState<{
+    battleId: string;
+    unitId: string;
+    day: number;
+  } | null>(null);
+  const [cityGovernanceEventId, setCityGovernanceEventId] = useState<string | null>(null);
+  const [deferredGovernanceIds, setDeferredGovernanceIds] = useState<string[]>([]);
   const [inspectedCell, setInspectedCell] = useState<{ x: number; y: number } | null>(null);
   const [showWiki, setShowWiki] = useState(false);
   const [wikiTopic, setWikiTopic] = useState<V03WikiTopic>('overview');
@@ -209,7 +216,7 @@ export function useGameSession() {
   const directWorkQuota = state && selectedCity ? cityWorkQuota(state, selectedCity) : 0;
   const directWorkRemaining =
     state && selectedCity
-      ? Math.max(0, directWorkQuota - cityWorkUsedThisMonth(state, selectedCity))
+      ? Math.max(0, directWorkQuota - cityWorkUsedThisPeriod(state, selectedCity))
       : 0;
   const governorCandidates =
     state && selectedCity
@@ -242,6 +249,12 @@ export function useGameSession() {
     viewMode === 'battle'
       ? (activeBattles.find((battle) => battle.id === selectedBattleId) ?? activeBattles[0] ?? null)
       : null;
+  const hasUnsubmittedBattleDay = activeBattles.some(
+    (battle) => !battle.autoCommand && !battle.playerDayComplete,
+  );
+  // A battle can end during an attack after every other field has submitted.
+  // Keep a way to finish that shared day, including when resuming an older save.
+  const canResumeBattleDay = Boolean(activeBattle?.playerDayComplete) && !hasUnsubmittedBattleDay;
   const battleState = activeBattle?.battleData ?? null;
   const currentUnit =
     battleState?.units.find((unit) => unit.id === selectedUnitId && unit.troops > 0) ?? null;
@@ -394,6 +407,12 @@ export function useGameSession() {
     }
   }, [state, activeBattles, selectedBattleId, selectedCityId, selectedUnitId, viewMode]);
   return {
+    battleActionMenu,
+    setBattleActionMenu,
+    cityGovernanceEventId,
+    setCityGovernanceEventId,
+    deferredGovernanceIds,
+    setDeferredGovernanceIds,
     campaignWindowOpen,
     setCampaignWindowOpen,
     marchNotice,
@@ -493,6 +512,8 @@ export function useGameSession() {
     governorSelection,
     activeBattles,
     activeBattle,
+    hasUnsubmittedBattleDay,
+    canResumeBattleDay,
     battleState,
     currentUnit,
     reachableCells,

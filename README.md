@@ -1,78 +1,74 @@
 # Hegemony of the Three Kingdoms · v0.3
 
-An independent single-player Three Kingdoms strategy game with Chinese/English UI, daily campaign time, historically informed travel estimates, autonomous governors and field battles on 15 hand-painted 48×32 battlefields. BAYE is a historical reference; v0.3 has its own rules and saves.
+A single-player Three Kingdoms strategy game with Chinese/English UI, a daily campaign, autonomous governors, travelling armies and field battles on 15 painted 48×32 maps. The game has two scenarios (190 and 200), six playable houses per scenario, 24 cities and a 98-officer catalog with scenario-specific availability and annual appearances.
 
-**Current local version:** branch `hegemony_of_the_three_kindoms_v0.3`, implementation commit `1e02e65`. Documentation checked October 22, 2026. Core feature tracks, the eight initial defect repairs and RV01–RV10 playability tasks are implemented. Player playtests, real low-end-machine testing and draft-art review remain open. Push, PR and remote CI remain deferred.
+**Local playable candidate. Documentation checked October 28, 2026 against the current working tree.** Player balance sessions, real low-end hardware testing and final artwork approval remain open. Older commit IDs and test totals in dated records describe those snapshots.
 
-[中文玩法指南](docs/v0.3/player-guide.md#中文玩法指南) · [English player guide](docs/v0.3/player-guide.md#english-player-guide) · [What changed in v0.3](docs/v0.3/release-notes.md) · [Current status](docs/v0.3/implementation-status.md) · [All documentation](docs/README.md)
-
-October 26 roster expansion: all 98 officers now have scenario-aware availability, annual appearances, recruitment, typed armies, portraits and directory profiles. [R1–R5 integration validation](docs/v0.3/evidence/officer-roster-r5-2026-10-26/README.md) covers both scenarios and all houses, casualty and water workflows, saves and production hosting under a subpath. Campaign balance playtests remain open.
+[中文玩法指南](docs/v0.3/player-guide.md#中文玩法指南) · [English player guide](docs/v0.3/player-guide.md#english-player-guide) · [Release notes](docs/v0.3/release-notes.md) · [Implementation status](docs/v0.3/implementation-status.md) · [Documentation index](docs/README.md)
 
 ## Start playing
 
-Requires Node.js 22.12 or newer.
+Requires Node.js **22.12 or newer**. From the repository root:
 
 ```powershell
 npm ci
 npm run dev
 ```
 
-Open the address Vite prints, normally `http://127.0.0.1:5173/`. On a fresh browser profile, choose the 190 or 200 scenario, select a house and click **New campaign**. Cao Cao is a reasonable first choice. A valid autosave opens automatically; use **Campaign menu** to resume or start a different campaign. The **中文 / EN** toggle changes language; **Field guide / Wiki / 游戏指南** and F1 open help during play. Use Ctrl+C in the server terminal to stop it.
+Keep the server terminal running and open the URL Vite prints, normally `http://127.0.0.1:5173/`. Use `npm run dev -- --port 5173 --strictPort` to keep a fixed address. Ctrl+C stops the server; an open browser tab alone does not keep the game server running.
 
-On the first day, inspect your capital's food, reserve and work points. Recruit into reserve, assign soldiers to an officer, then issue a march with enough troops for a whole officer force. Request supplies or armies from your other cities through their plans. Advance one day, ten days or to the next event; acknowledge due reports when time pauses. On arrival, command your side in the field battle. [The player guide](docs/v0.3/player-guide.md) walks through the sequence, equipment, tactics, water and common problems.
+A valid autosave opens automatically. Otherwise select a scenario and house, then **New campaign**. Use the in-game **Menu** for language, export/import, help and the Campaign menu. The Campaign menu offers Resume or a confirmed new campaign. **F1** opens the field guide.
 
-## What this version includes
+Start by opening your capital's **City affairs**, recruiting into reserve, and assigning soldiers from **Officers in the city → officer → Set troop count**. **March out** selects whole officer contingents and provisions. Advance one day, ten days or to the next event; acknowledge critical reports and submit each manual battlefield's day when prompted. The [player guide](docs/v0.3/player-guide.md) explains the complete sequence.
 
-| System       | Playable behavior                                                                                                                                                                                                                                                                 |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Campaign     | Two scenarios, six playable houses per scenario, 24 cities, diplomacy, monthly events, true-unification and Hegemon endings.                                                                                                                                                      |
-| Daily world  | One-day/ten-day/next-event controls, 30-day months, travel/arrival/return journeys, food and cargo accounting.                                                                                                                                                                    |
-| Geography    | 24 historical regional anchors and 42 configured links; straight-line distance, estimated road distance and party ETA are distinct. Hanzhong–Chang'an has a 425 km / 33-day nominal baseline; actual party ETA varies.                                                            |
-| Governors    | Direct capital administration; other cities use formal governors or local stewards. Orders expose available amounts, gaps and dates. Troop-free governor transfers travel and take effect at a month boundary.                                                                    |
-| Capital work | Recruitment/assignment, public order, search, training, feasts, rewards, fine arms, relief and food trading within monthly work points and available stock. Farming/commerce development controls exist but are unavailable in all starting cities under the current value limit. |
-| Battles      | 15 painted 48×32 battlefields (ten terrain types) chosen by the attacker's last route leg and direction; six unit types, six tactics, forecasts, morale, zone of control, AI turns and manual player command.                                                                     |
-| Water        | Every unit type may enter passable water. On water, attack ×0.75 and incoming troop damage ×1.25; shore units can attack water units in normal range.                                                                                                                             |
-| Interface    | Ink-wash atlas and a draggable top-down battlefield with officer-portrait unit tokens, pan/zoom/Fit/focus/minimaps, exact troop counts, weather/supply/terrain inspection, full order/report lists and bilingual Wiki.                                                            |
-| Recovery     | One browser autosave, portable export/import, in-game Campaign menu/Resume, confirmed replacement and withdrawal, and Retry save after storage failure.                                                                                                                           |
+## Current gameplay
 
-Normal battles last at most 30 days; raids at most 10. At timeout, more surviving troops wins field control; ties favor the defender. There is **no siege system**: no walls, gates, siege weapons or city-street phase. City administration and tactical command are separate.
+| System                   | Behavior                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time and work            | 30-day months; each owned city refreshes to **2 work points every 10 game days**, independent of officer count. Unused points do not accumulate. Execution still needs an eligible local officer.                                                                                                                                                   |
+| City management          | Farming/commerce development, recruitment, search, public order, training, feasts, rewards, fine arms, relief and food trade. Development caps at **500**, retaining existing values. The city overview shows farming, commerce, population, reserves and public order alongside gold, food and garrison.                                           |
+| Free preparations        | Troop assignment, contingent returns, rewards, equipment and ordinary officer transfers use no work points. Their resource, authority and availability rules still apply. Capital moves and appointments do not refund spent work.                                                                                                                  |
+| Group actions            | Feast, reward and fine-arms screens support checkboxes and select-all. A feast uses 1 point for the group; rewards cost 100 gold/person and fine arms 180 gold/person. Preview the total and actual effects; invalid or unaffordable groups do not partially execute.                                                                               |
+| Ordinary transfers       | **Source city → City affairs → Transfer officers** moves selected ordinary officers and all healthy/wounded personnel to another friendly city. Provisions and ETA are previewed; arrival stations them immediately, without a governor appointment or monthly wait.                                                                                |
+| Governance               | The ruler's capital is directly administered; other cities use governors or local stewards. Cross-city appointees carry their contingents and take office at a legal monthly boundary after arrival. A ruler's effective appointment also moves the capital. Conquest reports lead to personal rule, governor appointment or a deferred Inbox task. |
+| Orders and travel        | Actual outbound, waiting, return and redirected journeys; reserved stock, food consumption and arrival delivery. Governor campaign plans retain accept/reduce/wait/cancel decisions. In-transit transfers appear in **Marches & orders**.                                                                                                           |
+| Battles                  | Three base troop types with elite presentation, six tactics, morale, control zones, damage forecasts, manual/automatic command and universal water access. Movement opens the unit action menu. After one field ends, unfinished player battles remain reachable; a fully submitted day can resume with **Advance 1 day**.                          |
+| Prisoners and succession | A captured ruler is succeeded immediately. Recruiting that captive lowers the former house's remaining officers and cities by 10 loyalty; execution does not. Surviving houses display the current ruler's name.                                                                                                                                    |
+| Interface and recovery   | Ink-wash maps, pan/zoom/Fit/focus/minimaps, battlefield expansion/fullscreen and panel toggles, officer directory, bilingual help, one autosave and portable export/import.                                                                                                                                                                         |
 
-Geographic routes and battlefields are documented approximations inspired by the real terrain, not surveyed Han-era maps. Multi-city plan coordination, full future-budget simulation, naval-skill gates, extra save slots and old-save conversion are not included. See [scope and release notes](docs/v0.3/release-notes.md).
+Normal battles last at most 30 battle days; raids at most 10. At timeout, more combat-ready troops wins; ties favor the defender. All troop types can enter passable water: attack ×0.75 and incoming troop damage ×1.25. There is **no siege system or camp-capture victory**.
 
-**Known economy limit:** both scenarios start every city with farming and commerce above the current manual-development cap of 100. The development buttons stay disabled until a value falls below that cap. The initial-value/cap mismatch is [recorded for a scoped rules review](docs/next-steps.md#open-now); this documentation pass does not change the economy.
+Routes are historically informed gameplay estimates, not surveyed Han-era roads. There are 42 configured links; a party's ETA depends on its composition and route snapshot. Human campaign balance, multi-city coordinated planning, extra save slots and old-save conversion are outside the current delivery or remain unaccepted. See [scope and release notes](docs/v0.3/release-notes.md).
 
-Battlefield controls in the upper right provide **Expand battlefield / 放大战场**, **Fullscreen / 全屏** and **Show panels / 显示面板**. Toggle commands, minimap, help, top bar and battle list independently; hidden commands retain a compact action bar. [Display rules and validation](docs/v0.3/11-battle-display-and-camp-removal.md).
+## Saves and recovery
 
-## Current runtime views
+Saves use `hegemony.save`, version 3, ruleset `hegemony-3`, with the current personnel and officer-roster schemas. Older versions, earlier roster/personnel schemas and 24×20 battle saves are rejected without deleting their original data. Compatible current saves retain work already spent and pending travel/governance decisions.
 
-The atlas below is a runtime capture after the playability repairs. The battlefield is a campaign battle from Puyang to Xiapi, which the attack direction places on the Waterlands battlefield (④北). They demonstrate layout, not final art approval. [Battlefield plan and all 15 layouts](docs/v0.3/08-battlefield-canvas-plan.md).
+Browser storage belongs to the **profile and address**, including the port. Export before switching browsers, ports or clearing site data. Failed imports preserve the current campaign. If autosaving fails, keep the tab open, export a backup, then use **Retry save**. Exporting a file does not imply that browser autosaving succeeded.
 
-![v0.3 campaign atlas, compact minimap and capital controls](docs/images/v03-campaign.png)
+If time stops, check the Inbox for critical reports and unfinished manual battles. If every remaining field has submitted, **Advance 1 day** completes the shared day once. [Troubleshooting](docs/v0.3/player-guide.md#8-常见疑问与反馈).
 
-![v0.3 48×32 Waterlands battlefield with portrait unit tokens, battle conditions and tactics](docs/images/v03-battlefield.png)
+## Runtime views
 
-## Saves
+These retained screenshots show earlier v0.3 layouts; newer city statistics and action screens are described above. They are layout examples, not final artwork approval.
 
-v0.3 uses `hegemony.save`, version 3, ruleset `hegemony-3`. Older saves, including v3 saves with 24×20 battles, are rejected without deleting them or replacing the current game. Browser saves belong to the browser profile and address; export before changing profiles, URLs or clearing site data. A different port has separate storage.
+![v0.3 campaign atlas](docs/images/v03-campaign.png)
 
-**Campaign menu / 战役菜单** offers Resume and New campaign. Replacing the campaign requires confirmation and offers Export first. Failed imports preserve the current game and drafts; successful imports reset campaign-bound controls. Export downloads a file independently of local saving. If local saving fails, keep the tab open, export a backup and use Retry save after storage is available.
+![v0.3 Waterlands battlefield](docs/images/v03-battlefield.png)
 
-## Validation and remaining acceptance
+## Development and validation
 
-Recorded October 21, 2026 for the RV implementation candidate, not a new October 22 gameplay run:
+```powershell
+npm test -- --maxWorkers=1
+npm run build
+npm run lint:ui
+npm run test:e2e
+```
 
-- Full suite: **668 passed, 1 existing skip, 46 files**.
-- Browser suite: **34 passed**, plus six affected cases rechecked after final CSS; EN/ZH, four maps, 390/1366/1920 effective CSS px and 200% zoom.
-- TypeScript/build, production `/hegemony/` save-reload, tactical performance, formatting and portrait checks passed.
+The [developer guide](docs/v0.3/development.md) covers isolated browser-test ports, production subpaths, assets and save invariants. [Current status](docs/v0.3/implementation-status.md) distinguishes local automated checks from player acceptance; [next steps](docs/next-steps.md) lists the remaining work. Historical test counts and timings are kept with their dates, not presented as measurements of the latest tree.
 
-The [validation record](docs/v0.3/evidence/rv-implementation-2026-10-21/README.md) contains commands, environment, limits and screenshots. The accepted 96-month narrow-bot diagnostic produced no unifications or Hegemon wins; it is not a player win-rate claim. Art remains `draft`. Four 12-month/three-manual-battle play sessions and a real low-end-machine check await player observations. [Remaining tasks](docs/next-steps.md).
+## Attribution and history
 
-## Development and attribution
+Original generated artwork has [provenance](docs/v0.3/assets/provenance.md) and an [asset manifest](docs/v0.3/assets/manifest.json); portrait sources are recorded in [portrait credits](docs/assets/portrait-credits.md). Artwork does not determine terrain, movement or combat rules.
 
-[Developer guide](docs/v0.3/development.md) covers the active React/SVG modules, scripts and save contract. Old React/Pixi/IndexedDB guides are in the [versioned archive](docs/archive/README.md).
-
-Original ImageGen artwork has [provenance](docs/v0.3/assets/provenance.md) and a [manifest](docs/v0.3/assets/manifest.json). Existing portrait identity/provenance remains in [portrait credits](docs/assets/portrait-credits.md). Geographic overlays and combat data determine positions and rules, not painted decoration.
-
-BAYE source reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This is an independent redesign, not an official BAYE or San10WPK product. The optional local reference checkout is not required to build or play.
-
-October 22 playability/UI changes and current evidence: [implementation ledger](docs/v0.3/playability-implementation.md).
+BAYE is a historical reference: [erduoniba/baye-fmj-app](https://github.com/erduoniba/baye-fmj-app). This is an independent redesign, not an official BAYE or San10WPK product. No optional reference checkout is required to build or play. Previous versions and superseded designs remain in the [documentation archive](docs/archive/README.md).

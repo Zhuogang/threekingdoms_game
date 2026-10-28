@@ -5,6 +5,8 @@ import {
   prisonerHolder,
   prisonerRecruitChance,
   prisonerReturnPlan,
+  capturedRulerFaction,
+  RULER_DEFECTION_LOYALTY_LOSS,
 } from '../../campaign/prisoners';
 import { TroopProgress } from './TroopProgress';
 import { OfficerProfile } from './OfficerProfile';
@@ -33,7 +35,13 @@ export function PrisonerPanel({
         key:
           decision?.params?.accepted === false
             ? 'flow.prisonerRefused'
-            : `flow.prisoner.${command.action}`,
+            : decision?.params?.rulerDefection
+              ? 'flow.prisoner.rulerRecruited'
+              : `flow.prisoner.${command.action}`,
+        params: {
+          officerLoss: decision?.params?.officerLoyaltyLoss ?? 0,
+          cityLoss: decision?.params?.cityLoyaltyLoss ?? 0,
+        },
       });
       onComplete?.();
     }
@@ -54,6 +62,12 @@ export function PrisonerPanel({
       officer.location.cityId === selectedCity?.id,
   );
   if (!prisoners.length) return null;
+  const executingRuler =
+    execution &&
+    capturedRulerFaction(
+      state,
+      state.officers.find((entry) => entry.id === execution)!,
+    );
   return (
     <Panel title={message(locale, 'ui.prisoners.104')}>
       {prisoners.map((officer) => {
@@ -131,6 +145,12 @@ export function PrisonerPanel({
             const destination = plan ? displayName(plan.city, locale) : '';
             const exchanged = state.officers.find((entry) => entry.id === exchangeId);
             const exchangePlan = exchanged ? prisonerReturnPlan(state, exchanged) : null;
+            const rulerWarning =
+              pending.action === 'recruit' && capturedRulerFaction(state, officer)
+                ? locale === 'zh'
+                  ? ` 原势力已在其被俘时另立君主；招降成功后，原势力其余在世武将忠诚及所属城池民心各下降 ${RULER_DEFECTION_LOYALTY_LOSS} 点，最低为 0。失败不触发下降。`
+                  : ` The former house chose a successor when this ruler was captured. Successful recruitment lowers its remaining living officers’ loyalty and owned cities’ loyalty by ${RULER_DEFECTION_LOYALTY_LOSS}, floored at zero. Refusal causes no loss.`
+                : '';
             const detail =
               pending.action === 'recruit'
                 ? locale === 'zh'
@@ -157,7 +177,7 @@ export function PrisonerPanel({
                       ? 'ui.recruit.prisoner.107'
                       : 'ui.exchange.109',
                 )}
-                detail={detail}
+                detail={detail + rulerWarning}
                 cancelLabel={context.t.cancel}
                 confirmLabel={locale === 'zh' ? '确认' : 'Confirm'}
                 onCancel={() => setPending(null)}
@@ -176,7 +196,7 @@ export function PrisonerPanel({
       {execution ? (
         <ConfirmDialog
           title={message(locale, 'ui.execute.prisoner.112')}
-          detail={`${message(locale, 'ui.this.officer.will.die.permanently.113')} ${locale === 'zh' ? `所部 ${state.officers.find((entry) => entry.id === execution)!.troops + state.officers.find((entry) => entry.id === execution)!.wounded} 人遣散为当地人口，兵员经验永久消失。` : `Disband ${state.officers.find((entry) => entry.id === execution)!.troops + state.officers.find((entry) => entry.id === execution)!.wounded} personnel into local population, permanently losing their soldier XP.`}`}
+          detail={`${message(locale, 'ui.this.officer.will.die.permanently.113')} ${locale === 'zh' ? `所部 ${state.officers.find((entry) => entry.id === execution)!.troops + state.officers.find((entry) => entry.id === execution)!.wounded} 人遣散为当地人口，兵员经验永久消失。` : `Disband ${state.officers.find((entry) => entry.id === execution)!.troops + state.officers.find((entry) => entry.id === execution)!.wounded} personnel into local population, permanently losing their soldier XP.`}${executingRuler ? (locale === 'zh' ? ' 处决被俘君主不会降低原势力武将忠诚或城池民心。' : ' Executing a captured ruler does not lower the former house’s officer or city loyalty.') : ''}`}
           cancelLabel={message(locale, 'ui.cancel.62')}
           confirmLabel={message(locale, 'ui.execute.110')}
           onCancel={() => setExecution(null)}

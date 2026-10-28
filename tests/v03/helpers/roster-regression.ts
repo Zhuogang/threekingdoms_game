@@ -178,7 +178,7 @@ export function runRosterFlow(scenarioId: string, factionId: string, mode: FlowM
   });
   assert.equal(person(state, id).troopExperience, 1250);
   assert.equal(place(state, sourceId).reservePools[newcomer.troopType].troops, 300);
-  assert.equal(place(state, sourceId).workPointsUsed, 2);
+  assert.equal(place(state, sourceId).workPointsUsed, 1);
   assert.equal(
     cityPersonnelSummary(state, sourceId).troops,
     cityPeople,
@@ -310,6 +310,14 @@ export function runRosterFlow(scenarioId: string, factionId: string, mode: FlowM
     assert.equal(person(state, id).wounded, returningWounded, 'No healing while travelling');
   }
   state = saved(state, 'home/captor city');
+  // Recovery checks must not become a second war after monthly autonomous work.
+  state.alliances = state.factions.flatMap((a, index) =>
+    state.factions.slice(index + 1).map((b) => ({
+      a: a.id,
+      b: b.id,
+      expiresMonthIndex: state.monthIndex + 6,
+    })),
+  );
   const beforeHealing = person(state, id).wounded;
   for (let day = 0; day < 12; day++) state = command(ack(state), { type: 'advance', days: 1 });
   assert(person(state, id).wounded < beforeHealing, 'Wounded must recover with city food');

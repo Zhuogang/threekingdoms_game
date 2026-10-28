@@ -245,6 +245,11 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       });
     } else if (playerUnit(unitId)) {
       setSelectedUnitId(unitId);
+      context.setBattleActionMenu(
+        inspected.moved && !inspected.acted && !activeBattle.autoCommand
+          ? { battleId: activeBattle.id, unitId, day: battleState.day }
+          : null,
+      );
     }
   };
   const fitCampaignMap = () => {
@@ -310,6 +315,10 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
   };
   const requestEndBattleDay = () => {
     if (!activeBattle || !battleState) return;
+    if (activeBattle.playerDayComplete) {
+      if (context.canResumeBattleDay) dispatch({ type: 'advance', days: 1 });
+      return;
+    }
     if (
       battleState.units.some(
         (unit) => unit.side === battleState.playerSide && unit.troops > 0 && !unit.acted,

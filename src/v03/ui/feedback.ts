@@ -4,6 +4,31 @@ import type { V03GameState } from '../types';
 import type { V03Locale } from '../wiki';
 
 const ROUTINE_ZH: Readonly<Record<string, string>> = {
+  'Select up to 100 officers per transfer.': '每支调动队伍最多 100 名武将，请分批调动。',
+  'Choose at least one available officer.': '请至少勾选一名可用武将。',
+  'Only cities held by your faction can issue this order.': '仅己方城池可以发出此命令。',
+  'Choose living officers stationed in the source city.': '请选择驻留在出发城的己方在世武将。',
+  'Rulers and governors must use governor appointments instead of ordinary officer transfers.':
+    '君主和现任太守请通过太守任免调整任职；此处用于普通驻将。',
+  'This officer has a pending governor appointment.': '该武将已有待生效的太守任命。',
+  'The selected officers have departed for the friendly city.':
+    '所选武将已携带所部出发前往己方城池。',
+  'This action does not support multiple officers.': '此操作不支持多选武将。',
+  'Choose at least one officer for this action.': '请至少勾选一名武将。',
+  'Choose each officer only once.': '同一名武将不能重复选择。',
+  'All selected officers are already completely loyal.': '所选武将的忠诚均已达到上限。',
+  'The ruler must arrive in this city before governing it personally.':
+    '君主须先抵达本城，才能亲自治理。',
+  'This city governance decision is no longer available.': '该城治理选择已失效，请检查城池归属。',
+  'Choose another officer; use personal rule for the ruler.':
+    '请选择其他武将；君主任职请选择自任太守。',
+  'The source city needs enough unreserved food for the contingent’s transfer and possible return.':
+    '出发城须有足够未预留粮食，供所部调任及可能的返程使用。',
+  'You can propose an alliance to this faction again next month.':
+    '对该势力本月已提议结盟或解盟，请下月再试。',
+  'City loyalty is already full.': '本城民心已满，无需再整顿治安。',
+  'All stationed officers are already completely loyal.': '驻城武将忠诚均已满，无需再宴饮。',
+  'Choose a different troop count.': '兵力没有变化，请调整目标人数。',
   'These troops are still reorganizing.': '这批人员仍在整编，暂不能作战或调拨。',
   'Choose an uncommitted friendly city.': '请选择未被战斗占用的己方城市。',
   'Choose a positive number of personnel to disband.': '请输入要遣散的人数。',
@@ -128,12 +153,32 @@ export function localizeRoutineFeedback(
   if (locale === 'en') return message;
   if (ROUTINE_ZH[message]) return ROUTINE_ZH[message]!;
   const name = (value: string) => localizeV03PersonOrFormationName(value, locale, state);
-  let match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);
+  const groupCost = message.match(
+    /^The city needs (\d+) unreserved gold for the selected officers\.$/,
+  );
+  if (groupCost) return `赏赐或配发兵器给所选武将需要 ${groupCost[1]} 金可用资金。`;
+  const groupFeast = message.match(
+    /^(\d+) selected officers attended the feast and gained up to 8 loyalty each\.$/,
+  );
+  if (groupFeast) return `${groupFeast[1]} 名所选武将参加宴饮，忠诚各提高最多 8。`;
+  const groupReward = message.match(
+    /^(\d+) selected officers received rewards and gained up to 15 loyalty each\.$/,
+  );
+  if (groupReward) return `${groupReward[1]} 名所选武将接受赏赐，忠诚各提高最多 15。`;
+  const groupEquipment = message.match(
+    /^(\d+) selected officers received fine arms and gained up to 5 force each\.$/,
+  );
+  if (groupEquipment) return `${groupEquipment[1]} 名所选武将获赐精良兵器，武力各提高最多 5。`;
+  let match = message.match(
+    /^The capital has used its (\d+) work points for this ten-day period\.$/,
+  );
+  if (match) return `本城本旬的 ${match[1]} 个工作点已用完。`;
+  match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);
   if (match) return `本城本月的 ${match[1]} 个工作点已用完。`;
   match = message.match(/^(.+) improved city loyalty by 2 for 80 gold\.$/);
   if (match) return `${name(match[1]!)}花费 80 金，使民心提高 2。`;
-  match = message.match(/^(Farming|Commerce) improved by 1 for 80 gold\.$/);
-  if (match) return `${match[1] === 'Farming' ? '农业' : '商业'}花费 80 金提高了 1。`;
+  match = message.match(/^(Farming|Commerce) improved by (\d+) for 80 gold\.$/);
+  if (match) return `${match[1] === 'Farming' ? '农业' : '商业'}花费 80 金提高了 ${match[2]}。`;
   match = message.match(/^(.+) found (.+), who joined your faction\.$/);
   if (match) return `${name(match[1]!)}寻得${name(match[2]!)}，其已加入己方势力。`;
   match = message.match(/^(.+) searched the countryside, but no officer joined this month\.$/);
@@ -144,6 +189,11 @@ export function localizeRoutineFeedback(
   if (match) return `${name(match[1]!)}现统领 ${match[2]} 名士兵。`;
   match = message.match(/^(.+) completed training: \+25 experience and \+1 force\.$/);
   if (match) return `${name(match[1]!)}完成训练：经验 +25，武力 +1。`;
+  match = message.match(
+    /^(.+) completed training: \+(\d+) experience, \+(\d+) force and \+(\d+) intellect\.$/,
+  );
+  if (match)
+    return `${name(match[1]!)}完成训练：经验 +${match[2]}，武力 +${match[3]}，智力 +${match[4]}。`;
   match = message.match(/^(.+) restored public order; city loyalty is now (\d+)%\.$/);
   if (match) return `${name(match[1]!)}整顿治安，民心现为 ${match[2]}%。`;
   match = message.match(/^(.+) hosted a feast; local officers gained up to 8 loyalty\.$/);

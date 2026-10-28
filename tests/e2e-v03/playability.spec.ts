@@ -393,7 +393,7 @@ test('RV05 preserves an explicitly pending dismissal after reload', async ({ pag
   await expect(page.getByLabel('太守人选', { exact: true })).toHaveValue('');
 });
 
-test('RV07 shows reserve/officer results and rejects training at either cap before submission', async ({
+test('RV07 shows reserve/officer results and rejects training when both benefits are capped', async ({
   page,
 }) => {
   const state = createV03Game('cao', 868);
@@ -405,7 +405,8 @@ test('RV07 shows reserve/officer results and rejects training at either cap befo
       entry.factionId === 'cao',
   )!;
   officer.force = 100;
-  officer.experience = 0;
+  officer.experience = 500;
+  officer.level = 5;
   await loadState(page, state);
   await showCityManagement(page);
   await expect(page.getByRole('term').filter({ hasText: /^Reserve soldiers$/ })).toBeVisible();

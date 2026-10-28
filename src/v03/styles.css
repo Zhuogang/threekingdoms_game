@@ -947,6 +947,27 @@ button:disabled {
   width: 100%;
   height: 100%;
 }
+.v03-battle-unit-menu {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  gap: var(--space-2);
+  width: min(264px, calc(100% - 16px));
+  max-height: min(280px, calc(100% - 16px));
+  overflow-y: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--tone-143);
+  border-radius: 8px;
+  background: var(--tone-4);
+  box-shadow: 0 8px 24px var(--tone-144);
+}
+.v03-battle-unit-menu p {
+  margin: 0;
+}
+.v03-governance-choice {
+  display: grid;
+  gap: var(--space-2);
+}
 .v03-battle-camera-controls {
   position: absolute;
   z-index: 4;
@@ -2331,6 +2352,7 @@ th small {
 }
 .v03-city-overview > .v03-stat-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  row-gap: var(--space-4);
   padding: var(--space-3) 0;
   border-block: 1px solid var(--tone-30);
 }
@@ -2562,6 +2584,66 @@ th small {
 .v03-step-choice small {
   color: var(--tone-5);
   font-weight: normal;
+}
+.v03-group-select-all {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block: var(--space-4);
+}
+.v03-officer-group-work input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+.v03-officer-group-work {
+  container-type: inline-size;
+}
+.v03-work-detail.v03-officer-group-work > .v03-stat-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--tone-30);
+}
+.v03-group-roster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.v03-group-officer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--tone-30);
+  border-radius: var(--radius);
+  background: var(--paper);
+  cursor: pointer;
+}
+.v03-group-officer[data-selected='true'] {
+  border-color: var(--accent);
+  background: var(--paper-raised);
+}
+.v03-group-officer[data-disabled='true'] {
+  opacity: 0.65;
+  cursor: default;
+}
+.v03-group-officer > span:last-child {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v03-group-officer small {
+  color: var(--tone-5);
+}
+@container (max-width: 600px) {
+  .v03-group-roster {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v03-group-officer {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
 }
 .v03-roster > .v03-step-choice {
   margin-top: var(--space-4);

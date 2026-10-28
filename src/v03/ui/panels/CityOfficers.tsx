@@ -144,17 +144,22 @@ export function OfficerDetail({
                   onClick={() => onWork(action)}
                   aria-label={workLabel(context, action)}
                   disabled={
+                    action === 'train' &&
                     !context.capitalAvailability(
                       action,
                       officer.id,
                       context.troopAssignments[officer.id] ?? officer.troops,
                     ).ok
                   }
-                  title={context.capitalReason(
-                    action,
-                    officer.id,
-                    context.troopAssignments[officer.id] ?? officer.troops,
-                  )}
+                  title={
+                    action !== 'train'
+                      ? undefined
+                      : context.capitalReason(
+                          action,
+                          officer.id,
+                          context.troopAssignments[officer.id] ?? officer.troops,
+                        )
+                  }
                 >
                   <strong>{workLabel(context, action)}</strong>
                   <span aria-hidden>→</span>

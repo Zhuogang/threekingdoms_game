@@ -246,7 +246,7 @@ export function createOfficerRosterSetup(scenarioId: OfficerRosterScenarioId): O
       factionId: city.factionId,
       governorId: GOVERNORS[scenarioId][city.id] ?? null,
       healthyTroops: serving.reduce((sum, officer) => sum + officer.troops, 0),
-      workPoints: city.factionId === null ? 0 : Math.min(3, serving.length),
+      workPoints: city.factionId === null ? 0 : 2,
       reserveAdditions,
     };
   });

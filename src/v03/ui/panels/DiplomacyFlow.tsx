@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { message } from '../../i18n';
-import { getV03AllianceChance } from '../../campaign/diplomacy';
+import { getV03AllianceChance, hasProposedV03AllianceThisMonth } from '../../campaign/diplomacy';
 import { isV03AllianceActive } from '../../campaign/monthly-systems';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
@@ -133,6 +133,11 @@ export function DiplomacyFlow({
       ally(faction.id),
   );
   const allied = Boolean(treaty);
+  const proposalUsed = hasProposedV03AllianceThisMonth(state, faction.id);
+  const proposalHint =
+    locale === 'zh'
+      ? '对同一势力每月只能提议一次；本月解盟后也须等下月再提议。'
+      : 'One proposal per faction per month. After breaking a treaty, wait until next month to propose again.';
   if (page.kind === 'faction')
     return (
       <section className="v03-diplomacy v03-faction-detail">
@@ -152,11 +157,13 @@ export function DiplomacyFlow({
         />
         <Button
           className="v03-step-choice"
+          disabled={!allied && proposalUsed}
           onClick={() => onNavigate({ kind: allied ? 'break' : 'propose', id: faction.id })}
         >
           {allied ? t.breakAlliance : t.proposeAlliance}
           <span aria-hidden>→</span>
         </Button>
+        <p className="v03-muted">{proposalHint}</p>
         <Button variant="ghost" onClick={() => context.openWiki('diplomacy')}>
           {t.wiki}
         </Button>
@@ -174,13 +181,16 @@ export function DiplomacyFlow({
           />
           <p>{message(locale, 'flow.allianceDuration')}</p>
           <p className="v03-muted">{message(locale, 'flow.allianceHint')}</p>
+          <p className="v03-muted">{proposalHint}</p>
         </>
       ) : (
         <p>{message(locale, 'flow.breakAllianceHint')}</p>
       )}
       <Button
         variant={page.kind === 'break' ? 'danger' : 'primary'}
-        disabled={state.phase === 'finished' || (page.kind === 'propose' ? allied : !allied)}
+        disabled={
+          state.phase === 'finished' || (page.kind === 'propose' ? allied || proposalUsed : !allied)
+        }
         onClick={() =>
           send(
             {

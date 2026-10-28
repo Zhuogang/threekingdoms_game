@@ -1,6 +1,6 @@
 # Field battles, tactics and water combat
 
-Current reference checked October 26, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Wounded/aftermath rules](09-wounded-retreat-and-captivity-design.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
+Current reference checked October 28, 2026. [Bilingual controls and unit/tactic tables](player-guide.md) · [Wounded/aftermath rules](09-wounded-retreat-and-captivity-design.md) · [Original battle design brief](history/design/04-battlefields-and-water-combat.md).
 
 ## Implemented field
 
@@ -16,19 +16,21 @@ There is no siege generation, wall/gate state, city-defense phase, climbing or s
 
 The three base types are infantry, cavalry and archers. Waterborne is a terrain-driven presentation state, not a separate troop type. Ordinary movement/range and terrain costs live in `battle/rules.ts`; the [player guide](player-guide.md#5-基础兵种与水上单位) gives current budgets. Same-type officers can form one battlefield unit, and garrison militia has unique membership. Defeated historical units remain in saved battle records but cannot appear as active map/minimap/roster selections.
 
+A successful manual move opens Attack, Tactics, Wait and Close beside the unit. Choosing an action then a legal target executes it; closing the menu preserves the move and remaining action. Auto command and failed moves do not open the menu.
+
 Move, attack, hold, retreat and all six tactics are implemented: Fire, Confuse, Rally, Raid supplies, Ambush and Rockfall. Basic side-wide costs are 4/3/2/4/3/4 respectively; shared points regenerate two per day, capped at 30. Eligibility depends on officer attributes/level/traits, morale, movement/action status, source terrain, target and points. The UI uses rule queries for costs, rejection reasons, targets and forecasts. See the [tactic table](player-guide.md#6-战斗操作计策与水战), rather than the old v0.2 battle guide.
 
 Damage, counterattack and tactic forecasts share resolution helpers. Current/next weather, provisions, movement/range, attributes and tile effects are visible in the conditions panel. Inspection clicks can still perform legal map actions; they are not a separate no-action mode.
 
 ## Universal water rule
 
-All six types can enter and leave passable water without a skill, vessel inventory or unlock. A step touching water costs at least two movement points. While standing on water, attack damage is multiplied by **0.75**, incoming troop damage by **1.25**. Source and target water status are evaluated separately; shore→water, water→shore and water→water attacks are legal in normal range. Damaging tactics/counterattacks use the same common water model. Naval has no exemption. Leaving water restores land modifiers.
+All base troop types and their elite variants can enter and leave passable water without a skill, vessel inventory or unlock. A step touching water costs at least two movement points. While standing on water, attack damage is multiplied by **0.75**, incoming troop damage by **1.25**. Source and target water status are evaluated separately; shore→water, water→shore and water→water attacks are legal in normal range. Damaging tactics/counterattacks use the same common water model. Naval has no exemption. Leaving water restores land modifiers.
 
 Normal-hit terrain protection and fire weather/forest modifiers remain separate shared factors. Boat artwork does not override these rules. Strategic movement still requires a configured route.
 
 ## Daily resolution and outcomes
 
-Each participating player battle submits once per global day; all required player submissions must complete before the world advances once. NPC-only battles are automatic. Save/reload preserves the daily cursor and manual-command authority rejects nonparticipants.
+Each participating player battle submits once per global day; all required player submissions must complete before the world advances once. NPC-only battles are automatic. Finishing one field does not discard the others: closing its report returns to an unfinished battlefield. If all remaining fields already submitted, Advance 1 day resumes the shared day, including after reload. The campaign one-day control also permits this state; multi-day advance remains unavailable during manual battles. Save/reload preserves the daily cursor and manual-command authority rejects nonparticipants.
 
 Elimination, army rout, withdrawal or the time limit can decide a field. Normal battles allow 30 days, raids 10. Current timeout policy is `survivor-count`: compare combat-ready totals; ties go to defender. Capture changes ownership, Raid loots and returns without occupation, Sack captures and destructively plunders. Returning armies/cargo still travel. Empty cities resolve directly without creating free militia or combat XP.
 
@@ -38,8 +40,10 @@ Withdraw army is a side-level action requiring no selected unit. Confirmation pr
 
 NPC and auto-command armies use the same retreat policy: consider an orderly retreat with a valid route when healthy strength is at most 30% of its opening strength and at most half the enemy's. Existing forced outcomes cannot be downgraded by that policy. Final reports freeze healthy/wounded/permanent loss and XP rather than reading later officer counts.
 
+After confirming a conquest report, choose personal rule, appoint a governor or defer the decision to the Inbox. A captured ruler is succeeded immediately; recruiting the captive ruler lowers remaining living officers and owned cities of the former house by 10 loyalty, floored at zero. Refusal, release, exchange and execution do not apply that loss. Surviving houses display their current ruler.
+
 ## Source and evidence
 
 Authoritative source: [battle/engine.ts](../../src/v03/battle/engine.ts), [rules.ts](../../src/v03/battle/rules.ts), [maps.ts](../../src/v03/battle/maps.ts), [types.ts](../../src/v03/battle/types.ts), [battlefields/](../../src/v03/battle/battlefields/layout.ts); strategic aftermath is in `engine.ts`.
 
-F06/F07 and RV01/RV06/RV08/RV09/RV10 repairs are complete. Recorded tests cover map seeds/directions, six-type shore/water combinations, tactics/forecasts, saved cursors, names, counts and confirmation. [Latest recorded checks](evidence/rv-implementation-2026-10-21/README.md). Human battle feel, long campaigns and low-end performance remain open acceptance, not proven by these tests.
+F06/F07 and RV01/RV06/RV08/RV09/RV10 repairs are complete. Recorded tests cover map seeds/directions, six-type shore/water combinations, tactics/forecasts, saved cursors, names, counts and confirmation. [Current validation](implementation-status.md); [historical RV checks](evidence/rv-implementation-2026-10-21/README.md). Human battle feel, long campaigns and low-end performance remain open acceptance, not proven by these tests.

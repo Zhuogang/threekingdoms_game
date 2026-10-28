@@ -14,10 +14,12 @@ export function CityAffairs({
   context,
   onWork,
   onGovernor,
+  onTransfer,
 }: {
   context: GameplayContext;
   onWork: (action: CityWorkAction) => void;
   onGovernor: () => void;
+  onTransfer: () => void;
 }) {
   const { state, selectedCity: city, locale, t } = context;
   if (!city) return null;
@@ -97,6 +99,10 @@ export function CityAffairs({
           <PendingGovernor context={{ ...context, selectedCity: city }} />
         </>
       )}
+      <Button className="v03-step-choice" onClick={onTransfer}>
+        {message(locale, 'flow.officerTransfer')}
+        <span aria-hidden>→</span>
+      </Button>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 # Daily calendar, journeys and logistics
 
-Current reference checked October 26, 2026. [Player guide](player-guide.md) · [Governance/orders](03-governors-and-authority.md) · [Wounded rules](09-wounded-retreat-and-captivity-design.md) · [Original design brief](history/design/02-calendar-and-logistics.md).
+Current reference checked October 28, 2026. [Player guide](player-guide.md) · [Governance/orders](03-governors-and-authority.md) · [Wounded rules](09-wounded-retreat-and-captivity-design.md) · [Original design brief](history/design/02-calendar-and-logistics.md).
 
 ## Implemented behavior
 
@@ -10,6 +10,14 @@ Current reference checked October 26, 2026. [Player guide](player-guide.md) · [
 - Journeys carry officers/troops, food and cargo on versioned route snapshots. Departure, arrival, return and safe redirection are real states. Battle-created returns begin moving no earlier than the next strategic day.
 - Approved orders reserve stock; dispatch debits it; delivery credits it on arrival. Repeated confirmation cannot duplicate a party. Undelivered cargo remains accounted for through capacity/return handling instead of silently vanishing.
 - Daily food uses a fixed-point remainder, including small forces. City troop-service responsibility accumulates over actual service days for monthly accounting. A unit cannot simultaneously be in city, travel and battle rosters.
+
+## City work and officer travel
+
+Work budgets refresh to two points every ten actual game days; month-end income, appointment handovers and monthly search/first-assignment limits remain monthly. Unused work does not accumulate, and event-stopped advances count only elapsed days.
+
+Ordinary officer transfers use a separate `transfer` journey kind through the existing route, provisions, saved-travel and arrival engine. They carry the whole selected healthy/wounded contingent, debit ready source garrison soldiers and outbound/possible-return food once, pause recovery/reorganization while travelling, and station officers immediately on arrival. Governor appointments share retained-contingent travel but wait for the legal office handover. Both preserve spent work and troop XP/type.
+
+After a battlefield resolves, other manual fields stay available. When all surviving fields have submitted, Advance 1 day can finish the shared date once; closing a report and reading governance choices do not themselves advance time.
 
 ## Travel and provision defaults
 

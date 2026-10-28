@@ -1,5 +1,7 @@
 # v0.3 playability and interface plan
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 Written October 22, 2026 on branch `hegemony_of_the_three_kindoms_v0.3`. This plan follows a hands-on play session and a source review. It adds new scoped tasks; it does not reopen the completed RV01–RV10 work. [Current status](implementation-status.md) · [Open items before this plan](../next-steps.md#open-now) · [Decisions D1–D11](00-decisions-and-contracts.md).
 
 Implementation and executed evidence: [playability implementation ledger](playability-implementation.md). Fresh-player, actual low-end hardware and artwork acceptance remain player-owned gates.

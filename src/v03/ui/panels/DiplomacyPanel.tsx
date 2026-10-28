@@ -2,7 +2,7 @@ import { displayName } from '../shared/app-copy-3';
 import { Button, Select } from '../kit';
 import { message } from '../../i18n';
 
-import { getV03AllianceChance } from '../../campaign/diplomacy';
+import { getV03AllianceChance, hasProposedV03AllianceThisMonth } from '../../campaign/diplomacy';
 import { isV03AllianceActive } from '../../campaign/monthly-systems';
 
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -108,6 +108,7 @@ export function DiplomacyPanel({
             type="button"
             disabled={
               state.phase === 'finished' ||
+              hasProposedV03AllianceThisMonth(state, diplomacyTarget.id) ||
               playerAlliances.some((alliance) =>
                 [alliance.a, alliance.b].includes(diplomacyTarget.id),
               )
@@ -118,6 +119,13 @@ export function DiplomacyPanel({
           >
             {t.propose}
           </Button>
+          {hasProposedV03AllianceThisMonth(state, diplomacyTarget.id) ? (
+            <p className="v03-muted">
+              {locale === 'zh'
+                ? '下月可再次向该势力提议结盟。'
+                : 'You can propose to this faction again next month.'}
+            </p>
+          ) : null}
         </>
       ) : (
         <p className="v03-muted">

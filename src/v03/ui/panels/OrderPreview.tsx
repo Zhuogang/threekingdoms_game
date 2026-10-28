@@ -48,6 +48,17 @@ export function OrderPreview({
             {orderPreview.preview.deficit.food.toLocaleString()} · {t.troops}{' '}
             {orderPreview.preview.deficit.troops.toLocaleString()}
           </span>
+          {orderPreview.preview.travelFood > 0 ? (
+            <span>
+              {locale === 'zh'
+                ? '另需路粮（从出发城扣除）'
+                : 'Additional travel provisions (debited at source)'}
+              : {orderPreview.preview.travelFood.toLocaleString()}
+              {orderPreview.preview.travelFoodDeficit > 0
+                ? ` · ${t.planGap}: ${orderPreview.preview.travelFoodDeficit.toLocaleString()}`
+                : ''}
+            </span>
+          ) : null}
         </>
       ) : (
         <>

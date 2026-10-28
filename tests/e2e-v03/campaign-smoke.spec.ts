@@ -282,7 +282,7 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
   expect(await storedSave(page)).toMatchObject({ version: 3, state: { absoluteDay: 11 } });
 });
 
-test('runs reward, equipment, and relief through capital work points and persists the results', async ({
+test('charges work only for relief while preserving reward and equipment costs', async ({
   page,
 }) => {
   await startCampaign(page);
@@ -315,7 +315,7 @@ test('runs reward, equipment, and relief through capital work points and persist
       );
       return city?.workPointsUsed;
     })
-    .toBe(3);
+    .toBe(1);
 
   const saved = await page.evaluate((key) => {
     const raw = localStorage.getItem(key);
@@ -574,7 +574,9 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await englishWiki.getByRole('button', { name: 'Battle controls', exact: true }).click();
   await expect(englishWiki.getByText(/Six tactics are available/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Governors', exact: true }).click();
-  await expect(englishWiki.getByText(/reward an officer for 100 gold/)).toBeVisible();
+  await expect(
+    englishWiki.getByText(/Every owned city refreshes to two work points every ten game days/),
+  ).toContainText('Assignment, contingent returns, rewards and equipment use no work points.');
   await expect(englishWiki.getByText(/Recruit → assign → march/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Close' }).click();
 
@@ -591,7 +593,9 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(chineseWiki.getByText('战场部队')).toBeVisible();
   await expect(chineseWiki.getByText(/步兵稳定守线/)).toBeVisible();
   await chineseWiki.getByRole('button', { name: '太守', exact: true }).click();
-  await expect(chineseWiki.getByText(/君主本城每个驻城武将/)).toBeVisible();
+  await expect(chineseWiki.getByText(/每城每旬（10 个游戏日）固定 2 点/)).toContainText(
+    '配兵、归还所部、赏赐和装备不耗工作点',
+  );
   await expect(chineseWiki.getByText(/征募 → 分配 → 出征/)).toBeVisible();
   await chineseWiki.getByRole('button', { name: '战斗操作', exact: true }).click();
   await expect(chineseWiki.getByText(/六种计策/)).toBeVisible();

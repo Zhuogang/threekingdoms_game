@@ -170,7 +170,7 @@ describe.each(['capital', 'local'] as const)('R3 %s first armies', (kind) => {
       targetOfficerId: targetId,
       targetTroops: Math.min(500, stock),
       firstAssignment: true,
-      workPoints: 1,
+      workPoints: 0,
     });
     const beforeSummary = cityPersonnelSummary(state, cityId);
     const result = applyGovernorMonthlyWork(state, plan).state!;
@@ -188,7 +188,7 @@ describe.each(['capital', 'local'] as const)('R3 %s first armies', (kind) => {
       food: 100_000,
       gold: 20_000,
       population: 10_000,
-      workPointsUsed: 1,
+      workPointsUsed: 0,
       autoAssignmentsThisMonth: 1,
     });
     expect(validateV03State(result)).toBe(true);
@@ -220,7 +220,7 @@ describe.each(['capital', 'local'] as const)('R3 %s first armies', (kind) => {
     const organized = apply(recruited.state, cityId);
     expect(organized.plan.action).toBe('assign-troops');
     expect(officer(organized.state, targetId).troops).toBe(Math.min(500, quote.troops));
-    expect(cityAt(organized.state, cityId).workPointsUsed).toBe(2);
+    expect(cityAt(organized.state, cityId).workPointsUsed).toBe(1);
     expect(cityAt(organized.state, cityId).gold).toBe(20_000 - quote.gold);
     expect(cityPersonnelSummary(organized.state, cityId).troops).toBe(
       cityPersonnelSummary(state, cityId).troops + quote.troops,
@@ -256,7 +256,7 @@ describe.each(['capital', 'local'] as const)('R3 %s first armies', (kind) => {
     expect(officer(armed.state, candidateId).troops).toBe(500);
     expect(cityAt(armed.state, cityId)).toMatchObject({
       workMonthIndex: 1,
-      workPointsUsed: 1,
+      workPointsUsed: 0,
       autoAssignmentsThisMonth: 1,
       autoSearchesThisMonth: 0,
     });
@@ -447,7 +447,10 @@ describe('R3 qualification, budgets and stale plans', () => {
   it('shares all automatic work points, preserves approved reserves, and skips unaffordable recruitment', () => {
     const { state, cityId } = fixture('capital', 500);
     cityAt(state, cityId).workPointsUsed = 3;
-    expect(planGovernorMonthlyWork(state, cityId, 1).reasonCode).toBe('monthly-work-spent');
+    expect(planGovernorMonthlyWork(state, cityId, 1)).toMatchObject({
+      action: 'assign-troops',
+      workPoints: 0,
+    });
     cityAt(state, cityId).workPointsUsed = 0;
     approve(state, cityId, 500);
     expect(planGovernorMonthlyWork(state, cityId, 1).firstAssignment).toBe(false);
@@ -520,6 +523,10 @@ describe('R3 qualification, budgets and stale plans', () => {
     }
     const invalid = structuredClone(completed);
     cityAt(invalid, cityId).workPointsUsed = 0;
+    expect(validateV03State(invalid)).toBe(true);
+    cityAt(invalid, cityId).autoSearchesThisMonth = 1;
+    expect(validateV03State(invalid)).toBe(true);
+    cityAt(invalid, cityId).autoSearchesThisMonth = 2;
     expect(validateV03State(invalid)).toBe(false);
   });
 });

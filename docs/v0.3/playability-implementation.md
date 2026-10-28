@@ -1,5 +1,7 @@
 # Playability plan implementation
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 Implements [the October 22 plan](playability-and-ui-plan.md). This ledger distinguishes implementation and repeatable checks from player-owned acceptance. The historical RV evidence remains unchanged.
 
 The subsequent player-approved navigation prototype supersedes the permanent campaign sidebar described below. The main map now opens cities in a native dialog, presents a compact city overview, and opens the army builder only after **March out**. A successful capital dispatch closes the window, preserves the camera, and shows the army and departure notice on the map. **City affairs**, supplies, orders and diplomacy remain available on demand. Cancel/return, failed commands, source changes, both locales and desktop/mobile widths are covered by `tests/e2e-v03/city-flow.spec.ts`; trial captures are in ignored `.artifacts/city-flow/`. Domain rules and save formats are unchanged. This is the first interaction prototype for player feedback, not approval of the wider interface.
@@ -59,9 +61,9 @@ These are controlled three-officer engagements, not a guarantee that every campa
 
 The envelope remains `version: 3`, `ruleset: hegemony-3`. Structured fields, automatic command and monthly prisoner decisions are optional additions. Old event prose and old merged formations are readable. The global phase and daily-cursor validation remain intact; phase no longer grants or removes authority over unrelated cities.
 
-The development cap is 500 on the existing economic scale. Development still costs 80 gold and adds one point. No initial or loaded city is rescaled: a farming point contributes 2.2 food in an ordinary harvest formula before flooring; a commerce point contributes 0.55 gold before flooring. Values already over the cap remain intact and cannot be manually increased.
+The development cap is 500 on the existing economic scale. Development costs 80 gold and one work point, adding up to 20 farming or 10 commerce; previews and results report the actual capped gain. No initial or loaded city is rescaled. City loyalty multiplies the existing rounded base tax by `0.8 + loyalty / 500`, with the final tax rounded down; food and recruitment formulas are unchanged. Values already over the development cap remain intact and cannot be increased. Autonomous rewards/feasts are only considered below 55 officer loyalty. Training checks XP and force independently: XP increases by up to 25 until 500/level 5, force by up to 1 until 100 (105 with fine arms), with existing level-up bonuses. Higher XP in old saves is preserved; only a fully capped officer is blocked.
 
-Execution has no additional loyalty or diplomacy penalty. Recruitment chance is clamped to 5–90%, based on `100 - loyalty`; exchange acceptance is 75%, using the saved RNG. A prisoner receives at most one holder decision per month. Release from a house with no remaining city produces a free neutral officer at the holding city, without reviving the eliminated house.
+Execution has no additional loyalty or diplomacy penalty. Recruitment chance is clamped to 5–90%, based on `100 - loyalty`; exchange acceptance is 75%, using the saved RNG. Recruitment/exchange attempts are monthly; refused exchange consumes both participants’ attempts, while release and execution remain available afterward. Recruiting a captive ruler applies the later 10-point former-house loyalty/city-loyalty loss; execution does not. Release from a house with no remaining city produces a free neutral officer at the holding city, without reviving the eliminated house.
 
 ## Validation record
 

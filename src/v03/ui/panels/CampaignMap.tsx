@@ -94,11 +94,13 @@ export function CampaignMap({ context }: { context: GameplayContext }) {
         const symbol =
           first.kind === 'campaign'
             ? '軍'
-            : first.kind === 'appointment'
-              ? '任'
-              : first.manifest.troopCount > 0
-                ? '兵'
-                : '糧';
+            : first.kind === 'transfer'
+              ? '调'
+              : first.kind === 'appointment'
+                ? '任'
+                : first.manifest.troopCount > 0
+                  ? '兵'
+                  : '糧';
         const groupedLabel = `${cluster.parties.length} ${t.journeyGroup}: ${descriptions.join(' · ')}`;
         return (
           <Button

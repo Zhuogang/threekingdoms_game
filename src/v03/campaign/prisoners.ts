@@ -10,9 +10,47 @@ import { recordEvent } from './reports';
 import { cancelPendingGovernorAppointment } from '../governance/appointments';
 
 export type PrisonerAction = 'release' | 'recruit' | 'exchange' | 'execute';
+export const RULER_DEFECTION_LOYALTY_LOSS = 10;
+
+/** Succession replaces the leader ID immediately, so retain this captivity's ruler identity. */
+export function capturedRulerFaction(state: V03GameState, officer: V03Officer): string | null {
+  if (!officer.alive || officer.location.kind !== 'captured' || !officer.factionId) return null;
+  if (officer.capturedRulerFactionId !== undefined) return officer.capturedRulerFactionId;
+  if (
+    state.factions.some(
+      (faction) => faction.id === officer.factionId && faction.leaderOfficerId === officer.id,
+    )
+  )
+    return officer.factionId;
+  // Earlier saves have no marker; preserve the identity before their history is compacted.
+  return state.events.some(
+    (event) =>
+      (event.code === 'ruler.succession' || event.code === 'ruler.eliminated') &&
+      event.params?.previousOfficerId === officer.id &&
+      event.params.factionId === officer.factionId,
+  )
+    ? officer.factionId
+    : null;
+}
 
 export function prisonerHolder(state: V03GameState, officer: V03Officer): string | null {
   return custodyHolder(state, officer);
+}
+
+/** Active houses are displayed by their current ruler, while their stable IDs stay unchanged. */
+export function syncFactionRulerNames(state: V03GameState): void {
+  for (const faction of state.factions) {
+    const ruler = state.officers.find((officer) => officer.id === faction.leaderOfficerId);
+    if (
+      faction.eliminated ||
+      !ruler?.alive ||
+      ruler.factionId !== faction.id ||
+      ruler.location.kind === 'captured'
+    )
+      continue;
+    faction.name = ruler.name;
+    faction.chinese = ruler.chinese;
+  }
 }
 
 /** A captured ruler stays a prisoner. Loyalty, then stable ID, chooses succession. */
@@ -22,6 +60,8 @@ export function resolveSuccessions(state: V03GameState): void {
     const ruler = state.officers.find((officer) => officer.id === faction.leaderOfficerId);
     if (ruler?.alive && ruler.factionId === faction.id && ruler.location.kind !== 'captured')
       continue;
+    if (ruler?.alive && ruler.factionId === faction.id && ruler.location.kind === 'captured')
+      ruler.capturedRulerFactionId = faction.id;
     const successor = state.officers
       .filter(
         (officer) =>
@@ -85,6 +125,7 @@ export function resolveSuccessions(state: V03GameState): void {
       },
     });
   }
+  syncFactionRulerNames(state);
   disbandOrphanedSources(state);
 }
 
@@ -151,6 +192,7 @@ function disbandCaptiveArmy(state: V03GameState, cityId: string, officer: V03Off
 function releasePersonnel(state: V03GameState, prisoner: V03Officer): void {
   if (prisoner.location.kind !== 'captured' || !prisoner.location.cityId)
     throw new Error('The prisoner is still being escorted.');
+  if (capturedRulerFaction(state, prisoner)) prisoner.capturedRulerFactionId = null;
   const city = state.cities.find(
     (entry) => prisoner.location.kind === 'captured' && entry.id === prisoner.location.cityId,
   )!;
@@ -242,6 +284,8 @@ export function decidePrisoner(
     );
   const next = structuredClone(state);
   const officer = next.officers.find((entry) => entry.id === officerId)!;
+  const rulerFactionId = capturedRulerFaction(state, prisoner);
+  if (rulerFactionId) officer.capturedRulerFactionId = rulerFactionId;
   const cityId = prisoner.location.cityId;
   officer.governorOfCityId = null;
   if (action === 'recruit' || action === 'exchange') officer.prisonerActionMonth = next.monthIndex;
@@ -250,6 +294,7 @@ export function decidePrisoner(
       next.monthIndex;
   let accepted = true;
   if (action === 'execute') {
+    if (rulerFactionId) officer.capturedRulerFactionId = null;
     disbandCaptiveArmy(next, cityId, officer);
     Object.assign(officer, {
       alive: false,
@@ -264,11 +309,20 @@ export function decidePrisoner(
     next.rng = (Math.imul(next.rng, 1664525) + 1013904223) >>> 0;
     accepted = next.rng % 100 < (action === 'recruit' ? prisonerRecruitChance(officer) : 75);
     if (accepted && action === 'recruit') {
+      if (rulerFactionId) officer.capturedRulerFactionId = null;
       officer.factionId = holderId;
       officer.loyalty = 60;
       officer.location = { kind: 'city', cityId };
       officer.reorganizationDays =
         personnelCount(officer) > 0 ? PERSONNEL_RULES.reorganizationDays : 0;
+      if (rulerFactionId) {
+        for (const remaining of next.officers)
+          if (remaining.alive && remaining.factionId === rulerFactionId)
+            remaining.loyalty = Math.max(0, remaining.loyalty - RULER_DEFECTION_LOYALTY_LOSS);
+        for (const city of next.cities)
+          if (city.factionId === rulerFactionId)
+            city.loyalty = Math.max(0, city.loyalty - RULER_DEFECTION_LOYALTY_LOSS);
+      }
     }
     if (accepted && action === 'exchange') {
       releasePersonnel(next, officer);
@@ -287,7 +341,19 @@ export function decidePrisoner(
       holderId === state.playerFactionId || prisoner.factionId === state.playerFactionId
         ? 'notice'
         : 'chronicle',
-    params: { officerId, action, accepted },
+    params: {
+      officerId,
+      action,
+      accepted,
+      ...(rulerFactionId && action === 'recruit' && accepted
+        ? {
+            rulerDefection: true,
+            formerFactionId: rulerFactionId,
+            officerLoyaltyLoss: RULER_DEFECTION_LOYALTY_LOSS,
+            cityLoyaltyLoss: RULER_DEFECTION_LOYALTY_LOSS,
+          }
+        : {}),
+    },
   });
   resolveSuccessions(next);
   next.revision++;

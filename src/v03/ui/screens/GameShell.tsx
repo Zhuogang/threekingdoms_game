@@ -14,6 +14,7 @@ import type { GameplayContext } from '../hooks/gameplayView';
 import { TopBar } from '../panels/TopBar';
 import { Workspace } from '../panels/Workspace';
 import { CampaignWindow } from '../panels/CampaignWindow';
+import { activeCityGovernance, CityGovernancePrompt } from '../panels/CityGovernanceDialog';
 export function GameShell({
   context,
 }: {
@@ -78,6 +79,7 @@ export function GameShell({
     >
       {context.showReports ? <ReportsInbox context={context} /> : null}
       {(() => {
+        if (activeCityGovernance(context)) return null;
         const event = context.state.events.find(
           (entry) =>
             entry.kind === 'battleResolved' &&
@@ -90,14 +92,18 @@ export function GameShell({
             event={event}
             state={context.state}
             locale={locale}
+            closeLabel={
+              context.activeBattles.length ? message(locale, 'flow.continueBattle') : undefined
+            }
             onClose={() => {
               dispatch({ type: 'acknowledgeEvent', eventId: event.id });
               context.setSelectedCityId(event.battleOutcome!.cityId);
-              context.setViewMode('campaign');
+              context.setViewMode(context.activeBattles.length ? 'battle' : 'campaign');
             }}
           />
         ) : null;
       })()}
+      <CityGovernancePrompt context={context} />
 
       {!context.isBattleView || display.panels.topbar ? <TopBar context={{ ...context }} /> : null}
       {autosaveError ? (

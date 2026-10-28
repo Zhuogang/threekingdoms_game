@@ -11,11 +11,13 @@ export function BattleOutcome({
   state,
   locale,
   onClose,
+  closeLabel,
 }: {
   event: V03DomainEvent;
   state: V03GameState;
   locale: V03Locale;
   onClose?: () => void;
+  closeLabel?: string;
 }) {
   const report = event.battleOutcome;
   if (!report) return null;
@@ -114,7 +116,7 @@ export function BattleOutcome({
       ) : null}
       {onClose ? (
         <Button variant="primary" onClick={onClose}>
-          {message(locale, 'ui.return.to.campaign.48')}
+          {closeLabel ?? message(locale, 'ui.return.to.campaign.48')}
         </Button>
       ) : null}
     </>

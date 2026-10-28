@@ -4,7 +4,11 @@ import { troopName } from '../../rendering/presentation';
 import { recruitmentQuote } from '../../campaign/recruitment';
 import { availableReserveTroops } from '../../campaign/personnel';
 import { useMemo, useRef, useState } from 'react';
-import { applyV03CityAction } from '../../governance/city-actions';
+import {
+  applyV03CityAction,
+  cityActionWorkCost,
+  cityWorkRefreshDays,
+} from '../../governance/city-actions';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, Field, Input, StatGrid, Select } from '../kit';
@@ -53,6 +57,8 @@ export function WorkBudget({ context }: { context: GameplayContext }) {
       <strong>
         {context.directWorkRemaining}/{context.directWorkQuota}
       </strong>
+      {' · '}
+      {message(context.locale, 'flow.workRefresh', { days: cityWorkRefreshDays(context.state) })}
     </p>
   );
 }
@@ -97,8 +103,13 @@ export function CityWork({
   const afterOfficer =
     preview?.ok && officer ? preview.state.officers.find((entry) => entry.id === officer.id) : null;
   const changes: { label: string; value: string }[] = [];
-  const add = (label: string, before: number | string, after: number | string | undefined) => {
-    if (after !== undefined && before !== after)
+  const add = (
+    label: string,
+    before: number | string,
+    after: number | string | undefined,
+    showUnchanged = false,
+  ) => {
+    if (after !== undefined && (before !== after || showUnchanged))
       changes.push({
         label,
         value: `${before.toLocaleString()} → ${after.toLocaleString()}`,
@@ -116,9 +127,14 @@ export function CityWork({
   if (officer && afterOfficer) {
     add(t.troops, officer.troops, afterOfficer.troops);
     add(message(locale, 'ui.loyalty.52'), officer.loyalty, afterOfficer.loyalty);
-    add(message(locale, 'ui.force.53'), officer.force, afterOfficer.force);
+    add(message(locale, 'ui.force.53'), officer.force, afterOfficer.force, action === 'train');
     add(message(locale, 'ui.intellect.54'), officer.intellect, afterOfficer.intellect);
-    add(message(locale, 'ui.experience.55'), officer.experience, afterOfficer.experience);
+    add(
+      message(locale, 'ui.experience.55'),
+      officer.experience,
+      afterOfficer.experience,
+      action === 'train',
+    );
     add(message(locale, 'ui.level.56'), officer.level, afterOfficer.level);
   }
   return (
@@ -210,7 +226,9 @@ export function CityWork({
       {action === 'search' || action === 'feast' || action === 'equip' || action === 'recruit' ? (
         <p>{message(locale, `flow.workHint.${action}`)}</p>
       ) : null}
-      <p className="v03-muted">{message(locale, 'flow.workCost')}</p>
+      <p className="v03-muted">
+        {message(locale, cityActionWorkCost(action) ? 'flow.workCost' : 'flow.noWorkCost')}
+      </p>
       {!availability.ok ? (
         <p className="v03-action-reason" role="status">
           {context.capitalReason(action, officerId, amount, troopType)}

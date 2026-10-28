@@ -1,4 +1,5 @@
 import { marchArmy } from './governance/army';
+import { transferOfficers } from './governance/officer-transfer';
 import { applyCityPersonnelCommand } from './campaign/city-personnel';
 import { decidePrisoner } from './campaign/prisoners';
 import {
@@ -9,6 +10,7 @@ import {
   recallV03Journey,
 } from './engine';
 import { queueGovernorAppointment } from './governance/appointments';
+import { resolveCityGovernance } from './governance/conquest';
 import { acceptV03Invitation, breakV03Alliance, proposeV03Alliance } from './campaign/diplomacy';
 import { applyV03CityAction } from './governance/city-actions';
 import { createV03OrderServices } from './governance/services';
@@ -37,6 +39,15 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
     return { ok: false, state, error: 'This campaign has ended.' };
   }
   switch (command.type) {
+    case 'transferOfficers':
+      return transferOfficers(
+        state,
+        command.sourceCityId,
+        command.targetCityId,
+        command.officerIds,
+      );
+    case 'resolveCityGovernance':
+      return resolveCityGovernance(state, command, services);
     case 'returnTroops':
     case 'disband':
       return applyCityPersonnelCommand(state, command);

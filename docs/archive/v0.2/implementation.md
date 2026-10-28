@@ -1,5 +1,7 @@
 # v0.2 implementation and learning guide (historical)
 
+> Historical source references: retired files and the optional BAYE checkout are recorded as paths below, not links to files shipped in the current tree. See the [current documentation index](../../README.md) for active source references.
+
 > Archived October 22, 2026. This describes the old React/Pixi/IndexedDB game. Use the [v0.3 developer guide](../../v0.3/development.md) for the active application.
 
 Status: October 20, 2026 (v0.2). The repository contains a runnable, single-player web game using TypeScript, React, and PixiJS. The **Atlas ruleset (`baye-atlas-2`, state and save version 2)** supplies two scenarios (190 CE and 200 CE, 24 cities, six houses each, 52 officers plus Ma Chao in 200 CE), city management, plunder, diplomacy, logistics, tactical battles with tactic points, zone of control and morale, AI, campaign endings including the Hegemon victory, and local saves. English and Simplified Chinese are available throughout play. [v0.2-summary.md](v0.2-summary.md) lists the current checks; [v0.2-rules.md](v0.2-rules.md) is the full reference for everything v0.2 added; [v0.2-notes.md](v0.2-notes.md) lists deviations and balance evidence.
@@ -24,17 +26,17 @@ IndexedDB          i18n presentation catalogs
 platform/saves.ts also validates and exports JSON backups
 ```
 
-| File                                                                                                    | Responsibility and reason                                                                                             |
-| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [`src/game/types.ts`](../../../src/game/types.ts)                                                       | Serializable entities, commands, campaign phases, and battle continuation. IDs connect records without object cycles. |
-| [`src/game/campaign.ts`](../../../src/game/campaign.ts)                                                 | Authoritative rules, campaign AI, battle aftermath, monthly progression, and semantic save validation.                |
-| [`src/game/battle.ts`](../../../src/game/battle.ts)                                                     | Grid movement, attacks, skills, weather, provisions, tactical AI, and battle outcomes.                                |
-| [`src/game/random.ts`](../../../src/game/random.ts)                                                     | Saved xorshift32 RNG and bounded chronicle. Drawing a screen never consumes gameplay randomness.                      |
-| [`src/content/scenario.ts`](../../../src/content/scenario.ts)                                           | Authored map adjacency, factions, initial resources, and officer roster.                                              |
-| [`src/app/session.ts`](../../../src/app/session.ts)                                                     | One state snapshot and subscription boundary. React and Pixi request commands through this controller.                |
-| [`src/ui/App.tsx`](../../../src/ui/App.tsx), [`styles.css`](../../../src/ui/styles.css)                 | Management panels, dialogs, battle controls, save UI, and responsive visual styling.                                  |
-| [`src/rendering/GameMap.tsx`](../../../src/rendering/GameMap.tsx)                                       | Procedural atlas and battle artwork, picking, pan/zoom, resize, and Pixi lifecycle cleanup.                           |
-| [`src/platform/saves.ts`](../../../src/platform/saves.ts), [`audio.ts`](../../../src/platform/audio.ts) | Browser-dependent storage/export and optional synthesized audio.                                                      |
+| File                                             | Responsibility and reason                                                                                             |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `src/game/types.ts`                              | Serializable entities, commands, campaign phases, and battle continuation. IDs connect records without object cycles. |
+| `src/game/campaign.ts`                           | Authoritative rules, campaign AI, battle aftermath, monthly progression, and semantic save validation.                |
+| `src/game/battle.ts`                             | Grid movement, attacks, skills, weather, provisions, tactical AI, and battle outcomes.                                |
+| `src/game/random.ts`                             | Saved xorshift32 RNG and bounded chronicle. Drawing a screen never consumes gameplay randomness.                      |
+| `src/content/scenario.ts`                        | Authored map adjacency, factions, initial resources, and officer roster.                                              |
+| `src/app/session.ts`                             | One state snapshot and subscription boundary. React and Pixi request commands through this controller.                |
+| `src/ui/App.tsx`, `src/ui/styles.css`            | Management panels, dialogs, battle controls, save UI, and responsive visual styling.                                  |
+| `src/rendering/GameMap.tsx`                      | Procedural atlas and battle artwork, picking, pan/zoom, resize, and Pixi lifecycle cleanup.                           |
+| `src/platform/saves.ts`, `src/platform/audio.ts` | Browser-dependent storage/export and optional synthesized audio.                                                      |
 
 `dispatch` clones the current snapshot, validates and applies a command to that draft, and publishes it only on success. A failed command returns the original object: no partial costs, assignments, or RNG changes. At this scale, full snapshot cloning is easier to inspect than structural sharing. Simulation runs on the main thread and has no React, Pixi, DOM, or clock dependency.
 

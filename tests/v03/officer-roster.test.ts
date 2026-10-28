@@ -326,7 +326,7 @@ describe.each(scenarios)('R1 opening configuration: %s', (scenarioId) => {
     if (scenarioId === 'divided-realm-190') {
       expect(setup.cities.find((city) => city.id === 'beihai')).toMatchObject({
         governorId: 'yanliang',
-        workPoints: 1,
+        workPoints: 2,
         healthyTroops: 700,
       });
       expect(setup.reserveAssignments).toEqual([
@@ -335,17 +335,11 @@ describe.each(scenarios)('R1 opening configuration: %s', (scenarioId) => {
     }
   });
 
-  it('counts only local serving officers and leaves the archived scenario baseline untouched', () => {
+  it('gives each owned city two work points and leaves the archived scenario baseline untouched', () => {
     const oldContent = JSON.stringify(SCENARIOS);
     const setup = createOfficerRosterSetup(scenarioId);
     for (const city of setup.cities) {
-      const count = setup.officers.filter(
-        (officer) =>
-          officer.status === 'serving' &&
-          officer.factionId === city.factionId &&
-          officer.cityId === city.id,
-      ).length;
-      expect(city.workPoints).toBe(city.factionId === null ? 0 : Math.min(3, count));
+      expect(city.workPoints).toBe(city.factionId === null ? 0 : 2);
     }
     setup.officers[0]!.troops = 9999;
     setup.cities[0]!.reserveAdditions.cavalry = 9999;

@@ -1,6 +1,6 @@
 # v0.3 player guide / 中英玩法指南
 
-Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
+Updated October 28, 2026 against the current working tree. [Overview](README.md) · [Release notes](release-notes.md) · [Known limits](implementation-status.md). The game itself has searchable Chinese/English Wiki help; this guide covers the same current version, not the older Pixi game.
 
 ## 中文玩法指南
 
@@ -12,49 +12,65 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 主界面以大地图为主，点击城池后才打开操作窗口。“返回城池”回到本城概况，“返回大地图”或关闭按钮回到原地图位置；Esc 逐层返回。
 
+城池概况直接显示守军、预备兵、粮食、金钱、农业、商业、人口和治安／民心；治安与民心是同一个城市数值。城务中另显示本旬可用工作点。
+
 ### 2. 第一月：征募 → 分配 → 出征
 
-1. 在大地图点击君主本城，打开城池窗口，概况显示金粮，再点“城务”查看农商、预备兵、人口及本月工作点。工作点等于驻城在世己方武将数，上限 3；本城内政共用这些点。
+1. 在大地图点击君主本城，打开城池窗口，概况显示金粮，再点“城务”查看农商、预备兵、人口及本月工作点。每城每旬（10 个游戏日）固定 2 点，执行事务仍需在世己方驻将；武将进出不改变额度，迁都、任免不刷新已用点数。
 2. 在“城务”选“征募士兵”，指派执行武将，查看变化后点“确认执行”，成功后返回城务菜单。征募先把人口转为**预备兵**，不会直接增加武将带兵数。征募也会消耗工作点并降低少量民心。
-3. 返回城池，依次进入“驻城武将 → 选择武将 → 调整兵力”，输入希望的**最终带兵数**，核对变化后点“确认执行”。完成后返回这名武将的详情。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。调整也受工作点和已有承诺限制。
+3. 返回城池，依次进入“驻城武将 → 选择武将 → 调整兵力”，输入希望的**最终带兵数**，核对变化后点“确认执行”。完成后返回这名武将的详情。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。配兵不耗工作点，仍受兵种、兵员、整编和已有承诺限制。
 4. 返回城池概况，点“出征”，勾选随军武将，选择目标并核对军粮、行程和敌军；点击“确认出征”。君主本城直接派出所选武将，窗口关闭并回到原位置的大地图，显示部队行军标记。
 5. 出征兵力等于所选武将**整支所部**之和。太守城市的方案仍可能因最低留守、预留与军粮出现缺口，需接受缩减、等待或取消。
 6. 方案若需要决策，可接受、接受缩减、等待足额或取消。出发后会出现实际行程；未抵达不会瞬间获得目的地资源或开战。
 7. 推进一日或到下个事件。关键报告需要确认，普通月报与天下纪事不会暂停；军队会行军、吃粮、到达并开战。胜败之后仍需处理驻留或返程。
 
-不是每个动作都能在同一个月做完。工作点用尽需等月界；不要反复任免太守试图刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
+配兵、归还所部、赏赐和装备不耗工作点，保留原有资源成本与限制；其他城务每次消耗 1 点，用尽需等下个旬界。太守和 AI 同样执行。迁都或任免不会刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
 
 ### 3. 太守、地方自治与订单
 
+普通武将跨城调动：打开出发城的“城务 → 武将调动”，勾选多人或全选可用驻将，再选择另一座己方城池。确认前查看健全兵、伤兵、行程天数和去返路粮；确认后携带整支所部出发，不耗工作点。途中暂停治疗和整编，抵达后直接驻城，无需任命或等待月界。兵种、经验及整编状态保留；君主、现任太守、待赴任或已被批准命令占用的人选显示不可选原因。可从“军情与命令”查看在途队伍。
+
+工作点在每月第 11 日、第 21 日和下月第 1 日刷新至 2 点，未用点数不累计。推进十日和逐日推进采用同一游戏时间；遇报告或战斗提前停下，只计算实际经过的天数。面板显示距下次刷新的游戏日数。收入、粮耗、任职交接及自动搜索、首次自动配兵次数仍按原月度规则结算。旧存档保留原有消耗，跨过下个旬界后刷新。
+
 君主本城可以直接内政。其他城市由正式太守或地方班底自治，不能逐项控制其农业、装备或编兵；你仍可查看库存、征调金粮兵、下达出征令、任免太守并临阵指挥。
 
-点击己方自治城市，进入“城务 → 太守任免”，在“太守人选”中查看候选人及不可用理由。跨城调任必须先归还全部带兵，再按路线旅行；抵达后在合法月界就任。原职和目的地当前治理持续到实际交接，不会点击后立即换城或刷新工作点。
+点击己方自治城市，进入“城务 → 太守任免”，在“太守人选”中查看候选人及不可用理由。任职和调任均无需先清空所部。跨城调任携带现有健全兵与伤兵，保留兵种、经验和整编状态；出发时扣除来源城守军和去返路粮，途中不治疗或推进整编，抵达后在合法月界就任。原职和目的地当前治理持续到实际交接，不会点击后立即换城或刷新工作点。选择君主表示亲治：实际就任时同步切换君主本城，原本城转为自治；待赴任期间仍保留原本城。
+
+攻占城市并确认战报后，自动选择新城治理方式：“自任太守”需要君主已经抵达，将新城设为君主本城，原本城转为地方班底维持，两城库存、兵员和已用工作点保留；“任命太守”允许同城驻将保留所部立即就任，跨城人选沿用调任行程和月界。可点“稍后处理”，暂由地方班底维持，并从收件箱的治理待办继续；连续攻城逐城处理，未决事项读档后仍保留。
 
 从城池进入“征调资源 → 选择命令 → 选择目的地 → 填写数量 → 查看方案”，核对后再提交。核对页返回不会生成订单或扣除资源；足额请求按原规则直接出发并返回请求菜单，有缺额时进入答复页，接受、缩减、等待或取消后返回菜单。待答复方案退出后可继续查看，订单也保留在“军情与命令”中。
 
 资源订单的目的地是友城。答复说明可执行量、缺额、最早出发和预计到达；接受后保留相应资源，出发后从来源库存扣除，到达才交付。已派出且仍允许返程的行程可请求召回；进入战斗后不能瞬间召回。目的地易手或容量不足等情况会有报告。
 
+含兵力的调拨会按实际路线另备单程路粮，骑兵粮耗为两倍；确认页显示额外开销。出发时扣除交付物资和路粮，途中消耗路粮，余粮随队到达。路粮不足的部队不会出发，可以等待或缩减请求。该扣粮修正适用于新出发行程，不追溯扣除旧存档中已在途部队的出发粮。
+
 从地图打开“外交 → 选择势力 → 结盟或解盟”，核对成功率或解盟后果后确认，得到答复后返回该势力详情。有效同盟持续六个月，期间双方不能互相出征。联盟邀请有独立的确认页，加入后返回外交列表。势力详情中的游戏指南可查看规则说明。
+
+对同一势力每月只能提议一次，成功或失败都会记次；解盟当月也不能向对方重新提议。其他势力分别计次，读档不会重置。
 
 地图底部“军情与命令”和顶栏“收件箱”列出全部当前事项，可滚动查看。时间停住时先看报告的到期数量，以及是否还有己方战场未提交本日指令。纯 NPC 战斗会自动处理，不需要你替敌军操作。
 
 ### 4. 装备与本城经营
 
-每项城务先选择执行武将。征兵按执行者武力计算人数，搜索和治安使用其智力；农业、商业等固定效果保持原样。所有执行者共用城市工作点，不新增个人行动次数或任务占用时间。
+宴饮可勾选本城在世己方驻将并全选，只有所选者获得最多 8 点忠诚，整场耗 1 点工作点。赏赐、赐予兵器同样支持多选与全选可用武将：分别按每人 100 金、180 金合计，不耗工作点；忠诚已满、已有兵器或武力封顶者会说明原因。确认前显示人数、总费用及各将实际变化；无选择、资金不足或人员失效时整批不执行。
+
+发展、征兵、搜索和治安等城务先选择执行武将；宴饮直接勾选参与者，普通调动另选驻将与目的城。征兵按执行者武力计算人数，搜索和治安使用其智力；农业、商业等固定效果保持原样。每城共用每旬固定 2 点；配兵、归还所部、赏赐和装备不耗点，不新增个人行动次数或任务占用时间。
 
 赏赐、装备、训练和配兵从“驻城武将 → 选择武将”进入，每次只打开一项操作，确认后回到武将详情。俘虏从“驻城武将 → 俘虏 → 选择俘虏”进入，处置后返回俘虏列表。城务操作在确认前显示预计变化；未确认时返回不会消耗资源或工作点。
 
-| 操作             | 当前作用与注意事项                                                                                                                      |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 精良兵器         | 选武将配发，180 金、一个工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                |
-| 赏赐             | 100 金、一个工作点，单将忠诚最多 +15。                                                                                                  |
-| 训练             | 需要驻城且带兵的武将；经验 +25、武力 +1。升级时弓兵再加智力 2，其他兵种再加武力 2，均受属性上限约束；经验或武力达到训练上限时不可训练。 |
-| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +300。                                                                                |
-| 发展农商         | 各花 80 金和一个工作点，提高 1 点；当前上限为 500。已有数值不重算，达到上限时不可继续发展。                                             |
-| 买卖粮食         | 买入 800 粮花 80 金；卖出 800 粮得 80 金，也共用工作点，受库存和已批准预留限制。                                                        |
-| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                |
+| 操作             | 当前作用与注意事项                                                                                                                                                                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 精良兵器         | 选武将配发，180 金、不耗工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                                                                                                                                  |
+| 赏赐             | 100 金、不耗工作点，单将忠诚最多 +15。                                                                                                                                                                                                                    |
+| 训练             | 需要驻城且带兵的武将；经验最多 +25、武力最多 +1，分别判断上限。经验到 500 或 5 级后不再增加，旧档更高经验保留；武力上限 100（精良兵器 105）。升级时弓兵再加智力 2，其他兵种再加武力 2，均受属性上限约束；两项都无提升空间才禁用。预览与反馈显示实际增量。 |
+| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +300。                                                                                                                                                                                                  |
+| 发展农商         | 各花 80 金和一个工作点，农业最多 +20、商业最多 +10，上限为 500。临近上限显示实际增量；已有数值不重算，达到上限时不可继续发展。                                                                                                                            |
+| 买卖粮食         | 买入 800 粮花 80 金；卖出 800 粮得 80 金，也共用工作点，受库存和已批准预留限制。                                                                                                                                                                          |
+| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                                                                                                                                  |
 
 灰色按钮先看理由：权限、阶段、工作点、库存、已有承诺、无合适武将、属性上限均可能造成限制。地图上的“预备兵”和武将“带兵”是不同数字。
+
+城市民心只调整月税收：原基础税收先向下取整，再乘以 `0.8＋民心／500`，最终向下取整，系数范围 80%–100%；粮食与征兵公式不变。武将忠诚保留继位和俘虏处置作用，自治仅在驻将忠诚低于 55 时考虑赏赐或宴饮。
 
 ### 5. 基础兵种与水上单位
 
@@ -69,6 +85,8 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 同类武将所部可在战场上合并显示为编队；单位兵力不等于单名武将的完整个人面板。民兵是守军编组的一种，不能使用计策。
 
 ### 6. 战斗操作、计策与水战
+
+己方部队手动移动成功后，会在附近弹出“攻击、计策、待命、关闭”。选攻击或具体计策后，菜单收起，再在地图点击高亮目标才执行；关闭不撤销移动，也不消耗剩余行动，可重新选中该部队打开菜单。没有合法目标的选项显示不可用原因，自动指挥和失败移动不弹出。
 
 战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队主体使用水墨编队图，下水后变为载兵小船、上岸恢复；按当前存活兵力显示：少于 500 人用小队，500 人及以上用大队，船只暂不分规模。左上角保留编队统领的小头像：右上角小旗是势力色，左下角是兵种，右下角"×3"表示编队里有三位武将，下方是兵力数字和兵力条。可攻击的敌军有红圈，混乱或鼓舞的部队上方有小图标，已行动的部队变灰，溃败的部队半透明。缩得很小时，保留小队图，隐藏头像和次要标记；图片无法加载时显示兵种字。"网格"按钮可以隐藏格线。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
 
@@ -87,11 +105,13 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 所有兵种可进出可通行水格，不需要水军技能或船库存。涉及水的每步至少花 2 移动点；在水上攻击 ×0.75、受到兵力伤害 ×1.25，上岸恢复陆地规则。岸水互攻只需满足正常射程；峭壁所有兵种均不可进入。战场能涉水不代表大地图能离开配置路线任意渡海。
 
-全部己方战场都提交“结束战斗日”后，全局只推进一天；单场已提交的不要重复操作。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败或撤退可提前结束。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
+全部己方战场都提交“结束战斗日”后，全局只推进一天。一场结束后，关闭战报会显示未完战斗；若剩余战场都已提交，可点“推进一日”继续本日结算，读档后同样可继续，不会重复推进日期。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败或撤退可提前结束。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
 
 任务分别是占领、突袭和洗劫：突袭胜利后掠取并返程，不夺城；洗劫在夺城基础上破坏和掠夺，会损害城市。需要资源时也要考虑长期损失。
 
 ### 伤兵、撤退、被俘与恢复
+
+君主被俘时仍立即选出继任者，势力有继任者就会继续存在，并以现任君主姓名显示。招降被俘君主成功时，原势力其余在世武将忠诚与所属城池民心各下降 10 点，最低为 0；招降失败、释放、交换或处决均不触发这项下降。被俘君主身份随存档保留，原所部整编、归还及月度尝试次数规则不变。
 
 征兵时确定步、弓或骑，一名武将只带一种基础兵种；可战兵与随将伤兵合计最多 10000。有效战斗减员的 60% 成为伤兵，40% 永久损失，小额伤害累计余数。可战归零是击溃，仍可能有伤兵；只有两者都归零才是全灭并清空兵员经验。5000 精骑全部失去战斗力时，可留下 3000 伤兵；伤兵保留经验，不能在战场行动或治疗。断粮减员是永久损失。
 
@@ -101,7 +121,9 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 将军被俘时随军所部一起被俘，后方旧伤兵不连带改投。招降成功保留兵种和经验，但所部需 10 个己方有粮驻城日整编，期间不能作战或征调；治疗可同时进行，被看押或在途不推进整编。释放、成功交换均真实返乡，由看押城拨付现有粮食内的返程预算，不凭空补粮；无可达归属城时，释放武将并将所部遣散为当地人口。招降、交换每月一次尝试，交换失败双方也计次，失败后仍可释放或处决。处决武将时所部遣散，不成为胜方兵。失城时城内预备兵、旧伤兵及未参战整编人员散编，不自动加入占领军。
 
-所部、预备兵、待归队老兵、伤兵与俘虏均吃粮，骑兵两倍；俘虏由看押方供粮，不另付己方兵饷。在“驻城武将”或武将详情展开“兵员、养伤与遣散”，查看分项和遣散预览；遣散无需工作点，永久移除对应人员与经验。本城武将可“归还全部所部”，花一个工作点腾空武将，伤兵继续在城休养，不免粮。出征、战报和俘虏处置均显示实际可战、伤兵与限制。
+所部、预备兵、待归队老兵、伤兵与俘虏均吃粮，骑兵两倍；俘虏由看押方供粮，不另付己方兵饷。在“驻城武将”或武将详情展开“兵员、养伤与遣散”，查看分项和遣散预览；遣散无需工作点，永久移除对应人员与经验。各城武将均可不耗工作点“归还全部所部”，伤兵继续在城休养，不免粮。出征、战报和俘虏处置均显示实际可战、伤兵与限制。
+
+自治城也可归还全部所部，且无需太守剩余工作点，方便调整留守与后方休养；任职和普通调动均不要求先归还所部。归还会取消该将所有同城旧兵源的自动归队，保留兵种、兵员经验与整编限制。自治补兵现在覆盖普通驻将，保留同兵种 1000 预备兵并遵守伤兵容量、整编和订单承诺；待就任人选不会被重新配兵。治安已满、所有驻将忠诚已满、兵力数不变的命令不能确认，也不消耗工作点。
 
 ### 7. 镜头、快捷键与存档
 
@@ -114,14 +136,14 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 ### 8. 常见疑问与反馈
 
-| 现象                | 先检查                                                                           |
-| ------------------- | -------------------------------------------------------------------------------- |
-| 时间不走            | 到期报告是否确认；每场己方战斗是否已提交本日。                                   |
-| 征兵后武将兵力没变  | 新兵在预备兵；还需“调整兵力”。                                                   |
-| 出征方案为零或很少  | 整支所部、武将是否可用、留守要求、已批准预留、粮食和路线；方案会列出缺口。       |
-| 任命没立刻生效      | 调任人须无兵、抵达，并等合法月界。                                               |
-| 地图部队很小/看不全 | 开战时镜头已对准己方部队；Fit 看全图，再缩放或用 Unit 聚焦。                     |
-| 战绩不容易扩大      | 当前战略平衡仍有限；不要把诊断机器人结果当作个人胜率。记录实际体验供下一轮修订。 |
+| 现象                | 先检查                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| 时间不走            | 确认到期报告，并提交每场己方战斗的本日；若其余战场均已提交，点“推进一日”继续结算。 |
+| 征兵后武将兵力没变  | 新兵在预备兵；还需“调整兵力”。                                                     |
+| 出征方案为零或很少  | 整支所部、武将是否可用、留守要求、已批准预留、粮食和路线；方案会列出缺口。         |
+| 任命没立刻生效      | 跨城人选可携带所部调任，须抵达后等合法月界就任。                                   |
+| 地图部队很小/看不全 | 开战时镜头已对准己方部队；Fit 看全图，再缩放或用 Unit 聚焦。                       |
+| 战绩不容易扩大      | 当前战略平衡仍有限；不要把诊断机器人结果当作个人胜率。记录实际体验供下一轮修订。   |
 
 提交问题时附剧本/势力、日期、语言、浏览器/视口、导出存档、复现步骤和预期/实际结果。[玩家测试记录模板](../next-steps.md#player-test-record)。素材仍是草稿；指出具体场景、缩放和遮挡问题有助于定向修改。
 
@@ -131,7 +153,7 @@ Updated October 26, 2026 for wounded troops, army retreat and captivity. [Overvi
 
 Launch using the [project README](../../README.md#start-playing). On a fresh browser profile, choose the 190 or 200 scenario and a house, then start; Cao Cao is a reasonable first campaign. A valid browser autosave opens automatically, and Campaign menu offers Resume or a confirmed new game with Export available first. Change language with 中文/EN; F1 opens the in-game Wiki during play.
 
-1. Select the ruler's capital. The overview shows gold and food; **City affairs** shows development, population, reserve and monthly work points. Staffing supplies one point per stationed living friendly officer, capped at three.
+1. Select the ruler's capital. The overview shows garrison, reserve, gold, food, farming, commerce, population and public order/city loyalty (one shared city value). **City affairs** also shows the ten-day work budget. Every owned city refreshes to two points every ten game days and still needs a living friendly stationed executor. Officer movements do not change the quota; capital moves and appointments preserve spent work.
 2. Open **City affairs → Recruit soldiers → assign an officer → Confirm order**. Completion returns to the affairs menu. Recruits enter **city reserve**. Recruitment uses a work point and population; it does not directly increase an officer's army.
 3. Return to the city and open **Officers in the city → choose an officer → Set troop count**. Enter the desired **final** troop count, review the changes, then **Confirm order**. Completion returns to that officer. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. This also uses the shared work budget.
 4. Click your capital on the map, then **March out** in its city window. Choose officers and a destination, check provisions, ETA and defenders, then **Confirm march**. Capital armies depart directly; the window closes and the army appears on the map at the same camera position. City affairs and officers have separate entries; Escape and the footer return one level at a time.
@@ -139,23 +161,52 @@ Launch using the [project README](../../README.md#start-playing). On a fresh bro
 6. If a plan needs a decision, accept, accept a reduced amount, wait or cancel. Approved stock is reserved. Departure creates a journey; delivery and battle wait for arrival.
 7. Advance one day, ten days or to the next event. Acknowledge critical reports, command your arriving troops in battle, then read the aftermath and follow the order through its return. Routine monthly summaries and rival battles do not pause the clock.
 
-Work points reset at monthly settlement, not by repeated appointments. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
+Each city refreshes to two work points every ten actual game days; unused points do not accumulate. Monthly income and office handovers remain monthly. Capital changes, appointments and departing officers do not refund points. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
 
 ### Governors, economy and weapons
 
+Ordinary officer transfers: open the source city’s **City affairs → Transfer officers**, check one or more officers and choose another friendly city. Review healthy troops, wounded, travel days and outbound/return provisions before confirming. Transfers use no work points, preserve whole contingents and arrive as stationed officers immediately, without an appointment or monthly wait. Healing and reorganization pause in transit. Rulers, serving governors, pending appointees and officers committed to approved orders show why they are unavailable. Track travelling parties in **Marches & orders**.
+
+Feasts let you check local friendly guests or select all, costing one work point for the entire feast and adding up to 8 loyalty only to selected officers. Rewards and fine arms support the same selection, costing 100 and 180 gold per recipient without work points. Review headcount, total cost and actual gains before confirming; an unaffordable or invalid group is rejected in full.
+
 Only your capital accepts direct city work. Other cities are autonomous under governors or local stewards; use supply requests and campaign orders instead of controlling their individual internal actions. You retain tactical command of your forces.
 
-Open **City affairs → Governor appointments** in an autonomous city. Appointment submission returns to affairs, showing its pending status. Candidates show shared availability reasons. Cross-city candidates must have zero troops, travel to the new city and take office at a legal monthly boundary. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. The map dock opens **Marches & orders** in its own window; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
+Open **City affairs → Governor appointments** in an autonomous city. Appointment submission returns to affairs, showing its pending status. Candidates show shared availability reasons. Appointment and transfer do not require clearing the contingent. A transfer carries healthy and wounded personnel with their type, XP and reorganization intact. Departure debits ready soldiers and outbound/return provisions from the source. Treatment and reorganization pause during travel; office changes at a legal monthly boundary after arrival. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. The map dock opens **Marches & orders** in its own window; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
+
+After a conquest report, choose the new city's governance. **Govern personally** requires the ruler to be present and moves the ruler's capital; the old capital returns to stewardship. Both cities retain stock, personnel and spent work points. **Appoint a governor** allows a local officer to take office immediately with their contingent, while remote candidates travel and wait for a monthly boundary. **Decide later** leaves local stewardship and keeps an Inbox task. Captured cities are handled in order and pending choices survive reload.
 
 Supply requests follow **request kind → destination → amounts → review → submit**. Review does not issue an order or spend stock. Full requests still dispatch on submission; shortfalls open the existing accept/reduce/wait/cancel decisions. Completion returns to the request menu, and orders remain in Marches & orders.
 
+Troop transfers separately provision the actual outbound route, with double food for cavalry. Review shows this additional cost. Departure deducts cargo plus provisions; travel consumes provisions and delivers any remainder. Underfed forces cannot depart. This applies to new departures; existing journeys in older saves are not retroactively charged.
+
 Diplomacy follows **house → action → confirmation → house details**. Accepted alliances last six months and block attacks between allies. The confirmation screen shows the acceptance chance or the consequences of breaking a treaty. Coalition invitations have a separate confirmation and return to the diplomacy list. House details link to the in-game rules.
 
-City affairs first asks for an executing officer: recruitment uses force, search and security use intellect, and fixed effects keep their existing formulas. Officers share the city work budget; this does not add individual action limits or task duration.
+Each target house allows one proposal per month, including failed offers. Breaking a treaty also prevents another proposal to that house until next month. Other houses have separate limits; loading does not reset them.
 
-Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order has its own screen and returns to the selected officer on success. Prisoners have a separate list and individual decision screen. Fine arms is an officer action: **180 gold and one work point**, up to +5 force, capped at 105. There is no separate weapon inventory, manual weapon-use button or siege equipment. Reward costs 100 gold for up to +15 officer loyalty. Relief costs 80 gold/600 food for up to +15 city loyalty and +300 population. Training needs a stationed officer with troops and adds 25 experience/+1 force; a level-up adds two intellect for archers or two more force for other types, within the attribute cap. Either the experience or force training cap can block it. Farming/commerce development costs 80 gold and a work point for one point of improvement, capped at 500; existing values are not rescaled. Buy/sell trades 800 food for 80 gold. These actions share work points and stock/commitment checks. Search, security and feasts provide the other existing city options. Disabled controls explain authority, resources, staffing, stage, commitments and caps.
+Development, recruitment, search and security ask for an executing officer; feasts select guests directly, and ordinary transfers select officers and a destination. For work with an executor, recruitment uses force, search and security use intellect, and fixed effects keep their existing formulas. Officers share the city work budget; this does not add individual action limits or task duration.
+
+Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order returns to that officer on success; reward/equipment screens also permit group selection. Prisoners have a separate list and decision screen. Previews are read-only; returning before confirmation spends nothing.
+
+| Action                            | Cost and effect                                                                                                                                                                                                                                                                        |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fine arms                         | 180 gold/person, no work points; up to +5 force, cap 105. Existing arms or a full force cap blocks another grant.                                                                                                                                                                      |
+| Reward                            | 100 gold/person, no work points; up to +15 loyalty.                                                                                                                                                                                                                                    |
+| Feast                             | 1 work point for the whole group; up to +8 loyalty for checked guests only.                                                                                                                                                                                                            |
+| Training                          | 1 point; up to +25 officer XP and +1 force, checked independently. XP stops at 500/level 5; higher saved XP is retained. Force cap is 100 or 105 with fine arms. A level-up adds up to 2 intellect for archers or 2 force for other types. Only fully ineffective training is blocked. |
+| Relief                            | 1 point, 80 gold and 600 food; up to +15 city loyalty and +300 population.                                                                                                                                                                                                             |
+| Development                       | 1 point and 80 gold; up to +20 farming or +10 commerce, cap 500. Existing values are not rescaled.                                                                                                                                                                                     |
+| Food trade                        | 1 point; buy/sell 800 food for 80 gold, subject to stocks and reservations.                                                                                                                                                                                                            |
+| Assignment and contingent returns | No work points; preserve personnel/type, reserve, capacity and reorganization checks. Assignment sets a final healthy troop count.                                                                                                                                                     |
+| Ordinary transfer                 | No work points; deduct actual route and possible-return provisions and move the whole selected party.                                                                                                                                                                                  |
+| Search and public order           | 1 point; previews explain availability and effects without exposing the random search result.                                                                                                                                                                                          |
+
+Governors and AI share the work-point costs and refresh. Disabled controls explain authority, resources, staffing, commitments and caps. Fine arms is an officer upgrade, not a weapon inventory or siege system.
+
+City loyalty only modifies monthly tax: multiply the existing rounded base tax by `0.8 + loyalty / 500`, then round down again. The multiplier ranges from 80% to 100%; food and recruitment formulas are unchanged. Officer loyalty retains its succession and prisoner-decision roles. Autonomy only considers rewards or feasts when a local officer has less than 55 loyalty.
 
 ### Troops and battlefield actions
+
+Successful manual movement opens a nearby unit menu: **Attack, Tactics, Wait, Close**. Selecting attack or a specific tactic dismisses the menu so you can choose a highlighted map target before execution. Closing preserves the move and remaining action; select the unit again to reopen. Unavailable choices show a reason. Failed moves and automatic command do not open the menu.
 
 Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker enters on the left. The attacker's last route leg picks one of 15 painted battlefields (a few attack directions have their own), and the same leg and direction always give the same field, named in the battle heading. Unit tokens show a small ink squad below 500 surviving troops and a large formation at 500 or more, changing to a crewed boat on water and back on land. The highest-level officer appears as a separate portrait badge alongside a faction pennant, a troop-type seal, a ×N badge for multi-officer formations, the troop count and a strength bar; attackable enemies have a red ring, confused or inspired units an icon, acted units turn grey and routed units fade. Zoomed far out, squad art remains while portraits and secondary badges hide; the Grid button hides the grid lines. The painting illustrates the grid; inspect a cell to see whether it counts as plain, forest, hill, water or cliff.
 
@@ -182,7 +233,7 @@ At level 3, intellect thresholds drop by 10. Cunning can reduce point costs. Use
 
 All types can cross passable water without a naval skill or boat inventory. A step touching water costs at least two movement points. A unit on water deals ×0.75 attack damage and receives ×1.25 troop damage. Shore/water attacks are legal in normal range. Cliffs are impassable for everyone. Tactical water access does not create arbitrary strategic sea routes.
 
-Submit End battle day in **every player battle**; the global day advances once. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout or withdrawal can end a battle earlier. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
+Submit End battle day in **every player battle**; the global day advances once. Closing a finished battle report exposes the remaining fields. If they already submitted, use **Advance 1 day** to resume the shared day; reload preserves this state. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout or withdrawal can end a battle earlier. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
 
 Soldier level is separate from officer level. Mean soldier XP starts at 0, with one level per 100 XP up to level 20 / 1900 XP. Levels 11–20 display heavy infantry, elite cavalry or strong archers; reinforcement can dilute mean XP and return them to ordinary art. The 500-soldier size threshold, leader portraits and commander-based boat/tower-warship selection still apply independently. Officer details, battle details and reserves show mean XP and distance to the next level.
 
@@ -198,9 +249,13 @@ With a valid refuge route, capture risk per officer is 0% before engagement, 5% 
 
 Existing wounded stay in the departure city with their source and XP. Each full supplied city day heals 10% of eligible wounded, rounded up after grouping by city/type: 3,000 heals 300 on the first day and about 90% over 22 effective days. Travel, field battles and outside waiting give no treatment. Rear veterans rejoin their original officer only in the same city, under the same house, when uncommitted and within capacity; otherwise they remain a separate usable source.
 
-Captured officers retain their field contingent. Recruitment requires 10 supplied days in a city owned by the army faction before it can fight or transfer; healing proceeds alongside it, while captivity and travel pause reorganization. Release and successful exchange create actual return journeys, funded from the holding city's available food up to the travel budget. Without a reachable home city, release frees the officer and disbands the army into local population. Recruitment/exchange attempts are monthly; refused exchange uses both attempts. Release/execution remain available after refusal. Execution disbands the contingent. Rear reserves, old wounded and undeployed reorganizing troops disperse when their city falls.
+Captured rulers are succeeded immediately. A surviving house displays its current ruler’s name. Successfully recruiting the captured ruler lowers the former house’s remaining living officers and owned cities by 10 loyalty, floored at zero; refusal, release, exchange and execution cause no such loss. The captivity identity survives saves; existing army and monthly decision rules remain.
 
-Healthy troops, reserves, rear veterans, wounded and prisoners all consume food; cavalry counts twice. The holder feeds prisoners without paying own-army wages. Expand **Personnel, recovery & disbanding** in city officers/details to review counts and disband selected personnel without a work point. Disbanding permanently removes their XP. **Return the whole contingent** in the capital costs one work point and leaves wounded in city care; returning troops does not remove their food cost.
+Captured officers retain their field contingent. Recruitment requires 10 supplied days in a city owned by the army faction before it can fight or supply a troop requisition; healing proceeds alongside it. Ordinary relocation retains the remaining reorganization days; captivity and travel pause them. Release and successful exchange create actual return journeys, funded from the holding city's available food up to the travel budget. Without a reachable home city, release frees the officer and disbands the army into local population. Recruitment/exchange attempts are monthly; refused exchange uses both attempts. Release/execution remain available after refusal. Execution disbands the contingent. Rear reserves, old wounded and undeployed reorganizing troops disperse when their city falls.
+
+Healthy troops, reserves, rear veterans, wounded and prisoners all consume food; cavalry counts twice. The holder feeds prisoners without paying own-army wages. Expand **Personnel, recovery & disbanding** in city officers/details to review counts and disband selected personnel without a work point. Disbanding permanently removes their XP. **Return the whole contingent** uses no work points in any city and leaves wounded in city care; returning troops does not remove their food cost.
+
+Autonomous cities also allow whole-contingent returns without a work point. Returning troops is optional; appointment and ordinary relocation never require clearing the contingent first. Returns cancel all same-city rear detachments' auto-rejoin for that officer and preserve type, XP and reorganization. Autonomous reinforcement includes other stationed officers, protects 1,000 same-type reservists, and respects wounded capacity, reorganization and approved orders. Pending appointees are not re-armed. Full city loyalty, full local officer loyalty and unchanged troop counts block ineffective security, feast and assignment orders without spending work.
 
 ### Controls, saves, endings and troubleshooting
 

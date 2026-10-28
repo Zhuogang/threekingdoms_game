@@ -70,6 +70,92 @@ function hostileJourney(cityId: string): V03Journey {
 }
 
 describe('v0.3 governor monthly work planning', () => {
+  it('refills an injured non-governor after earlier monthly work, preserving experience and same-type reserves', () => {
+    const { state, cityId } = fixture();
+    const city = state.cities.find((entry) => entry.id === cityId)!;
+    const manager = state.officers.find((entry) => entry.id === city.governorId)!;
+    for (const officer of state.officers)
+      if (
+        officer.factionId === city.factionId &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === cityId
+      )
+        Object.assign(officer, { troops: 10_000, wounded: 0, loyalty: 100 });
+    const survivor = {
+      ...structuredClone(manager),
+      id: 'test-survivor',
+      governorOfCityId: null,
+      troops: 100,
+      wounded: 50,
+      troopExperience: 1200,
+    };
+    state.officers.push(survivor);
+    Object.assign(city, {
+      food: 100_000,
+      farming: 500,
+      commerce: 500,
+      loyalty: 100,
+      reserve: 7000,
+      reservePools: createReservePools(0, 0, 7000),
+      workPointsUsed: 1,
+    });
+    city.garrisonTroops = state.officers
+      .filter(
+        (entry) =>
+          entry.location.kind === 'city' &&
+          entry.location.cityId === cityId &&
+          entry.factionId === city.factionId,
+      )
+      .reduce((sum, entry) => sum + entry.troops, 0);
+    const plan = planGovernorMonthlyWork(state, cityId, 3);
+    expect(plan).toMatchObject({
+      action: 'assign-troops',
+      targetOfficerId: survivor.id,
+      targetTroops: 6100,
+      firstAssignment: false,
+    });
+    const applied = applyGovernorMonthlyWork(state, plan);
+    expect(applied.applied).toBe(true);
+    const reinforced = applied.state!.officers.find((entry) => entry.id === survivor.id)!;
+    expect(reinforced).toMatchObject({ troops: 6100, wounded: 50 });
+    expect(reinforced.troopExperience).toBeCloseTo((1200 * 150) / 6150);
+    expect(applied.city).toMatchObject({ reserve: 1000, workPointsUsed: 1 });
+    expect(applyGovernorMonthlyWork(applied.state!, plan).applied).toBe(false);
+
+    survivor.reorganizationDays = 2;
+    expect(planGovernorMonthlyWork(state, cityId, 3).targetOfficerId).not.toBe(survivor.id);
+    survivor.reorganizationDays = 0;
+    survivor.wounded = 9900;
+    expect(planGovernorMonthlyWork(state, cityId, 3).targetOfficerId).not.toBe(survivor.id);
+  });
+
+  it('does not re-arm an officer awaiting appointment, whether empty or partly depleted', () => {
+    const { state, cityId } = fixture();
+    const city = state.cities.find((entry) => entry.id === cityId)!;
+    const manager = state.officers.find((entry) => entry.id === city.governorId)!;
+    Object.assign(city, {
+      food: 100_000,
+      farming: 500,
+      commerce: 500,
+      loyalty: 100,
+      reserve: 7000,
+      reservePools: createReservePools(0, 0, 7000),
+    });
+    for (const troops of [0, 100]) {
+      const waiting = {
+        ...structuredClone(manager),
+        id: 'test-appointee',
+        governorOfCityId: null,
+        troops,
+        wounded: 0,
+      };
+      state.officers = state.officers.filter((entry) => entry.id !== waiting.id);
+      state.officers.push(waiting);
+      city.pendingAppointment = { governorId: waiting.id, effectiveDay: 30 };
+      expect(planGovernorMonthlyWork(state, cityId, 3).targetOfficerId).not.toBe(waiting.id);
+    }
+  });
+
   it('includes rear wounded, reserves and captive cavalry in the food forecast', () => {
     const { state, cityId } = fixture();
     const before = planGovernorMonthlyWork(state, cityId, 3);
@@ -158,7 +244,7 @@ describe('v0.3 governor monthly work planning', () => {
 
     const result = applyGovernorMonthlyWork(state, first);
     expect(result.applied).toBe(true);
-    expect(result.city).toMatchObject({ farming: 26, commerce: 75, gold: 920 });
+    expect(result.city).toMatchObject({ farming: 45, commerce: 75, gold: 920 });
     expect(state.cities.find((city) => city.id === cityId)?.farming).toBe(25);
 
     const afterApplying = structuredClone(state);
@@ -169,7 +255,7 @@ describe('v0.3 governor monthly work planning', () => {
     const replay = applyGovernorMonthlyWork(afterApplying, first);
     expect(replay.applied).toBe(false);
     expect(replay.city?.gold).toBe(920);
-    expect(replay.city?.farming).toBe(26);
+    expect(replay.city?.farming).toBe(45);
   });
 
   it('relieves low-loyalty cities when protected food is safe and keeps RNG unchanged', () => {
@@ -286,14 +372,16 @@ describe('v0.3 governor monthly work planning', () => {
     city.gold = 1000;
     for (const officer of local) officer.loyalty = 100;
 
-    manager.loyalty = 60;
+    manager.loyalty = 54;
+    city.gold = 0;
     let plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({ action: 'feast', reasonCode: 'officer-loyalty' });
     let result = applyGovernorMonthlyWork(state, plan);
     expect(result.applied).toBe(true);
-    expect(result.state?.officers.find((officer) => officer.id === manager.id)?.loyalty).toBe(68);
+    expect(result.state?.officers.find((officer) => officer.id === manager.id)?.loyalty).toBe(62);
 
     manager.loyalty = 100;
+    city.gold = 1000;
     state.officers.push({
       ...structuredClone(manager),
       id: 'local-neutral',

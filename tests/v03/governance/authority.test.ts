@@ -166,14 +166,13 @@ describe('v0.3 authority boundaries', () => {
     expect(getCityCapabilities(state, 'enemy').appointGovernor).toBe(false);
   });
 
-  it('keeps the capital directly governed and permits a troop-free officer from another friendly city', () => {
+  it('keeps the capital directly governed and permits an officer to retain their contingent', () => {
     const state = fixture();
     expect(canAppointGovernor(state, 'capital', 'officer-a').ok).toBe(false);
     expect(canAppointGovernor(state, 'province', 'officer-b')).toMatchObject({ ok: true });
     state.officers.find((officer) => officer.id === 'officer-b')!.troops = 1;
     expect(canAppointGovernor(state, 'province', 'officer-b')).toMatchObject({
-      ok: false,
-      reason: 'An officer commanding troops cannot take office until relieved.',
+      ok: true,
     });
     expect(canAppointGovernor(state, 'province', 'officer-a')).toMatchObject({ ok: true });
   });

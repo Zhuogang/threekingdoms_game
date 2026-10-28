@@ -20,27 +20,34 @@ import {
 } from './DiplomacyFlow';
 import { SupplyFlow, type SupplyPage } from './SupplyFlow';
 import { CityWorkAssignment } from './CityWorkAssignment';
+import { OfficerGroupWork } from './OfficerGroupWork';
+import { OfficerTransfer } from './OfficerTransfer';
+import { isOfficerGroupAction } from '../../governance/city-actions';
 import { localizeAppMessage } from '../shared/app-copy-2';
 
 type CityPage =
-  | { kind: 'overview' | 'affairs' | 'officers' | 'prisoners' | 'governor' }
+  | { kind: 'overview' | 'affairs' | 'officers' | 'prisoners' | 'governor' | 'transfer' }
   | { kind: 'officer' | 'prisoner'; officerId: string }
   | { kind: SupplyPage }
   | { kind: 'work-actor'; action: CityWorkAction }
-  | { kind: 'work'; action: CityWorkAction; officerId: string };
+  | { kind: 'work'; action: CityWorkAction; officerId?: string };
 
 function parentPage(page: CityPage): CityPage {
   switch (page.kind) {
     case 'work':
+      if (page.action === 'feast') return { kind: 'affairs' };
       return isCityWork(page.action)
         ? { kind: 'work-actor', action: page.action }
-        : { kind: 'officer', officerId: page.officerId };
+        : page.officerId
+          ? { kind: 'officer', officerId: page.officerId }
+          : { kind: 'officers' };
     case 'officer':
     case 'prisoners':
       return { kind: 'officers' };
     case 'prisoner':
       return { kind: 'prisoners' };
     case 'governor':
+    case 'transfer':
     case 'work-actor':
       return { kind: 'affairs' };
     case 'supply-target':
@@ -102,31 +109,33 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
           ? message(locale, 'flow.march')
           : page.kind === 'affairs'
             ? message(locale, 'flow.manage')
-            : page.kind === 'officers'
-              ? message(locale, 'flow.officers')
-              : page.kind === 'prisoners'
-                ? message(locale, 'ui.prisoners.104')
-                : page.kind === 'officer' || page.kind === 'prisoner'
-                  ? officerName
-                  : page.kind === 'work-actor'
-                    ? `${workLabel(context, page.action)} · ${message(locale, 'flow.assignWork')}`
-                    : page.kind === 'supply-target'
-                      ? message(locale, 'flow.chooseTarget')
-                      : page.kind === 'supply-form'
-                        ? context.requestKind === 'resource'
-                          ? t.requestSupplies
-                          : t.orderMarch
-                        : page.kind === 'supply-proposal' || page.kind === 'supply-review'
-                          ? message(locale, 'flow.proposal')
-                          : page.kind === 'supply-reduce'
-                            ? t.acceptReduced
-                            : page.kind === 'work'
-                              ? workLabel(context, page.action)
-                              : page.kind === 'governor'
-                                ? message(locale, 'flow.appointments')
-                                : page.kind === 'supplies'
-                                  ? t.requestSupplies
-                                  : cityName;
+            : page.kind === 'transfer'
+              ? message(locale, 'flow.officerTransfer')
+              : page.kind === 'officers'
+                ? message(locale, 'flow.officers')
+                : page.kind === 'prisoners'
+                  ? message(locale, 'ui.prisoners.104')
+                  : page.kind === 'officer' || page.kind === 'prisoner'
+                    ? officerName
+                    : page.kind === 'work-actor'
+                      ? `${workLabel(context, page.action)} · ${message(locale, 'flow.assignWork')}`
+                      : page.kind === 'supply-target'
+                        ? message(locale, 'flow.chooseTarget')
+                        : page.kind === 'supply-form'
+                          ? context.requestKind === 'resource'
+                            ? t.requestSupplies
+                            : t.orderMarch
+                          : page.kind === 'supply-proposal' || page.kind === 'supply-review'
+                            ? message(locale, 'flow.proposal')
+                            : page.kind === 'supply-reduce'
+                              ? t.acceptReduced
+                              : page.kind === 'work'
+                                ? workLabel(context, page.action)
+                                : page.kind === 'governor'
+                                  ? message(locale, 'flow.appointments')
+                                  : page.kind === 'supplies'
+                                    ? t.requestSupplies
+                                    : cityName;
   const backLabel =
     campaignTab === 'diplomacy'
       ? message(
@@ -212,7 +221,7 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
             {isCity
               ? message(locale, 'flow.cityWindow')
               : isAction
-                ? `${campaignTab === 'diplomacy' ? t.diplomacy : cityName}${page.kind === 'work' && officerName ? ` / ${officerName}` : ''}`
+                ? `${campaignTab === 'diplomacy' ? t.diplomacy : cityName}${page.kind === 'work' && officerName && !isOfficerGroupAction(page.action) ? ` / ${officerName}` : ''}`
                 : t.campaign}
           </span>
           <h2 id="campaign-window-title" tabIndex={-1} ref={heading}>
@@ -249,8 +258,11 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
             {page.kind === 'affairs' ? (
               <CityAffairs
                 context={nested}
-                onWork={(action) => navigate({ kind: 'work-actor', action })}
+                onWork={(action) =>
+                  navigate({ kind: action === 'feast' ? 'work' : 'work-actor', action })
+                }
                 onGovernor={() => navigate({ kind: 'governor' })}
+                onTransfer={() => navigate({ kind: 'transfer' })}
               />
             ) : null}
             {page.kind === 'officers' || page.kind === 'prisoners' ? (
@@ -277,7 +289,14 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
                 onSelect={(officerId) => navigate({ kind: 'work', action: page.action, officerId })}
               />
             ) : null}
-            {page.kind === 'work' ? (
+            {page.kind === 'work' && isOfficerGroupAction(page.action) ? (
+              <OfficerGroupWork
+                context={nested}
+                action={page.action}
+                initialOfficerId={page.officerId}
+                onComplete={complete}
+              />
+            ) : page.kind === 'work' ? (
               <CityWork
                 context={nested}
                 action={page.action}
@@ -288,6 +307,9 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
             ) : null}
             {page.kind === 'governor' ? (
               <GovernorAppointment context={{ ...nested, selectedCity }} onComplete={complete} />
+            ) : null}
+            {page.kind === 'transfer' ? (
+              <OfficerTransfer context={nested} onComplete={complete} />
             ) : null}
             {page.kind === 'prisoner' ? (
               <PrisonerPanel context={nested} officerId={page.officerId} onComplete={complete} />

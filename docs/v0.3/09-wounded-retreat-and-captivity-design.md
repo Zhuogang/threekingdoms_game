@@ -1,5 +1,7 @@
 # 伤兵 撤退 被俘与恢复设计草案
 
+> Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
+
 创建日期：2026-10-25。复核日期：2026-10-26，已补充玩家体验、规则一致性与实施可行性复核。现行规则核对基准：`3a53501`，包含此前的士兵经验与分兵种预备兵提交。
 
 **状态：W0–W6 已实现，W7 自动验证和三组机器短回放通过；长期人工平衡试玩待执行。** 第一节保留 `3a53501` 的实现前基线，便于理解改动，并非更新后的玩法。第二节起为本次规则；具体完成范围见[实施计划](10-wounded-system-implementation-plan.md)与[验证记录](evidence/wounded-system-2026-10-26/README.md)。最新玩家操作见[中英指南](player-guide.md)。

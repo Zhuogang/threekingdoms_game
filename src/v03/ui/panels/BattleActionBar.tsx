@@ -29,14 +29,18 @@ export function BattleActionBar({
       </label>
       <Button
         className="v03-primary v03-block"
-        disabled={activeBattle.playerDayComplete}
+        disabled={activeBattle.playerDayComplete && !context.canResumeBattleDay}
         onClick={() =>
           activeBattle.autoCommand
             ? dispatch({ type: 'advance', days: 1 })
             : context.requestEndBattleDay()
         }
       >
-        {activeBattle.playerDayComplete ? t.battleDaySubmitted : t.advanceBattle}
+        {context.canResumeBattleDay
+          ? t.advanceDay
+          : activeBattle.playerDayComplete
+            ? t.battleDaySubmitted
+            : t.advanceBattle}
       </Button>
       <details>
         <summary>{message(locale, 'ui.more.actions.77')}</summary>

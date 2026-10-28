@@ -1,6 +1,6 @@
 # ImageGen artwork: integrated drafts and revision workflow
 
-Current reference checked October 26, 2026. [Asset manifest](assets/manifest.json) · [Generation provenance and prompts](assets/provenance.md) · [Original art brief](history/design/06-imagegen-and-artwork.md).
+Current reference checked October 28, 2026. [Asset manifest](assets/manifest.json) · [Generation provenance and prompts](assets/provenance.md) · [Original art brief](history/design/06-imagegen-and-artwork.md).
 
 ## October 26 one-/three-person revision
 
@@ -24,6 +24,8 @@ Fourteen ink-03 unit images replace the dense formation textures with bold three
 City overviews pair an uncropped building silhouette with faction/status information, followed by resources and actions. Narrow screens stack the illustration above the summary. Only transparent safety padding is outside the display frame. Image failure preserves the frame with a city-character fallback, and all actions remain available. Eight regional styles cover all 24 scenario cities; Xiangyang now shares the river style with Jiangling, Jiangxia and Chaisang. Shouchun and Xiapi use the water-city style, without changing their geographic or battle data. [Detail painting provenance](assets/cities-regional-ink-02.json) · [Map-marker provenance](assets/cities-front-ink-01.json).
 
 City overview layout follows its actual container width, including CSS/browser zoom: below 600px the illustration and actions stack; below 400px resources use two columns, with long numbers wrapping inside each cell. Slow or corrupt images keep the same frame; opening the city again retries loading. Unknown city IDs fall back to plains art, including IDs that match Object.prototype names.
+
+Current officer portraits cover 98 identities in 128px and 256px renditions. The active portrait index, fallback behavior and retained variants are described in the [portrait inventory](../assets/v0.3-portraits/asset-inventory.md); historical 53-officer validation totals describe the earlier asset set.
 
 ## Retired artwork removed October 26
 

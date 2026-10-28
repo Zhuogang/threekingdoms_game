@@ -37,7 +37,7 @@ export const en = {
   directWork: 'Capital development',
   improveFarm: 'Improve farmland · 80 gold',
   improveMarket: 'Improve commerce · 80 gold',
-  workRemaining: 'Monthly work points remaining',
+  workRemaining: 'Ten-day work points remaining',
   search: 'Search for officers',
   recruit: 'Recruit soldiers',
   train: 'Train',
@@ -225,10 +225,15 @@ export const en = {
   'ui.food.46': 'Food',
   'ui.return.eta.47': 'Return ETA',
   'ui.return.to.campaign.48': 'Return to campaign',
+  'flow.continueBattle': 'Continue remaining battle',
+  'flow.officerTransfer': 'Transfer officers',
+  'flow.confirmTransfer': 'Confirm transfer',
+  'flow.transferHint':
+    'Select ordinary officers and a friendly destination. They carry all healthy and wounded personnel, retaining type, XP and reorganization. Travel and possible return provisions are deducted at departure. Uses no work points; arrival changes no offices.',
   'ui.one.point.per.stationed.officer.up.to.3.refreshe.49':
-    'One point per stationed officer, up to 3; refreshes monthly.',
+    'Each city refreshes to 2 work points every 10 game days; a stationed officer must execute work.',
   'ui.recruit.soldiers.into.reserve.assign.reserve.sol.50':
-    'Recruit soldiers into reserve, assign reserve soldiers to an officer, then issue a march order. Marches take whole officer forces; a request smaller than every available force may have no executable troops. Each city action uses monthly work points; approved orders keep their resources reserved.',
+    'Recruit soldiers into reserve, assign reserve soldiers to an officer, then issue a march order. Marches take whole officer forces; a request smaller than every available force may have no executable troops. Assignment, contingent returns, rewards and equipment use no work points. Other city work uses ten-day points; approved orders keep their resources reserved.',
   'ui.capital.action.limits.51': 'Capital action limits',
   'ui.loyalty.52': 'Loyalty',
   'ui.force.53': 'Force',
@@ -460,22 +465,37 @@ export const en = {
   'flow.prisonerRefused': 'The prisoner refused. Another decision is available next month.',
   'flow.prisoner.release': 'The prisoner has been released.',
   'flow.prisoner.recruit': 'The prisoner has joined your house.',
+  'flow.prisoner.rulerRecruited':
+    'The captured ruler joined your house. Their former house loses {officerLoss} officer loyalty and {cityLoss} city loyalty, floored at zero.',
   'flow.prisoner.exchange': 'The prisoners have been exchanged.',
   'flow.prisoner.execute': 'The prisoner has been executed.',
   'flow.inspectOnly': 'You can inspect this officer. They are outside your command.',
   'flow.farming': 'Farming',
   'flow.commerce': 'Commerce',
+  'flow.publicOrder': 'Public order',
+  'flow.selectAllEligible': 'Select all eligible officers',
+  'flow.selectedOfficers': 'Selected officers',
+  'flow.totalGold': 'Total gold',
+  'flow.workPointCost': 'Work point cost',
+  'flow.groupHint.feast':
+    'Select local officers for the feast. Only selected officers gain up to 8 loyalty; the entire feast uses 1 work point.',
+  'flow.groupHint.reward':
+    'Select reward recipients. Each costs 100 gold and gains up to 15 loyalty, with no work point cost.',
+  'flow.groupHint.equip':
+    'Select officers to receive fine arms. Each costs 180 gold and gains up to 5 force, capped at 105, with no work point cost.',
   'flow.reviewWork': 'Review this order before confirming.',
   'flow.assignmentHint':
     'Set the total commanded troops, from 0 to 10,000. Added troops come from the reserve; removed troops return to it.',
   'flow.workCost':
-    'Uses 1 monthly work point. After completion, you return to the previous screen.',
+    'Uses 1 ten-day work point. After completion, you return to the previous screen.',
+  'flow.noWorkCost': 'Uses no work points. Resource costs and existing restrictions still apply.',
+  'flow.workRefresh': 'Refreshes in {days} game days',
   'flow.confirmWork': 'Confirm order',
   'flow.executor': 'Executing officer',
   'flow.changeExecutor': 'Choose another officer',
   'flow.assignWork': 'Assign an officer',
   'flow.assignWorkHint':
-    'Choose a stationed officer to carry out this task. All officers share the city’s monthly work points.',
+    'Choose a stationed officer to carry out this task. All officers share the city’s ten-day work points.',
   'flow.recommended': 'Recommended',
   'flow.chooseRequest':
     'Choose a request, then its destination. Existing orders remain in Marches & orders.',

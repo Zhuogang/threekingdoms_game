@@ -1,6 +1,6 @@
 # v0.3 developer guide
 
-Updated October 22, 2026 for the [playability implementation](playability-implementation.md), branch `hegemony_of_the_three_kindoms_v0.3`. [Product overview](README.md) · [Decisions/contracts](00-decisions-and-contracts.md) · [Status](implementation-status.md) · [Maintenance handoff](implementation-plan.md).
+Updated October 28, 2026 against the current working tree. [Playability history](playability-implementation.md). [Product overview](README.md) · [Decisions/contracts](00-decisions-and-contracts.md) · [Status](implementation-status.md) · [Maintenance handoff](implementation-plan.md).
 
 ## Install and run
 
@@ -33,7 +33,7 @@ src/main.tsx → src/v03/App.tsx → executeV03Command
 | [engine.ts](../../src/v03/engine.ts)                                                                                                                       | Daily integration, arrivals, food/service ledgers, battle creation/aftermath, monthly settlement and campaign endings.       |
 | [calendar/index.ts](../../src/v03/calendar/index.ts), [day-resolution.ts](../../src/v03/calendar/day-resolution.ts)                                        | Date/ETA, route snapshots, supply/food helpers and serializable day scheduling.                                              |
 | [geography/index.ts](../../src/v03/geography/index.ts), [illustration.ts](../../src/v03/geography/illustration.ts)                                         | Anchors, route estimates and generalized display geography.                                                                  |
-| [governance](../../src/v03/governance/orders.ts)                                                                                                           | Orders/services, authority, appointments, pure city-action availability/effects and monthly autonomy.                        |
+| [governance](../../src/v03/governance/orders.ts)                                                                                                           | Orders/services, authority, appointments, ordinary transfers, shared action effects and ten-day autonomous work.             |
 | [strategic-ai.ts](../../src/v03/strategic-ai.ts), [campaign](../../src/v03/campaign/monthly-systems.ts)                                                    | Rival planning, events, coalitions, alliances and Hegemon progress.                                                          |
 | [battle](../../src/v03/battle/index.ts)                                                                                                                    | Map generation, movement/ZOC, target queries, forecasts, six tactics, AI, morale/water/outcomes.                             |
 | [rendering](../../src/v03/rendering/index.ts)                                                                                                              | React/SVG views, projection, picking, viewport fit/pan/zoom, minimaps, party layers, assets and native fallbacks.            |
@@ -47,7 +47,9 @@ Authored [scenario.ts](../../src/v03/content/scenario.ts), `guandu.ts`, traits a
 - Domain commands own game effects; invalid commands preserve the original state. Camera, locale and help must not consume time or randomness.
 - Use shared capability/action/target/forecast helpers. Do not reproduce costs, terrain/water multipliers or authority only in UI.
 - Maintain unique officer/formation/journey membership, approved-stock protection, once-only cargo delivery and the serialized day cursor across save/reload.
-- The App's active player battles differ from NPC-only battles. Do not restore global clock blocking for every active battle.
+- Distinguish NPC-only battles, unsubmitted manual fields and already-submitted remaining fields. Do not block a fully submitted day after another field resolves; preserve one shared date advance.
+- Work refreshes to two points every ten actual game days, independent of staffing. Keep monthly economy/talent/appointment counters separate; migration or appointments cannot refund used work.
+- Group actions and ordinary transfers validate all targets and total committed costs before mutating state. Transfers retain healthy/wounded personnel, XP, type and reorganization; arrival changes stationing without assigning an office.
 - Assign one editor per shared App/engine/type/command/storage file in parallel work; domain, rendering and art can use isolated ownership.
 - Keep draft art/provenance and source-backed geography limits explicit. Raster changes do not change terrain or ETA.
 
@@ -61,11 +63,13 @@ Authored [scenario.ts](../../src/v03/content/scenario.ts), `guandu.ts`, traits a
 | `npm run test:e2e`                                 | Active v0.3 browser flows and responsive/zoom/layout checks.                   |
 | `npm run test:production`                          | Production subpath assets and save reload.                                     |
 | `npm run test:perf:v03`                            | Active tactical-day performance.                                               |
-| `npm run validate:portraits`                       | Portrait mappings/files/provenance, not human art acceptance.                  |
+| `npm run validate:portraits:v03`                   | Current 98-officer assets/manifests; requires sharp, not human art acceptance. |
 | `npm run lint:ui`                                  | Shared controls, tokens, minimum type sizes and UI module length.              |
 | `npm run diagnostics:battles -- OUTPUT 200`        | Seeded pacing distributions; add `--baseline` to load the preservation tag.    |
 
 Browser tests use Chrome locally; CI config may use Playwright's bundled browser. Tests start isolated servers. `HEGEMONY_V03_PORT` and `HEGEMONY_PRODUCTION_PORT` select test ports. Do not point tests at a player's live save/profile. Run browser/performance work separately when collecting reliable timing. In restricted Windows sessions, a writable ignored temporary directory may be needed for TEMP/TMP/TMPDIR; the recorded RV run documents this environment adjustment.
+
+The v0.3 portrait validator uses `sharp` (install it in an ignored tool directory or supply `PORTRAIT_SHARP_PATH`); the older portrait command validates retained legacy assets.
 
 The v0.2 performance, production and FPS scripts have been removed. `npm run diagnostics:ai -- --months 96 --output OUTPUT` runs the active `tools/v03-campaign-diagnostics.mjs`. Follow [the evidence protocol](evidence/README.md), write new output to `.artifacts/` or a new named record, and retain source/config fingerprints. Never overwrite historical evidence to make it appear current.
 
@@ -75,4 +79,4 @@ Development builds provide named fixtures from the Campaign menu and a frozen st
 
 Update the player guide/Wiki when controls or rules change, the numbered system reference for technical boundaries, release notes for user-visible changes, and status/evidence for actual validation. Current status and next steps should agree. Preserve dated audit/research/test records in history; do not globally replace historical branch names, counts or hashes.
 
-The [October 22 audit](documentation-audit-2026-10-22.md) records the earlier documentation cleanup. The [playability ledger](playability-implementation.md) records current checks and the remaining human gates; [RV validation](evidence/rv-implementation-2026-10-21/README.md) remains historical evidence.
+The [October 28 audit](documentation-audit-2026-10-28.md) records current documentation checks; the [October 22 audit](documentation-audit-2026-10-22.md) preserves the earlier cleanup. The [playability ledger](playability-implementation.md) records current checks and the remaining human gates; [RV validation](evidence/rv-implementation-2026-10-21/README.md) remains historical evidence.

@@ -10,7 +10,7 @@ export type { V03CoalitionInvitation, V03TimedAlliance };
 
 export type V03GovernanceMode = 'ruler' | 'governor' | 'steward';
 export type V03GamePhase = 'planning' | 'battle' | 'finished';
-export type V03JourneyKind = 'requisition' | 'campaign' | 'appointment' | 'return';
+export type V03JourneyKind = 'requisition' | 'campaign' | 'appointment' | 'transfer' | 'return';
 export type V03JourneyStatus = CalendarJourney['status'];
 export type V03BattleIntent = 'conquer' | 'raid' | 'sack';
 export type V03CityAction =
@@ -68,8 +68,9 @@ export interface V03City {
   governorId: string | null;
   pendingAppointment: V03PendingAppointment | null;
   governanceMode: V03GovernanceMode;
-  /** Shared manual/autonomous work budget and automatic talent limits for this month. */
+  /** Monthly automatic talent counters; work points use an independent ten-day period. */
   workMonthIndex?: number;
+  workPeriodIndex?: number;
   workPointsUsed?: number;
   autoSearchesThisMonth?: number;
   autoAssignmentsThisMonth?: number;
@@ -118,6 +119,8 @@ export interface V03Officer {
   alive: boolean;
   /** At most one holder decision per prisoner per campaign month. */
   prisonerActionMonth?: number;
+  /** Ruler identity for this captivity; null prevents reuse after release or defection. */
+  capturedRulerFactionId?: string | null;
 }
 
 export interface V03JourneyCargo {
@@ -311,6 +314,8 @@ export interface V03GameState {
   coalitionInvitations: V03CoalitionInvitation[];
   firedMonthlyEventIds: string[];
   lastAllianceBreakMonthByFaction: Record<string, number>;
+  /** Player proposals (and treaty breaks) consume the target's monthly attempt. Optional for older saves. */
+  lastAllianceProposalMonthByTarget?: Record<string, number>;
   hegemon: { factionId: string | null; months: number };
   nextId: number;
   phase: V03GamePhase;
@@ -364,6 +369,13 @@ export interface V03PersonnelDay {
 }
 
 export type V03Command =
+  | { type: 'transferOfficers'; sourceCityId: string; targetCityId: string; officerIds: string[] }
+  | {
+      type: 'resolveCityGovernance';
+      eventId: string;
+      choice: 'self' | 'governor';
+      officerId?: string;
+    }
   | { type: 'returnTroops'; cityId: string; officerId: string }
   | { type: 'disband'; cityId: string; recordId: string; troops: number; wounded: number }
   | { type: 'advance'; days: 1 | 10 | 'nextEvent' }
@@ -374,6 +386,7 @@ export type V03Command =
       action: V03CityAction;
       troopType?: TroopType;
       officerId?: string;
+      officerIds?: string[];
       amount?: number;
     }
   | { type: 'developCapital'; field: 'farming' | 'commerce' }

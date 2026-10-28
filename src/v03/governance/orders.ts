@@ -3,7 +3,7 @@ import { detachWoundedToCity } from '../campaign/personnel';
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
-import { estimateRequisition } from './authority';
+import { availableCityResources, estimateRequisition } from './authority';
 import type {
   V03BattleIntent,
   V03CampaignDirective,
@@ -30,6 +30,7 @@ export type GovernanceOrderReasonCode =
   | 'order.party-unavailable'
   | 'order.minimum-garrison'
   | 'order.shortfall'
+  | 'order.travel-food-shortfall'
   | 'order.deadline-too-soon'
   | 'order.active-directive'
   | 'order.stale-proposal'
@@ -65,7 +66,7 @@ export interface PlanRouteInput {
   targetCityId: string;
   departureDay: number;
   troopCount: number;
-  kind: Extract<V03JourneyKind, 'requisition' | 'campaign' | 'appointment'>;
+  kind: Exclude<V03JourneyKind, 'return'>;
   composition: TravelComposition;
 }
 
@@ -80,7 +81,7 @@ export interface JourneyCreationInput {
   id: string;
   executionId: string;
   ownerFactionId: string;
-  kind: Extract<V03JourneyKind, 'requisition' | 'campaign' | 'appointment'>;
+  kind: Exclude<V03JourneyKind, 'return'>;
   intent?: V03BattleIntent;
   sourceCityId: string;
   targetCityId: string;
@@ -88,7 +89,7 @@ export interface JourneyCreationInput {
   arrivalDay: number;
   route: OrderRoutePlan;
   party: OrderPartyPlan;
-  /** Requisition cargo is delivered; campaign provisions go in carriedFood and are consumed in transit. */
+  /** Cargo is delivered; travel provisions go in carriedFood and are consumed in transit. */
   cargo: V03JourneyCargo;
   carriedFood: number;
 }
@@ -121,6 +122,8 @@ export interface RequisitionPreview {
   requested: V03JourneyCargo;
   executable: V03JourneyCargo;
   deficit: V03JourneyCargo;
+  travelFood: number;
+  travelFoodDeficit: number;
   earliestDepartureDay: number | null;
   estimatedArrivalDay: number | null;
   ready: boolean;
@@ -183,6 +186,8 @@ function msg(code: GovernanceOrderReasonCode, detail?: string): string {
     'order.minimum-garrison': 'The city must retain its protected minimum garrison.',
     'order.shortfall':
       'The full request is not currently executable; choose a reduced amount, wait, or cancel.',
+    'order.travel-food-shortfall':
+      'The source needs additional food to provision the travelling troops.',
     'order.deadline-too-soon':
       'The earliest feasible departure is later than the requested deadline.',
     'order.active-directive': 'This source city already has an active campaign directive.',
@@ -358,6 +363,8 @@ export function previewRequisition(
       requested,
       executable: zeroCargo(),
       deficit: { ...requested },
+      travelFood: 0,
+      travelFoodDeficit: 0,
       earliestDepartureDay: null,
       estimatedArrivalDay: null,
       ready: false,
@@ -382,6 +389,8 @@ export function previewRequisition(
       requested,
       executable: zeroCargo(),
       deficit: { ...requested },
+      travelFood: 0,
+      travelFoodDeficit: 0,
       earliestDepartureDay: null,
       estimatedArrivalDay: null,
       ready: false,
@@ -410,6 +419,22 @@ export function previewRequisition(
   const executable = { ...estimate.executable };
   if (requested.troops > 0 && !party) executable.troops = 0;
   else if (party && requested.troops > 0) executable.troops = party.troopCount;
+  const route = routePlan(state, services, {
+    sourceCityId: input.sourceCityId,
+    targetCityId: input.targetCityId,
+    departureDay: state.absoluteDay,
+    troopCount: executable.troops,
+    kind: 'requisition',
+    composition: party?.composition ?? { troopTypes: [] },
+  });
+  if (!route) addReason(codes, reasons, 'order.route-unavailable');
+  const travelFood = route && party ? requisitionTravelFood(party, route) : 0;
+  const availableFood = availableCityResources(state, input.sourceCityId).food;
+  const travelFoodDeficit = Math.max(0, travelFood - availableFood);
+  if (travelFoodDeficit > 0) {
+    executable.troops = 0;
+    addReason(codes, reasons, 'order.travel-food-shortfall');
+  } else executable.food = Math.min(executable.food, Math.max(0, availableFood - travelFood));
   const deficit = {
     gold: requested.gold - executable.gold,
     food: requested.food - executable.food,
@@ -426,7 +451,13 @@ export function previewRequisition(
     addReason(codes, reasons, 'order.party-unavailable');
   if (deficit.troops > 0 && estimate.executable.troops < requested.troops)
     addReason(codes, reasons, 'order.minimum-garrison');
-  const earliestDepartureDay = estimate.earliestDepartureDay;
+  const earliestDepartureDay = estimateRequisition(
+    state,
+    input.sourceCityId,
+    input.targetCityId,
+    { ...requested, food: requested.food + travelFood },
+    route?.estimatedDays ?? null,
+  ).earliestDepartureDay;
   const earliestRoute =
     earliestDepartureDay === null
       ? null
@@ -451,6 +482,8 @@ export function previewRequisition(
   )
     addReason(codes, reasons, 'order.deadline-too-soon');
   const ready =
+    route !== null &&
+    travelFoodDeficit === 0 &&
     deficit.gold === 0 &&
     deficit.food === 0 &&
     deficit.troops === 0 &&
@@ -460,15 +493,27 @@ export function previewRequisition(
     requested,
     executable,
     deficit,
+    travelFood,
+    travelFoodDeficit,
     earliestDepartureDay,
     estimatedArrivalDay,
     ready,
     requiresPlayerChoice: !ready,
-    route: preliminaryRoute,
+    route,
     party,
     reasonCodes: codes,
     reasons,
   };
+}
+
+function requisitionTravelFood(party: OrderPartyPlan, route: OrderRoutePlan): number {
+  return estimateCampaignSupply({
+    troopCount: party.troopCount,
+    cavalryTroops: party.composition.cavalryTroops,
+    outboundDays: route.estimatedDays,
+    battleDays: 0,
+    returnDays: 0,
+  }).totalFood;
 }
 
 function selectedOfficerServices(
@@ -832,7 +877,7 @@ function dispatch(
   }
   if (
     source.gold < input.cargo.gold ||
-    source.food < input.cargo.food ||
+    source.food < input.cargo.food + input.carriedFood ||
     source.garrisonTroops < input.cargo.troops
   )
     return null;
@@ -850,7 +895,7 @@ function dispatch(
   const next = structuredClone(state);
   const nextSource = next.cities.find((city) => city.id === input.sourceCityId)!;
   nextSource.gold -= input.cargo.gold;
-  nextSource.food -= input.cargo.food;
+  nextSource.food -= input.cargo.food + input.carriedFood;
   nextSource.garrisonTroops -= input.cargo.troops;
   for (const officerId of input.party.officerIds) {
     const officer = next.officers.find((entry) => entry.id === officerId)!;
@@ -915,7 +960,7 @@ function requisitionJourneyInput(
     route,
     party: party!,
     cargo,
-    carriedFood: 0,
+    carriedFood: requisitionTravelFood(party, route),
   };
 }
 
@@ -935,6 +980,20 @@ function dispatchRequisition(
       preview,
       reasonCode: 'order.party-unavailable',
       message: msg('order.party-unavailable'),
+    };
+  // Exclude this order's staged reservation, while preserving all other commitments.
+  const stock = availableCityResources(
+    { ...state, requisitions: state.requisitions.filter((entry) => entry.id !== order.id) },
+    order.sourceCityId,
+  );
+  if (stock.food < input.cargo.food + input.carriedFood)
+    return {
+      ok: false,
+      state,
+      order,
+      preview,
+      reasonCode: 'order.travel-food-shortfall',
+      message: msg('order.travel-food-shortfall'),
     };
   const result = dispatch(state, input, services);
   if (!result)
@@ -971,6 +1030,7 @@ export function requestRequisition(
       (code) =>
         ![
           'order.shortfall',
+          'order.travel-food-shortfall',
           'order.minimum-garrison',
           'order.party-unavailable',
           'order.deadline-too-soon',
@@ -1223,8 +1283,6 @@ function dispatchDirective(
       message: msg('order.dispatch-failed'),
     };
   const next = result.state;
-  const nextSource = next.cities.find((city) => city.id === order.sourceCityId)!;
-  nextSource.food -= input.carriedFood;
   const nextOrder = next.directives.find((entry) => entry.id === order.id)!;
   nextOrder.proposedTroops = troops;
   nextOrder.status = 'dispatched';

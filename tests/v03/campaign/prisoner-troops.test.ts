@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
 import { executeV03Command } from '../../../src/v03/commands';
-import { createPersonnelDay } from '../../../src/v03/campaign/personnel';
+import { availableTroops, createPersonnelDay } from '../../../src/v03/campaign/personnel';
 import { decidePrisoner, prisonerReturnPlan } from '../../../src/v03/campaign/prisoners';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../../src/v03/platform/storage';
 import { advanceV03 } from '../../../src/v03/engine';
@@ -37,6 +37,17 @@ describe('captive armies and real release journeys', () => {
     const journey = next.journeys.at(-1)!;
     const home = next.cities.find((city) => city.id === journey.destinationCityId)!;
     const garrison = home.garrisonTroops;
+    const stationedReady = (state: typeof next) =>
+      state.officers
+        .filter(
+          (officer) =>
+            officer.alive &&
+            officer.factionId === home.factionId &&
+            officer.location.kind === 'city' &&
+            officer.location.cityId === home.id,
+        )
+        .reduce((sum, officer) => sum + availableTroops(officer), 0);
+    const unled = garrison - stationedReady(next);
     journey.routeSnapshot = journey.routeSnapshot.map((segment) => ({
       ...segment,
       lengthKm: 1,
@@ -71,7 +82,7 @@ describe('captive armies and real release journeys', () => {
     const ready = next.officers.find((entry) => entry.id === prisoner.id)!;
     expect(ready.reorganizationDays).toBe(0);
     expect(next.cities.find((city) => city.id === home.id)?.garrisonTroops).toBe(
-      garrison + ready.troops,
+      unled + stationedReady(next),
     );
   });
 

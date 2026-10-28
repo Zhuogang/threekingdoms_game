@@ -2,6 +2,7 @@ import { useMenuPlacement } from '../hooks/useMenuPlacement';
 import { displayName } from '../shared/app-copy-3';
 import { Button, Input } from '../kit';
 import { message } from '../../i18n';
+import { pendingCityGovernance } from '../../governance/conquest';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 
@@ -53,7 +54,7 @@ export function TopBar({
           <Button
             type="button"
             className="v03-primary"
-            disabled={Boolean(activeBattle?.playerDayComplete)}
+            disabled={Boolean(activeBattle?.playerDayComplete) && !context.canResumeBattleDay}
             onClick={() =>
               activeBattle &&
               (activeBattle.autoCommand
@@ -61,13 +62,17 @@ export function TopBar({
                 : context.requestEndBattleDay())
             }
           >
-            {activeBattle?.playerDayComplete ? t.battleDaySubmitted : t.advanceBattle}
+            {context.canResumeBattleDay
+              ? t.advanceDay
+              : activeBattle?.playerDayComplete
+                ? t.battleDaySubmitted
+                : t.advanceBattle}
           </Button>
         ) : (
           <>
             <Button
               type="button"
-              disabled={activeBattles.some((battle) => !battle.autoCommand)}
+              disabled={context.hasUnsubmittedBattleDay}
               onClick={() => dispatch({ type: 'advance', days: 1 })}
             >
               {t.advanceDay}
@@ -89,7 +94,13 @@ export function TopBar({
           </>
         )}
         <Button onClick={() => context.setShowReports(true)}>
-          {message(locale, 'ui.inbox.118')} ({context.worldEvents.length})
+          {message(locale, 'ui.inbox.118')} (
+          {
+            new Set(
+              [...context.worldEvents, ...pendingCityGovernance(state)].map((event) => event.id),
+            ).size
+          }
+          )
         </Button>
         <details
           className="v03-app-menu"

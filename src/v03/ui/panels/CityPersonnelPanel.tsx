@@ -188,7 +188,7 @@ export function CityPersonnelPanel({
       >
         {locale === 'zh' ? '遣散指定人员' : 'Disband selected personnel'}
       </Button>
-      {officerId && city.id === state.playerCapitalCityId ? (
+      {officerId ? (
         <Button onClick={() => setAction('returnTroops')}>
           {locale === 'zh' ? '归还全部所部' : 'Return the whole contingent'}
         </Button>
@@ -208,10 +208,10 @@ export function CityPersonnelPanel({
             locale === 'zh'
               ? action === 'disband'
                 ? `遣散健全兵 ${troops}、伤兵 ${wounded}；其兵员经验永久失去，人员回归人口。`
-                : '健全兵归还同兵种兵源，伤兵留城养伤；取消自动归队，保留未完成整编。消耗 1 工作点。'
+                : '健全兵归还同兵种兵源，伤兵留城养伤；取消自动归队，保留未完成整编。无需工作点。'
               : action === 'disband'
                 ? `Disband ${troops} healthy and ${wounded} wounded. Their soldier XP is lost permanently; they return to the population.`
-                : 'Return healthy soldiers and leave wounded in the city. Auto-rejoin ends; unfinished reorganization remains. Costs 1 work point.'
+                : 'Return healthy soldiers and leave wounded in the city. Auto-rejoin ends; unfinished reorganization remains. No work point is needed.'
           }
           cancelLabel={context.t.cancel}
           confirmLabel={locale === 'zh' ? '确认' : 'Confirm'}

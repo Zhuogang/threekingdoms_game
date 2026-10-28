@@ -1,5 +1,7 @@
 # B 轨：24×20 战场与水战规则
 
+> Historical source references: retired files and the optional BAYE checkout are recorded as paths below, not links to files shipped in the current tree. See the [current documentation index](../../../README.md) for active source references.
+
 > **Historical design / planning record, retained October 22, 2026.** Statements such as “pending” describe this document’s original implementation stage. Read the [current v0.3 overview](../../README.md), [current status](../../implementation-status.md) and [player guide](../../player-guide.md) for the playable version. This record does not create new implementation work.
 
 状态（2026-10-21）：已实现 24×20 战场、六种计策、ZOC、撤退、共享水上攻防规则、战斗日调度和 D11 战略结果；确认过的初始编组/权限缺陷已修复。自动化矩阵覆盖四区域 × 20 种子 × 四进攻方向及六类兵种 × 六类目标的岸水攻击/反击组合。完整长战役平衡和玩家人工试玩仍待验收。第 10 节末尾的“当前实现更新”优先于其中明确标为初始审计历史的旧表格。自动化证据与跨轨状态见[实施状态台账](../../implementation-status.md)。
@@ -24,7 +26,7 @@
 
 ## 2. 需要替换的现有假设
 
-基线为 `ea29af2`，主要代码在 [battle.ts](../../../../src/game/battle.ts)：
+基线为 `ea29af2`，主要代码在 `src/game/battle.ts`：
 
 - `createBattle` 写死 12×10；`DEPLOY_ROWS`、营地行、河道和 `WALL_COLUMN` 使用旧图固定位置。
 - `stepCost` 仅允许 `naval` 进入水格，其他兵种返回不可达；水军进入水格只花 1 点。

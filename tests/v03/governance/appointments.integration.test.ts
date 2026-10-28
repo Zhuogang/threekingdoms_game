@@ -341,7 +341,11 @@ describe('v0.3 governor appointment journeys', () => {
     const candidate = state.officers.find((entry) => entry.id === 'caohong')!;
     const incumbent = state.officers.find(
       (entry) =>
-        entry.id !== candidate.id && entry.factionId === state.playerFactionId && entry.alive,
+        entry.id !== candidate.id &&
+        entry.id !==
+          state.factions.find((faction) => faction.id === state.playerFactionId)!.leaderOfficerId &&
+        entry.factionId === state.playerFactionId &&
+        entry.alive,
     )!;
     for (const city of state.cities) {
       if (city.governorId === candidate.id || city.governorId === incumbent.id) {
@@ -506,7 +510,7 @@ describe('v0.3 governor appointment journeys', () => {
     });
   });
 
-  it('rejects a transfer for an officer with troops without changing the command state', () => {
+  it('transfers an officer with troops without clearing the contingent', () => {
     const state = createV03Game('cao', 23);
     const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.location = { kind: 'city', cityId: 'chenliu' };
@@ -516,13 +520,13 @@ describe('v0.3 governor appointment journeys', () => {
       cityId: 'xuchang',
       officerId: officer.id,
     });
-    expect(result.ok).toBe(false);
-    expect(result.state).toBe(state);
-    expect(result.state.journeys).toHaveLength(0);
+    expect(result.ok, result.error).toBe(true);
+    expect(result.state.journeys).toHaveLength(1);
+    expect(result.state.journeys[0]!.manifest.troopCount).toBe(400);
+    expect(result.state.officers.find((entry) => entry.id === officer.id)?.troops).toBe(400);
     expect(
       result.state.cities.find((entry) => entry.id === 'xuchang')?.pendingAppointment,
-    ).toBeNull();
-    expect(result.state.governanceRevision).toBe(state.governanceRevision);
-    expect(result.state.nextId).toBe(state.nextId);
+    ).toMatchObject({ governorId: officer.id, journeyId: result.state.journeys[0]!.id });
+    expect(state.journeys).toHaveLength(0);
   });
 });

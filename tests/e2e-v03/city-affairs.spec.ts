@@ -92,7 +92,7 @@ for (const width of [390, 1366, 1920])
       const farmed = await current(page);
       expect(farmed.cities.find((entry) => entry.id === city.id)).toMatchObject({
         gold: 4920,
-        farming: city.farming + 1,
+        farming: city.farming + 20,
         workPointsUsed: 1,
       });
       await showAssignment(page, lang === 'en' ? officer.name : officer.chinese);
@@ -117,7 +117,7 @@ for (const width of [390, 1366, 1920])
       );
       expect(assigned.cities.find((entry) => entry.id === city.id)).toMatchObject({
         reserve: 1900,
-        workPointsUsed: 2,
+        workPointsUsed: 1,
       });
       expect(assigned.absoluteDay).toBe(before.absoluteDay);
       await page.screenshot({ path: `${folder}/officer-${width}-${lang}.png` });
@@ -160,7 +160,24 @@ test('each city task returns to affairs and retains the existing rule result', a
     await confirmWork(page);
     await expect(page.locator('.v03-city-affairs')).toBeVisible();
     expect(await current(page)).toEqual(
-      applyV03CityAction(before, { cityId: before.playerCapitalCityId, action }).state,
+      applyV03CityAction(before, {
+        cityId: before.playerCapitalCityId,
+        action,
+        ...(action === 'feast'
+          ? {
+              officerIds: before.officers
+                .filter(
+                  (officer) =>
+                    officer.alive &&
+                    officer.factionId === before.playerFactionId &&
+                    officer.location.kind === 'city' &&
+                    officer.location.cityId === before.playerCapitalCityId,
+                )
+                .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id))
+                .map((officer) => officer.id),
+            }
+          : {}),
+      }).state,
     );
   }
 });
@@ -176,7 +193,7 @@ test('officer training returns to the selected officer; exhausted work stays blo
       entry.location.cityId === before.playerCapitalCityId,
   )!;
   await showOfficer(page, officer.name);
-  for (let count = 1; count <= 3; count++) {
+  for (let count = 1; count <= 2; count++) {
     await page.getByRole('button', { name: 'Train', exact: true }).click();
     await confirmWork(page);
     await expect(page.locator('.v03-officer-detail')).toBeVisible();
@@ -187,8 +204,8 @@ test('officer training returns to the selected officer; exhausted work stays blo
   const exhausted = await current(page);
   const train = page.getByRole('button', { name: 'Train', exact: true });
   await expect(train).toBeDisabled();
-  await expect(train).toHaveAttribute('title', /monthly work points/);
-  await expect(page.locator('.v03-officer-detail')).toContainText('0/3');
+  await expect(train).toHaveAttribute('title', /ten-day period/);
+  await expect(page.locator('.v03-officer-detail')).toContainText('0/2');
   await expect(page.locator('.v03-work-detail')).toHaveCount(0);
   await expect(page.locator('.v03-officer-detail')).toBeVisible();
   expect(await current(page)).toEqual(exhausted);

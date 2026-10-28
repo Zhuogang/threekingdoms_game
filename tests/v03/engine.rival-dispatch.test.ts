@@ -97,8 +97,9 @@ describe('v0.3 engine rival campaign integration', () => {
       sourceCityId: 'ye',
       intent: 'conquer',
       status: 'dispatched',
-      requestedTroops: 5500,
-      proposedTroops: 5500,
+      // Autonomy now uses the spare 200 same-type reservists before optional training.
+      requestedTroops: 5700,
+      proposedTroops: 5700,
       earliestDepartureDay: 30,
     });
     expect(state.cities.find((city) => city.id === directive.targetCityId)?.factionId).toBeNull();
@@ -107,7 +108,7 @@ describe('v0.3 engine rival campaign integration', () => {
     if (!journey) throw new Error('Rival directive did not retain its created journey.');
     expect(journey.kind).toBe('campaign');
     expect(journey.ownerFactionId).toBe('yuan');
-    expect(journey.manifest.troopCount).toBe(5500);
+    expect(journey.manifest.troopCount).toBe(5700);
     expect(journey.manifest.officerIds).toHaveLength(6);
     expect(new Set(journey.manifest.officerIds).size).toBe(6);
     expect(
@@ -117,7 +118,7 @@ describe('v0.3 engine rival campaign integration', () => {
     ).toBe(true);
     expect(journey.manifest.carriedFood).toBe(
       estimateCampaignSupply({
-        troopCount: 5500,
+        troopCount: 5700,
         cavalryTroops: journey.manifest.officerIds.reduce((sum, id) => {
           const officer = state.officers.find((officer) => officer.id === id)!;
           return sum + (officer.troopType === 'cavalry' ? officer.troops : 0);

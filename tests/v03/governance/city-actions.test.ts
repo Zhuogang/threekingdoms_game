@@ -42,11 +42,11 @@ function rand(state: V03GameState, max: number): number {
 
 describe('v0.3 ruler city actions', () => {
   it.each([
-    { force: 100, experience: 25 },
-    { force: 60, experience: 10_000 },
-  ])('shares training availability at either cap: %o', ({ force, experience }) => {
+    { force: 100, experience: 500 },
+    { force: 100, experience: 10_000 },
+  ])('shares training rejection when both benefits are capped: %o', ({ force, experience }) => {
     const { state, cityId, officer } = fixture();
-    Object.assign(officer, { force, experience, troops: 300 });
+    Object.assign(officer, { force, experience, level: 5, troops: 300 });
     const input = { cityId, action: 'train' as const, officerId: officer.id };
     const before = structuredClone(state);
 
@@ -126,19 +126,10 @@ describe('v0.3 ruler city actions', () => {
       getV03CityActionAvailability(state, { cityId, action: 'equip', officerId: officer.id }).ok,
     ).toBe(true);
   });
-  it('uses the same 80-gold work effect and monthly staffed quota for direct development', () => {
+  it('uses the same 80-gold work effect and fixed ten-day quota for direct development', () => {
     const { state, cityId } = fixture();
     const city = state.cities.find((entry) => entry.id === cityId)!;
-    const quota = Math.min(
-      3,
-      state.officers.filter(
-        (officer) =>
-          officer.alive &&
-          officer.factionId === state.playerFactionId &&
-          officer.location.kind === 'city' &&
-          officer.location.cityId === cityId,
-      ).length,
-    );
+    const quota = 2;
     city.workPointsUsed = quota - 1;
     const before = structuredClone(state);
 
@@ -146,7 +137,7 @@ describe('v0.3 ruler city actions', () => {
 
     expect(result.ok).toBe(true);
     expect(result.state.cities.find((entry) => entry.id === cityId)).toMatchObject({
-      farming: 31,
+      farming: 50,
       gold: 920,
       workPointsUsed: quota,
     });

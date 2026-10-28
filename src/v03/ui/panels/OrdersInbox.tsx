@@ -5,6 +5,7 @@ import { message } from '../../i18n';
 import type { V03JourneyCargo } from '../../types';
 
 import { localizeOrderMessage } from '../shared/app-copy-2';
+import { displayName } from '../shared/app-copy-3';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 
@@ -26,6 +27,14 @@ export function OrdersInbox({
     setReducedTroopsByOrder,
     answerOrder,
   } = context;
+  const transfers = state.journeys.filter(
+    (journey) =>
+      (journey.kind === 'transfer' ||
+        (journey.kind === 'return' &&
+          journey.executionId.startsWith(`${state.scenarioId}:transfer:`))) &&
+      journey.ownerFactionId === state.playerFactionId &&
+      ['outbound', 'returning', 'waiting'].includes(journey.status),
+  );
   return (
     <section
       className="v03-orders-list v03-backlog-list"
@@ -37,7 +46,23 @@ export function OrdersInbox({
           ?
         </Button>
       </div>
-      {activeOrders.length === 0 ? (
+      {transfers.map((journey) => (
+        <div key={journey.id} className="v03-order-card v03-transfer-journey">
+          <strong>
+            {message(locale, 'flow.officerTransfer')} · {context.locationName(journey.sourceCityId)}{' '}
+            → {context.locationName(journey.destinationCityId)}
+          </strong>
+          <small>
+            {journey.manifest.officerIds
+              .map((id) => state.officers.find((officer) => officer.id === id))
+              .filter((officer) => Boolean(officer))
+              .map((officer) => displayName(officer!, locale))
+              .join(' · ')}
+          </small>
+          <small>{context.journeyDescription(journey)}</small>
+        </div>
+      ))}
+      {activeOrders.length === 0 && transfers.length === 0 ? (
         <p className="v03-muted">{t.emptyOrders}</p>
       ) : (
         activeOrders.map((order) => {

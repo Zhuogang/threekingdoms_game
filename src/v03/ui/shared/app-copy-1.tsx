@@ -83,6 +83,10 @@ export const ORDER_REASON_COPY: Record<GovernanceOrderReasonCode, Record<V03Loca
     en: 'The full request is not currently executable; choose a reduced amount, wait, or cancel.',
     zh: '目前无法足额执行；可以缩减需求、等待或取消。',
   },
+  'order.travel-food-shortfall': {
+    en: 'The source needs additional food to provision the travelling troops.',
+    zh: '出发城粮食不足，无法为调动部队备齐路粮。',
+  },
   'order.deadline-too-soon': {
     en: 'The earliest feasible departure is later than the requested deadline.',
     zh: '最早可出发日期晚于要求期限。',

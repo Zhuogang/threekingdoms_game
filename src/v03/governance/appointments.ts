@@ -1,5 +1,7 @@
-import { canAppointGovernor } from './authority';
-import type { V03DomainEvent, V03GameState } from '../types';
+import { availableCityResources, canAppointGovernor } from './authority';
+import { availableTroops, personnelCount } from '../campaign/personnel';
+import { estimateCampaignSupply } from '../calendar';
+import type { V03City, V03DomainEvent, V03GameState, V03Officer } from '../types';
 import type { GovernanceOrderServices } from './orders';
 
 function nextMonthBoundary(absoluteDay: number) {
@@ -8,6 +10,96 @@ function nextMonthBoundary(absoluteDay: number) {
 
 function eventId(state: V03GameState, kind: V03DomainEvent['kind']) {
   return `${state.scenarioId}:${kind}:${state.absoluteDay}:${state.nextId}`;
+}
+
+/** A transfer carries the officer's existing contingent, including wounded and restrictions. */
+export function previewGovernorTransfer(
+  state: V03GameState,
+  cityId: string,
+  officerId: string | null,
+  services: GovernanceOrderServices,
+) {
+  const eligibility = canAppointGovernor(state, cityId, officerId);
+  const officer = eligibility.officer;
+  if (!eligibility.ok) return { ok: false as const, reason: eligibility.reason! };
+  if (!officer || officer.location.kind !== 'city' || officer.location.cityId === cityId)
+    return { ok: true as const, transfer: null };
+  const sourceCityId = officer.location.cityId;
+  const total = personnelCount(officer);
+  const party = {
+    officerIds: [officer.id],
+    troopCount: total,
+    composition: {
+      troopTypes: total ? [officer.troopType] : [],
+      cavalryTroops: officer.troopType === 'cavalry' ? total : 0,
+      woundedTroops: officer.wounded,
+    },
+  };
+  const route = services.planRoute({
+    state,
+    sourceCityId,
+    targetCityId: cityId,
+    departureDay: state.absoluteDay,
+    troopCount: total,
+    kind: 'appointment',
+    composition: party.composition,
+  });
+  if (!route)
+    return {
+      ok: false as const,
+      reason: 'No usable route connects the officer’s current city to the appointment city.',
+    };
+  const food = estimateCampaignSupply({
+    troopCount: total,
+    cavalryTroops: party.composition.cavalryTroops,
+    outboundDays: route.estimatedDays,
+    battleDays: 0,
+    returnDays: route.estimatedDays,
+  }).totalFood;
+  if (availableCityResources(state, sourceCityId).food < food)
+    return {
+      ok: false as const,
+      reason:
+        'The source city needs enough unreserved food for the contingent’s transfer and possible return.',
+    };
+  return { ok: true as const, transfer: { sourceCityId, party, route, food } };
+}
+
+/** Change offices without moving, stripping or recreating anyone's personnel. */
+export function installGovernor(
+  state: V03GameState,
+  city: V03City,
+  incoming: V03Officer | null,
+): void {
+  const previous = state.officers.find((officer) => officer.id === city.governorId);
+  if (previous?.governorOfCityId === city.id) previous.governorOfCityId = null;
+  if (incoming) {
+    for (const source of state.cities) {
+      if (source.id === city.id || source.governorId !== incoming.id) continue;
+      source.governorId = null;
+      if (source.governanceMode === 'governor') source.governanceMode = 'steward';
+    }
+    incoming.governorOfCityId = city.id;
+  }
+  city.governorId = incoming?.id ?? null;
+  city.governanceMode = incoming ? 'governor' : 'steward';
+  city.pendingAppointment = null;
+}
+
+/** A ruler taking office changes the capital, without moving personnel or city stock. */
+export function installPersonalRule(state: V03GameState, city: V03City): void {
+  const faction = state.factions.find((entry) => entry.id === state.playerFactionId)!;
+  const ruler = state.officers.find((entry) => entry.id === faction.leaderOfficerId)!;
+  const oldCapital = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
+  installGovernor(state, city, null);
+  for (const source of state.cities) {
+    if (source.governorId === ruler.id) installGovernor(state, source, null);
+  }
+  ruler.governorOfCityId = null;
+  oldCapital.governanceMode = oldCapital.governorId ? 'governor' : 'steward';
+  city.governanceMode = 'ruler';
+  faction.capitalCityId = city.id;
+  state.playerCapitalCityId = city.id;
 }
 
 /** Queue a governance change. Authority only changes when its next month boundary is settled. */
@@ -47,22 +139,15 @@ export function queueGovernorAppointment(
         state,
         error: 'A route service is required to transfer an officer between cities.',
       };
-    const sourceCityId = result.officer.location.cityId;
-    const route = services.planRoute({
-      state,
-      sourceCityId,
-      targetCityId: cityId,
-      departureDay: state.absoluteDay,
-      troopCount: 0,
-      kind: 'appointment',
-      composition: { troopTypes: [] },
-    });
-    if (!route)
+    const preview = previewGovernorTransfer(state, cityId, officerId, services);
+    if (!preview.ok) return { ok: false, state, error: preview.reason };
+    if (!preview.transfer)
       return {
         ok: false,
         state,
-        error: 'No usable route connects the officer’s current city to the appointment city.',
+        error: 'The officer’s travel plan could not be created; no appointment was changed.',
       };
+    const { sourceCityId, route, party, food } = preview.transfer;
     const id = `${state.scenarioId}:appointment:${state.nextId}`;
     try {
       journey = services.createJourney({
@@ -75,13 +160,9 @@ export function queueGovernorAppointment(
         departureDay: state.absoluteDay,
         arrivalDay: state.absoluteDay + route.estimatedDays,
         route,
-        party: {
-          officerIds: [result.officer.id],
-          troopCount: 0,
-          composition: { troopTypes: [] },
-        },
+        party,
         cargo: { gold: 0, food: 0, troops: 0 },
-        carriedFood: 0,
+        carriedFood: food,
       });
     } catch {
       return {
@@ -105,6 +186,9 @@ export function queueGovernorAppointment(
   }
   if (journey) {
     const officer = next.officers.find((entry) => entry.id === result.officer!.id)!;
+    const source = next.cities.find((entry) => entry.id === journey!.sourceCityId)!;
+    source.garrisonTroops -= availableTroops(officer);
+    source.food -= journey.manifest.carriedFood;
     // The source office remains in force until this appointment takes effect at
     // the month boundary. Local staff can govern autonomously while the officer
     // is away, and the boundary transition moves the office atomically.
@@ -196,27 +280,23 @@ export function applyGovernanceMonthBoundary(
       cancelPendingAppointment(next, city.id, pending.governorId, reason, pending.journeyId);
       continue;
     }
-    if (city.governorId) {
-      const previous = next.officers.find((officer) => officer.id === city.governorId);
-      if (previous?.governorOfCityId === city.id) previous.governorOfCityId = null;
-    }
-    if (incoming) {
-      // Moving an appointed officer between offices is one boundary operation:
-      // keep the source governance intact while in transit, then vacate it here.
-      for (const source of next.cities) {
-        if (source.id === city.id || source.governorId !== incoming.id) continue;
-        source.governorId = null;
-        if (source.governanceMode === 'governor') source.governanceMode = 'steward';
-      }
-    }
-    city.governorId = incoming?.id ?? null;
-    city.governanceMode = incoming ? 'governor' : 'steward';
-    city.pendingAppointment = null;
-    if (incoming) incoming.governorOfCityId = city.id;
+    const personalRule = Boolean(
+      incoming &&
+      incoming.id ===
+        next.factions.find((faction) => faction.id === next.playerFactionId)?.leaderOfficerId,
+    );
+    if (personalRule) installPersonalRule(next, city);
+    else installGovernor(next, city, incoming ?? null);
     const event: V03DomainEvent = {
       id: eventId(next, 'governorChanged'),
       absoluteDay: effectiveDay,
       kind: 'governorChanged',
+      ...(personalRule
+        ? {
+            code: 'city.governance',
+            params: { cityId: city.id, choice: 'self', officerId: incoming!.id },
+          }
+        : {}),
       title: incoming ? 'A new governor takes office' : 'A city returns to local stewardship',
       detail: incoming
         ? `${incoming.name} now governs ${city.name}.`
