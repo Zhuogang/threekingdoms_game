@@ -10,6 +10,8 @@ Use the `v0.4` branch and record `git rev-parse HEAD` in each session record. Ru
 
 Use a separate browser profile, or export your existing campaign before starting another. The Campaign menu provides import/export. Export at the start and end of a session, before a major march, and before any surprising battle or arrival. Keep the original save when investigating a reload difference. The [player guide](../v0.3/player-guide.md) explains existing controls and commands; the in-game Wiki includes the changed status lifetimes.
 
+If the autosave-failure alert appears, keep the tab open and export the current campaign before reloading. The [large-save browser check](README.md#real-browser-recovery-from-large-save-storage-failure) confirms that a real long campaign can exceed browser storage capacity while its independent export remains valid. Reload opens the previous successful browser autosave, not the unsaved current campaign.
+
 ## Four campaign sessions
 
 Each session requires **12 campaign months and at least three manually commanded battles**. Auto-resolved battles do not satisfy that count. The suggestions below provide weak/strong openings, both scenarios and both languages; the player should make their own decisions. If a faction is eliminated early, retain the failed session as evidence and start another to complete the required duration. Do not discard the loss or count it as a completed twelve-month session.
