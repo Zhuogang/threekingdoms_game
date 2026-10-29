@@ -126,14 +126,14 @@ describe('v0.3 strategic rival planning', () => {
       targetCityId: 'pingyuan',
       intent: 'conquer',
       requestedByDay: null,
-      requestedTroops: 5000,
-      proposedTroops: 5000,
+      requestedTroops: 1000,
+      proposedTroops: 1000,
       departureDay: state.absoluteDay,
       estimatedArrivalDay: state.absoluteDay + first[0]!.route.estimatedDays,
     });
-    expect(first[0]!.officerIds).toHaveLength(5);
+    expect(first[0]!.officerIds).toHaveLength(1);
     expect(first[0]!.party.composition).toMatchObject({
-      troopTypes: ['infantry', 'cavalry', 'archer', 'infantry', 'cavalry'],
+      troopTypes: ['infantry'],
       heavySupplyTrain: true,
     });
     expect(first[0]!.route.routeId).toBe('pingyuan--ye');
@@ -154,7 +154,7 @@ describe('v0.3 strategic rival planning', () => {
     expect(plans).toHaveLength(1);
     expect(estimateSupply).toHaveBeenCalledWith({
       troopCount: plans[0]!.requestedTroops,
-      cavalryTroops: 2000,
+      cavalryTroops: plans[0]!.party.composition.cavalryTroops,
       outboundDays: plans[0]!.route.estimatedDays,
       battleDays: 30,
       returnDays: plans[0]!.route.estimatedDays,

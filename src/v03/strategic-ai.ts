@@ -1,4 +1,8 @@
-import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
+import {
+  recordAiDecision,
+  type CampaignDecisionReason,
+  type AiDecisionEvent,
+} from './ai/decision-trace';
 import {
   busyCampaignTargets,
   rivalCampaignSourceBlock,
@@ -6,6 +10,8 @@ import {
   isRivalCampaignOfficerAvailable,
 } from './ai/campaign-legality';
 import { committedCityStock } from './governance/city-actions';
+import { cityBattleRoster } from './campaign/roster';
+import { assessCampaignDeparture } from './ai/campaign-assessment';
 /**
  * Deterministic monthly rival campaign planning for v0.3.
  *
@@ -14,12 +20,7 @@ import { committedCityStock } from './governance/city-actions';
  * directive/journey and debiting food. A caller should commit each returned plan
  * before invoking the planner again, so the state's active-order checks can see it.
  */
-import {
-  estimateCampaignSupply,
-  type SupplyEstimate,
-  type SupplyEstimateInput,
-  type TravelComposition,
-} from './calendar';
+import { estimateCampaignSupply, type SupplyEstimate, type SupplyEstimateInput } from './calendar';
 import { createV03OrderServices } from './governance/services';
 import type { OrderPartyPlan, OrderRoutePlan, PlanRouteInput } from './governance/orders';
 import { ROUTE_BY_ID, routeIdBetween, type CityId } from './geography';
@@ -69,8 +70,11 @@ export interface StrategicAiPlannerOptions {
   excludedCandidates?: readonly Pick<StrategicRivalCampaignPlan, 'sourceCityId' | 'targetCityId'>[];
 }
 
+type CampaignEvent = Extract<AiDecisionEvent, { kind: 'campaign' }>;
+
 interface Candidate extends StrategicRivalCampaignPlan {
   defenderTroops: number;
+  score: number;
 }
 
 const defaultOrderServices = createV03OrderServices();
@@ -102,35 +106,67 @@ function availableOfficers(
     });
 }
 
-function buildParty(
-  state: Readonly<V03GameState>,
-  factionId: string,
-  cityId: string,
-  leaderOfficerId: string,
+function partyAlternatives(
+  officers: readonly V03Officer[],
   maxTroops: number,
-): OrderPartyPlan | null {
-  if (!Number.isSafeInteger(maxTroops) || maxTroops <= 0) return null;
-  const selected: V03Officer[] = [];
-  let troopCount = 0;
-  for (const officer of availableOfficers(state, factionId, cityId, leaderOfficerId)) {
-    if (selected.length >= MAX_OFFICERS_PER_PARTY) break;
-    if (troopCount + officer.troops > maxTroops) continue;
-    selected.push(officer);
-    troopCount += officer.troops;
+  defenderTroops: number,
+): OrderPartyPlan[] {
+  if (!Number.isSafeInteger(maxTroops) || maxTroops <= 0) return [];
+  const smallest = Math.min(...officers.map((officer) => officer.troops));
+  const parties: OrderPartyPlan[] = [];
+  const seen = new Set<string>();
+  for (const mode of ['small', 'balanced', 'maximum'] as const) {
+    const desired =
+      mode === 'small'
+        ? Math.max(1, Math.ceil(defenderTroops * 1.2))
+        : mode === 'balanced'
+          ? Math.max(smallest * 2, Math.ceil(defenderTroops * 1.6))
+          : maxTroops;
+    const pool = officers.slice();
+    if (mode === 'small')
+      pool.sort(
+        (a, b) =>
+          a.troops - b.troops ||
+          Number(a.troopType === 'cavalry') - Number(b.troopType === 'cavalry') ||
+          b.force - a.force ||
+          compareIds(a.id, b.id),
+      );
+    const selected: V03Officer[] = [];
+    let troopCount = 0;
+    while (pool.length && selected.length < MAX_OFFICERS_PER_PARTY && troopCount < desired) {
+      const index =
+        mode === 'balanced'
+          ? pool.findIndex(
+              (officer) =>
+                troopCount + officer.troops <= maxTroops &&
+                !selected.some((member) => member.troopType === officer.troopType),
+            )
+          : -1;
+      const [officer] = pool.splice(index < 0 ? 0 : index, 1);
+      if (!officer || troopCount + officer.troops > maxTroops) continue;
+      selected.push(officer);
+      troopCount += officer.troops;
+    }
+    if (!troopCount) continue;
+    const key = selected
+      .map((officer) => officer.id)
+      .sort(compareIds)
+      .join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    parties.push({
+      officerIds: selected.map((officer) => officer.id),
+      troopCount,
+      composition: {
+        cavalryTroops: selected
+          .filter((officer) => officer.troopType === 'cavalry')
+          .reduce((sum, officer) => sum + officer.troops, 0),
+        troopTypes: selected.map((officer) => officer.troopType),
+        heavySupplyTrain: true,
+      },
+    });
   }
-  if (troopCount <= 0) return null;
-  const composition: TravelComposition = {
-    cavalryTroops: selected
-      .filter((o) => o.troopType === 'cavalry')
-      .reduce((sum, o) => sum + o.troops, 0),
-    troopTypes: selected.map((officer) => officer.troopType),
-    heavySupplyTrain: true,
-  };
-  return {
-    officerIds: selected.map((officer) => officer.id),
-    troopCount,
-    composition,
-  };
+  return parties;
 }
 
 function validateRoute(
@@ -150,35 +186,22 @@ function validateRoute(
   );
 }
 
-function expectedBattleDefenderTroops(state: Readonly<V03GameState>, cityId: string): number {
-  const target = state.cities.find((city) => city.id === cityId);
-  if (!target) return 0;
-  const staffedTroops = state.officers
-    .filter(
-      (officer) =>
-        officer.alive &&
-        officer.factionId === target.factionId &&
-        officer.location.kind === 'city' &&
-        officer.location.cityId === target.id &&
-        officer.troops > 0 &&
-        officer.reorganizationDays === 0,
-    )
-    .reduce((total, officer) => total + officer.troops, 0);
-  // Match actual deployed strength; an undefended city receives no free militia.
-  return Math.max(target.garrisonTroops, staffedTroops);
-}
-
 function makeCandidate(
   state: Readonly<V03GameState>,
   factionId: string,
-  leaderOfficerId: string,
   sourceCityId: string,
   targetCityId: string,
   defenderTroops: number,
+  party: OrderPartyPlan,
   services: StrategicAiPlannerServices,
+  blocked: CampaignEvent[],
 ): Candidate | null {
+  const observe = (event: CampaignEvent) => {
+    recordAiDecision(event);
+    if (event.status === 'rejected') blocked.push(event);
+  };
   const reject = (reason: CampaignDecisionReason) => {
-    recordAiDecision({
+    observe({
       kind: 'campaign',
       day: state.absoluteDay,
       factionId,
@@ -195,14 +218,6 @@ function makeCandidate(
   const routeId = routeIdBetween(sourceCityId as CityId, targetCityId as CityId);
   const routeDefinition = ROUTE_BY_ID.get(routeId);
   if (!routeDefinition) return reject('no-route');
-
-  const reservedTroops = committedCityStock(state, sourceCityId).troops;
-  const troopLimit = Math.max(
-    0,
-    source.garrisonTroops - reservedTroops - protectedMinimumGarrison(source.garrisonTroops),
-  );
-  const party = buildParty(state, factionId, sourceCityId, leaderOfficerId, troopLimit);
-  if (!party) return reject('no-party');
 
   let route: OrderRoutePlan | null;
   try {
@@ -235,21 +250,65 @@ function makeCandidate(
   const availableFood = source.food - committedCityStock(state, sourceCityId).food;
   if (!Number.isSafeInteger(supply.totalFood) || supply.totalFood <= 0)
     return reject('invalid-supply');
-  recordAiDecision({
+  if (availableFood < supply.totalFood) {
+    observe({
+      kind: 'campaign',
+      day: state.absoluteDay,
+      factionId,
+      sourceCityId,
+      targetCityId,
+      status: 'rejected',
+      reason: 'unaffordable',
+      troops: party.troopCount,
+      defenderTroops,
+      food: supply.totalFood,
+      availableFood,
+      foodDeficit: supply.totalFood - availableFood,
+      travelDays: route.estimatedDays,
+    });
+    return null;
+  }
+  const assessment = assessCampaignDeparture(
+    state,
+    sourceCityId,
+    targetCityId,
+    party,
+    supply.totalFood,
+    route.estimatedDays,
+  );
+  // Ordinal value: one city, discounted by casualties, provisions, committed
+  // soldiers, travel time and credible exposure at home. Hold/preparation is zero.
+  const score =
+    1000 /
+    (1 +
+      assessment.matchup.expectedLosses / 1000 +
+      supply.totalFood / 10000 +
+      party.troopCount / 10000 +
+      route.estimatedDays / 30 +
+      assessment.homeRisk * 0.5);
+  observe({
     kind: 'campaign',
     day: state.absoluteDay,
     factionId,
     sourceCityId,
     targetCityId,
-    status: availableFood < supply.totalFood ? 'rejected' : 'eligible',
-    reason: availableFood < supply.totalFood ? 'unaffordable' : 'force-ratio-and-travel',
+    status: assessment.reason ? 'rejected' : 'eligible',
+    reason: assessment.reason ?? 'viable-campaign',
     troops: party.troopCount,
     defenderTroops,
+    officerIds: [...party.officerIds],
     food: supply.totalFood,
     availableFood,
     travelDays: route.estimatedDays,
+    score,
+    forceRatio: assessment.matchup.ratio,
+    expectedLosses: assessment.matchup.expectedLosses,
+    homeProjectedFood: assessment.economy.projectedAvailable.food,
+    homeRisk: assessment.homeRisk,
+    forceDeficit: assessment.forceDeficit,
+    foodDeficit: assessment.foodDeficit,
   });
-  if (availableFood < supply.totalFood) return null;
+  if (assessment.reason) return null;
 
   return {
     factionId,
@@ -267,12 +326,14 @@ function makeCandidate(
     supply,
     food: supply.totalFood,
     defenderTroops,
+    score,
   };
 }
 
 function compareCandidates(a: Candidate, b: Candidate): number {
   return (
-    a.defenderTroops / a.proposedTroops - b.defenderTroops / b.proposedTroops ||
+    b.score - a.score ||
+    a.food - b.food ||
     a.route.estimatedDays - b.route.estimatedDays ||
     compareIds(a.sourceCityId, b.sourceCityId) ||
     compareIds(a.targetCityId, b.targetCityId)
@@ -283,7 +344,7 @@ function compareCandidates(a: Candidate, b: Candidate): number {
  * Build legal rival campaign plans from the current state, normally once after a
  * monthly settlement. The planner never mutates the state, uses no RNG or clock,
  * considers independent cities, excludes friendly/occupied targets, and returns
- * stable ordering by defender-to-proposed-force ratio and travel time.
+ * a deterministic shortlist of three source/target options and three parties each.
  */
 export function planStrategicRivalCampaigns(
   state: Readonly<V03GameState>,
@@ -318,6 +379,15 @@ export function planStrategicRivalCampaigns(
       .filter((city) => city.factionId === faction.id)
       .sort((a, b) => compareIds(a.id, b.id));
     const candidates: Candidate[] = [];
+    const blocked: CampaignEvent[] = [];
+    const optionsToRank: Array<{
+      sourceCityId: string;
+      targetCityId: string;
+      defenderTroops: number;
+      officers: V03Officer[];
+      troopLimit: number;
+      distance: number;
+    }> = [];
 
     for (const source of ownedCities) {
       const sourceBlock = rivalCampaignSourceBlock(state, faction.id, source.id);
@@ -356,14 +426,67 @@ export function planStrategicRivalCampaigns(
           continue;
         }
 
+        const routeId = routeIdBetween(source.id as CityId, target.id as CityId);
+        const routeDefinition = ROUTE_BY_ID.get(routeId);
+        if (!routeDefinition) continue;
+        const reserved = committedCityStock(state, source.id);
+        const troopLimit = Math.max(
+          0,
+          source.garrisonTroops - reserved.troops - protectedMinimumGarrison(source.garrisonTroops),
+        );
+        const officers = availableOfficers(state, faction.id, source.id, faction.leaderOfficerId);
+        const deployable = Math.min(
+          troopLimit,
+          officers.reduce((sum, officer) => sum + officer.troops, 0),
+        );
+        if (deployable <= 0 || !officers.some((officer) => officer.troops <= troopLimit)) {
+          recordAiDecision({
+            kind: 'campaign',
+            day: state.absoluteDay,
+            factionId: faction.id,
+            sourceCityId: source.id,
+            targetCityId: target.id,
+            status: 'rejected',
+            reason: 'no-party',
+          });
+          continue;
+        }
+        const defenderTroops = cityBattleRoster(state, target.id, 'shortlist').roster.reduce(
+          (sum, unit) => sum + unit.troops,
+          0,
+        );
+        optionsToRank.push({
+          sourceCityId: source.id,
+          targetCityId: target.id,
+          defenderTroops,
+          officers,
+          troopLimit,
+          distance: routeDefinition.segments.reduce((sum, segment) => sum + segment.lengthKm, 0),
+        });
+      }
+    }
+    optionsToRank.sort(
+      (a, b) =>
+        a.defenderTroops / a.troopLimit - b.defenderTroops / b.troopLimit ||
+        a.distance - b.distance ||
+        compareIds(a.sourceCityId, b.sourceCityId) ||
+        compareIds(a.targetCityId, b.targetCityId),
+    );
+    for (const option of optionsToRank.slice(0, 3)) {
+      for (const party of partyAlternatives(
+        option.officers,
+        option.troopLimit,
+        option.defenderTroops,
+      )) {
         const candidate = makeCandidate(
           state,
           faction.id,
-          faction.leaderOfficerId,
-          source.id,
-          target.id,
-          expectedBattleDefenderTroops(state, target.id),
+          option.sourceCityId,
+          option.targetCityId,
+          option.defenderTroops,
+          party,
           services,
+          blocked,
         );
         if (candidate) candidates.push(candidate);
       }
@@ -374,8 +497,10 @@ export function planStrategicRivalCampaigns(
         kind: 'campaign',
         day: state.absoluteDay,
         factionId: faction.id,
+        ...blocked[0],
         status: 'wait',
-        reason: 'no-eligible-campaign',
+        reason: blocked[0]?.reason ?? 'no-eligible-campaign',
+        score: 0,
       });
     candidates.sort(compareCandidates);
     const plannedSources = new Set<string>();
@@ -394,7 +519,8 @@ export function planStrategicRivalCampaigns(
         sourceCityId: candidate.sourceCityId,
         targetCityId: candidate.targetCityId,
         status: 'selected',
-        reason: 'force-ratio-and-travel',
+        reason: 'viable-campaign',
+        score: candidate.score,
         troops: candidate.proposedTroops,
         defenderTroops: candidate.defenderTroops,
         food: candidate.food,

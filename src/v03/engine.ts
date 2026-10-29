@@ -3,6 +3,7 @@ import {
   rivalCampaignTargetBlock,
   isRivalCampaignOfficerAvailable,
 } from './ai/campaign-legality';
+import { assessCampaignDeparture } from './ai/campaign-assessment';
 import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
 import { FOOD_MICRO } from './calendar/rations';
 import { forecastBattleRations } from './battle/supply';
@@ -10,7 +11,7 @@ import { cityAccruedUpkeep, cityProduction, cityServiceHeadcounts } from './camp
 import { recoverPersonnelDay } from './campaign/personnel-recovery';
 import { planOfficerDebuts } from './campaign/officer-lifecycle';
 import { isCityCommitted } from './governance/commitments';
-import { applyTroopLoss, mergeTroopPools } from './campaign/troop-experience';
+import { applyTroopLoss } from './campaign/troop-experience';
 import { battleExperienceGain } from './battle/experience';
 import type { V03TroopGrowthReport } from './types';
 import { eventTier, isCriticalReport } from './campaign/reports';
@@ -43,11 +44,10 @@ import {
   createTacticalBattle,
   runBattleAiTurn,
   selectCampaignBattlefield,
-  type BattleRosterEntry,
   type TacticalBattleUnit,
   type V03TacticalBattleState,
 } from './battle';
-import { hasTrait } from './content/traits';
+import { cityBattleRoster, groupOfficers, rosterFromGroups } from './campaign/roster';
 import {
   advanceV03Hegemon,
   getV03AttackAllianceBlock,
@@ -91,7 +91,6 @@ import type {
   V03GameState,
   V03Journey,
   V03Officer,
-  TroopType,
 } from './types';
 
 const RESOURCE_CAP = 9_999_999;
@@ -260,94 +259,6 @@ function approachBetween(
   return dy > 0 ? 'south' : 'north';
 }
 
-interface FormationGroup {
-  type: TroopType;
-  officers: V03Officer[];
-  troops: number;
-  militia?: boolean;
-  troopExperience?: number;
-}
-
-function groupOfficers(officers: readonly V03Officer[], limit = 10): FormationGroup[] {
-  const groups: FormationGroup[] = [];
-  const sorted = officers
-    .filter((entry) => entry.troops > 0)
-    .slice()
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  const representatives = [...new Set(sorted.map((officer) => officer.troopType))].map((type) =>
-    sorted.find((officer) => officer.troopType === type)!,
-  );
-  for (const officer of [
-    ...representatives,
-    ...sorted.filter((officer) => !representatives.includes(officer)),
-  ]) {
-    if (groups.length < limit)
-      groups.push({ type: officer.troopType, officers: [officer], troops: officer.troops });
-    else {
-      const weakest = groups
-        .filter((group) => group.type === officer.troopType)
-        .sort((a, b) => a.troops - b.troops)[0];
-      if (!weakest) throw new Error('Battle roster overflow has no matching troop type.');
-      weakest.officers.push(officer);
-      weakest.troops += officer.troops;
-    }
-  }
-  return groups;
-}
-
-function rosterFromGroups(
-  groups: readonly FormationGroup[],
-  prefix: string,
-): {
-  roster: BattleRosterEntry[];
-  membership: Record<string, string[]>;
-} {
-  const membership: Record<string, string[]> = {};
-  const roster = groups.map((group) => {
-    const id = `${prefix}:${group.type}:${group.militia ? 'militia' : group.officers[0]!.id}`;
-    membership[id] = group.officers.map((officer) => officer.id);
-    const leaders = group.officers.map((officer) => officer.name).join(', ');
-    const name =
-      group.type === 'infantry'
-        ? group.militia
-          ? 'Militia'
-          : 'Infantry'
-        : group.type === 'cavalry'
-          ? 'Cavalry'
-          : group.type === 'archer'
-            ? 'Archers'
-            : group.type;
-    return {
-      id,
-      name: leaders ? `${name} · ${leaders}` : name,
-      troopType: group.type,
-      troops: group.troops,
-      troopExperience: group.militia
-        ? (group.troopExperience ?? 0)
-        : mergeTroopPools(...group.officers).troopExperience,
-      force: group.officers.length
-        ? Math.round(
-            group.officers.reduce((sum, officer) => sum + officer.force * officer.troops, 0) /
-              Math.max(1, group.troops),
-          )
-        : 45,
-      intellect: group.officers.length
-        ? Math.round(
-            group.officers.reduce((sum, officer) => sum + officer.intellect * officer.troops, 0) /
-              Math.max(1, group.troops),
-          )
-        : 40,
-      level: group.officers.length
-        ? Math.max(...group.officers.map((officer) => officer.level))
-        : 0,
-      isMilitia: Boolean(group.militia),
-      cunning: group.officers.some((officer) => hasTrait(officer.id, 'cunning')),
-      attackRange: group.type === 'archer' ? 3 : undefined,
-    } satisfies BattleRosterEntry;
-  });
-  return { roster, membership };
-}
-
 function allocateSurvivors(
   unit: TacticalBattleUnit,
   memberIds: readonly string[],
@@ -372,7 +283,7 @@ function allocateSurvivors(
   });
 }
 
-function chargeBattleRations(battle: V03BattleState, absoluteDay: number): void {
+export function chargeBattleRations(battle: V03BattleState, absoluteDay: number): void {
   const data = battle.battleData;
   if (
     battle.lastRationDay === absoluteDay ||
@@ -711,33 +622,9 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
       entry.factionId === target.factionId,
   ))
     detachWoundedToCity(state, officer.id);
-  const defenders = state.officers.filter(
-    (officer) =>
-      officer.alive &&
-      target.factionId !== null &&
-      officer.factionId === target.factionId &&
-      officer.location.kind === 'city' &&
-      officer.location.cityId === target.id &&
-      officer.troops > 0 &&
-      officer.reorganizationDays === 0,
-  );
   const attacker = rosterFromGroups(groupOfficers(attackers), `${journey.id}:attack`);
-  const defenderGroups = groupOfficers(
-    defenders,
-    target.garrisonTroops > defenders.reduce((sum, officer) => sum + officer.troops, 0) ? 9 : 10,
-  );
-  const staffedTroops = defenderGroups.reduce((sum, group) => sum + group.troops, 0);
-  const militia = Math.max(0, target.garrisonTroops - staffedTroops);
-  if (militia > 0) {
-    defenderGroups.push({
-      type: 'infantry',
-      officers: [],
-      troops: militia,
-      militia: true,
-      troopExperience: militia > 0 ? target.garrisonExperience : 0,
-    });
-  }
-  const defender = rosterFromGroups(defenderGroups, `${journey.id}:defend`);
+  const defender = cityBattleRoster(state, target.id, `${journey.id}:defend`);
+  const { officers: defenders, militia } = defender;
   const id = `battle-${state.nextId}`;
   const battleDays = journey.intent === 'raid' ? 10 : 30;
   const fieldFoodCount = defenders.reduce(
@@ -1466,6 +1353,16 @@ export function dispatchRivalCampaignPlan(
     source.food - committedCityStock(state, source.id).food < plan.food
   )
     return reject('unaffordable');
+
+  const assessment = assessCampaignDeparture(
+    state,
+    source.id,
+    target.id,
+    plan.party,
+    plan.food,
+    plan.route.estimatedDays,
+  );
+  if (assessment.reason) return reject(assessment.reason);
 
   const directiveId = `${state.scenarioId}:directive:${state.nextId}`;
   const journeyId = `${state.scenarioId}:journey:${state.nextId + 1}`;

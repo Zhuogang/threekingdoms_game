@@ -116,8 +116,13 @@ describe('V04-01 campaign legality and bounded fallback', () => {
     'rejects %s without spending stock, RNG, IDs or officer assignments',
     (_label, alter) => {
       const state = fixture();
+      if (_label === 'underreported cavalry')
+        state.officers
+          .filter((officer) => officer.troopType !== 'cavalry')
+          .forEach((officer) => (officer.reorganizationDays = 1));
       const plan = originalPlanner(state, { factionId: 'yuan' })[0]!;
-      expect(plan.party.composition.cavalryTroops).toBeGreaterThan(0);
+      if (_label === 'underreported cavalry')
+        expect(plan.party.composition.cavalryTroops).toBeGreaterThan(0);
       alter(state, plan);
       const before = structuredClone(state);
       const assigned = new Set<string>();
@@ -197,7 +202,17 @@ describe('V04-01 campaign legality and bounded fallback', () => {
     state.officers.slice(3).forEach((officer) => {
       officer.location = { kind: 'city', cityId: 'beiping' };
     });
-    expect(originalPlanner(state, { factionId: 'yuan', maxPlansPerFaction: 2 })).toHaveLength(2);
+    const trace = createAiDecisionTrace(1000);
+    withAiDecisionTrace(trace, () =>
+      originalPlanner(state, { factionId: 'yuan', maxPlansPerFaction: 2 }),
+    );
+    expect(
+      new Set(
+        trace.events
+          .filter((event) => event.kind === 'campaign' && event.status === 'eligible')
+          .map((event) => event.kind === 'campaign' && event.sourceCityId),
+      ),
+    ).toEqual(new Set(['ye', 'beiping']));
     dispatchMonthlyRivalCampaigns(state);
     expect(state.directives.filter((order) => order.factionId === 'yuan')).toHaveLength(1);
     expect(state.journeys).toHaveLength(1);

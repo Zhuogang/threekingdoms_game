@@ -8,9 +8,7 @@ import {
 } from '../../../src/v03/battle';
 import { rivalDecisionFixture, decisionBattle } from '../helpers/ai-fixtures';
 
-const unresolved = process.env.V04_REPRODUCE_FAILURES === '1' ? it : it.fails;
-
-/** These expected failures establish reviewed defects; convert each to a normal regression in its ticket. */
+/** Originally reproduced defects, now required passing behavior. */
 describe('v0.4 reproduced behavior requirements', () => {
   it('V04-01: an allied empty city cannot mask a legal independent target', () => {
     const state = rivalDecisionFixture();
@@ -24,7 +22,7 @@ describe('v0.4 reproduced behavior requirements', () => {
     ).toBe('jinyang');
   });
 
-  unresolved('V04-06: a routine 1:10 conquest is rejected in favor of preparation', () => {
+  it('V04-06: a routine 1:10 conquest is rejected in favor of preparation', () => {
     const state = rivalDecisionFixture();
     for (const city of state.cities) if (city.id !== 'ye') city.garrisonTroops = 50_000;
     expect(planStrategicRivalCampaigns(state).filter((plan) => plan.factionId === 'yuan')).toEqual(
@@ -32,7 +30,7 @@ describe('v0.4 reproduced behavior requirements', () => {
     );
   });
 
-  unresolved('V04-06: consider a smaller affordable party while retaining home provisions', () => {
+  it('V04-06: consider a smaller affordable party while retaining home provisions', () => {
     const state = rivalDecisionFixture();
     state.cities = state.cities.filter((city) => city.id !== 'jinyang');
     Object.assign(

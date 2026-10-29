@@ -120,9 +120,9 @@ describe('v0.3 engine rival campaign integration', () => {
       sourceCityId: 'ye',
       intent: 'conquer',
       status: 'dispatched',
-      // Autonomy now uses the spare 200 same-type reservists before optional training.
-      requestedTroops: 5700,
-      proposedTroops: 5700,
+      // The selected small party is sufficient for the nearby independent city.
+      requestedTroops: 1500,
+      proposedTroops: 1500,
       earliestDepartureDay: 30,
     });
     expect(state.cities.find((city) => city.id === directive.targetCityId)?.factionId).toBeNull();
@@ -131,9 +131,9 @@ describe('v0.3 engine rival campaign integration', () => {
     if (!journey) throw new Error('Rival directive did not retain its created journey.');
     expect(journey.kind).toBe('campaign');
     expect(journey.ownerFactionId).toBe('yuan');
-    expect(journey.manifest.troopCount).toBe(5700);
-    expect(journey.manifest.officerIds).toHaveLength(6);
-    expect(new Set(journey.manifest.officerIds).size).toBe(6);
+    expect(journey.manifest.troopCount).toBe(1500);
+    expect(journey.manifest.officerIds).toHaveLength(2);
+    expect(new Set(journey.manifest.officerIds).size).toBe(2);
     expect(
       journey.manifest.officerIds.some(
         (id) => initial.officers.find((officer) => officer.id === id)!.troops === 0,
@@ -141,7 +141,7 @@ describe('v0.3 engine rival campaign integration', () => {
     ).toBe(true);
     expect(journey.manifest.carriedFood).toBe(
       estimateCampaignSupply({
-        troopCount: 5700,
+        troopCount: 1500,
         cavalryTroops: journey.manifest.officerIds.reduce((sum, id) => {
           const officer = state.officers.find((officer) => officer.id === id)!;
           return sum + (officer.troopType === 'cavalry' ? officer.troops : 0);
@@ -153,7 +153,7 @@ describe('v0.3 engine rival campaign integration', () => {
     );
 
     const source = state.cities.find((city) => city.id === 'ye')!;
-    expect(source.garrisonTroops).toBe(1000);
+    expect(source.garrisonTroops).toBe(5200);
     // Reserve upkeep is paid before monthly autonomy transfers soldiers into a new army.
     const reserveRations = Math.ceil(
       (initialSource.reserve + initialSource.reservePools.cavalry.troops) * 0.004,
@@ -212,6 +212,9 @@ describe('v0.3 engine rival campaign integration', () => {
 
   it('captures an undefended independent city without creating phantom militia', () => {
     let state = prepareRivalMonth();
+    state.cities
+      .filter((city) => city.factionId === null)
+      .forEach((city) => (city.garrisonTroops = 0));
     state = advanceOneDayAcknowledgingEvents(state);
     const directive = state.directives.find((entry) => entry.status === 'dispatched')!;
     const independentCityId = directive.targetCityId;

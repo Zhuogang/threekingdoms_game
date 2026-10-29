@@ -16,6 +16,10 @@ export type CampaignDecisionReason =
   | 'invalid-supply'
   | 'unaffordable'
   | 'force-ratio-and-travel'
+  | 'viable-campaign'
+  | 'insufficient-force'
+  | 'home-food-shortage'
+  | 'home-defense-exposed'
   | 'no-eligible-campaign'
   | 'dispatch-revalidation';
 
@@ -31,6 +35,14 @@ export type AiDecisionEvent =
       reason: CampaignDecisionReason;
       troops?: number;
       defenderTroops?: number;
+      officerIds?: readonly string[];
+      score?: number;
+      forceRatio?: number;
+      expectedLosses?: number;
+      homeProjectedFood?: number;
+      homeRisk?: number;
+      forceDeficit?: number;
+      foodDeficit?: number;
       food?: number;
       availableFood?: number;
       travelDays?: number;
