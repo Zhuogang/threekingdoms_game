@@ -161,8 +161,21 @@ describe('R2 annual appearances and persistence', () => {
 
   it('keeps single-day, ten-day and next-event advances consistent at the same year boundary', () => {
     const before = yearEnd();
+    // A known report bounds every mode at the same date. Annual appearances are
+    // notices, so an unbounded next-event call can otherwise simulate a full year.
+    before.events.push({
+      id: 'year-boundary-report',
+      absoluteDay: 360,
+      kind: 'campaignEvent',
+      title: 'Scheduled review',
+      detail: 'Stop at the year boundary.',
+      entityId: null,
+      acknowledged: false,
+      tier: 'critical',
+    });
     const states = ([1, 10, 'next-event'] as const).map((mode) => advanceV03(before, mode).state);
     for (const state of states) {
+      expect(state.absoluteDay).toBe(360);
       expect(state.lastOfficerDebutYear).toBe(191);
       expect(state.officers.map((officer) => [officer.id, officer.age])).toEqual(
         states[0]!.officers.map((officer) => [officer.id, officer.age]),

@@ -70,8 +70,10 @@ describe('battle rules after camp removal', () => {
     const battle = state.battles.find((entry) => entry.active)!;
     const player = battle.battleData.units.find((entry) => entry.side === 'attacker')!;
     const enemy = battle.battleData.units.find((entry) => entry.side === 'defender')!;
-    Object.assign(player, { x: 12, y: 15 });
-    Object.assign(enemy, { x: 13, y: 15, isMilitia: true });
+    // Make an ordinary exchange worthwhile; this tests engagement bookkeeping,
+    // not whether weak militia should charge an elite cavalry formation.
+    Object.assign(player, { x: 12, y: 15, troopType: 'infantry', force: 45 });
+    Object.assign(enemy, { x: 13, y: 15, force: 85, isMilitia: true });
     expect(battle.battleData.engaged).toBe(false);
     expect(previewRetreat(state, battle, 'attacker').risk).toBe(0);
     battle.battleData = runBattleAiTurn(battle.battleData, 'defender');
