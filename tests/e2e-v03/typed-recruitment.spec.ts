@@ -1,8 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { createV03Game } from '../../src/v03/initial-state';
 import { recruitmentQuote } from '../../src/v03/campaign/recruitment';
+import { cityWorkUsedThisPeriod } from '../../src/v03/governance/city-actions';
 import { asSave } from './playability-fixtures';
-import { chooseWorkExecutor, confirmWork, showCityManagement } from './ui-navigation';
+import {
+  chooseWorkExecutor,
+  confirmWork,
+  showCityManagement,
+  closeCityWindow,
+} from './ui-navigation';
 import type { V03GameState } from '../../src/v03/types';
 
 for (const locale of ['zh', 'en'] as const) {
@@ -22,6 +28,28 @@ for (const locale of ['zh', 'en'] as const) {
     });
     await page.reload();
     for (const type of ['infantry', 'archer', 'cavalry'] as const) {
+      if (type === 'cavalry') {
+        // Two recruitments exhaust the real ten-day budget. Reload preserves
+        // that usage; the third recruitment must wait for its actual refresh.
+        expect(state.cities.find((city) => city.id === capital.id)!.workPointsUsed).toBe(2);
+        await closeCityWindow(page);
+        await page.getByRole('button', { name: /Advance 10 days|推进十日/, exact: true }).click();
+        await expect
+          .poll(() =>
+            page.evaluate((key) => JSON.parse(localStorage.getItem(key)!).state.absoluteDay, key),
+          )
+          .toBe(10);
+        state = await page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key)!).state as V03GameState,
+          key,
+        );
+        expect(
+          cityWorkUsedThisPeriod(
+            state,
+            state.cities.find((city) => city.id === capital.id)!,
+          ),
+        ).toBe(0);
+      }
       const before = state.cities.find((c) => c.id === capital.id)!;
       const quote = recruitmentQuote(before, officer.force, type);
       await showCityManagement(page);
