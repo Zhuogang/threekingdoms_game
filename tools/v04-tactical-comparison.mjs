@@ -6,6 +6,7 @@ import { performance } from 'node:perf_hooks';
 import { isDeepStrictEqual } from 'node:util';
 import { cpus, platform, release } from 'node:os';
 import { simulationFingerprint } from './simulation-fingerprint.mjs';
+import { compareOrdinaryAttackExposure } from './v04-tactical-exposure.mjs';
 
 const [
   runtime = '.',
@@ -81,6 +82,9 @@ const configuration = {
   runnerSha256: createHash('sha256')
     .update(await readFile(new URL(import.meta.url)))
     .digest('hex'),
+  exposureHelperSha256: createHash('sha256')
+    .update(await readFile(new URL('./v04-tactical-exposure.mjs', import.meta.url)))
+    .digest('hex'),
   description:
     'Both armies use the runtime policy; each fixture swaps armies and control seat. Actual campaign ration charging follows each tactical day. Synthetic contact/choke/water fixtures are labelled; river-crossing uses the unchanged canvas map. Field retention excludes later capture and return settlement.',
   instrumentation:
@@ -94,21 +98,32 @@ const configuration = {
       'Sum of the shared ordinary-hit forecasts at actual primary attack decisions; distinct from actual casualties.',
     idle: 'An unresolved day without an attack or tactic. Stalled also has no movement and no confusion activation. Ending-only rout/retreat checks are excluded. These counts do not prove every hold was mistaken.',
     unnecessaryExposure: {
-      status: 'not-attributable',
-      reason:
-        'No independent counterfactual search measures every equally useful safer move. Retaliation forecasts and controlled preservation fixtures are reported instead; missing exposure is not zero.',
+      status: 'measured-current-day-ordinary-reply-proxy',
+      definition:
+        'For an observed ordinary attack, enumerate all destinations legal at its observed movement origin. Replay the same target attack with actual deterministic commands. Require identical unit effects (except actor position/spent movement), outcome, food, points and RNG. Preserve every other friendly formation’s current reachable cells and never increase any friendly unit’s largest legal current-day normal reply. Report a strictly smaller largest reply to the actor.',
+      horizon:
+        'Only unspent enemy activations on the current board/day; actual moved, acted, Confuse, rout, occupancy, ZOC, terrain and water rules apply. Replies are independent possibilities, not a simultaneous attack sequence or predictions of what the opponent will choose.',
+      limits:
+        'A conservative positional opportunity, not proof that a move is globally dominated. Future turns, tactics, supply, timeout strategy and subsequent allied actions can change its value. Tactic/hold decisions are outside coverage; skipped ordinary attacks have explicit reasons. Casualty reductions are forecast opportunities, not observed lives saved.',
+      witnessLimitPerRun: 5,
     },
   },
 };
 const fingerprints = await simulationFingerprint(root, configuration);
 const observerKey = '__v04TacticalComparisonObserver';
-function insertObservation(code, name, anchor, action) {
+function insertObservation(
+  code,
+  name,
+  anchor,
+  action,
+  fields = 'sourceId: source.id, targetId: target.id',
+) {
   const start = code.indexOf(`function ${name}(`);
   if (start < 0) return { code, found: false };
   const end = code.indexOf('\n}', start) + 2;
   const body = code.slice(start, end);
   if (!body.includes(anchor)) throw new Error(`Observer anchor missing in ${name}`);
-  const call = `globalThis.${observerKey}?.(structuredClone(state), { action: ${action}, sourceId: source.id, targetId: target.id });\n  `;
+  const call = `globalThis.${observerKey}?.(structuredClone(state), { action: ${action}, ${fields} });\n  `;
   return {
     code: code.slice(0, start) + body.replace(anchor, call + anchor) + code.slice(end),
     found: true,
@@ -150,6 +165,14 @@ const server = await createServer({
           'source.acted = true;',
           "'attack'",
         );
+        result = insertObservation(
+          result.code,
+          'performMove',
+          'const startWater = isOnWater(state.map, unit);',
+          "'move'",
+          'sourceId: unit.id',
+        );
+        if (!result.found) throw new Error('No move executor to observe.');
         return result.code;
       },
     },
@@ -245,6 +268,19 @@ try {
       idleDays: 0,
       stalledDays: 0,
       tactics: {},
+      ordinaryAttackExposure: {
+        observed: 0,
+        measured: 0,
+        excluded: {},
+        positions: 0,
+        equivalentPositions: 0,
+        protectedPositions: 0,
+        saferEquivalentAttacks: 0,
+        forecastReduction: 0,
+        maximumReduction: 0,
+        witnesses: [],
+        droppedWitnesses: 0,
+      },
     };
     const samples = [];
     while (!wrapper.battleData.outcome && elapsedDays < 30) {
@@ -257,15 +293,73 @@ try {
         times.push(ms);
         samples.push(ms);
       }
+      const movementOrigins = new Map();
       globalThis[observerKey] = (state, action) => {
+        if (action.action === 'move') {
+          movementOrigins.set(action.sourceId, state);
+          return;
+        }
         metrics.primaryActions++;
         const source = state.units.find((unit) => unit.id === action.sourceId),
           target = state.units.find((unit) => unit.id === action.targetId);
         const normal = engine.predictBattleAttack(state, source.id, target.id);
         if (action.action === 'attack') {
           metrics.forecastRetaliation += normal?.counterattack.estimatedCasualties ?? 0;
+          if (measure) {
+            const observer = globalThis[observerKey];
+            delete globalThis[observerKey];
+            let comparison;
+            try {
+              comparison = compareOrdinaryAttackExposure(
+                engine,
+                state,
+                source.id,
+                target.id,
+                movementOrigins.get(source.id),
+              );
+            } finally {
+              globalThis[observerKey] = observer;
+            }
+            const exposure = metrics.ordinaryAttackExposure;
+            exposure.observed++;
+            if (comparison.status === 'excluded')
+              exposure.excluded[comparison.reason] =
+                (exposure.excluded[comparison.reason] ?? 0) + 1;
+            else {
+              exposure.measured++;
+              for (const key of ['positions', 'equivalentPositions', 'protectedPositions'])
+                exposure[key] += comparison[key];
+              if (comparison.best) {
+                exposure.saferEquivalentAttacks++;
+                exposure.forecastReduction += comparison.best.reduction;
+                exposure.maximumReduction = Math.max(
+                  exposure.maximumReduction,
+                  comparison.best.reduction,
+                );
+                if (
+                  exposure.witnesses.length <
+                  configuration.metrics.unnecessaryExposure.witnessLimitPerRun
+                )
+                  exposure.witnesses.push({
+                    day: state.day,
+                    primaryAction: metrics.primaryActions,
+                    actorId: source.id,
+                    targetId: target.id,
+                    army: source.id[0],
+                    side: source.side,
+                    unitStateSha256: createHash('sha256')
+                      .update(JSON.stringify(state.units))
+                      .digest('hex'),
+                    ...comparison,
+                  });
+                else exposure.droppedWitnesses++;
+              }
+            }
+          }
+          movementOrigins.delete(source.id);
           return;
         }
+        movementOrigins.delete(source.id);
         const tactic = engine.predictBattleTactic(state, source.id, action.action, target.id);
         if (!tactic?.inRange) throw new Error('Observed tactic lacks its actual legal forecast.');
         metrics.tacticPointsSpent += engine
@@ -377,6 +471,14 @@ try {
       tacticPointsSpent: sum((row) => row.metrics.tacticPointsSpent),
       stalledDays: sum((row) => row.metrics.stalledDays),
       foodShortfallDays: sum((row) => row.foodShortfallDays),
+      ordinaryAttackExposure: {
+        observed: sum((row) => row.metrics.ordinaryAttackExposure.observed),
+        measured: sum((row) => row.metrics.ordinaryAttackExposure.measured),
+        saferEquivalentAttacks: sum(
+          (row) => row.metrics.ordinaryAttackExposure.saferEquivalentAttacks,
+        ),
+        forecastReduction: sum((row) => row.metrics.ordinaryAttackExposure.forecastReduction),
+      },
     };
   });
   await mkdir(dirname(output), { recursive: true });
