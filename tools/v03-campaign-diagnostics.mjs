@@ -8,6 +8,7 @@ import { createServer } from 'vite';
 import { aggregateResults, summarize } from './v03-campaign-diagnostics-helpers.mjs';
 import { executeNextAdjacentCampaignOrder } from './v03-campaign-bot.mjs';
 import { simulationFingerprint } from './simulation-fingerprint.mjs';
+import { validateCampaignSaveCheckpoint } from './campaign-save-checkpoint.mjs';
 
 const DEFAULT_OUTPUT = '.artifacts/v04/campaign-diagnostics.json';
 const FACTION_IDS = ['cao', 'liu', 'sun', 'yuan', 'dong', 'yan', 'ma'];
@@ -27,10 +28,12 @@ function optionsFromArgs(args) {
     traceLimit: 200,
     runtime: '.',
     onlyRun: null,
+    validateSaves: false,
   };
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
     if (arg === '--quick') options.quick = true;
+    else if (arg === '--validate-saves') options.validateSaves = true;
     else if (arg === '--trace-limit') options.traceLimit = Number(args[++index]);
     else if (arg === '--months') options.months = Number(args[++index]);
     else if (arg === '--scenario') options.scenarios = [args[++index]];
@@ -40,7 +43,7 @@ function optionsFromArgs(args) {
     else if (arg === '--only-run') options.onlyRun = args[++index];
     else if (arg === '--help') {
       console.log(
-        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--runtime path] [--only-run scenario/faction/development|held-out] [--output path] [--trace-limit 200] [--quick]. --only-run preserves the configured matrix faction index and seed; --factions changes that index.',
+        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--runtime path] [--only-run scenario/faction/development|held-out] [--output path] [--trace-limit 200] [--validate-saves] [--quick]. --only-run preserves the configured matrix faction index and seed; --factions changes that index. --validate-saves checks initial, monthly and final snapshots through the runtime save codec without altering live play.',
       );
       process.exit(0);
     } else throw new Error(`Unknown argument: ${arg}`);
@@ -86,6 +89,7 @@ async function main() {
           'v03-campaign-bot.mjs',
           'v03-campaign-diagnostics-helpers.mjs',
           'simulation-fingerprint.mjs',
+          'campaign-save-checkpoint.mjs',
         ].map(async (file) => [
           file,
           createHash('sha256')
@@ -102,6 +106,7 @@ async function main() {
     cohorts: RUNS,
     policy: 'deterministic-adjacent-campaign-bot-v1',
     onlyRun: options.onlyRun,
+    validateSaves: options.validateSaves,
     harness,
   });
   const server = await createServer({
@@ -119,6 +124,7 @@ async function main() {
       { scenarioById },
       { ROUTE_DEFINITIONS },
       { createAiDecisionTrace, withAiDecisionTrace },
+      saveApi,
     ] = await Promise.all([
       server.ssrLoadModule('/src/v03/initial-state.ts'),
       server.ssrLoadModule('/src/v03/commands.ts'),
@@ -126,16 +132,19 @@ async function main() {
       server.ssrLoadModule('/src/v03/content/scenario.ts'),
       server.ssrLoadModule('/src/v03/geography/index.ts'),
       server.ssrLoadModule('/src/v03/ai/decision-trace.ts'),
+      server.ssrLoadModule('/src/v03/platform/storage.ts'),
     ]);
     const checkpoints = [...new Set([Math.min(48, options.months), options.months])];
     const results = [];
     const unavailableFactions = {};
     const outputPath = resolve(options.output);
-    const saveReport = async (complete = false) => {
+    let failure = null;
+    const saveReport = async (status = 'running') => {
       const output = {
         schemaVersion: 2,
         generatedAt: new Date().toISOString(),
-        status: complete ? 'complete' : 'running',
+        status,
+        failure,
         command: process.argv.slice(2),
         nodeVersion: process.version,
         wallClockMs: Math.round(performance.now() - startedAt),
@@ -163,6 +172,8 @@ async function main() {
               'Current ten-day work-period snapshots only; missing/stale periods remain unobserved. Cumulative work sums actual committed governor action events.',
             npcCampaigns:
               'Counts engine-created rival campaign journeys; capture, repulse, draw, and unresolved outcomes are separate.',
+            saveValidation:
+              'Optional passive encode/decode checks at initial state, first command result in each new month, and final state. Reload must equal the serialized compacted snapshot and the live state/RNG must remain unchanged. This samples checkpoints, not every command or future continuation.',
           },
           victoryDefinitions: {
             trueUnification: 'Every campaign city is controlled by the selected faction.',
@@ -215,6 +226,44 @@ async function main() {
           const observedCommand = (...args) =>
             withAiDecisionTrace(decisions, () => executeV03Command(...args));
           let state = createV03Game(factionId, cohort.seedBase + factionIndex, scenarioId);
+          const saveValidation = {
+            status: options.validateSaves ? 'passed' : 'not-requested',
+            checkpoints: [],
+          };
+          const checkSave = async (reason) => {
+            if (!options.validateSaves) return;
+            try {
+              saveValidation.checkpoints.push(
+                validateCampaignSaveCheckpoint(saveApi, state, reason),
+              );
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              const invalidStatePath = `${outputPath}.invalid-state.json`;
+              failure = {
+                scenarioId,
+                factionId,
+                cohort: cohort.cohort,
+                seed: cohort.seedBase + factionIndex,
+                absoluteDay: state.absoluteDay,
+                phase: state.phase,
+                reason,
+                message,
+                invalidStatePath,
+              };
+              await mkdir(dirname(outputPath), { recursive: true });
+              await writeFile(
+                invalidStatePath,
+                JSON.stringify({ kind: 'diagnostic-state-not-a-save', failure, state }),
+              );
+              await saveReport('failed');
+              throw new Error(
+                `${scenarioId}/${factionId}/${cohort.cohort} day ${state.absoluteDay} ${reason}: save validation failed: ${message}`,
+                { cause: error },
+              );
+            }
+          };
+          await checkSave('initial');
+          let lastValidatedMonth = Math.floor(state.absoluteDay / 30);
           const initialIndependentCityIds = state.cities
             .filter((city) => city.factionId === null)
             .map((city) => city.id);
@@ -310,6 +359,10 @@ async function main() {
             }
             steps++;
             const month = Math.floor(state.absoluteDay / 30);
+            if (month > lastValidatedMonth) {
+              await checkSave('month-boundary');
+              lastValidatedMonth = month;
+            }
             if (checkpoints.includes(month) && !months[month])
               months[month] = summarize(
                 state,
@@ -324,6 +377,7 @@ async function main() {
               );
           }
           const finalMonth = Math.min(options.months, Math.floor(state.absoluteDay / 30));
+          await checkSave('final');
           if (!months[finalMonth])
             months[finalMonth] = summarize(
               state,
@@ -341,6 +395,7 @@ async function main() {
             completedMonths: Math.floor(state.absoluteDay / 30),
             stoppedEarly: state.phase === 'finished',
             finalPhase: state.phase,
+            saveValidation,
             bot,
             decisions,
             checkpoints: months,
@@ -359,7 +414,7 @@ async function main() {
       JSON.stringify(await harnessFingerprint()) !== JSON.stringify(harness)
     )
       throw new Error('Runtime or diagnostic harness changed during the matrix.');
-    await saveReport(true);
+    await saveReport('complete');
     console.log(`Wrote ${outputPath}`);
   } finally {
     await server.close();
