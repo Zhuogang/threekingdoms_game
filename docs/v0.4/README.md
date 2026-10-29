@@ -16,7 +16,7 @@ Active branch: `v0.4`. The [implementation plan](../implementation.md) defines t
 | V04-06                    | Implemented                                                                                 | Viable party sizes, defensive exposure, provisions and justified waiting.                                                    |
 | V04-07                    | Implemented                                                                                 | Governor work aligned with actual deadlines, effects, authority and budgets.                                                 |
 | V04-08                    | Implemented                                                                                 | One persistent faction objective, real support orders and compatible save defaults.                                          |
-| V04-09                    | Pending                                                                                     | Paired tactical/campaign comparisons, full regression/browser/production/performance checks, player and hardware validation. |
+| V04-09                    | In progress                                                                                 | Paired tactical/campaign comparisons, full regression/browser/production/performance checks, player and hardware validation. |
 
 ## V04-00: observation before tuning
 
@@ -145,6 +145,41 @@ The isolated monthly-boundary benchmark completed ten measured seeds after three
 ## Frozen correctness checkpoint
 
 Commit `9ce0346` is the frozen P0-corrected policy, before tactical scoring. Its full suite passed **889 cases (including three then-unresolved expected failures)** and its production build passed. Baseline `10c6866` and P0 each completed all **24** paired scenario/faction/cohort runs at 90 days and 12 months. Neither matrix recorded player elimination, unification or Hegemon victory. These narrow-bot results do not establish release balance or human gameplay quality. Raw fingerprinted reports remain in `.artifacts/v04/baseline/` and `.artifacts/v04/p0/`; tactical/strategic policy comparisons and longer evaluation remain open.
+
+## V04-09: integration evaluation in progress
+
+The committed `ef3086c` policy completed the paired **24-run 90-day and 12-month matrices**, using both scenarios, all six playable factions per scenario, and the original development/held-out seeds. The frozen baseline and P0 reports use the same scenario/faction/seed tuples. A portable [integration data extract](evidence/campaign-integration.json) preserves all 144 rows, commands and fingerprints from these six matrices; complete local reports remain in `.artifacts/v04/{baseline,p0,policy}/`.
+
+No matrix records a true unification or Hegemon victory. All three policies have zero selected-player eliminations at 90 days. At 12 months the candidate has **one** elimination, versus zero in the baseline and P0; this is an investigation finding, not accepted balance. Final selected-faction city counts below show development / held-out separately. Zero cities can coexist with surviving armies and does not itself mean the faction is eliminated.
+
+| Scenario | Selected faction | Baseline |    P0 | Candidate |
+| -------- | ---------------- | -------: | ----: | --------: |
+| 190      | Cao              |    1 / 1 | 1 / 1 |     2 / 1 |
+| 190      | Liu              |    3 / 2 | 1 / 1 |    0 / 0* |
+| 190      | Sun              |    3 / 5 | 4 / 5 |     6 / 6 |
+| 190      | Yuan             |    1 / 0 | 0 / 0 |     0 / 1 |
+| 190      | Dong             |    4 / 3 | 5 / 4 |     6 / 4 |
+| 190      | Yan              |    4 / 3 | 4 / 3 |     5 / 5 |
+| 200      | Cao              |    7 / 8 | 5 / 9 |     4 / 1 |
+| 200      | Liu              |    1 / 1 | 3 / 1 |     1 / 1 |
+| 200      | Sun              |    5 / 5 | 5 / 3 |     5 / 6 |
+| 200      | Yuan             |    4 / 2 | 3 / 3 |     4 / 3 |
+| 200      | Yan              |    3 / 3 | 4 / 4 |     5 / 5 |
+| 200      | Ma               |    1 / 1 | 1 / 1 |     2 / 2 |
+
+*Liu's 190 held-out run, seed `970302`, ends on day 241. Exact replay reproduces the elimination and exports valid monthly/battle-start saves. The adjacent bot sends 700 soldiers toward Puyang while dispatching another 1,471 from Beiping toward Ye; Yuan takes the depleted Pingyuan on day 54. Later the bot repeatedly dispatches 268–741 soldiers against observed garrisons of 3,276–5,724. Its last home city falls on day 228, followed by its remaining army on day 241. The matched P0 replay retains Beiping through day 360. A fixed defensive script, using real capital work and staying home, retains Pingyuan through day 360 on the candidate. The economy-first and one-border-attack scripts also survive to day 360, each owning one city (Ye and Puyang respectively); these are separate fixed-policy probes on the same seed. These controlled differences expose the adjacent bot's behavior and demonstrate one surviving alternative; they do not establish broad weak-opening fairness or human counterplay. Guandu Cao's ownership decline and the remaining faction differences still require investigation before strategic acceptance. No weights have been changed using these held-out outcomes.
+
+The new [campaign replay tool](../../tools/v04-campaign-replay.mjs) accepts an exact runtime root, scenario, faction, seed, output directory and player policy. It records command-driven departures, ownership and battle changes, saves before player battles and at monthly checkpoints, and checks the source fingerprint before/after. Its four [diagnostic scripts](../../tools/v04-campaign-probes.mjs) are `adjacent-legacy`, `passive-defense`, `economy-first` and `border-attack`. The last three use actual player capital actions and battle ration remainders; they create no resources or authority overrides. Their fixed thresholds are evaluation choices, not gameplay AI or claims of human behavior. Five tool-policy tests verify actual work/gold/personnel accounting, opening delays and single border dispatch; TypeScript passes.
+
+For example, reproduce the defensive continuation with:
+
+```sh
+node tools/v04-campaign-replay.mjs . divided-realm-190 liu 970302 .artifacts/v04/liu-policy-passive passive-defense
+```
+
+The legacy driver deliberately reproduces the old diagnostic's omitted selected-side ration remainder; campaign execution still charges actual rations. New scripted probes pass those fractions. Keep this distinction when comparing reports. The diagnostic matrices' runtime totals are not performance measurements.
+
+All **15 existing production browser tests** passed after installing the browser version required by the locked Playwright dependency. A new production test also passes: it restores objective memory from day 10 and produces exactly the same full day-20 state as uninterrupted play. The broad browser run passed **209 of 211 cases**. Its two failures were the English/Chinese variants of an existing typed-recruitment fixture that attempted three paid recruitments in one two-point work period, a limit already present in the frozen baseline. The fixture now advances ten real days before its third recruitment, retains its exact gold/type/experience assertions and reload checks, and **both affected cases pass**. This verifies all 211 cases across the full run and focused rerun; it is not a second full-suite run. Logs: `.artifacts/v04/browser-tests.log` and `browser-typed-recruitment-final.log`. Further paired tactical and long-campaign evidence remains open. Production logs are `.artifacts/v04/production-tests-retry.log` and `production-objective-save.log`; the initial launch failures in `production-tests.log` occurred before a browser could start.
 
 ## Completion boundary
 

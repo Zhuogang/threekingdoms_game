@@ -1,0 +1,3001 @@
+{
+  "description": "Paired existing adjacent-city bot runs; automated diagnostics, not human balance validation. Zero owned cities does not itself imply elimination while armies remain active.",
+  "matrices": [
+    {
+      "policy": "baseline",
+      "horizon": "90d",
+      "generatedAt": "2026-10-29T04:40:00.198Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/baseline/campaign-90d.json",
+      "command": [
+        "--months",
+        "3",
+        "--output",
+        "/lambda/nfs/jo-dc/PROJECTS/experiments/threekingdoms_game/.artifacts/v04/baseline/campaign-90d.json"
+      ],
+      "fingerprint": {
+        "commit": "10c6866aad1996f15f685121205eb633f13dcf1f",
+        "dirty": false,
+        "sourceSha256": "a8f1d38d41e276593336d41c8dd80341c78870e2830097173e5c3d69a478528c",
+        "configSha256": "d81c1b14f85f76140825a350c3c2a1d605017ccaca7dec45a04b8601521b78ca"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 10,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 14,
+          "battlesResolved": 14,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 8,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 6,
+          "battlesResolved": 6,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 9,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 7,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 7,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 9,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 11,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 5,
+          "battlesResolved": 5,
+          "npcCampaigns": 6,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 5,
+          "battlesResolved": 5,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 9,
+          "playerEliminated": false,
+          "battlesStarted": 18,
+          "battlesResolved": 14,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 9,
+          "playerEliminated": false,
+          "battlesStarted": 18,
+          "battlesResolved": 14,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 11,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 10,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 10,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 10,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 11,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 14,
+          "battlesResolved": 12,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 14,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 14,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    },
+    {
+      "policy": "p0",
+      "horizon": "90d",
+      "generatedAt": "2026-10-29T05:11:34.742Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/p0/campaign-90d.json",
+      "command": [
+        "--months",
+        "3",
+        "--output",
+        "/lambda/nfs/jo-dc/PROJECTS/experiments/threekingdoms_game/.artifacts/v04/p0/campaign-90d.json"
+      ],
+      "fingerprint": {
+        "commit": "9ce034643c51184d58dbb4764310b146152f8d0a",
+        "dirty": false,
+        "sourceSha256": "7d064204fe2ebf9715613ba17e2dd2cc77a7bf9d3b1f06f9a7f6308f467969d7",
+        "configSha256": "d81c1b14f85f76140825a350c3c2a1d605017ccaca7dec45a04b8601521b78ca"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 10,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 15,
+          "battlesResolved": 14,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 9,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 8,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 11,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 7,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 12,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 7,
+          "battlesResolved": 6,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 7,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 12,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 7,
+          "battlesResolved": 7,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 8,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 18,
+          "battlesResolved": 13,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 18,
+          "battlesResolved": 14,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 12,
+          "battlesResolved": 11,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 10,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 11,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 15,
+          "battlesResolved": 13,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 14,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 14,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    },
+    {
+      "policy": "policy",
+      "horizon": "90d",
+      "generatedAt": "2026-10-29T15:15:39.927Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/policy/campaign-90d.json",
+      "command": ["--months", "3", "--output", ".artifacts/v04/policy/campaign-90d.json"],
+      "fingerprint": {
+        "commit": "ef3086c0da15c386f4156e4ff9e418ec50b24331",
+        "dirty": false,
+        "sourceSha256": "a27024736b56c248552a16a1f2c86681dcddcafff6598ecc016137539f3f2c95",
+        "configSha256": "d81c1b14f85f76140825a350c3c2a1d605017ccaca7dec45a04b8601521b78ca"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 14,
+          "battlesResolved": 11,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 11,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 8,
+          "npcCampaigns": 11,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 10,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 7,
+          "playerEliminated": false,
+          "battlesStarted": 9,
+          "battlesResolved": 8,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 7,
+          "battlesResolved": 6,
+          "npcCampaigns": 12,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 9,
+          "npcCampaigns": 14,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 11,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 13,
+          "battlesResolved": 12,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 6,
+          "battlesResolved": 6,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 6,
+          "battlesResolved": 6,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 9,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 7,
+          "playerEliminated": false,
+          "battlesStarted": 14,
+          "battlesResolved": 12,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 9,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 10,
+          "npcCampaigns": 7,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 8,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 10,
+          "battlesResolved": 9,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 10,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 11,
+          "battlesResolved": 11,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 90,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 7,
+          "battlesResolved": 7,
+          "npcCampaigns": 9,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 7,
+          "battlesResolved": 6,
+          "npcCampaigns": 8,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 7,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 90,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 8,
+          "battlesResolved": 6,
+          "npcCampaigns": 10,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    },
+    {
+      "policy": "baseline",
+      "horizon": "12m",
+      "generatedAt": "2026-10-29T04:48:11.696Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/baseline/campaign-12m.json",
+      "command": [
+        "--months",
+        "12",
+        "--output",
+        "/lambda/nfs/jo-dc/PROJECTS/experiments/threekingdoms_game/.artifacts/v04/baseline/campaign-12m.json"
+      ],
+      "fingerprint": {
+        "commit": "10c6866aad1996f15f685121205eb633f13dcf1f",
+        "dirty": false,
+        "sourceSha256": "a8f1d38d41e276593336d41c8dd80341c78870e2830097173e5c3d69a478528c",
+        "configSha256": "40f100b8f17e781765989d64ac0ce29d4b97f74caab4ddb0b72e2544d1f906d7"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 46,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 63,
+          "battlesResolved": 62,
+          "npcCampaigns": 47,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 53,
+          "battlesResolved": 53,
+          "npcCampaigns": 41,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 47,
+          "npcCampaigns": 43,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 54,
+          "battlesResolved": 54,
+          "npcCampaigns": 42,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 59,
+          "battlesResolved": 59,
+          "npcCampaigns": 44,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 43,
+          "battlesResolved": 43,
+          "npcCampaigns": 44,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 0,
+          "playerEliminated": false,
+          "battlesStarted": 46,
+          "battlesResolved": 46,
+          "npcCampaigns": 47,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 56,
+          "battlesResolved": 55,
+          "npcCampaigns": 37,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 47,
+          "npcCampaigns": 30,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 45,
+          "battlesResolved": 44,
+          "npcCampaigns": 39,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 43,
+          "battlesResolved": 42,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 7,
+          "playerEliminated": false,
+          "battlesStarted": 67,
+          "battlesResolved": 67,
+          "npcCampaigns": 39,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 8,
+          "playerEliminated": false,
+          "battlesStarted": 73,
+          "battlesResolved": 72,
+          "npcCampaigns": 37,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 56,
+          "battlesResolved": 54,
+          "npcCampaigns": 44,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 56,
+          "battlesResolved": 54,
+          "npcCampaigns": 41,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 53,
+          "battlesResolved": 53,
+          "npcCampaigns": 45,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 57,
+          "battlesResolved": 57,
+          "npcCampaigns": 44,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 51,
+          "battlesResolved": 51,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 56,
+          "battlesResolved": 56,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 51,
+          "battlesResolved": 49,
+          "npcCampaigns": 45,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 50,
+          "battlesResolved": 48,
+          "npcCampaigns": 51,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 46,
+          "battlesResolved": 45,
+          "npcCampaigns": 50,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 47,
+          "npcCampaigns": 51,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    },
+    {
+      "policy": "p0",
+      "horizon": "12m",
+      "generatedAt": "2026-10-29T05:17:59.654Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/p0/campaign-12m.json",
+      "command": [
+        "--months",
+        "12",
+        "--output",
+        "/lambda/nfs/jo-dc/PROJECTS/experiments/threekingdoms_game/.artifacts/v04/p0/campaign-12m.json"
+      ],
+      "fingerprint": {
+        "commit": "9ce034643c51184d58dbb4764310b146152f8d0a",
+        "dirty": false,
+        "sourceSha256": "7d064204fe2ebf9715613ba17e2dd2cc77a7bf9d3b1f06f9a7f6308f467969d7",
+        "configSha256": "40f100b8f17e781765989d64ac0ce29d4b97f74caab4ddb0b72e2544d1f906d7"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 62,
+          "battlesResolved": 62,
+          "npcCampaigns": 49,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 62,
+          "battlesResolved": 61,
+          "npcCampaigns": 43,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 56,
+          "battlesResolved": 55,
+          "npcCampaigns": 49,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 50,
+          "battlesResolved": 50,
+          "npcCampaigns": 46,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 60,
+          "battlesResolved": 59,
+          "npcCampaigns": 45,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 58,
+          "battlesResolved": 57,
+          "npcCampaigns": 49,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 0,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 47,
+          "npcCampaigns": 50,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 0,
+          "playerEliminated": false,
+          "battlesStarted": 47,
+          "battlesResolved": 47,
+          "npcCampaigns": 49,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 61,
+          "battlesResolved": 61,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 52,
+          "battlesResolved": 52,
+          "npcCampaigns": 38,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 45,
+          "npcCampaigns": 43,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 49,
+          "battlesResolved": 48,
+          "npcCampaigns": 45,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 71,
+          "battlesResolved": 69,
+          "npcCampaigns": 38,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 9,
+          "playerEliminated": false,
+          "battlesStarted": 71,
+          "battlesResolved": 71,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 52,
+          "battlesResolved": 51,
+          "npcCampaigns": 44,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 55,
+          "battlesResolved": 55,
+          "npcCampaigns": 41,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 51,
+          "battlesResolved": 50,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 55,
+          "battlesResolved": 54,
+          "npcCampaigns": 40,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 52,
+          "battlesResolved": 52,
+          "npcCampaigns": 41,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 58,
+          "battlesResolved": 57,
+          "npcCampaigns": 41,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 52,
+          "battlesResolved": 51,
+          "npcCampaigns": 46,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 47,
+          "npcCampaigns": 48,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 44,
+          "battlesResolved": 44,
+          "npcCampaigns": 48,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 45,
+          "battlesResolved": 45,
+          "npcCampaigns": 50,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    },
+    {
+      "policy": "policy",
+      "horizon": "12m",
+      "generatedAt": "2026-10-29T15:22:45.004Z",
+      "nodeVersion": "v22.23.2",
+      "rawLocalReport": ".artifacts/v04/policy/campaign-12m.json",
+      "command": ["--months", "12", "--output", ".artifacts/v04/policy/campaign-12m.json"],
+      "fingerprint": {
+        "commit": "ef3086c0da15c386f4156e4ff9e418ec50b24331",
+        "dirty": false,
+        "sourceSha256": "a27024736b56c248552a16a1f2c86681dcddcafff6598ecc016137539f3f2c95",
+        "configSha256": "40f100b8f17e781765989d64ac0ce29d4b97f74caab4ddb0b72e2544d1f906d7"
+      },
+      "rows": [
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 48,
+          "battlesResolved": 48,
+          "npcCampaigns": 26,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 40,
+          "battlesResolved": 40,
+          "npcCampaigns": 31,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 0,
+          "playerEliminated": false,
+          "battlesStarted": 33,
+          "battlesResolved": 32,
+          "npcCampaigns": 30,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 241,
+          "phase": "finished",
+          "ownedCities": 0,
+          "playerEliminated": true,
+          "battlesStarted": 23,
+          "battlesResolved": 23,
+          "npcCampaigns": 20,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 45,
+          "battlesResolved": 45,
+          "npcCampaigns": 28,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 44,
+          "battlesResolved": 44,
+          "npcCampaigns": 28,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 0,
+          "playerEliminated": false,
+          "battlesStarted": 30,
+          "battlesResolved": 30,
+          "npcCampaigns": 32,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 41,
+          "battlesResolved": 40,
+          "npcCampaigns": 35,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 49,
+          "battlesResolved": 48,
+          "npcCampaigns": 26,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "dong",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 36,
+          "battlesResolved": 36,
+          "npcCampaigns": 22,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 37,
+          "battlesResolved": 36,
+          "npcCampaigns": 29,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "divided-realm-190",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 36,
+          "battlesResolved": 34,
+          "npcCampaigns": 31,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "development",
+          "seed": 610301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 55,
+          "battlesResolved": 55,
+          "npcCampaigns": 21,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "cao",
+          "cohort": "held-out",
+          "seed": 970301,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 57,
+          "battlesResolved": 57,
+          "npcCampaigns": 27,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "development",
+          "seed": 610302,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 38,
+          "battlesResolved": 37,
+          "npcCampaigns": 25,
+          "playerBattleFoodShortfallDays": 6,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "liu",
+          "cohort": "held-out",
+          "seed": 970302,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 1,
+          "playerEliminated": false,
+          "battlesStarted": 32,
+          "battlesResolved": 32,
+          "npcCampaigns": 24,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "development",
+          "seed": 610303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 43,
+          "battlesResolved": 43,
+          "npcCampaigns": 26,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "sun",
+          "cohort": "held-out",
+          "seed": 970303,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 6,
+          "playerEliminated": false,
+          "battlesStarted": 43,
+          "battlesResolved": 43,
+          "npcCampaigns": 28,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "development",
+          "seed": 610304,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 4,
+          "playerEliminated": false,
+          "battlesStarted": 50,
+          "battlesResolved": 49,
+          "npcCampaigns": 23,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yuan",
+          "cohort": "held-out",
+          "seed": 970304,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 3,
+          "playerEliminated": false,
+          "battlesStarted": 42,
+          "battlesResolved": 41,
+          "npcCampaigns": 21,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "development",
+          "seed": 610305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 32,
+          "battlesResolved": 31,
+          "npcCampaigns": 22,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "yan",
+          "cohort": "held-out",
+          "seed": 970305,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 5,
+          "playerEliminated": false,
+          "battlesStarted": 34,
+          "battlesResolved": 33,
+          "npcCampaigns": 27,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "development",
+          "seed": 610306,
+          "day": 360,
+          "phase": "battle",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 25,
+          "battlesResolved": 23,
+          "npcCampaigns": 26,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        },
+        {
+          "scenario": "guandu-200",
+          "faction": "ma",
+          "cohort": "held-out",
+          "seed": 970306,
+          "day": 360,
+          "phase": "planning",
+          "ownedCities": 2,
+          "playerEliminated": false,
+          "battlesStarted": 25,
+          "battlesResolved": 25,
+          "npcCampaigns": 28,
+          "playerBattleFoodShortfallDays": 0,
+          "trueUnification": false,
+          "hegemon": {
+            "claimantFactionId": null,
+            "consecutiveMonths": 0,
+            "victoryDeclared": false
+          }
+        }
+      ]
+    }
+  ]
+}
