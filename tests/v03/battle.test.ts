@@ -1428,8 +1428,12 @@ describe('serializable tactical battle operations', () => {
     state.map.terrain[index(state.map, 6, 5)] = 'forest';
     state.tacticPoints.attacker = 20;
     const result = runBattleAiTurn(state, 'attacker');
-    expect(result.log.some((line) => line.includes('fire tactic strikes'))).toBe(true);
-    expect(result.tacticPoints.attacker).toBe(16);
+    // Fire and Confuse both avoid the poor ordinary exchange in this fixture.
+    const tactic = result.logEntries!.find((entry) => entry.code === 'log.tactic');
+    expect(['fire', 'confuse']).toContain(tactic?.params.tactic);
+    expect(result.tacticPoints.attacker).toBeLessThan(20);
+    expect(result.units[0]!.troops).toBe(1000);
+    expect(result.units[1]!.troops < 1000 || result.units[1]!.status === 'confused').toBe(true);
   });
 
   it('allows the player to retreat and ends the battle once with the opposing side holding the field', () => {

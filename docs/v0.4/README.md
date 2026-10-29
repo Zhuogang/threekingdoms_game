@@ -11,7 +11,7 @@ Active branch: `v0.4`. The [implementation plan](../implementation.md) defines t
 | V04-02                    | Implemented                                                                                 | Actual rations, next unsettled economic boundary and city obligations.                                                       |
 | V04-03                    | Implemented                                                                                 | Next eligible Confuse activation and one-hit Inspired lifetime, including saves and both seats.                              |
 | F05 / V04-07 early repair | Implemented                                                                                 | Replace dominated restore-loyalty choice with legal security.                                                                |
-| V04-04                    | Pending                                                                                     | Compare ordinary attacks, tactics and hold on consistent costs and benefits.                                                 |
+| V04-04                    | Implemented                                                                                 | Compare ordinary attacks, tactics and hold on consistent costs and benefits.                                                 |
 | V04-05                    | Pending                                                                                     | Bounded movement/action alternatives, preservation and coordination.                                                         |
 | V04-06                    | Pending                                                                                     | Viable party sizes, defensive exposure, provisions and justified waiting.                                                    |
 | V04-07                    | Pending                                                                                     | Governor work aligned with actual deadlines, effects, authority and budgets.                                                 |
@@ -65,6 +65,20 @@ Validation: **11 focused status tests** passed, including mirrored seats, acted 
 
 Reproduced the 80-gold, +2 loyalty choice when relief cannot spare protected food. Governors now choose the existing free security action (at least +8 loyalty, one work point). Shared player/NPC action costs and effects are unchanged; the old restore-loyalty command/report name remains compatible, but autonomy no longer selects it. The focused regression verifies the committed gain, unchanged food/gold and work cost; governance tests passed.
 
+## V04-04: compare useful actions before spending the turn
+
+The tactical AI now evaluates every legal ordinary target, tactic target and hold in the current position. A single score includes expected casualties, retaliation and veteran preservation, formation elimination/rout, retained wounded, useful Rally/Confuse, near-term supply shortages and tactic-point recovery/scarcity. An immediate winning hit receives explicit value. These are deterministic policy preferences, not calibrated win probabilities. Existing damage, tactic costs, ration rates, retreat thresholds and battle endings are unchanged.
+
+Developer traces include compared scores and their damage, retaliation, finishing, support, supply and point-cost terms, followed by the actual committed action. Evaluation itself is pure. The old tactic-first selector and separate AI attack executor were removed; execution uses the same attack/tactic validation as other command paths.
+
+The dominated-Fire case is now a passing ordinary regression. New fixtures verify a safe finishing hit over a worse retaliation exchange, useful recovery, preservation of the last points when Rally adds nothing, effective low-supply denial, an immediate win over optional recovery, and trace/state/RNG parity. The old forest fixture now permits either useful Fire or Confuse instead of prescribing one policy choice. Two status fixtures also now explicitly set infantry's one-tile range when replacing an archer fixture.
+
+Validation: **164 passing targeted tests and two remaining strategic expected failures** across tactics, statuses, campaign continuation and evidence. TypeScript passed; both existing 10v10 performance checks passed their 50 ms p95 limits. Movement alternatives, reachable enemy threats and formation ordering remain V04-05 work.
+
+## Frozen correctness checkpoint
+
+Commit `9ce0346` is the frozen P0-corrected policy, before tactical scoring. Its full suite passed **889 cases (including three then-unresolved expected failures)** and its production build passed. Baseline `10c6866` and P0 each completed all **24** paired scenario/faction/cohort runs at 90 days and 12 months. Neither matrix recorded player elimination, unification or Hegemon victory. These narrow-bot results do not establish release balance or human gameplay quality. Raw fingerprinted reports remain in `.artifacts/v04/baseline/` and `.artifacts/v04/p0/`; tactical/strategic policy comparisons and longer evaluation remain open.
+
 ## Completion boundary
 
-V04-01 through V04-03 are implemented; remaining policy tickets and release acceptance are still open. Four real player sessions (12 campaign months and at least three manual battles each), real low-end hardware measurement and artwork approval remain outstanding. Automated play and browser checks will be recorded separately and cannot substitute for those gates. The existing 40 formatting failures in unchanged asset/source records predate v0.4; changed files must pass formatting.
+V04-01 through V04-04 and the F05 repair are implemented; remaining policy tickets and release acceptance are still open. Four real player sessions (12 campaign months and at least three manual battles each), real low-end hardware measurement and artwork approval remain outstanding. Automated play and browser checks will be recorded separately and cannot substitute for those gates. The existing 40 formatting failures in unchanged asset/source records predate v0.4; changed files must pass formatting.

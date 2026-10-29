@@ -77,7 +77,9 @@ describe('V04-00 actual decision evidence', () => {
       runBattleAiTurn(battle, 'attacker'),
     );
     expect(trace.events.some((event) => event.kind === 'tactical')).toBe(true);
-    expect(trace.events.every((event) => event.status === 'committed')).toBe(true);
+    expect(trace.events.some((event) => event.status === 'committed')).toBe(true);
+    expect(trace.events.some((event) => event.status === 'selected')).toBe(true);
+    expect(trace.events.every((event) => event.status !== 'execution-rejected')).toBe(true);
   });
 
   it('bounds retained events while counting every executed work action; restores scopes on error', () => {

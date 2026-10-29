@@ -53,8 +53,15 @@ export type AiDecisionEvent =
       side: BattleSide;
       unitId?: string;
       targetId?: string;
-      status: 'committed' | 'execution-rejected';
-      reason: 'current-policy' | 'opening-force-retreat' | 'confused-activation';
+      status: 'candidate' | 'selected' | 'committed' | 'execution-rejected';
+      reason: 'current-policy' | 'action-value' | 'opening-force-retreat' | 'confused-activation';
+      score?: number;
+      outgoing?: number;
+      retaliation?: number;
+      finishValue?: number;
+      supportValue?: number;
+      supplyValue?: number;
+      pointCost?: number;
       action: BattleTactic | 'attack' | 'move' | 'hold' | 'retreat' | 'skip';
       x?: number;
       y?: number;

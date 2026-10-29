@@ -70,18 +70,15 @@ describe('v0.4 reproduced behavior requirements', () => {
     expect(result.state.units.find((unit) => unit.id === source.id)!.status).toBe('normal');
   });
 
-  unresolved(
-    'V04-04: compare Fire with the best ordinary target before spending tactic points',
-    () => {
-      const battle = decisionBattle();
-      const forecast = predictBattleAttack(battle, 'actor', 'strong')!;
-      expect(forecast.estimatedCasualties).toBeGreaterThan(300);
-      expect(forecast.counterattack.possible).toBe(false);
-      const result = runBattleAiTurn(battle, 'attacker');
-      expect(result.tacticPoints.attacker).toBe(battle.tacticPoints.attacker);
-      expect(result.units.find((unit) => unit.id === 'strong')!.troops).toBe(
-        3000 - forecast.estimatedCasualties!,
-      );
-    },
-  );
+  it('V04-04: compare Fire with the best ordinary target before spending tactic points', () => {
+    const battle = decisionBattle();
+    const forecast = predictBattleAttack(battle, 'actor', 'strong')!;
+    expect(forecast.estimatedCasualties).toBeGreaterThan(300);
+    expect(forecast.counterattack.possible).toBe(false);
+    const result = runBattleAiTurn(battle, 'attacker');
+    expect(result.tacticPoints.attacker).toBe(battle.tacticPoints.attacker);
+    expect(result.units.find((unit) => unit.id === 'strong')!.troops).toBe(
+      3000 - forecast.estimatedCasualties!,
+    );
+  });
 });

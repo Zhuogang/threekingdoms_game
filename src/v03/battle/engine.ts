@@ -1026,55 +1026,199 @@ function chooseAiDestination(
   return best ? { x: best.x, y: best.y } : null;
 }
 
-function chooseAiTactic(
-  state: V03TacticalBattleState,
-  unit: TacticalBattleUnit,
-  rationRemainders: BattleRationRemainders,
-): { tactic: BattleTactic; target: TacticalBattleUnit; score: number } | null {
-  const regularTarget = getUnitAttackTargets(state, unit.id)[0];
-  const regularForecast = regularTarget
-    ? predictBattleAttack(state, unit.id, regularTarget.id)
-    : null;
-  const regularScore = regularForecast
-    ? (regularForecast.estimatedCasualties ?? 0) -
-      (regularForecast.counterattack.estimatedCasualties ?? 0) * 0.65
+export interface TacticalActionCandidate {
+  action: 'attack' | BattleTactic | 'hold';
+  unitId: string;
+  targetId?: string;
+  score: number;
+  outgoing: number;
+  retaliation: number;
+  finishValue: number;
+  supportValue: number;
+  supplyValue: number;
+  pointCost: number;
+}
+
+// Casualty-equivalent policy values, not win probabilities. Mechanical forecasts
+// supply the outcomes; these bounded preferences value preservation and scarce points.
+const TACTICAL_VALUE = {
+  retaliation: 1.1,
+  formation: 80,
+  wounded: 0.15,
+  rout: 50,
+  pointRecoveryDay: 24,
+} as const;
+
+function finishingValue(target: TacticalBattleUnit, casualties: number, moraleChange = 0): number {
+  if (casualties >= target.troops)
+    return TACTICAL_VALUE.formation + Math.min(200, target.wounded * TACTICAL_VALUE.wounded);
+  const loss =
+    casualties > 0 ? Math.min(45, Math.max(1, Math.ceil((casualties / target.troops) * 55))) : 0;
+  return !isRouted(target) && target.morale - loss + moraleChange < ROUTED_MORALE
+    ? TACTICAL_VALUE.rout
     : 0;
-  let best: { tactic: BattleTactic; target: TacticalBattleUnit; score: number } | null = null;
-  for (const entry of getAvailableBattleTactics(state, unit.id)) {
+}
+
+function potentialDamage(state: V03TacticalBattleState, unit: TacticalBattleUnit): number {
+  if (isRouted(unit) || unit.status === 'confused') return 0;
+  let present = 0,
+    future = 0;
+  for (const enemy of livingUnits(state, otherSide(unit.side))) {
+    const casualties = estimateDamage(unit, enemy, state.map).casualties;
+    const damage = casualties + finishingValue(enemy, casualties);
+    if (isBattleAttackInRange(state.map, unit, enemy, unit.attackRange))
+      present = Math.max(present, damage);
+    future = Math.max(future, damage);
+  }
+  // When no shot exists yet, discount a possible later exchange instead of
+  // presenting an unreachable attack as a currently legal action.
+  return present || future * 0.35;
+}
+
+function tacticOpportunityCost(points: number, cost: number): number {
+  const remaining = points - cost;
+  const regenerationDays = cost / BATTLE_TACTIC_POINT_REGEN;
+  const scarcity = remaining < BATTLE_TACTIC_POINT_REGEN ? 1.5 : 1;
+  return TACTICAL_VALUE.pointRecoveryDay * regenerationDays * scarcity;
+}
+
+/** Pure legal alternatives in the unit's current position. Stable ties prefer
+ * lower spending, then target/action identity. This never consumes RNG or actions.
+ */
+export function evaluateBattleActions(
+  state: V03TacticalBattleState,
+  unitId: string,
+  rationRemainders: BattleRationRemainders = {},
+): TacticalActionCandidate[] {
+  const unit = unitById(state, unitId);
+  if (!unit || unit.acted || unit.status === 'confused' || state.outcome) return [];
+  const candidate = (
+    action: TacticalActionCandidate['action'],
+    targetId?: string,
+  ): TacticalActionCandidate => ({
+    action,
+    unitId,
+    targetId,
+    score: 0,
+    outgoing: 0,
+    retaliation: 0,
+    finishValue: 0,
+    supportValue: 0,
+    supplyValue: 0,
+    pointCost: 0,
+  });
+  const choices = [candidate('hold')];
+  const enemies = livingUnits(state, otherSide(unit.side));
+  const finishing = (target: TacticalBattleUnit, casualties: number, moraleChange = 0) => {
+    const value = finishingValue(target, casualties, moraleChange);
+    const endsBattle = casualties >= target.troops && enemies.length === 1;
+    return (
+      value +
+      (endsBattle
+        ? 500 +
+          livingUnits(state, unit.side).reduce(
+            (sum, entry) => sum + entry.troops * 0.5 + entry.wounded,
+            0,
+          )
+        : 0)
+    );
+  };
+  const preserve = TACTICAL_VALUE.retaliation + (unit.troopExperience / 1900) * 0.2;
+  for (const target of getUnitAttackTargets(state, unitId)) {
+    const forecast = predictBattleAttack(state, unitId, target.id)!;
+    const action = candidate('attack', target.id);
+    action.outgoing = forecast.estimatedCasualties ?? 0;
+    action.retaliation = forecast.counterattack.estimatedCasualties ?? 0;
+    action.finishValue = finishing(target, action.outgoing);
+    if (action.retaliation >= unit.troops)
+      action.finishValue -= TACTICAL_VALUE.formation + unit.wounded * 0.6;
+    action.score = action.outgoing - action.retaliation * preserve + action.finishValue;
+    choices.push(action);
+  }
+  for (const entry of getAvailableBattleTactics(state, unitId)) {
     if (!entry.allowed) continue;
-    for (const target of getBattleTacticTargets(state, unit.id, entry.tactic)) {
-      const forecast = predictBattleTactic(state, unit.id, entry.tactic, target.id);
+    for (const target of getBattleTacticTargets(state, unitId, entry.tactic)) {
+      const forecast = predictBattleTactic(state, unitId, entry.tactic, target.id);
       if (!forecast?.inRange) continue;
-      let value = 0;
+      const action = candidate(entry.tactic, target.id);
+      action.pointCost = tacticOpportunityCost(state.tacticPoints[unit.side], entry.cost);
       if (entry.tactic === 'rally') {
-        if (target.acted) continue;
-        if (target.status === 'confused' || target.morale < 60)
-          value = forecast.moraleChange * 1.5 + (forecast.endsConfusion ? 180 : 0);
+        const restored = {
+          ...target,
+          morale: Math.min(100, target.morale + forecast.moraleChange),
+          status: 'inspired' as const,
+        };
+        const opportunity =
+          target.acted || target.id === unit.id ? (state.day < state.dayLimit ? 0.45 : 0) : 1;
+        action.supportValue =
+          opportunity *
+            Math.max(0, potentialDamage(state, restored) - potentialDamage(state, target)) +
+          (forecast.moraleChange / 100) * (target.troops + target.wounded * 0.3) * 0.3;
+        if (isRouted(target) && !isRouted(restored)) action.supportValue += target.troops * 0.08;
       } else if (entry.tactic === 'confuse') {
-        if (target.status === 'confused') continue;
-        value = (forecast.chance / 100) * Math.max(40, target.troops * 0.045);
+        if (target.status !== 'confused' && (!target.acted || state.day < state.dayLimit))
+          action.supportValue = (forecast.chance / 100) * potentialDamage(state, target);
       } else if (entry.tactic === 'raidSupply') {
-        if (forecast.suppliesTransferred <= 0) continue;
-        const { supplyDays } = forecastBattleRations(
-          state,
-          target.side,
-          rationRemainders[target.side],
-        );
-        value = forecast.suppliesTransferred * (supplyDays <= 12 ? 0.1 : 0.025);
+        const horizon = Math.min(10, state.dayLimit - state.day + 1);
+        const enemy = forecastBattleRations(state, target.side, rationRemainders[target.side]);
+        const own = forecastBattleRations(state, unit.side, rationRemainders[unit.side]);
+        const food = forecast.suppliesTransferred;
+        const hungerDays = (coverage: number) => Math.max(0, horizon - coverage);
+        const denied =
+          enemy.dailyFood > 0
+            ? hungerDays(Math.max(0, enemy.supplyDays - food / enemy.dailyFood)) -
+              hungerDays(enemy.supplyDays)
+            : 0;
+        const relieved =
+          own.dailyFood > 0
+            ? hungerDays(own.supplyDays) -
+              hungerDays(own.supplyDays + Math.floor(food / 2) / own.dailyFood)
+            : 0;
+        const personnel = (side: BattleSide) =>
+          state.units
+            .filter((entry) => entry.side === side)
+            .reduce((sum, entry) => sum + entry.troops + entry.wounded * 0.6, 0);
+        action.supplyValue =
+          (denied * personnel(target.side) + relieved * personnel(unit.side)) * 0.012;
       } else {
-        value = (forecast.minCasualties + forecast.maxCasualties) / 2;
-        // Offensive tactics do not trigger the ordinary attack's counterattack.
-        if (regularForecast?.counterattack.possible) value += 15;
+        action.outgoing = (forecast.minCasualties + forecast.maxCasualties) / 2;
+        action.finishValue = finishing(target, action.outgoing, forecast.moraleChange);
       }
-      const score = value - entry.cost * 12;
-      if (
-        score > regularScore &&
-        (!best || score > best.score || (score === best.score && target.id < best.target.id))
-      )
-        best = { tactic: entry.tactic, target, score };
+      action.score =
+        action.outgoing +
+        action.finishValue +
+        action.supportValue +
+        action.supplyValue -
+        action.pointCost;
+      choices.push(action);
     }
   }
-  return best;
+  return choices.sort(
+    (a, b) =>
+      b.score - a.score ||
+      a.pointCost - b.pointCost ||
+      (a.targetId ?? '').localeCompare(b.targetId ?? '') ||
+      a.action.localeCompare(b.action),
+  );
+}
+
+function traceTacticalChoices(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  choices: readonly TacticalActionCandidate[],
+) {
+  for (const [index, choice] of choices.entries())
+    recordAiDecision({
+      kind: 'tactical',
+      day: state.day,
+      battleId: state.id,
+      side: unit.side,
+      ...choice,
+      status: index === 0 ? 'selected' : 'candidate',
+      reason: 'action-value',
+      x: unit.x,
+      y: unit.y,
+    });
 }
 
 /** Deterministic, single-side tactical AI; it never advances the global battle day. */
@@ -1105,7 +1249,7 @@ export function runBattleAiTurn(
           ? 'opening-force-retreat'
           : action === 'skip'
             ? 'confused-activation'
-            : 'current-policy',
+            : 'action-value',
       x: unit?.x,
       y: unit?.y,
     });
@@ -1146,49 +1290,30 @@ export function runBattleAiTurn(
       trace('skip', unit);
       continue;
     }
-    const availableTarget = () =>
-      livingUnits(draft, otherSide(side))
-        .filter(
-          (target) =>
-            !isRouted(unit) && isBattleAttackInRange(draft.map, unit, target, unit.attackRange),
-        )
-        .map((target) => ({
-          target,
-          forecast: predictBattleAttack(draft, unit.id, target.id)!,
-        }))
-        .sort(
-          (a, b) =>
-            (b.forecast.estimatedCasualties ?? 0) - (a.forecast.estimatedCasualties ?? 0) ||
-            a.target.troops - b.target.troops ||
-            a.target.id.localeCompare(b.target.id),
-        )[0]?.target;
-    let target = availableTarget();
-    let tactic = chooseAiTactic(draft, unit, rationRemainders);
-    if (tactic) {
-      const error = performTactic(draft, unit, tactic.tactic, tactic.target);
-      trace(tactic.tactic, unit, tactic.target, error);
-      continue;
-    }
-    if (!target && !unit.moved) {
+    let choices = evaluateBattleActions(draft, unit.id, rationRemainders);
+    let choice = choices[0]!;
+    if (
+      choice.action === 'hold' &&
+      !unit.moved &&
+      getUnitAttackTargets(draft, unit.id).length === 0
+    ) {
       const destination = chooseAiDestination(draft, unit);
       if (destination) {
         const error = performMove(draft, unit, destination);
         trace('move', unit, undefined, error);
-      }
-      target = availableTarget();
-      tactic = chooseAiTactic(draft, unit, rationRemainders);
-      if (tactic) {
-        const error = performTactic(draft, unit, tactic.tactic, tactic.target);
-        trace(tactic.tactic, unit, tactic.target, error);
-        continue;
+        choices = evaluateBattleActions(draft, unit.id, rationRemainders);
+        choice = choices[0]!;
       }
     }
     if (draft.outcome) break;
-    if (target) {
-      unit.acted = false;
-      // Use the shared resolution path while allowing an AI-controlled side.
-      performAttackForSide(draft, unit, target);
-      trace('attack', unit, target);
+    traceTacticalChoices(draft, unit, choices);
+    const target = choice.targetId ? unitById(draft, choice.targetId) : undefined;
+    if (choice.action === 'attack' && target) {
+      const error = performAttack(draft, unit, target);
+      trace('attack', unit, target, error);
+    } else if (choice.action !== 'hold' && choice.action !== 'attack' && target) {
+      const error = performTactic(draft, unit, choice.action, target);
+      trace(choice.action, unit, target, error);
     } else {
       unit.moved = true;
       unit.acted = true;
@@ -1197,27 +1322,6 @@ export function runBattleAiTurn(
     }
   }
   return draft;
-}
-
-function performAttackForSide(
-  state: V03TacticalBattleState,
-  source: TacticalBattleUnit,
-  target: TacticalBattleUnit,
-): void {
-  source.acted = true;
-  attackOneWay(state, source, target);
-  checkImmediateOutcome(state);
-  if (
-    !state.outcome &&
-    target.troops > 0 &&
-    source.troops > 0 &&
-    target.status !== 'confused' &&
-    !isRouted(target) &&
-    isBattleAttackInRange(state.map, target, source, target.attackRange)
-  ) {
-    attackOneWay(state, target, source);
-    checkImmediateOutcome(state);
-  }
 }
 
 function totalTroops(state: V03TacticalBattleState, side: BattleSide): number {

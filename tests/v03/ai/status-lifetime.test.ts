@@ -39,6 +39,7 @@ function mirrored(side: BattleSide) {
   const caster = unit(battle, 'actor');
   Object.assign(caster, {
     troopType: 'infantry',
+    attackRange: 1,
     troops: 100,
     initialTroops: 100,
     intellect: 120,
