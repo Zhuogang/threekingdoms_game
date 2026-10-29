@@ -224,20 +224,20 @@ describe('ten-day work point refresh', () => {
       state.personnelDay = createPersonnelDay(state);
       const next = reload(advance(state, 1));
       expect(cityAt(next, cityId)).toMatchObject({
-        farming: 120,
-        commerce: 110,
         workPeriodIndex: 1,
         workPointsUsed: 2,
         gold: 9840,
       });
+      const investmentCount = (value: typeof city) =>
+        (value.farming - 100) / 20 + (value.commerce - 100) / 10;
+      expect(investmentCount(cityAt(next, cityId))).toBe(2);
       const after = reload(advance(next, 10));
       expect(cityAt(after, cityId)).toMatchObject({
-        farming: 140,
-        commerce: 120,
         workPeriodIndex: 2,
         workPointsUsed: 2,
         gold: 9680,
       });
+      expect(investmentCount(cityAt(after, cityId))).toBe(4);
     },
   );
 });

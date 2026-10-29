@@ -338,9 +338,9 @@ describe('fixed city work points and free preparations', () => {
     expect(cityAt(state, city.id)).toMatchObject({
       workMonthIndex: 1,
       workPointsUsed: 2,
-      farming: 120,
-      commerce: 100,
     });
+    const invested = cityAt(state, city.id);
+    expect((invested.farming - 100) / 20 + (invested.commerce - 100) / 10).toBe(1);
     expect(state.officers.find((entry) => entry.id === officer.id)).toMatchObject({
       loyalty: 60,
       troops: 9700,

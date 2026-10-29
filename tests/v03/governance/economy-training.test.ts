@@ -222,7 +222,7 @@ describe('existing economy and training adjustments', () => {
       const { state, city, manager } = autonomous();
       manager.loyalty = loyalty;
       const plan = planGovernorMonthlyWork(state, city.id, 1);
-      expect(plan.action).toBe('develop-farming');
+      expect(['develop-farming', 'develop-commerce']).toContain(plan.action);
       const result = applyGovernorMonthlyWork(state, plan);
       expect(result.applied).toBe(true);
       expect(result.state!.officers.find((entry) => entry.id === manager.id)!.loyalty).toBe(

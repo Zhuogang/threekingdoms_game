@@ -1,4 +1,5 @@
-import { forecastCityEconomy } from '../campaign/economy';
+import { cityProduction, forecastCityEconomy } from '../campaign/economy';
+import { incomingCampaignThreats } from '../ai/campaign-threats';
 import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
@@ -13,6 +14,7 @@ import {
   GOVERNOR_REWARD_GOLD_COST,
   applyGovernorCityAction,
   applyNpcCapitalCityAction,
+  applySharedCityWorkEffect,
   automaticTalentWorkUsed,
   committedCityStock,
   getAutomaticCityActionAvailability,
@@ -87,6 +89,8 @@ export interface GovernorMonthlyWorkPlan {
   reservedFood: number;
   reservedTroops: number;
   projectedNextMonthFood: number;
+  projectedFoodAfterWork: number;
+  projectedGoldAfterWork: number;
   workMonthIndex: number;
   workPointsUsedAtPlan: number;
   farmingAtPlan: number;
@@ -110,18 +114,6 @@ export interface GovernorMonthlyWorkResult {
 }
 
 const MONTHLY_FOOD_RATE = DAYS_PER_MONTH * PILOT_LOGISTICS_RATES.cityFoodPerTroopDay;
-
-function hasIncomingThreat(state: Readonly<V03GameState>, city: V03City): boolean {
-  return (
-    isCityCommitted(state, city.id) ||
-    state.journeys.some(
-      (journey) =>
-        journey.ownerFactionId !== city.factionId &&
-        journey.destinationCityId === city.id &&
-        ['outbound', 'waiting'].includes(journey.status),
-    )
-  );
-}
 
 /** One deterministic action; both NPC capitals and local governors share city budgets. */
 export function planGovernorMonthlyWork(
@@ -165,6 +157,7 @@ export function planGovernorMonthlyWork(
   const protectedFood = Math.max(500, upkeep * 2) + reserves.food;
   const economy = forecastCityEconomy(state, cityId);
   const projectedNextMonthFood = economy.projectedFood;
+  const threats = incomingCampaignThreats(state, cityId);
   const candidates = localSearchCandidates(state, city.id);
   const workUsed = cityWorkUsedThisPeriod(state, city);
   const awaitingAppointment = new Set(
@@ -192,6 +185,7 @@ export function planGovernorMonthlyWork(
       directives: state.directives.filter((order) => order.sourceCityId === cityId),
       personnelDay: state.personnelDay,
       economy,
+      threats,
     }),
     managerOfficerId: manager?.id ?? null,
     managerIntellectAtPlan: manager?.intellect ?? 0,
@@ -213,6 +207,8 @@ export function planGovernorMonthlyWork(
     reservedFood: reserves.food,
     reservedTroops: reserves.troops,
     projectedNextMonthFood,
+    projectedFoodAfterWork: economy.projectedAvailable.food,
+    projectedGoldAfterWork: economy.projectedAvailable.gold,
     workMonthIndex: state.monthIndex,
     workPointsUsedAtPlan: workUsed,
     farmingAtPlan: city.farming,
@@ -240,14 +236,52 @@ export function planGovernorMonthlyWork(
     );
   if (!manager)
     return stop('manager-unavailable', 'No living local officer can organize this work.');
-  if (hasIncomingThreat(state, city))
+  if (isCityCommitted(state, city.id))
     return stop(
       'city-threatened',
-      'Monthly work is paused while a hostile force threatens the city.',
+      'City work is paused while its personnel and resources are committed to an active battle.',
     );
   const workSpent = workUsed >= cityWorkQuota(state, city);
 
   let failure = '';
+  let orderReserveBlocked = false;
+  const forecasts = new Map<string, { city: V03City; economy: typeof economy } | null>();
+  function afterWork(
+    action: GovernorWorkAction,
+    goldCost: number,
+    foodCost: number,
+    troopType = manager!.troopType,
+  ) {
+    const key = `${action}:${goldCost}:${foodCost}:${troopType}`;
+    if (forecasts.has(key)) return forecasts.get(key)!;
+    let updated: V03City | null;
+    if (
+      action === 'develop-farming' ||
+      action === 'develop-commerce' ||
+      action === 'recruit' ||
+      action === 'buy-food' ||
+      action === 'sell-food' ||
+      action === 'security' ||
+      action === 'relieve' ||
+      action === 'restore-loyalty'
+    )
+      updated = applySharedCityWorkEffect(city!, action, manager!, troopType);
+    else updated = { ...city!, gold: city!.gold - goldCost, food: city!.food - foodCost };
+    const result = updated
+      ? {
+          city: updated,
+          economy: forecastCityEconomy(
+            {
+              ...state,
+              cities: state.cities.map((entry) => (entry.id === cityId ? updated : entry)),
+            },
+            cityId,
+          ),
+        }
+      : null;
+    forecasts.set(key, result);
+    return result;
+  }
   function offer(
     action: GovernorWorkAction,
     reasonCode: GovernorWorkReasonCode,
@@ -256,6 +290,14 @@ export function planGovernorMonthlyWork(
     targetTroops: number | null = null,
     troopType = manager!.troopType,
   ): boolean {
+    if (
+      threats.length &&
+      ['develop-farming', 'develop-commerce', 'search', 'sell-food'].includes(action)
+    ) {
+      failure =
+        'An approaching hostile army makes defense preparation more useful than optional development.';
+      return false;
+    }
     const target = local.find((officer) => officer.id === targetOfficerId);
     const goldCost =
       action === 'recruit'
@@ -273,6 +315,7 @@ export function planGovernorMonthlyWork(
       action === 'relieve' ? GOVERNOR_RELIEF_FOOD_COST : action === 'sell-food' ? 800 : 0;
     if (foodCost && city!.food - foodCost < protectedFood) {
       failure = 'Spending food would use the protected reserve or an approved order.';
+      orderReserveBlocked ||= city!.food - foodCost < reserves.food;
       return false;
     }
     if (action === 'recruit') {
@@ -298,6 +341,21 @@ export function planGovernorMonthlyWork(
     );
     if (!available.ok) {
       failure = available.reason ?? '';
+      orderReserveBlocked ||= failure.includes('reserved');
+      return false;
+    }
+    const after = afterWork(action, goldCost, foodCost, troopType);
+    if (!after) return false;
+    if (goldCost > 0 && after.economy.projectedAvailable.gold < 0) {
+      failure = 'Spending gold would leave the next accrued wages or an approved order unfunded.';
+      return false;
+    }
+    if (
+      (goldCost > 0 || foodCost > 0) &&
+      after.economy.projectedAvailable.food < 0 &&
+      !['buy-food', 'develop-farming'].includes(action)
+    ) {
+      failure = 'This work would leave the next food bill or an approved order unfunded.';
       return false;
     }
     Object.assign(plan, {
@@ -310,6 +368,8 @@ export function planGovernorMonthlyWork(
       troopType,
       targetOfficerId,
       targetTroops,
+      projectedFoodAfterWork: after.economy.projectedAvailable.food,
+      projectedGoldAfterWork: after.economy.projectedAvailable.gold,
       firstAssignment: action === 'assign-troops' && target?.troops === 0 && target.wounded === 0,
       targetOfficerExperienceAtPlan: target?.experience ?? 0,
       targetOfficerForceAtPlan: target?.force ?? 0,
@@ -322,24 +382,50 @@ export function planGovernorMonthlyWork(
     workSpent
       ? stop('monthly-work-spent', 'The city has used all work points for this ten-day period.')
       : stop(
-          failure.includes('reserved')
+          orderReserveBlocked
             ? 'approved-order-reserve'
-            : failure
-              ? 'insufficient-budget'
-              : 'development-capped',
+            : failure.includes('approaching hostile')
+              ? 'city-threatened'
+              : failure
+                ? 'insufficient-budget'
+                : 'development-capped',
           failure || plan.reason,
         );
 
-  // Urgent safety work is never displaced by optional recruitment or development.
-  if (!workSpent && projectedNextMonthFood < protectedFood) {
-    if (
-      city.farming < 500 &&
-      offer('develop-farming', 'food-security', 'Food security requires farming.')
-    )
-      return plan;
-    if (offer('buy-food', 'food-security', 'The city buys food to protect next-month provisions.'))
-      return plan;
-    return none();
+  // First cover the actual deadline. If both actions cover it, recurring farming
+  // wins; otherwise choose the largest real reduction in the shortfall.
+  const foodAtDeadline = threats.length
+    ? Math.min(city.food, projectedNextMonthFood)
+    : projectedNextMonthFood;
+  if (!workSpent && foodAtDeadline < protectedFood) {
+    const alternatives = (['develop-farming', 'buy-food'] as const)
+      .flatMap((action) => {
+        const after = afterWork(action, CITY_MONTHLY_WORK_GOLD_COST, 0);
+        if (!after) return [];
+        const food = threats.length
+          ? Math.min(after.city.food, after.economy.projectedFood)
+          : after.economy.projectedFood;
+        return [{ action, food, covers: food >= protectedFood }];
+      })
+      .sort(
+        (a, b) =>
+          Number(b.covers) - Number(a.covers) ||
+          (a.covers
+            ? Number(b.action === 'develop-farming') - Number(a.action === 'develop-farming')
+            : b.food - a.food),
+      );
+    for (const { action } of alternatives)
+      if (
+        offer(
+          action,
+          'food-security',
+          action === 'buy-food'
+            ? 'Buy food to reduce the projected shortage before the next bill or approaching battle.'
+            : 'The next harvest gain covers the food reserve shortfall; invest in farming.',
+        )
+      )
+        return plan;
+    // Unaffordable food work must not suppress free loyalty or reserve organization.
   }
   if (!workSpent && city.loyalty < 60) {
     if (
@@ -372,6 +458,44 @@ export function planGovernorMonthlyWork(
     if (offer('feast', 'officer-loyalty', 'A feast urgently restores local officer loyalty.'))
       return plan;
   }
+
+  function organizeReserves(): boolean {
+    // Existing reserves already eat city rations. Refill stationed contingents before
+    // optional training, including non-governors and after another monthly action.
+    for (const officer of [...local].sort(
+      (a, b) => a.troops + a.wounded - b.troops - b.wounded || a.id.localeCompare(b.id),
+    )) {
+      if (
+        officer.troops + officer.wounded === 0 ||
+        officer.reorganizationDays > 0 ||
+        awaitingAppointment.has(officer.id) ||
+        isOfficerReservedForOrder(state, officer.id)
+      )
+        continue;
+      const ready =
+        availableReserveTroops(state, cityId, officer.troopType) -
+        reserves.troops -
+        (threats.length ? 0 : 1000);
+      const amount = Math.min(10_000 - officer.wounded, officer.troops + ready);
+      if (
+        ready > 0 &&
+        amount > officer.troops &&
+        offer(
+          'assign-troops',
+          'troop-organization',
+          threats.length
+            ? 'Organize available reserves for the approaching battle.'
+            : 'Reinforce a stationed officer while protecting a 1,000-soldier same-type reserve.',
+          officer.id,
+          amount,
+          officer.troopType,
+        )
+      )
+        return true;
+    }
+    return false;
+  }
+  if (threats.length && organizeReserves()) return plan;
 
   const newcomer =
     automaticTalentWorkUsed(state, city, 'assign') < 1
@@ -418,6 +542,10 @@ export function planGovernorMonthlyWork(
     )
       return plan;
   }
+  if (foodAtDeadline < protectedFood && !threats.length) {
+    if (organizeReserves()) return plan;
+    return none();
+  }
   if (
     automaticTalentWorkUsed(state, city, 'search') < 1 &&
     candidates.length &&
@@ -440,35 +568,7 @@ export function planGovernorMonthlyWork(
     offer('sell-food', 'market-balance', 'Sell surplus food to fund city work.')
   )
     return plan;
-  // Existing reserves already eat city rations. Refill stationed contingents before
-  // optional training, including non-governors and after another monthly action.
-  for (const officer of [...local].sort(
-    (a, b) => a.troops + a.wounded - b.troops - b.wounded || a.id.localeCompare(b.id),
-  )) {
-    if (
-      officer.troops + officer.wounded === 0 ||
-      officer.reorganizationDays > 0 ||
-      awaitingAppointment.has(officer.id) ||
-      isOfficerReservedForOrder(state, officer.id)
-    )
-      continue;
-    const ready =
-      availableReserveTroops(state, city.id, officer.troopType) - reserves.troops - 1000;
-    const amount = Math.min(10_000 - officer.wounded, officer.troops + ready);
-    if (
-      ready > 0 &&
-      amount > officer.troops &&
-      offer(
-        'assign-troops',
-        'troop-organization',
-        'Reinforce a stationed officer while protecting a 1,000-soldier same-type reserve.',
-        officer.id,
-        amount,
-        officer.troopType,
-      )
-    )
-      return plan;
-  }
+  if (organizeReserves()) return plan;
   if (workUsed === 0) {
     const trainee = local
       .filter((officer) => officer.troops > 0 && hasTrainingBenefit(officer))
@@ -476,12 +576,35 @@ export function planGovernorMonthlyWork(
     if (trainee && offer('train', 'officer-training', 'Train a local officer.', trainee.id))
       return plan;
   }
-  const sectors =
-    city.farming <= city.commerce
-      ? (['develop-farming', 'develop-commerce'] as const)
-      : (['develop-commerce', 'develop-farming'] as const);
-  for (const action of sectors)
-    if (offer(action, 'economic-balance', 'Develop the lower economic sector.')) return plan;
+  // Compare the next three real production increments, including the harvest
+  // season and caps. The existing market exchange values ten food as one gold.
+  const sectors = (['develop-farming', 'develop-commerce'] as const)
+    .flatMap((action) => {
+      const after = afterWork(action, CITY_MONTHLY_WORK_GOLD_COST, 0);
+      if (!after) return [];
+      let value = 0;
+      for (let offset = 0; offset < 3; offset++) {
+        const month = ((economy.boundary.harvestMonth - 1 + offset) % 12) + 1;
+        const beforeProduction = cityProduction(city, month),
+          afterProduction = cityProduction(after.city, month);
+        value +=
+          (afterProduction.food - beforeProduction.food) / 10 +
+          afterProduction.gold -
+          beforeProduction.gold;
+      }
+      return [{ action, value }];
+    })
+    .sort((a, b) => b.value - a.value || a.action.localeCompare(b.action));
+  for (const { action, value } of sectors)
+    if (
+      value > 0 &&
+      offer(
+        action,
+        'economic-balance',
+        'Invest in the larger production gain over the next three settlements.',
+      )
+    )
+      return plan;
   const equipmentTarget = local
     .filter((officer) => officer.equipment !== 'Fine arms' && officer.force < 105)
     .sort((a, b) => b.troops - a.troops || b.force - a.force || a.id.localeCompare(b.id))[0];

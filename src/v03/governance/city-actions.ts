@@ -134,6 +134,7 @@ export function applySharedCityWorkEffect(
     | 'develop-farming'
     | 'develop-commerce'
     | 'security'
+    | 'relieve'
     | 'recruit'
     | 'buy-food'
     | 'sell-food',
@@ -142,7 +143,9 @@ export function applySharedCityWorkEffect(
 ): V03City | null {
   const city: V03City = { ...source };
   if (
-    ['restore-loyalty', 'develop-farming', 'develop-commerce', 'buy-food'].includes(action) &&
+    ['restore-loyalty', 'develop-farming', 'develop-commerce', 'buy-food', 'relieve'].includes(
+      action,
+    ) &&
     city.gold < CITY_MONTHLY_WORK_GOLD_COST
   )
     return null;
@@ -151,6 +154,11 @@ export function applySharedCityWorkEffect(
   if (action === 'restore-loyalty' && city.loyalty >= 100) return null;
   if (action === 'buy-food' && city.food + 800 > RESOURCE_CAP) return null;
   if (action === 'sell-food' && (city.food < 800 || city.gold + 80 > RESOURCE_CAP)) return null;
+  if (
+    action === 'relieve' &&
+    (city.food < GOVERNOR_RELIEF_FOOD_COST || city.population >= RESOURCE_CAP)
+  )
+    return null;
   if (action === 'recruit') {
     const { troops: gain, gold } = recruitmentQuote(city, manager.force, troopType);
     if (gain <= 0 || city.reserve + gain > RESOURCE_CAP || city.gold < gold) return null;
@@ -162,6 +170,11 @@ export function applySharedCityWorkEffect(
       mergeTroopPools(city.reservePools[troopType], { troops: gain, troopExperience: 0 }),
     );
     city.loyalty = Math.max(0, city.loyalty - 2);
+  } else if (action === 'relieve') {
+    city.gold -= GOVERNOR_RELIEF_GOLD_COST;
+    city.food -= GOVERNOR_RELIEF_FOOD_COST;
+    city.loyalty = Math.min(100, city.loyalty + 15);
+    city.population = Math.min(RESOURCE_CAP, city.population + 300);
   } else if (action === 'security')
     city.loyalty = Math.min(100, city.loyalty + 8 + Math.floor(manager.intellect / 20));
   else if (action === 'buy-food') {
@@ -694,16 +707,9 @@ function applyCityAction(
       break;
     }
     case 'relieve': {
-      if (city.gold < GOVERNOR_RELIEF_GOLD_COST)
-        return fail(`The city needs ${GOVERNOR_RELIEF_GOLD_COST} gold to relieve the people.`);
-      if (city.food < GOVERNOR_RELIEF_FOOD_COST)
-        return fail(`The city needs ${GOVERNOR_RELIEF_FOOD_COST} food to relieve the people.`);
-      if (city.population >= RESOURCE_CAP)
-        return fail('The city population is already at capacity.');
-      city.gold -= GOVERNOR_RELIEF_GOLD_COST;
-      city.food -= GOVERNOR_RELIEF_FOOD_COST;
-      city.loyalty = Math.min(100, city.loyalty + 15);
-      city.population = Math.min(RESOURCE_CAP, city.population + 300);
+      const updated = applySharedCityWorkEffect(city, input.action);
+      if (!updated) return fail('The city cannot afford or benefit from relief.');
+      Object.assign(city, updated);
       message = `${actor.name} distributed grain: up to 15 city loyalty and 300 population.`;
       break;
     }

@@ -462,7 +462,17 @@ describe('R3 qualification, budgets and stale plans', () => {
     expect(planGovernorMonthlyWork(state, cityId, 1).action).toBe('search');
     cityAt(state, cityId).food = 0;
     const starving = planGovernorMonthlyWork(state, cityId, 1);
-    expect(['recruit', 'assign-troops', 'search']).not.toContain(starving.action);
+    expect(['recruit', 'search']).not.toContain(starving.action);
+    // Organizing existing reserves adds no mouths, food cost or work point.
+    if (starving.action === 'assign-troops') {
+      expect(starving).toMatchObject({ foodCost: 0, goldCost: 0, workPoints: 0 });
+      const prepared = applyGovernorMonthlyWork(state, starving);
+      expect(prepared.applied).toBe(true);
+      expect(prepared.city!.food).toBe(0);
+      expect(prepared.city!.garrisonTroops + prepared.city!.reserve).toBe(
+        cityAt(state, cityId).garrisonTroops + cityAt(state, cityId).reserve,
+      );
+    }
   });
 
   it('can search after ordinary work, while keeping the talent counter independent of work usage', () => {

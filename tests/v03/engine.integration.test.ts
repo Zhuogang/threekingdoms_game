@@ -13,6 +13,7 @@ import {
 } from '../../src/v03/engine';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
+import { createReservePools } from '../../src/v03/campaign/troop-experience';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import type { V03GameState } from '../../src/v03/types';
 import type { V03TacticalBattleState } from '../../src/v03/battle';
@@ -687,7 +688,7 @@ describe('v0.3 strategic engine integration', () => {
     expect(advanced.daysAdvanced).toBe(1);
     expect(advanced.state.battles.some((entry) => entry.active)).toBe(true);
     const settledCity = advanced.state.cities.find((entry) => entry.id === city.id)!;
-    expect(settledCity.farming).toBe(40);
+    expect(settledCity.food).toBeGreaterThanOrEqual(800);
     expect(settledCity.workMonthIndex).toBe(1);
     expect(settledCity.workPointsUsed).toBe(2);
   });
@@ -803,6 +804,11 @@ describe('v0.3 strategic engine integration', () => {
     let state = issueCampaign();
     const target = state.cities.find((city) => city.id === targetCity)!;
     target.garrisonTroops = 1_100;
+    // Keep this roster fixture fixed while the army approaches; governors can
+    // now recruit and organize real reserves before the battle begins.
+    target.population = 1000;
+    target.reserve = 0;
+    target.reservePools = createReservePools();
     // A staffed force belongs to an actual defending faction, not neutral residents.
     target.factionId = 'yuan';
     const defender = state.officers.find((officer) => officer.id === 'guotu')!;

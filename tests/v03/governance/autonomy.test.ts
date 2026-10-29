@@ -248,7 +248,7 @@ describe('v0.3 governor monthly work planning', () => {
     },
   );
 
-  it('plans one deterministic, explainable action and applies only its gold cost and one improvement', () => {
+  it('plans one deterministic, explainable food purchase and applies its actual cost and gain', () => {
     const { state, cityId } = fixture();
     const before = structuredClone(state);
     const first = planGovernorMonthlyWork(state, cityId, 3);
@@ -259,7 +259,7 @@ describe('v0.3 governor monthly work planning', () => {
     expect(first).toMatchObject({
       cityId,
       managerOfficerId: state.cities.find((city) => city.id === cityId)?.governorId,
-      action: 'develop-farming',
+      action: 'buy-food',
       workPoints: 1,
       goldCost: 80,
       reasonCode: 'food-security',
@@ -267,7 +267,7 @@ describe('v0.3 governor monthly work planning', () => {
 
     const result = applyGovernorMonthlyWork(state, first);
     expect(result.applied).toBe(true);
-    expect(result.city).toMatchObject({ farming: 45, commerce: 75, gold: 920 });
+    expect(result.city).toMatchObject({ farming: 25, commerce: 75, gold: 920, food: 800 });
     expect(state.cities.find((city) => city.id === cityId)?.farming).toBe(25);
 
     const afterApplying = structuredClone(state);
@@ -278,7 +278,7 @@ describe('v0.3 governor monthly work planning', () => {
     const replay = applyGovernorMonthlyWork(afterApplying, first);
     expect(replay.applied).toBe(false);
     expect(replay.city?.gold).toBe(920);
-    expect(replay.city?.farming).toBe(45);
+    expect(replay.city?.food).toBe(800);
   });
 
   it('relieves low-loyalty cities when protected food is safe and keeps RNG unchanged', () => {
@@ -596,14 +596,14 @@ describe('v0.3 governor monthly work planning', () => {
     expect(plan.protectedFood).toBeGreaterThanOrEqual(1000);
   });
 
-  it('pauses development under an incoming hostile force and reports the reason', () => {
+  it('does not freeze work for a manifest with no actual hostile personnel', () => {
     const { state, cityId } = fixture();
     state.journeys.push(hostileJourney(cityId));
 
     const plan = planGovernorMonthlyWork(state, cityId, 3);
 
-    expect(plan.action).toBeNull();
-    expect(plan.reasonCode).toBe('city-threatened');
+    expect(plan.action).toBe('buy-food');
+    expect(plan.reasonCode).toBe('food-security');
   });
 
   it('does not give work to a ruler capital or a city without local staff', () => {
