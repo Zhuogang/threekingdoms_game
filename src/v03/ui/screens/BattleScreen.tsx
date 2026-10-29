@@ -136,7 +136,7 @@ export function BattleScreen({
           onUnitClick={(unitId) => {
             handleBattleUnitClick(unitId);
           }}
-          onCellClick={(cell) => {
+          onCellClick={(cell, source) => {
             setInspectedCell(cell);
             if (selectedTactic) {
               setFeedback({ key: 'tacticChooseTarget' });
@@ -146,8 +146,10 @@ export function BattleScreen({
               setFeedback({ key: 'selectUnit' });
               return;
             }
-            // Clicking outside the green cells inspects the tile without trying to move.
+            // A click outside the green cells only inspects the tile. Keyboard Enter still
+            // submits the move so the rules can explain why that cell cannot be reached.
             if (
+              source === 'pointer' &&
               !reachableCells.some((reachable) => reachable.x === cell.x && reachable.y === cell.y)
             )
               return;

@@ -88,7 +88,8 @@ export interface BattlefieldMapViewProps {
   waterIncomingDamageMultiplier?: number;
   className?: string;
   style?: CSSProperties;
-  onCellClick?: (cell: GridPoint) => void;
+  /** `keyboard` when Enter/Space activated the focused cell, `pointer` for a click. */
+  onCellClick?: (cell: GridPoint, source: 'pointer' | 'keyboard') => void;
   onUnitClick?: (unitId: string, cell: GridPoint) => void;
 }
 
@@ -581,7 +582,7 @@ export function BattlefieldMapView({
     });
     const cell = hitTestWorld(world, map.width, map.height);
     const snapped = nearestLegalBattleCell(world, reachableCells);
-    if (snapped || cell) onCellClick(snapped ?? cell!);
+    if (snapped || cell) onCellClick(snapped ?? cell!, 'pointer');
   };
   const pointerWorldPoint = (clientX: number, clientY: number, camera: BattlefieldViewBox) =>
     clientToViewBoxPoint(
@@ -696,7 +697,7 @@ export function BattlefieldMapView({
       next = { ...focusedCell, y: Math.min(map.height - 1, focusedCell.y + 1) };
     else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      onCellClick(focusedCell);
+      onCellClick(focusedCell, 'keyboard');
       return;
     }
     if (next) {

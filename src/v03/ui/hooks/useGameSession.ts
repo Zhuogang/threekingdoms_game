@@ -4,6 +4,7 @@ import {
   gridToWorld,
   V03_BATTLE_CELL,
   V03_BATTLE_READABLE_CELL_PIXELS,
+  TOKEN_BADGES_MIN_CELL_PIXELS,
   V03_BATTLEFIELD_PADDING,
 } from '../../rendering';
 
@@ -327,35 +328,54 @@ export function useGameSession() {
       const aspect = rect.width / rect.height;
       if (battleViewportIdentity.current !== identity) {
         battleViewportIdentity.current = identity;
-        // Open on both armies so the player sees what they face. Zoom out only as far as
-        // needed to contain every living formation, never past "Fit", and never closer
-        // than the readable portrait scale (about 48 screen pixels per cell).
+        // Open at a zoom where leader portraits still show, leaning toward the enemy as far
+        // as possible while every friendly formation stays in view. When both armies fit at
+        // that scale, both are framed.
         const living = battleState.units.filter((unit) => unit.troops > 0);
-        const focus = living.map((unit) => gridToWorld({ x: unit.x + 0.5, y: unit.y + 0.5 }));
+        const own = living.filter((unit) => unit.side === battleState.playerSide);
+        const center = (unit: { x: number; y: number }) =>
+          gridToWorld({ x: unit.x + 0.5, y: unit.y + 0.5 });
+        const all = living.map(center);
+        const mine = (own.length ? own : living).map(center);
         const fit = fitBattlefieldViewport(bounds, aspect);
         const readableWidth = (rect.width / V03_BATTLE_READABLE_CELL_PIXELS) * V03_BATTLE_CELL;
-        const xs = focus.map((point) => point.x);
-        const ys = focus.map((point) => point.y);
+        // One pixel of margin keeps rounding from dropping tokens to compact discs.
+        const portraitWidth = (rect.width / (TOKEN_BADGES_MIN_CELL_PIXELS + 1)) * V03_BATTLE_CELL;
         const padding = V03_BATTLE_CELL * 4;
-        const neededWidth = focus.length
-          ? Math.max(
-              Math.max(...xs) - Math.min(...xs) + padding,
-              (Math.max(...ys) - Math.min(...ys) + padding) * aspect,
-            )
-          : fit.width;
-        setBattleViewport(
-          focus.length
-            ? focusBattlefieldViewport(
-                bounds,
-                fit,
-                {
-                  x: (Math.max(...xs) + Math.min(...xs)) / 2,
-                  y: (Math.max(...ys) + Math.min(...ys)) / 2,
-                },
-                Math.max(1, fit.width / Math.max(readableWidth, neededWidth)),
-              )
-            : fit,
-        );
+        const span = (points: { x: number; y: number }[], axis: 'x' | 'y') => {
+          const values = points.map((point) => point[axis]);
+          return { min: Math.min(...values), max: Math.max(...values) };
+        };
+        if (!all.length) setBattleViewport(fit);
+        else {
+          const allX = span(all, 'x'),
+            allY = span(all, 'y'),
+            ownX = span(mine, 'x'),
+            ownY = span(mine, 'y');
+          const neededWidth = Math.max(
+            allX.max - allX.min + padding,
+            (allY.max - allY.min + padding) * aspect,
+          );
+          const width = Math.max(readableWidth, Math.min(neededWidth, portraitWidth));
+          const height = width / aspect;
+          // Clamp the midpoint of both armies so the player's formations remain visible.
+          const lean = (mid: number, own: { min: number; max: number }, size: number) => {
+            const low = own.max + padding / 2 - size / 2;
+            const high = own.min - padding / 2 + size / 2;
+            return low > high ? (own.min + own.max) / 2 : Math.min(high, Math.max(low, mid));
+          };
+          setBattleViewport(
+            focusBattlefieldViewport(
+              bounds,
+              fit,
+              {
+                x: lean((allX.min + allX.max) / 2, ownX, width),
+                y: lean((allY.min + allY.max) / 2, ownY, height),
+              },
+              Math.max(1, fit.width / width),
+            ),
+          );
+        }
       } else {
         setBattleViewport((viewport) =>
           viewport

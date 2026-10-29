@@ -286,11 +286,12 @@ for (const lang of ['en', 'zh']) {
       expect(box.y + box.height).toBeLessThanOrEqual(845);
     }
     await page.screenshot({ path: info.outputPath(`expanded-mobile-${lang}.png`) });
+    // No ready unit can strike on this walking day, so the day ends without a prompt and
+    // the expanded layout stays in place. The withdrawal dialog below covers Escape.
     await page
       .getByRole('button', { name: lang === 'zh' ? '结束战斗日' : 'End battle day', exact: true })
       .click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('.v03-battle-expanded')).toBeVisible();
     await page.locator('.v03-battle-action-bar summary').click();
     await page

@@ -85,18 +85,13 @@ for (const locale of ['zh', 'en']) {
   test(`movement opens actions, attack captures the city, and a local governor retains the contingent (${locale})`, async ({
     page,
   }, info) => {
-    const { state, battle, unit, enemy } = battleFixture(1);
+    const { state, battle, unit } = battleFixture(1);
     await load(page, state, locale);
     await move(page, unit.id);
     const menu = page.getByRole('region', { name: /部队行动选择|Unit actions/ });
+    // With exactly one enemy in range, Attack strikes it without a second map click.
     await menu.getByRole('button', { name: /攻击|Attack/, exact: true }).click();
     await expect(menu).toHaveCount(0);
-    expect(
-      (await saved(page)).battles
-        .find((entry) => entry.id === battle.id)!
-        .battleData.units.find((entry) => entry.id === unit.id)!.acted,
-    ).toBe(false);
-    await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
     await expect(page.locator('.v03-outcome-modal')).toBeVisible();
     await page.locator('.v03-outcome-modal').getByRole('button').last().click();
     const dialog = dialogForGovernance(page);
