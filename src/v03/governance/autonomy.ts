@@ -1,3 +1,4 @@
+import { forecastCityEconomy } from '../campaign/economy';
 import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
@@ -108,7 +109,6 @@ export interface GovernorMonthlyWorkResult {
   reason: string;
 }
 
-const RESOURCE_CAP = 9_999_999;
 const MONTHLY_FOOD_RATE = DAYS_PER_MONTH * PILOT_LOGISTICS_RATES.cityFoodPerTroopDay;
 
 function hasIncomingThreat(state: Readonly<V03GameState>, city: V03City): boolean {
@@ -127,9 +127,13 @@ function hasIncomingThreat(state: Readonly<V03GameState>, city: V03City): boolea
 export function planGovernorMonthlyWork(
   state: Readonly<V03GameState>,
   cityId: string,
-  settledMonth: number,
+  settledMonth?: number,
 ): GovernorMonthlyWorkPlan {
-  if (!Number.isInteger(settledMonth) || settledMonth < 1 || settledMonth > 12)
+  // Retain the old call signature, but never use its ambiguous month hint in forecasts.
+  if (
+    settledMonth !== undefined &&
+    (!Number.isInteger(settledMonth) || settledMonth < 1 || settledMonth > 12)
+  )
     throw new Error('settledMonth must be between 1 and 12.');
   const city = state.cities.find((entry) => entry.id === cityId);
   if (!city) throw new Error('Unknown city ' + cityId + '.');
@@ -159,9 +163,8 @@ export function planGovernorMonthlyWork(
   const reserves = committedCityStock(state, city.id);
   const upkeep = Math.ceil(cityPersonnelSummary(state, city.id).foodHeadcount * MONTHLY_FOOD_RATE);
   const protectedFood = Math.max(500, upkeep * 2) + reserves.food;
-  const nextMonth = (settledMonth % 12) + 1;
-  const nextHarvest = Math.floor(city.farming * (nextMonth === 9 ? 4 : 2.2) + city.population / 80);
-  const projectedNextMonthFood = Math.min(RESOURCE_CAP, city.food + nextHarvest - upkeep);
+  const economy = forecastCityEconomy(state, cityId);
+  const projectedNextMonthFood = economy.projectedFood;
   const candidates = localSearchCandidates(state, city.id);
   const workUsed = cityWorkUsedThisPeriod(state, city);
   const awaitingAppointment = new Set(
@@ -171,7 +174,7 @@ export function planGovernorMonthlyWork(
   );
   const plan: GovernorMonthlyWorkPlan = {
     cityId,
-    month: settledMonth,
+    month: economy.boundary.harvestMonth,
     factionId: city.factionId,
     npcCapital,
     troopType: manager?.troopType ?? 'infantry',
@@ -188,6 +191,7 @@ export function planGovernorMonthlyWork(
       requisitions: state.requisitions.filter((order) => order.sourceCityId === cityId),
       directives: state.directives.filter((order) => order.sourceCityId === cityId),
       personnelDay: state.personnelDay,
+      economy,
     }),
     managerOfficerId: manager?.id ?? null,
     managerIntellectAtPlan: manager?.intellect ?? 0,
@@ -499,7 +503,7 @@ export function applyGovernorMonthlyWork(
 ): GovernorMonthlyWorkResult {
   const city = state.cities.find((entry) => entry.id === plan.cityId);
   if (!city) return { applied: false, city: null, reason: 'The city no longer exists.' };
-  const current = planGovernorMonthlyWork(state, plan.cityId, plan.month);
+  const current = planGovernorMonthlyWork(state, plan.cityId);
   if (!plan.action || JSON.stringify(current) !== JSON.stringify(plan))
     return {
       applied: false,

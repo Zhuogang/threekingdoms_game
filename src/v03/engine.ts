@@ -4,6 +4,9 @@ import {
   isRivalCampaignOfficerAvailable,
 } from './ai/campaign-legality';
 import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
+import { FOOD_MICRO } from './calendar/rations';
+import { forecastBattleRations } from './battle/supply';
+import { cityAccruedUpkeep, cityProduction, cityServiceHeadcounts } from './campaign/economy';
 import { recoverPersonnelDay } from './campaign/personnel-recovery';
 import { planOfficerDebuts } from './campaign/officer-lifecycle';
 import { isCityCommitted } from './governance/commitments';
@@ -21,7 +24,6 @@ import {
   mergePersonnel,
   detachWoundedToCity,
   cityPersonnelSummary,
-  cityRationCredits,
   retainPersonnel,
   availableTroops,
   refreshJourneyPersonnel,
@@ -93,7 +95,6 @@ import type {
 } from './types';
 
 const RESOURCE_CAP = 9_999_999;
-const FOOD_MICRO = 1_000_000;
 function cloneState(state: V03GameState): V03GameState {
   return structuredClone(state);
 }
@@ -384,18 +385,11 @@ function chargeBattleRations(battle: V03BattleState, absoluteDay: number): void 
     const living = data.units.filter(
       (unit) => unit.side === side && unit.troops + unit.wounded > 0,
     );
-    const totalTroops = living.reduce(
-      (sum, unit) => sum + (unit.troops + unit.wounded) * (unit.troopType === 'cavalry' ? 2 : 1),
-      0,
-    );
     const foodKey = side === 'attacker' ? 'attackerFood' : 'defenderFood';
     const remainderKey =
       side === 'attacker' ? 'attackerFoodRemainderMicro' : 'defenderFoodRemainderMicro';
-    const demandMicro =
-      Math.round(PILOT_LOGISTICS_RATES.battleFoodPerTroopDay * FOOD_MICRO) * totalTroops +
-      battle[remainderKey];
-    const demandFood = Math.floor(demandMicro / FOOD_MICRO);
-    const shortage = data.supplies[side] * FOOD_MICRO < demandMicro;
+    const demand = forecastBattleRations(data, side, battle[remainderKey]);
+    const { demandMicro, wholeFood: demandFood, shortage } = demand;
     const paid = Math.min(data.supplies[side], demandFood);
     data.supplies[side] -= paid;
     battle[foodKey] = data.supplies[side];
@@ -1577,7 +1571,7 @@ export function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
   }
 }
 
-function settleAutonomousCityWork(state: V03GameState, month: number) {
+function settleAutonomousCityWork(state: V03GameState) {
   const governorActions = new Map<string, string[]>();
   for (const city of state.cities) {
     if (
@@ -1590,7 +1584,7 @@ function settleAutonomousCityWork(state: V03GameState, month: number) {
     // Paid work stops at the shared quota. Free work is bounded by available
     // reserves, gold, officer caps and the existing monthly assignment limit.
     for (;;) {
-      const plan = planGovernorMonthlyWork(state, city.id, month);
+      const plan = planGovernorMonthlyWork(state, city.id);
       const work = applyGovernorMonthlyWork(state, plan);
       if (!work.applied || !work.city) {
         recordAiDecision({
@@ -1649,28 +1643,11 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     );
     const staffedTroops = serving.reduce((sum, officer) => sum + availableTroops(officer), 0);
     const militiaTroops = Math.max(0, city.garrisonTroops - staffedTroops);
-    const troopCount = staffedTroops + militiaTroops;
-    const harvest = city.factionId
-      ? Math.floor(city.farming * (month === 9 ? 4 : 2.2) + city.population / 80)
-      : 0;
-    const baseIncome = Math.floor(city.population / 150 + city.commerce * 0.55);
-    const income = city.factionId ? Math.floor(baseIncome * (0.8 + city.loyalty / 500)) : 0;
-    const troopServiceDays = city.troopServiceDaysThisMonth ?? troopCount * DAYS_PER_MONTH;
-    const cavalryDays =
-      city.cavalryServiceDaysThisMonth ??
-      serving.filter((o) => o.troopType === 'cavalry').reduce((sum, o) => sum + o.troops, 0) *
-        DAYS_PER_MONTH;
-    const foodUpkeep = Math.ceil(
-      (troopServiceDays +
-        cavalryDays +
-        (city.prisonerServiceDaysThisMonth ?? 0) +
-        (city.prisonerCavalryDaysThisMonth ?? 0)) *
-        PILOT_LOGISTICS_RATES.cityFoodPerTroopDay,
-    );
+    const { food: harvest, gold: income } = cityProduction(city, month);
+    const { food: foodUpkeep, gold: goldUpkeep } = cityAccruedUpkeep(next, city);
     city.cavalryServiceDaysThisMonth = 0;
     city.prisonerServiceDaysThisMonth = 0;
     city.prisonerCavalryDaysThisMonth = 0;
-    const goldUpkeep = city.factionId ? Math.ceil((troopServiceDays * 0.025) / DAYS_PER_MONTH) : 0;
     city.troopServiceDaysThisMonth = 0;
     city.food = Math.min(RESOURCE_CAP, city.food + harvest);
     city.gold = Math.min(RESOURCE_CAP, city.gold + income);
@@ -1732,7 +1709,10 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
       for (const officer of serving) officer.loyalty = Math.max(0, officer.loyalty - 3);
     } else city.gold -= goldUpkeep;
   }
-  const governorActions = settleAutonomousCityWork(next, month);
+  // Every city bill is now paid. Governor forecasts must see the new month's
+  // boundary, even though the outer timeline is still completing its callback.
+  next.dayResolution = null;
+  const governorActions = settleAutonomousCityWork(next);
   for (const faction of next.factions) {
     const owned = next.cities.filter((city) => city.factionId === faction.id);
     if (owned.length > 0 && !owned.some((city) => city.id === faction.capitalCityId))
@@ -1990,9 +1970,13 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
     attacker: retreatDestination(state, battle, 'attacker') !== null,
     defender: retreatDestination(state, battle, 'defender') !== null,
   };
+  const rationRemainders = {
+    attacker: battle.attackerFoodRemainderMicro,
+    defender: battle.defenderFoodRemainderMicro,
+  };
   if (!playerFights || battle.autoCommand)
-    tactical = runBattleAiTurn(tactical, tactical.playerSide);
-  tactical = advanceBattleDay(tactical);
+    tactical = runBattleAiTurn(tactical, tactical.playerSide, rationRemainders);
+  tactical = advanceBattleDay(tactical, rationRemainders);
   battle.battleData = tactical;
   battle.playerDayComplete = false;
   chargeBattleRations(battle, state.absoluteDay);
@@ -2064,21 +2048,12 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
     },
     accountCityServiceDay: (current) => {
       for (const city of state.cities) {
-        const summary = cityPersonnelSummary(state, city.id);
-        const captives = state.officers.filter(
-          (o) => o.alive && o.location.kind === 'captured' && o.location.cityId === city.id,
-        );
-        const credits = cityRationCredits(state, city.id);
-        const captiveCount = Math.max(0, summary.prisoners - credits.captivePeople);
-        const captiveCavalry = captives
-          .filter((o) => o.troopType === 'cavalry')
-          .reduce((sum, o) => sum + o.troops + o.wounded, 0);
-        const allPeople = summary.troops + summary.wounded + summary.prisoners;
-        const troopCount = Math.max(0, summary.troops + summary.wounded - credits.ownPeople);
-        const cavalryTroops = Math.max(
-          0,
-          summary.foodHeadcount - allPeople - credits.ownCavalry - captiveCavalry,
-        );
+        const {
+          own: troopCount,
+          cavalry: cavalryTroops,
+          prisoners: captiveCount,
+          prisonerCavalry,
+        } = cityServiceHeadcounts(state, city.id);
         const elapsed = state.absoluteDay % DAYS_PER_MONTH;
         city.troopServiceDaysThisMonth =
           (city.troopServiceDaysThisMonth ?? troopCount * elapsed) + troopCount;
@@ -2086,8 +2061,7 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
           (city.cavalryServiceDaysThisMonth ?? cavalryTroops * elapsed) + cavalryTroops;
         city.prisonerServiceDaysThisMonth = (city.prisonerServiceDaysThisMonth ?? 0) + captiveCount;
         city.prisonerCavalryDaysThisMonth =
-          (city.prisonerCavalryDaysThisMonth ?? 0) +
-          Math.max(0, captiveCavalry - credits.captiveCavalry);
+          (city.prisonerCavalryDaysThisMonth ?? 0) + prisonerCavalry;
       }
       recoverPersonnelDay(state);
       return current;
@@ -2120,7 +2094,7 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
         state.absoluteDay % CITY_WORK_PERIOD_DAYS === 0 &&
         state.absoluteDay % DAYS_PER_MONTH !== 0
       )
-        settleAutonomousCityWork(state, calendarDateAt(state.startYear, state.absoluteDay).month);
+        settleAutonomousCityWork(state);
       return toTimeline(state);
     },
   });

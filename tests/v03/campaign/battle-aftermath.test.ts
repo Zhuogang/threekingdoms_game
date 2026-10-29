@@ -1,3 +1,4 @@
+import { forecastBattleRations } from '../../../src/v03/battle/supply';
 import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
 import { executeV03Command } from '../../../src/v03/commands';
@@ -55,6 +56,51 @@ function battleFixture(setup?: (state: ReturnType<typeof createV03Game>) => void
 }
 
 describe('wounded combat and campaign aftermath', () => {
+  it.each(['attacker', 'defender'] as const)(
+    'matches ration preview, fractional charge and reload for the %s side',
+    (side) => {
+      const { state, battle } = battleFixture();
+      const units = battle.battleData.units.filter((unit) => unit.side === side);
+      units.forEach((unit, i) =>
+        Object.assign(unit, {
+          troops: 101 + i,
+          wounded: 23,
+          troopType: i === 0 ? 'cavalry' : 'infantry',
+          acted: true,
+          moved: true,
+        }),
+      );
+      battle.battleData.units.forEach((unit) => {
+        unit.acted = true;
+        unit.moved = true;
+      });
+      const foodKey = side === 'attacker' ? 'attackerFood' : 'defenderFood';
+      const remainderKey =
+        side === 'attacker' ? 'attackerFoodRemainderMicro' : 'defenderFoodRemainderMicro';
+      battle[remainderKey] = 920000;
+      battle[foodKey] = 500;
+      battle.battleData.supplies[side] = 500;
+      const before = structuredClone(state);
+      const preview = forecastBattleRations(battle.battleData, side, battle[remainderKey]);
+      expect(preview.dailyFood).toBeCloseTo(
+        units.reduce(
+          (sum, unit) =>
+            sum + (unit.troops + unit.wounded) * (unit.troopType === 'cavalry' ? 2 : 1),
+          0,
+        ) * 0.04,
+      );
+      expect(state).toEqual(before);
+      const loaded = decodeV03Save(encodeV03Save(state));
+      loaded.events.forEach((event) => (event.acknowledged = true));
+      const result = completeV03BattleDay(loaded, battle.id);
+      expect(result.ok, result.error).toBe(true);
+      const after = result.state.battles.find((entry) => entry.id === battle.id)!;
+      expect(after[foodKey]).toBe(500 - preview.wholeFood);
+      expect(after[remainderKey]).toBe(preview.remainderMicro);
+      expect(after.foodShortfallDays).toBe(0);
+    },
+  );
+
   it('redirects a returning army if its friendly refuge falls while it is waiting outside', () => {
     const { state, battle } = battleFixture();
     let next = applyV03BattleAction(state, battle.id, { type: 'retreat', side: 'attacker' }).state;

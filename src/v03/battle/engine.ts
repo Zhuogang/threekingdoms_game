@@ -1,3 +1,4 @@
+import { forecastBattleRations, type BattleRationRemainders } from './supply';
 import { recordAiDecision, type AiDecisionEvent } from '../ai/decision-trace';
 import { applyCombatDamage } from './experience';
 import { PERSONNEL_RULES } from '../campaign/personnel';
@@ -1011,6 +1012,7 @@ function chooseAiDestination(
 function chooseAiTactic(
   state: V03TacticalBattleState,
   unit: TacticalBattleUnit,
+  rationRemainders: BattleRationRemainders,
 ): { tactic: BattleTactic; target: TacticalBattleUnit; score: number } | null {
   const regularTarget = getUnitAttackTargets(state, unit.id)[0];
   const regularForecast = regularTarget
@@ -1036,9 +1038,11 @@ function chooseAiTactic(
         value = (forecast.chance / 100) * Math.max(40, target.troops * 0.045);
       } else if (entry.tactic === 'raidSupply') {
         if (forecast.suppliesTransferred <= 0) continue;
-        const remaining = state.supplies[target.side];
-        const dailyUse = Math.max(1, Math.ceil(totalTroops(state, target.side) / 1000));
-        const supplyDays = remaining / dailyUse;
+        const { supplyDays } = forecastBattleRations(
+          state,
+          target.side,
+          rationRemainders[target.side],
+        );
         value = forecast.suppliesTransferred * (supplyDays <= 12 ? 0.1 : 0.025);
       } else {
         value = (forecast.minCasualties + forecast.maxCasualties) / 2;
@@ -1060,6 +1064,7 @@ function chooseAiTactic(
 export function runBattleAiTurn(
   state: V03TacticalBattleState,
   side: BattleSide,
+  rationRemainders: BattleRationRemainders = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   const draft = structuredClone(state);
@@ -1147,7 +1152,7 @@ export function runBattleAiTurn(
             a.target.id.localeCompare(b.target.id),
         )[0]?.target;
     let target = availableTarget();
-    let tactic = chooseAiTactic(draft, unit);
+    let tactic = chooseAiTactic(draft, unit, rationRemainders);
     if (tactic) {
       const error = performTactic(draft, unit, tactic.tactic, tactic.target);
       trace(tactic.tactic, unit, tactic.target, error);
@@ -1160,7 +1165,7 @@ export function runBattleAiTurn(
         trace('move', unit, undefined, error);
       }
       target = availableTarget();
-      tactic = chooseAiTactic(draft, unit);
+      tactic = chooseAiTactic(draft, unit, rationRemainders);
       if (tactic) {
         const error = performTactic(draft, unit, tactic.tactic, tactic.target);
         trace(tactic.tactic, unit, tactic.target, error);
@@ -1275,7 +1280,10 @@ function resolveRout(state: V03TacticalBattleState): boolean {
 }
 
 /** Resolve the human side, run the other side's AI, then commit one battle day. */
-export function advanceBattleDay(state: V03TacticalBattleState): V03TacticalBattleState {
+export function advanceBattleDay(
+  state: V03TacticalBattleState,
+  rationRemainders: BattleRationRemainders = {},
+): V03TacticalBattleState {
   if (state.outcome) return state;
   let draft = structuredClone(state);
   for (const unit of livingUnits(draft, draft.playerSide)) {
@@ -1290,7 +1298,7 @@ export function advanceBattleDay(state: V03TacticalBattleState): V03TacticalBatt
       } else append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
-  draft = runBattleAiTurn(draft, otherSide(draft.playerSide));
+  draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders);
   if (draft.outcome) return draft;
   if (resolveRout(draft)) return draft;
   if (draft.day >= draft.dayLimit) {
