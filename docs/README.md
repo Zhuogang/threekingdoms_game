@@ -13,6 +13,7 @@ The existing [developer guide](v0.3/development.md) and [system references](v0.3
 | Location                               | Scope                                                                                                                                                |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [implementation.md](implementation.md) | Canonical v0.4 plan, tickets V04-00–V04-09, work order and release gates; formerly `docs/improvement.md`.                                            |
+| [v0.4/](v0.4/README.md)                | Implemented changes, comparative evidence and the [player/hardware validation packet](v0.4/player-validation.md).                                    |
 | [v0.3/](v0.3/README.md)                | Existing gameplay/developer references, release notes, plans, remaining acceptance, artwork records and evidence.                                    |
 | [archive/](archive/README.md)          | v0.1/v0.2 documents and original design studies. v0.1 diagnostic and display collections now live with that version.                                 |
 | [assets/](assets/README.md)            | Shared asset provenance, portrait sources and older visual records. Stable paths are retained because manifests and generation tools reference them. |

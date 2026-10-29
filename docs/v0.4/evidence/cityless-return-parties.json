@@ -1,0 +1,330 @@
+{
+  "description": "Inherited cityless-house limitation reproduced by exact 96-month replays. No owned city, no active player battle, and every remaining free officer belongs to a waiting return party. House survival is not strategic viability. No new surrender/elimination rule has been implemented or accepted by this evidence.",
+  "baselineCommit": "10c6866aad1996f15f685121205eb633f13dcf1f",
+  "unchangedCode": [
+    {
+      "file": "src/v03/engine.ts",
+      "function": "friendlyRefugeHop",
+      "identicalToBaseline": true,
+      "sha256": "65bf2b88498a02c4485e8348642c62642bc15597e9d965b0b15db2bcb725c595"
+    },
+    {
+      "file": "src/v03/engine.ts",
+      "function": "redirectJourneyToFriendlyCity",
+      "identicalToBaseline": true,
+      "sha256": "07aab295d903867f6319622281a7bb096f3c473854c9579dc52dc48fd3fdb272"
+    },
+    {
+      "file": "src/v03/engine.ts",
+      "function": "handleArrivals",
+      "identicalToBaseline": true,
+      "sha256": "70cd6d7c3512d33df3c16b703e401b9f7967888b2954a54b72a5615a703afbdc"
+    },
+    {
+      "file": "src/v03/campaign/prisoners.ts",
+      "identicalToBaseline": true,
+      "sha256": "6886f8bbfdb7932a4b9cd54371ac593b51660f3d0c558cf798a07a190d81c89e"
+    },
+    {
+      "file": "src/v03/calendar/index.ts",
+      "identicalToBaseline": true,
+      "sha256": "28fb8f28170b2d4261551000a313a7a5636bc8de27887b93cb7d264ef4f2564a"
+    }
+  ],
+  "runs": [
+    {
+      "scenario": "divided-realm-190",
+      "player": "cao",
+      "seed": 970301,
+      "day": 2880,
+      "phase": "planning",
+      "owned": [],
+      "faction": {
+        "id": "cao",
+        "name": "Xiahou Yuan",
+        "chinese": "\u590f\u4faf\u6e0a",
+        "leaderOfficerId": "xiahouyuan",
+        "color": "#53778d",
+        "capitalCityId": "jiangxia",
+        "isPlayer": true,
+        "eliminated": false
+      },
+      "freeOfficers": [
+        {
+          "id": "xiahouyuan",
+          "alive": true,
+          "factionId": "cao",
+          "location": {
+            "kind": "journey",
+            "journeyId": "divided-realm-190:journey:31:return"
+          },
+          "troopType": "cavalry",
+          "troops": 0,
+          "wounded": 280,
+          "troopExperience": 40
+        },
+        {
+          "id": "taoqian",
+          "alive": true,
+          "factionId": "cao",
+          "location": {
+            "kind": "journey",
+            "journeyId": "battle-68:defender-return"
+          },
+          "troopType": "infantry",
+          "troops": 950,
+          "wounded": 0,
+          "troopExperience": 50.10526315789474
+        }
+      ],
+      "activeJourneys": [
+        {
+          "id": "divided-realm-190:journey:31:return",
+          "executionId": "divided-realm-190:journey:31:return:execution",
+          "ownerFactionId": "cao",
+          "sourceCityId": "beihai",
+          "destinationCityId": "puyang",
+          "routeId": "path-5d2d0164",
+          "routeVersion": "v0.3-geography-2-path",
+          "routeSnapshot": [
+            {
+              "terrain": "plain",
+              "lengthKm": 210,
+              "baseSpeedKmPerDay": 20,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            },
+            {
+              "terrain": "hill",
+              "lengthKm": 210,
+              "baseSpeedKmPerDay": 15,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            },
+            {
+              "terrain": "plain",
+              "lengthKm": 395,
+              "baseSpeedKmPerDay": 20,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            }
+          ],
+          "roadKmNominal": 815,
+          "departedAbsoluteDay": 93,
+          "expectedArrivalDay": 138,
+          "elapsedDays": 2787,
+          "segmentProgressKm": [210, 210, 395],
+          "segmentWaitDays": [0, 0, 0],
+          "manifest": {
+            "officerIds": ["xiahouyuan"],
+            "troopCount": 280,
+            "composition": {
+              "troopTypes": ["cavalry"],
+              "cavalryTroops": 280,
+              "woundedTroops": 280,
+              "soloOfficer": false
+            },
+            "carriedFood": 0,
+            "cargo": {
+              "gold": 0,
+              "food": 0,
+              "troops": 0
+            }
+          },
+          "status": "waiting",
+          "deliveredCargo": {},
+          "consumedFood": 1734,
+          "supplyRemainderMicro": 0,
+          "accumulatedFoodShortfall": 10751.759999999367,
+          "kind": "return",
+          "routeCityIds": ["beihai", "xiapi", "puyang"]
+        },
+        {
+          "id": "battle-68:defender-return",
+          "executionId": "battle-68:defender-return:execution",
+          "ownerFactionId": "cao",
+          "sourceCityId": "xiapi",
+          "destinationCityId": "puyang",
+          "routeId": "puyang--xiapi",
+          "routeVersion": "v0.3-geography-2-path",
+          "routeSnapshot": [
+            {
+              "terrain": "plain",
+              "lengthKm": 395,
+              "baseSpeedKmPerDay": 20,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            }
+          ],
+          "roadKmNominal": 395,
+          "departedAbsoluteDay": 107,
+          "expectedArrivalDay": 127,
+          "elapsedDays": 2773,
+          "segmentProgressKm": [395],
+          "segmentWaitDays": [0],
+          "manifest": {
+            "officerIds": ["taoqian"],
+            "troopCount": 950,
+            "composition": {
+              "troopTypes": ["infantry"],
+              "cavalryTroops": 0,
+              "woundedTroops": 0,
+              "soloOfficer": false
+            },
+            "carriedFood": 0,
+            "cargo": {
+              "gold": 0,
+              "food": 0,
+              "troops": 0
+            }
+          },
+          "status": "waiting",
+          "deliveredCargo": {},
+          "consumedFood": 320,
+          "supplyRemainderMicro": 0,
+          "accumulatedFoodShortfall": 20754.799999999716,
+          "kind": "return",
+          "routeCityIds": ["xiapi", "puyang"]
+        }
+      ],
+      "activePlayerBattles": [],
+      "rawLocalSave": ".artifacts/v04/cao-policy-96m-observed/final.json",
+      "saveSha256": "610d2999fc74c05097fb12ecc3fdf9dd8962c4d9fedc54e46ac17feef9cb2319",
+      "configuration": {
+        "scenario": "divided-realm-190",
+        "player": "cao",
+        "seed": 970301,
+        "days": 2880,
+        "policy": "adjacent-legacy",
+        "observation": "Decision counters cover each real command. Objective events retain the bounded command trace; dropped events are reported explicitly. Objective/support history records changed states at loop boundaries, not every transient state within a command. History does not establish pre-dispatch donor conditions.",
+        "note": "Exact reproduction of the existing diagnostic driver, including its omitted selected-side ration remainder. Actual campaign commands still charge real rations. No parameter tuning.",
+        "runnerSha256": "ff245d243df2149ca5e50e271c41b88e1aa7dd0fb26317281cf88cdbef7e5e5d",
+        "driverSha256": "93df2f837d1dc4b1380881872df86d8a7ffb998e0c6e06610ca748bb76562e1b",
+        "adjacentDriverSha256": "80e4509211b62ea204b92f2967204699c5c103e26d0cbec3e2d8046082e12bc5"
+      },
+      "fingerprint": {
+        "commit": "178902b82660d7a55223cd41029aa0577eb96d70",
+        "dirty": false,
+        "sourceSha256": "6ba86cb83c001d35305fbf98700a68b889844dd63e7ca15f1a3eb0f909bbd198",
+        "configSha256": "d942f18377a70702c439ccd12bc475bcda75108cabd9b78137cf0fae7b65f6ba"
+      }
+    },
+    {
+      "scenario": "divided-realm-190",
+      "player": "yuan",
+      "seed": 610304,
+      "day": 2880,
+      "phase": "planning",
+      "owned": [],
+      "faction": {
+        "id": "yuan",
+        "name": "Yuan Shao",
+        "chinese": "\u8881\u7ecd",
+        "leaderOfficerId": "yuanshao",
+        "color": "#93824b",
+        "capitalCityId": "jinyang",
+        "isPlayer": true,
+        "eliminated": false
+      },
+      "freeOfficers": [
+        {
+          "id": "yuanshao",
+          "alive": true,
+          "factionId": "yuan",
+          "location": {
+            "kind": "journey",
+            "journeyId": "divided-realm-190:journey:99:return"
+          },
+          "troopType": "cavalry",
+          "troops": 0,
+          "wounded": 60,
+          "troopExperience": 215.1545155993432
+        }
+      ],
+      "activeJourneys": [
+        {
+          "id": "divided-realm-190:journey:99:return",
+          "executionId": "divided-realm-190:journey:99:return:execution",
+          "ownerFactionId": "yuan",
+          "sourceCityId": "ye",
+          "destinationCityId": "jinyang",
+          "routeId": "jinyang--ye",
+          "routeVersion": "v0.3-geography-2-path",
+          "routeSnapshot": [
+            {
+              "terrain": "plain",
+              "lengthKm": 120,
+              "baseSpeedKmPerDay": 20,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            },
+            {
+              "terrain": "hill",
+              "lengthKm": 80,
+              "baseSpeedKmPerDay": 15,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            },
+            {
+              "terrain": "mountain",
+              "lengthKm": 200,
+              "baseSpeedKmPerDay": 10,
+              "speedMultiplier": 1,
+              "fixedDelayDays": 0
+            }
+          ],
+          "roadKmNominal": 400,
+          "departedAbsoluteDay": 197,
+          "expectedArrivalDay": 229,
+          "elapsedDays": 2683,
+          "segmentProgressKm": [120, 80, 200],
+          "segmentWaitDays": [0, 0, 0],
+          "manifest": {
+            "officerIds": ["yuanshao"],
+            "troopCount": 60,
+            "composition": {
+              "troopTypes": ["cavalry"],
+              "cavalryTroops": 60,
+              "woundedTroops": 60,
+              "soloOfficer": false
+            },
+            "carriedFood": 0,
+            "cargo": {
+              "gold": 0,
+              "food": 0,
+              "troops": 0
+            }
+          },
+          "status": "waiting",
+          "deliveredCargo": {},
+          "consumedFood": 381,
+          "supplyRemainderMicro": 0,
+          "accumulatedFoodShortfall": 2194.680000000059,
+          "kind": "return",
+          "routeCityIds": ["ye", "jinyang"]
+        }
+      ],
+      "activePlayerBattles": [],
+      "rawLocalSave": ".artifacts/v04/yuan-policy-96m-observed/final.json",
+      "saveSha256": "902c165c9bf351f03620462546a77e2bd5647d61bca1392b41c03488ce4862b9",
+      "configuration": {
+        "scenario": "divided-realm-190",
+        "player": "yuan",
+        "seed": 610304,
+        "days": 2880,
+        "policy": "adjacent-legacy",
+        "observation": "Decision counters cover each real command. Objective events retain the bounded command trace; dropped events are reported explicitly. Objective/support history records changed states at loop boundaries, not every transient state within a command. History does not establish pre-dispatch donor conditions.",
+        "note": "Exact reproduction of the existing diagnostic driver, including its omitted selected-side ration remainder. Actual campaign commands still charge real rations. No parameter tuning.",
+        "runnerSha256": "ff245d243df2149ca5e50e271c41b88e1aa7dd0fb26317281cf88cdbef7e5e5d",
+        "driverSha256": "93df2f837d1dc4b1380881872df86d8a7ffb998e0c6e06610ca748bb76562e1b",
+        "adjacentDriverSha256": "80e4509211b62ea204b92f2967204699c5c103e26d0cbec3e2d8046082e12bc5"
+      },
+      "fingerprint": {
+        "commit": "178902b82660d7a55223cd41029aa0577eb96d70",
+        "dirty": false,
+        "sourceSha256": "6ba86cb83c001d35305fbf98700a68b889844dd63e7ca15f1a3eb0f909bbd198",
+        "configSha256": "8eec7b077fa9c4d03ca5a2cc2061844e5924a4e4b81d5fa726cafca4a15c7956"
+      }
+    }
+  ]
+}

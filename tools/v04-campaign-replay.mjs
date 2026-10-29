@@ -12,18 +12,24 @@ const [
   seedText = '970302',
   output = '.artifacts/v04/liu-replay',
   policy = 'adjacent-legacy',
+  daysText = '360',
 ] = process.argv.slice(2);
 const root = resolve(runtime),
   seed = Number(seedText),
+  days = Number(daysText),
   outputRoot = resolve(output);
 if (!Number.isSafeInteger(seed) || !CAMPAIGN_PROBE_POLICIES.includes(policy))
   throw new Error('Invalid seed or policy.');
+if (!Number.isSafeInteger(days) || days < 1 || days > 3600)
+  throw new Error('Replay days must be an integer from 1 to 3600.');
 const configuration = {
   scenario,
   player,
   seed,
-  days: 360,
+  days,
   policy,
+  observation:
+    'Decision counters cover each real command. Objective events retain the bounded command trace; dropped events are reported explicitly. Objective/support history records changed states at loop boundaries, not every transient state within a command. History does not establish pre-dispatch donor conditions.',
   note:
     policy === 'adjacent-legacy'
       ? 'Exact reproduction of the existing diagnostic driver, including its omitted selected-side ration remainder. Actual campaign commands still charge real rations. No parameter tuning.'
@@ -43,12 +49,31 @@ const server = await createServer({
   root,
   configFile: false,
   optimizeDeps: { noDiscovery: true, include: [] },
-  server: { middlewareMode: true, hmr: false },
+  server: { middlewareMode: true, hmr: false, ws: false },
 });
 await mkdir(outputRoot, { recursive: true });
 try {
   const { createV03Game } = await server.ssrLoadModule('/src/v03/initial-state.ts');
-  const { executeV03Command } = await server.ssrLoadModule('/src/v03/commands.ts');
+  const { executeV03Command: executeCommand } = await server.ssrLoadModule('/src/v03/commands.ts');
+  const { createAiDecisionTrace, withAiDecisionTrace } = await server.ssrLoadModule(
+    '/src/v03/ai/decision-trace.ts',
+  );
+  const decisions = { observed: 0, dropped: 0, counts: {}, workByFaction: {}, objectiveEvents: [] };
+  const executeV03Command = (...args) => {
+    const trace = createAiDecisionTrace(10000);
+    const result = withAiDecisionTrace(trace, () => executeCommand(...args));
+    decisions.observed += trace.observed;
+    decisions.dropped += trace.dropped;
+    for (const [key, count] of Object.entries(trace.counts))
+      decisions.counts[key] = (decisions.counts[key] ?? 0) + count;
+    for (const [faction, work] of Object.entries(trace.workByFaction)) {
+      const total = (decisions.workByFaction[faction] ??= { actions: 0, workPoints: 0 });
+      total.actions += work.actions;
+      total.workPoints += work.workPoints;
+    }
+    decisions.objectiveEvents.push(...trace.events.filter((event) => event.kind === 'objective'));
+    return result;
+  };
   const { runBattleAiTurn } = await server.ssrLoadModule('/src/v03/battle/engine.ts');
   const { ROUTE_DEFINITIONS } = await server.ssrLoadModule('/src/v03/geography/index.ts');
   const { encodeV03Save } = await server.ssrLoadModule('/src/v03/platform/storage.ts');
@@ -67,6 +92,10 @@ try {
     services: createV03OrderServices(),
   };
   const events = [],
+    objectiveHistory = [],
+    supportHistory = [],
+    previousObjectives = new Map(),
+    previousSupport = new Map(),
     snapshots = new Set(),
     battleStarts = new Set(),
     resolutions = new Set();
@@ -89,6 +118,35 @@ try {
         { healthy: 0, wounded: 0 },
       );
   const record = async () => {
+    const objectives = state.factionObjectives ?? [];
+    for (const objective of objectives) {
+      const signature = JSON.stringify(objective);
+      if (previousObjectives.get(objective.factionId) !== signature) {
+        objectiveHistory.push({ day: state.absoluteDay, ...structuredClone(objective) });
+        previousObjectives.set(objective.factionId, signature);
+      }
+    }
+    for (const factionId of previousObjectives.keys())
+      if (!objectives.some((objective) => objective.factionId === factionId)) {
+        objectiveHistory.push({ day: state.absoluteDay, factionId, removed: true });
+        previousObjectives.delete(factionId);
+      }
+    for (const order of state.requisitions.filter((order) => order.factionId !== player)) {
+      const journeys = state.journeys.filter(
+        (journey) =>
+          journey.id === order.journeyId ||
+          (order.journeyId && journey.id.startsWith(`${order.journeyId}:`)),
+      );
+      const signature = JSON.stringify([order.status, journeys.map((j) => [j.id, j.status])]);
+      if (previousSupport.get(order.id) !== signature) {
+        supportHistory.push({
+          day: state.absoluteDay,
+          order: structuredClone(order),
+          journeys: structuredClone(journeys),
+        });
+        previousSupport.set(order.id, signature);
+      }
+    }
     for (const city of state.cities)
       if (city.factionId !== ownership.get(city.id)) {
         events.push({
@@ -138,7 +196,7 @@ try {
     if (state.absoluteDay % 30 === 0) await snapshot(`day-${state.absoluteDay}`);
   };
   await record();
-  while (state.absoluteDay < 360 && state.phase !== 'finished') {
+  while (state.absoluteDay < days && state.phase !== 'finished') {
     for (const event of state.events.filter(
       (event) => !event.acknowledged && event.absoluteDay <= state.absoluteDay,
     )) {
@@ -184,7 +242,7 @@ try {
       state = result.state;
     }
     await record();
-    if (++steps > 3600) throw new Error('Replay stalled.');
+    if (++steps > days * 10) throw new Error('Replay stalled.');
   }
   await snapshot('final');
   const after = await simulationFingerprint(root, configuration);
@@ -197,6 +255,9 @@ try {
     phase: state.phase,
     winner: state.winnerFactionId,
     owned: state.cities.filter((c) => c.factionId === player).map((c) => c.id),
+    decisions,
+    objectiveHistory,
+    supportHistory,
     events,
     snapshots: [...snapshots],
   };
