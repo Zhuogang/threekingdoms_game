@@ -2,6 +2,8 @@
 
 Status: **not performed**. This is the review packet for the remaining [release gates](../implementation.md#54-human-and-release-checks), not validation evidence. Automated results and known tradeoffs are in the [implementation ledger](README.md#v04-09-integration-evaluation-in-progress).
 
+On October 29, 2026, the user confirmed that no player-session, low-end-device or artwork-review results were available. These gates remain pending; completed automated checks do not fill their result records.
+
 ## Build and preserve saves
 
 Use the `v0.4` branch and record `git rev-parse HEAD` in each session record. Run `npm run build`, then `npm run preview`; open the local address printed by Vite. Use the production build for these sessions. The package/title and compatible save envelope still carry v0.3 identifiers while release acceptance is pending.

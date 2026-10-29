@@ -442,16 +442,18 @@ Steps 3 and 4 can proceed in parallel after shared forecasts are settled. Assign
 
 ### Definition of done
 
-- [ ] Reproduced legality, status, ration, calendar, and dominated-action problems have regressions and fixes.
-- [ ] Tactical choices compare the best legal alternatives, including meaningful movement and preservation.
-- [ ] Campaigns consider viability, party size, home defense, and post-action provisions.
-- [ ] Governors use correct deadlines and shared effects while preserving budgets and authority.
-- [ ] Each NPC faction can maintain, progress, and cancel one bounded objective through existing actions.
-- [ ] Traces observe actual choices, fingerprints identify the real rules, and missing data stays explicit.
-- [ ] Save/reload, invalid-command atomicity, conservation, and deterministic continuation remain intact.
-- [ ] Core tests, affected browser/save flows, build, performance, and staged paired comparisons pass their declared scope.
+Checked items refer to the implemented behavior and scoped evidence in the [ticket ledger](v0.4/README.md), not release approval. The remaining player and hardware checks are recorded in the [validation packet](v0.4/player-validation.md); artwork disposition also remains pending.
+
+- [x] Reproduced legality, status, ration, calendar, and dominated-action problems have regressions and fixes.
+- [x] Tactical choices compare the best legal alternatives, including meaningful movement and preservation.
+- [x] Campaigns consider viability, party size, home defense, and post-action provisions.
+- [x] Governors use correct deadlines and shared effects while preserving budgets and authority.
+- [x] Each NPC faction can maintain, progress, and cancel one bounded objective through existing actions.
+- [x] Traces observe actual choices, fingerprints identify the real rules, and missing data stays explicit.
+- [x] Save/reload, invalid-command atomicity, conservation, and deterministic continuation remain intact.
+- [x] Core tests, affected browser/save flows, build, performance, and staged paired comparisons pass their declared scope.
 - [ ] Player sessions assess intentional behavior, fairness, pacing, and counterplay; low-end testing is recorded separately.
-- [ ] Current documentation states implemented behavior and remaining limits without rewriting historical evidence.
+- [x] Current documentation states implemented behavior and remaining limits without rewriting historical evidence.
 
 **Release goal:** the same game world offers stronger opposition, more credible preparation, better tactical trades, and rules the player can reason about.
 
