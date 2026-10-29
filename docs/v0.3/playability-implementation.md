@@ -77,4 +77,4 @@ Executed locally on October 22, 2026:
 
 The local `v0.2-final` tag preserves the starting checkout. No push, pull request or remote CI run was made. Human gates and remote publication are not implied by local automated results.
 
-Remaining acceptance: run the [fresh-player script](first-hour-playtest.md), record the four human twelve-month sessions and the actual low-end hardware check from [next steps](../next-steps.md), and approve the artwork before replacing README images. These require a player or the specified hardware; the fixtures, automation and captures prepare those checks without claiming their results.
+Remaining acceptance: run the [fresh-player script](first-hour-playtest.md), record the four human twelve-month sessions and the actual low-end hardware check from [next steps](next-steps.md), and approve the artwork before replacing README images. These require a player or the specified hardware; the fixtures, automation and captures prepare those checks without claiming their results.

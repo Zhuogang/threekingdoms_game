@@ -2,7 +2,7 @@
 
 > Dated implementation/design record. Later work-point, group-action, appointment and ordinary-transfer rules are maintained in the [current guide](player-guide.md) and [governance reference](03-governors-and-authority.md). Earlier constraints and measurements below describe their own stage.
 
-Written October 22, 2026 on branch `hegemony_of_the_three_kindoms_v0.3`. This plan follows a hands-on play session and a source review. It adds new scoped tasks; it does not reopen the completed RV01–RV10 work. [Current status](implementation-status.md) · [Open items before this plan](../next-steps.md#open-now) · [Decisions D1–D11](00-decisions-and-contracts.md).
+Written October 22, 2026 on branch `hegemony_of_the_three_kindoms_v0.3`. This plan follows a hands-on play session and a source review. It adds new scoped tasks; it does not reopen the completed RV01–RV10 work. [Current status](implementation-status.md) · [Open items before this plan](next-steps.md#open-now) · [Decisions D1–D11](00-decisions-and-contracts.md).
 
 Implementation and executed evidence: [playability implementation ledger](playability-implementation.md). Fresh-player, actual low-end hardware and artwork acceptance remain player-owned gates.
 
@@ -352,7 +352,7 @@ A checklist of small fixes. Some become trivial once ST-03 lands:
 
 ### GP-08 — Development cap mismatch
 
-This is the existing V/I/Q item in [next steps](../next-steps.md#open-now): starting farming and commerce of 220–380 against a manual cap of 100. Scope and acceptance are unchanged.
+This is the existing V/I/Q item in [next steps](next-steps.md#open-now): starting farming and commerce of 220–380 against a manual cap of 100. Scope and acceptance are unchanged.
 
 ### GP-09 — Explain capital work points
 
@@ -368,7 +368,7 @@ This is the existing V/I/Q item in [next steps](../next-steps.md#open-now): star
 
 ## M5 — Validation
 
-- **QA-01 First-hour playtest script.** A fresh player, with no Wiki, plays Cao Cao for two campaign months. Pass if they capture or seriously contest one city, never reach a state where nothing can be done, and can explain every pause. Record using the existing [player test record](../next-steps.md#player-test-record).
+- **QA-01 First-hour playtest script.** A fresh player, with no Wiki, plays Cao Cao for two campaign months. Pass if they capture or seriously contest one city, never reach a state where nothing can be done, and can explain every pause. Record using the existing [player test record](next-steps.md#player-test-record).
 - **QA-02 Screen baseline captures.** Start, campaign, city tabs, order builder, battle and aftermath screens, in EN and ZH, at 390, 1366 and 1920 px. Replaces the README images once approved.
 - **QA-03 Full regression, then the existing player gates.** Run the unit, browser, production, performance, format and portrait checks. Then run the four 12-month sessions and the low-end check from `next-steps.md`. They are more useful after M1–M4 than before.
 

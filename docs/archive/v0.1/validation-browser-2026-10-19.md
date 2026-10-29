@@ -17,7 +17,7 @@ human usability acceptance.
 
 ## Measured display results
 
-The [complete measured matrix](../../validation-evidence/display-metrics.json) retains both languages,
+The [complete measured matrix](validation-evidence/display-metrics.json) retains both languages,
 every preset, the canvas size, board bounds, and rendered font targets. Values below are CSS
 pixels after camera transforms at 100% browser zoom.
 

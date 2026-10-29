@@ -1,5 +1,7 @@
 # v0.3：每日战役、太守自治与水墨战场
 
+**Version scope / 版本范围：** v0.3 is the playable baseline and this directory preserves its player/developer guides, plans, acceptance and evidence. Active development now follows the [v0.4 implementation plan](../implementation.md). “Current” in these records means the v0.3 snapshot on the stated date; completed v0.3 task IDs and historical publication deferrals do not describe v0.4 work.
+
 文档核对：**2026-10-28，当前工作区**。这是可本地游玩的候选版，人工长期平衡试玩、真实低端机和美术批准仍未完成。旧记录中的提交号、测试数量和阶段限制只适用于各自日期。
 
 ## 从这里开始
@@ -10,7 +12,7 @@
 | 实际操作与规则             | [中文玩法指南](player-guide.md#中文玩法指南) / [English player guide](player-guide.md#english-player-guide) |
 | 最近改动与范围             | [版本说明 / Release notes](release-notes.md)                                                                |
 | 实现与验证状态             | [当前状态](implementation-status.md)                                                                        |
-| 下一步与反馈               | [当前待办](../next-steps.md)、[首次试玩脚本](first-hour-playtest.md)                                        |
+| 下一步与反馈               | [当前待办](next-steps.md)、[首次试玩脚本](first-hour-playtest.md)                                           |
 | 修改代码                   | [Developer guide](development.md)、[维护接续](implementation-plan.md)                                       |
 
 ## 当前可玩内容
@@ -48,6 +50,6 @@ These describe the current implementation. Dated plans preserve earlier decision
 
 The [playability ledger](playability-implementation.md), [battlefield plan](08-battlefield-canvas-plan.md), [wounded design](09-wounded-retreat-and-captivity-design.md), [wounded implementation](10-wounded-system-implementation-plan.md), [display changes](11-battle-display-and-camp-removal.md), [roster plan](12-officer-roster-expansion-plan.md) and [roster data](13-officer-roster-data.md) retain their dated scope. [Earlier design briefs](history/README.md) and [versioned archives](../archive/README.md) are historical references.
 
-See [current status](implementation-status.md) for validation and [next steps](../next-steps.md) for open acceptance. Automated checks do not replace long player campaigns, physical low-end hardware testing or art approval. The accepted historical narrow-bot progression miss is not a human win-rate claim. Push, PR and remote CI remain deferred.
+See [v0.3 status](implementation-status.md) for validation and [remaining acceptance](next-steps.md) for the v0.3 handoff. Automated checks do not replace long player campaigns, physical low-end hardware testing or art approval. The accepted historical narrow-bot progression miss is not a human win-rate claim.
 
 [October 28 documentation audit](documentation-audit-2026-10-28.md) records the current cleanup and checks.

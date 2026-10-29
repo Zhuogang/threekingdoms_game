@@ -1,6 +1,6 @@
 # v0.2 completion and deferred release decisions (historical)
 
-> Archived October 22, 2026. v0.2 deferrals and balance exceptions apply to that version only. See the [current next steps](../../next-steps.md).
+> Archived October 22, 2026. v0.2 deferrals and balance exceptions apply to that version only. See the [current development plan](../../implementation.md).
 
 Status on October 20, 2026, branch `hegemony_of_the_three_kindoms_v0.2` (formerly `v0.2`): implementation and design decisions are complete; integrated verification is recorded in [v0.2-validation.md](v0.2-validation.md). This checklist also tracks the release action and v0.3 proposals. It replaces the plan sections of [the v0.2 review](v0.2-review.md); that review keeps the history and detailed task cards (R1–R8). [v0.2-summary.md](v0.2-summary.md) describes the result.
 

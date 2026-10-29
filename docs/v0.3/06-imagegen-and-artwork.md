@@ -42,4 +42,4 @@ The active China-wide painting, city art, battlefield canvases and terrain rules
 5. Update source/output references, prompt intent, dimensions, alpha, bytes/hash, manifest and provenance together. Keep `draft` until the player approves the integrated rendering; record the precise approved scope.
 6. Measure runtime download/decode/draw behavior on the actual low-end machine. Do not substitute file decoding or simulated CPU throttling for the requested real-device check.
 
-Do not launch another generation batch just because an old design brief lists variants. Player-directed revisions and any expansion should be scoped first. [Open gates](../next-steps.md).
+Do not launch another generation batch just because an old design brief lists variants. Player-directed revisions and any expansion should be scoped first. [Open gates](next-steps.md).

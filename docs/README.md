@@ -1,30 +1,31 @@
 # Documentation
 
-Updated October 28, 2026 against the current working tree. **v0.3 is the active game.** This pass updates documentation; dated implementation/evidence records retain their original source IDs and measurements.
+Updated October 29, 2026. **v0.4 is the active development target; v0.3 remains the playable baseline.** The [v0.4 implementation plan](implementation.md) is the source of truth for new work. No v0.4 implementation or release validation is claimed by this reorganization.
 
-## For players
+## Start v0.4 work
 
-| Read                                                | Purpose                                                                                 |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [Project README](../README.md)                      | Install, launch, version identity, features and screenshots.                            |
-| [v0.3 overview](v0.3/README.md)                     | Scope and navigation in Chinese/English.                                                |
-| [Player guide / 中英玩法指南](v0.3/player-guide.md) | First campaign, governors, economy, weapons, units, tactics, water, controls and saves. |
-| [v0.3 release notes](v0.3/release-notes.md)         | New systems, inherited features, completed repairs and exclusions.                      |
-| [Current status](v0.3/implementation-status.md)     | Implemented work, recorded tests and remaining human gates.                             |
-| [Next steps](next-steps.md)                         | Only current-version open work and how to report playtests.                             |
+Read the [scope](implementation.md#1-direction-for-v04), establish [V04-00 decision fixtures and traces](implementation.md#v04-00--establish-trustworthy-decision-evidence), then follow the [work order](implementation.md#7-handoff-and-completion-checklist). Correct legality, food/calendar forecasts, status lifetime and the dominated governor action before policy tuning or persistent objectives. The plan contains the acceptance checklist and [evaluation/release gates](implementation.md#5-evaluation-protocol-and-release-gates); there is no separate root backlog to keep in sync.
 
-## For contributors
+The existing [developer guide](v0.3/development.md) and [system references](v0.3/README.md#system-references) explain the v0.3 code that v0.4 builds on. Their completed tasks and test totals are historical baseline records, not v0.4 completion evidence. Runtime code remains under `src/v03/` until an implementation change requires otherwise.
 
-Start with the [developer guide](v0.3/development.md), then the [decisions/contracts](v0.3/00-decisions-and-contracts.md) and relevant [system reference](v0.3/README.md#system-references). Current maintenance handoff is in the [implementation plan](v0.3/implementation-plan.md). The [RV completion ledger](v0.3/playability-review-and-todo.md#rv-completion-ledger) retains task acceptance history.
+## Documentation layout
 
-## Evidence, art and history
+| Location                               | Scope                                                                                                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [implementation.md](implementation.md) | Canonical v0.4 plan, tickets V04-00–V04-09, work order and release gates; formerly `docs/improvement.md`.                                            |
+| [v0.3/](v0.3/README.md)                | Existing gameplay/developer references, release notes, plans, remaining acceptance, artwork records and evidence.                                    |
+| [archive/](archive/README.md)          | v0.1/v0.2 documents and original design studies. v0.1 diagnostic and display collections now live with that version.                                 |
+| [assets/](assets/README.md)            | Shared asset provenance, portrait sources and older visual records. Stable paths are retained because manifests and generation tools reference them. |
+| [images/](images/)                     | Shared README screenshots and historical captures; each retains its original version/date.                                                           |
 
-- [Current implementation and validation](v0.3/implementation-status.md): latest recorded scope and checks. [RV screenshots and checks](v0.3/evidence/rv-implementation-2026-10-21/README.md) describe the October 21 candidate.
-- [Campaign diagnostic evidence](v0.3/evidence/README.md): generation-time fingerprints, rejected balance trials and the accepted diagnostic miss.
-- [Art status and revision workflow](v0.3/06-imagegen-and-artwork.md), [manifest](v0.3/assets/manifest.json), [provenance](v0.3/assets/provenance.md): integrated draft assets and review boundaries.
-- [Shared/legacy asset records](assets/README.md): portrait provenance and older visual work, with their version scope.
-- [v0.3 history](v0.3/history/README.md): initial audit, original design briefs and superseded planning snapshots. Findings there are dated observations, not automatically current defects.
-- [v0.1/v0.2 archive](archive/README.md): previous rules, implementation guides, tests, plans and version-specific deferrals.
-- [October 28 documentation audit](v0.3/documentation-audit-2026-10-28.md): current rules, cleanup and link checks. The [October 22 audit](v0.3/documentation-audit-2026-10-22.md) retains the earlier reorganization.
+The old root implementation entry and next-steps checklist now live at [v0.3/implementation.md](v0.3/implementation.md) and [v0.3/next-steps.md](v0.3/next-steps.md). Existing v0.3 documents remain together rather than moving a second time into `archive/`. Their dated claims and historical publication deferrals apply to their original snapshots.
 
-Historical evidence JSON, screenshots, hashes and prompt/source records are retained in place. `ai-diagnostics/` and `validation-evidence/` are old measurement collections; v0.3 evidence lives under `v0.3/evidence/`. New working output normally belongs in ignored `.artifacts/`.
+Keep new v0.4 planning in the canonical plan. Add `v0.4/` when there are implemented-system references or retained evidence to store; use ignored `.artifacts/` for working output. Keep older evidence, hashes and source records intact. Player sessions, real low-end hardware checks and final art approval remain outstanding; archiving a checklist does not complete it.
+
+## Play the existing game
+
+- [Project README](../README.md): install, launch, gameplay and screenshots.
+- [Player guide / 中英玩法指南](v0.3/player-guide.md): campaign, city management, officers, battles, controls and saves.
+- [v0.3 release notes](v0.3/release-notes.md) and [implementation status](v0.3/implementation-status.md): delivered scope and recorded validation.
+- [Remaining v0.3 acceptance](v0.3/next-steps.md): player/hardware/art checks and the reusable player test record.
+- [v0.3 history](v0.3/history/README.md) and [diagnostic evidence](v0.3/evidence/README.md): dated decisions, measurements and limitations.

@@ -30,4 +30,4 @@ The [campaign evidence](evidence/README.md) retains generation-time fingerprints
 
 ## Still open
 
-Four player sessions (12 months and three manual battles each), a real low-end-machine check, and specific draft-art revision/approval. Geography retains stated research limits. Local CI configuration is not evidence of remote CI: push/PR/remote CI remain deferred. See [next steps](../next-steps.md) for the current action list and [status](implementation-status.md) for the acceptance boundary.
+Four player sessions (12 months and three manual battles each), a real low-end-machine check, and specific draft-art revision/approval. Geography retains stated research limits. Local CI configuration is not evidence of remote CI: push/PR/remote CI remain deferred. See [next steps](next-steps.md) for the current action list and [status](implementation-status.md) for the acceptance boundary.

@@ -145,7 +145,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 | 地图部队很小/看不全 | 开战时镜头已对准己方部队；Fit 看全图，再缩放或用 Unit 聚焦。                       |
 | 战绩不容易扩大      | 当前战略平衡仍有限；不要把诊断机器人结果当作个人胜率。记录实际体验供下一轮修订。   |
 
-提交问题时附剧本/势力、日期、语言、浏览器/视口、导出存档、复现步骤和预期/实际结果。[玩家测试记录模板](../next-steps.md#player-test-record)。素材仍是草稿；指出具体场景、缩放和遮挡问题有助于定向修改。
+提交问题时附剧本/势力、日期、语言、浏览器/视口、导出存档、复现步骤和预期/实际结果。[玩家测试记录模板](next-steps.md#player-test-record)。素材仍是草稿；指出具体场景、缩放和遮挡问题有助于定向修改。
 
 ## English player guide
 
@@ -268,4 +268,4 @@ Autonomous cities also allow whole-contingent returns without a work point. Retu
 
 If time stops, inspect due reports and unfinished player battle submissions. If a march is empty, check whole-officer strength, garrison, food, available officers, reserved stock and route. If recruitment seems ineffective, assign reserve soldiers. If a governor has not changed, check travel and the month boundary. Fit before zooming when a map is confusing.
 
-The candidate's strategic pacing and artwork still need player review. Report scenario/house, game date, locale, browser/viewport, exported save and reproduction steps using the [test record](../next-steps.md#player-test-record). Four long sessions, real low-end hardware and draft-art approval remain open; automated diagnostics are not a player win-rate claim.
+The candidate's strategic pacing and artwork still need player review. Report scenario/house, game date, locale, browser/viewport, exported save and reproduction steps using the [test record](next-steps.md#player-test-record). Four long sessions, real low-end hardware and draft-art approval remain open; automated diagnostics are not a player win-rate claim.

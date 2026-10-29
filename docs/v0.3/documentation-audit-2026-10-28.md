@@ -17,7 +17,7 @@ Authoritative checks used [city actions](../../src/v03/governance/city-actions.t
 
 - README is a current launch/feature/recovery entry point; obsolete commit pinning, staffing budgets, troop-free transfers, development warnings and duplicated dated updates were removed.
 - The bilingual player guide keeps group actions with city management, separates ordinary relocation from governor handover, and provides a compact English action table. Developer and system references use current sources and scripts.
-- Status now leads with current delivery and validation. Earlier stage counts remain dated. Completed development repairs were removed from the open-work table; current acceptance stays in [next steps](../next-steps.md).
+- Status now leads with current delivery and validation. Earlier stage counts remain dated. Completed development repairs were removed from the open-work table; current acceptance stays in [next steps](next-steps.md).
 - Superseded plans explicitly defer to current rules. Missing retired/optional source references in archives are preserved as historical paths rather than broken file links. Evidence JSON, screenshots and recorded hashes were not rewritten.
 
 ## Checks and boundaries
@@ -27,7 +27,7 @@ Authoritative checks used [city actions](../../src/v03/governance/city-actions.t
 - The earlier October 28 implementation checks covered six ordinary-transfer browser cases, two governor-transfer cases and four multi-battle recovery cases across Chinese/English, including narrow layouts and reload. Those were focused runs; this documentation pass does not claim a new full browser/production or hardware run.
 - `npm run build`, Prettier checks for all changed Markdown/in-game help, and `git diff --check` passed. Old build sizes, timings, art counts and RV totals in dated evidence are not current-tree measurements.
 
-Long player sessions, actual low-end hardware testing and final artwork approval remain open. Push, PR and remote CI remain deferred. [Current status](implementation-status.md) and [next steps](../next-steps.md) retain those acceptance boundaries.
+Long player sessions, actual low-end hardware testing and final artwork approval remain open. Push, PR and remote CI remain deferred. [Current status](implementation-status.md) and [next steps](next-steps.md) retain those acceptance boundaries.
 
 ## Runtime-view correction
 

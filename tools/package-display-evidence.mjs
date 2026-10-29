@@ -52,9 +52,9 @@ const evidence = {
     'Playwright map metrics after rendered camera transforms; assertions plus actual pointer tests and screenshots in tests/e2e/improvements.spec.ts.',
   cases,
 };
-await mkdir('docs/validation-evidence', { recursive: true });
+await mkdir('docs/archive/v0.1/validation-evidence', { recursive: true });
 await writeFile(
-  'docs/validation-evidence/display-metrics.json',
+  'docs/archive/v0.1/validation-evidence/display-metrics.json',
   JSON.stringify(evidence, null, 2) + '\n',
 );
 await copyFile(

@@ -73,9 +73,9 @@ only its original Balanced policy.
 
 Durable raw per-run evidence:
 
-- [Pre-change baseline: 60 runs](../../ai-diagnostics/baseline.json)
-- [Initial proposed presets: 180 runs](../../ai-diagnostics/initial-presets.json)
-- [Final tuned presets: 180 runs](../../ai-diagnostics/final-presets.json)
+- [Pre-change baseline: 60 runs](ai-diagnostics/baseline.json)
+- [Initial proposed presets: 180 runs](ai-diagnostics/initial-presets.json)
+- [Final tuned presets: 180 runs](ai-diagnostics/final-presets.json)
 
 ## Tuning decision
 

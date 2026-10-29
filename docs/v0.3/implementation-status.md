@@ -9,7 +9,7 @@ Checked against the working tree, including the recent noncombat and battle-flow
 - Recent focused implementation browser checks cover six ordinary-transfer cases, two governor-transfer cases and four multi-battle recovery cases across EN/ZH. These were targeted runs, not a fresh full browser/production/hardware certification. Build, UI lint and changed-file formatting passed during implementation.
 - Still open: long player campaigns, real low-end hardware testing and final art approval. Push/PR/remote CI remain deferred.
 
-[Current rules](player-guide.md) · [Release notes](release-notes.md) · [Open work](../next-steps.md)
+[Current rules](player-guide.md) · [Release notes](release-notes.md) · [Open work](next-steps.md)
 
 ## Dated implementation milestones
 
@@ -93,7 +93,7 @@ R1–R4 已完成，R5 尚未开始。新增仅含 98 人身份与 128／256px �
 
 伤兵机制 W0–W6 已实现，W7 自动验证及三组机器短回放完成；实施后边界复核也已完成。整编绕过、微量断粮、日末击溃、俘虏粮债、等待改道、中立供粮及快照关联已修复，新增 10 个回归用例。当前全量 465 项单元／集成、本轮 12 项相关中英浏览器、构建、UI、格式和本地文件链接检查通过。首轮 103 个浏览器分批证据与试玩存档保留在[首轮记录](evidence/wounded-system-2026-10-26/README.md)，最新修复和范围见[复核记录](evidence/wounded-review-2026-10-26.md)及[分阶段进度](10-wounded-system-implementation-plan.md)。新存档仍为 `personnelSchema: 1`，旧档可原文导出，不迁移。设计参数未改，长期人工平衡和真实低端机验收仍待执行；下文保留历史版本证据。
 
-The scope below is maintained against the October 28 working tree. Dated validation sections refer to their original candidates. **Core implementation, F01–F08 and RV01–RV10 are complete with recorded automated evidence.** This is a local playable candidate; human acceptance is not complete. [Features](release-notes.md) · [How to play](player-guide.md) · [Open work](../next-steps.md).
+The scope below is maintained against the October 28 working tree. Dated validation sections refer to their original candidates. **Core implementation, F01–F08 and RV01–RV10 are complete with recorded automated evidence.** This is a local playable candidate; human acceptance is not complete. [Features](release-notes.md) · [How to play](player-guide.md) · [Open work](next-steps.md).
 
 The October 23–25 battlefield redesign (P0–P7) is tracked in the [battlefield canvas plan](08-battlefield-canvas-plan.md). The subsequent October 22 playability/UI implementation is tracked in the [new implementation ledger](playability-implementation.md), including current automated results and unchanged human gates. The validation counts below describe the earlier RV candidate.
 
@@ -154,4 +154,4 @@ The final 24-run 96-month narrow-bot matrix recorded no selected-player eliminat
 - Specific art revision feedback, revised runtime review and approval. All generated v0.3 art remains draft.
 - Push, PR and remote CI remain explicitly deferred. Local configuration/passing local tests do not imply remote CI passed.
 
-The v0.2 human-gate deferral and earlier portrait/profile approvals apply only to that recorded scope. They do not waive these v0.3 gates. See [next steps and test record](../next-steps.md).
+The v0.2 human-gate deferral and earlier portrait/profile approvals apply only to that recorded scope. They do not waive these v0.3 gates. See [next steps and test record](next-steps.md).

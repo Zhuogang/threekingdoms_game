@@ -1,6 +1,10 @@
 # Earlier-version documentation
 
-Archived material explains earlier implementations and decisions. Its rules, test counts, branch names and waivers apply to the named version/date, not the active [v0.3 game](../v0.3/README.md). Records were reorganized October 22, 2026; bodies are retained with navigation rebased. Old source paths in prose identify their original context.
+Archived material explains earlier implementations and decisions. Its rules, test counts, branch names and waivers apply to the named version/date. Active development follows the [v0.4 implementation plan](../implementation.md); the playable baseline and its documentation remain in [v0.3/](../v0.3/README.md). Records were reorganized October 22, 2026 and navigation updated October 29; bodies retain their dated scope. Old source paths in prose identify their original context.
+
+## v0.3 baseline
+
+The [v0.3 collection](../v0.3/README.md) stays at its existing versioned path. It includes player/developer references, implementation plans, [remaining acceptance](../v0.3/next-steps.md), [evidence](../v0.3/evidence/README.md) and [earlier design history](../v0.3/history/README.md). These records support v0.4 development without defining its active backlog.
 
 ## v0.2
 
@@ -26,9 +30,11 @@ v0.2's human-playtest/low-end deferral and approved Ma Chao/profile images do no
 - [Rival-policy measurements](v0.1/ai-balance.md).
 - [Original roadmap](v0.1/roadmap.md).
 
+The original [AI diagnostic collection](v0.1/ai-diagnostics/) and [display metrics](v0.1/validation-evidence/display-metrics.json) moved here from the documentation root on October 29, 2026. Their contents and measurements are unchanged.
+
 ## Original architecture and source study
 
 - [BAYE web architecture proposal](design/architecture.md): original rebuild assumptions, not the current v0.3 architecture.
 - [BAYE source baseline](design/reference-baseline.md): historical source-reading notes. References to the optional `baye-fmj-app-main/` checkout are not bundled game dependencies or remotely verified links.
 
-Shared asset provenance and old visual records remain under [assets](../assets/README.md). Historical measurement JSON and screenshots remain in their existing directories; no result/hash was regenerated for this reorganization. The [v0.3 history](../v0.3/history/README.md) contains that version's earlier design/audit material.
+Shared asset provenance and old visual records remain under [assets](../assets/README.md); screenshots retain their existing paths. Other than the v0.1 collections listed above, evidence stays in place. No result/hash was regenerated for this reorganization.

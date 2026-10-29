@@ -1,4 +1,6 @@
-# Hegemony of the Three Kingdoms · v0.3
+# Hegemony of the Three Kingdoms
+
+**Development target: v0.4. Playable baseline: v0.3.** Start new work with the [v0.4 implementation plan](docs/implementation.md): coherent AI and trustworthy rules. The gameplay, saves, screenshots and validation records below describe v0.3; v0.4 implementation is not yet complete.
 
 A single-player Three Kingdoms strategy game with Chinese/English UI, a daily campaign, autonomous governors, travelling armies and field battles on 15 painted 48×32 maps. The game has two scenarios (190 and 200), six playable houses per scenario, 24 cities and a 98-officer catalog with scenario-specific availability and annual appearances.
 
@@ -73,7 +75,7 @@ npm run lint:ui
 npm run test:e2e
 ```
 
-The [developer guide](docs/v0.3/development.md) covers isolated browser-test ports, production subpaths, assets and save invariants. [Current status](docs/v0.3/implementation-status.md) distinguishes local automated checks from player acceptance; [next steps](docs/next-steps.md) lists the remaining work. Historical test counts and timings are kept with their dates, not presented as measurements of the latest tree.
+The [v0.4 implementation plan](docs/implementation.md) defines the active scope, work order and release gates. The [v0.3 developer guide](docs/v0.3/development.md) covers the existing runtime, isolated browser-test ports, production subpaths, assets and save invariants. [v0.3 status](docs/v0.3/implementation-status.md) distinguishes recorded automated checks from player acceptance; [remaining v0.3 acceptance](docs/v0.3/next-steps.md) preserves the previous handoff. Historical test counts and timings are kept with their dates, not presented as measurements of the latest tree.
 
 ## Attribution and history
 

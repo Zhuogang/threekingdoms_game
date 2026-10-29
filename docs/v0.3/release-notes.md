@@ -1,6 +1,6 @@
 # v0.3 release notes / 版本说明
 
-Local playable candidate. Documentation checked October 28, 2026 against the working tree. Dated sections below preserve their own validation scope. [How to play](player-guide.md) · [Status and tests](implementation-status.md) · [Open acceptance](../next-steps.md).
+Local playable candidate. Documentation checked October 28, 2026 against the working tree. Dated sections below preserve their own validation scope. [How to play](player-guide.md) · [Status and tests](implementation-status.md) · [Open acceptance](next-steps.md).
 
 ## October 28 gameplay and operation refinements
 

@@ -22,7 +22,7 @@ This pass edits Markdown and reorganizes historical Markdown only. It does not a
 ## Where things live
 
 - Player/product: root README, [v0.3 overview](README.md), [player guide](player-guide.md), [release notes](release-notes.md).
-- Current engineering: [developer guide](development.md), numbered references, [status](implementation-status.md), [handoff](implementation-plan.md), [current next steps](../next-steps.md).
+- Current engineering: [developer guide](development.md), numbered references, [status](implementation-status.md), [handoff](implementation-plan.md), [current next steps](next-steps.md).
 - v0.3 history: [index](history/README.md), original eight briefs, prior P01–P11 plan, initial `33ad2fc` audit and original proposal page.
 - Older games: [archive index](../archive/README.md), `archive/v0.1/`, `archive/v0.2/`, `archive/design/`.
 - Evidence/provenance: existing JSON/image/source paths preserved; [RV validation](evidence/rv-implementation-2026-10-21/README.md), [campaign diagnostics](evidence/README.md), [asset records](../assets/README.md).

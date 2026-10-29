@@ -16,7 +16,7 @@ Use a fresh browser profile, scenario 190, Cao Cao and the default manual battle
 10. From City affairs, open Transfer officers. Select multiple ordinary officers, review the destination/healthy/wounded/provisions preview, cancel once, then dispatch. Find the party in Marches & orders and verify arrival stations it without a governor appointment. Try group feast, reward and fine arms selection; verify unselected officers stay unchanged and an unaffordable group cannot partially execute.
 11. Save, reload, export, switch language, and resume. Confirm that no resources, officers, orders or battle submissions disappear or repeat.
 
-Pass only if the player captures or seriously contests a city, encounters no state in which every useful action is blocked, and can explain every pause without help. Record elapsed time, campaign dates, pauses, unexpected outcomes and the player's explanations in the [player test record](../next-steps.md#player-test-record).
+Pass only if the player captures or seriously contests a city, encounters no state in which every useful action is blocked, and can explain every pause without help. Record elapsed time, campaign dates, pauses, unexpected outcomes and the player's explanations in the [player test record](next-steps.md#player-test-record).
 
 The development Campaign menu provides `battle`, `rival-battle`, `ruler-captured`, `shortage` and `many-reports` fixtures for targeted follow-up. `?debug=1` exposes a frozen state snapshot and the real command boundary as `window.__V03_PLAYTEST__`. These facilities are excluded from production.
 
