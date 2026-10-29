@@ -6,7 +6,7 @@
 
 **Reviewed baseline:** `main` at [`86cd40e3f305f1ab24ee51a617365226d2953513`](https://github.com/Zhuogang/threekingdoms_game/tree/86cd40e3f305f1ab24ee51a617365226d2953513)
 
-**Status:** Active development plan from October 29, 2026. Implementation has not started; the playable baseline remains v0.3. This cleanup changes documentation and evidence paths only.
+**Status:** Active development plan from October 29, 2026. Implementation is in progress; the playable baseline remains v0.3. See the [ticket ledger and recorded evidence](v0.4/README.md) for actual progress and remaining acceptance.
 
 This is the canonical v0.4 plan, moved from `docs/improvement.md`. Start with [V04-00](#v04-00--establish-trustworthy-decision-evidence), then follow the [work order and completion checklist](#7-handoff-and-completion-checklist). The [v0.3 documentation](v0.3/README.md) describes the existing baseline; its plans, task IDs and recorded results retain their original scope. The [documentation index](README.md) explains the version layout.
 

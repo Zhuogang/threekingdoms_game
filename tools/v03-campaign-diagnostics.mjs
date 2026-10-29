@@ -1,41 +1,20 @@
 #!/usr/bin/env node
 
-import { createHash } from 'node:crypto';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createServer } from 'vite';
 import { aggregateResults, summarize } from './v03-campaign-diagnostics-helpers.mjs';
 import { executeNextAdjacentCampaignOrder } from './v03-campaign-bot.mjs';
+import { simulationFingerprint } from './simulation-fingerprint.mjs';
 
 const ROOT = process.cwd();
-const DEFAULT_OUTPUT = 'docs/v0.3/evidence/v03-campaign-bot-diagnostics-96m.json';
+const DEFAULT_OUTPUT = '.artifacts/v04/campaign-diagnostics.json';
 const FACTION_IDS = ['cao', 'liu', 'sun', 'yuan', 'dong', 'yan', 'ma'];
 const SCENARIO_IDS = ['divided-realm-190', 'guandu-200'];
 const RUNS = [
   { cohort: 'development', seedBase: 610301 },
   { cohort: 'held-out', seedBase: 970301 },
-];
-const SOURCE_FILES = [
-  'src/v03/engine.ts',
-  'src/v03/commands.ts',
-  'src/v03/initial-state.ts',
-  'src/v03/strategic-ai.ts',
-  'src/v03/calendar/index.ts',
-  'src/v03/calendar/day-resolution.ts',
-  'src/v03/battle/engine.ts',
-  'src/v03/battle/maps.ts',
-  'src/v03/geography/index.ts',
-  'src/v03/governance/autonomy.ts',
-  'src/v03/governance/city-actions.ts',
-  'src/v03/governance/appointments.ts',
-  'src/v03/governance/authority.ts',
-  'src/v03/governance/orders.ts',
-  'src/v03/governance/services.ts',
-  'src/v03/campaign/monthly-systems.ts',
-  'tools/v03-campaign-bot.mjs',
-  'tools/v03-campaign-diagnostics.mjs',
-  'tools/v03-campaign-diagnostics-helpers.mjs',
 ];
 
 function optionsFromArgs(args) {
@@ -45,17 +24,19 @@ function optionsFromArgs(args) {
     factions: [...FACTION_IDS],
     output: DEFAULT_OUTPUT,
     quick: false,
+    traceLimit: 200,
   };
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
     if (arg === '--quick') options.quick = true;
+    else if (arg === '--trace-limit') options.traceLimit = Number(args[++index]);
     else if (arg === '--months') options.months = Number(args[++index]);
     else if (arg === '--scenario') options.scenarios = [args[++index]];
     else if (arg === '--factions') options.factions = args[++index].split(',');
     else if (arg === '--output') options.output = args[++index];
     else if (arg === '--help') {
       console.log(
-        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--output path] [--quick]',
+        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--output path] [--trace-limit 200] [--quick]',
       );
       process.exit(0);
     } else throw new Error(`Unknown argument: ${arg}`);
@@ -71,37 +52,24 @@ function optionsFromArgs(args) {
     if (!SCENARIO_IDS.includes(scenario)) throw new Error(`Unknown scenario: ${scenario}`);
   for (const faction of options.factions)
     if (!FACTION_IDS.includes(faction)) throw new Error(`Unknown faction: ${faction}`);
+  if (
+    !Number.isSafeInteger(options.traceLimit) ||
+    options.traceLimit < 0 ||
+    options.traceLimit > 10_000
+  )
+    throw new Error('--trace-limit must be an integer from 0 to 10,000.');
   return options;
-}
-
-function hashBuffers(parts) {
-  const hash = createHash('sha256');
-  for (const [name, data] of parts) {
-    hash.update(name);
-    hash.update('\0');
-    hash.update(data);
-    hash.update('\0');
-  }
-  return hash.digest('hex');
-}
-
-async function fingerprint(files) {
-  const content = await Promise.all(
-    files.map(async (file) => [file, await readFile(resolve(ROOT, file))]),
-  );
-  return hashBuffers(content);
 }
 
 async function main() {
   const options = optionsFromArgs(process.argv.slice(2));
-  const sourceFingerprint = await fingerprint(SOURCE_FILES);
-  const configFingerprint = await fingerprint([
-    'src/v03/content/scenario.ts',
-    'src/v03/content/guandu.ts',
-    'src/v03/geography/index.ts',
-    'src/v03/battle/maps.ts',
-    'src/v03/calendar/index.ts',
-  ]);
+  const fingerprints = await simulationFingerprint(ROOT, {
+    months: options.months,
+    scenarios: options.scenarios,
+    factions: options.factions,
+    cohorts: RUNS,
+    policy: 'deterministic-adjacent-campaign-bot-v1',
+  });
   const server = await createServer({
     configFile: false,
     root: ROOT,
@@ -116,12 +84,14 @@ async function main() {
       { runBattleAiTurn },
       { scenarioById },
       { ROUTE_DEFINITIONS },
+      { createAiDecisionTrace, withAiDecisionTrace },
     ] = await Promise.all([
       server.ssrLoadModule('/src/v03/initial-state.ts'),
       server.ssrLoadModule('/src/v03/commands.ts'),
       server.ssrLoadModule('/src/v03/battle/engine.ts'),
       server.ssrLoadModule('/src/v03/content/scenario.ts'),
       server.ssrLoadModule('/src/v03/geography/index.ts'),
+      server.ssrLoadModule('/src/v03/ai/decision-trace.ts'),
     ]);
     const checkpoints = [...new Set([Math.min(48, options.months), options.months])];
     const results = [];
@@ -129,6 +99,7 @@ async function main() {
     const outputPath = resolve(ROOT, options.output);
     const saveReport = async (complete = false) => {
       const output = {
+        schemaVersion: 2,
         generatedAt: new Date().toISOString(),
         status: complete ? 'complete' : 'running',
         command: process.argv.slice(2),
@@ -147,7 +118,7 @@ async function main() {
           ],
           metricDefinitions: {
             battleDuration:
-              'Tactical battle day number at the checkpoint; raw per-battle values are retained.',
+              'Resolved-battle duration only; active-battle age is reported separately with raw records.',
             closeBattle:
               'Resolved battle with an absolute surviving-troop difference no greater than 10% of combined initial troops.',
             relativeStrength:
@@ -155,7 +126,7 @@ async function main() {
             longDistance:
               'Campaign route is multi-leg when the route snapshot includes an intermediate city; raw nominal route kilometres are retained.',
             governorIdle:
-              'Count only autonomous cities whose workMonthIndex matches the latest completed month; unobserved cities are kept separate.',
+              'Current ten-day work-period snapshots only; missing/stale periods remain unobserved. Cumulative work sums actual committed governor action events.',
             npcCampaigns:
               'Counts engine-created rival campaign journeys; capture, repulse, draw, and unresolved outcomes are separate.',
           },
@@ -180,18 +151,7 @@ async function main() {
           months: options.months,
           campaignCount: results.length,
         },
-        fingerprints: {
-          sourceFiles: SOURCE_FILES,
-          sourceSha256: sourceFingerprint,
-          configFiles: [
-            'src/v03/content/scenario.ts',
-            'src/v03/content/guandu.ts',
-            'src/v03/geography/index.ts',
-            'src/v03/battle/maps.ts',
-            'src/v03/calendar/index.ts',
-          ],
-          configSha256: configFingerprint,
-        },
+        fingerprints,
         aggregate: aggregateResults(results),
         results,
       };
@@ -211,6 +171,9 @@ async function main() {
       for (let factionIndex = 0; factionIndex < eligibleFactions.length; factionIndex++) {
         const factionId = eligibleFactions[factionIndex];
         for (const cohort of RUNS) {
+          const decisions = createAiDecisionTrace(options.traceLimit);
+          const observedCommand = (...args) =>
+            withAiDecisionTrace(decisions, () => executeV03Command(...args));
           let state = createV03Game(factionId, cohort.seedBase + factionIndex, scenarioId);
           const initialIndependentCityIds = state.cities
             .filter((city) => city.factionId === null)
@@ -230,7 +193,7 @@ async function main() {
             for (const event of state.events.filter(
               (entry) => !entry.acknowledged && entry.absoluteDay <= state.absoluteDay,
             )) {
-              const acknowledged = executeV03Command(state, {
+              const acknowledged = observedCommand(state, {
                 type: 'acknowledgeEvent',
                 eventId: event.id,
               });
@@ -245,7 +208,7 @@ async function main() {
               const action = executeNextAdjacentCampaignOrder(
                 state,
                 ROUTE_DEFINITIONS,
-                executeV03Command,
+                observedCommand,
               );
               state = action.state;
               bot.campaignCandidatesTried += action.candidatesTried;
@@ -263,7 +226,9 @@ async function main() {
             const battleIds = playerBattles.map((battle) => battle.id);
             for (const battle of playerBattles) {
               const side = battle.attackerFactionId === factionId ? 'attacker' : 'defender';
-              const tactical = runBattleAiTurn(battle.battleData, side);
+              const tactical = withAiDecisionTrace(decisions, () =>
+                runBattleAiTurn(battle.battleData, side),
+              );
               battle.battleData = tactical;
               battle.attackerFood = tactical.supplies.attacker;
               battle.defenderFood = tactical.supplies.defender;
@@ -271,7 +236,7 @@ async function main() {
             }
             if (battleIds.length > 0) {
               for (const battleId of battleIds) {
-                const completed = executeV03Command(state, { type: 'completeBattleDay', battleId });
+                const completed = observedCommand(state, { type: 'completeBattleDay', battleId });
                 if (!completed.ok)
                   throw new Error(
                     `${scenarioId}/${factionId}: battle day completion failed: ${completed.error}`,
@@ -279,7 +244,7 @@ async function main() {
                 state = completed.state;
               }
             } else {
-              const advanced = executeV03Command(state, { type: 'advance', days: 1 });
+              const advanced = observedCommand(state, { type: 'advance', days: 1 });
               if (!advanced.ok) throw new Error(`${scenarioId}/${factionId}: ${advanced.error}`);
               if (advanced.state.absoluteDay === state.absoluteDay) {
                 const pending = advanced.state.events.filter(
@@ -306,7 +271,13 @@ async function main() {
             steps++;
             const month = Math.floor(state.absoluteDay / 30);
             if (checkpoints.includes(month) && !months[month])
-              months[month] = summarize(state, factionId, month, initialIndependentCityIds);
+              months[month] = summarize(
+                state,
+                factionId,
+                month,
+                initialIndependentCityIds,
+                decisions,
+              );
             if (steps > targetDays * 10)
               throw new Error(
                 `${scenarioId}/${factionId} exceeded the daily progress safety limit.`,
@@ -314,7 +285,13 @@ async function main() {
           }
           const finalMonth = Math.min(options.months, Math.floor(state.absoluteDay / 30));
           if (!months[finalMonth])
-            months[finalMonth] = summarize(state, factionId, finalMonth, initialIndependentCityIds);
+            months[finalMonth] = summarize(
+              state,
+              factionId,
+              finalMonth,
+              initialIndependentCityIds,
+              decisions,
+            );
           results.push({
             scenarioId,
             factionId,
@@ -325,6 +302,7 @@ async function main() {
             stoppedEarly: state.phase === 'finished',
             finalPhase: state.phase,
             bot,
+            decisions,
             checkpoints: months,
           });
           console.log(

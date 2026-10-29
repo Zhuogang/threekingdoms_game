@@ -1,3 +1,4 @@
+import { recordAiDecision, type AiDecisionEvent } from '../ai/decision-trace';
 import { applyCombatDamage } from './experience';
 import { PERSONNEL_RULES } from '../campaign/personnel';
 import {
@@ -1062,6 +1063,30 @@ export function runBattleAiTurn(
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   const draft = structuredClone(state);
+  const trace = (
+    action: Extract<AiDecisionEvent, { kind: 'tactical' }>['action'],
+    unit?: TacticalBattleUnit,
+    target?: TacticalBattleUnit,
+    error?: string | null,
+  ) =>
+    recordAiDecision({
+      kind: 'tactical',
+      day: draft.day,
+      battleId: draft.id,
+      side,
+      unitId: unit?.id,
+      targetId: target?.id,
+      action,
+      status: error ? 'execution-rejected' : 'committed',
+      reason:
+        action === 'retreat'
+          ? 'opening-force-retreat'
+          : action === 'skip'
+            ? 'confused-activation'
+            : 'current-policy',
+      x: unit?.x,
+      y: unit?.y,
+    });
   if (checkImmediateOutcome(draft) || resolveRout(draft)) return draft;
   const current = livingUnits(draft, side).reduce((sum, unit) => sum + unit.troops, 0);
   const opening = draft.units
@@ -1080,6 +1105,7 @@ export function runBattleAiTurn(
       'log.retreat',
       { side, winner: otherSide(side) },
     );
+    trace('retreat');
     return draft;
   }
   const order = livingUnits(draft, side).sort((a, b) => {
@@ -1101,6 +1127,7 @@ export function runBattleAiTurn(
       append(draft, `${unit.name} loses its turn to confusion.`, 'log.confused', {
         unitId: unit.id,
       });
+      trace('skip', unit);
       continue;
     }
     const availableTarget = () =>
@@ -1122,16 +1149,21 @@ export function runBattleAiTurn(
     let target = availableTarget();
     let tactic = chooseAiTactic(draft, unit);
     if (tactic) {
-      performTactic(draft, unit, tactic.tactic, tactic.target);
+      const error = performTactic(draft, unit, tactic.tactic, tactic.target);
+      trace(tactic.tactic, unit, tactic.target, error);
       continue;
     }
     if (!target && !unit.moved) {
       const destination = chooseAiDestination(draft, unit);
-      if (destination) performMove(draft, unit, destination);
+      if (destination) {
+        const error = performMove(draft, unit, destination);
+        trace('move', unit, undefined, error);
+      }
       target = availableTarget();
       tactic = chooseAiTactic(draft, unit);
       if (tactic) {
-        performTactic(draft, unit, tactic.tactic, tactic.target);
+        const error = performTactic(draft, unit, tactic.tactic, tactic.target);
+        trace(tactic.tactic, unit, tactic.target, error);
         continue;
       }
     }
@@ -1140,10 +1172,12 @@ export function runBattleAiTurn(
       unit.acted = false;
       // Use the shared resolution path while allowing an AI-controlled side.
       performAttackForSide(draft, unit, target);
+      trace('attack', unit, target);
     } else {
       unit.moved = true;
       unit.acted = true;
       append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
+      trace('hold', unit);
     }
   }
   return draft;

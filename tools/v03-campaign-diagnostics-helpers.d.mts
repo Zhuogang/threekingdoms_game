@@ -68,6 +68,12 @@ export interface CampaignDiagnosticSummary extends CampaignDiagnosticCheckpoint 
       maximum: number | null;
       raw: Array<Record<string, unknown>>;
     };
+    activeAgeDays: {
+      unit: string;
+      median: number | null;
+      maximum: number | null;
+      raw: Array<Record<string, unknown>>;
+    };
     closeOutcomes: {
       definition: string;
       decidedBattles: number;
@@ -85,12 +91,15 @@ export interface CampaignDiagnosticSummary extends CampaignDiagnosticCheckpoint 
   };
   autonomy: {
     autonomousCities: number;
-    workMonthIndexExpected: number;
-    observedForLastSettlement: number;
+    workPeriodIndexExpected: number;
+    observedForCurrentPeriod: number;
     workedCities: number;
     idleCities: number;
     unobservedCities: number;
-    completedWorkPoints: number;
+    currentPeriodWorkPoints: number;
+    cumulativeWork:
+      | { status: 'not-observed'; reason: string }
+      | { status: 'observed'; actions: number; workPoints: number };
     coverageNote: string;
   };
 }
@@ -105,6 +114,7 @@ export function summarize(
       food: number;
       governanceMode?: string;
       workMonthIndex?: number;
+      workPeriodIndex?: number;
       workPointsUsed?: number;
     }>;
     factions: Array<{
@@ -139,7 +149,7 @@ export function summarize(
       targetCityId: string;
       proposedTroops: number;
       status: string;
-      journeyId?: string;
+      journeyId?: string | null;
     }>;
     journeys: Array<{
       id?: string;
@@ -161,6 +171,7 @@ export function summarize(
   factionId: string,
   month: number,
   initialIndependentCityIds?: string[],
+  trace?: { workByFaction: Record<string, { actions: number; workPoints: number }> } | null,
 ): CampaignDiagnosticSummary;
 
 export function aggregateResults(results: CampaignDiagnosticRun[]): {

@@ -9,7 +9,14 @@ function playerBattleMetrics(state, factionId) {
   const battles = (state.battles ?? []).filter(
     (battle) => battle.attackerFactionId === factionId || battle.defenderFactionId === factionId,
   );
-  const durationDays = battles.map((battle) => battle.battleData.day).filter(Number.isFinite);
+  const durationDays = battles
+    .filter((battle) => battle.resolved)
+    .map((battle) => battle.battleData.day)
+    .filter(Number.isFinite);
+  const activeAges = battles
+    .filter((battle) => battle.active)
+    .map((battle) => battle.battleData.day)
+    .filter(Number.isFinite);
   const records = battles.map((battle) => {
     const data = battle.battleData;
     const attacker = data.units.filter((unit) => unit.side === 'attacker');
@@ -38,7 +45,8 @@ function playerBattleMetrics(state, factionId) {
     return {
       battleId: battle.id,
       resolved: battle.resolved,
-      durationDays: data.day,
+      durationDays: battle.resolved ? data.day : null,
+      activeAgeDays: battle.active ? data.day : null,
       initialTroops: initial,
       survivingTroops: surviving,
       initialAttackerToDefenderRatio:
@@ -59,7 +67,13 @@ function playerBattleMetrics(state, factionId) {
       unit: 'tactical days',
       median: median(durationDays),
       maximum: durationDays.length ? Math.max(...durationDays) : null,
-      raw: records,
+      raw: records.filter((record) => record.resolved),
+    },
+    activeAgeDays: {
+      unit: 'tactical days',
+      median: median(activeAges),
+      maximum: activeAges.length ? Math.max(...activeAges) : null,
+      raw: records.filter((record) => !record.resolved),
     },
     closeOutcomes: {
       definition:
@@ -117,25 +131,32 @@ function playerCampaignAndSupplyMetrics(state, factionId) {
   };
 }
 
-function playerAutonomyMetrics(state, factionId) {
+function playerAutonomyMetrics(state, factionId, trace) {
   const cities = state.cities.filter(
     (city) => city.factionId === factionId && city.governanceMode !== 'ruler',
   );
-  // Monthly settlement applies work after the timeline has crossed into the
-  // new month, and city actions store that current index on the city.
-  const expectedWorkMonthIndex = state.monthIndex;
-  const observed = cities.filter((city) => city.workMonthIndex === expectedWorkMonthIndex);
+  const expectedPeriod = Math.floor(state.absoluteDay / 10);
+  const observed = cities.filter(
+    (city) => city.workMonthIndex === state.monthIndex && city.workPeriodIndex === expectedPeriod,
+  );
   const worked = observed.filter((city) => (city.workPointsUsed ?? 0) > 0);
   return {
     autonomousCities: cities.length,
-    workMonthIndexExpected: expectedWorkMonthIndex,
-    observedForLastSettlement: observed.length,
+    workPeriodIndexExpected: expectedPeriod,
+    observedForCurrentPeriod: observed.length,
     workedCities: worked.length,
     idleCities: observed.length - worked.length,
     unobservedCities: cities.length - observed.length,
-    completedWorkPoints: observed.reduce((sum, city) => sum + (city.workPointsUsed ?? 0), 0),
+    currentPeriodWorkPoints: observed.reduce((sum, city) => sum + (city.workPointsUsed ?? 0), 0),
+    cumulativeWork: trace
+      ? { status: 'observed', ...(trace.workByFaction[factionId] ?? { actions: 0, workPoints: 0 }) }
+      : {
+          status: 'not-observed',
+          reason:
+            'Use committed governor decision events; an endpoint work budget is not a cumulative counter.',
+        },
     coverageNote:
-      'Idle is counted only for autonomous cities whose workMonthIndex matches the most recent completed month; unobserved entries are not classified as idle.',
+      'Only explicit workMonthIndex/workPeriodIndex matching the current ten-day period is observed. Older or missing periods are unobserved, not idle. Cumulative work comes from actual committed-action traces.',
   };
 }
 
@@ -242,7 +263,7 @@ function rivalCampaignMetrics(state, selectedFactionId) {
   };
 }
 
-export function summarize(state, factionId, month, initialIndependentCityIds = []) {
+export function summarize(state, factionId, month, initialIndependentCityIds = [], trace = null) {
   const ownedCities = state.cities.filter((city) => city.factionId === factionId).length;
   const initialIndependentIds = new Set(initialIndependentCityIds);
   const independentCities = state.cities.filter((city) => initialIndependentIds.has(city.id));
@@ -292,7 +313,7 @@ export function summarize(state, factionId, month, initialIndependentCityIds = [
     battlesResolved: resolvedBattles,
     battles: playerBattleMetrics(state, factionId),
     logistics: playerCampaignAndSupplyMetrics(state, factionId),
-    autonomy: playerAutonomyMetrics(state, factionId),
+    autonomy: playerAutonomyMetrics(state, factionId, trace),
     campaignDirectives: {
       total: state.directives.length,
       dispatched: state.directives.filter((item) => item.status === 'dispatched').length,

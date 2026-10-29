@@ -254,6 +254,7 @@ describe('v0.3 campaign diagnostic outcome reporting', () => {
           food: 200,
           governanceMode: 'governor',
           workMonthIndex: 2,
+          workPeriodIndex: 6,
           workPointsUsed: 2,
         },
       ],
@@ -318,10 +319,10 @@ describe('v0.3 campaign diagnostic outcome reporting', () => {
     });
     expect(result.autonomy).toMatchObject({
       autonomousCities: 1,
-      observedForLastSettlement: 1,
+      observedForCurrentPeriod: 1,
       workedCities: 1,
       idleCities: 0,
-      completedWorkPoints: 2,
+      currentPeriodWorkPoints: 2,
     });
   });
 });

@@ -1,3 +1,4 @@
+import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
 import { isCityCommitted } from './governance/commitments';
 /**
  * Deterministic monthly rival campaign planning for v0.3.
@@ -252,12 +253,24 @@ function makeCandidate(
   defenderTroops: number,
   services: StrategicAiPlannerServices,
 ): Candidate | null {
+  const reject = (reason: CampaignDecisionReason) => {
+    recordAiDecision({
+      kind: 'campaign',
+      day: state.absoluteDay,
+      factionId,
+      sourceCityId,
+      targetCityId,
+      status: 'rejected',
+      reason,
+    });
+    return null;
+  };
   const source = state.cities.find((city) => city.id === sourceCityId);
-  if (!source || source.factionId !== factionId) return null;
+  if (!source || source.factionId !== factionId) return reject('source-busy');
 
   const routeId = routeIdBetween(sourceCityId as CityId, targetCityId as CityId);
   const routeDefinition = ROUTE_BY_ID.get(routeId);
-  if (!routeDefinition) return null;
+  if (!routeDefinition) return reject('no-route');
 
   const reservedTroops = reservedSourceTroops(state, sourceCityId);
   const troopLimit = Math.max(
@@ -265,7 +278,7 @@ function makeCandidate(
     source.garrisonTroops - reservedTroops - protectedMinimumGarrison(source.garrisonTroops),
   );
   const party = buildParty(state, factionId, sourceCityId, leaderOfficerId, troopLimit);
-  if (!party) return null;
+  if (!party) return reject('no-party');
 
   let route: OrderRoutePlan | null;
   try {
@@ -279,9 +292,9 @@ function makeCandidate(
       composition: party.composition,
     });
   } catch {
-    return null;
+    return reject('invalid-route');
   }
-  if (!validateRoute(route, routeId)) return null;
+  if (!validateRoute(route, routeId)) return reject('invalid-route');
 
   let supply: SupplyEstimate;
   try {
@@ -293,15 +306,26 @@ function makeCandidate(
       returnDays: route.estimatedDays,
     });
   } catch {
-    return null;
+    return reject('invalid-supply');
   }
   const availableFood = source.food - reservedSourceFood(state, sourceCityId);
-  if (
-    !Number.isSafeInteger(supply.totalFood) ||
-    supply.totalFood <= 0 ||
-    availableFood < supply.totalFood
-  )
-    return null;
+  if (!Number.isSafeInteger(supply.totalFood) || supply.totalFood <= 0)
+    return reject('invalid-supply');
+  recordAiDecision({
+    kind: 'campaign',
+    day: state.absoluteDay,
+    factionId,
+    sourceCityId,
+    targetCityId,
+    status: availableFood < supply.totalFood ? 'rejected' : 'eligible',
+    reason: availableFood < supply.totalFood ? 'unaffordable' : 'force-ratio-and-travel',
+    troops: party.troopCount,
+    defenderTroops,
+    food: supply.totalFood,
+    availableFood,
+    travelDays: route.estimatedDays,
+  });
+  if (availableFood < supply.totalFood) return null;
 
   return {
     factionId,
@@ -369,7 +393,17 @@ export function planStrategicRivalCampaigns(
     const candidates: Candidate[] = [];
 
     for (const source of ownedCities) {
-      if (isCityCommitted(state, source.id) || hasActiveSourceOrder(state, source.id)) continue;
+      if (isCityCommitted(state, source.id) || hasActiveSourceOrder(state, source.id)) {
+        recordAiDecision({
+          kind: 'campaign',
+          day: state.absoluteDay,
+          factionId: faction.id,
+          sourceCityId: source.id,
+          status: 'rejected',
+          reason: 'source-busy',
+        });
+        continue;
+      }
       for (const target of state.cities) {
         if (
           target.id === source.id ||
@@ -399,6 +433,14 @@ export function planStrategicRivalCampaigns(
       }
     }
 
+    if (!candidates.length)
+      recordAiDecision({
+        kind: 'campaign',
+        day: state.absoluteDay,
+        factionId: faction.id,
+        status: 'wait',
+        reason: 'no-eligible-campaign',
+      });
     candidates.sort(compareCandidates);
     const plannedSources = new Set<string>();
     let factionPlans = 0;
@@ -409,6 +451,19 @@ export function planStrategicRivalCampaigns(
       plannedSources.add(candidate.sourceCityId);
       plannedTargets.add(candidate.targetCityId);
       factionPlans++;
+      recordAiDecision({
+        kind: 'campaign',
+        day: state.absoluteDay,
+        factionId: faction.id,
+        sourceCityId: candidate.sourceCityId,
+        targetCityId: candidate.targetCityId,
+        status: 'selected',
+        reason: 'force-ratio-and-travel',
+        troops: candidate.proposedTroops,
+        defenderTroops: candidate.defenderTroops,
+        food: candidate.food,
+        travelDays: candidate.route.estimatedDays,
+      });
       result.push({
         factionId: candidate.factionId,
         sourceCityId: candidate.sourceCityId,

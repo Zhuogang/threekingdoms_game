@@ -1,3 +1,4 @@
+import { recordAiDecision } from './ai/decision-trace';
 import { recoverPersonnelDay } from './campaign/personnel-recovery';
 import { planOfficerDebuts } from './campaign/officer-lifecycle';
 import { isCityCommitted } from './governance/commitments';
@@ -1611,7 +1612,22 @@ function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
   // validates supply, routes and reserves from one snapshot.
   const plans = planStrategicRivalCampaigns(planningSnapshot);
   const assignedOfficerIds = new Set<string>();
-  for (const plan of plans) dispatchRivalCampaignPlan(state, plan, assignedOfficerIds);
+  for (const plan of plans) {
+    const committed = dispatchRivalCampaignPlan(state, plan, assignedOfficerIds);
+    recordAiDecision({
+      kind: 'campaign',
+      day: state.absoluteDay,
+      factionId: plan.factionId,
+      sourceCityId: plan.sourceCityId,
+      targetCityId: plan.targetCityId,
+      status: committed ? 'committed' : 'execution-rejected',
+      reason: 'dispatch-revalidation',
+      troops: plan.requestedTroops,
+      food: plan.food,
+      travelDays: plan.route.estimatedDays,
+      journeyId: committed ? state.journeys.at(-1)?.id : undefined,
+    });
+  }
 }
 
 function settleAutonomousCityWork(state: V03GameState, month: number) {
@@ -1630,6 +1646,16 @@ function settleAutonomousCityWork(state: V03GameState, month: number) {
       const plan = planGovernorMonthlyWork(state, city.id, month);
       const work = applyGovernorMonthlyWork(state, plan);
       if (!work.applied || !work.city) {
+        recordAiDecision({
+          kind: 'governor',
+          day: state.absoluteDay,
+          factionId: city.factionId!,
+          cityId: city.id,
+          action: plan.action,
+          workPoints: 0,
+          status: plan.action ? 'execution-rejected' : 'blocked',
+          reason: plan.action ? 'stale-plan' : plan.reasonCode,
+        });
         if (completed === 0) pushLog(state, `${city.name} autonomy: no work (${plan.reason})`);
         break;
       }
@@ -1646,6 +1672,16 @@ function settleAutonomousCityWork(state: V03GameState, month: number) {
       if (plan.action)
         governorActions.set(city.id, [...(governorActions.get(city.id) ?? []), plan.action]);
       completed++;
+      recordAiDecision({
+        kind: 'governor',
+        day: state.absoluteDay,
+        factionId: city.factionId!,
+        cityId: city.id,
+        action: plan.action,
+        workPoints: plan.workPoints,
+        status: 'committed',
+        reason: plan.reasonCode,
+      });
       pushLog(state, `${city.name} autonomy: ${plan.action} (${plan.reason})`);
     }
   }

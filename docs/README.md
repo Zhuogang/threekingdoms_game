@@ -1,6 +1,6 @@
 # Documentation
 
-Updated October 29, 2026. **v0.4 is the active development target; v0.3 remains the playable baseline.** The [v0.4 implementation plan](implementation.md) is the source of truth for new work. No v0.4 implementation or release validation is claimed by this reorganization.
+Updated October 29, 2026. **v0.4 is the active development target; v0.3 remains the playable baseline.** The [v0.4 implementation plan](implementation.md) is the source of truth for new work. The [v0.4 ticket ledger](v0.4/README.md) records implementation progress and validation; planned behavior is not a release claim.
 
 ## Start v0.4 work
 
@@ -20,7 +20,7 @@ The existing [developer guide](v0.3/development.md) and [system references](v0.3
 
 The old root implementation entry and next-steps checklist now live at [v0.3/implementation.md](v0.3/implementation.md) and [v0.3/next-steps.md](v0.3/next-steps.md). Existing v0.3 documents remain together rather than moving a second time into `archive/`. Their dated claims and historical publication deferrals apply to their original snapshots.
 
-Keep new v0.4 planning in the canonical plan. Add `v0.4/` when there are implemented-system references or retained evidence to store; use ignored `.artifacts/` for working output. Keep older evidence, hashes and source records intact. Player sessions, real low-end hardware checks and final art approval remain outstanding; archiving a checklist does not complete it.
+Keep new v0.4 planning in the canonical plan and implemented-system references/evidence under [v0.4/](v0.4/README.md); use ignored `.artifacts/` for working output. Keep older evidence, hashes and source records intact. Player sessions, real low-end hardware checks and final art approval remain outstanding; archiving a checklist does not complete it.
 
 ## Play the existing game
 
