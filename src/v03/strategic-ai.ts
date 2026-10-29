@@ -60,6 +60,17 @@ export interface StrategicRivalCampaignPlan {
   food: number;
 }
 
+/** Executable choices and measurable blockers, independent of developer tracing. */
+export interface StrategicCampaignOpportunity {
+  plan: StrategicRivalCampaignPlan;
+  reason: CampaignDecisionReason | null;
+  forceRatio: number;
+  forceDeficit: number;
+  foodDeficit: number;
+  foodTarget: number;
+  score: number;
+}
+
 export interface StrategicAiPlannerOptions {
   /** Override only for tests or host-specific route/ration services. */
   services?: StrategicAiPlannerServices;
@@ -195,6 +206,7 @@ function makeCandidate(
   party: OrderPartyPlan,
   services: StrategicAiPlannerServices,
   blocked: CampaignEvent[],
+  opportunities: StrategicCampaignOpportunity[],
 ): Candidate | null {
   const observe = (event: CampaignEvent) => {
     recordAiDecision(event);
@@ -250,24 +262,6 @@ function makeCandidate(
   const availableFood = source.food - committedCityStock(state, sourceCityId).food;
   if (!Number.isSafeInteger(supply.totalFood) || supply.totalFood <= 0)
     return reject('invalid-supply');
-  if (availableFood < supply.totalFood) {
-    observe({
-      kind: 'campaign',
-      day: state.absoluteDay,
-      factionId,
-      sourceCityId,
-      targetCityId,
-      status: 'rejected',
-      reason: 'unaffordable',
-      troops: party.troopCount,
-      defenderTroops,
-      food: supply.totalFood,
-      availableFood,
-      foodDeficit: supply.totalFood - availableFood,
-      travelDays: route.estimatedDays,
-    });
-    return null;
-  }
   const assessment = assessCampaignDeparture(
     state,
     sourceCityId,
@@ -286,31 +280,9 @@ function makeCandidate(
       party.troopCount / 10000 +
       route.estimatedDays / 30 +
       assessment.homeRisk * 0.5);
-  observe({
-    kind: 'campaign',
-    day: state.absoluteDay,
-    factionId,
-    sourceCityId,
-    targetCityId,
-    status: assessment.reason ? 'rejected' : 'eligible',
-    reason: assessment.reason ?? 'viable-campaign',
-    troops: party.troopCount,
-    defenderTroops,
-    officerIds: [...party.officerIds],
-    food: supply.totalFood,
-    availableFood,
-    travelDays: route.estimatedDays,
-    score,
-    forceRatio: assessment.matchup.ratio,
-    expectedLosses: assessment.matchup.expectedLosses,
-    homeProjectedFood: assessment.economy.projectedAvailable.food,
-    homeRisk: assessment.homeRisk,
-    forceDeficit: assessment.forceDeficit,
-    foodDeficit: assessment.foodDeficit,
-  });
-  if (assessment.reason) return null;
-
-  return {
+  const reason = availableFood < supply.totalFood ? 'unaffordable' : assessment.reason;
+  const foodDeficit = Math.max(0, supply.totalFood - availableFood, assessment.foodDeficit);
+  const plan: StrategicRivalCampaignPlan = {
     factionId,
     sourceCityId,
     targetCityId,
@@ -325,9 +297,42 @@ function makeCandidate(
     route,
     supply,
     food: supply.totalFood,
-    defenderTroops,
-    score,
   };
+  opportunities.push({
+    plan,
+    reason,
+    forceRatio: assessment.matchup.ratio,
+    forceDeficit: assessment.forceDeficit,
+    foodDeficit,
+    foodTarget: Math.max(
+      supply.totalFood,
+      availableFood - assessment.economy.projectedAvailable.food,
+    ),
+    score,
+  });
+  observe({
+    kind: 'campaign',
+    day: state.absoluteDay,
+    factionId,
+    sourceCityId,
+    targetCityId,
+    status: reason ? 'rejected' : 'eligible',
+    reason: reason ?? 'viable-campaign',
+    troops: party.troopCount,
+    defenderTroops,
+    officerIds: [...party.officerIds],
+    food: supply.totalFood,
+    availableFood,
+    travelDays: route.estimatedDays,
+    score,
+    forceRatio: assessment.matchup.ratio,
+    expectedLosses: assessment.matchup.expectedLosses,
+    homeProjectedFood: assessment.economy.projectedAvailable.food,
+    homeRisk: assessment.homeRisk,
+    forceDeficit: assessment.forceDeficit,
+    foodDeficit,
+  });
+  return reason ? null : { ...plan, defenderTroops, score };
 }
 
 function compareCandidates(a: Candidate, b: Candidate): number {
@@ -346,23 +351,25 @@ function compareCandidates(a: Candidate, b: Candidate): number {
  * considers independent cities, excludes friendly/occupied targets, and returns
  * a deterministic shortlist of three source/target options and three parties each.
  */
-export function planStrategicRivalCampaigns(
+export function reviewStrategicRivalCampaigns(
   state: Readonly<V03GameState>,
   options: StrategicAiPlannerOptions = {},
-): StrategicRivalCampaignPlan[] {
+): { plans: StrategicRivalCampaignPlan[]; opportunities: StrategicCampaignOpportunity[] } {
   if (
     state.phase === 'finished' ||
     !Number.isSafeInteger(state.absoluteDay) ||
     state.absoluteDay < 0
   )
-    return [];
+    return { plans: [], opportunities: [] };
   const maxPlansPerFaction = options.maxPlansPerFaction ?? 1;
-  if (!Number.isSafeInteger(maxPlansPerFaction) || maxPlansPerFaction < 1) return [];
+  if (!Number.isSafeInteger(maxPlansPerFaction) || maxPlansPerFaction < 1)
+    return { plans: [], opportunities: [] };
 
   const services = options.services ?? defaultPlannerServices;
   const busyTargets = busyCampaignTargets(state);
   const plannedTargets = new Set<string>();
   const result: StrategicRivalCampaignPlan[] = [];
+  const opportunities: StrategicCampaignOpportunity[] = [];
 
   const rivalFactions = state.factions
     .filter(
@@ -375,6 +382,15 @@ export function planStrategicRivalCampaigns(
     .sort((a, b) => compareIds(a.id, b.id));
 
   for (const faction of rivalFactions) {
+    const focus = state.factionObjectives?.find(
+      (objective) => objective.factionId === faction.id && objective.mode === 'prepare-conquest',
+    );
+    const preferred = (option: { sourceCityId: string; targetCityId: string }) =>
+      Boolean(
+        focus &&
+        focus.sourceCityId === option.sourceCityId &&
+        focus.targetCityId === option.targetCityId,
+      );
     const ownedCities = state.cities
       .filter((city) => city.factionId === faction.id)
       .sort((a, b) => compareIds(a.id, b.id));
@@ -467,6 +483,7 @@ export function planStrategicRivalCampaigns(
     }
     optionsToRank.sort(
       (a, b) =>
+        Number(preferred(b)) - Number(preferred(a)) ||
         a.defenderTroops / a.troopLimit - b.defenderTroops / b.troopLimit ||
         a.distance - b.distance ||
         compareIds(a.sourceCityId, b.sourceCityId) ||
@@ -487,6 +504,7 @@ export function planStrategicRivalCampaigns(
           party,
           services,
           blocked,
+          opportunities,
         );
         if (candidate) candidates.push(candidate);
       }
@@ -503,6 +521,9 @@ export function planStrategicRivalCampaigns(
         score: 0,
       });
     candidates.sort(compareCandidates);
+    const retained = candidates.find(preferred);
+    if (retained && retained.score >= candidates[0]!.score * 0.8)
+      candidates.unshift(...candidates.splice(candidates.indexOf(retained), 1));
     const plannedSources = new Set<string>();
     let factionPlans = 0;
     for (const candidate of candidates) {
@@ -545,5 +566,12 @@ export function planStrategicRivalCampaigns(
     }
   }
 
-  return result;
+  return { plans: result, opportunities };
+}
+
+export function planStrategicRivalCampaigns(
+  state: Readonly<V03GameState>,
+  options: StrategicAiPlannerOptions = {},
+): StrategicRivalCampaignPlan[] {
+  return reviewStrategicRivalCampaigns(state, options).plans;
 }

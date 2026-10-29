@@ -1,3 +1,4 @@
+import { reconcileFactionObjectives } from './ai/faction-objectives';
 import { marchArmy } from './governance/army';
 import { transferOfficers } from './governance/officer-transfer';
 import { applyCityPersonnelCommand } from './campaign/city-personnel';
@@ -231,6 +232,7 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
 export function executeV03Command(state: V03GameState, command: V03Command): V03ActionResult {
   const result = executeCommand(state, command);
   if (result.state !== state) {
+    result.state = reconcileFactionObjectives(result.state);
     const existing = new Set(state.events.map((event) => event.id));
     for (const event of result.state.events)
       if (!existing.has(event.id) && !event.code) {

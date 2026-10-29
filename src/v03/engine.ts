@@ -77,6 +77,12 @@ import {
 } from './governance/appointments';
 import { applyGovernorMonthlyWork, planGovernorMonthlyWork } from './governance/autonomy';
 import {
+  reconcileFactionObjectives,
+  updateFactionObjectives,
+  supportFactionObjectives,
+  recordFactionCampaign,
+} from './ai/faction-objectives';
+import {
   CITY_WORK_PERIOD_DAYS,
   initializeCityWorkPeriods,
   committedCityStock,
@@ -1426,6 +1432,7 @@ export function dispatchRivalCampaignPlan(
   state.directives.push(directive);
   state.journeys.push(journey);
   state.nextId += 2;
+  recordFactionCampaign(state, plan.factionId, source.id, target.id, officerIds[0]!, directiveId);
   pushLog(
     state,
     `${faction.name} dispatched ${plan.requestedTroops} troops from ${source.name} toward ${target.name}; ${plan.food} food is committed for the march and campaign.`,
@@ -1469,6 +1476,8 @@ export function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
 }
 
 function settleAutonomousCityWork(state: V03GameState) {
+  updateFactionObjectives(state);
+  supportFactionObjectives(state);
   const governorActions = new Map<string, string[]>();
   for (const city of state.cities) {
     if (
@@ -1523,6 +1532,7 @@ function settleAutonomousCityWork(state: V03GameState) {
       pushLog(state, `${city.name} autonomy: ${plan.action} (${plan.reason})`);
     }
   }
+  updateFactionObjectives(state);
   return governorActions;
 }
 
@@ -1794,7 +1804,10 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
   if (hegemon.declared) completeHegemonVictoryIfReady(governed);
   resolveSuccessions(governed);
   const refreshed = resolveAiPrisoners(refreshWaitingOrders(governed, createV03OrderServices()));
-  if (refreshed.phase !== 'finished') dispatchMonthlyRivalCampaigns(refreshed);
+  if (refreshed.phase !== 'finished') {
+    updateFactionObjectives(refreshed);
+    dispatchMonthlyRivalCampaigns(refreshed);
+  }
   addEvent(
     refreshed,
     'monthBoundary',
@@ -1986,7 +1999,7 @@ export function advanceV03(initial: V03GameState, mode: AdvanceMode): V03Advance
       if (state.personnelDay.absoluteDay !== state.absoluteDay)
         state.personnelDay = createPersonnelDay(state);
       handleArrivals(state, previousJourneys);
-      state = reconcileV03Rulers(state);
+      state = reconcileFactionObjectives(reconcileV03Rulers(state));
       if (
         state.absoluteDay % CITY_WORK_PERIOD_DAYS === 0 &&
         state.absoluteDay % DAYS_PER_MONTH !== 0

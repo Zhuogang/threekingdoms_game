@@ -41,6 +41,42 @@ export interface V03Faction {
   eliminated: boolean;
 }
 
+export type V03ObjectiveReason =
+  | 'incoming-army'
+  | 'active-defense'
+  | 'ready'
+  | 'force-shortfall'
+  | 'food-shortfall'
+  | 'no-opportunity'
+  | 'campaign-active'
+  | 'campaign-resolved'
+  | 'ownership-changed'
+  | 'alliance-changed'
+  | 'commander-unavailable'
+  | 'route-unavailable'
+  | 'budget-impossible'
+  | 'preparation-expired'
+  | 'opportunity-changed';
+
+/** Advisory NPC memory. Targets reserve nothing; only existing orders move stock. */
+export interface V03FactionObjective {
+  factionId: string;
+  mode: 'defend' | 'recover' | 'prepare-conquest' | 'conquer';
+  sourceCityId: string | null;
+  targetCityId: string | null;
+  commanderOfficerId: string | null;
+  startedDay: number;
+  reviewDay: number;
+  forceTarget: number;
+  foodTarget: number;
+  forceDeficit: number;
+  foodDeficit: number;
+  reason: V03ObjectiveReason;
+  cancellationReason: V03ObjectiveReason | null;
+  /** At most one support requisition and one campaign directive. */
+  orderIds: string[];
+}
+
 export interface V03PendingAppointment {
   governorId: string | null;
   effectiveDay: number;
@@ -321,6 +357,8 @@ export interface V03GameState {
   phase: V03GamePhase;
   playerCapitalCityId: string;
   factions: V03Faction[];
+  /** Absent in compatible v3 saves until the first normal planning boundary. */
+  factionObjectives?: V03FactionObjective[];
   cities: V03City[];
   officers: V03Officer[];
   journeys: V03Journey[];

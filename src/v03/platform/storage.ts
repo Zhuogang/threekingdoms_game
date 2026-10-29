@@ -1,3 +1,4 @@
+import { reconcileFactionObjectives } from '../ai/faction-objectives';
 import { reconcileV03Rulers } from '../engine';
 import { capturedRulerFaction } from '../campaign/prisoners';
 import { validateOfficerRosterState } from '../campaign/officer-lifecycle';
@@ -529,6 +530,42 @@ const personnelDay = z
   })
   .strict();
 
+const objectiveReason = z.enum([
+  'incoming-army',
+  'active-defense',
+  'ready',
+  'force-shortfall',
+  'food-shortfall',
+  'no-opportunity',
+  'campaign-active',
+  'campaign-resolved',
+  'ownership-changed',
+  'alliance-changed',
+  'commander-unavailable',
+  'route-unavailable',
+  'budget-impossible',
+  'preparation-expired',
+  'opportunity-changed',
+]);
+const factionObjective = z
+  .object({
+    factionId: id,
+    mode: z.enum(['defend', 'recover', 'prepare-conquest', 'conquer']),
+    sourceCityId: id.nullable(),
+    targetCityId: id.nullable(),
+    commanderOfficerId: id.nullable(),
+    startedDay: nonnegative,
+    reviewDay: nonnegative,
+    forceTarget: nonnegative.max(9_999_999),
+    foodTarget: nonnegative.max(9_999_999),
+    forceDeficit: nonnegative.max(9_999_999),
+    foodDeficit: nonnegative.max(9_999_999),
+    reason: objectiveReason,
+    cancellationReason: objectiveReason.nullable(),
+    orderIds: z.array(id).max(2),
+  })
+  .strict();
+
 const stateSchema = z
   .object({
     version: z.literal(3),
@@ -556,6 +593,7 @@ const stateSchema = z
     phase: z.enum(['planning', 'battle', 'finished']),
     playerCapitalCityId: id,
     factions: z.array(faction).min(2).max(20),
+    factionObjectives: z.array(factionObjective).max(20).optional(),
     cities: z.array(city).min(1).max(100),
     officers: z.array(officer).min(1).max(2000),
     journeys: z.array(journey).max(HISTORY_RECORD_LIMIT),
@@ -586,6 +624,20 @@ export function validateV03State(value: unknown): value is V03GameState {
   const parsed = stateSchema.safeParse(value);
   if (!parsed.success) return false;
   const state = parsed.data;
+  // Structural memory errors are rejected. Stale world references are safely
+  // reconciled on load and before planning, without moving any resources.
+  const objectives = state.factionObjectives ?? [];
+  if (
+    new Set(objectives.map((objective) => objective.factionId)).size !== objectives.length ||
+    objectives.some(
+      (objective) =>
+        objective.startedDay > state.absoluteDay ||
+        objective.reviewDay < objective.startedDay ||
+        objective.reviewDay > objective.startedDay + 90 ||
+        new Set(objective.orderIds).size !== objective.orderIds.length,
+    )
+  )
+    return false;
   if (!validateOfficerRosterState(state)) return false;
   const unique = (items: Array<{ id: string }>) =>
     new Set(items.map((item) => item.id)).size === items.length;
@@ -1262,7 +1314,7 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
   }
   if (!validateV03State(parsed.data.state))
     throw new Error('The save contains inconsistent campaign state.');
-  return reconcileV03Rulers(compactV03History(parsed.data.state));
+  return reconcileFactionObjectives(reconcileV03Rulers(compactV03History(parsed.data.state)));
 }
 
 export function saveV03Autosave(

@@ -1,5 +1,8 @@
 import { cityProduction, forecastCityEconomy } from '../campaign/economy';
 import { incomingCampaignThreats } from '../ai/campaign-threats';
+import { reconcileFactionObjectives } from '../ai/faction-objectives';
+import { isRivalCampaignOfficerAvailable } from '../ai/campaign-legality';
+import { cityBattleRoster } from '../campaign/roster';
 import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
@@ -153,8 +156,29 @@ export function planGovernorMonthlyWork(
     (npcCapital ? local.find((officer) => officer.id === faction?.leaderOfficerId) : undefined) ??
     local[0];
   const reserves = committedCityStock(state, city.id);
+  const objective =
+    city.factionId !== state.playerFactionId && !faction?.isPlayer
+      ? reconcileFactionObjectives(state).factionObjectives?.find(
+          (goal) =>
+            goal.factionId === city.factionId &&
+            goal.sourceCityId === city.id &&
+            goal.mode !== 'conquer',
+        )
+      : undefined;
+  const organized =
+    objective?.mode === 'defend'
+      ? cityBattleRoster(state, city.id, 'governor-defense').roster.reduce(
+          (sum, unit) => sum + unit.troops,
+          0,
+        )
+      : local
+          .filter((officer) =>
+            isRivalCampaignOfficerAvailable(state, officer, city.factionId!, city.id),
+          )
+          .reduce((sum, officer) => sum + officer.troops, 0);
+  const forceNeeded = Math.max(0, (objective?.forceTarget ?? 0) - organized);
   const upkeep = Math.ceil(cityPersonnelSummary(state, city.id).foodHeadcount * MONTHLY_FOOD_RATE);
-  const protectedFood = Math.max(500, upkeep * 2) + reserves.food;
+  const protectedFood = Math.max(500, upkeep * 2, objective?.foodTarget ?? 0) + reserves.food;
   const economy = forecastCityEconomy(state, cityId);
   const projectedNextMonthFood = economy.projectedFood;
   const threats = incomingCampaignThreats(state, cityId);
@@ -186,6 +210,7 @@ export function planGovernorMonthlyWork(
       personnelDay: state.personnelDay,
       economy,
       threats,
+      objective,
     }),
     managerOfficerId: manager?.id ?? null,
     managerIntellectAtPlan: manager?.intellect ?? 0,
@@ -394,17 +419,19 @@ export function planGovernorMonthlyWork(
 
   // First cover the actual deadline. If both actions cover it, recurring farming
   // wins; otherwise choose the largest real reduction in the shortfall.
-  const foodAtDeadline = threats.length
-    ? Math.min(city.food, projectedNextMonthFood)
-    : projectedNextMonthFood;
+  const foodAtDeadline =
+    threats.length || objective?.mode === 'prepare-conquest'
+      ? Math.min(city.food, projectedNextMonthFood)
+      : projectedNextMonthFood;
   if (!workSpent && foodAtDeadline < protectedFood) {
     const alternatives = (['develop-farming', 'buy-food'] as const)
       .flatMap((action) => {
         const after = afterWork(action, CITY_MONTHLY_WORK_GOLD_COST, 0);
         if (!after) return [];
-        const food = threats.length
-          ? Math.min(after.city.food, after.economy.projectedFood)
-          : after.economy.projectedFood;
+        const food =
+          threats.length || objective?.mode === 'prepare-conquest'
+            ? Math.min(after.city.food, after.economy.projectedFood)
+            : after.economy.projectedFood;
         return [{ action, food, covers: food >= protectedFood }];
       })
       .sort(
@@ -475,16 +502,20 @@ export function planGovernorMonthlyWork(
       const ready =
         availableReserveTroops(state, cityId, officer.troopType) -
         reserves.troops -
-        (threats.length ? 0 : 1000);
-      const amount = Math.min(10_000 - officer.wounded, officer.troops + ready);
+        (threats.length || forceNeeded > 0 ? 0 : 1000);
+      const amount = Math.min(
+        10_000 - officer.wounded,
+        officer.troops +
+          (forceNeeded > 0 && !threats.length ? Math.min(ready, forceNeeded) : ready),
+      );
       if (
         ready > 0 &&
         amount > officer.troops &&
         offer(
           'assign-troops',
           'troop-organization',
-          threats.length
-            ? 'Organize available reserves for the approaching battle.'
+          threats.length || forceNeeded > 0
+            ? 'Organize available reserves for the current military need.'
             : 'Reinforce a stationed officer while protecting a 1,000-soldier same-type reserve.',
           officer.id,
           amount,
@@ -495,7 +526,20 @@ export function planGovernorMonthlyWork(
     }
     return false;
   }
-  if (threats.length && organizeReserves()) return plan;
+  if ((threats.length || forceNeeded > 0) && organizeReserves()) return plan;
+  const plannedCommander = local.find((officer) => officer.id === objective?.commanderOfficerId);
+  if (
+    forceNeeded > 0 &&
+    offer(
+      'recruit',
+      'reserve-recruitment',
+      'Recruit toward the current military shortfall.',
+      plannedCommander?.id ?? null,
+      null,
+      plannedCommander?.troopType ?? manager.troopType,
+    )
+  )
+    return plan;
 
   const newcomer =
     automaticTalentWorkUsed(state, city, 'assign') < 1

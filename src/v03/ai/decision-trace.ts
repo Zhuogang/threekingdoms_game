@@ -1,6 +1,7 @@
 import type { RivalCampaignBlock } from './campaign-legality';
 import type { BattleSide, BattleTactic } from '../battle/types';
 import type { GovernorWorkReasonCode } from '../governance/autonomy';
+import type { V03FactionObjective } from '../types';
 
 export type CampaignDecisionReason =
   | RivalCampaignBlock
@@ -25,6 +26,20 @@ export type CampaignDecisionReason =
 
 /** Developer observations only: never serialized or used to make a decision. */
 export type AiDecisionEvent =
+  | {
+      kind: 'objective';
+      day: number;
+      factionId: string;
+      mode: V03FactionObjective['mode'];
+      sourceCityId: string | null;
+      targetCityId: string | null;
+      status: 'selected' | 'retained' | 'cancelled' | 'support-committed' | 'campaign-committed';
+      reason: V03FactionObjective['reason'];
+      forceDeficit: number;
+      foodDeficit: number;
+      reviewDay: number;
+      orderId?: string;
+    }
   | {
       kind: 'campaign';
       day: number;
