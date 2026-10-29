@@ -38,7 +38,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 5,
+          "observedGovernorWorkPoints": 320
         },
         {
           "scenario": "divided-realm-190",
@@ -58,7 +66,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 3,
+          "observedGovernorWorkPoints": 318
         },
         {
           "scenario": "divided-realm-190",
@@ -78,7 +94,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 4,
+          "observedGovernorWorkPoints": 334
         },
         {
           "scenario": "divided-realm-190",
@@ -98,7 +122,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 5,
+          "observedGovernorWorkPoints": 332
         },
         {
           "scenario": "divided-realm-190",
@@ -118,7 +150,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 5,
+          "observedGovernorWorkPoints": 326
         },
         {
           "scenario": "divided-realm-190",
@@ -138,7 +178,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 4,
+          "observedGovernorWorkPoints": 320
         },
         {
           "scenario": "divided-realm-190",
@@ -158,7 +206,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 4,
+          "observedGovernorWorkPoints": 342
         },
         {
           "scenario": "divided-realm-190",
@@ -178,7 +234,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 5,
+          "observedGovernorWorkPoints": 326
         },
         {
           "scenario": "divided-realm-190",
@@ -198,7 +262,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 6,
+          "observedGovernorWorkPoints": 320
         },
         {
           "scenario": "divided-realm-190",
@@ -218,7 +290,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 8,
+          "observedGovernorWorkPoints": 304
         },
         {
           "scenario": "divided-realm-190",
@@ -238,7 +318,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 9,
+          "observedGovernorWorkPoints": 332
         },
         {
           "scenario": "divided-realm-190",
@@ -258,7 +346,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 8,
+          "observedGovernorWorkPoints": 332
         },
         {
           "scenario": "guandu-200",
@@ -278,7 +374,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 274
         },
         {
           "scenario": "guandu-200",
@@ -298,7 +402,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 274
         },
         {
           "scenario": "guandu-200",
@@ -318,7 +430,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 330
         },
         {
           "scenario": "guandu-200",
@@ -338,7 +458,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 326
         },
         {
           "scenario": "guandu-200",
@@ -358,7 +486,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 324
         },
         {
           "scenario": "guandu-200",
@@ -378,7 +514,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 328
         },
         {
           "scenario": "guandu-200",
@@ -398,7 +542,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 276
         },
         {
           "scenario": "guandu-200",
@@ -418,7 +570,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 278
         },
         {
           "scenario": "guandu-200",
@@ -438,7 +598,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 318
         },
         {
           "scenario": "guandu-200",
@@ -458,7 +626,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 318
         },
         {
           "scenario": "guandu-200",
@@ -478,7 +654,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 336
         },
         {
           "scenario": "guandu-200",
@@ -498,7 +682,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 338
         }
       ]
     },
@@ -539,7 +731,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 312
         },
         {
           "scenario": "divided-realm-190",
@@ -559,7 +759,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 314
         },
         {
           "scenario": "divided-realm-190",
@@ -579,7 +787,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 330
         },
         {
           "scenario": "divided-realm-190",
@@ -599,7 +815,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 332
         },
         {
           "scenario": "divided-realm-190",
@@ -619,7 +843,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 332
         },
         {
           "scenario": "divided-realm-190",
@@ -639,7 +871,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 316
         },
         {
           "scenario": "divided-realm-190",
@@ -659,7 +899,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 334
         },
         {
           "scenario": "divided-realm-190",
@@ -679,7 +927,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 326
         },
         {
           "scenario": "divided-realm-190",
@@ -699,7 +955,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 316
         },
         {
           "scenario": "divided-realm-190",
@@ -719,7 +983,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 300
         },
         {
           "scenario": "divided-realm-190",
@@ -739,7 +1011,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 334
         },
         {
           "scenario": "divided-realm-190",
@@ -759,7 +1039,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 324
         },
         {
           "scenario": "guandu-200",
@@ -779,7 +1067,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 270
         },
         {
           "scenario": "guandu-200",
@@ -799,7 +1095,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 272
         },
         {
           "scenario": "guandu-200",
@@ -819,7 +1123,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 330
         },
         {
           "scenario": "guandu-200",
@@ -839,7 +1151,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 326
         },
         {
           "scenario": "guandu-200",
@@ -859,7 +1179,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 320
         },
         {
           "scenario": "guandu-200",
@@ -879,7 +1207,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 322
         },
         {
           "scenario": "guandu-200",
@@ -899,7 +1235,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 272
         },
         {
           "scenario": "guandu-200",
@@ -919,7 +1263,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 274
         },
         {
           "scenario": "guandu-200",
@@ -939,7 +1291,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 318
         },
         {
           "scenario": "guandu-200",
@@ -959,7 +1319,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 318
         },
         {
           "scenario": "guandu-200",
@@ -979,7 +1347,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 336
         },
         {
           "scenario": "guandu-200",
@@ -999,7 +1375,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 0,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 338
         }
       ]
     },
@@ -1035,7 +1419,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 335
         },
         {
           "scenario": "divided-realm-190",
@@ -1055,7 +1447,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 338
         },
         {
           "scenario": "divided-realm-190",
@@ -1075,7 +1475,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 356
         },
         {
           "scenario": "divided-realm-190",
@@ -1095,7 +1503,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 355
         },
         {
           "scenario": "divided-realm-190",
@@ -1115,7 +1531,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 369
         },
         {
           "scenario": "divided-realm-190",
@@ -1135,7 +1559,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 367
         },
         {
           "scenario": "divided-realm-190",
@@ -1155,7 +1587,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 354
         },
         {
           "scenario": "divided-realm-190",
@@ -1175,7 +1615,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 351
         },
         {
           "scenario": "divided-realm-190",
@@ -1195,7 +1643,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 364
         },
         {
           "scenario": "divided-realm-190",
@@ -1215,7 +1671,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 363
         },
         {
           "scenario": "divided-realm-190",
@@ -1235,7 +1699,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 346
         },
         {
           "scenario": "divided-realm-190",
@@ -1255,7 +1727,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 348
         },
         {
           "scenario": "guandu-200",
@@ -1275,7 +1755,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 337
         },
         {
           "scenario": "guandu-200",
@@ -1295,7 +1783,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 340
         },
         {
           "scenario": "guandu-200",
@@ -1315,7 +1811,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 359
         },
         {
           "scenario": "guandu-200",
@@ -1335,7 +1839,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 360
         },
         {
           "scenario": "guandu-200",
@@ -1355,7 +1867,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 339
         },
         {
           "scenario": "guandu-200",
@@ -1375,7 +1895,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 347
         },
         {
           "scenario": "guandu-200",
@@ -1395,7 +1923,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 1,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 320
         },
         {
           "scenario": "guandu-200",
@@ -1415,7 +1951,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 322
         },
         {
           "scenario": "guandu-200",
@@ -1435,7 +1979,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 3,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 328
         },
         {
           "scenario": "guandu-200",
@@ -1455,7 +2007,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 2,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 324
         },
         {
           "scenario": "guandu-200",
@@ -1475,7 +2035,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 338
         },
         {
           "scenario": "guandu-200",
@@ -1495,7 +2063,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 338
         }
       ]
     },
@@ -1536,7 +2112,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 23,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 12,
+          "observedGovernorWorkPoints": 1236
         },
         {
           "scenario": "divided-realm-190",
@@ -1556,7 +2140,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 22,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 10,
+          "observedGovernorWorkPoints": 1212
         },
         {
           "scenario": "divided-realm-190",
@@ -1576,7 +2168,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 11,
+          "observedGovernorWorkPoints": 1240
         },
         {
           "scenario": "divided-realm-190",
@@ -1596,7 +2196,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 11,
+          "observedGovernorWorkPoints": 1256
         },
         {
           "scenario": "divided-realm-190",
@@ -1616,7 +2224,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 9,
+          "observedGovernorWorkPoints": 1231
         },
         {
           "scenario": "divided-realm-190",
@@ -1636,7 +2252,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 25,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 8,
+          "observedGovernorWorkPoints": 1220
         },
         {
           "scenario": "divided-realm-190",
@@ -1656,7 +2280,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 10,
+          "observedGovernorWorkPoints": 1297
         },
         {
           "scenario": "divided-realm-190",
@@ -1676,7 +2308,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 26,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 12,
+          "observedGovernorWorkPoints": 1303
         },
         {
           "scenario": "divided-realm-190",
@@ -1696,7 +2336,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 13,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 16,
+          "observedGovernorWorkPoints": 1231
         },
         {
           "scenario": "divided-realm-190",
@@ -1716,7 +2364,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 18,
+          "observedGovernorWorkPoints": 1259
         },
         {
           "scenario": "divided-realm-190",
@@ -1736,7 +2392,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 19,
+          "observedGovernorWorkPoints": 1253
         },
         {
           "scenario": "divided-realm-190",
@@ -1756,7 +2420,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 17,
+          "observedGovernorWorkPoints": 1272
         },
         {
           "scenario": "guandu-200",
@@ -1776,7 +2448,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 23,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1092
         },
         {
           "scenario": "guandu-200",
@@ -1796,7 +2476,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 24,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1123
         },
         {
           "scenario": "guandu-200",
@@ -1816,7 +2504,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1241
         },
         {
           "scenario": "guandu-200",
@@ -1836,7 +2532,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 13,
+            "repulse": 23,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1234
         },
         {
           "scenario": "guandu-200",
@@ -1856,7 +2560,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 22,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1213
         },
         {
           "scenario": "guandu-200",
@@ -1876,7 +2588,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 23,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1220
         },
         {
           "scenario": "guandu-200",
@@ -1896,7 +2616,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 20,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1181
         },
         {
           "scenario": "guandu-200",
@@ -1916,7 +2644,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1139
         },
         {
           "scenario": "guandu-200",
@@ -1936,7 +2672,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 20,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1214
         },
         {
           "scenario": "guandu-200",
@@ -1956,7 +2700,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 24,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1194
         },
         {
           "scenario": "guandu-200",
@@ -1976,7 +2728,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1237
         },
         {
           "scenario": "guandu-200",
@@ -1996,7 +2756,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 26,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1271
         }
       ]
     },
@@ -2037,7 +2805,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 23,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1216
         },
         {
           "scenario": "divided-realm-190",
@@ -2057,7 +2833,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 24,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1215
         },
         {
           "scenario": "divided-realm-190",
@@ -2077,7 +2861,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1225
         },
         {
           "scenario": "divided-realm-190",
@@ -2097,7 +2889,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1277
         },
         {
           "scenario": "divided-realm-190",
@@ -2117,7 +2917,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 23,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1202
         },
         {
           "scenario": "divided-realm-190",
@@ -2137,7 +2945,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 22,
+            "draw": 0,
+            "unknown": 9
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1214
         },
         {
           "scenario": "divided-realm-190",
@@ -2157,7 +2973,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1254
         },
         {
           "scenario": "divided-realm-190",
@@ -2177,7 +3001,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 28,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1278
         },
         {
           "scenario": "divided-realm-190",
@@ -2197,7 +3029,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 20,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1181
         },
         {
           "scenario": "divided-realm-190",
@@ -2217,7 +3057,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1209
         },
         {
           "scenario": "divided-realm-190",
@@ -2237,7 +3085,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 25,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1227
         },
         {
           "scenario": "divided-realm-190",
@@ -2257,7 +3113,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 25,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1243
         },
         {
           "scenario": "guandu-200",
@@ -2277,7 +3141,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 13,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1091
         },
         {
           "scenario": "guandu-200",
@@ -2297,7 +3169,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 11,
+            "repulse": 24,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1118
         },
         {
           "scenario": "guandu-200",
@@ -2317,7 +3197,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1221
         },
         {
           "scenario": "guandu-200",
@@ -2337,7 +3225,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1231
         },
         {
           "scenario": "guandu-200",
@@ -2357,7 +3253,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1206
         },
         {
           "scenario": "guandu-200",
@@ -2377,7 +3281,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1191
         },
         {
           "scenario": "guandu-200",
@@ -2397,7 +3309,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1188
         },
         {
           "scenario": "guandu-200",
@@ -2417,7 +3337,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1131
         },
         {
           "scenario": "guandu-200",
@@ -2437,7 +3365,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 23,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1224
         },
         {
           "scenario": "guandu-200",
@@ -2457,7 +3393,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1234
         },
         {
           "scenario": "guandu-200",
@@ -2477,7 +3421,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1267
         },
         {
           "scenario": "guandu-200",
@@ -2497,7 +3449,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1264
         }
       ]
     },
@@ -2533,7 +3493,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1414
         },
         {
           "scenario": "divided-realm-190",
@@ -2553,7 +3521,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1466
         },
         {
           "scenario": "divided-realm-190",
@@ -2573,7 +3549,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1455
         },
         {
           "scenario": "divided-realm-190",
@@ -2593,7 +3577,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1013
         },
         {
           "scenario": "divided-realm-190",
@@ -2613,7 +3605,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1468
         },
         {
           "scenario": "divided-realm-190",
@@ -2633,7 +3633,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 12,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1450
         },
         {
           "scenario": "divided-realm-190",
@@ -2653,7 +3661,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1471
         },
         {
           "scenario": "divided-realm-190",
@@ -2673,7 +3689,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1465
         },
         {
           "scenario": "divided-realm-190",
@@ -2693,7 +3717,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1468
         },
         {
           "scenario": "divided-realm-190",
@@ -2713,7 +3745,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1474
         },
         {
           "scenario": "divided-realm-190",
@@ -2733,7 +3773,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1438
         },
         {
           "scenario": "divided-realm-190",
@@ -2753,7 +3801,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1416
         },
         {
           "scenario": "guandu-200",
@@ -2773,7 +3829,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1398
         },
         {
           "scenario": "guandu-200",
@@ -2793,7 +3857,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1379
         },
         {
           "scenario": "guandu-200",
@@ -2813,7 +3885,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1434
         },
         {
           "scenario": "guandu-200",
@@ -2833,7 +3913,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 12,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1464
         },
         {
           "scenario": "guandu-200",
@@ -2853,7 +3941,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1446
         },
         {
           "scenario": "guandu-200",
@@ -2873,7 +3969,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1453
         },
         {
           "scenario": "guandu-200",
@@ -2893,7 +3997,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1351
         },
         {
           "scenario": "guandu-200",
@@ -2913,7 +4025,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1375
         },
         {
           "scenario": "guandu-200",
@@ -2933,7 +4053,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1358
         },
         {
           "scenario": "guandu-200",
@@ -2953,7 +4081,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1336
         },
         {
           "scenario": "guandu-200",
@@ -2973,7 +4109,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1376
         },
         {
           "scenario": "guandu-200",
@@ -2993,7 +4137,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1419
         }
       ]
     },
@@ -3034,7 +4186,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 24,
+            "repulse": 22,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1123
         },
         {
           "scenario": "divided-realm-190",
@@ -3054,7 +4214,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1180
         },
         {
           "scenario": "divided-realm-190",
@@ -3074,7 +4242,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 26,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1221
         },
         {
           "scenario": "divided-realm-190",
@@ -3094,7 +4270,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1255
         },
         {
           "scenario": "divided-realm-190",
@@ -3114,7 +4298,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 22,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1207
         },
         {
           "scenario": "divided-realm-190",
@@ -3134,7 +4326,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1189
         },
         {
           "scenario": "divided-realm-190",
@@ -3154,7 +4354,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 6,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 788
         },
         {
           "scenario": "divided-realm-190",
@@ -3174,7 +4382,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 9
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1242
         },
         {
           "scenario": "divided-realm-190",
@@ -3194,7 +4410,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 16,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1195
         },
         {
           "scenario": "divided-realm-190",
@@ -3214,7 +4438,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1155
         },
         {
           "scenario": "divided-realm-190",
@@ -3234,7 +4466,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1262
         },
         {
           "scenario": "divided-realm-190",
@@ -3254,7 +4494,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1202
         },
         {
           "scenario": "guandu-200",
@@ -3274,7 +4522,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1124
         },
         {
           "scenario": "guandu-200",
@@ -3294,7 +4550,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1062
         },
         {
           "scenario": "guandu-200",
@@ -3314,7 +4578,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 25,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1247
         },
         {
           "scenario": "guandu-200",
@@ -3334,7 +4606,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1236
         },
         {
           "scenario": "guandu-200",
@@ -3354,7 +4634,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1208
         },
         {
           "scenario": "guandu-200",
@@ -3374,7 +4662,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1236
         },
         {
           "scenario": "guandu-200",
@@ -3394,7 +4690,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 22,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1160
         },
         {
           "scenario": "guandu-200",
@@ -3414,7 +4718,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 8
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1190
         },
         {
           "scenario": "guandu-200",
@@ -3434,7 +4746,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 23,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1225
         },
         {
           "scenario": "guandu-200",
@@ -3454,7 +4774,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 21,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1220
         },
         {
           "scenario": "guandu-200",
@@ -3474,7 +4802,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 24,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 7
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1261
         },
         {
           "scenario": "guandu-200",
@@ -3494,7 +4830,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 24,
+            "repulse": 20,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1257
         }
       ]
     },
@@ -3535,7 +4879,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 26,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1200
         },
         {
           "scenario": "divided-realm-190",
@@ -3555,7 +4907,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1224
         },
         {
           "scenario": "divided-realm-190",
@@ -3575,7 +4935,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 6,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1283
         },
         {
           "scenario": "divided-realm-190",
@@ -3595,7 +4963,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 20,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 6
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1280
         },
         {
           "scenario": "divided-realm-190",
@@ -3615,7 +4991,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 5,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1280
         },
         {
           "scenario": "divided-realm-190",
@@ -3635,7 +5019,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 6,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1288
         },
         {
           "scenario": "divided-realm-190",
@@ -3655,7 +5047,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1355
         },
         {
           "scenario": "divided-realm-190",
@@ -3675,7 +5075,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 7,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1351
         },
         {
           "scenario": "divided-realm-190",
@@ -3695,7 +5103,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 19,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1257
         },
         {
           "scenario": "divided-realm-190",
@@ -3715,7 +5131,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1224
         },
         {
           "scenario": "divided-realm-190",
@@ -3735,7 +5159,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1292
         },
         {
           "scenario": "divided-realm-190",
@@ -3755,7 +5187,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 6,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1301
         },
         {
           "scenario": "guandu-200",
@@ -3775,7 +5215,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 13,
+            "repulse": 2,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1223
         },
         {
           "scenario": "guandu-200",
@@ -3795,7 +5243,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1188
         },
         {
           "scenario": "guandu-200",
@@ -3815,7 +5271,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 18,
+            "repulse": 5,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1001
         },
         {
           "scenario": "guandu-200",
@@ -3835,7 +5299,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 7,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1288
         },
         {
           "scenario": "guandu-200",
@@ -3855,7 +5327,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 7,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1286
         },
         {
           "scenario": "guandu-200",
@@ -3875,7 +5355,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 3,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1256
         },
         {
           "scenario": "guandu-200",
@@ -3895,7 +5383,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 16,
+            "repulse": 4,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1221
         },
         {
           "scenario": "guandu-200",
@@ -3915,7 +5411,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 15,
+            "repulse": 5,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1208
         },
         {
           "scenario": "guandu-200",
@@ -3935,7 +5439,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 19,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1295
         },
         {
           "scenario": "guandu-200",
@@ -3955,7 +5467,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 21,
+            "repulse": 7,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1315
         },
         {
           "scenario": "guandu-200",
@@ -3975,7 +5495,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1330
         },
         {
           "scenario": "guandu-200",
@@ -3995,7 +5523,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 17,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 5
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1315
         }
       ]
     },
@@ -4036,7 +5572,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1425
         },
         {
           "scenario": "divided-realm-190",
@@ -4056,7 +5600,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1453
         },
         {
           "scenario": "divided-realm-190",
@@ -4076,7 +5628,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1441
         },
         {
           "scenario": "divided-realm-190",
@@ -4096,7 +5656,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1450
         },
         {
           "scenario": "divided-realm-190",
@@ -4116,7 +5684,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1478
         },
         {
           "scenario": "divided-realm-190",
@@ -4136,7 +5712,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 10,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1444
         },
         {
           "scenario": "divided-realm-190",
@@ -4156,7 +5740,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 9,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 869
         },
         {
           "scenario": "divided-realm-190",
@@ -4176,7 +5768,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 14,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1457
         },
         {
           "scenario": "divided-realm-190",
@@ -4196,7 +5796,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1474
         },
         {
           "scenario": "divided-realm-190",
@@ -4216,7 +5824,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1475
         },
         {
           "scenario": "divided-realm-190",
@@ -4236,7 +5852,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 19,
+            "draw": 0,
+            "unknown": 4
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1436
         },
         {
           "scenario": "divided-realm-190",
@@ -4256,7 +5880,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 17,
+            "draw": 0,
+            "unknown": 3
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1418
         },
         {
           "scenario": "guandu-200",
@@ -4276,7 +5908,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1410
         },
         {
           "scenario": "guandu-200",
@@ -4296,7 +5936,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 12,
+            "repulse": 8,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1419
         },
         {
           "scenario": "guandu-200",
@@ -4316,7 +5964,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1445
         },
         {
           "scenario": "guandu-200",
@@ -4336,7 +5992,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 8,
+            "repulse": 9,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1420
         },
         {
           "scenario": "guandu-200",
@@ -4356,7 +6020,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 4,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1388
         },
         {
           "scenario": "guandu-200",
@@ -4376,7 +6048,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 15,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1402
         },
         {
           "scenario": "guandu-200",
@@ -4396,7 +6076,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 13,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1381
         },
         {
           "scenario": "guandu-200",
@@ -4416,7 +6104,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 2
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1381
         },
         {
           "scenario": "guandu-200",
@@ -4436,7 +6132,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 5,
+            "repulse": 10,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1368
         },
         {
           "scenario": "guandu-200",
@@ -4456,7 +6160,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 14,
+            "draw": 0,
+            "unknown": 1
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1349
         },
         {
           "scenario": "guandu-200",
@@ -4476,7 +6188,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 7,
+            "repulse": 18,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1394
         },
         {
           "scenario": "guandu-200",
@@ -4496,7 +6216,15 @@
             "claimantFactionId": null,
             "consecutiveMonths": 0,
             "victoryDeclared": false
-          }
+          },
+          "npcCampaignOutcomes": {
+            "capture": 6,
+            "repulse": 11,
+            "draw": 0,
+            "unknown": 0
+          },
+          "npcCampaignExecutionRejections": 0,
+          "observedGovernorWorkPoints": 1394
         }
       ]
     }

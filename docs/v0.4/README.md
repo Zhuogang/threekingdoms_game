@@ -187,7 +187,22 @@ The existing matrix driver now accepts `--runtime` and `--only-run scenario/fact
 node tools/v03-campaign-diagnostics.mjs --runtime .artifacts/v04/policy-runtime --months 96 --only-run guandu-200/cao/held-out --output .artifacts/v04/cao-96m.json
 ```
 
-All **15 existing production browser tests** passed after installing the browser version required by the locked Playwright dependency. A new production test also passes: it restores objective memory from day 10 and produces exactly the same full day-20 state as uninterrupted play. The broad browser run passed **209 of 211 cases**. Its two failures were the English/Chinese variants of an existing typed-recruitment fixture that attempted three paid recruitments in one two-point work period, a limit already present in the frozen baseline. The fixture now advances ten real days before its third recruitment, retains its exact gold/type/experience assertions and reload checks, and **both affected cases pass**. This verifies all 211 cases across the full run and focused rerun; it is not a second full-suite run. Logs: `.artifacts/v04/browser-tests.log` and `browser-typed-recruitment-final.log`. Long-campaign evidence remains open. Production logs are `.artifacts/v04/production-tests-retry.log` and `production-objective-save.log`; the initial launch failures in `production-tests.log` occurred before a browser could start.
+All **15 existing production browser tests** passed after installing the browser version required by the locked Playwright dependency. A new production test also passes: it restores objective memory from day 10 and produces exactly the same full day-20 state as uninterrupted play. The broad browser run passed **209 of 211 cases**. Its two failures were the English/Chinese variants of an existing typed-recruitment fixture that attempted three paid recruitments in one two-point work period, a limit already present in the frozen baseline. The fixture now advances ten real days before its third recruitment, retains its exact gold/type/experience assertions and reload checks, and **both affected cases pass**. This verifies all 211 cases across the full run and focused rerun; it is not a second full-suite run. Logs: `.artifacts/v04/browser-tests.log` and `browser-typed-recruitment-final.log`. The completed long-campaign comparisons are recorded below. Production logs are `.artifacts/v04/production-tests-retry.log` and `production-objective-save.log`; the initial launch failures in `production-tests.log` occurred before a browser could start.
+
+### Campaign activity across increments
+
+The twelve-month reports also retain actual NPC dispatch outcomes and complete decision counters, rather than relying on the first 200 retained trace events. Totals below cover all 24 runs per policy; early elimination means the later policies observe about 283–285 combined campaign-months versus 288 for baseline/P0. They are descriptive totals, not equal-exposure efficiency estimates or isolated head-to-head victories.
+
+| Policy   | NPC dispatches | Captures | Repulses | Unclassified at cutoff | Execution rejections |
+| -------- | -------------: | -------: | -------: | ---------------------: | -------------------: |
+| Baseline |          1,021 |      414 |      461 |                    146 |                  153 |
+| P0       |          1,063 |      463 |      447 |                    153 |                    0 |
+| V04-05   |          1,047 |      475 |      415 |                    157 |                    0 |
+| V04-06   |            623 |      410 |      152 |                     61 |                    0 |
+| V04-07   |            521 |      184 |      297 |                     40 |                    0 |
+| V04-08   |            636 |      215 |      346 |                     75 |                    0 |
+
+No draw is recorded. Unclassified journeys have no classified campaign result at the cutoff and are not counted as losses. Shared legality eliminates the observed execution rejections. Campaign assessment reduces departures and repulses in V04-06, while the governor increment changes defenses and reduces captures substantially. Objective integration produces more departures, captures and repulses than V04-07. More activity is not itself an improvement, and the combined policies do not establish a universal gain in offensive efficiency. Selected-player battles record 0/0/1/0/5/6 side-food-shortfall days in the same policy order. The [integration extract](evidence/campaign-integration.json) preserves these figures per scenario/faction/cohort, plus actual governor work points; stronger opposition and the diagnostic player's repeated poor attacks must be considered alongside the controlled behavior tests and human results.
 
 ### Observed preparation and support
 
@@ -203,6 +218,40 @@ Four twelve-month replays now retain bounded per-command decision observations a
 These are observations of **NPC factions**, not the selected player's plans. An episode retains faction, mode, source, target, commander and start-day identity. Its observed duration is 0–40 days here; zero-day/final right-censored episodes remain explicit. The readiness column counts only initially deficient episodes that later show both deficits at zero. Targets are recalculated, so readiness can disappear again. The campaign column includes initially ready episodes and only a following observed conquest with the same source/target. Transient preparations completed inside one command and dispatches while a primary defense objective continues are outside that narrower count; the complete trace separately records 105 actual NPC campaign commits. Repeated retained reviews are not independent campaign opportunities.
 
 The nine completed support shipments arrive on their recorded arrival dates; two remain outbound at day 360, with arrivals scheduled for days 361 and 363. All eleven carry real gold in these particular probes; they do not demonstrate food shipments in ordinary play, which remain covered by the convoy integration fixtures. In the passive 190 Liu run, Cao's Chenliu preparation starts with a 170-troop deficit, receives 160 gold from Xuchang on day 26, and becomes a Luoyang campaign on day 30. This is an observed sequence, not an isolated causal attribution of the shipment. The saved histories cannot reconstruct donor stock immediately before every dispatch; donor protections are established by the separate command/conservation tests. Cancellation observations include changed ownership and an unavailable commander, while incoming armies repeatedly redirect work into defense. These examples establish real continuation and accounting, not optimal preparation efficiency.
+
+### Matched 96-month campaigns
+
+All **72 long cases** completed successfully: 24 each for baseline `10c6866`, P0 `9ce0346` and the integrated policy runtime `178902b` (unchanged gameplay since `ef3086c`). The cases ran independently against immutable checkouts. Assembly verifies complete unique scenario/faction/cohort coverage, original seed indices, identical runtime/harness hashes within each variant and compatible configurations. The first full 96-month case for **each** variant exactly matches the earlier sequential driver, including checkpoints and decision observations; the one-month parity checks also cover both cohorts. Parallel runtime totals are not performance measurements.
+
+The portable [long-run extract](evidence/campaign-long-run.json) includes all 72 final rows, 48-month checkpoints where reached, actual early-ending dates, each faction's ownership, NPC campaign outcomes, decision counts, commands and report/configuration hashes. Full assembled reports are `.artifacts/v04/{baseline,p0,policy}/campaign-96m.json`; individual reports are in `.artifacts/v04/96m-shards/`. The earlier sequential partial reports remain separately preserved.
+
+| Final diagnostic measure                      | Baseline |    P0 | Integrated policy |
+| --------------------------------------------- | -------: | ----: | ----------------: |
+| Mean selected-faction cities                  |    1.542 | 2.250 |             0.750 |
+| Selected factions with at least one city      |       14 |    14 |                 6 |
+| Selected factions eliminated                  |        5 |     4 |                 4 |
+| Selected factions cityless but not eliminated |        5 |     6 |                14 |
+| True unifications                             |        0 |     0 |                 0 |
+| Hegemon victories                             |        0 |     0 |                 0 |
+
+One candidate run ends with an NPC Cao Hegemon claim at six consecutive months (Guandu Sun held-out); it is not a victory. The selected-faction mean and unchanged elimination count hide a substantial increase in cityless houses. Final city counts below retain development / held-out separately; `*` means actual elimination before the requested horizon, while an unmarked zero does not.
+
+| Scenario | Selected faction | Baseline |     P0 | Integrated policy |
+| -------- | ---------------- | -------: | -----: | ----------------: |
+| 190      | Cao              |   0* / 0 |  1 / 1 |             0 / 0 |
+| 190      | Liu              |    0 / 0 | 0* / 0 |            0 / 0* |
+| 190      | Sun              |    1 / 2 |  5 / 6 |            0* / 1 |
+| 190      | Yuan             |   0* / 0 |  0 / 0 |            0 / 0* |
+| 190      | Dong             |   0* / 3 |  0 / 0 |             0 / 2 |
+| 190      | Yan              |    1 / 1 |  4 / 3 |             4 / 4 |
+| 200      | Cao              |    2 / 6 |  6 / 6 |             0 / 0 |
+| 200      | Liu              |  0* / 0* | 0 / 0* |             0 / 0 |
+| 200      | Sun              |    0 / 5 | 3 / 0* |             0 / 0 |
+| 200      | Yuan             |    5 / 2 |  5 / 3 |             0 / 0 |
+| 200      | Yan              |    3 / 4 |  6 / 4 |             4 / 3 |
+| 200      | Ma               |    1 / 1 | 0* / 1 |            0* / 0 |
+
+The stronger-opponent interpretation is plausible but insufficient for acceptance: the selected player is still the expansion-only bot, and its short-run failures already show repeated understrength departures. These long runs provide no evidence of improved human pacing, fairness or completion. The inherited cityless-party behavior below further weakens survival as an outcome measure. No coefficients or dispatch limits were changed to improve these held-out scores; strategic release acceptance remains open.
 
 ### Inherited cityless-house limitation
 
