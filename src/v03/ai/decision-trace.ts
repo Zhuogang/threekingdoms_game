@@ -54,7 +54,12 @@ export type AiDecisionEvent =
       unitId?: string;
       targetId?: string;
       status: 'candidate' | 'selected' | 'committed' | 'execution-rejected';
-      reason: 'current-policy' | 'action-value' | 'opening-force-retreat' | 'confused-activation';
+      reason:
+        | 'current-policy'
+        | 'action-value'
+        | 'move-and-action'
+        | 'opening-force-retreat'
+        | 'confused-activation';
       score?: number;
       outgoing?: number;
       retaliation?: number;
@@ -62,6 +67,12 @@ export type AiDecisionEvent =
       supportValue?: number;
       supplyValue?: number;
       pointCost?: number;
+      moveCost?: number;
+      exposure?: number;
+      retreatAllowed?: boolean;
+      retreatRiskPercent?: number;
+      progressValue?: number;
+      blockingPenalty?: number;
       action: BattleTactic | 'attack' | 'move' | 'hold' | 'retreat' | 'skip';
       x?: number;
       y?: number;

@@ -20,7 +20,6 @@ import {
   isOnWater,
   manhattanDistance,
   movementBudget,
-  WATER_ATTACK_MULTIPLIER,
   waterCombatModifiers,
   type PathBlocker,
 } from './rules';
@@ -464,9 +463,17 @@ export function predictBattleAttack(
   const source = unitById(state, sourceId);
   const target = unitById(state, targetId);
   if (!source || !target || source.side === target.side) return null;
-  const inRange = isBattleAttackInRange(state.map, source, target, source.attackRange);
-  const initial = waterCombatModifiers(state.map, source, target);
-  const estimatedCasualties = inRange ? estimateDamage(source, target, state.map).casualties : null;
+  return forecastAttack(state.map, source, target);
+}
+
+function forecastAttack(
+  map: V03TacticalBattleState['map'],
+  source: TacticalBattleUnit,
+  target: TacticalBattleUnit,
+): BattleAttackForecast {
+  const inRange = isBattleAttackInRange(map, source, target, source.attackRange);
+  const initial = waterCombatModifiers(map, source, target);
+  const estimatedCasualties = inRange ? estimateDamage(source, target, map).casualties : null;
   const survivingTarget = estimatedCasualties === null ? null : target.troops - estimatedCasualties;
   const targetMoraleLoss = estimatedCasualties
     ? Math.min(45, Math.max(1, Math.ceil((estimatedCasualties / Math.max(1, target.troops)) * 55)))
@@ -478,7 +485,7 @@ export function predictBattleAttack(
     target.status !== 'confused' &&
     target.morale - targetMoraleLoss >= ROUTED_MORALE &&
     source.troops > 0 &&
-    isBattleAttackInRange(state.map, target, source, target.attackRange),
+    isBattleAttackInRange(map, target, source, target.attackRange),
   );
   const counterSource = counterattackPossible
     ? {
@@ -487,13 +494,13 @@ export function predictBattleAttack(
         morale: Math.max(MIN_MORALE, target.morale - targetMoraleLoss),
       }
     : target;
-  const counter = waterCombatModifiers(state.map, counterSource, source);
+  const counter = waterCombatModifiers(map, counterSource, source);
   const counterCasualties = counterattackPossible
-    ? estimateDamage(counterSource, source, state.map).casualties
+    ? estimateDamage(counterSource, source, map).casualties
     : null;
   return {
-    sourceId,
-    targetId,
+    sourceId: source.id,
+    targetId: target.id,
     inRange,
     sourceOnWater: initial.sourceOnWater,
     targetOnWater: initial.targetOnWater,
@@ -960,72 +967,6 @@ export function applyBattleAction(
   return { ok: true, state: draft };
 }
 
-function chooseAiDestination(
-  state: V03TacticalBattleState,
-  unit: TacticalBattleUnit,
-): BattlePosition | null {
-  const enemies = livingUnits(state, otherSide(unit.side));
-  const occupied = new Set(
-    livingUnits(state).map((candidate) => battlePositionIndex(state.map, candidate.x, candidate.y)),
-  );
-  // Cells within attack range of any enemy, in row-major order. Walking each
-  // enemy's range diamond gives the same set as scanning the whole board.
-  const { width, height } = state.map;
-  const inRange = new Set<number>();
-  for (const enemy of enemies)
-    for (let dy = -unit.attackRange; dy <= unit.attackRange; dy++) {
-      const span = unit.attackRange - Math.abs(dy);
-      for (let dx = -span; dx <= span; dx++) {
-        const x = enemy.x + dx;
-        const y = enemy.y + dy;
-        if (x >= 0 && y >= 0 && x < width && y < height) inRange.add(y * width + x);
-      }
-    }
-  const attackPositions = [...inRange]
-    .sort((a, b) => a - b)
-    .flatMap((index) =>
-      state.map.terrain[index] === 'cliff' || occupied.has(index)
-        ? []
-        : [{ x: index % width, y: Math.floor(index / width) }],
-    );
-  const goals = attackPositions;
-  const options = getUnitReachableTiles(state, unit.id);
-  // Only the unit's cell and its move options are scored, so the field can stop there.
-  const routeDistance = getBattleRouteDistanceField(
-    state.map,
-    unit,
-    goals,
-    otherUnitsAsBlockers(state, unit),
-    [unit, ...options],
-  );
-  const scores = new Map<number, number>();
-  const score = (position: BattlePosition): number => {
-    const key = battlePositionIndex(state.map, position.x, position.y);
-    const known = scores.get(key);
-    if (known !== undefined) return known;
-    const value = scoreUncached(position);
-    scores.set(key, value);
-    return value;
-  };
-  const scoreUncached = (position: BattlePosition): number => {
-    // The route field respects movement cost, terrain barriers, occupied cells.
-    const routeCost = routeDistance[battlePositionIndex(state.map, position.x, position.y)]!;
-    const candidate = { ...unit, ...position };
-    const threatened = enemies
-      .filter((enemy) => isBattleAttackInRange(state.map, enemy, candidate, enemy.attackRange))
-      .reduce((total, enemy) => total + estimateDamage(enemy, candidate, state.map).casualties, 0);
-    const waterExposure = isOnWater(state.map, candidate)
-      ? baseDamage(candidate, enemies[0] ?? candidate, state.map) * (1 - WATER_ATTACK_MULTIPLIER)
-      : 0;
-    return routeCost * 400 + threatened * 0.25 + waterExposure;
-  };
-  const currentScore = score(unit);
-  const best = options
-    .filter((tile) => score(tile) < currentScore)
-    .sort((a, b) => score(a) - score(b) || a.cost - b.cost || a.y - b.y || a.x - b.x)[0];
-  return best ? { x: best.x, y: best.y } : null;
-}
-
 export interface TacticalActionCandidate {
   action: 'attack' | BattleTactic | 'hold';
   unitId: string;
@@ -1090,8 +1031,27 @@ export function evaluateBattleActions(
   unitId: string,
   rationRemainders: BattleRationRemainders = {},
 ): TacticalActionCandidate[] {
+  return battleActionCandidates(state, unitId, rationRemainders);
+}
+
+function battleActionCandidates(
+  state: V03TacticalBattleState,
+  unitId: string,
+  rationRemainders: BattleRationRemainders,
+  capabilities?: Map<string, number>,
+): TacticalActionCandidate[] {
   const unit = unitById(state, unitId);
   if (!unit || unit.acted || unit.status === 'confused' || state.outcome) return [];
+  const capability = (target: TacticalBattleUnit) => {
+    if (!capabilities) return potentialDamage(state, target);
+    const key = `${target.id}:${target.x}:${target.y}:${target.troops}:${target.morale}:${target.status}`;
+    let value = capabilities.get(key);
+    if (value === undefined) {
+      value = potentialDamage(state, target);
+      capabilities.set(key, value);
+    }
+    return value;
+  };
   const candidate = (
     action: TacticalActionCandidate['action'],
     targetId?: string,
@@ -1151,12 +1111,15 @@ export function evaluateBattleActions(
         const opportunity =
           target.acted || target.id === unit.id ? (state.day < state.dayLimit ? 0.45 : 0) : 1;
         action.supportValue =
-          opportunity *
-            Math.max(0, potentialDamage(state, restored) - potentialDamage(state, target)) +
+          opportunity * Math.max(0, capability(restored) - capability(target)) +
           (forecast.moraleChange / 100) * (target.troops + target.wounded * 0.3) * 0.3;
         if (isRouted(target) && !isRouted(restored)) action.supportValue += target.troops * 0.08;
       } else if (entry.tactic === 'confuse') {
-        if (target.status !== 'confused' && (!target.acted || state.day < state.dayLimit))
+        if (
+          !capabilities &&
+          target.status !== 'confused' &&
+          (!target.acted || state.day < state.dayLimit)
+        )
           action.supportValue = (forecast.chance / 100) * potentialDamage(state, target);
       } else if (entry.tactic === 'raidSupply') {
         const horizon = Math.min(10, state.dayLimit - state.day + 1);
@@ -1202,10 +1165,465 @@ export function evaluateBattleActions(
   );
 }
 
+export interface TacticalTurnCandidate extends TacticalActionCandidate {
+  x: number;
+  y: number;
+  moveCost: number;
+  exposure: number;
+  progressValue: number;
+  blockingPenalty: number;
+}
+interface TacticalTurnContext {
+  enemies: TacticalBattleUnit[];
+  attackFields: Map<string, Map<number, BattlePosition>>;
+  routes: Map<string, number[]>;
+  capabilities: Map<string, number>;
+  fields: Map<string, Map<number, BattlePosition>>;
+  timeoutWinner: BattleSide | null;
+  occupied: Map<number, TacticalBattleUnit>;
+}
+
+/** Reachable attacks on the enemy's next activation, with actual movement, ZOC,
+ * occupied cells and terrain. Rebuilt after every committed formation action.
+ * It is a one-ply estimate from current occupancy, not a multi-unit future simulation.
+ */
+function tacticalTurnContext(
+  state: V03TacticalBattleState,
+  side: BattleSide,
+  routes = new Map<string, number[]>(),
+  fields = new Map<string, Map<number, BattlePosition>>(),
+): TacticalTurnContext {
+  const enemies = livingUnits(state, otherSide(side));
+  const attackFields = new Map<string, Map<number, BattlePosition>>();
+  for (const enemy of enemies) attackFields.set(enemy.id, enemyAttackField(state, enemy, fields));
+  return {
+    enemies,
+    attackFields,
+    routes,
+    fields,
+    capabilities: new Map(),
+    timeoutWinner: getBattleTimeoutOutcome(state).winner,
+    occupied: new Map(
+      livingUnits(state).map((unit) => [battlePositionIndex(state.map, unit.x, unit.y), unit]),
+    ),
+  };
+}
+
+function enemyAttackField(
+  state: V03TacticalBattleState,
+  enemy: TacticalBattleUnit,
+  cache: Map<string, Map<number, BattlePosition>>,
+): Map<number, BattlePosition> {
+  const field = new Map<number, BattlePosition>();
+  if (
+    isRouted(enemy) ||
+    enemy.status === 'confused' ||
+    (enemy.acted && state.day >= state.dayLimit)
+  )
+    return field;
+  // Occupancy and ZOC outside the movement radius cannot affect this field.
+  // Damage, points and remote moves also leave it intact; reuse it by geometry
+  // across formation commits, including the views that vacate one formation.
+  const radius = movementBudget(enemy.troopType) + 1;
+  const key =
+    `${enemy.id}:${enemy.x}:${enemy.y}:${enemy.troopType}:${enemy.attackRange}|` +
+    state.units
+      .filter((unit) => unit.troops > 0 && manhattanDistance(unit, enemy) <= radius)
+      .map((unit) => `${unit.id}:${unit.x}:${unit.y}:${unit.side}`)
+      .join('|');
+  const known = cache.get(key);
+  if (known) return known;
+  const refreshed = { ...enemy, moved: false, acted: false };
+  const view = {
+    ...state,
+    units: state.units.map((entry) => (entry.id === enemy.id ? refreshed : entry)),
+  };
+  const positions = [enemy, ...getUnitReachableTiles(view, enemy.id)];
+  for (const position of positions) {
+    for (let dy = -enemy.attackRange; dy <= enemy.attackRange; dy++) {
+      const span = enemy.attackRange - Math.abs(dy);
+      for (let dx = -span; dx <= span; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const x = position.x + dx,
+          y = position.y + dy;
+        if (x < 0 || y < 0 || x >= state.map.width || y >= state.map.height) continue;
+        const index = battlePositionIndex(state.map, x, y);
+        if (state.map.terrain[index] === 'cliff') continue;
+        const previous = field.get(index);
+        if (
+          !previous ||
+          (isOnWater(state.map, previous) && !isOnWater(state.map, position)) ||
+          (isOnWater(state.map, previous) === isOnWater(state.map, position) &&
+            manhattanDistance(position, { x, y }) > manhattanDistance(previous, { x, y }))
+        )
+          field.set(index, position);
+      }
+    }
+  }
+  cache.set(key, field);
+  return field;
+}
+
+function tacticalRoute(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  context: TacticalTurnContext,
+): number[] {
+  const signature = context.enemies.map((entry) => `${entry.id}:${entry.x}:${entry.y}`).join('|');
+  const key = `${unit.troopType}:${unit.attackRange}:${signature}`;
+  const known = context.routes.get(key);
+  if (known) return known;
+  const occupied = new Set(
+    context.enemies.map((entry) => battlePositionIndex(state.map, entry.x, entry.y)),
+  );
+  const goals: BattlePosition[] = [];
+  const seen = new Set<number>();
+  for (const enemy of context.enemies)
+    for (let dy = -unit.attackRange; dy <= unit.attackRange; dy++) {
+      const span = unit.attackRange - Math.abs(dy);
+      for (let dx = -span; dx <= span; dx++) {
+        const x = enemy.x + dx,
+          y = enemy.y + dy;
+        if (x < 0 || y < 0 || x >= state.map.width || y >= state.map.height) continue;
+        const index = battlePositionIndex(state.map, x, y);
+        if (seen.has(index) || occupied.has(index) || state.map.terrain[index] === 'cliff')
+          continue;
+        seen.add(index);
+        goals.push({ x, y });
+      }
+    }
+  // Friendly formations may move later; use terrain/enemy occupancy for the long
+  // route, and enforce all occupied cells on the actual immediate move below.
+  const route = getBattleRouteDistanceField(state.map, unit, goals, context.enemies);
+  context.routes.set(key, route);
+  return route;
+}
+
+function nextEnemyDamage(
+  state: V03TacticalBattleState,
+  enemy: TacticalBattleUnit,
+  target: TacticalBattleUnit,
+  context: TacticalTurnContext,
+): number {
+  const position = context.attackFields
+    .get(enemy.id)
+    ?.get(battlePositionIndex(state.map, target.x, target.y));
+  return position ? estimateDamage({ ...enemy, ...position }, target, state.map).casualties : 0;
+}
+
+const CARDINAL_STEPS = [
+  [0, -1],
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+] as const;
+
+function blockingPenalty(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  position: BattlePosition,
+  context: TacticalTurnContext,
+): number {
+  let penalty = 0;
+  for (const [dx, dy] of CARDINAL_STEPS) {
+    const x = position.x + dx,
+      y = position.y + dy;
+    if (x < 0 || y < 0 || x >= state.map.width || y >= state.map.height) continue;
+    const ally = context.occupied.get(battlePositionIndex(state.map, x, y));
+    if (!ally || ally.id === unit.id || ally.side !== unit.side || ally.acted) continue;
+    let exits = 0;
+    for (const [ax, ay] of CARDINAL_STEPS) {
+      const tx = ally.x + ax,
+        ty = ally.y + ay;
+      if (tx < 0 || ty < 0 || tx >= state.map.width || ty >= state.map.height) continue;
+      const index = battlePositionIndex(state.map, tx, ty);
+      if (state.map.terrain[index] === 'cliff') continue;
+      const occupant = context.occupied.get(index);
+      if (!occupant || occupant.id === unit.id) exits++;
+    }
+    if (exits <= 1) penalty += 80;
+    else if (exits === 2) penalty += 15;
+  }
+  return penalty;
+}
+
+/** At most six legal destination cells including the current cell. Full action
+ * comparisons run only there; cheap damage/route/risk terms shortlist the moves.
+ */
+export function evaluateBattleTurn(
+  state: V03TacticalBattleState,
+  unitId: string,
+  rationRemainders: BattleRationRemainders = {},
+  context?: TacticalTurnContext,
+): TacticalTurnCandidate[] {
+  const unit = unitById(state, unitId);
+  if (!unit || unit.acted || unit.status === 'confused' || state.outcome) return [];
+  const turn = context ?? tacticalTurnContext(state, unit.side);
+  const routed = isRouted(unit);
+  const route = routed ? null : tacticalRoute(state, unit, turn);
+  const remainingDays = state.dayLimit - state.day + 1;
+  const behind = turn.timeoutWinner !== unit.side;
+  // A full move toward contact is worth at most roughly one normal hit. Scaling
+  // by capability lets viable infantry cross an archer's firing zone without
+  // treating a handful of route cells as more valuable than an army's survival.
+  const approachHit = Math.max(
+    0,
+    ...turn.enemies.map((enemy) => estimateDamage(unit, enemy, state.map).casualties),
+  );
+  const approachValue =
+    remainingDays === 1
+      ? 0
+      : Math.max(40, (approachHit * 0.9) / movementBudget(unit.troopType)) *
+        (!behind && remainingDays <= 3 ? 0.5 : 1);
+  const currentRoute = route?.[battlePositionIndex(state.map, unit.x, unit.y)] ?? 0;
+  const rescuers = routed
+    ? livingUnits(state, unit.side).filter(
+        (entry) =>
+          entry.id !== unit.id &&
+          getAvailableBattleTactics(state, entry.id).some(
+            (tactic) => tactic.tactic === 'rally' && tactic.allowed,
+          ),
+      )
+    : [];
+  const rescueDistance = (position: BattlePosition) =>
+    rescuers.length
+      ? Math.min(
+          ...rescuers.map((entry) =>
+            Math.max(0, manhattanDistance(entry, position) - tacticRange(entry, 'rally')),
+          ),
+        )
+      : 0;
+  const currentRescue = rescueDistance(unit);
+  let movingThreat: TacticalTurnContext | undefined;
+  const replyContext = (position: BattlePosition) => {
+    if (position.x === unit.x && position.y === unit.y) return turn;
+    // Vacating this formation also removes its old occupied cell and old ZOC.
+    // Omit it when building the shared movement threat bound: its destination
+    // can restrict enemy movement further, but cannot create an unseen attack.
+    if (movingThreat) return movingThreat;
+    const affected = turn.enemies.filter(
+      (enemy) => manhattanDistance(enemy, unit) <= movementBudget(enemy.troopType) + 1,
+    );
+    if (!affected.length) return (movingThreat = turn);
+    const view = { ...state, units: state.units.filter((entry) => entry.id !== unit.id) };
+    movingThreat = { ...turn, attackFields: new Map(turn.attackFields) };
+    for (const enemy of affected)
+      movingThreat.attackFields.set(enemy.id, enemyAttackField(view, enemy, turn.fields));
+    return movingThreat;
+  };
+  const exchanges = new Map<
+    string,
+    {
+      totalDamage: number;
+      totalReturn: number;
+      hits: Map<string, { damage: number; returned: number }>;
+    }
+  >();
+  const risk = (candidate: TacticalBattleUnit, action?: TacticalActionCandidate) => {
+    const retaliation = action?.retaliation ?? 0;
+    const own = {
+      ...candidate,
+      troops: Math.max(0, candidate.troops - retaliation),
+      morale: Math.max(
+        MIN_MORALE,
+        candidate.morale -
+          (retaliation > 0
+            ? Math.min(45, Math.max(1, Math.ceil((retaliation / candidate.troops) * 55)))
+            : 0),
+      ),
+    };
+    if (action?.action === 'attack' || action?.action === 'ambush')
+      if (own.status === 'inspired') own.status = 'normal';
+    if (action?.action === 'rally' && action.targetId === unit.id) {
+      own.morale = Math.min(100, own.morale + 15 + Math.floor(unit.intellect / 5));
+      own.status = 'inspired';
+    }
+    const key = `${candidate.x}:${candidate.y}:${own.troops}:${own.morale}:${own.status}`;
+    const replies = replyContext(candidate);
+    const exchange = (enemy: TacticalBattleUnit, hit: number) => {
+      const firing = replies.attackFields
+        .get(enemy.id)
+        ?.get(battlePositionIndex(state.map, candidate.x, candidate.y));
+      if (!firing || hit >= enemy.troops) return { damage: 0, returned: 0 };
+      const next = {
+        ...enemy,
+        ...firing,
+        troops: enemy.troops - hit,
+        morale: Math.max(
+          MIN_MORALE,
+          enemy.morale -
+            (hit > 0 ? Math.min(45, Math.max(1, Math.ceil((hit / enemy.troops) * 55))) : 0),
+        ),
+      };
+      if (isRouted(next)) return { damage: 0, returned: 0 };
+      const forecast = forecastAttack(state.map, next, own);
+      return {
+        damage: forecast.estimatedCasualties ?? 0,
+        returned: forecast.counterattack.estimatedCasualties ?? 0,
+      };
+    };
+    let base = exchanges.get(key);
+    if (!base) {
+      base = { totalDamage: 0, totalReturn: 0, hits: new Map() };
+      for (const enemy of turn.enemies) {
+        const hit = exchange(enemy, 0);
+        base.hits.set(enemy.id, hit);
+        base.totalDamage += hit.damage;
+        base.totalReturn += hit.returned;
+      }
+      exchanges.set(key, base);
+    }
+    let damage = base.totalDamage,
+      returned = base.totalReturn;
+    const target = turn.enemies.find((enemy) => enemy.id === action?.targetId);
+    if (target && action) {
+      const before = base.hits.get(target.id)!;
+      const after = action.outgoing > 0 ? exchange(target, action.outgoing) : before;
+      const denial =
+        action.action === 'confuse'
+          ? (predictBattleTactic(state, unit.id, 'confuse', target.id)?.chance ?? 0) / 100
+          : 0;
+      damage += after.damage * (1 - denial) - before.damage;
+      returned += after.returned * (1 - denial) - before.returned;
+    }
+    // Reuse unchanged next exchanges across actions; only the struck or confused
+    // target needs a revised reply. Return hits prevent equal forces freezing.
+    return (
+      Math.max(0, Math.min(own.troops, damage) - returned) +
+      (own.troops > 0 && damage >= own.troops ? 80 + candidate.wounded * 0.6 : 0)
+    );
+  };
+  const positions = [
+    { x: unit.x, y: unit.y, cost: 0 },
+    ...getUnitReachableTiles(state, unit.id),
+  ].map((position) => {
+    const moved = position.cost > 0;
+    const candidate = { ...unit, x: position.x, y: position.y, moved: unit.moved || moved };
+    const distance = route?.[battlePositionIndex(state.map, position.x, position.y)] ?? 0;
+    const progress =
+      Number.isFinite(currentRoute) && Number.isFinite(distance)
+        ? (currentRoute - distance) * approachValue
+        : 0;
+    const progressValue = routed ? (currentRescue - rescueDistance(position)) * 35 : progress;
+    // The destination shortlist only needs a cheap incoming-damage bound.
+    // Full damage/counterattack exchanges are evaluated at the six retained cells.
+    const threat = replyContext(candidate);
+    const incoming = turn.enemies.reduce(
+      (sum, enemy) => sum + nextEnemyDamage(state, enemy, candidate, threat),
+      0,
+    );
+    const exposure =
+      Math.min(unit.troops, incoming) + (incoming >= unit.troops ? 80 + unit.wounded * 0.6 : 0);
+    const blocking = blockingPenalty(state, unit, position, turn);
+    let shot = 0;
+    if (!routed)
+      for (const enemy of turn.enemies)
+        if (isBattleAttackInRange(state.map, candidate, enemy, candidate.attackRange)) {
+          const casualties = estimateDamage(candidate, enemy, state.map).casualties;
+          shot = Math.max(shot, casualties + finishingValue(enemy, casualties));
+        }
+    return {
+      ...position,
+      candidate,
+      progressValue,
+      exposure,
+      blocking,
+      shot,
+      cheap: shot + progressValue - exposure * 0.65 - blocking,
+    };
+  });
+  const [current, ...moves] = positions;
+  moves.sort((a, b) => b.cheap - a.cheap || a.cost - b.cost || a.y - b.y || a.x - b.x);
+  const selected = [current!];
+  const keep = (position: typeof current) => {
+    if (position && !selected.includes(position) && selected.length < 6) selected.push(position);
+  };
+  keep(moves[0]);
+  keep(moves.slice().sort((a, b) => b.shot - a.shot || b.cheap - a.cheap)[0]);
+  keep(moves.slice().sort((a, b) => a.exposure - b.exposure || b.cheap - a.cheap)[0]);
+  keep(moves.slice().sort((a, b) => b.progressValue - a.progressValue || b.cheap - a.cheap)[0]);
+  for (const position of moves) keep(position);
+  const choices: TacticalTurnCandidate[] = [];
+  const deniedOthers = new Map<string, number>();
+  for (const position of selected) {
+    const view =
+      position.cost === 0
+        ? state
+        : {
+            ...state,
+            units: state.units.map((entry) => (entry.id === unit.id ? position.candidate : entry)),
+          };
+    for (const original of battleActionCandidates(
+      view,
+      unit.id,
+      rationRemainders,
+      turn.capabilities,
+    )) {
+      const action = { ...original };
+      if (
+        action.action === 'confuse' &&
+        unitById(view, action.targetId!)!.status !== 'confused' &&
+        (!unitById(view, action.targetId!)!.acted || state.day < state.dayLimit)
+      ) {
+        const target = unitById(state, action.targetId!)!;
+        const chance = predictBattleTactic(view, unit.id, 'confuse', target.id)!.chance / 100;
+        const replies = replyContext(position);
+        const key = `${target.id}:${replies === turn ? 'current' : 'moving'}`;
+        let denied = deniedOthers.get(key);
+        if (denied === undefined) {
+          denied = 0;
+          for (const ally of livingUnits(view, unit.side)) {
+            if (ally.id === unit.id) continue;
+            const damage = nextEnemyDamage(view, target, ally, replies);
+            denied = Math.max(denied, damage + (damage > 0 ? finishingValue(ally, damage) : 0));
+          }
+          deniedOthers.set(key, denied);
+        }
+        // This formation's protection is already counted in its exchange risk.
+        // Credit only additional protection of another ally, once per enemy reply.
+        const ownDamage = nextEnemyDamage(view, target, position.candidate, replies);
+        const ownRisk = ownDamage + (ownDamage > 0 ? finishingValue(unit, ownDamage) : 0);
+        const support = Math.max(0, denied - ownRisk) * chance * 0.65;
+        action.score += support - action.supportValue;
+        action.supportValue = support;
+      }
+      const exposure = risk(position.candidate, action);
+      const urgency =
+        behind && remainingDays <= 3 ? (action.outgoing + action.finishValue) * 0.15 : 0;
+      choices.push({
+        ...action,
+        x: position.x,
+        y: position.y,
+        moveCost: position.cost,
+        exposure,
+        progressValue: position.progressValue,
+        blockingPenalty: position.blocking,
+        score:
+          action.score +
+          urgency +
+          position.progressValue -
+          exposure * (routed ? 1 : 0.65) -
+          position.blocking -
+          position.cost * 0.1,
+      });
+    }
+  }
+  return choices.sort(
+    (a, b) =>
+      b.score - a.score ||
+      a.pointCost - b.pointCost ||
+      a.moveCost - b.moveCost ||
+      (a.targetId ?? '').localeCompare(b.targetId ?? '') ||
+      a.action.localeCompare(b.action) ||
+      a.y - b.y ||
+      a.x - b.x,
+  );
+}
+
 function traceTacticalChoices(
   state: V03TacticalBattleState,
   unit: TacticalBattleUnit,
-  choices: readonly TacticalActionCandidate[],
+  choices: readonly TacticalTurnCandidate[],
 ) {
   for (const [index, choice] of choices.entries())
     recordAiDecision({
@@ -1215,9 +1633,9 @@ function traceTacticalChoices(
       side: unit.side,
       ...choice,
       status: index === 0 ? 'selected' : 'candidate',
-      reason: 'action-value',
-      x: unit.x,
-      y: unit.y,
+      reason: 'move-and-action',
+      x: choice.x,
+      y: choice.y,
     });
 }
 
@@ -1259,11 +1677,49 @@ export function runBattleAiTurn(
     .filter((unit) => unit.side === side)
     .reduce((sum, unit) => sum + unit.initialTroops, 0);
   const enemy = livingUnits(draft, otherSide(side)).reduce((sum, unit) => sum + unit.troops, 0);
-  if (
-    draft.retreatAllowed[side] &&
+  const withdrawalThreshold =
     current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
-    current * 100 <= enemy * PERSONNEL_RULES.aiRetreatEnemyPercent
-  ) {
+    current * 100 <= enemy * PERSONNEL_RULES.aiRetreatEnemyPercent;
+  if (withdrawalThreshold) {
+    const context = tacticalTurnContext(draft, side);
+    const own = livingUnits(draft, side);
+    // Each enemy gets one prospective hit, assigned to its most valuable target.
+    // This is a bounded diagnostic comparison, not a new retreat threshold.
+    const exposure = context.enemies.reduce(
+      (sum, attacker) =>
+        sum +
+        Math.max(
+          0,
+          ...own.map((target) => {
+            const damage = nextEnemyDamage(draft, attacker, target, context);
+            return damage + (damage >= target.troops ? 80 + target.wounded * 0.6 : 0);
+          }),
+        ),
+      0,
+    );
+    const allowed = draft.retreatAllowed[side];
+    const captureRisk = !allowed ? 100 : draft.engaged ? PERSONNEL_RULES.orderlyCapturePercent : 0;
+    const withdrawalCost = own.reduce(
+      (sum, unit) =>
+        sum + (unit.troops + unit.wounded * 0.6) * (unit.isMilitia ? 1 : captureRisk / 100),
+      0,
+    );
+    for (const action of ['hold', 'retreat'] as const)
+      recordAiDecision({
+        kind: 'tactical',
+        day: draft.day,
+        battleId: draft.id,
+        side,
+        action,
+        status: action === 'retreat' && allowed ? 'selected' : 'candidate',
+        reason: 'opening-force-retreat',
+        score: -(action === 'hold' ? exposure : withdrawalCost),
+        exposure,
+        retreatAllowed: allowed,
+        retreatRiskPercent: captureRisk,
+      });
+  }
+  if (draft.retreatAllowed[side] && withdrawalThreshold) {
     draft.outcome = { winner: otherSide(side), reason: 'retreat' };
     append(
       draft,
@@ -1274,39 +1730,43 @@ export function runBattleAiTurn(
     trace('retreat');
     return draft;
   }
-  const order = livingUnits(draft, side).sort((a, b) => {
-    const canSupportA = getAvailableBattleTactics(draft, a.id).some(
-      (entry) => entry.tactic === 'rally' && entry.allowed,
-    );
-    const canSupportB = getAvailableBattleTactics(draft, b.id).some(
-      (entry) => entry.tactic === 'rally' && entry.allowed,
-    );
-    return Number(canSupportB) - Number(canSupportA) || a.id.localeCompare(b.id);
-  });
-  for (const unit of order) {
-    if (draft.outcome) break;
-    if (unit.acted || unit.troops <= 0) continue;
-    if (consumeConfusedActivation(draft, unit)) {
-      trace('skip', unit);
-      continue;
+  const routes = new Map<string, number[]>();
+  const fields = new Map<string, Map<number, BattlePosition>>();
+  // Reconsider all unspent formations after each committed move/action. A cheap
+  // finisher with no useful alternative can act before an otherwise stronger unit.
+  for (let activation = 0; activation < MAX_UNITS_PER_SIDE && !draft.outcome; activation++) {
+    const remaining = livingUnits(draft, side).filter((unit) => !unit.acted);
+    const available = remaining.filter((unit) => unit.status !== 'confused');
+    if (!available.length) {
+      for (const unit of remaining) if (consumeConfusedActivation(draft, unit)) trace('skip', unit);
+      break;
     }
-    let choices = evaluateBattleActions(draft, unit.id, rationRemainders);
-    let choice = choices[0]!;
-    if (
-      choice.action === 'hold' &&
-      !unit.moved &&
-      getUnitAttackTargets(draft, unit.id).length === 0
-    ) {
-      const destination = chooseAiDestination(draft, unit);
-      if (destination) {
-        const error = performMove(draft, unit, destination);
-        trace('move', unit, undefined, error);
-        choices = evaluateBattleActions(draft, unit.id, rationRemainders);
-        choice = choices[0]!;
+    const context = tacticalTurnContext(draft, side, routes, fields);
+    const options = available
+      .map((unit) => {
+        const choices = evaluateBattleTurn(draft, unit.id, rationRemainders, context);
+        const choice = choices[0]!;
+        const alternative = choices.find((entry) => entry.targetId !== choice.targetId);
+        const regret = alternative ? Math.max(0, choice.score - alternative.score) : 0;
+        return { unit, choices, choice, priority: choice.score + Math.min(200, regret) * 0.5 };
+      })
+      .sort(
+        (a, b) =>
+          b.priority - a.priority ||
+          a.choice.moveCost - b.choice.moveCost ||
+          a.unit.id.localeCompare(b.unit.id),
+      );
+    const { unit, choices, choice } = options[0]!;
+    traceTacticalChoices(draft, unit, choices);
+    if (choice.moveCost > 0) {
+      const error = performMove(draft, unit, choice);
+      trace('move', unit, undefined, error);
+      if (error) {
+        unit.acted = true;
+        continue;
       }
     }
     if (draft.outcome) break;
-    traceTacticalChoices(draft, unit, choices);
     const target = choice.targetId ? unitById(draft, choice.targetId) : undefined;
     if (choice.action === 'attack' && target) {
       const error = performAttack(draft, unit, target);

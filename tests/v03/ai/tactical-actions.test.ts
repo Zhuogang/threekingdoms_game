@@ -127,7 +127,14 @@ describe('V04-04 meaningful tactical alternatives', () => {
     const selected = trace.events.find(
       (entry) => entry.kind === 'tactical' && entry.status === 'selected',
     );
-    expect(selected).toMatchObject({ action: 'attack', targetId: 'strong', pointCost: 0 });
+    // With reachable threats included, the safe finishing shot now beats
+    // entering the stronger infantry's next attack range.
+    expect(selected).toMatchObject({
+      action: 'attack',
+      targetId: 'weak',
+      pointCost: 0,
+      exposure: 0,
+    });
     const fire = trace.events.find((entry) => entry.kind === 'tactical' && entry.action === 'fire');
     expect(fire).toMatchObject({ status: 'candidate' });
     expect(

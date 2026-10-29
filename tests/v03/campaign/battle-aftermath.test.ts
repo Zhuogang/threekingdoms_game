@@ -90,13 +90,17 @@ describe('wounded combat and campaign aftermath', () => {
         x: 8,
         y: 5,
         troopType: 'infantry',
+        attackRange: 1,
         troops: 100,
         initialTroops: 100,
         intellect: 120,
         isMilitia: false,
         acted: false,
-        moved: false,
+        // Status lifetime is under test; keep a fresh movement escape from replacing the cast.
+        moved: true,
       });
+      // Keep supply denial from replacing the status cast in this lifetime fixture.
+      battle.battleData.supplies = { attacker: 100_000, defender: 100_000 };
       battle.battleData.tacticPoints[caster.side] = 10;
       battle.battleData.rngState = 2;
       state.events.forEach((entry) => (entry.acknowledged = true));

@@ -72,6 +72,9 @@ describe('v0.4 reproduced behavior requirements', () => {
 
   it('V04-04: compare Fire with the best ordinary target before spending tactic points', () => {
     const battle = decisionBattle();
+    // Isolate the ordinary-hit/Fire comparison from next-day movement threats.
+    battle.day = battle.dayLimit;
+    battle.units.filter((unit) => unit.side === 'defender').forEach((unit) => (unit.acted = true));
     const forecast = predictBattleAttack(battle, 'actor', 'strong')!;
     expect(forecast.estimatedCasualties).toBeGreaterThan(300);
     expect(forecast.counterattack.possible).toBe(false);
