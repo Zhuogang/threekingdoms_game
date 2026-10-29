@@ -189,9 +189,9 @@ export function localizeTacticReason(
   if (match) return `需要 ${match[1]} 点计策点。`;
   match = reason.match(/^(.+) has already acted today\.$/);
   if (match) return `${localizeV03PersonOrFormationName(match[1]!, locale, state)}今日已经行动。`;
-  match = reason.match(/^(.+) is confused and will lose the rest of today\.$/);
+  match = reason.match(/^(.+) is confused and will lose (?:the rest of today|its next action)\.$/);
   if (match)
-    return `${localizeV03PersonOrFormationName(match[1]!, locale, state)}陷入混乱，今日无法继续行动。`;
+    return `${localizeV03PersonOrFormationName(match[1]!, locale, state)}陷入混乱，将失去下一次行动。`;
   return reason;
 }
 

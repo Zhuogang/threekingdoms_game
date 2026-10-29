@@ -91,6 +91,7 @@ const tacticalUnit = z
     cunning: z.boolean(),
     attackRange: safeInt.min(1).max(24),
     morale: nonnegative.max(100),
+    // Existing enum encodes a pending activation/hit; old v3 saves retain their effect.
     status: z.enum(['normal', 'confused', 'inspired']),
     moved: z.boolean(),
     acted: z.boolean(),

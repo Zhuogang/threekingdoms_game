@@ -1059,7 +1059,7 @@ describe('serializable tactical battle operations', () => {
     if (failure.ok) expect(failure.state.units[1]!.status).toBe('normal');
   });
 
-  it('does not offer confusion against an enemy that already acted this day', () => {
+  it('offers confusion against an enemy that already acted, for its next activation', () => {
     const state = battle({
       attackerUnits: [
         {
@@ -1080,8 +1080,8 @@ describe('serializable tactical battle operations', () => {
     state.units[1]!.acted = true;
     state.tacticPoints.attacker = 10;
 
-    expect(getBattleTacticTargets(state, 'a1', 'confuse')).toEqual([]);
-    expect(predictBattleTactic(state, 'a1', 'confuse', 'd1')).toBeNull();
+    expect(getBattleTacticTargets(state, 'a1', 'confuse').map((unit) => unit.id)).toEqual(['d1']);
+    expect(predictBattleTactic(state, 'a1', 'confuse', 'd1')).toMatchObject({ inRange: true });
     const before = structuredClone(state);
     const result = applyBattleAction(state, {
       type: 'tactic',
@@ -1089,7 +1089,7 @@ describe('serializable tactical battle operations', () => {
       tactic: 'confuse',
       targetId: 'd1',
     });
-    expect(result).toMatchObject({ ok: false, error: 'Choose a valid target for this tactic.' });
+    expect(result.ok).toBe(true);
     expect(state).toEqual(before);
   });
 

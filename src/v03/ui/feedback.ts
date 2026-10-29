@@ -210,13 +210,14 @@ export function localizeRoutineFeedback(
   if (match)
     return `${match[3] === 'reward an officer' ? '赏赐武将' : match[3] === 'relieve the people' ? '赈济百姓' : '配发精良兵器'}需要 ${match[1]} ${match[2] === 'gold' ? '金' : '粮'}。`;
   match = message.match(
-    /^(.+) (has already acted today|has already moved today|is confused and cannot act today|is confused and will lose the rest of today|is outside the normal attack range|is outside this tactic's range)\.$/,
+    /^(.+) (has already acted today|has already moved today|is confused and cannot act today|is confused and will lose the rest of today|is confused and will lose its next action|is outside the normal attack range|is outside this tactic's range)\.$/,
   );
   if (match) {
     const reasons: Record<string, string> = {
       'has already acted today': '今日已经行动',
       'has already moved today': '今日已经移动',
       'is confused and cannot act today': '陷入混乱，今日无法行动',
+      'is confused and will lose its next action': '陷入混乱，将失去下一次行动',
       'is confused and will lose the rest of today': '陷入混乱，今日无法继续行动',
       'is outside the normal attack range': '不在普通攻击射程内',
       "is outside this tactic's range": '不在此计策的射程内',
@@ -274,11 +275,11 @@ export function localizeRoutineBattleLog(
       `${person(match[1]!)}抵抗了${person(match[2]!)}的混乱计策（成功率 ${match[3]}%）`,
     );
   match = core.match(
-    /^(.+) rallies (.+): morale \+(\d+); next attack \+20%(; confusion cleared)?\.$/,
+    /^(.+) rallies (.+): morale \+(\d+); next (?:attack|normal attack, counterattack or Ambush hit) \+20%(; confusion cleared)?\.$/,
   );
   if (match)
     return finish(
-      `${person(match[1]!)}鼓舞${person(match[2]!)}：士气 +${match[3]}，下次攻击 +20%${match[4] ? '，混乱已解除' : ''}`,
+      `${person(match[1]!)}鼓舞${person(match[2]!)}：士气 +${match[3]}，下次普攻、反击或伏兵命中伤害 +20%${match[4] ? '，混乱已解除' : ''}`,
     );
   match = core.match(/^(.+) raids (.+)'s supplies: (\d+) food seized\.$/);
   if (match)

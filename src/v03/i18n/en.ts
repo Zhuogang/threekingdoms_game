@@ -166,8 +166,8 @@ export const en = {
   unitReady: 'Ready to act',
   unitMoved: 'Moved · action available',
   unitActed: 'Acted for today',
-  unitConfused: 'Confused',
-  unitInspired: 'Inspired',
+  unitConfused: 'Confused: next action lost',
+  unitInspired: 'Inspired: next hit +20%',
   journeyGroup: 'parties',
   'ui.waiting.0': 'waiting',
   'ui.returning.1': 'returning',
@@ -377,6 +377,10 @@ export const en = {
   'log.move': '{unit} moves to ({x}, {y}).',
   'log.wait': '{unit} holds position.',
   'log.confused': '{unit} loses its turn to confusion.',
+  tacticConfuseEffect:
+    'Skips the next activation, even after today’s action; Rally clears it. Does not stack.',
+  tacticRallyEffect:
+    'Clears confusion. One normal attack, counterattack or Ambush hit deals +20%; lasts until used, does not stack.',
   'log.tactic':
     '{source} uses {tactic} on {target}: casualties {casualties}, morale {morale}, food {food}; {success} ({chance}%).',
   'log.retreat': '{side} withdraws; {winner} holds the field.',

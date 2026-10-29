@@ -567,7 +567,7 @@ export function getAvailableBattleTactics(
         : unit.acted
           ? `${unit.name} has already acted today.`
           : unit.status === 'confused'
-            ? `${unit.name} is confused and will lose the rest of today.`
+            ? `${unit.name} is confused and will lose its next action.`
             : tacticReason(state, unit, tactic);
     return {
       tactic,
@@ -599,9 +599,6 @@ export function getBattleTacticTargets(
     .filter(
       (target) =>
         (tactic === 'rally' ? target.side === unit.side : target.side !== unit.side) &&
-        // Confusion only removes the target's upcoming action. Applying it after
-        // the target has acted would expire it at the day boundary without effect.
-        !(tactic === 'confuse' && target.acted) &&
         manhattanDistance(unit, target) <= range &&
         !(tactic === 'rockfall' && battleTerrainAt(state.map, target) === 'hill'),
     )
@@ -625,7 +622,6 @@ export function predictBattleTactic(
     source.acted ||
     source.status === 'confused' ||
     (tactic === 'rally' ? target.side !== source.side : target.side === source.side) ||
-    (tactic === 'confuse' && target.acted) ||
     (tactic === 'rockfall' && battleTerrainAt(state.map, target) === 'hill')
   )
     return null;
@@ -682,6 +678,24 @@ export function predictBattleTactic(
   };
 }
 
+/** Only damage paths using baseDamage qualify; Fire and Rockfall do not. */
+function consumeInspiredHit(source: TacticalBattleUnit, casualties: number): void {
+  if (casualties > 0 && source.status === 'inspired') source.status = 'normal';
+}
+
+/** One scheduled move/action opportunity, including a routed unit's hold. */
+function consumeConfusedActivation(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+): boolean {
+  if (unit.status !== 'confused' || unit.acted || unit.troops <= 0) return false;
+  unit.status = 'normal';
+  unit.moved = true;
+  unit.acted = true;
+  append(state, `${unit.name} loses its turn to confusion.`, 'log.confused', { unitId: unit.id });
+  return true;
+}
+
 function attackOneWay(
   state: V03TacticalBattleState,
   source: TacticalBattleUnit,
@@ -691,6 +705,7 @@ function attackOneWay(
   state.engaged = true;
   recordCombatCasualties(source, target, casualties);
   applyCombatDamage(target, casualties);
+  consumeInspiredHit(source, casualties);
   if (casualties > 0) {
     const moraleLoss = Math.min(
       45,
@@ -754,7 +769,8 @@ function performAttack(
   target: TacticalBattleUnit,
 ): string | null {
   if (source.acted) return `${source.name} has already acted today.`;
-  if (source.status === 'confused') return `${source.name} is confused and cannot act today.`;
+  if (source.status === 'confused')
+    return `${source.name} is confused and will lose its next action.`;
   if (isRouted(source)) return 'Routed units can only move or hold.';
   if (source.side === target.side || target.troops <= 0) return 'Choose a living enemy unit.';
   if (!isBattleAttackInRange(state.map, source, target, source.attackRange))
@@ -849,6 +865,7 @@ function performTactic(
       target,
       baseDamage(source, target, state.map) * variation * AMBUSH_DAMAGE_MULTIPLIER,
     );
+    consumeInspiredHit(source, casualties);
     message = `${source.name} ambushes ${target.name}: ${casualties} casualties`;
   } else if (tactic === 'rockfall') {
     const casualties = applyTacticDamage(state, source, target, rockfallBaseDamage(source, target));
@@ -867,7 +884,7 @@ function performTactic(
     const priorMorale = target.morale;
     target.morale = Math.min(100, target.morale + gain);
     target.status = 'inspired';
-    message = `${source.name} rallies ${target.name}: morale +${target.morale - priorMorale}; next attack +20%${priorStatus === 'confused' ? '; confusion cleared' : ''}`;
+    message = `${source.name} rallies ${target.name}: morale +${target.morale - priorMorale}; next normal attack, counterattack or Ambush hit +20%${priorStatus === 'confused' ? '; confusion cleared' : ''}`;
   } else {
     const taken = forecast.suppliesTransferred;
     state.supplies[target.side] -= taken;
@@ -914,7 +931,7 @@ function performAction(draft: V03TacticalBattleState, action: BattleAction): str
   if (!unit) return 'Select a living unit.';
   if (unit.side !== draft.playerSide) return 'You can command only your own units.';
   if (draft.outcome) return 'This battle has ended.';
-  if (unit.status === 'confused') return `${unit.name} is confused and cannot act today.`;
+  if (unit.status === 'confused') return `${unit.name} is confused and will lose its next action.`;
   if (action.type === 'tactic') {
     const target = unitById(draft, action.targetId);
     return target ? performTactic(draft, unit, action.tactic, target) : 'Choose a living target.';
@@ -1034,7 +1051,7 @@ function chooseAiTactic(
         if (target.status === 'confused' || target.morale < 60)
           value = forecast.moraleChange * 1.5 + (forecast.endsConfusion ? 180 : 0);
       } else if (entry.tactic === 'confuse') {
-        if (target.acted || target.status === 'confused') continue;
+        if (target.status === 'confused') continue;
         value = (forecast.chance / 100) * Math.max(40, target.troops * 0.045);
       } else if (entry.tactic === 'raidSupply') {
         if (forecast.suppliesTransferred <= 0) continue;
@@ -1125,13 +1142,7 @@ export function runBattleAiTurn(
   for (const unit of order) {
     if (draft.outcome) break;
     if (unit.acted || unit.troops <= 0) continue;
-    if (unit.status === 'confused') {
-      unit.status = 'normal';
-      unit.moved = true;
-      unit.acted = true;
-      append(draft, `${unit.name} loses its turn to confusion.`, 'log.confused', {
-        unitId: unit.id,
-      });
+    if (consumeConfusedActivation(draft, unit)) {
       trace('skip', unit);
       continue;
     }
@@ -1287,15 +1298,10 @@ export function advanceBattleDay(
   if (state.outcome) return state;
   let draft = structuredClone(state);
   for (const unit of livingUnits(draft, draft.playerSide)) {
-    if (!unit.acted) {
+    if (!unit.acted && !consumeConfusedActivation(draft, unit)) {
       unit.moved = true;
       unit.acted = true;
-      if (unit.status === 'confused') {
-        unit.status = 'normal';
-        append(draft, `${unit.name} loses its turn to confusion.`, 'log.confused', {
-          unitId: unit.id,
-        });
-      } else append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
+      append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
   draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders);
@@ -1324,7 +1330,7 @@ export function advanceBattleDay(
   for (const unit of draft.units) {
     unit.moved = false;
     unit.acted = false;
-    if (unit.status === 'confused' || unit.status === 'inspired') unit.status = 'normal';
+    // Effects survive rollover until their promised activation or hit is consumed.
   }
   append(draft, `Battle day ${draft.day} begins.`, 'log.day', { day: draft.day });
   return draft;

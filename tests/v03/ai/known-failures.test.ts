@@ -46,21 +46,18 @@ describe('v0.4 reproduced behavior requirements', () => {
     expect(plans[0]!.food).toBeLessThan(6000);
   });
 
-  unresolved(
-    'V04-03: Confuse can deny the next activation after a target has already acted',
-    () => {
-      const battle = decisionBattle();
-      const source = battle.units.find((unit) => unit.id === 'actor')!;
-      source.intellect = 120;
-      const target = battle.units.find((unit) => unit.id === 'strong')!;
-      target.acted = true;
-      expect(getBattleTacticTargets(battle, source.id, 'confuse').map((unit) => unit.id)).toContain(
-        target.id,
-      );
-    },
-  );
+  it('V04-03: Confuse can deny the next activation after a target has already acted', () => {
+    const battle = decisionBattle();
+    const source = battle.units.find((unit) => unit.id === 'actor')!;
+    source.intellect = 120;
+    const target = battle.units.find((unit) => unit.id === 'strong')!;
+    target.acted = true;
+    expect(getBattleTacticTargets(battle, source.id, 'confuse').map((unit) => unit.id)).toContain(
+      target.id,
+    );
+  });
 
-  unresolved('V04-03: the Inspired bonus is consumed by its first ordinary hit', () => {
+  it('V04-03: the Inspired bonus is consumed by its first ordinary hit', () => {
     const battle = decisionBattle();
     const source = battle.units.find((unit) => unit.id === 'actor')!;
     source.status = 'inspired';

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
 import { executeV03Command } from '../../../src/v03/commands';
 import { applyV03BattleAction } from '../../../src/v03/engine';
-import { completeV03BattleDay } from '../../../src/v03/engine';
+import { advanceV03, completeV03BattleDay } from '../../../src/v03/engine';
 import { runBattleAiTurn } from '../../../src/v03/battle';
 import { applyCombatDamage } from '../../../src/v03/battle/experience';
 import { allocatePersonnel, previewRetreat } from '../../../src/v03/campaign/battle-aftermath';
@@ -56,6 +56,99 @@ function battleFixture(setup?: (state: ReturnType<typeof createV03Game>) => void
 }
 
 describe('wounded combat and campaign aftermath', () => {
+  it.each([
+    ['attacker', 'manual'],
+    ['defender', 'manual'],
+    ['attacker', 'auto'],
+    ['defender', 'auto'],
+    ['attacker', 'npc'],
+    ['defender', 'npc'],
+  ] as const)(
+    'preserves Confuse through real campaign rollover/save and consumes once: %s/%s',
+    (seat, control) => {
+      const { state, battle } = battleFixture();
+      const playerFactionId =
+        control === 'npc'
+          ? 'sun'
+          : seat === 'attacker'
+            ? battle.attackerFactionId
+            : battle.defenderFactionId!;
+      state.playerFactionId = playerFactionId;
+      state.playerCapitalCityId = state.factions.find(
+        (entry) => entry.id === playerFactionId,
+      )!.capitalCityId;
+      state.factions.forEach((entry) => (entry.isPlayer = entry.id === playerFactionId));
+      battle.battleData.playerSide = seat;
+      battle.autoCommand = control !== 'manual';
+      const target = battle.battleData.units.find((entry) => entry.side === seat)!;
+      const caster = battle.battleData.units.find((entry) => entry.side !== seat)!;
+      battle.battleData.units.forEach((entry, i) =>
+        Object.assign(entry, { x: 20 + i, y: 15, acted: true, moved: true, morale: 100 }),
+      );
+      Object.assign(target, { x: 5, y: 5, troops: 5000, initialTroops: 5000, intellect: 0 });
+      Object.assign(caster, {
+        x: 8,
+        y: 5,
+        troopType: 'infantry',
+        troops: 100,
+        initialTroops: 100,
+        intellect: 120,
+        isMilitia: false,
+        acted: false,
+        moved: false,
+      });
+      battle.battleData.tacticPoints[caster.side] = 10;
+      battle.battleData.rngState = 2;
+      state.events.forEach((entry) => (entry.acknowledged = true));
+      const next =
+        control === 'manual'
+          ? completeV03BattleDay(state, battle.id).state
+          : advanceV03(state, 1).state;
+      const after = next.battles.find((entry) => entry.id === battle.id)!;
+      expect(after.battleData.units.find((entry) => entry.id === target.id)).toMatchObject({
+        status: 'confused',
+        acted: false,
+      });
+      let loaded = decodeV03Save(encodeV03Save(next));
+      const saved = loaded.battles.find((entry) => entry.id === battle.id)!;
+      saved.battleData.units.forEach((entry) => {
+        entry.acted = entry.id !== target.id;
+        entry.isMilitia = true;
+      });
+      loaded.events.forEach((entry) => (entry.acknowledged = true));
+      loaded =
+        control === 'manual'
+          ? completeV03BattleDay(loaded, battle.id).state
+          : advanceV03(loaded, 1).state;
+      const consumed = loaded.battles.find((entry) => entry.id === battle.id)!.battleData;
+      expect(consumed.units.find((entry) => entry.id === target.id)!.status).toBe('normal');
+      expect(
+        consumed.logEntries!.filter(
+          (entry) => entry.code === 'log.confused' && entry.params.unitId === target.id,
+        ),
+      ).toHaveLength(1);
+      expect(validateV03State(loaded)).toBe(true);
+    },
+  );
+
+  it('preserves an unused Inspired bonus through campaign day completion and save/load', () => {
+    const { state, battle, veteran } = battleFixture();
+    veteran.status = 'inspired';
+    battle.battleData.units.forEach((entry) => {
+      entry.acted = true;
+      entry.moved = true;
+    });
+    state.events.forEach((entry) => (entry.acknowledged = true));
+    const result = completeV03BattleDay(state, battle.id);
+    expect(result.ok).toBe(true);
+    const loaded = decodeV03Save(encodeV03Save(result.state));
+    expect(
+      loaded.battles
+        .find((entry) => entry.id === battle.id)!
+        .battleData.units.find((entry) => entry.id === veteran.id)!.status,
+    ).toBe('inspired');
+  });
+
   it.each(['attacker', 'defender'] as const)(
     'matches ration preview, fractional charge and reload for the %s side',
     (side) => {

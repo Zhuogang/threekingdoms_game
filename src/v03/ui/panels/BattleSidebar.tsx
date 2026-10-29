@@ -119,6 +119,14 @@ export function BattleSidebar({
                     ) : null}
                     {selectedTactic && tacticForecasts.has(unit.id) ? (
                       <small className="v03-tactic-forecast">
+                        {selectedTactic === 'confuse' || selectedTactic === 'rally' ? (
+                          <>
+                            {selectedTactic === 'confuse'
+                              ? t.tacticConfuseEffect
+                              : t.tacticRallyEffect}
+                            {' · '}
+                          </>
+                        ) : null}
                         {tacticLabel(selectedTactic, locale)} · {t.tacticChance}{' '}
                         {tacticForecasts.get(unit.id)?.chance ?? 0}%
                         {(tacticForecasts.get(unit.id)?.maxCasualties ?? 0) > 0 ? (

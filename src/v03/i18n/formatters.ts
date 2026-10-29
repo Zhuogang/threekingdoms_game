@@ -49,6 +49,15 @@ export function formatBattleLog(
   params.success = message(locale, params.success ? 'success' : 'refused');
   return (
     message(locale, entry.code as MessageKey, params) +
+    (entry.code === 'log.tactic' &&
+    entry.params.success &&
+    ['rally', 'confuse'].includes(String(entry.params.tactic))
+      ? ' ' +
+        message(
+          locale,
+          entry.params.tactic === 'rally' ? 'tacticRallyEffect' : 'tacticConfuseEffect',
+        )
+      : '') +
     (entry.code === 'log.attack' && entry.params.water ? message(locale, 'log.water', params) : '')
   );
 }

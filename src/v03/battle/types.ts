@@ -118,6 +118,7 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   cunning: boolean;
   attackRange: number;
   morale: number;
+  /** Confused skips one next activation; Inspired boosts one normal/counterattack/Ambush hit. Neither expires at day rollover. */
   status: 'normal' | 'confused' | 'inspired';
   moved: boolean;
   acted: boolean;
