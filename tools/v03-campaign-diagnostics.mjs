@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { createServer } from 'vite';
 import { aggregateResults, summarize } from './v03-campaign-diagnostics-helpers.mjs';
 import { executeNextAdjacentCampaignOrder } from './v03-campaign-bot.mjs';
 import { simulationFingerprint } from './simulation-fingerprint.mjs';
 
-const ROOT = process.cwd();
 const DEFAULT_OUTPUT = '.artifacts/v04/campaign-diagnostics.json';
 const FACTION_IDS = ['cao', 'liu', 'sun', 'yuan', 'dong', 'yan', 'ma'];
 const SCENARIO_IDS = ['divided-realm-190', 'guandu-200'];
@@ -25,6 +25,8 @@ function optionsFromArgs(args) {
     output: DEFAULT_OUTPUT,
     quick: false,
     traceLimit: 200,
+    runtime: '.',
+    onlyRun: null,
   };
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
@@ -34,9 +36,11 @@ function optionsFromArgs(args) {
     else if (arg === '--scenario') options.scenarios = [args[++index]];
     else if (arg === '--factions') options.factions = args[++index].split(',');
     else if (arg === '--output') options.output = args[++index];
+    else if (arg === '--runtime') options.runtime = args[++index];
+    else if (arg === '--only-run') options.onlyRun = args[++index];
     else if (arg === '--help') {
       console.log(
-        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--output path] [--trace-limit 200] [--quick]',
+        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--runtime path] [--only-run scenario/faction/development|held-out] [--output path] [--trace-limit 200] [--quick]. --only-run preserves the configured matrix faction index and seed; --factions changes that index.',
       );
       process.exit(0);
     } else throw new Error(`Unknown argument: ${arg}`);
@@ -52,6 +56,16 @@ function optionsFromArgs(args) {
     if (!SCENARIO_IDS.includes(scenario)) throw new Error(`Unknown scenario: ${scenario}`);
   for (const faction of options.factions)
     if (!FACTION_IDS.includes(faction)) throw new Error(`Unknown faction: ${faction}`);
+  if (options.onlyRun !== null) {
+    const [scenario, faction, cohort, extra] = options.onlyRun.split('/');
+    if (
+      extra !== undefined ||
+      !options.scenarios.includes(scenario) ||
+      !options.factions.includes(faction) ||
+      !RUNS.some((run) => run.cohort === cohort)
+    )
+      throw new Error('--only-run must select scenario/faction/cohort from the configured matrix.');
+  }
   if (
     !Number.isSafeInteger(options.traceLimit) ||
     options.traceLimit < 0 ||
@@ -63,18 +77,38 @@ function optionsFromArgs(args) {
 
 async function main() {
   const options = optionsFromArgs(process.argv.slice(2));
+  const ROOT = resolve(options.runtime);
+  const harnessFingerprint = async () =>
+    Object.fromEntries(
+      await Promise.all(
+        [
+          'v03-campaign-diagnostics.mjs',
+          'v03-campaign-bot.mjs',
+          'v03-campaign-diagnostics-helpers.mjs',
+          'simulation-fingerprint.mjs',
+        ].map(async (file) => [
+          file,
+          createHash('sha256')
+            .update(await readFile(new URL(file, import.meta.url)))
+            .digest('hex'),
+        ]),
+      ),
+    );
+  const harness = await harnessFingerprint();
   const fingerprints = await simulationFingerprint(ROOT, {
     months: options.months,
     scenarios: options.scenarios,
     factions: options.factions,
     cohorts: RUNS,
     policy: 'deterministic-adjacent-campaign-bot-v1',
+    onlyRun: options.onlyRun,
+    harness,
   });
   const server = await createServer({
     configFile: false,
     root: ROOT,
     logLevel: 'error',
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, hmr: false, ws: false },
   });
   const startedAt = performance.now();
   try {
@@ -96,7 +130,7 @@ async function main() {
     const checkpoints = [...new Set([Math.min(48, options.months), options.months])];
     const results = [];
     const unavailableFactions = {};
-    const outputPath = resolve(ROOT, options.output);
+    const outputPath = resolve(options.output);
     const saveReport = async (complete = false) => {
       const output = {
         schemaVersion: 2,
@@ -149,6 +183,7 @@ async function main() {
           unavailableFactions,
           cohorts: RUNS.map(({ cohort }) => cohort),
           months: options.months,
+          onlyRun: options.onlyRun,
           campaignCount: results.length,
         },
         fingerprints,
@@ -171,6 +206,11 @@ async function main() {
       for (let factionIndex = 0; factionIndex < eligibleFactions.length; factionIndex++) {
         const factionId = eligibleFactions[factionIndex];
         for (const cohort of RUNS) {
+          if (
+            options.onlyRun !== null &&
+            options.onlyRun !== `${scenarioId}/${factionId}/${cohort.cohort}`
+          )
+            continue;
           const decisions = createAiDecisionTrace(options.traceLimit);
           const observedCommand = (...args) =>
             withAiDecisionTrace(decisions, () => executeV03Command(...args));
@@ -312,6 +352,13 @@ async function main() {
         }
       }
     }
+    if (!results.length) throw new Error('The selected run is unavailable in its scenario.');
+    const after = await simulationFingerprint(ROOT, fingerprints.configuration);
+    if (
+      after.sourceSha256 !== fingerprints.sourceSha256 ||
+      JSON.stringify(await harnessFingerprint()) !== JSON.stringify(harness)
+    )
+      throw new Error('Runtime or diagnostic harness changed during the matrix.');
     await saveReport(true);
     console.log(`Wrote ${outputPath}`);
   } finally {

@@ -181,6 +181,12 @@ node tools/v04-campaign-replay.mjs . divided-realm-190 liu 970302 .artifacts/v04
 
 The legacy driver deliberately reproduces the old diagnostic's omitted selected-side ration remainder; campaign execution still charges actual rations. New scripted probes pass those fractions. Keep this distinction when comparing reports. The diagnostic matrices' runtime totals are not performance measurements.
 
+The existing matrix driver now accepts `--runtime` and `--only-run scenario/faction/cohort`, allowing independent cases to run against an immutable checkout without changing the configured faction index or its seed. Narrowing `--factions` alone still changes those indices and must not be used to reproduce a full-matrix seed. The tool fingerprints the external harness and helpers separately from the runtime and rejects source changes during a run. One-month Liu selections in both cohorts exactly match the original frozen driver, including complete result rows, checkpoints, traces and seeds `610302`/`970302`; local parity reports are `.artifacts/v04/shard-{original,development,held-out}.json`. For example:
+
+```sh
+node tools/v03-campaign-diagnostics.mjs --runtime .artifacts/v04/policy-runtime --months 96 --only-run guandu-200/cao/held-out --output .artifacts/v04/cao-96m.json
+```
+
 All **15 existing production browser tests** passed after installing the browser version required by the locked Playwright dependency. A new production test also passes: it restores objective memory from day 10 and produces exactly the same full day-20 state as uninterrupted play. The broad browser run passed **209 of 211 cases**. Its two failures were the English/Chinese variants of an existing typed-recruitment fixture that attempted three paid recruitments in one two-point work period, a limit already present in the frozen baseline. The fixture now advances ten real days before its third recruitment, retains its exact gold/type/experience assertions and reload checks, and **both affected cases pass**. This verifies all 211 cases across the full run and focused rerun; it is not a second full-suite run. Logs: `.artifacts/v04/browser-tests.log` and `browser-typed-recruitment-final.log`. Long-campaign evidence remains open. Production logs are `.artifacts/v04/production-tests-retry.log` and `production-objective-save.log`; the initial launch failures in `production-tests.log` occurred before a browser could start.
 
 ### Paired tactical policy increments
