@@ -6,7 +6,10 @@ import { surrenderStrandedReturn } from '../../../src/v03/campaign/stranded-retu
 import { decodeV03Save, encodeV03Save } from '../../../src/v03/platform/storage';
 import type { V03BattleState } from '../../../src/v03/types';
 import { formatEvent } from '../../../src/v03/i18n/events';
-import { strandedReturnFixture as fixture } from '../helpers/stranded-return-fixture';
+import {
+  strandedReturnFixture as fixture,
+  strandedReturnMonthEndFixture,
+} from '../helpers/stranded-return-fixture';
 
 describe('stranded return surrender', () => {
   it('captures actual healthy/wounded contingents and remaining cargo exactly once', () => {
@@ -93,6 +96,20 @@ describe('stranded return surrender', () => {
     expect(
       result.state.events.filter((event) => event.code === 'journey.strandedSurrender'),
     ).toHaveLength(1);
+    expect(decodeV03Save(encodeV03Save(result.state))).toEqual(result.state);
+  });
+
+  it('settles an unrelated battle when month-end succession eliminates the returning house', () => {
+    const { state, campaign } = strandedReturnMonthEndFixture();
+    const resumed = decodeV03Save(encodeV03Save(state));
+    const result = executeV03Command(state, { type: 'advance', days: 1 });
+    expect(result.ok, result.error).toBe(true);
+    expect(result.state.absoluteDay).toBe(30);
+    expect(result.state.phase).toBe('finished');
+    expect(result.state.battles.some((b) => b.attackerJourneyId === campaign.id)).toBe(true);
+    expect(result.state.battles.filter((b) => b.active)).toEqual([]);
+    expect(result.state.dayResolution).toBeNull();
+    expect(executeV03Command(resumed, { type: 'advance', days: 1 }).state).toEqual(result.state);
     expect(decodeV03Save(encodeV03Save(result.state))).toEqual(result.state);
   });
 

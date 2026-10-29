@@ -27410,5 +27410,18 @@
         ]
       }
     }
-  ]
+  ],
+  "terminalValidation": {
+    "finding": "One cc11536 command-complete endpoint fails save validation: finished phase with one active NPC battle. The selected-faction statistics remain correct but this endpoint is not a valid terminal save.",
+    "case": {
+      "scenario": "guandu-200",
+      "faction": "yuan",
+      "cohort": "development",
+      "seed": 610304,
+      "months": 96,
+      "day": 1260
+    },
+    "correctionEvidence": "surrender-month-end.json",
+    "note": "The paired continuation validates the later terminal-settlement correction from the same day-1230 save. These original full-matrix rows and fingerprints are preserved as cc11536 evidence."
+  }
 }

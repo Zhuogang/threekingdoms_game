@@ -66,3 +66,69 @@ export function strandedReturnFixture(player = 'yuan') {
   encodeV03Save(state);
   return { state, journey, target, officer };
 }
+
+export function strandedReturnMonthEndFixture() {
+  const { state } = strandedReturnFixture('cao');
+  state.absoluteDay = 29;
+  const services = createV03OrderServices();
+  const attacker = state.officers.find(
+    (o) =>
+      o.factionId === 'dong' && o.location.kind === 'city' && o.troops > 0 && !o.governorOfCityId,
+  )!;
+  const source = state.cities.find(
+    (c) => attacker.location.kind === 'city' && c.id === attacker.location.cityId,
+  )!;
+  const composition = { troopTypes: [attacker.troopType] };
+  const route = services.planRoute({
+    state,
+    movingFactionId: 'dong',
+    sourceCityId: source.id,
+    targetCityId: 'ye',
+    departureDay: 0,
+    troopCount: attacker.troops,
+    kind: 'campaign',
+    composition,
+  })!;
+  const campaign = services.createJourney({
+    id: 'npc-month-end',
+    executionId: 'npc-month-end:execution',
+    ownerFactionId: 'dong',
+    kind: 'campaign',
+    sourceCityId: source.id,
+    targetCityId: 'ye',
+    departureDay: 0,
+    arrivalDay: route.estimatedDays,
+    route,
+    party: { officerIds: [attacker.id], troopCount: attacker.troops, composition },
+    cargo: { gold: 0, food: 0, troops: 0 },
+    carriedFood: 1000,
+  });
+  source.garrisonTroops -= attacker.troops;
+  source.food -= 1000;
+  attacker.location = { kind: 'journey', journeyId: campaign.id };
+  campaign.segmentProgressKm = campaign.routeSnapshot.map((s) => s.lengthKm);
+  campaign.segmentProgressKm[campaign.segmentProgressKm.length - 1]! -= 1;
+  campaign.segmentWaitDays.fill(0);
+  campaign.elapsedDays = 29;
+  state.journeys.push(campaign);
+  state.directives.push({
+    id: campaign.executionId,
+    factionId: 'dong',
+    sourceCityId: source.id,
+    targetCityId: 'ye',
+    intent: 'conquer',
+    requestedTroops: attacker.troops,
+    proposedTroops: attacker.troops,
+    requestedByDay: null,
+    earliestDepartureDay: 0,
+    estimatedArrivalDay: campaign.expectedArrivalDay,
+    status: 'dispatched',
+    journeyId: campaign.id,
+    governanceRevision: state.governanceRevision,
+    message: 'Previously dispatched NPC expedition.',
+    officerIds: [attacker.id],
+  });
+  state.personnelDay = createPersonnelDay(state);
+  encodeV03Save(state);
+  return { state, campaign };
+}

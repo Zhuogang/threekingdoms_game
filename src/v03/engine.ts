@@ -2227,7 +2227,15 @@ export function reconcileV03Rulers(source: V03GameState): V03GameState {
       (faction.name !== leader.name || faction.chinese !== leader.chinese)
     );
   });
-  if (!needsSuccession && !rulerCity && !staleRulerNames) return source;
+  // Monthly succession may already have marked the house eliminated before
+  // this refresh, while unrelated arrivals have opened a battle. Complete the
+  // same terminal settlement even when no further succession is needed.
+  const needsTerminalSettlement =
+    faction.eliminated &&
+    (source.phase !== 'finished' ||
+      source.battles.some((battle) => battle.active) ||
+      source.dayResolution !== null);
+  if (!needsSuccession && !rulerCity && !staleRulerNames && !needsTerminalSettlement) return source;
   const state = cloneState(source);
   if (rulerCity) {
     cancelPendingGovernorAppointment(state, rulerCity.id, 'the ruler takes direct command');

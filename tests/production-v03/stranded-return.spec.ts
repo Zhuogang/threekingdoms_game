@@ -1,6 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
-import { strandedReturnFixture } from '../v03/helpers/stranded-return-fixture';
+import {
+  strandedReturnFixture,
+  strandedReturnMonthEndFixture,
+} from '../v03/helpers/stranded-return-fixture';
 
 const key = 'hegemony-v0.3:autosave';
 async function saved(page: Page) {
@@ -70,4 +73,32 @@ for (const locale of ['en', 'zh'] as const) {
       expect(errors).toEqual([]);
     });
   }
+}
+
+for (const locale of ['en', 'zh'] as const) {
+  test(`${locale}: month-end surrender saves after settling an unrelated battle`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const { state } = strandedReturnMonthEndFixture();
+    await page.goto(`./?lang=${locale}`);
+    await page.evaluate(({ key, payload }) => localStorage.setItem(key, payload), {
+      key,
+      payload: encodeV03Save(state),
+    });
+    await page.reload();
+    await page
+      .getByRole('button', { name: locale === 'en' ? 'Advance 1 day' : '推进一日', exact: true })
+      .click();
+    await expect.poll(async () => (await saved(page)).absoluteDay).toBe(30);
+    const ended = await saved(page);
+    expect(ended.phase).toBe('finished');
+    expect(ended.battles.length).toBeGreaterThan(0);
+    expect(ended.battles.every((b) => b.resolved && !b.active)).toBe(true);
+    expect(ended.dayResolution).toBeNull();
+    await page.reload();
+    expect(await saved(page)).toEqual(ended);
+    expect(errors).toEqual([]);
+  });
 }
