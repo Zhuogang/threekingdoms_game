@@ -75,6 +75,29 @@ function advanceOneDayAcknowledgingEvents(state: ReturnType<typeof createV03Game
 }
 
 describe('v0.3 engine rival campaign integration', () => {
+  it('V04-01 dispatches legal Jinyang at the actual month boundary when empty Pingyuan is allied', () => {
+    const initial = prepareRivalMonth();
+    const capital = initial.cities.find((city) => city.id === 'chenliu')!;
+    Object.assign(capital, { factionId: 'cao', governanceMode: 'ruler', garrisonTroops: 5000 });
+    initial.playerCapitalCityId = capital.id;
+    initial.factions.find((faction) => faction.id === 'cao')!.capitalCityId = capital.id;
+    const jinyang = initial.cities.find((city) => city.id === 'jinyang')!;
+    Object.assign(jinyang, { factionId: null, governanceMode: 'steward', garrisonTroops: 1000 });
+    const pingyuan = initial.cities.find((city) => city.id === 'pingyuan')!;
+    Object.assign(pingyuan, { factionId: 'cao', garrisonTroops: 0 });
+    for (const city of initial.cities)
+      if (!['ye', 'jinyang', 'pingyuan', 'chenliu'].includes(city.id)) city.garrisonTroops = 50_000;
+    initial.alliances.push({ a: 'yuan', b: 'cao', expiresMonthIndex: 3 });
+    const result = advanceV03(initial, 1).state;
+    expect(result.absoluteDay).toBe(30);
+    const campaigns = result.directives.filter((order) => order.factionId === 'yuan');
+    expect(campaigns).toHaveLength(1);
+    expect(campaigns[0]).toMatchObject({ targetCityId: 'jinyang', status: 'dispatched' });
+    expect(
+      result.journeys.find((journey) => journey.id === campaigns[0]!.journeyId)?.destinationCityId,
+    ).toBe('jinyang');
+  });
+
   it('dispatches a deterministic independent-city conquest at month settlement with exact accounting and a valid save', () => {
     const initial = prepareRivalMonth();
     const initialSource = initial.cities.find((city) => city.id === 'ye')!;

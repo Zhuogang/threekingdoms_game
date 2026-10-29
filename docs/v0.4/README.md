@@ -7,7 +7,7 @@ Active branch: `v0.4`. The [implementation plan](../implementation.md) defines t
 | Ticket                    | Status                                                                                      | Evidence / next acceptance                                                                                                   |
 | ------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | V04-00                    | Evidence foundation implemented; remaining behavior fixtures accompany their owning tickets | Ten-day telemetry, bounded actual-decision traces, full source fingerprints and six reproduced defects. Details below.       |
-| V04-01                    | Pending                                                                                     | Shared campaign legality, commit-time revalidation and bounded fallback.                                                     |
+| V04-01                    | Implemented                                                                                 | Shared campaign legality, commit-time revalidation and bounded fallback.                                                     |
 | V04-02                    | Pending                                                                                     | Actual rations, next unsettled economic boundary and city obligations.                                                       |
 | V04-03                    | Pending                                                                                     | Next eligible Confuse activation and one-hit Inspired lifetime, including saves and both seats.                              |
 | F05 / V04-07 early repair | Pending                                                                                     | Replace dominated restore-loyalty choice with legal security.                                                                |
@@ -35,6 +35,14 @@ The pre-change `fb6a650` baseline passed all **820** unit/integration tests on O
 
 Validation for this foundation: **88 targeted tests passed, six expected failures reproduced**, TypeScript passed, and both existing tactical performance tests passed their 50 ms p95 limit. Changed-file formatting and whitespace checks passed.
 
+## V04-01: legal campaigns and bounded fallback
+
+Planning and dispatch now share source, officer, commitment, ownership and alliance checks. The alliance is checked before ranking; the reproduced day-29-to-30 case dispatches toward legal Jinyang. Expiring treaties permit attack at their actual expiry boundary. Dispatch revalidates the route, party readiness, cavalry count, food and remaining garrison before allocating IDs or spending resources.
+
+Each faction receives at most three planning/commit attempts against the latest state and stops after one successful campaign. A stale ownership, alliance or target commitment triggers a legal alternative; failed candidates reserve nothing. This preserves the existing one-new-campaign-per-faction monthly allowance.
+
+Validation: **69 passing tests and five remaining expected failures** across campaign legality, strategic planning, real monthly dispatch, arrival ordering, save validation and evidence tools; TypeScript passed. Fifteen new tests cover harmless rejection, fallback, expiry and the dispatch limit, plus a real month-boundary regression. The previous F01 expected failure is now a passing regression. The frozen baseline completed 24 paired scenario/faction/cohort runs at both 90 days and 12 months; policy comparison is still pending.
+
 ## Completion boundary
 
-No policy ticket or release acceptance is complete yet. Four real player sessions (12 campaign months and at least three manual battles each), real low-end hardware measurement and artwork approval remain outstanding. Automated play and browser checks will be recorded separately and cannot substitute for those gates. The existing 40 formatting failures in unchanged asset/source records predate v0.4; changed files must pass formatting.
+V04-01 is implemented; remaining policy tickets and release acceptance are still open. Four real player sessions (12 campaign months and at least three manual battles each), real low-end hardware measurement and artwork approval remain outstanding. Automated play and browser checks will be recorded separately and cannot substitute for those gates. The existing 40 formatting failures in unchanged asset/source records predate v0.4; changed files must pass formatting.

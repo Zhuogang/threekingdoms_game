@@ -1,7 +1,11 @@
+import type { RivalCampaignBlock } from './campaign-legality';
 import type { BattleSide, BattleTactic } from '../battle/types';
 import type { GovernorWorkReasonCode } from '../governance/autonomy';
 
 export type CampaignDecisionReason =
+  | RivalCampaignBlock
+  | 'stale-plan'
+  | 'invalid-party'
   | 'source-busy'
   | 'friendly-target'
   | 'target-busy'

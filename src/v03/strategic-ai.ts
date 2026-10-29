@@ -1,5 +1,11 @@
 import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
-import { isCityCommitted } from './governance/commitments';
+import {
+  busyCampaignTargets,
+  rivalCampaignSourceBlock,
+  rivalCampaignTargetBlock,
+  isRivalCampaignOfficerAvailable,
+} from './ai/campaign-legality';
+import { committedCityStock } from './governance/city-actions';
 /**
  * Deterministic monthly rival campaign planning for v0.3.
  *
@@ -17,17 +23,8 @@ import {
 import { createV03OrderServices } from './governance/services';
 import type { OrderPartyPlan, OrderRoutePlan, PlanRouteInput } from './governance/orders';
 import { ROUTE_BY_ID, routeIdBetween, type CityId } from './geography';
-import type { V03CampaignDirective, V03GameState, V03Officer, V03OrderStatus } from './types';
+import type { V03GameState, V03Officer } from './types';
 
-const ACTIVE_DIRECTIVE_STATUSES: readonly V03OrderStatus[] = [
-  'requested',
-  'proposed',
-  'waiting',
-  'accepted',
-  'reserved',
-  'dispatched',
-];
-const ACTIVE_JOURNEY_STATUSES = new Set(['outbound', 'returning', 'waiting']);
 const CAMPAIGN_BATTLE_RESERVE_DAYS = 30;
 const MAX_OFFICERS_PER_PARTY = 10;
 
@@ -67,6 +64,9 @@ export interface StrategicAiPlannerOptions {
   services?: StrategicAiPlannerServices;
   /** Number of new attacks a rival may plan at one monthly boundary; defaults to one. */
   maxPlansPerFaction?: number;
+  /** A monthly retry refreshes one faction's alternatives against the latest state. */
+  factionId?: string;
+  excludedCandidates?: readonly Pick<StrategicRivalCampaignPlan, 'sourceCityId' | 'targetCityId'>[];
 }
 
 interface Candidate extends StrategicRivalCampaignPlan {
@@ -83,50 +83,9 @@ function compareIds(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-function isActiveDirective(directive: V03CampaignDirective): boolean {
-  return ACTIVE_DIRECTIVE_STATUSES.includes(directive.status);
-}
-
-function activeCampaignJourneys(state: Readonly<V03GameState>) {
-  return state.journeys.filter(
-    (journey) => journey.kind === 'campaign' && ACTIVE_JOURNEY_STATUSES.has(journey.status),
-  );
-}
-
 function protectedMinimumGarrison(troops: number): number {
   // Keep the authority layer's established minimum: 35% of the garrison, capped at 1,000.
   return Math.min(1000, Math.ceil(troops * 0.35));
-}
-
-function reservedSourceTroops(state: Readonly<V03GameState>, cityId: string): number {
-  const requisitions = state.requisitions
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        ['accepted', 'reserved', 'dispatched'].includes(order.status),
-    )
-    .reduce((total, order) => total + order.proposed.troops, 0);
-  const directives = state.directives
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        ['accepted', 'reserved', 'dispatched'].includes(order.status),
-    )
-    .reduce((total, order) => total + order.proposedTroops, 0);
-  return requisitions + directives;
-}
-
-function reservedSourceFood(state: Readonly<V03GameState>, cityId: string): number {
-  return state.requisitions
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        ['accepted', 'reserved', 'dispatched'].includes(order.status),
-    )
-    .reduce((total, order) => total + order.proposed.food, 0);
 }
 
 function availableOfficers(
@@ -136,15 +95,7 @@ function availableOfficers(
   leaderOfficerId: string,
 ): V03Officer[] {
   return state.officers
-    .filter(
-      (officer) =>
-        officer.alive &&
-        officer.factionId === factionId &&
-        officer.location.kind === 'city' &&
-        officer.location.cityId === cityId &&
-        officer.troops > 0 &&
-        officer.reorganizationDays === 0,
-    )
+    .filter((officer) => isRivalCampaignOfficerAvailable(state, officer, factionId, cityId))
     .sort((a, b) => {
       const leaderOrder = Number(b.id === leaderOfficerId) - Number(a.id === leaderOfficerId);
       return leaderOrder || b.force - a.force || b.troops - a.troops || compareIds(a.id, b.id);
@@ -180,33 +131,6 @@ function buildParty(
     troopCount,
     composition,
   };
-}
-
-function hasActiveSourceOrder(state: Readonly<V03GameState>, cityId: string): boolean {
-  if (
-    state.directives.some(
-      (directive) => directive.sourceCityId === cityId && isActiveDirective(directive),
-    )
-  )
-    return true;
-  return activeCampaignJourneys(state).some((journey) => journey.sourceCityId === cityId);
-}
-
-function getBusyCampaignTargets(state: Readonly<V03GameState>): Set<string> {
-  const busy = new Set<string>();
-  for (const directive of state.directives) {
-    if (isActiveDirective(directive)) busy.add(directive.targetCityId);
-  }
-  for (const journey of activeCampaignJourneys(state)) busy.add(journey.destinationCityId);
-  for (const battle of state.battles) {
-    if (!battle.active || battle.resolved) continue;
-    for (const journeyId of [battle.attackerJourneyId, battle.defenderJourneyId]) {
-      if (!journeyId) continue;
-      const journey = state.journeys.find((entry) => entry.id === journeyId);
-      if (journey) busy.add(journey.destinationCityId);
-    }
-  }
-  return busy;
 }
 
 function validateRoute(
@@ -272,7 +196,7 @@ function makeCandidate(
   const routeDefinition = ROUTE_BY_ID.get(routeId);
   if (!routeDefinition) return reject('no-route');
 
-  const reservedTroops = reservedSourceTroops(state, sourceCityId);
+  const reservedTroops = committedCityStock(state, sourceCityId).troops;
   const troopLimit = Math.max(
     0,
     source.garrisonTroops - reservedTroops - protectedMinimumGarrison(source.garrisonTroops),
@@ -308,7 +232,7 @@ function makeCandidate(
   } catch {
     return reject('invalid-supply');
   }
-  const availableFood = source.food - reservedSourceFood(state, sourceCityId);
+  const availableFood = source.food - committedCityStock(state, sourceCityId).food;
   if (!Number.isSafeInteger(supply.totalFood) || supply.totalFood <= 0)
     return reject('invalid-supply');
   recordAiDecision({
@@ -375,14 +299,17 @@ export function planStrategicRivalCampaigns(
   if (!Number.isSafeInteger(maxPlansPerFaction) || maxPlansPerFaction < 1) return [];
 
   const services = options.services ?? defaultPlannerServices;
-  const factionsById = new Map(state.factions.map((faction) => [faction.id, faction]));
-  const busyTargets = getBusyCampaignTargets(state);
+  const busyTargets = busyCampaignTargets(state);
   const plannedTargets = new Set<string>();
   const result: StrategicRivalCampaignPlan[] = [];
 
   const rivalFactions = state.factions
     .filter(
-      (faction) => faction.id !== state.playerFactionId && !faction.isPlayer && !faction.eliminated,
+      (faction) =>
+        faction.id !== state.playerFactionId &&
+        !faction.isPlayer &&
+        !faction.eliminated &&
+        (!options.factionId || faction.id === options.factionId),
     )
     .sort((a, b) => compareIds(a.id, b.id));
 
@@ -393,31 +320,40 @@ export function planStrategicRivalCampaigns(
     const candidates: Candidate[] = [];
 
     for (const source of ownedCities) {
-      if (isCityCommitted(state, source.id) || hasActiveSourceOrder(state, source.id)) {
+      const sourceBlock = rivalCampaignSourceBlock(state, faction.id, source.id);
+      if (sourceBlock) {
         recordAiDecision({
           kind: 'campaign',
           day: state.absoluteDay,
           factionId: faction.id,
           sourceCityId: source.id,
           status: 'rejected',
-          reason: 'source-busy',
+          reason: sourceBlock,
         });
         continue;
       }
       for (const target of state.cities) {
         if (
-          target.id === source.id ||
-          target.factionId === faction.id ||
-          busyTargets.has(target.id) ||
-          plannedTargets.has(target.id)
+          options.excludedCandidates?.some(
+            (previous) =>
+              previous.sourceCityId === source.id && previous.targetCityId === target.id,
+          )
         )
           continue;
-        // Independent cities are valid conquests. They are often the only
-        // bridge between rival territories, so excluding them can stall a
-        // faction even when it has troops and adjacent expansion options.
-        if (target.factionId) {
-          const targetFaction = factionsById.get(target.factionId);
-          if (!targetFaction || targetFaction.eliminated) continue;
+        const targetBlock = plannedTargets.has(target.id)
+          ? 'target-busy'
+          : rivalCampaignTargetBlock(state, faction.id, target.id, busyTargets);
+        if (targetBlock) {
+          recordAiDecision({
+            kind: 'campaign',
+            day: state.absoluteDay,
+            factionId: faction.id,
+            sourceCityId: source.id,
+            targetCityId: target.id,
+            status: 'rejected',
+            reason: targetBlock,
+          });
+          continue;
         }
 
         const candidate = makeCandidate(

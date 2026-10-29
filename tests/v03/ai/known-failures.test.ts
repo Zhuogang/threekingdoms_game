@@ -12,7 +12,7 @@ const unresolved = process.env.V04_REPRODUCE_FAILURES === '1' ? it : it.fails;
 
 /** These expected failures establish reviewed defects; convert each to a normal regression in its ticket. */
 describe('v0.4 reproduced behavior requirements', () => {
-  unresolved('V04-01: an allied empty city cannot mask a legal independent target', () => {
+  it('V04-01: an allied empty city cannot mask a legal independent target', () => {
     const state = rivalDecisionFixture();
     Object.assign(
       state.cities.find((city) => city.id === 'pingyuan')!,

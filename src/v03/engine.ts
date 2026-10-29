@@ -1,4 +1,9 @@
-import { recordAiDecision } from './ai/decision-trace';
+import {
+  rivalCampaignSourceBlock,
+  rivalCampaignTargetBlock,
+  isRivalCampaignOfficerAvailable,
+} from './ai/campaign-legality';
+import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
 import { recoverPersonnelDay } from './campaign/personnel-recovery';
 import { planOfficerDebuts } from './campaign/officer-lifecycle';
 import { isCityCommitted } from './governance/commitments';
@@ -69,7 +74,11 @@ import {
   installPersonalRule,
 } from './governance/appointments';
 import { applyGovernorMonthlyWork, planGovernorMonthlyWork } from './governance/autonomy';
-import { CITY_WORK_PERIOD_DAYS, initializeCityWorkPeriods } from './governance/city-actions';
+import {
+  CITY_WORK_PERIOD_DAYS,
+  initializeCityWorkPeriods,
+  committedCityStock,
+} from './governance/city-actions';
 import { availableCityResources } from './governance/authority';
 import { planStrategicRivalCampaigns, type StrategicRivalCampaignPlan } from './strategic-ai';
 import type {
@@ -85,21 +94,6 @@ import type {
 
 const RESOURCE_CAP = 9_999_999;
 const FOOD_MICRO = 1_000_000;
-const ACTIVE_CAMPAIGN_ORDER_STATUSES = [
-  'requested',
-  'proposed',
-  'waiting',
-  'accepted',
-  'reserved',
-  'dispatched',
-] as const;
-
-function isActiveCampaignStatus(status: V03CampaignDirective['status']): boolean {
-  return ACTIVE_CAMPAIGN_ORDER_STATUSES.includes(
-    status as (typeof ACTIVE_CAMPAIGN_ORDER_STATUSES)[number],
-  );
-}
-
 function cloneState(state: V03GameState): V03GameState {
   return structuredClone(state);
 }
@@ -278,7 +272,7 @@ function groupOfficers(officers: readonly V03Officer[], limit = 10): FormationGr
   const sorted = officers
     .filter((entry) => entry.troops > 0)
     .slice()
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const representatives = [...new Set(sorted.map((officer) => officer.troopType))].map((type) =>
     sorted.find((officer) => officer.troopType === type)!,
   );
@@ -1368,113 +1362,37 @@ function unloadJourneyAtCity(state: V03GameState, journey: V03Journey, target: V
   return true;
 }
 
-function reservedCampaignTroops(state: V03GameState, cityId: string): number {
-  const activeReservation = (status: string) =>
-    status === 'accepted' || status === 'reserved' || status === 'dispatched';
-  const requisitions = state.requisitions
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        activeReservation(order.status),
-    )
-    .reduce((sum, order) => sum + order.proposed.troops, 0);
-  const directives = state.directives
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        activeReservation(order.status),
-    )
-    .reduce((sum, order) => sum + order.proposedTroops, 0);
-  return requisitions + directives;
-}
-
-function reservedCampaignFood(state: V03GameState, cityId: string): number {
-  return state.requisitions
-    .filter(
-      (order) =>
-        order.sourceCityId === cityId &&
-        order.journeyId === null &&
-        (order.status === 'accepted' ||
-          order.status === 'reserved' ||
-          order.status === 'dispatched'),
-    )
-    .reduce((sum, order) => sum + order.proposed.food, 0);
-}
-
-function isCampaignJourneyActive(journey: V03Journey): boolean {
-  return (
-    journey.kind === 'campaign' &&
-    (journey.status === 'outbound' ||
-      journey.status === 'returning' ||
-      journey.status === 'waiting')
-  );
-}
-
-function hasConflictingRivalOperation(
-  state: V03GameState,
-  sourceCityId: string,
-  targetCityId: string,
-): boolean {
-  if (
-    state.directives.some(
-      (directive) =>
-        isActiveCampaignStatus(directive.status) &&
-        (directive.sourceCityId === sourceCityId || directive.targetCityId === targetCityId),
-    )
-  )
-    return true;
-  if (
-    state.journeys.some(
-      (journey) =>
-        isCampaignJourneyActive(journey) &&
-        (journey.sourceCityId === sourceCityId || journey.destinationCityId === targetCityId),
-    )
-  )
-    return true;
-  return state.battles.some((battle) => {
-    if (!battle.active || battle.resolved) return false;
-    return [battle.attackerJourneyId, battle.defenderJourneyId].some((journeyId) => {
-      if (!journeyId) return false;
-      return (
-        state.journeys.find((journey) => journey.id === journeyId)?.destinationCityId ===
-        targetCityId
-      );
-    });
-  });
-}
-
-function dispatchRivalCampaignPlan(
+/** Internal monthly commit boundary: failed plans preserve state and assigned IDs. */
+export function dispatchRivalCampaignPlan(
   state: V03GameState,
   plan: StrategicRivalCampaignPlan,
-  alreadyAssignedOfficerIds: Set<string>,
+  alreadyAssignedOfficerIds: Set<string> = new Set(),
 ): boolean {
-  const faction = state.factions.find((entry) => entry.id === plan.factionId);
-  const source = state.cities.find((entry) => entry.id === plan.sourceCityId);
-  const target = state.cities.find((entry) => entry.id === plan.targetCityId);
-  if (
-    !faction ||
-    faction.isPlayer ||
-    faction.eliminated ||
-    plan.factionId === state.playerFactionId ||
-    !source ||
-    source.factionId !== plan.factionId ||
-    !target ||
-    target.factionId === plan.factionId ||
-    (target.factionId !== null &&
-      (getV03AttackAllianceBlock(
-        state.alliances,
-        plan.factionId,
-        target.factionId,
-        state.monthIndex,
-      ) !== null ||
-        state.factions.find((entry) => entry.id === target.factionId)?.eliminated)) ||
-    plan.departureDay !== state.absoluteDay ||
-    plan.intent !== 'conquer' ||
-    hasConflictingRivalOperation(state, plan.sourceCityId, plan.targetCityId)
-  )
+  const reject = (reason: CampaignDecisionReason) => {
+    recordAiDecision({
+      kind: 'campaign',
+      day: state.absoluteDay,
+      factionId: plan.factionId,
+      sourceCityId: plan.sourceCityId,
+      targetCityId: plan.targetCityId,
+      status: 'execution-rejected',
+      reason,
+    });
     return false;
+  };
+  const block =
+    rivalCampaignSourceBlock(state, plan.factionId, plan.sourceCityId) ??
+    rivalCampaignTargetBlock(state, plan.factionId, plan.targetCityId);
+  if (block) return reject(block);
+  const faction = state.factions.find((entry) => entry.id === plan.factionId)!;
+  const source = state.cities.find((entry) => entry.id === plan.sourceCityId)!;
+  const target = state.cities.find((entry) => entry.id === plan.targetCityId)!;
+  if (
+    state.phase === 'finished' ||
+    plan.departureDay !== state.absoluteDay ||
+    plan.intent !== 'conquer'
+  )
+    return reject('stale-plan');
 
   const officerIds = [...plan.party.officerIds];
   if (
@@ -1491,36 +1409,55 @@ function dispatchRivalCampaignPlan(
     plan.party.composition.troopTypes.length !== officerIds.length ||
     plan.party.composition.heavySupplyTrain !== true
   )
-    return false;
+    return reject('invalid-party');
 
   const officers = officerIds.map((id) => state.officers.find((entry) => entry.id === id));
   if (
     officers.some(
       (officer) =>
-        !officer ||
-        !officer.alive ||
-        officer.factionId !== plan.factionId ||
-        officer.location.kind !== 'city' ||
-        officer.location.cityId !== plan.sourceCityId ||
-        officer.troops <= 0,
+        !isRivalCampaignOfficerAvailable(state, officer, plan.factionId, plan.sourceCityId),
     )
   )
-    return false;
+    return reject('invalid-party');
   const rosteredTroops = officers.reduce((sum, officer) => sum + (officer?.troops ?? 0), 0);
   if (
     rosteredTroops !== plan.requestedTroops ||
+    officers.reduce(
+      (sum, officer) => sum + (officer?.troopType === 'cavalry' ? officer.troops : 0),
+      0,
+    ) !== plan.party.composition.cavalryTroops ||
     officers.some(
       (officer, index) => officer?.troopType !== plan.party.composition.troopTypes[index],
     )
   )
-    return false;
+    return reject('invalid-party');
 
   const protectedGarrison = Math.min(1000, Math.ceil(source.garrisonTroops * 0.35));
   if (
-    source.garrisonTroops - reservedCampaignTroops(state, source.id) - plan.requestedTroops <
+    source.garrisonTroops - committedCityStock(state, source.id).troops - plan.requestedTroops <
     protectedGarrison
   )
-    return false;
+    return reject('invalid-party');
+
+  try {
+    const currentRoute = createV03OrderServices().planRoute({
+      state,
+      sourceCityId: source.id,
+      targetCityId: target.id,
+      departureDay: state.absoluteDay,
+      troopCount: plan.requestedTroops,
+      kind: 'campaign',
+      composition: plan.party.composition,
+    });
+    if (
+      !currentRoute ||
+      JSON.stringify(currentRoute) !== JSON.stringify(plan.route) ||
+      plan.estimatedArrivalDay !== state.absoluteDay + currentRoute.estimatedDays
+    )
+      return reject('invalid-route');
+  } catch {
+    return reject('invalid-route');
+  }
 
   const supply = estimateCampaignSupply({
     troopCount: plan.requestedTroops,
@@ -1532,9 +1469,9 @@ function dispatchRivalCampaignPlan(
   if (
     plan.food !== supply.totalFood ||
     plan.supply.totalFood !== supply.totalFood ||
-    source.food - reservedCampaignFood(state, source.id) < plan.food
+    source.food - committedCityStock(state, source.id).food < plan.food
   )
-    return false;
+    return reject('unaffordable');
 
   const directiveId = `${state.scenarioId}:directive:${state.nextId}`;
   const journeyId = `${state.scenarioId}:journey:${state.nextId + 1}`;
@@ -1556,7 +1493,7 @@ function dispatchRivalCampaignPlan(
       carriedFood: plan.food,
     });
   } catch {
-    return false;
+    return reject('invalid-route');
   }
   if (
     journey.id !== journeyId ||
@@ -1569,7 +1506,7 @@ function dispatchRivalCampaignPlan(
     journey.manifest.officerIds.length !== officerIds.length ||
     journey.manifest.officerIds.some((id, index) => id !== officerIds[index])
   )
-    return false;
+    return reject('invalid-party');
 
   const directive: V03CampaignDirective = {
     id: directiveId,
@@ -1602,31 +1539,41 @@ function dispatchRivalCampaignPlan(
     state,
     `${faction.name} dispatched ${plan.requestedTroops} troops from ${source.name} toward ${target.name}; ${plan.food} food is committed for the march and campaign.`,
   );
+  recordAiDecision({
+    kind: 'campaign',
+    day: state.absoluteDay,
+    factionId: plan.factionId,
+    sourceCityId: source.id,
+    targetCityId: target.id,
+    status: 'committed',
+    reason: 'dispatch-revalidation',
+    troops: plan.requestedTroops,
+    food: plan.food,
+    travelDays: plan.route.estimatedDays,
+    journeyId,
+  });
   return true;
 }
 
-function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
-  // Monthly strategic decisions continue while the global UI is in a manual battle.
-  const planningSnapshot = state;
-  // Keep each rival to one new campaign per monthly boundary. The planner
-  // validates supply, routes and reserves from one snapshot.
-  const plans = planStrategicRivalCampaigns(planningSnapshot);
+export function dispatchMonthlyRivalCampaigns(state: V03GameState): void {
+  const factions = state.factions
+    .filter(
+      (faction) => !faction.isPlayer && faction.id !== state.playerFactionId && !faction.eliminated,
+    )
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const assignedOfficerIds = new Set<string>();
-  for (const plan of plans) {
-    const committed = dispatchRivalCampaignPlan(state, plan, assignedOfficerIds);
-    recordAiDecision({
-      kind: 'campaign',
-      day: state.absoluteDay,
-      factionId: plan.factionId,
-      sourceCityId: plan.sourceCityId,
-      targetCityId: plan.targetCityId,
-      status: committed ? 'committed' : 'execution-rejected',
-      reason: 'dispatch-revalidation',
-      troops: plan.requestedTroops,
-      food: plan.food,
-      travelDays: plan.route.estimatedDays,
-      journeyId: committed ? state.journeys.at(-1)?.id : undefined,
-    });
+  for (const faction of factions) {
+    const attempted: StrategicRivalCampaignPlan[] = [];
+    // Three attempts at most; failed proposals never consume the one successful dispatch allowance.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const plan = planStrategicRivalCampaigns(state, {
+        factionId: faction.id,
+        excludedCandidates: attempted,
+      })[0];
+      if (!plan) break;
+      attempted.push(plan);
+      if (dispatchRivalCampaignPlan(state, plan, assignedOfficerIds)) break;
+    }
   }
 }
 
