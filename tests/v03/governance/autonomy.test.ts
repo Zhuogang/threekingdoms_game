@@ -70,6 +70,29 @@ function hostileJourney(cityId: string): V03Journey {
 }
 
 describe('v0.3 governor monthly work planning', () => {
+  it('V04-F05 chooses free security when relief cannot spare food, instead of paying 80 gold for +2', () => {
+    const { state, cityId } = fixture();
+    const city = state.cities.find((entry) => entry.id === cityId)!;
+    Object.assign(city, {
+      food: 600,
+      gold: 1000,
+      loyalty: 40,
+      garrisonTroops: 0,
+      reserve: 0,
+      reservePools: createReservePools(),
+    });
+    for (const officer of state.officers)
+      if (officer.location.kind === 'city' && officer.location.cityId === cityId)
+        Object.assign(officer, { troops: 0, wounded: 0, troopExperience: 0 });
+    const plan = planGovernorMonthlyWork(state, cityId);
+    expect(plan).toMatchObject({ action: 'security', goldCost: 0, foodCost: 0, workPoints: 1 });
+    const applied = applyGovernorMonthlyWork(state, plan);
+    expect(applied.applied).toBe(true);
+    expect(applied.city!.gold).toBe(1000);
+    expect(applied.city!.food).toBe(600);
+    expect(applied.city!.loyalty).toBe(40 + 8 + Math.floor(plan.managerIntellectAtPlan / 20));
+  });
+
   it('refills an injured non-governor after earlier monthly work, preserving experience and same-type reserves', () => {
     const { state, cityId } = fixture();
     const city = state.cities.find((entry) => entry.id === cityId)!;

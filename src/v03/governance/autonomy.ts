@@ -350,11 +350,8 @@ export function planGovernorMonthlyWork(
       )
     )
       return plan;
-    if (
-      city.loyalty < 50 &&
-      offer('restore-loyalty', 'low-loyalty', 'Restore struggling city loyalty.')
-    )
-      return plan;
+    // Security is free and restores at least eight loyalty for the same work point.
+    // Retain restore-loyalty only as a legacy command/report name.
     if (offer('security', 'public-order', 'Restore public order before optional work.'))
       return plan;
     return none();

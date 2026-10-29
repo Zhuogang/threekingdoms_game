@@ -10,7 +10,7 @@ Active branch: `v0.4`. The [implementation plan](../implementation.md) defines t
 | V04-01                    | Implemented                                                                                 | Shared campaign legality, commit-time revalidation and bounded fallback.                                                     |
 | V04-02                    | Implemented                                                                                 | Actual rations, next unsettled economic boundary and city obligations.                                                       |
 | V04-03                    | Implemented                                                                                 | Next eligible Confuse activation and one-hit Inspired lifetime, including saves and both seats.                              |
-| F05 / V04-07 early repair | Pending                                                                                     | Replace dominated restore-loyalty choice with legal security.                                                                |
+| F05 / V04-07 early repair | Implemented                                                                                 | Replace dominated restore-loyalty choice with legal security.                                                                |
 | V04-04                    | Pending                                                                                     | Compare ordinary attacks, tactics and hold on consistent costs and benefits.                                                 |
 | V04-05                    | Pending                                                                                     | Bounded movement/action alternatives, preservation and coordination.                                                         |
 | V04-06                    | Pending                                                                                     | Viable party sizes, defensive exposure, provisions and justified waiting.                                                    |
@@ -60,6 +60,10 @@ Confuse now targets a living enemy even after that enemy acted. The status persi
 Inspired persists until one ordinary attack, counterattack or Ambush hit consumes the bonus. Fire/Rockfall neither benefit nor consume it, and repeated Rally does not stack multipliers. Forecasts retain the same damage calculation as execution. The existing status enum already serializes these pending effects, so no save field or format migration was necessary. Previews, status labels, English/Chinese logs and Wiki explain the clarified lifetime.
 
 Validation: **11 focused status tests** passed, including mirrored seats, acted targets, routed/dead units, repeated casts, Rally removal, ordinary/counterattack/Ambush consumption and unused-day persistence. **Seven campaign/save tests** cover both seats under manual/auto/NPC control and an unused Inspired effect. Existing battle and bilingual-feedback checks passed; TypeScript and formatting passed. The two V04-03 expected failures are now ordinary passing regressions; three policy defects remain expected failures.
+
+## F05: useful loyalty recovery
+
+Reproduced the 80-gold, +2 loyalty choice when relief cannot spare protected food. Governors now choose the existing free security action (at least +8 loyalty, one work point). Shared player/NPC action costs and effects are unchanged; the old restore-loyalty command/report name remains compatible, but autonomy no longer selects it. The focused regression verifies the committed gain, unchanged food/gold and work cost; governance tests passed.
 
 ## Completion boundary
 
