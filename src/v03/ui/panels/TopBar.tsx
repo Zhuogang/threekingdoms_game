@@ -68,11 +68,26 @@ export function TopBar({
                 ? t.battleDaySubmitted
                 : t.advanceBattle}
           </Button>
+        ) : state.phase === 'finished' ? (
+          // Time no longer moves; point to the menu that starts another campaign.
+          <Button
+            type="button"
+            className="v03-primary"
+            onClick={() => {
+              setScenarioId(state.scenarioId);
+              setFactionId(state.playerFactionId);
+              setShowCampaignMenu(true);
+            }}
+          >
+            {message(locale, 'topbar.campaignEnded')}
+          </Button>
         ) : (
           <>
             <Button
               type="button"
               disabled={context.hasUnsubmittedBattleDay}
+              aria-keyshortcuts="Space"
+              title={message(locale, 'topbar.hotkey', { p0: message(locale, 'topbar.key.space') })}
               onClick={() => dispatch({ type: 'advance', days: 1 })}
             >
               {t.advanceDay}
@@ -80,6 +95,10 @@ export function TopBar({
             <Button
               type="button"
               disabled={activeBattles.some((battle) => !battle.autoCommand)}
+              aria-keyshortcuts="Shift+Space"
+              title={message(locale, 'topbar.hotkey', {
+                p0: message(locale, 'topbar.key.shiftSpace'),
+              })}
               onClick={() => dispatch({ type: 'advance', days: 10 })}
             >
               {t.advanceTen}
@@ -87,13 +106,19 @@ export function TopBar({
             <Button
               type="button"
               disabled={activeBattles.some((battle) => !battle.autoCommand)}
+              aria-keyshortcuts="N"
+              title={message(locale, 'topbar.hotkey', { p0: 'N' })}
               onClick={() => dispatch({ type: 'advance', days: 'nextEvent' })}
             >
               {t.nextEvent}
             </Button>
           </>
         )}
-        <Button onClick={() => context.setShowReports(true)}>
+        <Button
+          aria-keyshortcuts="I"
+          title={message(locale, 'topbar.hotkey', { p0: 'I' })}
+          onClick={() => context.setShowReports(true)}
+        >
           {message(locale, 'ui.inbox.118')} (
           {
             new Set(

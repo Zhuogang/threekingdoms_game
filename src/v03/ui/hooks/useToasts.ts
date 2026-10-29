@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { COPY, message, type MessageKey } from '../../i18n';
 import { localizeAppMessage } from '../shared/app-copy-2';
 import type { V03GameState } from '../../types';
 export type ToastMessage =
   | { key: MessageKey; params?: Record<string, string | number | boolean | null> }
   | { legacy: string };
+const TOAST_DURATION_MS = 6000;
+
 /** Store identity, not a locale snapshot. Legacy command feedback is read at render time. */
 export function useToasts(locale: 'en' | 'zh', state: V03GameState | null) {
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -32,6 +34,12 @@ export function useToasts(locale: 'en' | 'zh', state: V03GameState | null) {
       );
     setToast(key ? { key } : { legacy: value });
   }, []);
+  // Toasts confirm or explain the last command; they should not linger over the map.
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), TOAST_DURATION_MS);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
   const feedback = toast
     ? 'key' in toast
       ? message(locale, toast.key, toast.params)

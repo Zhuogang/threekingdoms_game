@@ -234,7 +234,8 @@ function toTimeline(state: V03GameState): StrategicTimeline {
       absoluteDay: journey.expectedArrivalDay,
       kind: 'arrival',
       pause: false,
-      visibleToPlayer: false,
+      // "Next event" stops when the player's own party arrives; day advances do not pause.
+      visibleToPlayer: true,
     });
   }
   return {
@@ -2134,6 +2135,7 @@ export function applyV03BattleAction(
 export function completeV03BattleDay(
   state: V03GameState,
   battleId: string,
+  options: { remainingAct?: boolean } = {},
 ): { ok: boolean; state: V03GameState; error?: string; advancedWorldDay?: boolean } {
   const current = state.battles.find((battle) => battle.id === battleId && battle.active);
   if (!current) return { ok: false, state, error: 'This battle is no longer active.' };
@@ -2152,6 +2154,29 @@ export function completeV03BattleDay(
     };
 
   const next = cloneState(state);
+  if (options.remainingAct) {
+    // Officers who have not acted use the same tactical policy as auto-command.
+    const battle = next.battles.find((entry) => entry.id === battleId)!;
+    const tactical = runBattleAiTurn(
+      battle.battleData,
+      battle.battleData.playerSide,
+      {
+        attacker: battle.attackerFoodRemainderMicro,
+        defender: battle.defenderFoodRemainderMicro,
+      },
+      { allowWithdrawal: false },
+    );
+    battle.battleData = tactical;
+    battle.attackerFood = tactical.supplies.attacker;
+    battle.defenderFood = tactical.supplies.defender;
+    if (tactical.outcome) {
+      finishBattle(next, battle);
+      if (next.phase !== 'finished')
+        next.phase = next.battles.some((entry) => entry.active) ? 'battle' : 'planning';
+      next.revision++;
+      return { ok: true, state: next, advancedWorldDay: false };
+    }
+  }
   next.battles.find((battle) => battle.id === battleId)!.playerDayComplete = true;
   const manual = next.battles.filter(
     (battle) =>

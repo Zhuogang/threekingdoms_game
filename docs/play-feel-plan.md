@@ -4,7 +4,7 @@
 
 **Review date:** October 29, 2026, against `v0.4` at `a5b028e`. Line references point to that commit.
 
-**Status:** Proposal. Nothing in this plan is implemented. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
+**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phase 0 is implemented (see section 7.1); later phases are not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
 
 ## 1. Goal and guardrails
 
@@ -287,6 +287,8 @@ These are correctness or consistency problems rather than tuning; most are S.
 
 ## 5. Decisions for the owner
 
+On October 29, 2026, the owner accepted the recommendation for every decision below (D1 a, D2 a, D3 a, D4 a, D5 a, D6 a, D7 b).
+
 | ID  | Question                                                        | Options                                                                            | Recommendation                                                                                                                                                                      |
 | --- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | How much of a hostile army aimed at the player may be revealed? | (a) at dispatch; (b) within N days of arrival; (c) keep hidden                     | **(a)**, with strength rounded to hundreds. The player's own governors already react at dispatch; hiding it only makes losses feel unfair. Rival-vs-rival wars stay chronicle-only. |
@@ -333,6 +335,27 @@ The v0.4 player sessions still evaluate AI behaviour and rule clarity. Presentat
 | 4 — Optional, measured    | PF-CA-03, PF-CA-06, PF-CA-07, PF-CT-05                                                                     | Only if phase 3 still shows stagnation or runaway leaders  |
 
 Work rules carried over from v0.4: one editor at a time for the shared engine, battle engine, types, commands and storage; behaviour fixtures instead of coefficient snapshots; trace parity and deterministic continuation preserved; the 10v10 battle-day p95 < 50 ms gate re-run after any battle AI change; and updates to the player guide, Wiki and both languages for every changed rule.
+
+### 7.1 Phase 0 status
+
+Implemented on `v0.4` on October 29, 2026. Regression tests are in `tests/v03/play-feel-phase0.test.ts`.
+
+| Item            | Result                                                                                                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PF-FX-01        | Requisition wait estimates use the settlement production formula for the next boundary.                                                                                                                                                                    |
+| PF-FX-02        | "Next event" stops when a player party arrives; one-day and ten-day advances still do not pause for it.                                                                                                                                                    |
+| PF-FX-03        | English guide corrected (assignment is free); free actions no longer show the work-point counter.                                                                                                                                                          |
+| PF-FX-04        | Governor passes that cannot fund development below its cap report `insufficient-budget`.                                                                                                                                                                   |
+| PF-FX-05        | A finished campaign replaces the time controls with a "Campaign ended · New campaign…" button.                                                                                                                                                             |
+| PF-FX-06        | The unreachable campaign sidebar panels were deleted.                                                                                                                                                                                                      |
+| PF-FX-07        | No change needed yet: traits are not shown in the current interface. Their effects arrive with PF-CA-01/PF-BA-01.                                                                                                                                          |
+| PF-UI-03        | Each advance says why and when it stopped, counts new reports, and opens the inbox for a report that needs attention.                                                                                                                                      |
+| PF-UI-11        | Order deadlines are entered as days from today; "Request supplies" is "Send supplies" (调拨物资); route tooltips drop "schematic city link"; Esc no longer defers conquest governance; Esc closes the battle outcome; start-screen cards and button fixed. |
+| PF-CT-01        | Space, Shift+Space, N, I, O, C, D on the campaign map; W and E anywhere in battle view. Buttons show their keys.                                                                                                                                           |
+| PF-CT-04        | Attack executes on a single target; clicking outside green cells only inspects; the camera follows the selected unit; the end-day prompt appears only when a ready unit can strike and offers **Let remaining officers act** (never withdraws the army).   |
+| Framing, toasts | Battles open framing both armies. Toasts dismiss after six seconds and hide behind the battle outcome; the per-day "campaign advanced" toast is gone.                                                                                                      |
+
+Deferred from Phase 0: opening the Wiki over the city window (it needs the Wiki in the dialog top layer) and the hover preview of attackable enemies, which moves to Phase 2 with the on-map forecast (PF-UI-07).
 
 ## 8. Not in this plan
 

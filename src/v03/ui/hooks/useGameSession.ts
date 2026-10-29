@@ -327,23 +327,32 @@ export function useGameSession() {
       const aspect = rect.width / rect.height;
       if (battleViewportIdentity.current !== identity) {
         battleViewportIdentity.current = identity;
-        // Open centered on the player's formations at a zoom where portraits read
-        // clearly (about 44 screen pixels per cell); "Fit" still shows the whole field.
+        // Open on both armies so the player sees what they face. Zoom out only as far as
+        // needed to contain every living formation, never past "Fit", and never closer
+        // than the readable portrait scale (about 48 screen pixels per cell).
         const living = battleState.units.filter((unit) => unit.troops > 0);
-        const own = living.filter((unit) => unit.side === battleState.playerSide);
-        const focus = (own.length ? own : living).map((unit) => gridToWorld(unit));
+        const focus = living.map((unit) => gridToWorld({ x: unit.x + 0.5, y: unit.y + 0.5 }));
         const fit = fitBattlefieldViewport(bounds, aspect);
         const readableWidth = (rect.width / V03_BATTLE_READABLE_CELL_PIXELS) * V03_BATTLE_CELL;
+        const xs = focus.map((point) => point.x);
+        const ys = focus.map((point) => point.y);
+        const padding = V03_BATTLE_CELL * 4;
+        const neededWidth = focus.length
+          ? Math.max(
+              Math.max(...xs) - Math.min(...xs) + padding,
+              (Math.max(...ys) - Math.min(...ys) + padding) * aspect,
+            )
+          : fit.width;
         setBattleViewport(
           focus.length
             ? focusBattlefieldViewport(
                 bounds,
                 fit,
                 {
-                  x: focus.reduce((sum, point) => sum + point.x, 0) / focus.length,
-                  y: focus.reduce((sum, point) => sum + point.y, 0) / focus.length,
+                  x: (Math.max(...xs) + Math.min(...xs)) / 2,
+                  y: (Math.max(...ys) + Math.min(...ys)) / 2,
                 },
-                Math.max(1, fit.width / readableWidth),
+                Math.max(1, fit.width / Math.max(readableWidth, neededWidth)),
               )
             : fit,
         );

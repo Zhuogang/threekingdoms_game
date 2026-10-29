@@ -62,7 +62,18 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
             onClick={() => {
               context.setSelectedTactic(null);
               context.setBattleActionMenu(null);
-              context.setFeedback(t.attackHelp);
+              // A single target needs no second click on the map.
+              if (context.attackTargets.length === 1)
+                context.dispatch({
+                  type: 'battleAction',
+                  battleId: activeBattle.id,
+                  action: {
+                    type: 'attack',
+                    unitId: currentUnit.id,
+                    targetId: context.attackTargets[0]!.id,
+                  },
+                });
+              else context.setFeedback(t.attackHelp);
             }}
           >
             {zh ? '攻击' : 'Attack'}

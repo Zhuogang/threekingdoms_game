@@ -32,10 +32,10 @@ async function load(page: Page, state = ready(), lang = 'en') {
 }
 async function resources(page: Page, lang = 'en') {
   await openCity(page, lang === 'zh' ? '濮阳' : 'Puyang');
-  await page.getByRole('button', { name: /Request supplies|征调资源/ }).click();
+  await page.getByRole('button', { name: /Send supplies|调拨物资/ }).click();
   await page
     .locator('.v03-supply-menu')
-    .getByRole('button', { name: /Request supplies|征调资源/ })
+    .getByRole('button', { name: /Send supplies|调拨物资/ })
     .click();
   await page
     .locator('.v03-supply-targets')
@@ -237,7 +237,7 @@ test('campaign requisitions also review before creating a directive', async ({ p
   const before = ready();
   await load(page, before);
   await openCity(page, 'Puyang');
-  await page.getByRole('button', { name: /Request supplies/ }).click();
+  await page.getByRole('button', { name: /Send supplies/ }).click();
   await page
     .locator('.v03-supply-menu')
     .getByRole('button', { name: 'Order a march', exact: true })

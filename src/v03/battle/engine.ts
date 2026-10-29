@@ -1644,6 +1644,8 @@ export function runBattleAiTurn(
   state: V03TacticalBattleState,
   side: BattleSide,
   rationRemainders: BattleRationRemainders = {},
+  /** Delegated player formations act, but only the player may withdraw the army. */
+  options: { allowWithdrawal?: boolean } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   const draft = structuredClone(state);
@@ -1678,6 +1680,7 @@ export function runBattleAiTurn(
     .reduce((sum, unit) => sum + unit.initialTroops, 0);
   const enemy = livingUnits(draft, otherSide(side)).reduce((sum, unit) => sum + unit.troops, 0);
   const withdrawalThreshold =
+    options.allowWithdrawal !== false &&
     current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
     current * 100 <= enemy * PERSONNEL_RULES.aiRetreatEnemyPercent;
   if (withdrawalThreshold) {

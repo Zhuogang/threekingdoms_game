@@ -5,6 +5,8 @@ import {
   CITY_COMMITTED_REASON,
   OFFICER_COMMITTED_REASON,
 } from './commitments';
+import { DAYS_PER_MONTH } from '../calendar';
+import { cityProduction, nextEconomicBoundary } from '../campaign/economy';
 import type { V03City, V03GameState, V03JourneyCargo, V03Officer } from '../types';
 
 export interface V03Capabilities {
@@ -96,13 +98,11 @@ function outstandingAtSource(state: V03GameState, cityId: string) {
   return reserved;
 }
 
-function productionPerDay(city: V03City, resource: 'gold' | 'food') {
-  // Used only to give a planning date. Real monthly settlement remains the source of stock.
-  const monthly =
-    resource === 'food'
-      ? Math.max(1, Math.floor(city.farming / 4))
-      : Math.max(1, Math.floor(city.commerce / 5));
-  return monthly / 30;
+function productionPerDay(state: V03GameState, city: V03City, resource: 'gold' | 'food') {
+  // Used only to give a planning date. Real monthly settlement remains the source of stock;
+  // the rate is the same production formula that settlement pays at the next boundary.
+  const production = cityProduction(city, nextEconomicBoundary(state).harvestMonth);
+  return Math.max(1, production[resource]) / DAYS_PER_MONTH;
 }
 
 export function availableCityResources(state: V03GameState, cityId: string): V03JourneyCargo {
@@ -203,8 +203,8 @@ export function estimateRequisitionForFaction(
   const cityReadyDay =
     state.absoluteDay +
     Math.max(
-      deficit.gold === 0 ? 0 : Math.ceil(deficit.gold / productionPerDay(source, 'gold')),
-      deficit.food === 0 ? 0 : Math.ceil(deficit.food / productionPerDay(source, 'food')),
+      deficit.gold === 0 ? 0 : Math.ceil(deficit.gold / productionPerDay(state, source, 'gold')),
+      deficit.food === 0 ? 0 : Math.ceil(deficit.food / productionPerDay(state, source, 'food')),
       deficit.troops === 0 ? 0 : 30,
     );
   const earliestDepartureDay =

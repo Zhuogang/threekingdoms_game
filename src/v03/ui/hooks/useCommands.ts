@@ -27,7 +27,13 @@ import { createV03Game } from '../../initial-state';
 import type { V03GameState, V03JourneyCargo } from '../../types';
 
 import { localizeSaveError, CAMPAIGN_BOUNDS, cityScale } from '../shared/app-copy-2';
-import { displayName, mapPosition } from '../shared/app-copy-3';
+import {
+  absoluteDateLabel,
+  deadlineFromDaysInput,
+  displayName,
+  mapPosition,
+} from '../shared/app-copy-3';
+import { localizedEvent } from '../shared/legacy-events';
 import type { useGameSession } from './useGameSession';
 export function useCommands(context: ReturnType<typeof useGameSession>) {
   const {
@@ -85,6 +91,59 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     requestedFood,
     intent,
   } = context;
+  /** Say what stopped the clock and open the inbox when a report is waiting. */
+  const explainAdvance = (
+    next: V03GameState,
+    advance: NonNullable<ReturnType<typeof executeV03Command>['advance']>,
+  ): string | null => {
+    if (!state) return null;
+    const date = absoluteDateLabel(next.startYear, next.absoluteDay, locale);
+    const newReports = next.events.filter(
+      (event) =>
+        eventTier(next, event) !== 'chronicle' && !state.events.some((old) => old.id === event.id),
+    ).length;
+    const suffix =
+      advance.daysAdvanced > 1 && newReports > 0
+        ? message(locale, 'feedback.advance.newReports', { p0: newReports })
+        : '';
+    const arrival = advance.eventId?.startsWith('arrival:')
+      ? state.journeys.find((journey) => `arrival:${journey.id}` === advance.eventId)
+      : undefined;
+    if (arrival) {
+      const city = next.cities.find((entry) => entry.id === arrival.destinationCityId);
+      return (
+        message(locale, 'feedback.advance.arrival', {
+          p0: date,
+          p1: city ? displayName(city, locale) : arrival.destinationCityId,
+        }) + suffix
+      );
+    }
+    const event = advance.eventId
+      ? next.events.find((entry) => entry.id === advance.eventId)
+      : undefined;
+    if (event) {
+      if (isCriticalReport(next, event)) setShowReports(true);
+      return (
+        message(locale, 'feedback.advance.event', {
+          p0: date,
+          p1: localizedEvent(event, next, locale).title,
+        }) + suffix
+      );
+    }
+    if (advance.stoppedFor === 'manual-battle' || advance.stoppedFor === 'active-battle')
+      return message(locale, 'feedback.advance.battle', { p0: date }) + suffix;
+    if (advance.stoppedFor === 'step-limit')
+      return message(locale, 'feedback.advance.quiet', { p0: advance.daysAdvanced, p1: date });
+    if (next.events.some((entry) => isCriticalReport(next, entry))) {
+      setShowReports(true);
+      return message(locale, 'feedback.advance.report', { p0: date }) + suffix;
+    }
+    return (
+      (advance.daysAdvanced === 1
+        ? message(locale, 'feedback.advance.oneDay', { p0: date })
+        : message(locale, 'feedback.advance.days', { p0: advance.daysAdvanced, p1: date })) + suffix
+    );
+  };
   const dispatch = (command: Parameters<typeof executeV03Command>[1]) => {
     if (!state) return;
     if (command.type === 'advance' || command.type === 'completeBattleDay') {
@@ -142,7 +201,18 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
           | import('../../governance/orders').CampaignDirectivePreview,
       });
     }
-    if (result.message) setFeedback(result.message);
+    const advanceExplanation =
+      command.type === 'advance' && result.advance
+        ? explainAdvance(result.state, result.advance)
+        : null;
+    if (advanceExplanation) setFeedback(advanceExplanation);
+    else if (
+      command.type === 'completeBattleDay' &&
+      result.message === 'All active battles completed their day; the campaign advanced one day.'
+    )
+      // The new battle day is visible on the field; a toast every day only adds noise.
+      setFeedback('');
+    else if (result.message) setFeedback(result.message);
     else if (command.type === 'marchArmy') setFeedback({ key: 'feedback.marchArmy' });
     if (command.type === 'marchArmy') {
       const journey = result.state.journeys.find(
@@ -438,7 +508,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   ]);
   const submitResourceOrder = () => {
     if (!state || !selectedCity) return;
-    const deadline = requestedByDay.trim() === '' ? null : Number(requestedByDay);
+    const deadline = deadlineFromDaysInput(state.absoluteDay, requestedByDay);
     return dispatch({
       type: 'requestRequisition',
       sourceCityId: selectedCity.id,
@@ -453,7 +523,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   };
   const submitCampaignOrder = () => {
     if (!state || !selectedCity) return;
-    const deadline = requestedByDay.trim() === '' ? null : Number(requestedByDay);
+    const deadline = deadlineFromDaysInput(state.absoluteDay, requestedByDay);
     return dispatch({
       type: 'issueCampaignDirective',
       sourceCityId: selectedCity.id,

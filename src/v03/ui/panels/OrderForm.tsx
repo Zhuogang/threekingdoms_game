@@ -87,7 +87,7 @@ export function OrderForm({
         {t.deadline}
         <Input
           type="number"
-          min={state.absoluteDay}
+          min={0}
           placeholder={message(locale, 'ui.no.deadline.64')}
           value={requestedByDay}
           onChange={(event) => setRequestedByDay(event.target.value)}

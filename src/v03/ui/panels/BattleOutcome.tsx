@@ -133,6 +133,12 @@ export function BattleOutcome({
           node?.focus();
         }}
         onKeyDown={(event) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            onClose();
+            return;
+          }
           if (event.key === 'Tab') {
             event.preventDefault();
             event.currentTarget.querySelector<HTMLButtonElement>('button')?.focus();

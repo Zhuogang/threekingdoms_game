@@ -143,7 +143,8 @@ export function CityWork({
         {officer ? displayName(officer, locale) : displayName(city, locale)} ·{' '}
         {message(locale, 'flow.reviewWork')}
       </p>
-      <WorkBudget context={context} />
+      {/* Free preparations do not touch the budget, so do not show it beside them. */}
+      {cityActionWorkCost(action) ? <WorkBudget context={context} /> : null}
       {action === 'recruit' ? (
         <>
           <Field label={locale === 'zh' ? '招募兵种' : 'Recruit troop type'}>

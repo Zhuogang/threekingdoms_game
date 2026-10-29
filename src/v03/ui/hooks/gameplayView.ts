@@ -4,6 +4,9 @@ import { message } from '../../i18n';
 
 import {
   battleTerrainAt,
+  getAvailableBattleTactics,
+  getBattleTacticTargets,
+  getUnitAttackTargets,
   isBattleUnitRouted,
   terrainMovementCost,
   waterCombatModifiers,
@@ -319,12 +322,22 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       if (context.canResumeBattleDay) dispatch({ type: 'advance', days: 1 });
       return;
     }
-    if (
-      battleState.units.some(
-        (unit) => unit.side === battleState.playerSide && unit.troops > 0 && !unit.acted,
-      )
-    )
-      context.setConfirmation('end-day');
+    // Ask only when a ready unit could still strike: an attack in range or an offensive
+    // tactic with a legal target. Walking days end without a prompt.
+    const canStillStrike = battleState.units.some(
+      (unit) =>
+        unit.side === battleState.playerSide &&
+        unit.troops > 0 &&
+        !unit.acted &&
+        (getUnitAttackTargets(battleState, unit.id).length > 0 ||
+          getAvailableBattleTactics(battleState, unit.id).some(
+            (entry) =>
+              entry.allowed &&
+              entry.tactic !== 'rally' &&
+              getBattleTacticTargets(battleState, unit.id, entry.tactic).length > 0,
+          )),
+    );
+    if (canStillStrike) context.setConfirmation('end-day');
     else dispatch({ type: 'completeBattleDay', battleId: activeBattle.id });
   };
   const nextReadyUnit = () => {

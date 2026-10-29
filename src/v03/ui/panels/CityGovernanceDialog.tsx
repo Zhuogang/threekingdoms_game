@@ -84,6 +84,8 @@ function CityGovernanceDialog({
         !choice || (choice === 'self' ? Boolean(selfReason) : !officerId || !preview?.ok)
       }
       onCancel={cancel}
+      // Deferring leaves the city to stewardship; it should be a deliberate click.
+      escapeCancels={false}
       onConfirm={() => {
         if (!choice) return false;
         const result = context.dispatch({

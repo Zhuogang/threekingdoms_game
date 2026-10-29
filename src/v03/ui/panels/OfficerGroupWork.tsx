@@ -66,7 +66,8 @@ export function OfficerGroupWork({
       aria-label={workLabel(context, action)}
     >
       <p className="v03-step-intro">{message(locale, `flow.groupHint.${action}`)}</p>
-      <WorkBudget context={context} />
+      {/* Free preparations do not touch the budget, so do not show it beside them. */}
+      {cityActionWorkCost(action) ? <WorkBudget context={context} /> : null}
       <label className="v03-group-select-all">
         <Input
           ref={all}

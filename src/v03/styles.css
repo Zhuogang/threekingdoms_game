@@ -1932,25 +1932,55 @@ th small {
   height: 100dvh;
   overflow: auto;
 }
+/* Banner, portrait and name/cities/details side by side; the description runs below. */
 .v03-ruler-card {
   text-align: left;
   display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: var(--space-2);
+  grid-template-columns: 6px 48px minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas:
+    'banner portrait name'
+    'banner portrait cities'
+    'banner portrait meta'
+    'blurb blurb blurb';
+  align-items: start;
+  gap: 2px var(--space-2);
 }
-.v03-ruler-card > img {
+.v03-ruler-card > .v03-banner {
+  grid-area: banner;
+  width: 6px;
+  height: auto;
+  align-self: stretch;
+}
+.v03-ruler-card > .v03-officer-portrait {
+  grid-area: portrait;
   width: 48px;
   height: 60px;
-  object-fit: cover;
-  grid-row: span 3;
 }
-.v03-ruler-card > p {
-  grid-column: 1/-1;
-  margin: var(--space-1) 0;
-  font-size: var(--text-sm);
+.v03-ruler-card > strong {
+  grid-area: name;
 }
 .v03-ruler-card > small {
   white-space: normal;
+}
+.v03-ruler-card > small:nth-of-type(1) {
+  grid-area: cities;
+}
+.v03-ruler-card > small:nth-of-type(2) {
+  grid-area: meta;
+}
+.v03-ruler-card > p {
+  grid-area: blurb;
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+}
+/* Keep the start button reachable without scrolling past every house card. */
+.v03-start-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding: var(--space-2) 0;
+  background: var(--tone-162);
 }
 @media (max-width: 800px) {
   .v03-brand strong {

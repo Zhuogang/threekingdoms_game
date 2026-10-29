@@ -30,6 +30,12 @@ export interface V03ActionResult {
   error?: string;
   orderId?: string;
   preview?: unknown;
+  /** Why an advance stopped, so the interface can explain the pause. */
+  advance?: {
+    daysAdvanced: number;
+    stoppedFor: ReturnType<typeof advanceV03>['stoppedFor'];
+    eventId: string | null;
+  };
 }
 
 const services = createV03OrderServices();
@@ -89,6 +95,11 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
             state: result.state,
             message: `Advanced ${result.daysAdvanced} day${result.daysAdvanced === 1 ? '' : 's'}.`,
             orderId: result.eventId ?? undefined,
+            advance: {
+              daysAdvanced: result.daysAdvanced,
+              stoppedFor: result.stoppedFor,
+              eventId: result.eventId,
+            },
           };
     }
     case 'appointGovernor': {
@@ -212,7 +223,9 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
       return { ok: result.ok, state: result.state, error: result.error };
     }
     case 'completeBattleDay': {
-      const result = completeV03BattleDay(state, command.battleId);
+      const result = completeV03BattleDay(state, command.battleId, {
+        remainingAct: command.remainingAct,
+      });
       return result.ok
         ? {
             ok: true,

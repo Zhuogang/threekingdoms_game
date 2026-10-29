@@ -38,7 +38,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 攻占城市并确认战报后，自动选择新城治理方式：“自任太守”需要君主已经抵达，将新城设为君主本城，原本城转为地方班底维持，两城库存、兵员和已用工作点保留；“任命太守”允许同城驻将保留所部立即就任，跨城人选沿用调任行程和月界。可点“稍后处理”，暂由地方班底维持，并从收件箱的治理待办继续；连续攻城逐城处理，未决事项读档后仍保留。
 
-从城池进入“征调资源 → 选择命令 → 选择目的地 → 填写数量 → 查看方案”，核对后再提交。核对页返回不会生成订单或扣除资源；足额请求按原规则直接出发并返回请求菜单，有缺额时进入答复页，接受、缩减、等待或取消后返回菜单。待答复方案退出后可继续查看，订单也保留在“军情与命令”中。
+从城池进入“调拨物资 → 选择命令 → 选择目的地 → 填写数量 → 查看方案”，核对后再提交。核对页返回不会生成订单或扣除资源；足额请求按原规则直接出发并返回请求菜单，有缺额时进入答复页，接受、缩减、等待或取消后返回菜单。待答复方案退出后可继续查看，订单也保留在“军情与命令”中。
 
 资源订单的目的地是友城。答复说明可执行量、缺额、最早出发和预计到达；接受后保留相应资源，出发后从来源库存扣除，到达才交付。已派出且仍允许返程的行程可请求召回；进入战斗后不能瞬间召回。目的地易手或容量不足等情况会有报告。
 
@@ -128,6 +128,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 ### 7. 镜头、快捷键与存档
 
 - 主地图：滚轮/按钮缩放，拖动或方向键平移，Home/Fit 显示全图，小地图可定位；Tab 后 Enter/空格可选城市。
+- 快捷键（输入框外）：空格推进 1 日，Shift+空格推进 10 日，N 至下一事件，I 收件箱，O 军情与命令，C 君主本城，D 外交；战场中 W 待命、E 结束战斗日。每次推进都会说明停下的原因与日期。
 - 战场显示：“放大战场”铺满窗口，“全屏”进入浏览器全屏；“显示面板”可分别切换指令栏、小地图、操作提示、全局顶栏和战场列表。退出放大恢复原布局，Escape 优先取消当前操作/弹窗。隐藏指令栏时，底部仍有托管、结束战斗日及更多行动中的撤退。
 - 战场：Fit 全图，Unit 聚焦所选部队；小地图移动视口。地图获得焦点后方向键移动格子光标，Enter/空格执行该格操作；Shift+方向键平移镜头，+/- 缩放，Home 全图。
 - 游戏中 F1 打开 Wiki，Escape 关闭 Wiki 或取消确认框。中英切换和读指南不推进时间。
@@ -155,7 +156,7 @@ Launch using the [project README](../../README.md#start-playing). On a fresh bro
 
 1. Select the ruler's capital. The overview shows garrison, reserve, gold, food, farming, commerce, population and public order/city loyalty (one shared city value). **City affairs** also shows the ten-day work budget. Every owned city refreshes to two points every ten game days and still needs a living friendly stationed executor. Officer movements do not change the quota; capital moves and appointments preserve spent work.
 2. Open **City affairs → Recruit soldiers → assign an officer → Confirm order**. Completion returns to the affairs menu. Recruits enter **city reserve**. Recruitment uses a work point and population; it does not directly increase an officer's army.
-3. Return to the city and open **Officers in the city → choose an officer → Set troop count**. Enter the desired **final** troop count, review the changes, then **Confirm order**. Completion returns to that officer. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. This also uses the shared work budget.
+3. Return to the city and open **Officers in the city → choose an officer → Set troop count**. Enter the desired **final** troop count, review the changes, then **Confirm order**. Completion returns to that officer. Increasing 800 to 900 assigns 100 reserve soldiers; setting zero returns the force. Assignment uses no work points; troop type, reserve, reorganization and existing commitments still apply.
 4. Click your capital on the map, then **March out** in its city window. Choose officers and a destination, check provisions, ETA and defenders, then **Confirm march**. Capital armies depart directly; the window closes and the army appears on the map at the same camera position. City affairs and officers have separate entries; Escape and the footer return one level at a time.
 5. Army strength is the sum of the chosen **whole officer forces**. Governor-city proposals may have a shortfall because they protect a minimum garrison, provisions and prior commitments.
 6. If a plan needs a decision, accept, accept a reduced amount, wait or cancel. Approved stock is reserved. Departure creates a journey; delivery and battle wait for arrival.
@@ -175,7 +176,7 @@ Open **City affairs → Governor appointments** in an autonomous city. Appointme
 
 After a conquest report, choose the new city's governance. **Govern personally** requires the ruler to be present and moves the ruler's capital; the old capital returns to stewardship. Both cities retain stock, personnel and spent work points. **Appoint a governor** allows a local officer to take office immediately with their contingent, while remote candidates travel and wait for a monthly boundary. **Decide later** leaves local stewardship and keeps an Inbox task. Captured cities are handled in order and pending choices survive reload.
 
-Supply requests follow **request kind → destination → amounts → review → submit**. Review does not issue an order or spend stock. Full requests still dispatch on submission; shortfalls open the existing accept/reduce/wait/cancel decisions. Completion returns to the request menu, and orders remain in Marches & orders.
+Open **Send supplies** in the sending city; the flow is **request kind → destination → amounts → review → submit**. Review does not issue an order or spend stock. Full requests still dispatch on submission; shortfalls open the existing accept/reduce/wait/cancel decisions. Completion returns to the request menu, and orders remain in Marches & orders.
 
 Troop transfers separately provision the actual outbound route, with double food for cavalry. Review shows this additional cost. Departure deducts cargo plus provisions; travel consumes provisions and delivers any remainder. Underfed forces cannot depart. This applies to new departures; existing journeys in older saves are not retroactively charged.
 
@@ -260,6 +261,7 @@ Autonomous cities also allow whole-contingent returns without a work point. Retu
 ### Controls, saves, endings and troubleshooting
 
 - Campaign: wheel/buttons zoom, drag/arrows pan, Home/Fit shows the atlas; minimap repositions. Tab/Enter/Space selects cities.
+- Shortcuts (outside text fields): Space advances 1 day, Shift+Space 10 days, N to the next event, I opens the inbox, O marches & orders, C the ruler's capital, D diplomacy; in battle, W waits and E ends the battle day. Every advance says why and when it stopped.
 - Battlefield display: Expand battlefield fills the window; Fullscreen enters native fullscreen when allowed. Show panels toggles commands, minimap, help, top bar and battle list. Restore layout restores prior settings. With commands hidden, the compact bar retains auto-command, End battle day and More actions → Withdraw.
 - Battlefield: Fit shows the field; Unit focuses selection. With map focus, arrows move the cell cursor and Enter/Space executes; Shift+arrows pans, +/- zooms, Home fits. Minimap moves the viewport.
 - Wiki: F1 opens during play, Escape closes or cancels a confirmation. Language/camera/help do not change the date.

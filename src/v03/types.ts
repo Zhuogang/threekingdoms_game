@@ -475,7 +475,7 @@ export type V03Command =
       action: 'release' | 'recruit' | 'exchange' | 'execute';
       exchangeOfficerId?: string;
     }
-  | { type: 'completeBattleDay'; battleId: string }
+  | { type: 'completeBattleDay'; battleId: string; remainingAct?: boolean }
   | { type: 'acknowledgeEvent'; eventId: string };
 
 export interface V03CommandResult {

@@ -19,6 +19,13 @@ export function absoluteDateLabel(
   return message(locale, 'ui.month.day.137', { p0: date.year, p1: date.month, p2: date.day });
 }
 
+/** Order deadlines are entered as "within N days"; blank means no deadline. */
+export function deadlineFromDaysInput(absoluteDay: number, input: string): number | null {
+  if (input.trim() === '') return null;
+  const days = Number(input);
+  return Number.isFinite(days) ? absoluteDay + Math.max(0, Math.floor(days)) : null;
+}
+
 export function displayName(city: { name: string; chinese: string }, locale: V03Locale): string {
   return locale === 'zh'
     ? (Object.values(OFFICER_IDENTITIES).find((identity) => identity.name === city.name)?.chinese ??
@@ -49,6 +56,7 @@ export function ConfirmDialog({
   body,
   children,
   confirmDisabled = false,
+  escapeCancels = true,
 }: {
   title: string;
   detail: string;
@@ -57,6 +65,8 @@ export function ConfirmDialog({
   onCancel: () => void;
   onConfirm: () => void | boolean;
   confirmDisabled?: boolean;
+  /** False when cancelling has a consequence that Escape should not choose by reflex. */
+  escapeCancels?: boolean;
   body?: ReactNode;
   children?: ReactNode;
 }) {
@@ -78,7 +88,7 @@ export function ConfirmDialog({
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
             event.preventDefault();
-            onCancel();
+            if (escapeCancels) onCancel();
           }
           if (event.key !== 'Tab') return;
           const controls = dialog.current?.querySelectorAll<HTMLElement>(

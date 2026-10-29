@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../kit';
 import { message } from '../../i18n';
 
@@ -8,7 +8,13 @@ import {
   battlefieldName,
 } from '../../battle';
 
-import { BattlefieldMapView, BattlefieldMinimap } from '../../rendering';
+import {
+  BattlefieldMapView,
+  BattlefieldMinimap,
+  gridToWorld,
+  recenterBattlefieldViewport,
+  V03_BATTLE_CELL,
+} from '../../rendering';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import type { BattleDisplay } from '../hooks/useBattleDisplay';
@@ -56,6 +62,21 @@ export function BattleScreen({
   } = context;
   // Faint grid lines are on by default and can be hidden (plan §3).
   const [showGrid, setShowGrid] = useState(true);
+  // Follow the selected unit when it changes (auto-advance or Tab) if it is off-screen.
+  const followedUnitId = currentUnit?.id;
+  useEffect(() => {
+    const bounds = context.battleBounds;
+    if (!currentUnit || !battleViewport || !bounds) return;
+    const center = gridToWorld({ x: currentUnit.x + 0.5, y: currentUnit.y + 0.5 });
+    const margin = V03_BATTLE_CELL;
+    const visible =
+      center.x >= battleViewport.left + margin &&
+      center.x <= battleViewport.left + battleViewport.width - margin &&
+      center.y >= battleViewport.top + margin &&
+      center.y <= battleViewport.top + battleViewport.height - margin;
+    if (!visible) setBattleViewport(recenterBattlefieldViewport(battleViewport, bounds, center));
+    // Only a change of selected unit moves the camera; manual panning is left alone.
+  }, [followedUnitId]);
   return (
     <section
       className="v03-battle-main"
@@ -125,6 +146,11 @@ export function BattleScreen({
               setFeedback({ key: 'selectUnit' });
               return;
             }
+            // Clicking outside the green cells inspects the tile without trying to move.
+            if (
+              !reachableCells.some((reachable) => reachable.x === cell.x && reachable.y === cell.y)
+            )
+              return;
             dispatch({
               type: 'battleAction',
               battleId: activeBattle.id,

@@ -657,6 +657,9 @@ export function planGovernorMonthlyWork(
     offer('equip', 'equipment-issue', 'Issue fine arms to a local officer.', equipmentTarget.id)
   )
     return plan;
+  // Development below its cap that the city cannot fund is a budget limit, not a cap.
+  if (!failure && (city.farming < 500 || city.commerce < 500))
+    failure = 'Development remains below its cap, but the city cannot fund it this period.';
   return none();
 }
 

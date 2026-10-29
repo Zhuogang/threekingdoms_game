@@ -89,10 +89,10 @@ export async function showForces(page: Page) {
 }
 export async function showSupplies(page: Page) {
   await cityOverview(page);
-  await page.getByRole('button', { name: /Request supplies|征调资源/ }).click();
+  await page.getByRole('button', { name: /Send supplies|调拨物资/ }).click();
   await page
     .locator('.v03-supply-menu')
-    .getByRole('button', { name: /Request supplies|征调资源/ })
+    .getByRole('button', { name: /Send supplies|调拨物资/ })
     .click();
 }
 export async function showWithdrawal(page: Page) {

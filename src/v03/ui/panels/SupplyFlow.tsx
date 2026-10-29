@@ -3,7 +3,7 @@ import { previewRequisition, previewCampaignDirective } from '../../governance/o
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, Field, Input } from '../kit';
-import { displayName } from '../shared/app-copy-3';
+import { deadlineFromDaysInput, displayName } from '../shared/app-copy-3';
 import { OrderForm } from './OrderForm';
 import { OrderPreview } from './OrderPreview';
 
@@ -39,8 +39,7 @@ export function SupplyFlow({
                   food: context.requestedFood,
                   troops: context.requestedResourceTroops,
                 },
-                requestedByDay:
-                  context.requestedByDay.trim() === '' ? null : Number(context.requestedByDay),
+                requestedByDay: deadlineFromDaysInput(state.absoluteDay, context.requestedByDay),
               },
               context.orderServices,
             )
@@ -51,8 +50,7 @@ export function SupplyFlow({
                 targetCityId: context.targetCityId,
                 requestedTroops: context.requestedTroops,
                 intent: context.intent,
-                requestedByDay:
-                  context.requestedByDay.trim() === '' ? null : Number(context.requestedByDay),
+                requestedByDay: deadlineFromDaysInput(state.absoluteDay, context.requestedByDay),
               },
               context.orderServices,
             ),

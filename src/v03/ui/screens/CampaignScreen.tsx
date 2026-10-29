@@ -47,15 +47,27 @@ export function CampaignScreen({
           <BookUser size={18} />
           {officerCopy[locale].directory}
         </Button>
-        <Button onClick={() => context.focusCampaignCity(state.playerCapitalCityId)}>
+        <Button
+          aria-keyshortcuts="C"
+          title={message(locale, 'topbar.hotkey', { p0: 'C' })}
+          onClick={() => context.focusCampaignCity(state.playerCapitalCityId)}
+        >
           <Flag size={18} />
           {t.rulerCapital}
         </Button>
-        <Button onClick={() => open('orders')}>
+        <Button
+          aria-keyshortcuts="O"
+          title={message(locale, 'topbar.hotkey', { p0: 'O' })}
+          onClick={() => open('orders')}
+        >
           <ScrollText size={18} />
           {message(locale, 'flow.orders')}
         </Button>
-        <Button onClick={() => open('diplomacy')}>
+        <Button
+          aria-keyshortcuts="D"
+          title={message(locale, 'topbar.hotkey', { p0: 'D' })}
+          onClick={() => open('diplomacy')}
+        >
           <Handshake size={18} />
           {t.diplomacy}
         </Button>

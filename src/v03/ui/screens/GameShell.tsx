@@ -1,4 +1,5 @@
 import { Button, Input } from '../kit';
+import { useHotkeys } from '../hooks/useHotkeys';
 import { useBattleDisplay } from '../hooks/useBattleDisplay';
 import { RetreatPreview } from '../panels/RetreatPreview';
 import { previewRetreat } from '../../campaign/battle-aftermath';
@@ -21,6 +22,7 @@ export function GameShell({
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
 }) {
   const display = useBattleDisplay(context.isBattleView);
+  useHotkeys(context);
   const {
     t,
     locale,
@@ -45,6 +47,15 @@ export function GameShell({
     setWikiTopic,
     displayedWikiArticle,
   } = context;
+  const outcomeEvent = activeCityGovernance(context)
+    ? undefined
+    : context.state.events.find(
+        (entry) =>
+          entry.kind === 'battleResolved' &&
+          entry.battleOutcome &&
+          !entry.acknowledged &&
+          entry.tier === 'critical',
+      );
   return (
     <main
       ref={display.root}
@@ -79,14 +90,7 @@ export function GameShell({
     >
       {context.showReports ? <ReportsInbox context={context} /> : null}
       {(() => {
-        if (activeCityGovernance(context)) return null;
-        const event = context.state.events.find(
-          (entry) =>
-            entry.kind === 'battleResolved' &&
-            entry.battleOutcome &&
-            !entry.acknowledged &&
-            entry.tier === 'critical',
-        );
+        const event = outcomeEvent;
         return event ? (
           <BattleOutcome
             event={event}
@@ -114,7 +118,7 @@ export function GameShell({
           </Button>
         </div>
       ) : null}
-      {feedback && !context.campaignWindowOpen ? (
+      {feedback && !context.campaignWindowOpen && !outcomeEvent ? (
         <div className="v03-toast" role="status">
           {localizeAppMessage(feedback, locale, context.state)}
           <Button type="button" aria-label={t.close} onClick={() => setFeedback('')}>
@@ -145,7 +149,21 @@ export function GameShell({
             setConfirmation(null);
             dispatch({ type: 'completeBattleDay', battleId: activeBattle.id });
           }}
-        />
+        >
+          <Button
+            type="button"
+            onClick={() => {
+              setConfirmation(null);
+              dispatch({
+                type: 'completeBattleDay',
+                battleId: activeBattle.id,
+                remainingAct: true,
+              });
+            }}
+          >
+            {message(locale, 'battle.remainingAct')}
+          </Button>
+        </ConfirmDialog>
       ) : null}
       {confirmation === 'withdraw' && activeBattle ? (
         <ConfirmDialog
