@@ -11,6 +11,7 @@ import {
   type RouteDefinition,
 } from '../geography';
 import type { V03Journey } from '../types';
+import { isOfficerReservedForOrder } from './commitments';
 import type {
   GovernanceOrderServices,
   JourneyCreationInput,
@@ -76,23 +77,26 @@ function planParty(input: PlanPartyInput): OrderPartyPlan | null {
     .filter(
       (officer) =>
         officer.alive &&
-        officer.factionId === input.state.playerFactionId &&
+        officer.factionId === (input.movingFactionId ?? input.state.playerFactionId) &&
         officer.location.kind === 'city' &&
         officer.location.cityId === input.sourceCityId &&
         officer.troops > 0 &&
-        officer.reorganizationDays === 0,
+        officer.reorganizationDays === 0 &&
+        (input.kind !== 'requisition' || !isOfficerReservedForOrder(input.state, officer.id)),
     )
     .sort((a, b) => {
       const leaderA =
         a.id ===
-        input.state.factions.find((faction) => faction.id === input.state.playerFactionId)
-          ?.leaderOfficerId
+        input.state.factions.find(
+          (faction) => faction.id === (input.movingFactionId ?? input.state.playerFactionId),
+        )?.leaderOfficerId
           ? 1
           : 0;
       const leaderB =
         b.id ===
-        input.state.factions.find((faction) => faction.id === input.state.playerFactionId)
-          ?.leaderOfficerId
+        input.state.factions.find(
+          (faction) => faction.id === (input.movingFactionId ?? input.state.playerFactionId),
+        )?.leaderOfficerId
           ? 1
           : 0;
       return (

@@ -116,8 +116,28 @@ export function availableCityResources(state: V03GameState, cityId: string): V03
   };
 }
 
+/** Player-facing resource preview always uses the current player authority. */
 export function estimateRequisition(
   state: V03GameState,
+  sourceCityId: string,
+  targetCityId: string,
+  requested: V03JourneyCargo,
+  routeDays: number | null,
+): RequisitionEstimate {
+  return estimateRequisitionForFaction(
+    state,
+    state.playerFactionId,
+    sourceCityId,
+    targetCityId,
+    requested,
+    routeDays,
+  );
+}
+
+/** Shared arithmetic; execution boundaries validate the supplied acting faction. */
+export function estimateRequisitionForFaction(
+  state: V03GameState,
+  factionId: string,
   sourceCityId: string,
   targetCityId: string,
   requested: V03JourneyCargo,
@@ -127,9 +147,9 @@ export function estimateRequisition(
   const target = state.cities.find((city) => city.id === targetCityId);
   const invalidReasons: string[] = [];
   if (!source || !target) invalidReasons.push('A source or destination city no longer exists.');
-  if (source?.factionId !== state.playerFactionId)
+  if (source?.factionId !== factionId)
     invalidReasons.push('Only cities held by your faction can issue this order.');
-  if (target?.factionId !== state.playerFactionId)
+  if (target?.factionId !== factionId)
     invalidReasons.push('The destination must be held by your faction.');
   if (sourceCityId === targetCityId) invalidReasons.push('Choose a different destination city.');
   if (routeDays === null || !Number.isSafeInteger(routeDays) || routeDays < 1)

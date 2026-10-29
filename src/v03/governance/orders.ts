@@ -1,9 +1,13 @@
-import { isCityCommitted } from './commitments';
+import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
 import { detachWoundedToCity } from '../campaign/personnel';
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
-import { availableCityResources, estimateRequisition } from './authority';
+import {
+  availableCityResources,
+  estimateRequisition,
+  estimateRequisitionForFaction,
+} from './authority';
 import type {
   V03BattleIntent,
   V03CampaignDirective,
@@ -72,6 +76,7 @@ export interface PlanRouteInput {
 
 export interface PlanPartyInput {
   state: Readonly<V03GameState>;
+  movingFactionId?: string;
   sourceCityId: string;
   maxTroops: number;
   kind: Extract<V03JourneyKind, 'requisition' | 'campaign'>;
@@ -250,11 +255,16 @@ function partyPlan(
   state: V03GameState,
   services: GovernanceOrderServices,
   input: Omit<PlanPartyInput, 'state'>,
+  factionId = state.playerFactionId,
 ): OrderPartyPlan | null {
   if (input.maxTroops <= 0)
     return { officerIds: [], troopCount: 0, composition: { troopTypes: [] } };
   try {
-    const party = services.planParty({ ...input, state: structuredClone(state) });
+    const party = services.planParty({
+      ...input,
+      movingFactionId: factionId,
+      state: structuredClone(state),
+    });
     if (
       !party ||
       !Number.isSafeInteger(party.troopCount) ||
@@ -275,7 +285,9 @@ function partyPlan(
         (officer) =>
           !officer ||
           !officer.alive ||
-          officer.factionId !== state.playerFactionId ||
+          officer.factionId !== factionId ||
+          officer.reorganizationDays > 0 ||
+          (input.kind === 'requisition' && isOfficerReservedForOrder(state, officer.id)) ||
           officer.location.kind !== 'city' ||
           officer.location.cityId !== input.sourceCityId,
       )
@@ -283,6 +295,16 @@ function partyPlan(
       return null;
     const rostered = officers.reduce((sum, officer) => sum + (officer?.troops ?? 0), 0);
     if (rostered !== party.troopCount) return null;
+    const cavalry = officers
+      .filter((officer) => officer?.troopType === 'cavalry')
+      .reduce((sum, officer) => sum + officer!.troops, 0);
+    const types = [...new Set(officers.map((officer) => officer!.troopType))].sort();
+    if (
+      (party.composition.cavalryTroops ?? 0) !== cavalry ||
+      (party.composition.woundedTroops ?? 0) !== 0 ||
+      JSON.stringify([...new Set(party.composition.troopTypes)].sort()) !== JSON.stringify(types)
+    )
+      return null;
     return structuredClone({ ...party, officerIds: ids });
   } catch {
     return null;
@@ -294,17 +316,17 @@ function validRequisitionInput(
   input: RequisitionInput,
   codes: GovernanceOrderReasonCode[],
   reasons: string[],
+  factionId: string | null,
 ) {
   if (state.phase === 'finished') addReason(codes, reasons, 'order.invalid-phase');
   if (isCityCommitted(state, input.sourceCityId) || isCityCommitted(state, input.targetCityId))
     addReason(codes, reasons, 'order.city-committed');
   const source = state.cities.find((city) => city.id === input.sourceCityId);
   const target = state.cities.find((city) => city.id === input.targetCityId);
-  if (!source || source.factionId !== state.playerFactionId)
+  if (!factionId || !source || source.factionId !== factionId)
     addReason(codes, reasons, 'order.source-unavailable');
   if (!target) addReason(codes, reasons, 'order.target-unavailable');
-  else if (target.factionId !== state.playerFactionId)
-    addReason(codes, reasons, 'order.target-not-friendly');
+  else if (target.factionId !== factionId) addReason(codes, reasons, 'order.target-not-friendly');
   if (input.sourceCityId === input.targetCityId) addReason(codes, reasons, 'order.same-city');
   if (
     !validAmount(input.requested.gold) ||
@@ -349,15 +371,46 @@ function estimateCampaignResources(
   return estimateRequisition(projectedState, sourceCityId, projectionId, requested, routeDays);
 }
 
+function npcOrderActor(state: V03GameState, factionId: string): string | null {
+  return state.factions.some(
+    (faction) =>
+      faction.id === factionId &&
+      !faction.eliminated &&
+      !faction.isPlayer &&
+      faction.id !== state.playerFactionId,
+  )
+    ? factionId
+    : null;
+}
+
 export function previewRequisition(
   state: V03GameState,
+  input: RequisitionInput,
+  services: GovernanceOrderServices,
+): RequisitionPreview {
+  return previewRequisitionForFaction(state, state.playerFactionId, input, services);
+}
+
+/** Trusted NPC entry point; no actor override is read from a public order input. */
+export function previewNpcRequisition(
+  state: V03GameState,
+  factionId: string,
+  input: RequisitionInput,
+  services: GovernanceOrderServices,
+): RequisitionPreview {
+  return previewRequisitionForFaction(state, npcOrderActor(state, factionId), input, services);
+}
+
+function previewRequisitionForFaction(
+  state: V03GameState,
+  factionId: string | null,
   input: RequisitionInput,
   services: GovernanceOrderServices,
 ): RequisitionPreview {
   const requested = { ...input.requested };
   const codes: GovernanceOrderReasonCode[] = [];
   const reasons: string[] = [];
-  const valid = validRequisitionInput(state, input, codes, reasons);
+  const valid = validRequisitionInput(state, input, codes, reasons, factionId);
   if (!valid) {
     return {
       requested,
@@ -376,6 +429,7 @@ export function previewRequisition(
     };
   }
   const preliminaryRoute = routePlan(state, services, {
+    movingFactionId: factionId!,
     sourceCityId: input.sourceCityId,
     targetCityId: input.targetCityId,
     departureDay: state.absoluteDay,
@@ -401,8 +455,9 @@ export function previewRequisition(
       reasons,
     };
   }
-  const estimate = estimateRequisition(
+  const estimate = estimateRequisitionForFaction(
     state,
+    factionId!,
     input.sourceCityId,
     input.targetCityId,
     requested,
@@ -410,16 +465,22 @@ export function previewRequisition(
   );
   const party =
     requested.troops > 0 && estimate.executable.troops > 0
-      ? partyPlan(state, services, {
-          sourceCityId: input.sourceCityId,
-          maxTroops: estimate.executable.troops,
-          kind: 'requisition',
-        })
+      ? partyPlan(
+          state,
+          services,
+          {
+            sourceCityId: input.sourceCityId,
+            maxTroops: estimate.executable.troops,
+            kind: 'requisition',
+          },
+          factionId!,
+        )
       : { officerIds: [], troopCount: 0, composition: { troopTypes: [] } as TravelComposition };
   const executable = { ...estimate.executable };
   if (requested.troops > 0 && !party) executable.troops = 0;
   else if (party && requested.troops > 0) executable.troops = party.troopCount;
   const route = routePlan(state, services, {
+    movingFactionId: factionId!,
     sourceCityId: input.sourceCityId,
     targetCityId: input.targetCityId,
     departureDay: state.absoluteDay,
@@ -451,8 +512,9 @@ export function previewRequisition(
     addReason(codes, reasons, 'order.party-unavailable');
   if (deficit.troops > 0 && estimate.executable.troops < requested.troops)
     addReason(codes, reasons, 'order.minimum-garrison');
-  const earliestDepartureDay = estimateRequisition(
+  const earliestDepartureDay = estimateRequisitionForFaction(
     state,
+    factionId!,
     input.sourceCityId,
     input.targetCityId,
     { ...requested, food: requested.food + travelFood },
@@ -462,6 +524,7 @@ export function previewRequisition(
     earliestDepartureDay === null
       ? null
       : routePlan(state, services, {
+          movingFactionId: factionId!,
           sourceCityId: input.sourceCityId,
           targetCityId: input.targetCityId,
           departureDay: earliestDepartureDay,
@@ -843,7 +906,12 @@ function validJourney(input: JourneyCreationInput, journey: V03Journey): boolean
     journey.status === 'outbound' &&
     journey.manifest.troopCount === input.party.troopCount &&
     journey.manifest.carriedFood === input.carriedFood &&
+    journey.manifest.officerIds.length === input.party.officerIds.length &&
     input.party.officerIds.every((id) => journey.manifest.officerIds.includes(id)) &&
+    ['gold', 'food', 'troops'].every(
+      (resource) =>
+        journey.manifest.cargo[resource] === input.cargo[resource as keyof V03JourneyCargo],
+    ) &&
     (input.kind !== 'campaign' || journey.intent === input.intent)
   );
 }
@@ -929,17 +997,34 @@ function requisitionJourneyInput(
   preview: RequisitionPreview,
   services: GovernanceOrderServices,
 ): JourneyCreationInput | null {
-  if (!preview.route) return null;
+  if (
+    !preview.route ||
+    !state.cities.some(
+      (city) => city.id === order.sourceCityId && city.factionId === order.factionId,
+    ) ||
+    !state.cities.some(
+      (city) => city.id === order.targetCityId && city.factionId === order.factionId,
+    ) ||
+    isCityCommitted(state, order.sourceCityId) ||
+    isCityCommitted(state, order.targetCityId)
+  )
+    return null;
   let party = preview.party;
   if (cargo.troops > 0) {
-    party = partyPlan(state, services, {
-      sourceCityId: order.sourceCityId,
-      maxTroops: cargo.troops,
-      kind: 'requisition',
-    });
+    party = partyPlan(
+      state,
+      services,
+      {
+        sourceCityId: order.sourceCityId,
+        maxTroops: cargo.troops,
+        kind: 'requisition',
+      },
+      order.factionId,
+    );
     if (!party || party.troopCount !== cargo.troops) return null;
   } else party = { officerIds: [], troopCount: 0, composition: { troopTypes: [] } };
   const route = routePlan(state, services, {
+    movingFactionId: order.factionId,
     sourceCityId: order.sourceCityId,
     targetCityId: order.targetCityId,
     departureDay: state.absoluteDay,
@@ -1024,8 +1109,35 @@ export function requestRequisition(
   input: RequisitionInput,
   services: GovernanceOrderServices,
 ): GovernanceOrderResult<V03Requisition, RequisitionPreview> {
-  const preview = previewRequisition(state, input, services);
+  return requestRequisitionForFaction(state, state.playerFactionId, input, services);
+}
+
+/** NPC objectives remain advisory until this real, immediately affordable order commits. */
+export function requestNpcRequisition(
+  state: V03GameState,
+  factionId: string,
+  input: RequisitionInput,
+  services: GovernanceOrderServices,
+): GovernanceOrderResult<V03Requisition, RequisitionPreview> {
+  return requestRequisitionForFaction(
+    state,
+    npcOrderActor(state, factionId),
+    input,
+    services,
+    true,
+  );
+}
+
+function requestRequisitionForFaction(
+  state: V03GameState,
+  factionId: string | null,
+  input: RequisitionInput,
+  services: GovernanceOrderServices,
+  readyOnly = false,
+): GovernanceOrderResult<V03Requisition, RequisitionPreview> {
+  const preview = previewRequisitionForFaction(state, factionId, input, services);
   if (
+    (readyOnly && !preview.ready) ||
     preview.reasonCodes.some(
       (code) =>
         ![
@@ -1047,7 +1159,7 @@ export function requestRequisition(
   }
   const order: V03Requisition = {
     id: requisitionId(state),
-    factionId: state.playerFactionId,
+    factionId: factionId!,
     sourceCityId: input.sourceCityId,
     targetCityId: input.targetCityId,
     requested: { ...preview.requested },
@@ -1106,7 +1218,7 @@ export function answerRequisition(
   reduced?: V03JourneyCargo,
 ): GovernanceOrderResult<V03Requisition, RequisitionPreview> {
   const order = state.requisitions.find((entry) => entry.id === id);
-  if (!order)
+  if (!order || order.factionId !== state.playerFactionId)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
   if (state.phase === 'finished')
     return {
@@ -1396,7 +1508,7 @@ export function answerCampaignDirective(
   reducedTroops?: number,
 ): GovernanceOrderResult<V03CampaignDirective, CampaignDirectivePreview> {
   const order = state.directives.find((entry) => entry.id === id);
-  if (!order)
+  if (!order || order.factionId !== state.playerFactionId)
     return { ok: false, state, reasonCode: 'order.not-found', message: msg('order.not-found') };
   if (state.phase === 'finished')
     return {
@@ -1505,7 +1617,9 @@ export function refreshWaitingRequisitions(
 ): V03GameState {
   const next = structuredClone(state);
   let changed = false;
-  for (const order of next.requisitions.filter((entry) => entry.status === 'waiting')) {
+  for (const order of next.requisitions.filter(
+    (entry) => entry.status === 'waiting' && entry.factionId === state.playerFactionId,
+  )) {
     const preview = previewRequisition(
       next,
       {

@@ -201,6 +201,9 @@ function partyFor(state: Readonly<V03GameState>, sourceCityId: string, maxTroops
     officerIds: picked.map((officer) => officer.id),
     troopCount,
     composition: {
+      cavalryTroops: picked
+        .filter((officer) => officer.troopType === 'cavalry')
+        .reduce((sum, officer) => sum + officer.troops, 0),
       troopTypes: [
         ...new Set(picked.map((officer) => officer.troopType)),
       ] as TravelComposition['troopTypes'][number][],
