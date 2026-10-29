@@ -109,6 +109,14 @@ export function formatEvent(
       detail: message(locale, 'ui.the.armies.have.deployed.in.the.field.176'),
     };
   }
+  if (event.code === 'journey.strandedSurrender')
+    return {
+      title: locale === 'zh' ? '归途无援，队伍投降' : 'Stranded return party surrendered',
+      detail:
+        locale === 'zh'
+          ? `${name(p.factionId, 'factions')}的返程队伍在${name(p.cityId, 'cities')}投降：本势力已无城池、在途出征或未结束的战斗。武将及其健卒、伤兵转为俘虏。接收方取得 ${p.gold} 金、${p.food} 粮；其中 ${p.waitingGold} 金、${p.waitingFood} 粮仍在城外等待仓储空间。`
+          : `${name(p.factionId, 'factions')}'s returning party surrendered at ${name(p.cityId, 'cities')}: its house has no cities, active campaigns or battles. Officers retain their healthy and wounded troops in captivity. The receiving city takes ${p.gold} gold and ${p.food} food; ${p.waitingGold} gold and ${p.waitingFood} food remain outside awaiting storage space.`,
+    };
   if (event.code === 'journey.captured')
     return {
       title: message(locale, 'event.officersCaptured'),

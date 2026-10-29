@@ -15,6 +15,7 @@ import { applyTroopLoss } from './campaign/troop-experience';
 import { battleExperienceGain } from './battle/experience';
 import type { V03TroopGrowthReport } from './types';
 import { eventTier, isCriticalReport } from './campaign/reports';
+import { surrenderStrandedReturn } from './campaign/stranded-return';
 import {
   resolveSuccessions,
   resolveAiPrisoners,
@@ -463,6 +464,17 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
       'the city was captured before the candidate took office',
     );
     target.governorId = null;
+    // A cityless house can recover through an expedition already in flight.
+    // Its old capital is still hostile; establish the recovered seat before saving.
+    if (
+      !state.cities.some(
+        (city) =>
+          city.id === attackerFaction.capitalCityId && city.factionId === attackerFaction.id,
+      )
+    ) {
+      attackerFaction.capitalCityId = target.id;
+      if (attackerFaction.isPlayer) state.playerCapitalCityId = target.id;
+    }
     target.governanceMode = target.id === attackerFaction.capitalCityId ? 'ruler' : 'steward';
     target.garrisonExperience = 0;
     const formerOwner = state.factions.find((faction) => faction.id === oldOwner);
@@ -1008,7 +1020,8 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
     if (journey.status !== 'waiting') continue;
     const target = state.cities.find((city) => city.id === journey.destinationCityId);
     if (target && journey.kind !== 'campaign' && target.factionId !== journey.ownerFactionId) {
-      redirectJourneyToFriendlyCity(state, journey);
+      if (!redirectJourneyToFriendlyCity(state, journey))
+        surrenderStrandedReturn(state, journey, target);
       continue;
     }
     const battleAtDestination = state.battles.some((battle) => {
@@ -1155,7 +1168,7 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
           `The party reached ${target.name}, which is no longer friendly. It is returning to friendly territory.`,
           journey.id,
         );
-      } else {
+      } else if (!surrenderStrandedReturn(state, journey, target)) {
         journey.status = 'waiting';
         addEvent(
           state,

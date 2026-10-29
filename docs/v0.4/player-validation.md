@@ -23,6 +23,8 @@ Across the sessions, include a ten-day city work refresh, a monthly bill, a long
 
 After each manual battle, account for starting troops, healthy/wounded survivors, officer fates, provisions, city ownership and any return journey. When possible, observe a Confuse effect consumed on the target's next eligible activation and an Inspired effect consumed on its next qualifying hit. Record what actually occurred; an unencountered case remains unobserved.
 
+If a house loses its last city, distinguish an active recovery expedition from a stranded return. The latter surrenders at a hostile city only after the house has no cities, active campaigns or battles; officers retain their contingents in captivity. Note whether the report makes that outcome understandable. Do not force a loss merely to cover this case.
+
 At the end of each session, answer with a specific example:
 
 - Could you anticipate the risk from the information available to you?
