@@ -15,6 +15,7 @@ export const TOPIC_LABEL: Record<V03Locale, Record<V03WikiTopic, string>> = {
     governance: 'Governors',
     requisition: 'Orders',
     diplomacy: 'Diplomacy',
+    rivals: 'Rival houses',
   },
   zh: {
     overview: '新手入门',
@@ -25,7 +26,8 @@ export const TOPIC_LABEL: Record<V03Locale, Record<V03WikiTopic, string>> = {
     water: '水战',
     governance: '太守',
     requisition: '征调与出征',
-    diplomacy: '外交與同盟',
+    diplomacy: '外交与同盟',
+    rivals: '敌对势力',
   },
 };
 

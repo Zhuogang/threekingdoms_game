@@ -12,11 +12,11 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 主界面以大地图为主，点击城池后才打开操作窗口。“返回城池”回到本城概况，“返回大地图”或关闭按钮回到原地图位置；Esc 逐层返回。
 
-城池概况直接显示守军、预备兵、粮食、金钱、农业、商业、人口和治安／民心；治安与民心是同一个城市数值。城务中另显示本旬可用工作点。
+城池概况直接显示守军、预备兵、粮食、金钱、农业、商业、人口和治安／民心；治安与民心是同一个城市数值。城务中另显示可用工作点（未用点数最多累积 6 点）。
 
 ### 2. 第一月：征募 → 分配 → 出征
 
-1. 在大地图点击君主本城，打开城池窗口，概况显示金粮，再点“城务”查看农商、预备兵、人口及本月工作点。每城每旬（10 个游戏日）固定 2 点，执行事务仍需在世己方驻将；武将进出不改变额度，迁都、任免不刷新已用点数。
+1. 在大地图点击君主本城，打开城池窗口，概况显示金粮，再点“城务”查看农商、预备兵、人口及可用工作点。每城每旬（10 个游戏日）增加 2 点，未用点数可累积至 6 点，执行事务仍需在世己方驻将；武将进出不改变额度，迁都、任免不刷新已用点数。
 2. 在“城务”选“征募士兵”，指派执行武将，查看变化后点“确认执行”，成功后返回城务菜单。征募先把人口转为**预备兵**，不会直接增加武将带兵数。征募也会消耗工作点并降低少量民心。
 3. 返回城池，依次进入“驻城武将 → 选择武将 → 调整兵力”，输入希望的**最终带兵数**，核对变化后点“确认执行”。完成后返回这名武将的详情。例如从 800 改为 900，会从预备兵分配 100；改为 0 会归还所部。配兵不耗工作点，仍受兵种、兵员、整编和已有承诺限制。
 4. 返回城池概况，点“出征”，勾选随军武将，选择目标并核对军粮、行程和敌军；点击“确认出征”。君主本城直接派出所选武将，窗口关闭并回到原位置的大地图，显示部队行军标记。
@@ -28,13 +28,13 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 城务直接进入核对页并预选推荐执行武将（可点“重新指派武将”更换）。征兵会建议本城武将可统领的最便宜兵种，并列出可统领者。“预备兵补入武将”（城务、驻城武将或出征页）不耗工作点，按武力从高到低把同兵种预备兵补入驻将。预览会显示每项事务此后每月的影响，例如新兵的开支与税基损失、开发的回本时间；城池概况显示每月收入、开支与存粮可支撑时长。出征页只列出可达目的地并按行程排序，说明不可选原因，对比所需与可用军粮，并列出尚需配兵的武将。
 
-配兵、归还所部、赏赐和装备不耗工作点，保留原有资源成本与限制；其他城务每次消耗 1 点，用尽需等下个旬界。太守和 AI 同样执行。迁都或任免不会刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
+配兵、归还所部、赏赐和装备不耗工作点，保留原有资源成本与限制；其他城务每次消耗 1 点；用尽需等下个旬界。“恢复民心”已取消：治安不花钱且恢复更多。太守和 AI 同样执行。迁都或任免不会刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
 
 ### 3. 太守、地方自治与订单
 
 普通武将跨城调动：打开出发城的“城务 → 武将调动”，勾选多人或全选可用驻将，再选择另一座己方城池。确认前查看健全兵、伤兵、行程天数和去返路粮；确认后携带整支所部出发，不耗工作点。途中暂停治疗和整编，抵达后直接驻城，无需任命或等待月界。兵种、经验及整编状态保留；君主、现任太守、待赴任或已被批准命令占用的人选显示不可选原因。可从“军情与命令”查看在途队伍。
 
-工作点在每月第 11 日、第 21 日和下月第 1 日刷新至 2 点，未用点数不累计。推进十日和逐日推进采用同一游戏时间；遇报告或战斗提前停下，只计算实际经过的天数。面板显示距下次刷新的游戏日数。收入、粮耗、任职交接及自动搜索、首次自动配兵次数仍按原月度规则结算。旧存档保留原有消耗，跨过下个旬界后刷新。
+工作点在每月第 11 日、第 21 日和下月第 1 日各增加 2 点，未用点数可累积，最多 6 点（一个月的量），跳过时间不再浪费。推进十日和逐日推进采用同一游戏时间；遇报告或战斗提前停下，只计算实际经过的天数。面板显示可用点数与距下次增加的游戏日数。收入、粮耗、任职交接及自动搜索、首次自动配兵次数仍按原月度规则结算。旧存档保留原有消耗，跨过下个旬界后照常累积。
 
 君主本城可以直接内政。其他城市由正式太守或地方班底自治，不能逐项控制其农业、装备或编兵；你仍可查看库存、征调金粮兵、下达出征令、任免太守并临阵指挥。
 
@@ -48,7 +48,9 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 含兵力的调拨会按实际路线另备单程路粮，骑兵粮耗为两倍；确认页显示额外开销。出发时扣除交付物资和路粮，途中消耗路粮，余粮随队到达。路粮不足的部队不会出发，可以等待或缩减请求。该扣粮修正适用于新出发行程，不追溯扣除旧存档中已在途部队的出发粮。
 
-从地图打开“外交 → 选择势力 → 结盟或解盟”，核对成功率或解盟后果后确认，得到答复后返回该势力详情。有效同盟持续六个月，期间双方不能互相出征。联盟邀请有独立的确认页，加入后返回外交列表。势力详情中的游戏指南可查看规则说明。
+从地图打开“外交 → 选择势力 → 结盟或解盟”，核对成功率或解盟后果后确认，得到答复后返回该势力详情。有效同盟持续六个月，期间双方不能互相出征。提议页逐项列出成功率的加减：对方君主仁德 +10、勇猛 −10，我方是最强势力或对方正在进犯我方各 −30，解盟后二十四个月内 −30，我方仅有两城或更少 +15。结盟时距目标超过五日的出征部队返程，五日以内的照常交战。
+
+敌对势力依君主性格行事（外交页和武将资料可见）：勇猛者胜算较低也出兵并会劫掠攻不下的城池，仁德者谨慎且不亲征，智谋者更看重伤亡，贪婪者偏好富庶城池并会劫掠。劫掠不夺城，但守方战败会损失金粮、民心与开发。攻占的城池民心最高 50（仁德君主 60）。详见游戏指南“敌对势力”。联盟邀请有独立的确认页，加入后返回外交列表。势力详情中的游戏指南可查看规则说明。
 
 对同一势力每月只能提议一次，成功或失败都会记次；解盟当月也不能向对方重新提议。其他势力分别计次，读档不会重置。
 
@@ -60,17 +62,17 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 发展、征兵、搜索和治安等城务先选择执行武将；宴饮直接勾选参与者，普通调动另选驻将与目的城。征兵按执行者武力计算人数，搜索和治安使用其智力；农业、商业等固定效果保持原样。每城共用每旬固定 2 点；配兵、归还所部、赏赐和装备不耗点，不新增个人行动次数或任务占用时间。
 
-赏赐、装备、训练和配兵从“驻城武将 → 选择武将”进入，每次只打开一项操作，确认后回到武将详情。俘虏从“驻城武将 → 俘虏 → 选择俘虏”进入，处置后返回俘虏列表。城务操作在确认前显示预计变化；未确认时返回不会消耗资源或工作点。
+赏赐、装备、训练和配兵从“驻城武将 → 选择武将”进入，每次只打开一项操作，确认后回到武将详情。俘虏从“驻城武将 → 俘虏 → 选择俘虏”进入，处置后返回俘虏列表；“劝降本城全部俘虏”对本月尚未劝降的每名俘虏各试一次。俘虏每到月界忠诚 −5，劝降成功率（100 减忠诚）随之上升；敌方只要供得起口粮便会关押并每月劝降。城务操作在确认前显示预计变化；未确认时返回不会消耗资源或工作点。
 
-| 操作             | 当前作用与注意事项                                                                                                                                                                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 精良兵器         | 选武将配发，180 金、不耗工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                                                                                                                                  |
-| 赏赐             | 100 金、不耗工作点，单将忠诚最多 +15。                                                                                                                                                                                                                    |
-| 训练             | 需要驻城且带兵的武将；经验最多 +25、武力最多 +1，分别判断上限。经验到 500 或 5 级后不再增加，旧档更高经验保留；武力上限 100（精良兵器 105）。升级时弓兵再加智力 2，其他兵种再加武力 2，均受属性上限约束；两项都无提升空间才禁用。预览与反馈显示实际增量。 |
-| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +300。                                                                                                                                                                                                  |
-| 发展农商         | 各花 80 金和一个工作点，农业最多 +20、商业最多 +10，上限为 500。临近上限显示实际增量；已有数值不重算，达到上限时不可继续发展。                                                                                                                            |
-| 买卖粮食         | 买入 800 粮花 80 金；卖出 800 粮得 80 金，也共用工作点，受库存和已批准预留限制。                                                                                                                                                                          |
-| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                                                                                                                                  |
+| 操作             | 当前作用与注意事项                                                                                                                                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 精良兵器         | 选武将配发，180 金、不耗工作点；武力增加最多 5，上限 105。不是拾取后拖到战场使用的道具，没有独立武器背包或攻城兵器操作。                                                                                                                          |
+| 赏赐             | 100 金、不耗工作点，单将忠诚最多 +15。                                                                                                                                                                                                            |
+| 训练             | 需要驻城且带兵的武将；每次武将经验 +25，不再直接加武力。参战武将在战斗结算时另得所部战斗经验的一半。每 100 经验升一级，升级时弓兵智力 +2，其他兵种武力 +2，受属性上限约束（武力 100，精良兵器 105）。经验到 500 或 5 级后禁用，旧档更高经验保留。 |
+| 赈济             | 80 金、600 粮、一个工作点；城市民心最多 +15、人口 +1,500。                                                                                                                                                                                        |
+| 发展农商         | 各花 80 金和一个工作点，农业最多 +20、商业最多 +10，上限为 500。临近上限显示实际增量；已有数值不重算，达到上限时不可继续发展。                                                                                                                    |
+| 买卖粮食         | 买入 2,000 粮花 200 金；卖出 2,000 粮得 200 金，也共用工作点，受库存和已批准预留限制。                                                                                                                                                            |
+| 搜索、治安、宴饮 | 分别寻找可加入武将、恢复城市民心、提高驻城武将忠诚；效果和不可用原因在反馈及面板中显示。                                                                                                                                                          |
 
 灰色按钮先看理由：权限、阶段、工作点、库存、已有承诺、无合适武将、属性上限均可能造成限制。地图上的“预备兵”和武将“带兵”是不同数字。
 
@@ -172,7 +174,7 @@ The strip above the map shows your capital's work points, total gold and food wi
 
 City work opens directly on its review with the recommended executor (**Choose another officer** to change it). Recruitment suggests the cheapest troop type a local officer can lead and lists who can lead it. **Fill officers from reserve** (City affairs, Officers in the city or March out) moves matching reserve soldiers to the stationed officers for free, strongest commanders first. Previews show each action's lasting monthly effect, such as a recruit's upkeep and lost tax or a development's payback time, and the city overview shows monthly income, upkeep and food runway. The march form lists only reachable destinations, nearest first, explains blocked ones, shows provisions needed against stock and lists officers who still need troops.
 
-Each city refreshes to two work points every ten actual game days; unused points do not accumulate. Monthly income and office handovers remain monthly. Capital changes, appointments and departing officers do not refund points. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
+Each city gains two work points every ten actual game days; unused points carry over up to six, one month’s worth. Restore loyalty is retired: security is free and restores more. Monthly income and office handovers remain monthly. Capital changes, appointments and departing officers do not refund points. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
 
 ### Governors, economy and weapons
 
@@ -190,26 +192,28 @@ Open **Send supplies** in the sending city; the flow is **request kind → desti
 
 Troop transfers separately provision the actual outbound route, with double food for cavalry. Review shows this additional cost. Departure deducts cargo plus provisions; travel consumes provisions and delivers any remainder. Underfed forces cannot depart. This applies to new departures; existing journeys in older saves are not retroactively charged.
 
-Diplomacy follows **house → action → confirmation → house details**. Accepted alliances last six months and block attacks between allies. The confirmation screen shows the acceptance chance or the consequences of breaking a treaty. Coalition invitations have a separate confirmation and return to the diplomacy list. House details link to the in-game rules.
+Diplomacy follows **house → action → confirmation → house details**. Accepted alliances last six months and block attacks between allies. The confirmation screen shows the acceptance chance term by term (a benevolent ruler +10, a fierce one −10, −30 when you are the strongest house or their army is marching on you, −30 for 24 months after breaking a treaty, +15 while you hold two cities or fewer) or the consequences of breaking a treaty. A new treaty turns back armies more than five days from their target; closer ones still fight.
+
+Rival houses act on their ruler’s traits, shown on the diplomacy page and officer profiles: fierce rulers march at worse odds and raid cities they cannot take, benevolent ones wait for clear odds and never lead in person, cunning ones weigh losses heavily, greedy ones prefer rich cities and raid. A raid takes no city, but a defeated defender loses gold, food, loyalty and development. A conquered city starts at no more than 50 loyalty (60 under a benevolent ruler). See **Rival houses** in the in-game guide. Coalition invitations have a separate confirmation and return to the diplomacy list. House details link to the in-game rules.
 
 Each target house allows one proposal per month, including failed offers. Breaking a treaty also prevents another proposal to that house until next month. Other houses have separate limits; loading does not reset them.
 
 Development, recruitment, search and security ask for an executing officer; feasts select guests directly, and ordinary transfers select officers and a destination. For work with an executor, recruitment uses force, search and security use intellect, and fixed effects keep their existing formulas. Officers share the city work budget; this does not add individual action limits or task duration.
 
-Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order returns to that officer on success; reward/equipment screens also permit group selection. Prisoners have a separate list and decision screen. Previews are read-only; returning before confirmation spends nothing.
+Open **Officers in the city → choose an officer** for assignment, training, rewards and equipment. Each order returns to that officer on success; reward/equipment screens also permit group selection. Prisoners have a separate list and decision screen; **Ask every prisoner here to serve** tries each captive not yet asked this month. Captives lose 5 loyalty at every month boundary, so the chance (100 minus loyalty) improves; rival houses hold captives and ask monthly while they can feed them. Previews are read-only; returning before confirmation spends nothing.
 
-| Action                            | Cost and effect                                                                                                                                                                                                                                                                        |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fine arms                         | 180 gold/person, no work points; up to +5 force, cap 105. Existing arms or a full force cap blocks another grant.                                                                                                                                                                      |
-| Reward                            | 100 gold/person, no work points; up to +15 loyalty.                                                                                                                                                                                                                                    |
-| Feast                             | 1 work point for the whole group; up to +8 loyalty for checked guests only.                                                                                                                                                                                                            |
-| Training                          | 1 point; up to +25 officer XP and +1 force, checked independently. XP stops at 500/level 5; higher saved XP is retained. Force cap is 100 or 105 with fine arms. A level-up adds up to 2 intellect for archers or 2 force for other types. Only fully ineffective training is blocked. |
-| Relief                            | 1 point, 80 gold and 600 food; up to +15 city loyalty and +300 population.                                                                                                                                                                                                             |
-| Development                       | 1 point and 80 gold; up to +20 farming or +10 commerce, cap 500. Existing values are not rescaled.                                                                                                                                                                                     |
-| Food trade                        | 1 point; buy/sell 800 food for 80 gold, subject to stocks and reservations.                                                                                                                                                                                                            |
-| Assignment and contingent returns | No work points; preserve personnel/type, reserve, capacity and reorganization checks. Assignment sets a final healthy troop count.                                                                                                                                                     |
-| Ordinary transfer                 | No work points; deduct actual route and possible-return provisions and move the whole selected party.                                                                                                                                                                                  |
-| Search and public order           | 1 point; previews explain availability and effects without exposing the random search result.                                                                                                                                                                                          |
+| Action                            | Cost and effect                                                                                                                                                                                                                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fine arms                         | 180 gold/person, no work points; up to +5 force, cap 105. Existing arms or a full force cap blocks another grant.                                                                                                                                                                                        |
+| Reward                            | 100 gold/person, no work points; up to +15 loyalty.                                                                                                                                                                                                                                                      |
+| Feast                             | 1 work point for the whole group; up to +8 loyalty for checked guests only.                                                                                                                                                                                                                              |
+| Training                          | 1 point; +25 officer XP and no direct force. Officers who fight also gain half their troops’ battle XP at settlement. Each 100 XP is a level: +2 intellect for archers or +2 force for other types, within the cap (100, or 105 with fine arms). Blocked at 500 XP/level 5; higher saved XP is retained. |
+| Relief                            | 1 point, 80 gold and 600 food; up to +15 city loyalty and +1,500 population.                                                                                                                                                                                                                             |
+| Development                       | 1 point and 80 gold; up to +20 farming or +10 commerce, cap 500. Existing values are not rescaled.                                                                                                                                                                                                       |
+| Food trade                        | 1 point; buy/sell 2,000 food for 200 gold, subject to stocks and reservations.                                                                                                                                                                                                                           |
+| Assignment and contingent returns | No work points; preserve personnel/type, reserve, capacity and reorganization checks. Assignment sets a final healthy troop count.                                                                                                                                                                       |
+| Ordinary transfer                 | No work points; deduct actual route and possible-return provisions and move the whole selected party.                                                                                                                                                                                                    |
+| Search and public order           | 1 point; previews explain availability and effects without exposing the random search result.                                                                                                                                                                                                            |
 
 Governors and AI share the work-point costs and refresh. Disabled controls explain authority, resources, staffing, commitments and caps. Fine arms is an officer upgrade, not a weapon inventory or siege system.
 

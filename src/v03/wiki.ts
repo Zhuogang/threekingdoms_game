@@ -8,7 +8,8 @@ export type V03WikiTopic =
   | 'water'
   | 'governance'
   | 'requisition'
-  | 'diplomacy';
+  | 'diplomacy'
+  | 'rivals';
 
 export interface V03WikiArticle {
   id: V03WikiTopic;
@@ -74,6 +75,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'Each officer commands one base type. Healthy and attached wounded share a 10,000-person cap. Effective combat loss becomes 60% wounded and 40% permanent loss; zero healthy means defeated, while zero healthy and wounded means annihilation. Wounded retain XP but cannot act or heal on the field. Starvation losses are permanent.',
           'Existing wounded automatically stay in the departure city with their own source and XP. Each full supplied city day heals 10% per city/type group, rounded up: 3,000 heals 300 first and about 90% over 22 effective days. Travel and outside waiting give no treatment. Rear veterans rejoin their original officer only in the same city, under the same house, when available and within capacity; otherwise they remain a separate source.',
           'All military personnel consume food, including reserves, rear veterans, wounded and captives; cavalry counts twice. Expand Personnel, recovery & disbanding in city officers or officer details to review upkeep and disband selected soldiers without a work point. Returning the whole contingent uses no work points in any city; wounded stay in city care and still eat.',
+          'Recruitment draws people from the city’s population. Infantry costs 200 gold and archers 350 for a force-based batch; cavalry costs 400 / 500 / 600 gold in the north / centre / south for 60% / 50% / 40% of the infantry headcount. At force 70 a cavalry soldier costs about 1.0 / 1.5 / 2.3 gold against 0.3 for infantry, and still eats double.',
         ],
       },
     ],
@@ -130,13 +132,13 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'Ordinary appointments and dismissals take effect at a monthly settlement. Officers keep their contingents when taking office. Cross-city transfers carry healthy and wounded soldiers, preserve XP and reorganization, and provision outbound/return travel; treatment and reorganization pause in transit. Repeated appointments cannot refresh work points or reset commitments.',
           'For ordinary officers, open the source city’s City affairs → Transfer officers, check one or more officers and select another friendly city. Preview people, travel days and outbound/return provisions. Transfers use no work points, retain whole contingents and arrive as stationed officers without an appointment or monthly wait. Rulers, governors, pending appointees and committed officers are unavailable. Track travelling groups in Marches & orders.',
           'After confirming a conquest report, choose personal rule or a governor. Personal rule requires the ruler to be present and moves the ruler’s capital; the old capital returns to stewardship. Local candidates may immediately govern the newly captured city with their contingents. Remote candidates follow the transfer and monthly appointment rules. Decide later keeps an Inbox task, including after reload; both cities retain stock, personnel and spent work.',
-          'Every owned city refreshes to two work points every ten game days, independent of staffing; execution still requires a living local officer. Assignment, contingent returns, rewards and equipment use no work points. Rewards cost 100 gold for up to 15 loyalty; fine arms cost 180 gold for up to 5 force (limit 105). Relief costs one point, 80 gold and 600 food for up to 15 city loyalty and 300 population. Governors and AI use the same rules and protect committed resources. Capital moves and appointments preserve spent work.',
+          'Every owned city gains two work points every ten game days, independent of staffing; unused points carry over up to six, one month’s worth, so skipping time loses nothing. Execution still requires a living local officer. Assignment, contingent returns, rewards and equipment use no work points. Rewards cost 100 gold for up to 15 loyalty; fine arms cost 180 gold for up to 5 force (limit 105). Relief costs one point, 80 gold and 600 food for up to 15 city loyalty and 1,500 population, about a year of tax to repay. Market trade buys or sells 2,000 food for 200 gold per point. Restore loyalty is retired: security is free and restores more. Governors and AI use the same rules and protect committed resources. Capital moves and appointments preserve spent work.',
           'Recruit → assign → march: recruitment adds soldiers to the city reserve, not an officer’s army. Set an officer’s troop count and assign those reserve soldiers before preparing a march. Open City affairs, choose one task, then confirm; completion returns to affairs. For assignment, training, rewards or equipment, open Officers in the city, choose one officer and one order; completion returns to their details. Escape returns one level without executing an unconfirmed order. Disabled actions explain their work-point, stock, commitment or attribute limit.',
           'Click a city on the map, then March out. Choose the officers who will march, a destination and provisions, then Confirm march to return to the map. Their complete forces determine the army total; provisions default to outbound travel, battle and return. Capital armies depart directly. Governor cities keep their accept/reduce/wait/cancel proposal flow, minimum garrison and protected commitments.',
           'Feasts allow checked local guests for one work point; only selected officers gain up to 8 loyalty. Rewards and fine arms support multiple recipients at 100 and 180 gold per officer, without work points. Select all includes eligible recipients. Review totals and actual gains before confirming; insufficient funds or an invalid recipient reject the whole order.',
           'Development costs 80 gold and one work point: farming gains up to 20, commerce up to 10, capped at 500. Preview shows the actual gain near the cap. Existing city values are not rescaled.',
           'Monthly tax is the existing base tax, rounded down, multiplied by (0.8 + city loyalty / 500), then rounded down again: 80–100% of base tax. Food and recruitment formulas are unchanged. Officer loyalty retains its succession and prisoner-decision roles; autonomy only considers rewards or feasts when a local officer is below 55 loyalty.',
-          'Training adds up to 25 officer XP and 1 force independently. XP stops increasing at 500 or level 5; existing higher XP is preserved. Force caps at 100, or 105 with fine arms. Training remains available until both benefits are capped; existing level-up bonuses still apply. Preview and feedback show actual gains.',
+          'Officers grow through deeds. Training adds 25 officer XP and no longer raises force by itself; officers who fight gain half their troops’ battle XP when the battle settles. Every 100 XP is a level (up to level 5 at 500 XP), and each level adds 2 force, or 2 intellect for archers, within the force cap of 100 (105 with fine arms). Training is unavailable at 500 XP or level 5; existing higher XP is preserved. Preview and feedback show actual gains.',
           'Autonomy does not remove tactical command. If your forces enter a manual battle, you can still command your units regardless of which city sent them.',
         ],
       },
@@ -164,10 +166,31 @@ const ENGLISH: readonly V03WikiArticle[] = [
       {
         heading: 'Six-month treaties',
         body: [
-          'Alliance proposals use the ruler’s intellect: the base chance is 40 plus half of that intellect, with a 5–90% limit. Offering to unite against the strongest house can add 20 points; proposing to the strongest house removes 30. Breaking an alliance reduces your chance for the next twelve months.',
-          'A successful treaty lasts six campaign months and prevents both houses from attacking one another. Campaigns already on the road turn back at the next safe route decision. Breaking a treaty takes effect immediately.',
+          'The proposal page lists every term of the acceptance chance. The base is 40 plus half of your ruler’s intellect. Both of you bordering the strongest house adds 20; proposing to the strongest house removes 30, and so does being the strongest house yourself. A house whose army is marching on you is 30 less willing. A benevolent ruler is 10 more willing and a fierce one 10 less. Breaking a treaty costs 30 on every offer for 24 months. While you hold two cities or fewer, offers gain 15. The result is limited to 5–90%.',
+          'A successful treaty lasts six campaign months and prevents both houses from attacking one another. Campaigns between the two houses more than five days from their target turn back at the next safe route decision; closer armies press on and fight, so a treaty is no instant shield. Breaking a treaty takes effect immediately.',
           'If the anti-Dong coalition forms, a non-Dong player can accept its invitation to join six-month treaties with its surviving members. The invitation expires after three months.',
           'Holding Luoyang and at least sixteen cities at every monthly boundary for twelve consecutive months proclaims a Hegemon. Rival claims are reported when they begin and when three months remain. This is separate from capturing every city for unification.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rivals',
+    title: 'Rival houses',
+    sections: [
+      {
+        heading: 'Character comes from the ruler',
+        body: [
+          'Each rival house acts on its current ruler’s traits, shown on the diplomacy page and in officer profiles; succession can change a house’s character. A house marches when it estimates at least 80% of the defenders’ strength. A fierce ruler marches at 70% and leaves home more exposed; a benevolent ruler waits for 95% and never leads a campaign in person; a cunning ruler counts expected losses twice. Rulers without these traits keep the neutral policy.',
+          'Some cities are worth more: Luoyang, a city the house lost by conquest in the last year, the leading house’s cities, rich cities for a greedy ruler and isolated ones for a cunning ruler. Together these add at most half again to a target’s value.',
+          'Fierce and greedy rulers raid another house’s city when a conquest is out of reach but they estimate at least half the defenders’ strength. A raid takes no city: a defeated defender loses gold, food, loyalty and development, and the city cannot be raided again for 90 days. A raid on your city is reported as raiders marching on it.',
+        ],
+      },
+      {
+        heading: 'Prisoners and conquest',
+        body: [
+          'Captives lose 5 loyalty at every month boundary, so the chance to recruit them (100 minus loyalty, 5–90%) improves the longer they are held. Rival houses keep captives and ask them every month while they can feed them; only a benevolent ruler lets go those too loyal to turn (75+). In a city’s prisoner list, Ask every prisoner here to serve tries each captive not yet asked this month.',
+          'A city taken by conquest starts with loyalty no higher than 50, or 60 under a benevolent ruler. Its new governor spends early work on relief and public order, which leaves a short window to strike back.',
         ],
       },
     ],
@@ -232,6 +255,7 @@ const CHINESE: readonly V03WikiArticle[] = [
           '一将只带一个基础兵种，可战与随将伤兵合计最多 10000 人。有效战斗减员的 60% 成为伤兵，40% 永久损失；可战归零是击溃，两者归零才是全灭。伤兵保留经验，不能在战场行动或恢复。断粮减员是永久损失。',
           '新出征自动将旧伤兵留城，保留来源和经验。有粮完整驻城一日后，按每城同兵种汇总恢复 10% 并向上取整：3000 首日恢复 300，约 22 个有效日恢复九成。在途和城外等待不恢复。留城老兵仅在原将同城、同势力、可用且有容量时自动归队，否则作为独立兵源保留。',
           '所部、预备兵、待归队老兵、伤兵与俘虏都吃粮，骑兵两倍；看押方承担俘虏口粮，不另付己方兵饷。驻城武将或武将详情中可展开“兵员、养伤与遣散”，查看粮耗并无工作点遣散指定人员。各城“归还全部所部”均不耗工作点，伤兵继续留城休养和吃粮。',
+          '征募从城市人口中抽调。步兵每批 200 金、弓兵 350 金（人数随武力）；骑兵在北方／中原／南方分别花 400／500／600 金，人数为步兵的 60%／50%／40%。以武力 70 计，每名骑兵约 1.0／1.5／2.3 金，步兵约 0.3 金；骑兵仍吃双倍口粮。',
         ],
       },
     ],
@@ -288,13 +312,13 @@ const CHINESE: readonly V03WikiArticle[] = [
           '常规任命或免职在月界生效，无需先清空所部。跨城调任携带健全兵和伤兵，保留经验及整编状态，另备去返路粮；在途暂停治疗和整编。反复任免不会刷新城市本旬已用工作点，也不会清除既有承诺。',
           '普通驻将从出发城的“城务 → 武将调动”勾选多人或全选，再选择另一座己方城池。确认前查看人数、行程和去返路粮；不耗工作点，携带整支所部，抵达后直接驻城，无需任命或等待月界。君主、现任太守、待赴任和已被批准命令占用的人选显示不可选原因。在途队伍可从“军情与命令”查看。',
           '攻城后确认战报，自动选择自任太守或任命太守。自任要求君主已经抵达，将新城设为君主本城，原本城转为地方班底维持；新城同城驻将可保留所部立即任太守，跨城候选沿用调任和月界规则。可稍后处理并从收件箱待办继续，读档仍保留；两城库存、兵员和已用工作点不刷新。',
-          '每城每旬（10 个游戏日）固定 2 点，不随驻将人数变化；执行仍需在世己方驻将。配兵、归还所部、赏赐和装备不耗工作点。赏赐花 100 金（忠诚最多 +15），精良兵器花 180 金（武力最多 +5，上限 105）；赈济花 1 点、80 金与 600 粮（民心最多 +15、人口 +300）。太守和 AI 同样执行，已承诺的资源会保留；迁都、任免不刷新已用点数。',
+          '每城每旬（10 个游戏日）增加 2 点，不随驻将人数变化；未用点数可累积，最多 6 点（一个月的量），跳过时间不再浪费。执行仍需在世己方驻将。配兵、归还所部、赏赐和装备不耗工作点。赏赐花 100 金（忠诚最多 +15），精良兵器花 180 金（武力最多 +5，上限 105）；赈济花 1 点、80 金与 600 粮（民心最多 +15、人口 +1,500），约一年税收可回本。市场买卖每点 2,000 粮换 200 金。“恢复民心”已取消：治安不花钱且恢复更多。太守和 AI 同样执行，已承诺的资源会保留；迁都、任免不刷新已用点数。',
           '征募 → 分配 → 出征：征募先增加城市预备兵，不会直接增加武将带兵。设定武将带兵数并从预备兵分配后，再准备出征。城务中选择一项事务并确认，完成后回到城务菜单。配兵、训练、赏赐和装备从驻城武将中选人，再进入单项操作页，完成后回到该武将详情。Esc 逐层返回，未确认的命令不会执行。不可用的行动会说明工作点、库存、已有承诺或属性上限的限制。',
           '点击地图上的城池，再点出征。选择随军武将、目标与军粮，确认出征后返回地图查看行军。以完整所部合计兵力；军粮默认包含去程、战斗及返程。君主本城直接出发，太守城市保留接受、缩减、等待与取消的方案流程，并保护最低留守兵力及已有承诺。',
           '宴饮可勾选本城己方驻将，整场消耗 1 点，仅所选者获得最多 8 忠诚。赏赐与精良兵器支持多选，分别按每人 100 金和 180 金合计，不耗工作点。全选仅包括可用人选；确认前显示总费用和实际变化，资金不足或任何人选失效时整批不执行。',
           '发展农业或商业各花 80 金和一个工作点，农业最多 +20、商业最多 +10，上限 500。临近上限时预览实际增量；已有城市数值不重算。',
           '每月税收为原基础税收向下取整后，乘以（0.8＋城市民心／500），再向下取整，即原税收的 80%–100%。粮食与征兵公式不变。武将忠诚保留继位与俘虏处置作用，自治仅在驻将忠诚低于 55 时考虑赏赐或宴饮。',
-          '训练的经验与武力分别判定：每次最多 +25 武将经验、+1 武力，升级奖励沿用原规则。经验到 500 或 5 级后停止增加，旧档更高经验保留；武力上限为 100，精良兵器为 105。两项都无提升空间时才禁止训练，预览和结果显示实际增量。',
+          '武将靠战功成长。训练每次 +25 武将经验，不再直接加武力；参战武将在战斗结算时获得所部战斗经验的一半。每 100 经验升一级（500 经验即 5 级封顶），每级武力 +2，弓兵改为智力 +2，武力上限 100（精良兵器 105）。经验到 500 或 5 级后不能再训练，旧档更高经验保留；预览和结果显示实际增量。',
           '自治不影响临阵指挥。来自任何城市的部队进入手动战斗后，玩家仍可控制自己的部队。',
         ],
       },
@@ -317,15 +341,36 @@ const CHINESE: readonly V03WikiArticle[] = [
   },
   {
     id: 'diplomacy',
-    title: '外交與同盟',
+    title: '外交与同盟',
     sections: [
       {
-        heading: '六個月盟約',
+        heading: '六个月盟约',
         body: [
-          '同盟提議以君主智力計算：基礎概率為 40 加上智力的一半，並限制在 5%–90%。共同對抗最強勢力可加 20 點；向最強勢力提議則減 30 點。解除同盟後十二個月內，提議成功率會降低。',
-          '成功的同盟持續六個戰役月，雙方不能互相攻擊。已在途的出征隊會在下一個安全路線節點返程。解除同盟立即生效。',
-          '討伐董卓聯盟成立時，非董卓玩家可以接受邀請，與仍存續的盟友締結六個月同盟。邀請三個月後失效。',
-          '在每個月界都控制洛陽與至少十六座城市，連續維持十二個月即可稱霸。若敵方開始稱霸，遊戲會在進度開始與剩餘三個月時發出警告。稱霸與攻取全部城市、天下一統是不同勝利條件。',
+          '提议页面列出成功率的每一项。基础为 40 加我方君主智力的一半。双方都与最强势力接壤加 20；向最强势力提议减 30，我方自己是最强势力也减 30。对方军队正在进犯我方时减 30。对方君主仁德加 10、勇猛减 10。解除同盟后二十四个月内，每次提议减 30。我方仅有两城或更少时加 15。最终限制在 5%–90%。',
+          '成功的同盟持续六个战役月，双方不能互相攻击。双方距目标超过五日的出征部队会在下一个安全路线节点返程；五日以内的部队继续进军并交战，盟约不能临时当作挡箭牌。解除同盟立即生效。',
+          '讨伐董卓联盟成立时，非董卓玩家可以接受邀请，与仍存续的盟友缔结六个月同盟。邀请三个月后失效。',
+          '在每个月界都控制洛阳与至少十六座城市，连续维持十二个月即可称霸。若敌方开始称霸，游戏会在进度开始与剩余三个月时发出警告。称霸与攻取全部城市、天下一统是不同胜利条件。',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'rivals',
+    title: '敌对势力',
+    sections: [
+      {
+        heading: '性格来自君主',
+        body: [
+          '每个敌对势力依其现任君主的性格行事，外交页面和武将资料中可见；君主更替可能改变势力性格。一般势力预估胜算达到守军的 80% 才出征。勇猛的君主 70% 即出兵，更敢让本城空虚；仁德的君主要等到 95%，且从不亲自领兵；智谋的君主对预计伤亡的重视加倍。没有这些性格的君主维持一般策略。',
+          '有些城池更值得争夺：洛阳、一年内被攻占的旧城、领先势力的城池；贪婪的君主偏好富庶城池，智谋的君主偏好孤立无援的城池。这些加成合计最多使目标价值提高一半。',
+          '勇猛和贪婪的君主在攻不下城池、但预估胜算仍有一半时，会劫掠其他势力的城池。劫掠不夺城：守方战败会损失金粮、民心与开发，该城 90 日内不会再被劫掠。针对我方城池的劫掠会以“敌军劫掠”报告。',
+        ],
+      },
+      {
+        heading: '俘虏与攻城',
+        body: [
+          '俘虏每到月界忠诚下降 5，劝降成功率（100 减忠诚，5%–90%）随关押时间上升。敌对势力只要供得起口粮，就会关押俘虏并每月劝降；只有仁德的君主会释放忠诚 75 以上、难以劝降的俘虏。在城池俘虏列表中，“劝降本城全部俘虏”会对本月尚未劝降的每名俘虏各尝试一次。',
+          '攻占的城池民心最高为 50，仁德君主为 60。新太守会先用工作点赈济与整顿治安，原主因此有短暂的反攻时机。',
         ],
       },
     ],
