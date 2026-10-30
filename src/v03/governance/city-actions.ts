@@ -88,6 +88,35 @@ export function cityActionWorkCost(action: V03CityAction): 0 | 1 {
   return action === 'assign-troops' || action === 'reward' || action === 'equip' ? 0 : 1;
 }
 
+/**
+ * Days a capital task occupies the officer who carries it out. The effect still lands at
+ * once; the officer cannot take another capital task until the days pass. Feasts and the
+ * free preparations have no executor to occupy.
+ */
+const CITY_WORK_BUSY_DAYS: Partial<Record<V03CityAction, number>> = {
+  'develop-farming': 10,
+  'develop-commerce': 10,
+  train: 10,
+  recruit: 5,
+  security: 5,
+  relieve: 5,
+  search: 5,
+  'buy-food': 2,
+  'sell-food': 2,
+};
+
+export function cityWorkBusyDays(action: V03CityAction): number {
+  return CITY_WORK_BUSY_DAYS[action] ?? 0;
+}
+
+/** Days left on the officer's current capital task; 0 when they can take a new one. */
+export function officerBusyDays(
+  state: Pick<V03GameState, 'absoluteDay'>,
+  officer: Pick<V03Officer, 'cityWork'>,
+): number {
+  return Math.max(0, (officer.cityWork?.untilDay ?? 0) - state.absoluteDay);
+}
+
 export function cityWorkPeriodIndex(state: Pick<V03GameState, 'absoluteDay'>): number {
   return Math.floor(state.absoluteDay / CITY_WORK_PERIOD_DAYS);
 }
@@ -230,9 +259,16 @@ function officerForAction(
   state: Readonly<V03GameState>,
   city: V03City,
   officerId?: string,
+  busyAction?: V03CityAction,
 ): V03Officer | undefined {
   const officers = localOfficers(state, city);
-  return officerId ? officers.find((officer) => officer.id === officerId) : officers[0];
+  if (officerId) return officers.find((officer) => officer.id === officerId);
+  // Unnamed, the task goes to the ablest officer not still occupied with another one.
+  const free =
+    busyAction && cityWorkBusyDays(busyAction)
+      ? officers.find((officer) => !officerBusyDays(state, officer))
+      : undefined;
+  return free ?? officers[0];
 }
 
 function nextRandom(state: V03GameState, max: number): number {
@@ -419,12 +455,22 @@ function inspectCityAction(
     );
   if (isCityCommitted(state, input.cityId)) return fail(CITY_COMMITTED_REASON);
   if (state.phase === 'finished') return fail('This campaign has ended.');
-  const actor = officerForAction(state, city, input.officerId);
+  const actor = officerForAction(
+    state,
+    city,
+    input.officerId,
+    authority === 'player' ? input.action : undefined,
+  );
   if (!actor)
     return fail('A living officer must be stationed in the capital to organize this work.');
   if (cityActionWorkCost(input.action) && cityWorkAvailable(state, city) <= 0)
     return fail(
       `The capital has no work points left; ${cityWorkQuota(state, city)} more arrive in ${cityWorkRefreshDays(state)} days.`,
+    );
+  // Only the player's capital tracks who is occupied; autonomous planners are unchanged.
+  if (authority === 'player' && cityWorkBusyDays(input.action) && officerBusyDays(state, actor) > 0)
+    return fail(
+      `${actor.name} is still busy with city work for ${officerBusyDays(state, actor)} more days.`,
     );
 
   let goldCost = 0;
@@ -593,7 +639,12 @@ function applyCityAction(
   const availability = inspectCityAction(state, input, authority);
   if (!availability.ok) return { ok: false, state, error: availability.reason! };
   const sourceCity = state.cities.find((city) => city.id === input.cityId)!;
-  const manager = officerForAction(state, sourceCity, input.officerIds?.[0] ?? input.officerId)!;
+  const manager = officerForAction(
+    state,
+    sourceCity,
+    input.officerIds?.[0] ?? input.officerId,
+    authority === 'player' ? input.action : undefined,
+  )!;
 
   const next = structuredClone(state);
   const city = next.cities.find((entry) => entry.id === input.cityId)!;
@@ -786,6 +837,11 @@ function applyCityAction(
   }
 
   useWorkPoint(next, city, cityActionWorkCost(input.action));
+  if (authority === 'player' && cityWorkBusyDays(input.action))
+    actor.cityWork = {
+      action: input.action,
+      untilDay: next.absoluteDay + cityWorkBusyDays(input.action),
+    };
   if (authority !== 'player' && input.action === 'search')
     city.autoSearchesThisMonth = (city.autoSearchesThisMonth ?? 0) + 1;
   if (authority !== 'player' && firstAssignment)

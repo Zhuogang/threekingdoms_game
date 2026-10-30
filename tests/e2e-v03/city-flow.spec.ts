@@ -41,7 +41,10 @@ for (const width of [390, 1366, 1920])
       await expect(dialog).toHaveCount(0);
       expect(await map.getAttribute('viewBox')).toBe(viewbox);
       await city(page, lang === 'zh' ? '陈留' : 'Chenliu');
-      await dialog.getByRole('button', { name: lang === 'zh' ? /出征/ : /March out/ }).click();
+      // "下达出征令" (a directive) sits beside it, so match the march button exactly.
+      await dialog
+        .getByRole('button', { name: lang === 'zh' ? '出征' : 'March out', exact: true })
+        .click();
       const send = dialog.getByRole('button', {
         name: lang === 'zh' ? '确认出征' : 'Confirm march',
         exact: true,

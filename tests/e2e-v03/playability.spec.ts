@@ -410,7 +410,7 @@ test('RV07 shows reserve/officer results and rejects training when both benefits
   officer.level = 5;
   await loadState(page, state);
   await showCityManagement(page);
-  await expect(page.getByRole('term').filter({ hasText: /^Reserve soldiers$/ })).toBeVisible();
+  await expect(page.locator('.v03-city-section-military h4')).toContainText('Reserve soldiers');
   await expect(page.getByText('Population', { exact: true })).toBeVisible();
   await showOfficer(page, officer.name);
   await expect(page.getByRole('button', { name: 'Train', exact: true })).toBeDisabled();
@@ -429,7 +429,7 @@ test('RV07 shows reserve/officer results and rejects training when both benefits
       async () => (await savedState(page)).cities.find((city) => city.id === capital.id)!.reserve,
     )
     .toBeGreaterThan(capital.reserve);
-  await expect(page.getByRole('term').filter({ hasText: /^预备兵$/ })).toBeVisible();
+  await expect(page.locator('.v03-city-section-military h4')).toContainText('预备兵');
   await expect(page.locator('.v03-window-feedback')).not.toContainText(/recruit|reserve|soldiers/);
 });
 

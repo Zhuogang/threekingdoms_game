@@ -129,8 +129,9 @@ for (const locale of ['zh', 'en'] as const) {
               ? 'Jianye'
               : 'Shouchun',
         );
-        await expect(page.getByRole('button', { name: /City affairs|城务/ })).toHaveCount(0);
-        await expect(page.locator('.v03-work-menu')).toHaveCount(0);
+        await expect(page.locator('.v03-city-overview')).toBeVisible();
+        await expect(page.locator('.v03-city-section-affairs')).toHaveCount(0);
+        await expect(page.locator('.v03-city-section-logistics')).toHaveCount(0);
         await page.screenshot({ path: testInfo.outputPath('npc-first-army.png'), fullPage: true });
         expect(errors).toEqual([]);
       },

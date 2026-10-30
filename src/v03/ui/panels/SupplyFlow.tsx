@@ -8,12 +8,8 @@ import { OrderForm } from './OrderForm';
 import { OrderPreview } from './OrderPreview';
 
 export type SupplyPage =
-  | 'supplies'
-  | 'supply-target'
-  | 'supply-form'
-  | 'supply-review'
-  | 'supply-proposal'
-  | 'supply-reduce';
+  'supply-target' | 'supply-form' | 'supply-review' | 'supply-proposal' | 'supply-reduce';
+/** Requests start from the city page's Military and Logistics sections and return there. */
 export function SupplyFlow({
   context,
   page,
@@ -21,7 +17,7 @@ export function SupplyFlow({
 }: {
   context: GameplayContext & { selectedCity: NonNullable<GameplayContext['selectedCity']> };
   page: SupplyPage;
-  onNavigate: (page: SupplyPage) => void;
+  onNavigate: (page: SupplyPage | 'overview') => void;
 }) {
   const { state, selectedCity, locale, t, orderPreview, orderPreviewOrder: order } = context;
   const draftPreview = useMemo(
@@ -81,44 +77,10 @@ export function SupplyFlow({
     );
     if (result?.ok) {
       context.setOrderPreview(null);
-      onNavigate('supplies');
+      onNavigate('overview');
       context.setFeedback({ key: `flow.orderResult.${choice}` });
     } else submitted.current = false;
   };
-  if (page === 'supplies')
-    return (
-      <section className="v03-supply-menu">
-        <p className="v03-step-intro">{message(locale, 'flow.chooseRequest')}</p>
-        <div className="v03-work-menu officer-work-menu">
-          {(['resource', 'campaign'] as const).map((kind) => (
-            <Button
-              className="v03-step-choice"
-              key={kind}
-              onClick={() => {
-                context.setRequestKind(kind);
-                context.setTargetCityId('');
-                onNavigate('supply-target');
-              }}
-            >
-              <strong>{kind === 'resource' ? t.requestSupplies : t.orderMarch}</strong>
-              <span aria-hidden>→</span>
-            </Button>
-          ))}
-        </div>
-        {pending ? (
-          <Button
-            className="v03-step-choice v03-pending-proposal"
-            onClick={() => onNavigate('supply-proposal')}
-          >
-            {message(locale, 'flow.resumeProposal')} · {context.locationName(order.targetCityId)}
-            <span aria-hidden>→</span>
-          </Button>
-        ) : null}
-        <Button variant="ghost" onClick={() => context.setCampaignTab('orders')}>
-          {message(locale, 'flow.orders')}
-        </Button>
-      </section>
-    );
   if (page === 'supply-target')
     return (
       <section className="v03-supply-targets">
@@ -196,7 +158,7 @@ export function SupplyFlow({
               onNavigate('supply-proposal');
             else {
               context.setOrderPreview(null);
-              onNavigate('supplies');
+              onNavigate('overview');
               context.setFeedback({ key: 'flow.orderDispatched' });
             }
           }}

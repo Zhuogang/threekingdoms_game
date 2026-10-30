@@ -70,8 +70,14 @@ for (const width of [390, 1366, 1920])
       await mkdir(folder, { recursive: true });
       await openCity(page);
       await showCityManagement(page);
-      await expect(page.locator('.v03-work-menu button')).toHaveCount(9);
-      await expect(page.locator('.v03-campaign-window input')).toHaveCount(0);
+      // Administration lists six tasks; recruiting, feasts and searches sit with Military
+      // and Officers on the same page.
+      await expect(page.locator('.v03-city-section-affairs .v03-city-op')).toHaveCount(6);
+      await expect(page.locator('.v03-city-section-military .v03-city-op')).toHaveCount(3);
+      await expect(page.locator('.v03-city-section-officers .v03-city-ops').first()).toContainText(
+        lang === 'en' ? 'Host a feast' : '举行宴饮',
+      );
+      await expect(page.locator('.v03-campaign-window input:visible')).toHaveCount(0);
       await expect(page.locator('.v03-officer-detail')).toHaveCount(0);
       await page.screenshot({ path: `${folder}/affairs-${width}-${lang}.png` });
       const farm = page.getByRole('button', { name: /Improve farmland|发展农田/ });
@@ -80,13 +86,13 @@ for (const width of [390, 1366, 1920])
       await expect(page.locator('#campaign-window-title')).toBeFocused();
       await expect(page.locator('.v03-work-detail')).toContainText('5,000 → 4,920');
       expect(await current(page)).toEqual(before);
-      // The review opens directly with the recommended executor, so one Escape returns to affairs.
+      // The review opens directly with the recommended executor, so one Escape returns to the city.
       await page.keyboard.press('Escape');
-      await expect(page.locator('.v03-city-affairs')).toBeVisible();
+      await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
       expect(await current(page)).toEqual(before);
       await farm.click();
       await confirmWork(page);
-      await expect(page.locator('.v03-city-affairs')).toBeVisible();
+      await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
       await expect(page.locator('.v03-window-feedback')).toBeVisible();
       const farmed = await current(page);
       expect(farmed.cities.find((entry) => entry.id === city.id)).toMatchObject({
@@ -121,10 +127,8 @@ for (const width of [390, 1366, 1920])
       expect(assigned.absoluteDay).toBe(before.absoluteDay);
       await page.screenshot({ path: `${folder}/officer-${width}-${lang}.png` });
       await page.keyboard.press('Escape');
-      await expect(page.locator('.v03-roster')).toBeVisible();
-      await expect(page.locator('.v03-officer-detail')).toHaveCount(0);
-      await page.keyboard.press('Escape');
       await expect(page.locator('.v03-city-overview')).toBeVisible();
+      await expect(page.locator('.v03-officer-detail')).toHaveCount(0);
       await page.keyboard.press('Escape');
       await expect(page.locator('.v03-campaign-window')).toHaveCount(0);
       expect(await map.getAttribute('viewBox')).toBe(camera);
@@ -159,48 +163,64 @@ test('each city task returns to affairs and retains the existing rule result', a
     if (action === 'recruit')
       await page.getByLabel('Recruit troop type', { exact: true }).selectOption('infantry');
     await confirmWork(page);
-    await expect(page.locator('.v03-city-affairs')).toBeVisible();
+    await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
+    const locals = before.officers.filter(
+      (officer) =>
+        officer.alive &&
+        officer.factionId === before.playerFactionId &&
+        officer.location.kind === 'city' &&
+        officer.location.cityId === before.playerCapitalCityId,
+    );
+    // The page recommends force for recruiting and intellect for the rest; that officer is
+    // the one the task occupies.
+    const executor = [...locals].sort(
+      (a, b) =>
+        (action === 'recruit' ? b.force - a.force : b.intellect - a.intellect) ||
+        a.id.localeCompare(b.id),
+    )[0]!;
     expect(await current(page)).toEqual(
       applyV03CityAction(before, {
         cityId: before.playerCapitalCityId,
         action,
         ...(action === 'feast'
           ? {
-              officerIds: before.officers
-                .filter(
-                  (officer) =>
-                    officer.alive &&
-                    officer.factionId === before.playerFactionId &&
-                    officer.location.kind === 'city' &&
-                    officer.location.cityId === before.playerCapitalCityId,
-                )
+              officerIds: locals
                 .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id))
                 .map((officer) => officer.id),
             }
-          : {}),
+          : { officerId: executor.id }),
       }).state,
     );
   }
 });
 
-test('officer training returns to the selected officer; exhausted work stays blocked with a reason', async ({
+test('officer training returns to the selected officer; busy and exhausted work stay blocked with a reason', async ({
   page,
 }) => {
   const before = await load(page);
-  const officer = before.officers.find(
+  const [first, second] = before.officers.filter(
     (entry) =>
       entry.factionId === 'cao' &&
       entry.location.kind === 'city' &&
-      entry.location.cityId === before.playerCapitalCityId,
-  )!;
-  await showOfficer(page, officer.name);
-  for (let count = 1; count <= 2; count++) {
+      entry.location.cityId === before.playerCapitalCityId &&
+      entry.troops > 0,
+  );
+  for (const officer of [first!, second!]) {
+    await showOfficer(page, officer.name);
     await page.getByRole('button', { name: 'Train', exact: true }).click();
     await confirmWork(page);
     await expect(page.locator('.v03-officer-detail')).toBeVisible();
     expect(
       (await current(page)).officers.find((entry) => entry.id === officer.id)?.experience,
-    ).toBe(count * 25);
+    ).toBe(25);
+    if (officer === first) {
+      // Training occupies the officer for ten days, whatever work points remain.
+      await expect(page.locator('.v03-officer-detail')).toContainText('Busy: Train · 10 days left');
+      await expect(page.getByRole('button', { name: 'Train', exact: true })).toHaveAttribute(
+        'title',
+        /still busy with city work for 10 more days/,
+      );
+    }
   }
   const exhausted = await current(page);
   const train = page.getByRole('button', { name: 'Train', exact: true });

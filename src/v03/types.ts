@@ -159,6 +159,8 @@ export interface V03Officer {
   alive: boolean;
   /** At most one holder decision per prisoner per campaign month. */
   prisonerActionMonth?: number;
+  /** The capital task this officer is still occupied with; free again on `untilDay`. */
+  cityWork?: { action: V03CityAction; untilDay: number };
   /** Ruler identity for this captivity; null prevents reuse after release or defection. */
   capturedRulerFactionId?: string | null;
 }

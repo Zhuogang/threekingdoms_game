@@ -1,27 +1,33 @@
-import { Landmark, Swords, Package, Users } from 'lucide-react';
 import { message } from '../../i18n';
 import { isCityCommitted } from '../../governance/commitments';
 import { forecastCityEconomy } from '../../campaign/economy';
 import type { GameplayContext } from '../hooks/gameplayView';
-import { Button, StatGrid } from '../kit';
+import { StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 import { CityIllustration } from '../shared/CityIllustration';
+import { WorkBudget } from './CityWork';
+import {
+  CityAdministration,
+  CityLogistics,
+  CityMilitary,
+  CityOfficerSection,
+  type CityOperations,
+} from './CitySections';
 
+/** One scrolling page: the city at a glance, then every operation grouped by purpose. */
 export function CityOverview({
   context,
-  onManage,
-  onSupplies,
-  onOfficers,
+  operations,
 }: {
   context: GameplayContext;
-  onManage: () => void;
-  onSupplies: () => void;
-  onOfficers: () => void;
+  operations: Omit<CityOperations, 'onMarch'>;
 }) {
   const { state, selectedCity: city, locale, t } = context;
   if (!city) return null;
   const owner = state.factions.find((entry) => entry.id === city.factionId);
   const friendly = city.factionId === state.playerFactionId;
+  const direct =
+    friendly && city.id === state.playerCapitalCityId && city.governanceMode === 'ruler';
   const committed = isCityCommitted(state, city.id);
   const field = state.battles.find(
     (battle) =>
@@ -36,17 +42,23 @@ export function CityOverview({
     : city.garrisonTroops;
   // The same next-settlement forecast governors use, shown to the player for their own cities.
   const economy = friendly && !field ? forecastCityEconomy(state, city.id) : null;
-  const net = economy
-    ? {
-        gold: economy.production.gold - economy.upkeep.gold,
-        food: economy.production.food - economy.upkeep.food,
-      }
-    : null;
   const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value).toLocaleString()}`;
-  const officers = state.officers.filter(
-    (officer) =>
-      officer.alive && officer.location.kind === 'city' && officer.location.cityId === city.id,
-  );
+  const flow = (key: 'gold' | 'food') =>
+    economy ? (
+      <>
+        {signed(economy.production[key] - economy.upkeep[key])}
+        <small>
+          {message(locale, 'city.flowDetail', {
+            income: economy.production[key].toLocaleString(),
+            upkeep: economy.upkeep[key].toLocaleString(),
+          })}
+        </small>
+      </>
+    ) : null;
+  const netFood = economy ? economy.production.food - economy.upkeep.food : 0;
+  const governor = city.governorId
+    ? state.officers.find((entry) => entry.id === city.governorId)
+    : undefined;
   const march = () => {
     context.setTargetCityId(friendly ? '' : city.id);
     if (!friendly) {
@@ -92,6 +104,7 @@ export function CityOverview({
     }
     context.setCampaignTab('forces');
   };
+  const sections = { context, operations: { ...operations, onMarch: march }, direct };
   return (
     <div className="v03-city-overview">
       <div className="v03-city-hero">
@@ -106,98 +119,60 @@ export function CityOverview({
               : friendly
                 ? message(locale, 'flow.yourCity')
                 : message(locale, 'flow.foreignCity')}
+            {friendly
+              ? ` · ${
+                  direct
+                    ? message(locale, 'city.ruledDirectly')
+                    : governor
+                      ? message(locale, 'city.governedBy', {
+                          name: displayName(governor, locale),
+                        })
+                      : t.localSteward
+                }`
+              : ''}
           </p>
-          <small>
-            {committed
-              ? message(locale, 'ui.garrison.in.the.field.92')
-              : message(locale, 'flow.chooseAction')}
-          </small>
+          {direct ? <WorkBudget context={context} /> : null}
+          {committed ? <small>{message(locale, 'ui.garrison.in.the.field.92')}</small> : null}
         </div>
       </div>
       <StatGrid
         values={[
+          { label: t.gold, value: city.gold.toLocaleString() },
+          { label: t.food, value: (field?.defenderFood ?? city.food).toLocaleString() },
+          ...(economy
+            ? [
+                { label: message(locale, 'city.monthlyGold'), value: flow('gold') },
+                { label: message(locale, 'city.monthlyFood'), value: flow('food') },
+              ]
+            : []),
           { label: t.garrison, value: troops.toLocaleString() },
           {
             label: message(locale, 'city.reserveNotDefending'),
             value: city.reserve.toLocaleString(),
           },
-          { label: t.food, value: (field?.defenderFood ?? city.food).toLocaleString() },
-          { label: t.gold, value: city.gold.toLocaleString() },
-          { label: message(locale, 'flow.farming'), value: city.farming.toLocaleString() },
-          { label: message(locale, 'flow.commerce'), value: city.commerce.toLocaleString() },
           { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },
           { label: message(locale, 'flow.publicOrder'), value: `${city.loyalty}%` },
-          ...(economy && net
+          { label: message(locale, 'flow.farming'), value: city.farming.toLocaleString() },
+          { label: message(locale, 'flow.commerce'), value: city.commerce.toLocaleString() },
+          ...(economy
             ? [
-                {
-                  label: message(locale, 'city.monthlyGold'),
-                  value: message(locale, 'city.monthlyFlow', {
-                    net: signed(net.gold),
-                    income: economy.production.gold.toLocaleString(),
-                    upkeep: economy.upkeep.gold.toLocaleString(),
-                  }),
-                },
-                {
-                  label: message(locale, 'city.monthlyFood'),
-                  value: message(locale, 'city.monthlyFlow', {
-                    net: signed(net.food),
-                    income: economy.production.food.toLocaleString(),
-                    upkeep: economy.upkeep.food.toLocaleString(),
-                  }),
-                },
                 {
                   label: message(locale, 'city.foodRunway'),
                   value:
-                    net.food >= 0
+                    netFood >= 0
                       ? message(locale, 'city.foodGrowing')
                       : message(locale, 'city.foodMonths', {
-                          months: Math.floor(city.food / -net.food),
+                          months: Math.floor(city.food / -netFood),
                         }),
                 },
               ]
             : []),
         ]}
       />
-      <div className="v03-city-actions-grid">
-        <Button variant="primary" className="v03-city-action" onClick={march} disabled={committed}>
-          <Swords size={28} />
-          <span>
-            <strong>{message(locale, friendly ? 'flow.march' : 'ui.march.here.96')}</strong>
-            <small>{message(locale, 'flow.marchHint')}</small>
-          </span>
-          <span aria-hidden>→</span>
-        </Button>
-        <Button className="v03-city-action" onClick={onOfficers}>
-          <Users size={26} />
-          <span>
-            <strong>
-              {message(locale, 'flow.officers')} · {officers.length}
-            </strong>
-            <small>{message(locale, 'flow.officersHint')}</small>
-          </span>
-          <span aria-hidden>→</span>
-        </Button>
-        {friendly ? (
-          <>
-            <Button className="v03-city-action" onClick={onManage}>
-              <Landmark size={26} />
-              <span>
-                <strong>{message(locale, 'flow.manage')}</strong>
-                <small>{message(locale, 'flow.manageHint')}</small>
-              </span>
-              <span aria-hidden>→</span>
-            </Button>
-            <Button className="v03-city-action" onClick={onSupplies}>
-              <Package size={26} />
-              <span>
-                <strong>{t.requestSupplies}</strong>
-                <small>{message(locale, 'flow.suppliesHint')}</small>
-              </span>
-              <span aria-hidden>→</span>
-            </Button>
-          </>
-        ) : null}
-      </div>
+      <CityMilitary {...sections} friendly={friendly} committed={committed} />
+      {friendly ? <CityAdministration {...sections} /> : null}
+      <CityOfficerSection {...sections} />
+      {friendly ? <CityLogistics {...sections} /> : null}
     </div>
   );
 }

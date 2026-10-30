@@ -1,16 +1,24 @@
+import { cityWorkBusyDays, officerBusyDays } from '../../governance/city-actions';
 import { message } from '../../i18n';
+import type { V03Officer } from '../../types';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
+import { BusyNote } from './CityOfficers';
 import { WorkBudget, type CityWorkAction } from './CityWork';
 
-/** Best executor first: force drives recruitment; intellect drives the other city work. */
-export function rankWorkExecutors<T extends { id: string; force: number; intellect: number }>(
-  officers: readonly T[],
-  action: CityWorkAction,
-): T[] {
+/**
+ * Best executor first: officers still busy with another capital task go last; then force
+ * drives recruitment and intellect drives the other city work.
+ */
+export function rankWorkExecutors<
+  T extends Pick<V03Officer, 'id' | 'force' | 'intellect' | 'cityWork'>,
+>(officers: readonly T[], action: CityWorkAction, absoluteDay: number): T[] {
+  const busy = (officer: T) =>
+    cityWorkBusyDays(action) > 0 && officerBusyDays({ absoluteDay }, officer) > 0;
   return [...officers].sort(
     (a, b) =>
+      Number(busy(a)) - Number(busy(b)) ||
       (action === 'recruit' ? b.force - a.force : b.intellect - a.intellect) ||
       a.id.localeCompare(b.id),
   );
@@ -25,8 +33,8 @@ export function CityWorkAssignment({
   action: CityWorkAction;
   onSelect: (id: string) => void;
 }) {
-  const { locale, directCityOfficers } = context;
-  const officers = rankWorkExecutors(directCityOfficers, action);
+  const { locale, directCityOfficers, state } = context;
+  const officers = rankWorkExecutors(directCityOfficers, action, state.absoluteDay);
   return (
     <section className="v03-work-assignment">
       <p className="v03-step-intro">{message(locale, 'flow.assignWorkHint')}</p>
@@ -37,6 +45,7 @@ export function CityWorkAssignment({
             className="v03-step-choice"
             key={officer.id}
             aria-label={displayName(officer, locale)}
+            disabled={cityWorkBusyDays(action) > 0 && officerBusyDays(state, officer) > 0}
             onClick={() => onSelect(officer.id)}
           >
             <span>
@@ -48,6 +57,7 @@ export function CityWorkAssignment({
                   ? ` · ${message(locale, 'flow.recommended')}`
                   : ''}
               </small>
+              <BusyNote context={context} officer={officer} />
             </span>
             <span aria-hidden>→</span>
           </Button>

@@ -3,8 +3,17 @@ import { getUnitReachableTiles } from '../../src/v03/battle';
 import { reportBlocksAdvance, stopsBattleDay } from '../../src/v03/campaign/reports';
 import { playtestFixture } from '../../src/v03/dev/fixtures';
 import { advanceV03, completeV03BattleDay } from '../../src/v03/engine';
+import {
+  applyNpcCapitalCityAction,
+  applyV03CityAction,
+  cityWorkBusyDays,
+  getV03CityActionAvailability,
+  officerBusyDays,
+} from '../../src/v03/governance/city-actions';
 import { createV03Game } from '../../src/v03/initial-state';
+import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
 import { standOnPendingMove } from '../../src/v03/ui/hooks/battle-controls';
+import { localizeAppMessage } from '../../src/v03/ui/shared/app-copy-2';
 import type { V03DomainEvent, V03GameState } from '../../src/v03/types';
 
 // First play session after Phase 3 (October 30, 2026): reports that need no orders no
@@ -116,5 +125,103 @@ describe('provisional battle moves', () => {
       action: { type: 'move', unitId: pending.unitId, x: pending.x, y: pending.y },
     });
     expect(commit.base).toBe(state);
+  });
+});
+
+// Second note from the same session: a capital task takes its executor's time.
+describe('capital tasks occupy their executor', () => {
+  function capital() {
+    const state = createV03Game('cao', 4);
+    const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
+    Object.assign(city, { gold: 10_000, farming: 100, commerce: 100, loyalty: 50 });
+    city.workPointsBanked = 4;
+    city.workPeriodIndex = 0;
+    city.workMonthIndex = 0;
+    city.workPointsUsed = 0;
+    const officers = state.officers
+      .filter(
+        (officer) =>
+          officer.alive &&
+          officer.factionId === state.playerFactionId &&
+          officer.location.kind === 'city' &&
+          officer.location.cityId === city.id,
+      )
+      .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id));
+    return { state, city, officers };
+  }
+
+  it('applies the effect at once and keeps the executor busy for the task days', () => {
+    const { state, city, officers } = capital();
+    const executor = officers[0]!;
+    expect(cityWorkBusyDays('develop-farming')).toBe(10);
+    const done = applyV03CityAction(state, {
+      cityId: city.id,
+      action: 'develop-farming',
+      officerId: executor.id,
+    });
+    expect(done.ok, done.error).toBe(true);
+    expect(done.state.cities.find((entry) => entry.id === city.id)!.farming).toBe(120);
+    const busy = done.state.officers.find((entry) => entry.id === executor.id)!;
+    expect(busy.cityWork).toEqual({ action: 'develop-farming', untilDay: state.absoluteDay + 10 });
+    expect(officerBusyDays(done.state, busy)).toBe(10);
+    const again = applyV03CityAction(done.state, {
+      cityId: city.id,
+      action: 'security',
+      officerId: executor.id,
+    });
+    expect(again.ok).toBe(false);
+    expect(again.error).toBe(`${executor.name} is still busy with city work for 10 more days.`);
+    expect(localizeAppMessage(again.error!, 'zh', done.state)).toContain('还需 10 日');
+    // Free preparations and rewards do not need the officer's time.
+    const reward = applyV03CityAction(done.state, {
+      cityId: city.id,
+      action: 'reward',
+      officerIds: [executor.id],
+    });
+    expect(reward.ok, reward.error).toBe(true);
+    const later = structuredClone(done.state);
+    later.absoluteDay += 10;
+    expect(officerBusyDays(later, busy)).toBe(0);
+    expect(
+      getV03CityActionAvailability(later, {
+        cityId: city.id,
+        action: 'security',
+        officerId: executor.id,
+      }).ok,
+    ).toBe(true);
+  });
+
+  it('gives an unnamed task to the next free officer, and feasts occupy no one', () => {
+    const { state, city, officers } = capital();
+    const first = applyV03CityAction(state, { cityId: city.id, action: 'buy-food' });
+    expect(first.ok, first.error).toBe(true);
+    const second = applyV03CityAction(first.state, { cityId: city.id, action: 'buy-food' });
+    expect(second.ok, second.error).toBe(true);
+    const occupied = second.state.officers.filter((officer) => officer.cityWork);
+    expect(occupied.map((officer) => officer.id)).toEqual([officers[0]!.id, officers[1]!.id]);
+    expect(occupied.every((officer) => officer.cityWork!.untilDay === state.absoluteDay + 2)).toBe(
+      true,
+    );
+    const feast = applyV03CityAction(second.state, {
+      cityId: city.id,
+      action: 'feast',
+      officerIds: officers.map((officer) => officer.id),
+    });
+    expect(feast.ok, feast.error).toBe(true);
+    expect(feast.state.officers.filter((officer) => officer.cityWork)).toHaveLength(2);
+    expect(decodeV03Save(encodeV03Save(feast.state))).toEqual(feast.state);
+  });
+
+  it('leaves governors and rival capitals on their existing monthly rules', () => {
+    const state = createV03Game('cao', 4);
+    const rival = state.factions.find((faction) => faction.id !== state.playerFactionId)!;
+    const city = state.cities.find((entry) => entry.id === rival.capitalCityId)!;
+    Object.assign(city, { gold: 10_000, farming: 100 });
+    const done = applyNpcCapitalCityAction(state, rival.id, {
+      cityId: city.id,
+      action: 'develop-farming',
+    });
+    expect(done.ok, done.error).toBe(true);
+    expect(done.state.officers.some((officer) => officer.cityWork)).toBe(false);
   });
 });

@@ -384,12 +384,12 @@ describe('R3 qualification, budgets and stale plans', () => {
       officerId: executor.id,
     });
     expect(first.ok).toBe(true);
+    // The first searcher is out for five days; the next free officer searches again.
     const second = applyV03CityAction(first.state, {
       cityId: direct.playerCapitalCityId,
       action: 'search',
-      officerId: executor.id,
     });
-    expect(second.ok).toBe(true);
+    expect(second.ok, second.error).toBe(true);
     expect(cityAt(second.state, direct.playerCapitalCityId).workPointsUsed).toBe(2);
     expect(cityAt(second.state, direct.playerCapitalCityId).autoSearchesThisMonth).toBe(0);
   });

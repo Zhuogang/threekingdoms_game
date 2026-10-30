@@ -19,7 +19,17 @@ for (const locale of ['zh', 'en'] as const) {
     const capital = state.cities.find((c) => c.id === state.playerCapitalCityId)!;
     capital.gold = 10000;
     Object.values(capital.reservePools).forEach((pool) => (pool.troopExperience = 1200));
-    const officer = state.officers.find((o) => o.id === 'caocao')!;
+    const caocao = state.officers.find((o) => o.id === 'caocao')!;
+    // Recruiting occupies its officer for five days, so a second officer takes the
+    // archers; Cao Cao is free again for the cavalry after the ten-day advance.
+    const second = state.officers.find(
+      (o) =>
+        o.id !== 'caocao' &&
+        o.factionId === 'cao' &&
+        o.location.kind === 'city' &&
+        o.location.cityId === capital.id,
+    )!;
+    const recruiters = { infantry: caocao, archer: second, cavalry: caocao };
     const key = 'hegemony-v0.3:autosave';
     await page.goto(`/?lang=${locale}`);
     await page.evaluate(({ key, raw }) => localStorage.setItem(key, raw), {
@@ -51,6 +61,7 @@ for (const locale of ['zh', 'en'] as const) {
         ).toBe(0);
       }
       const before = state.cities.find((c) => c.id === capital.id)!;
+      const officer = recruiters[type];
       const quote = recruitmentQuote(before, officer.force, type);
       await showCityManagement(page);
       await page.getByRole('button', { name: /Recruit soldiers|征募士兵/, exact: true }).click();
@@ -63,7 +74,7 @@ for (const locale of ['zh', 'en'] as const) {
       if (type === 'cavalry')
         await page.screenshot({ path: testInfo.outputPath('recruit-cavalry.png') });
       await confirmWork(page);
-      await expect(page.locator('.v03-city-affairs')).toBeVisible();
+      await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
       state = await page.evaluate(
         (key) => JSON.parse(localStorage.getItem(key)!).state as V03GameState,
         key,

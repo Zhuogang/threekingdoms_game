@@ -45,11 +45,11 @@ for (const width of [1366, 390])
         expect(dimensions.art.height / dimensions.art.width).toBeCloseTo(0.75, 2);
         expect(dimensions.art.x).toBeGreaterThanOrEqual(dimensions.hero.x);
         expect(dimensions.art.right).toBeLessThanOrEqual(dimensions.hero.right + 1);
-        await expect(dialog.locator('.v03-stat-grid')).toBeVisible();
+        await expect(dialog.locator('.v03-city-overview > .v03-stat-grid')).toBeVisible();
         if (id === 'luoyang' || id === 'hanzhong')
           await page.screenshot({ path: testInfo.outputPath(`${id}-${width}-${lang}.png`) });
-        await dialog.locator('.v03-city-action').last().scrollIntoViewIfNeeded();
-        await expect(dialog.locator('.v03-city-action').last()).toBeInViewport();
+        await dialog.locator('.v03-city-op').last().scrollIntoViewIfNeeded();
+        await expect(dialog.locator('.v03-city-op').last()).toBeInViewport();
         await expect(dialog.locator('.v03-window-footer button').first()).toBeInViewport();
         await page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
@@ -70,10 +70,7 @@ test('missing city art preserves actions and another city still loads its illust
   await page.getByRole('button', { name: '新战役', exact: true }).click();
   await page.getByRole('button', { name: '陈留', exact: true }).click();
   await expect(page.locator('.v03-city-art-fallback')).toHaveText('陈');
-  await page.getByRole('button', { name: /城务/ }).click();
-  await expect(page.locator('.v03-work-menu')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.locator('.v03-city-art-fallback')).toBeVisible();
+  await expect(page.locator('.v03-city-section-affairs .v03-city-ops')).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: '洛阳', exact: true }).click();
   await expect(page.locator('.v03-city-illustration img')).toHaveJSProperty('naturalWidth', 512);

@@ -100,29 +100,32 @@ for (const locale of ['zh', 'en']) {
     );
   });
 
-  test(`one stationed officer can spend both city points (${locale})`, async ({ page }) => {
+  test(`one stationed officer takes one task at a time while the city keeps its points (${locale})`, async ({
+    page,
+  }) => {
     const { city } = await load(page, locale, 0);
     await openCity(page);
     await showCityManagement(page);
     await expect(page.locator('.v03-work-budget')).toContainText('2/6');
-    for (let used = 1; used <= 2; used++) {
-      await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
-      await confirmWork(page);
-      expect((await saved(page)).cities.find((entry) => entry.id === city.id)).toMatchObject({
-        workPointsUsed: used,
-        farming: 100 + used * 20,
-        gold: 5000 - used * 80,
-      });
-      await expect(page.locator('.v03-work-budget')).toContainText(`${2 - used}/6`);
-    }
-    const exhausted = await saved(page);
+    await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
+    await confirmWork(page);
+    expect((await saved(page)).cities.find((entry) => entry.id === city.id)).toMatchObject({
+      workPointsUsed: 1,
+      farming: 120,
+      gold: 4920,
+    });
+    await expect(page.locator('.v03-work-budget')).toContainText('1/6');
+    // Development occupies the only officer for ten days; the second point waits.
+    const busy = await saved(page);
     await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
     await expect(page.locator('.v03-assigned-officer')).toBeVisible();
     await expect(
       page.getByRole('button', { name: /确认执行|Confirm order/, exact: true }),
     ).toBeDisabled();
-    await expect(page.locator('.v03-action-reason')).toContainText(/no work points left|工作点/);
-    expect(await saved(page)).toEqual(exhausted);
+    await expect(page.locator('.v03-action-reason')).toContainText(
+      locale === 'zh' ? '还需 10 日' : 'busy with city work for 10 more days',
+    );
+    expect(await saved(page)).toEqual(busy);
   });
 
   test(`ten-day advancement adds two points, banks the unused one and displays the countdown (${locale})`, async ({

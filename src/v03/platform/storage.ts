@@ -251,6 +251,23 @@ const officer = z
     governorOfCityId: id.nullable(),
     alive: z.boolean(),
     prisonerActionMonth: nonnegative.optional(),
+    cityWork: z
+      .object({
+        action: z.enum([
+          'develop-farming',
+          'develop-commerce',
+          'train',
+          'recruit',
+          'security',
+          'relieve',
+          'search',
+          'buy-food',
+          'sell-food',
+        ]),
+        untilDay: nonnegative,
+      })
+      .strict()
+      .optional(),
     capturedRulerFactionId: id.nullable().optional(),
   })
   .strict();

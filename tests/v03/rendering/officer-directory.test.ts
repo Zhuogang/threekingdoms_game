@@ -12,7 +12,7 @@ import {
 } from '../../../src/v03/rendering/officer-portraits';
 import { OfficerPortrait } from '../../../src/v03/rendering/OfficerPortrait';
 import { OfficerProfile } from '../../../src/v03/ui/panels/OfficerProfile';
-import { CityOfficers, OfficerDetail } from '../../../src/v03/ui/panels/CityOfficers';
+import { OfficerRoster, OfficerDetail } from '../../../src/v03/ui/panels/CityOfficers';
 import {
   officerDirectory,
   officerDossier,
@@ -209,7 +209,7 @@ describe('R4 city grouping and permissions', () => {
   it('separates local free people from serving officers and gives both real portraits', () => {
     const ctx = context();
     const html = renderToStaticMarkup(
-      createElement(CityOfficers, { context: ctx, onOfficer: () => {} }),
+      createElement(OfficerRoster, { context: ctx, onOfficer: () => {} }),
     );
     expect(html).toContain('驻城在职');
     expect(html).toContain('本城在野');
@@ -223,7 +223,7 @@ describe('R4 city grouping and permissions', () => {
       holderFactionId: 'cao',
     };
     const transit = renderToStaticMarkup(
-      createElement(CityOfficers, { context: ctx, prisoners: true, onOfficer: () => {} }),
+      createElement(OfficerRoster, { context: ctx, prisoners: true, onOfficer: () => {} }),
     );
     expect(transit).not.toContain('data-portrait-id="chengyu"');
   });

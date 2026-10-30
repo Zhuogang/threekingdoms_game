@@ -30,19 +30,21 @@ async function checkContained(page: Page) {
     return {
       bodyWidth: body.clientWidth,
       contentWidth: body.scrollWidth,
-      statistics: [...dialog.querySelectorAll('.v03-stat-grid dd')].map((node) => {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        const content = range.getBoundingClientRect(),
-          cell = node.getBoundingClientRect();
-        return {
-          text: node.textContent,
-          left: content.left,
-          right: content.right,
-          cellLeft: cell.left,
-          cellRight: cell.right,
-        };
-      }),
+      statistics: [...dialog.querySelectorAll('.v03-city-overview > .v03-stat-grid dd')].map(
+        (node) => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const content = range.getBoundingClientRect(),
+            cell = node.getBoundingClientRect();
+          return {
+            text: node.textContent,
+            left: content.left,
+            right: content.right,
+            cellLeft: cell.left,
+            cellRight: cell.right,
+          };
+        },
+      ),
     };
   });
   expect(measurements.contentWidth).toBeLessThanOrEqual(measurements.bodyWidth);
@@ -50,7 +52,7 @@ async function checkContained(page: Page) {
     expect(cell.left, cell.text!).toBeGreaterThanOrEqual(cell.cellLeft - 1);
     expect(cell.right, cell.text!).toBeLessThanOrEqual(cell.cellRight + 1);
   }
-  const lastAction = page.locator('.v03-city-action').last();
+  const lastAction = page.locator('.v03-city-op').last();
   await lastAction.scrollIntoViewIfNeeded();
   await expect(lastAction).toBeInViewport();
   await expect(page.locator('.v03-window-footer button').first()).toBeInViewport();
@@ -85,7 +87,7 @@ for (const locale of ['en', 'zh'] as const)
       .getByRole('button', { name: locale === 'en' ? 'Ruler’s capital' : '君主本城', exact: true })
       .click();
     await expect(page.locator('.v03-city-illustration img')).toHaveJSProperty('naturalWidth', 512);
-    await expect(page.locator('.v03-stat-grid')).toContainText('9,999,999');
+    await expect(page.locator('.v03-city-overview > .v03-stat-grid')).toContainText('9,999,999');
     await checkContained(page);
     await page.screenshot({ path: testInfo.outputPath(`small-stocks-${locale}.png`) });
   });

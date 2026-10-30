@@ -34,7 +34,7 @@ test('city paintings and the active campaign background load under the productio
     .locator('.v03-window-body')
     .evaluate((node) => ({ width: node.clientWidth, content: node.scrollWidth }));
   expect(body.content).toBeLessThanOrEqual(body.width);
-  const lastAction = page.locator('.v03-city-action').last();
+  const lastAction = page.locator('.v03-city-op').last();
   await lastAction.scrollIntoViewIfNeeded();
   await expect(lastAction).toBeInViewport();
   await expect(page.locator('.v03-window-footer button').first()).toBeInViewport();

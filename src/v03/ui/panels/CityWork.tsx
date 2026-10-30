@@ -9,12 +9,13 @@ import {
   applyV03CityAction,
   CITY_WORK_BANK_MAX_POINTS,
   cityActionWorkCost,
+  cityWorkBusyDays,
   cityWorkRefreshDays,
 } from '../../governance/city-actions';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, Field, Input, StatGrid, Select } from '../kit';
-import { displayName } from '../shared/app-copy-3';
+import { absoluteDateLabel, displayName } from '../shared/app-copy-3';
 import { ReinforcementPreview, TroopProgress } from './TroopProgress';
 
 export const cityWorkActions = [
@@ -50,6 +51,11 @@ export function workLabel(context: GameplayContext, action: CityWorkAction) {
     reward: t.rewardOfficer,
     equip: t.issueFineArms,
   }[action];
+}
+
+/** The task's name without its price, for status lines. */
+export function workTaskName(context: GameplayContext, action: CityWorkAction) {
+  return workLabel(context, action).split(' · ')[0]!;
 }
 
 export function WorkBudget({ context }: { context: GameplayContext }) {
@@ -315,6 +321,19 @@ export function CityWork({
       <p className="v03-muted">
         {message(locale, cityActionWorkCost(action) ? 'flow.workCost' : 'flow.noWorkCost')}
       </p>
+      {officer && cityWorkBusyDays(action) ? (
+        <p className="v03-muted">
+          {message(locale, 'work.busyFor', {
+            name: displayName(officer, locale),
+            days: cityWorkBusyDays(action),
+            date: absoluteDateLabel(
+              state.startYear,
+              state.absoluteDay + cityWorkBusyDays(action),
+              locale,
+            ),
+          })}
+        </p>
+      ) : null}
       {!availability.ok ? (
         <p className="v03-action-reason" role="status">
           {context.capitalReason(action, officerId, amount, troopType)}

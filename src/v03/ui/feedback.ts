@@ -184,6 +184,8 @@ export function localizeRoutineFeedback(
   if (match) return `本城本旬的 ${match[1]} 个工作点已用完。`;
   match = message.match(/^The capital has no work points left; (\d+) more arrive in (\d+) days\.$/);
   if (match) return `本城工作点已用完，${match[2]} 日后增加 ${match[1]} 点。`;
+  match = message.match(/^(.+) is still busy with city work for (\d+) more days\.$/);
+  if (match) return `${name(match[1]!)}仍在办理城务，还需 ${match[2]} 日才能接新任务。`;
   match = message.match(/^(\d+) of (\d+) prisoners agreed to serve\.$/);
   if (match) return `${match[2]} 名俘虏中有 ${match[1]} 名愿意归顺。`;
   match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);

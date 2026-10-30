@@ -28,7 +28,11 @@ export function prepareProbeCapital(initial, api) {
           officer.location.cityId === city.id,
       )
       .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id));
-    const manager = locals[0];
+    // A capital task occupies its executor for some days; like a player, use whoever is free.
+    const free = locals.filter(
+      (officer) => !officer.cityWork || officer.cityWork.untilDay <= state.absoluteDay,
+    );
+    const manager = free[0] ?? locals[0];
     if (!manager) break;
     const choices = [];
     if (city.food < 3000) choices.push({ action: 'buy-food' });
@@ -40,7 +44,7 @@ export function prepareProbeCapital(initial, api) {
         choices.push({ action: 'assign-troops', officerId: officer.id, amount });
     }
     if (city.food >= 5000 && city.garrisonTroops < 5000 && city.reserve < 1500) {
-      const recruiter = locals
+      const recruiter = (free.length ? free : locals)
         .slice()
         .sort((a, b) => b.force - a.force || a.id.localeCompare(b.id))[0];
       choices.push({ action: 'recruit', officerId: recruiter.id, troopType: recruiter.troopType });

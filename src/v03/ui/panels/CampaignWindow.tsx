@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowLeft, X } from 'lucide-react';
 import { message } from '../../i18n';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 import { CityOverview } from './CityOverview';
-import { CityAffairs } from './CityAffairs';
-import { CityOfficers, OfficerDetail } from './CityOfficers';
+import { CityPrisoners, OfficerDetail } from './CityOfficers';
 import { CityWork, workLabel, isCityWork, type CityWorkAction } from './CityWork';
 import { GovernorAppointment } from './GovernorAppointment';
 import { PrisonerPanel } from './PrisonerPanel';
@@ -26,7 +25,7 @@ import { isOfficerGroupAction } from '../../governance/city-actions';
 import { localizeAppMessage } from '../shared/app-copy-2';
 
 type CityPage =
-  | { kind: 'overview' | 'affairs' | 'officers' | 'prisoners' | 'governor' | 'transfer' }
+  | { kind: 'overview' | 'prisoners' | 'governor' | 'transfer' }
   | { kind: 'officer' | 'prisoner'; officerId: string }
   | { kind: SupplyPage }
   | { kind: 'work-actor'; action: CityWorkAction }
@@ -35,21 +34,11 @@ type CityPage =
 function parentPage(page: CityPage): CityPage {
   switch (page.kind) {
     case 'work':
-      // City work opens on its review with a recommended executor, so Back returns to affairs.
-      if (page.action === 'feast' || isCityWork(page.action)) return { kind: 'affairs' };
-      return page.officerId ? { kind: 'officer', officerId: page.officerId } : { kind: 'officers' };
-    case 'officer':
-    case 'prisoners':
-      return { kind: 'officers' };
+      // City work and group orders open from the city page; officer orders from their detail.
+      if (isCityWork(page.action) || !page.officerId) return { kind: 'overview' };
+      return { kind: 'officer', officerId: page.officerId };
     case 'prisoner':
       return { kind: 'prisoners' };
-    case 'governor':
-    case 'transfer':
-    case 'work-actor':
-      return { kind: 'affairs' };
-    case 'supply-target':
-    case 'supply-proposal':
-      return { kind: 'supplies' };
     case 'supply-form':
       return { kind: 'supply-target' };
     case 'supply-review':
@@ -82,8 +71,18 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
     campaignTab === 'diplomacy'
       ? navigateDiplomacy(diplomacyParent(diplomacyPage))
       : navigate(parent);
-  const complete = () =>
-    navigate(page.kind === 'work' && isCityWork(page.action) ? { kind: 'affairs' } : parent, true);
+  const complete = () => navigate(parent, true);
+  // Recommended executor first; "Change executor" on the review still opens the full list.
+  const openWork = (action: CityWorkAction) => {
+    const executor = isOfficerGroupAction(action)
+      ? undefined
+      : rankWorkExecutors(context.directCityOfficers, action, state.absoluteDay)[0];
+    navigate(
+      isOfficerGroupAction(action) || executor
+        ? { kind: 'work', action, officerId: executor?.id }
+        : { kind: 'work-actor', action },
+    );
+  };
   const isCity = campaignTab === 'city' && page.kind === 'overview';
   const isAction =
     campaignTab === 'forces' ||
@@ -104,35 +103,29 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
         ? diplomacyTitle(context, diplomacyPage)
         : campaignTab === 'forces'
           ? message(locale, 'flow.march')
-          : page.kind === 'affairs'
-            ? message(locale, 'flow.manage')
-            : page.kind === 'transfer'
-              ? message(locale, 'flow.officerTransfer')
-              : page.kind === 'officers'
-                ? message(locale, 'flow.officers')
-                : page.kind === 'prisoners'
-                  ? message(locale, 'ui.prisoners.104')
-                  : page.kind === 'officer' || page.kind === 'prisoner'
-                    ? officerName
-                    : page.kind === 'work-actor'
-                      ? `${workLabel(context, page.action)} · ${message(locale, 'flow.assignWork')}`
-                      : page.kind === 'supply-target'
-                        ? message(locale, 'flow.chooseTarget')
-                        : page.kind === 'supply-form'
-                          ? context.requestKind === 'resource'
-                            ? t.requestSupplies
-                            : t.orderMarch
-                          : page.kind === 'supply-proposal' || page.kind === 'supply-review'
-                            ? message(locale, 'flow.proposal')
-                            : page.kind === 'supply-reduce'
-                              ? t.acceptReduced
-                              : page.kind === 'work'
-                                ? workLabel(context, page.action)
-                                : page.kind === 'governor'
-                                  ? message(locale, 'flow.appointments')
-                                  : page.kind === 'supplies'
-                                    ? t.requestSupplies
-                                    : cityName;
+          : page.kind === 'transfer'
+            ? message(locale, 'flow.officerTransfer')
+            : page.kind === 'prisoners'
+              ? message(locale, 'ui.prisoners.104')
+              : page.kind === 'officer' || page.kind === 'prisoner'
+                ? officerName
+                : page.kind === 'work-actor'
+                  ? `${workLabel(context, page.action)} · ${message(locale, 'flow.assignWork')}`
+                  : page.kind === 'supply-target'
+                    ? message(locale, 'flow.chooseTarget')
+                    : page.kind === 'supply-form'
+                      ? context.requestKind === 'resource'
+                        ? t.requestSupplies
+                        : t.orderMarch
+                      : page.kind === 'supply-proposal' || page.kind === 'supply-review'
+                        ? message(locale, 'flow.proposal')
+                        : page.kind === 'supply-reduce'
+                          ? t.acceptReduced
+                          : page.kind === 'work'
+                            ? workLabel(context, page.action)
+                            : page.kind === 'governor'
+                              ? message(locale, 'flow.appointments')
+                              : cityName;
   const backLabel =
     campaignTab === 'diplomacy'
       ? message(
@@ -143,25 +136,17 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
         )
       : message(
           locale,
-          parent.kind === 'work-actor'
-            ? 'flow.changeExecutor'
-            : parent.kind === 'supplies'
-              ? 'flow.backSupplies'
-              : parent.kind === 'supply-target'
-                ? 'flow.backTargets'
-                : parent.kind === 'supply-proposal'
-                  ? 'flow.backProposal'
-                  : parent.kind === 'supply-form'
-                    ? 'flow.backRequest'
-                    : parent.kind === 'affairs'
-                      ? 'flow.backAffairs'
-                      : parent.kind === 'officers'
-                        ? 'flow.backOfficers'
-                        : parent.kind === 'officer'
-                          ? 'flow.backOfficer'
-                          : parent.kind === 'prisoners'
-                            ? 'flow.backPrisoners'
-                            : 'flow.backCity',
+          parent.kind === 'supply-target'
+            ? 'flow.backTargets'
+            : parent.kind === 'supply-proposal'
+              ? 'flow.backProposal'
+              : parent.kind === 'supply-form'
+                ? 'flow.backRequest'
+                : parent.kind === 'officer'
+                  ? 'flow.backOfficer'
+                  : parent.kind === 'prisoners'
+                    ? 'flow.backPrisoners'
+                    : 'flow.backCity',
         );
   const screenKey = `${selectedCity?.id}:${campaignTab}:${JSON.stringify(page)}:${JSON.stringify(diplomacyPage)}`;
   useEffect(() => {
@@ -174,6 +159,13 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
   }, [selectedCity?.id]);
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
+  }, [screenKey]);
+  // Returning from an operation lands where the player left the long city page.
+  const body = useRef<HTMLDivElement>(null);
+  const cityScroll = useRef({ cityId: '', top: 0 });
+  useLayoutEffect(() => {
+    if (isCity && body.current && cityScroll.current.cityId === selectedCity?.id)
+      body.current.scrollTop = cityScroll.current.top;
   }, [screenKey]);
   // Existing help remains reachable while the campaign dialog owns native focus.
   const nested = {
@@ -236,7 +228,15 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
           <X size={20} />
         </Button>
       </header>
-      <div className="v03-window-body" key={screenKey}>
+      <div
+        className="v03-window-body"
+        key={screenKey}
+        ref={body}
+        onScroll={(event) => {
+          if (isCity && selectedCity)
+            cityScroll.current = { cityId: selectedCity.id, top: event.currentTarget.scrollTop };
+        }}
+      >
         {context.feedback ? (
           <p className="v03-window-feedback" role="status">
             {localizeAppMessage(context.feedback, locale, state)}
@@ -245,41 +245,27 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
         {isCity && selectedCity ? (
           <CityOverview
             context={nested}
-            onManage={() => navigate({ kind: 'affairs' })}
-            onOfficers={() => navigate({ kind: 'officers' })}
-            onSupplies={() => navigate({ kind: 'supplies' })}
+            operations={{
+              onWork: openWork,
+              onOfficer: (officerId) => navigate({ kind: 'officer', officerId }),
+              onPrisoners: () => navigate({ kind: 'prisoners' }),
+              onGovernor: () => navigate({ kind: 'governor' }),
+              onTransfer: () => navigate({ kind: 'transfer' }),
+              onRequest: (kind) => {
+                context.setRequestKind(kind);
+                context.setTargetCityId('');
+                navigate({ kind: 'supply-target' });
+              },
+              onProposal: () => navigate({ kind: 'supply-proposal' }),
+            }}
           />
         ) : null}
         {campaignTab === 'city' && selectedCity ? (
           <>
-            {page.kind === 'affairs' ? (
-              <CityAffairs
+            {page.kind === 'prisoners' ? (
+              <CityPrisoners
                 context={nested}
-                onWork={(action) => {
-                  // Go straight to the review with the recommended executor; "Change executor"
-                  // on that page still opens the full list.
-                  const executor =
-                    action === 'feast'
-                      ? undefined
-                      : rankWorkExecutors(nested.directCityOfficers, action)[0];
-                  navigate(
-                    action === 'feast' || executor
-                      ? { kind: 'work', action, officerId: executor?.id }
-                      : { kind: 'work-actor', action },
-                  );
-                }}
-                onGovernor={() => navigate({ kind: 'governor' })}
-                onTransfer={() => navigate({ kind: 'transfer' })}
-              />
-            ) : null}
-            {page.kind === 'officers' || page.kind === 'prisoners' ? (
-              <CityOfficers
-                context={nested}
-                prisoners={page.kind === 'prisoners'}
-                onPrisoners={() => navigate({ kind: 'prisoners' })}
-                onOfficer={(officerId) =>
-                  navigate({ kind: page.kind === 'prisoners' ? 'prisoner' : 'officer', officerId })
-                }
+                onOfficer={(officerId) => navigate({ kind: 'prisoner', officerId })}
               />
             ) : null}
             {page.kind === 'officer' ? (
@@ -323,7 +309,6 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
             ) : null}
             {(
               [
-                'supplies',
                 'supply-target',
                 'supply-form',
                 'supply-review',

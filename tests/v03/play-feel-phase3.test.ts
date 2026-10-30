@@ -488,6 +488,8 @@ describe('PF-RL-01 bank unused work', () => {
       expect(result.ok, result.error).toBe(true);
       state = result.state;
       expect(cityWorkAvailable(state, capital())).toBe(6 - spent);
+      // This test is about the bank; executors' task days have their own tests.
+      for (const officer of state.officers) delete officer.cityWork;
     }
     expect(
       applyV03CityAction(state, { cityId: capital().id, action: 'develop-commerce' }).error,

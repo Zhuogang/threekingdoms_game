@@ -50,13 +50,12 @@ export async function cityOverview(page: Page) {
     if (!(await page.locator('.v03-campaign-window').count())) await openCity(page);
   }
 }
+// The city page is one scroll: affairs, officers and requests are sections of the overview.
 export async function showCityManagement(page: Page) {
   await cityOverview(page);
-  await page.getByRole('button', { name: /City affairs|城务/ }).click();
 }
 export async function showOfficers(page: Page) {
   await cityOverview(page);
-  await page.getByRole('button', { name: /Officers in the city|驻城武将/ }).click();
 }
 export async function showOfficer(page: Page, name?: string) {
   await showOfficers(page);
@@ -93,15 +92,16 @@ export async function showGovernor(page: Page) {
 }
 export async function showForces(page: Page) {
   await cityOverview(page);
-  await page.getByRole('button', { name: /March out|出征/ }).click();
+  await page.getByRole('button', { name: /^(March out|出征|March here|进军此城)$/ }).click();
 }
 export async function showSupplies(page: Page) {
   await cityOverview(page);
-  await page.getByRole('button', { name: /Send supplies|调拨物资/ }).click();
-  await page
-    .locator('.v03-supply-menu')
-    .getByRole('button', { name: /Send supplies|调拨物资/ })
-    .click();
+  await page.getByRole('button', { name: /^(Send supplies|调拨物资)$/ }).click();
+}
+/** A campaign directive: the city forms the army from a troop count. */
+export async function showDirective(page: Page) {
+  await cityOverview(page);
+  await page.getByRole('button', { name: /^(Order a march|下达出征令)$/ }).click();
 }
 export async function showWithdrawal(page: Page) {
   const details = page.locator('.v03-battle-action-bar details');

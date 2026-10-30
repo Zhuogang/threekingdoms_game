@@ -1,5 +1,6 @@
 import { message } from '../../i18n';
-import { ReserveFillButton } from './ReserveFill';
+import { officerBusyDays } from '../../governance/city-actions';
+import type { V03Officer } from '../../types';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
@@ -9,18 +10,38 @@ import { UnitIcon } from '../../rendering/UnitIcon';
 import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { OfficerProfile } from './OfficerProfile';
 import { officerCopy, officerStatus, OFFICER_STATUS_LABELS } from '../shared/officer-view';
-import { officerWorkActions, workLabel, WorkBudget, type CityWorkAction } from './CityWork';
+import {
+  officerWorkActions,
+  workLabel,
+  workTaskName,
+  WorkBudget,
+  type CityWorkAction,
+} from './CityWork';
 
-export function CityOfficers({
+/** The capital task an officer is still occupied with, if any. */
+export function BusyNote({ context, officer }: { context: GameplayContext; officer: V03Officer }) {
+  const days = officerBusyDays(context.state, officer);
+  if (!days || !officer.cityWork || officer.factionId !== context.state.playerFactionId)
+    return null;
+  return (
+    <small className="v03-officer-busy">
+      {message(context.locale, 'officer.busy', {
+        task: workTaskName(context, officer.cityWork.action as CityWorkAction),
+        days,
+      })}
+    </small>
+  );
+}
+
+/** Officers in the selected city (or its prisoners), grouped; each opens their detail. */
+export function OfficerRoster({
   context,
   prisoners = false,
   onOfficer,
-  onPrisoners,
 }: {
   context: GameplayContext;
   prisoners?: boolean;
   onOfficer: (id: string) => void;
-  onPrisoners?: () => void;
 }) {
   const { state, selectedCity: city, locale, t } = context;
   const copy = officerCopy[locale];
@@ -38,24 +59,71 @@ export function CityOfficers({
         { title: copy.serving, people: officers.filter((officer) => officer.factionId !== null) },
         { title: copy.free, people: officers.filter((officer) => officer.factionId === null) },
       ];
-  const captured = state.officers.filter(
-    (officer) =>
-      officer.alive &&
-      officer.location.kind === 'captured' &&
-      !officer.location.journeyId &&
-      officer.location.cityId === city?.id,
-  ).length;
+  if (!officers.length) return <p className="v03-muted">{message(locale, 'flow.emptyRoster')}</p>;
+  return (
+    <>
+      {groups
+        .filter((group) => group.people.length)
+        .map((group) => (
+          <section className="v03-city-roster-group" key={group.title}>
+            <h4>
+              {group.title} · {group.people.length}
+            </h4>
+            <div className="v03-roster-list">
+              {group.people.map((officer) => (
+                <Button
+                  key={officer.id}
+                  className="v03-step-choice"
+                  onClick={() => onOfficer(officer.id)}
+                  aria-label={displayName(officer, locale)}
+                >
+                  <OfficerPortrait id={officer.id} locale={locale} />
+                  <span>
+                    <strong>{displayName(officer, locale)}</strong>
+                    <small>{OFFICER_STATUS_LABELS[officerStatus(officer)][locale]}</small>
+                    <BusyNote context={context} officer={officer} />
+                    {officer.factionId !== null ? (
+                      <TroopProgress unit={officer} locale={locale} compact />
+                    ) : null}
+                    <small>
+                      {officer.troops.toLocaleString()} {t.troops} ·{' '}
+                      {message(locale, 'ui.force.53')} {officer.force} ·{' '}
+                      {message(locale, 'ui.intellect.54')} {officer.intellect}
+                    </small>
+                  </span>
+                  <span aria-hidden>→</span>
+                </Button>
+              ))}
+            </div>
+          </section>
+        ))}
+    </>
+  );
+}
+
+export function CityPrisoners({
+  context,
+  onOfficer,
+}: {
+  context: GameplayContext;
+  onOfficer: (id: string) => void;
+}) {
+  const { state, selectedCity: city, locale } = context;
   const askable =
-    prisoners && city?.factionId === state.playerFactionId
-      ? officers.filter((officer) => officer.prisonerActionMonth !== state.monthIndex).length
+    city?.factionId === state.playerFactionId
+      ? state.officers.filter(
+          (officer) =>
+            officer.alive &&
+            officer.location.kind === 'captured' &&
+            !officer.location.journeyId &&
+            officer.location.cityId === city.id &&
+            officer.prisonerActionMonth !== state.monthIndex,
+        ).length
       : 0;
   return (
     <section className="v03-roster">
-      <p className="v03-step-intro">
-        {message(locale, prisoners ? 'flow.choosePrisoner' : 'flow.chooseOfficer')}
-      </p>
-      {!prisoners ? <ReserveFillButton context={context} /> : null}
-      {prisoners && city?.factionId === state.playerFactionId ? (
+      <p className="v03-step-intro">{message(locale, 'flow.choosePrisoner')}</p>
+      {city?.factionId === state.playerFactionId ? (
         <>
           <Button
             className="v03-step-choice"
@@ -67,51 +135,7 @@ export function CityOfficers({
           <p className="v03-muted">{message(locale, 'prisoners.captivityHint')}</p>
         </>
       ) : null}
-      {officers.length ? (
-        groups
-          .filter((group) => group.people.length)
-          .map((group) => (
-            <section className="v03-city-roster-group" key={group.title}>
-              <h3>
-                {group.title} · {group.people.length}
-              </h3>
-              <div className="v03-roster-list">
-                {group.people.map((officer) => (
-                  <Button
-                    key={officer.id}
-                    className="v03-step-choice"
-                    onClick={() => onOfficer(officer.id)}
-                    aria-label={displayName(officer, locale)}
-                  >
-                    <OfficerPortrait id={officer.id} locale={locale} />
-                    <span>
-                      <strong>{displayName(officer, locale)}</strong>
-                      <small>{OFFICER_STATUS_LABELS[officerStatus(officer)][locale]}</small>
-                      {officer.factionId !== null ? (
-                        <TroopProgress unit={officer} locale={locale} compact />
-                      ) : null}
-                      <small>
-                        {officer.troops.toLocaleString()} {t.troops} ·{' '}
-                        {message(locale, 'ui.force.53')} {officer.force} ·{' '}
-                        {message(locale, 'ui.intellect.54')} {officer.intellect}
-                      </small>
-                    </span>
-                    <span aria-hidden>→</span>
-                  </Button>
-                ))}
-              </div>
-            </section>
-          ))
-      ) : (
-        <p className="v03-muted">{message(locale, 'flow.emptyRoster')}</p>
-      )}
-      {!prisoners && captured > 0 ? (
-        <Button className="v03-step-choice" onClick={onPrisoners}>
-          {message(locale, 'ui.prisoners.104')} · {captured}
-          <span aria-hidden>→</span>
-        </Button>
-      ) : null}
-      {!prisoners ? <CityPersonnelPanel context={context} /> : null}
+      <OfficerRoster context={context} prisoners onOfficer={onOfficer} />
     </section>
   );
 }
@@ -146,6 +170,7 @@ export function OfficerDetail({
         </div>
       ) : null}
       <p>{officer.equipment === 'Fine arms' ? t.fineArmsEquipped : t.noFineArms}</p>
+      <BusyNote context={context} officer={officer} />
       {friendly ? (
         <>
           {city?.id === state.playerCapitalCityId ? (

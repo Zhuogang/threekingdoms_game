@@ -32,11 +32,7 @@ async function load(page: Page, state = ready(), lang = 'en') {
 }
 async function resources(page: Page, lang = 'en') {
   await openCity(page, lang === 'zh' ? '濮阳' : 'Puyang');
-  await page.getByRole('button', { name: /Send supplies|调拨物资/ }).click();
-  await page
-    .locator('.v03-supply-menu')
-    .getByRole('button', { name: /Send supplies|调拨物资/ })
-    .click();
+  await page.getByRole('button', { name: /^(Send supplies|调拨物资)$/ }).click();
   await page
     .locator('.v03-supply-targets')
     .getByRole('button', { name: lang === 'zh' ? '陈留' : 'Chenliu', exact: true })
@@ -85,7 +81,7 @@ for (const width of [390, 1366, 1920])
         .getByLabel(lang === 'zh' ? '招募兵种' : 'Recruit troop type', { exact: true })
         .selectOption('infantry');
       await confirmWork(page);
-      await expect(page.locator('.v03-city-affairs')).toBeVisible();
+      await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
       expect(await current(page)).toEqual(expectedWork.state);
       await resources(page, lang);
       const beforeRequest = await current(page);
@@ -114,7 +110,7 @@ for (const width of [390, 1366, 1920])
       await page
         .getByRole('button', { name: lang === 'zh' ? '提交征调' : 'Submit request', exact: true })
         .click();
-      await expect(page.locator('.v03-supply-menu')).toBeVisible();
+      await expect(page.locator('.v03-city-section-logistics')).toBeVisible();
       const dispatched = executeV03Command(beforeRequest, {
         type: 'requestRequisition',
         sourceCityId: 'puyang',
@@ -182,7 +178,7 @@ for (const answer of ['reduce', 'wait', 'cancel'] as const)
     const proposal = await current(page);
     const order = proposal.requisitions.at(-1)!;
     await page.keyboard.press('Escape');
-    await expect(page.locator('.v03-supply-menu')).toBeVisible();
+    await expect(page.locator('.v03-city-section-logistics')).toBeVisible();
     await page.locator('.v03-pending-proposal').click();
     expect(await current(page)).toEqual(proposal);
     if (answer === 'reduce') {
@@ -202,7 +198,7 @@ for (const answer of ['reduce', 'wait', 'cancel'] as const)
           exact: true,
         })
         .click();
-    await expect(page.locator('.v03-supply-menu')).toBeVisible();
+    await expect(page.locator('.v03-city-section-logistics')).toBeVisible();
     expect(await current(page)).toEqual(
       executeV03Command(proposal, {
         type: 'answerRequisition',
@@ -242,9 +238,9 @@ test('campaign requisitions also review before creating a directive', async ({ p
   const before = ready();
   await load(page, before);
   await openCity(page, 'Puyang');
-  await page.getByRole('button', { name: /Send supplies/ }).click();
+  // Directives now sit with the city's military operations.
   await page
-    .locator('.v03-supply-menu')
+    .locator('.v03-city-section-military')
     .getByRole('button', { name: 'Order a march', exact: true })
     .click();
   await page
@@ -267,7 +263,7 @@ test('campaign requisitions also review before creating a directive', async ({ p
   expect(await current(page)).toEqual(expected.state);
   await expect(page.locator('.v03-supply-proposal')).toBeVisible();
   await page.getByRole('button', { name: 'Wait for full plan', exact: true }).click();
-  await expect(page.locator('.v03-supply-menu')).toBeVisible();
+  await expect(page.locator('.v03-city-section-logistics')).toBeVisible();
   expect(await current(page)).toEqual(
     executeV03Command(expected.state, {
       type: 'answerCampaignDirective',
