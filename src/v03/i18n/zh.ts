@@ -456,6 +456,9 @@ export const zh: Record<MessageKey, string> = {
   'event.threat.title': '敌军进犯{city}',
   'event.threat.detail':
     '{faction}自{source}出兵约 {troops} 人，预计 {date}（{days} 日后）抵达{city}。可增强守备、调兵运粮或寻求结盟。',
+  'event.raid.title': '敌军劫掠{city}',
+  'event.raid.detail':
+    '{faction}自{source}派出约 {troops} 人劫掠，预计 {date}（{days} 日后）抵达{city}。劫掠不夺城，但战败会损失金粮、民心与开发。',
   'map.battleHere': '此地正在交战',
   'map.threatIn': '敌军约 {days} 日后抵达',
   'map.threatDays': '{days}日',

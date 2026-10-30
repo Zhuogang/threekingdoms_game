@@ -22,6 +22,7 @@ import { rulerTemperament } from './ai/temperament';
  * before invoking the planner again, so the state's active-order checks can see it.
  */
 import { estimateCampaignSupply, type SupplyEstimate, type SupplyEstimateInput } from './calendar';
+import { campaignBattleDays } from './battle/types';
 import { createV03OrderServices } from './governance/services';
 import type { OrderPartyPlan, OrderRoutePlan, PlanRouteInput } from './governance/orders';
 import { ROUTE_BY_ID, ROUTE_DEFINITIONS, routeIdBetween, type CityId } from './geography';
@@ -29,8 +30,9 @@ import type { V03City, V03GameState, V03Officer } from './types';
 import type { RulerTemperament } from './ai/temperament';
 import { V03_HEGEMON_CAPITAL_CITY_ID } from './campaign/monthly-systems';
 
-const CAMPAIGN_BATTLE_RESERVE_DAYS = 30;
 const MAX_OFFICERS_PER_PARTY = 10;
+/** A raid takes no city: it scores half of an equivalent conquest. */
+const RAID_SCORE_FACTOR = 0.5;
 /** A city lost by conquest stays a priority for its former owner this long. */
 export const RECENT_LOSS_DAYS = 360;
 const MAX_TARGET_VALUE = 0.5;
@@ -107,14 +109,14 @@ export interface StrategicAiPlannerServices {
  *
  * The engine can create a V03CampaignDirective and V03Journey from this data
  * using its normal ID allocation and dispatch path. `requestedTroops` always
- * equals the whole-officer `party.troopCount`; `food` uses the same 30-day
- * battle reserve and return-trip estimate as player campaign orders.
+ * equals the whole-officer `party.troopCount`; `food` uses the same battle
+ * reserve (30 days, 14 for a raid) and return-trip estimate as player orders.
  */
 export interface StrategicRivalCampaignPlan {
   factionId: string;
   sourceCityId: string;
   targetCityId: string;
-  intent: 'conquer';
+  intent: 'conquer' | 'raid';
   requestedTroops: number;
   proposedTroops: number;
   requestedByDay: null;
@@ -279,6 +281,7 @@ function makeCandidate(
   services: StrategicAiPlannerServices,
   blocked: CampaignEvent[],
   opportunities: StrategicCampaignOpportunity[],
+  intent: 'conquer' | 'raid' = 'conquer',
 ): Candidate | null {
   const observe = (event: CampaignEvent) => {
     recordAiDecision(event);
@@ -325,7 +328,7 @@ function makeCandidate(
       troopCount: party.troopCount,
       cavalryTroops: party.composition.cavalryTroops,
       outboundDays: route.estimatedDays,
-      battleDays: CAMPAIGN_BATTLE_RESERVE_DAYS,
+      battleDays: campaignBattleDays(intent),
       returnDays: route.estimatedDays,
     });
   } catch {
@@ -341,12 +344,16 @@ function makeCandidate(
     party,
     supply.totalFood,
     route.estimatedDays,
+    intent,
   );
   // Ordinal value: one city, discounted by casualties, provisions, committed
   // soldiers, travel time and credible exposure at home. Hold/preparation is zero.
   // A cunning ruler counts expected losses twice; target value raises the city's worth.
+  // A raid takes no city, so it is worth half a conquest.
   const score =
-    (1000 * (1 + campaignTargetValue(state, factionId, targetCityId, assessment.temperament))) /
+    ((intent === 'raid' ? RAID_SCORE_FACTOR : 1) *
+      1000 *
+      (1 + campaignTargetValue(state, factionId, targetCityId, assessment.temperament))) /
     (1 +
       (assessment.matchup.expectedLosses / 1000) * assessment.temperament.lossWeight +
       supply.totalFood / 10000 +
@@ -359,7 +366,7 @@ function makeCandidate(
     factionId,
     sourceCityId,
     targetCityId,
-    intent: 'conquer',
+    intent,
     requestedTroops: party.troopCount,
     proposedTroops: party.troopCount,
     requestedByDay: null,
@@ -371,18 +378,20 @@ function makeCandidate(
     supply,
     food: supply.totalFood,
   };
-  opportunities.push({
-    plan,
-    reason,
-    forceRatio: assessment.matchup.ratio,
-    forceDeficit: assessment.forceDeficit,
-    foodDeficit,
-    foodTarget: Math.max(
-      supply.totalFood,
-      availableFood - assessment.economy.projectedAvailable.food,
-    ),
-    score,
-  });
+  // Preparation objectives build toward conquests only; raids are taken as they come.
+  if (intent === 'conquer')
+    opportunities.push({
+      plan,
+      reason,
+      forceRatio: assessment.matchup.ratio,
+      forceDeficit: assessment.forceDeficit,
+      foodDeficit,
+      foodTarget: Math.max(
+        supply.totalFood,
+        availableFood - assessment.economy.projectedAvailable.food,
+      ),
+      score,
+    });
   observe({
     kind: 'campaign',
     day: state.absoluteDay,
@@ -568,11 +577,18 @@ export function reviewStrategicRivalCampaigns(
         compareIds(a.targetCityId, b.targetCityId),
     );
     for (const option of optionsToRank.slice(0, 3)) {
+      const target = state.cities.find((city) => city.id === option.targetCityId)!;
+      // Fierce and greedy rulers raid another house's city when a conquest is out of reach.
+      const raidable =
+        temperament.raidRatio !== null &&
+        target.factionId !== null &&
+        state.absoluteDay >= (target.plunderCooldownUntilDay ?? 0);
       for (const party of partyAlternatives(
         option.officers,
         option.troopLimit,
         option.defenderTroops,
       )) {
+        const examined = opportunities.length;
         const candidate = makeCandidate(
           state,
           faction.id,
@@ -584,7 +600,30 @@ export function reviewStrategicRivalCampaigns(
           blocked,
           opportunities,
         );
-        if (candidate) candidates.push(candidate);
+        if (candidate) {
+          candidates.push(candidate);
+          continue;
+        }
+        const conquest = opportunities.length > examined ? opportunities.at(-1) : undefined;
+        if (
+          raidable &&
+          conquest?.reason === 'insufficient-force' &&
+          conquest.forceRatio >= temperament.raidRatio!
+        ) {
+          const raid = makeCandidate(
+            state,
+            faction.id,
+            option.sourceCityId,
+            option.targetCityId,
+            option.defenderTroops,
+            party,
+            services,
+            blocked,
+            opportunities,
+            'raid',
+          );
+          if (raid) candidates.push(raid);
+        }
       }
     }
 

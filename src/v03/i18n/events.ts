@@ -71,9 +71,12 @@ export function formatEvent(
   }
   if (event.code === 'threat.approach') {
     const arrival = gameDate({ startYear: state.startYear, absoluteDay: Number(p.arrivalDay) });
+    const raid = p.intent === 'raid';
     return {
-      title: message(locale, 'event.threat.title', { city: name(p.targetCityId, 'cities') }),
-      detail: message(locale, 'event.threat.detail', {
+      title: message(locale, raid ? 'event.raid.title' : 'event.threat.title', {
+        city: name(p.targetCityId, 'cities'),
+      }),
+      detail: message(locale, raid ? 'event.raid.detail' : 'event.threat.detail', {
         faction: name(p.factionId, 'factions'),
         source: name(p.sourceCityId, 'cities'),
         city: name(p.targetCityId, 'cities'),

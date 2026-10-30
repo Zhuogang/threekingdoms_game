@@ -7,7 +7,9 @@ import {
 } from '../../src/v03/strategic-ai';
 import { createV03Game } from '../../src/v03/initial-state';
 import { executeV03Command } from '../../src/v03/commands';
-import { applyV03BattleAction } from '../../src/v03/engine';
+import { applyV03BattleAction, dispatchRivalCampaignPlan } from '../../src/v03/engine';
+import { estimateCampaignSupply } from '../../src/v03/calendar';
+import { formatEvent } from '../../src/v03/i18n/events';
 import { createPersonnelDay } from '../../src/v03/campaign/personnel';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import { rulerTemperament, temperamentFromTraits } from '../../src/v03/ai/temperament';
@@ -217,5 +219,76 @@ describe('PF-CA-02 wars with a purpose', () => {
     });
     expect(validateV03State(after)).toBe(true);
     expect(decodeV03Save(encodeV03Save(after))).toEqual(after);
+  });
+});
+
+describe('PF-CA-05 AI raids below the conquest threshold', () => {
+  /** Pingyuan belongs to Liu Bei and is too strong to conquer, but not to raid. */
+  function raidTarget(rulerId: string) {
+    const state = rivalWithRuler(rulerId);
+    Object.assign(
+      state.cities.find((city) => city.id === 'pingyuan')!,
+      {
+        factionId: 'liu',
+        garrisonTroops: 14_000,
+      },
+    );
+    return state;
+  }
+
+  it('lets fierce and greedy rulers raid where a conquest is out of reach', () => {
+    const fierce = planStrategicRivalCampaigns(raidTarget('yanliang'), { factionId: 'yuan' });
+    expect(fierce).toHaveLength(1);
+    expect(fierce[0]).toMatchObject({ intent: 'raid', targetCityId: 'pingyuan' });
+    // Fourteen battle days of provisions instead of thirty.
+    const conquestFood = estimateCampaignSupply({
+      troopCount: fierce[0]!.requestedTroops,
+      cavalryTroops: fierce[0]!.party.composition.cavalryTroops,
+      outboundDays: fierce[0]!.route.estimatedDays,
+      battleDays: 30,
+      returnDays: fierce[0]!.route.estimatedDays,
+    }).totalFood;
+    expect(fierce[0]!.food).toBeLessThan(conquestFood);
+    expect(
+      planStrategicRivalCampaigns(raidTarget('yuanshao'), { factionId: 'yuan' })[0]?.intent,
+    ).toBe('raid');
+    expect(planStrategicRivalCampaigns(raidTarget('yuejin'), { factionId: 'yuan' })).toEqual([]);
+    expect(planStrategicRivalCampaigns(raidTarget('liubei'), { factionId: 'yuan' })).toEqual([]);
+  });
+
+  it('waits out the plunder cooldown and never raids an independent city', () => {
+    const recovering = raidTarget('yanliang');
+    recovering.cities.find((city) => city.id === 'pingyuan')!.plunderCooldownUntilDay =
+      recovering.absoluteDay + 30;
+    expect(planStrategicRivalCampaigns(recovering, { factionId: 'yuan' })).toEqual([]);
+    const independent = raidTarget('yanliang');
+    independent.cities.find((city) => city.id === 'pingyuan')!.factionId = null;
+    expect(planStrategicRivalCampaigns(independent, { factionId: 'yuan' })).toEqual([]);
+  });
+
+  it('dispatches a raid, warns the player and leaves the conquest objective alone', () => {
+    const state = raidTarget('yanliang');
+    state.playerFactionId = 'liu';
+    state.factions.forEach((faction) => (faction.isPlayer = faction.id === 'liu'));
+    const plan = planStrategicRivalCampaigns(state, { factionId: 'yuan' })[0]!;
+    expect(dispatchRivalCampaignPlan(state, plan)).toBe(true);
+    const journey = state.journeys.at(-1)!;
+    expect(journey.intent).toBe('raid');
+    expect(state.directives.at(-1)!.intent).toBe('raid');
+    const warning = state.events.find((event) => event.kind === 'hostileApproach')!;
+    expect(warning.params).toMatchObject({ intent: 'raid', targetCityId: 'pingyuan' });
+    expect(formatEvent(warning, state, 'en')!.title).toBe('Raiders marching on Pingyuan');
+    expect(
+      state.factionObjectives?.some((objective) =>
+        objective.orderIds.includes(journey.executionId),
+      ),
+    ).not.toBe(true);
+  });
+
+  it('refuses a raid plan from a ruler who does not raid', () => {
+    const state = raidTarget('yanliang');
+    const plan = planStrategicRivalCampaigns(state, { factionId: 'yuan' })[0]!;
+    state.factions.find((faction) => faction.id === 'yuan')!.leaderOfficerId = 'yuejin';
+    expect(dispatchRivalCampaignPlan(state, plan)).toBe(false);
   });
 });

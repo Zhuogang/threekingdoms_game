@@ -4,6 +4,7 @@ import {
   isRivalCampaignOfficerAvailable,
 } from './ai/campaign-legality';
 import { assessCampaignDeparture } from './ai/campaign-assessment';
+import { rulerTemperament } from './ai/temperament';
 import { recordAiDecision, type CampaignDecisionReason } from './ai/decision-trace';
 import { FOOD_MICRO } from './calendar/rations';
 import { forecastBattleRations } from './battle/supply';
@@ -131,6 +132,7 @@ function warnPlayerOfApproach(state: V03GameState, journey: V03Journey): void {
       journeyId: journey.id,
       troops: Math.max(100, Math.round(journey.manifest.troopCount / 100) * 100),
       arrivalDay: journey.expectedArrivalDay,
+      ...(journey.intent === 'raid' ? { intent: 'raid' } : {}),
     },
     title: 'Hostile army approaching',
     detail: `An army is marching on ${target.name}.`,
@@ -1337,10 +1339,15 @@ export function dispatchRivalCampaignPlan(
   const faction = state.factions.find((entry) => entry.id === plan.factionId)!;
   const source = state.cities.find((entry) => entry.id === plan.sourceCityId)!;
   const target = state.cities.find((entry) => entry.id === plan.targetCityId)!;
+  // Raids come only from rulers who raid, against another house's recovered city.
   if (
     state.phase === 'finished' ||
     plan.departureDay !== state.absoluteDay ||
-    plan.intent !== 'conquer'
+    (plan.intent !== 'conquer' &&
+      (plan.intent !== 'raid' ||
+        rulerTemperament(state, plan.factionId).raidRatio === null ||
+        target.factionId === null ||
+        state.absoluteDay < (target.plunderCooldownUntilDay ?? 0)))
   )
     return reject('stale-plan');
 
@@ -1413,7 +1420,7 @@ export function dispatchRivalCampaignPlan(
     troopCount: plan.requestedTroops,
     cavalryTroops: plan.party.composition.cavalryTroops,
     outboundDays: plan.route.estimatedDays,
-    battleDays: 30,
+    battleDays: campaignBattleDays(plan.intent),
     returnDays: plan.route.estimatedDays,
   });
   if (
@@ -1430,6 +1437,7 @@ export function dispatchRivalCampaignPlan(
     plan.party,
     plan.food,
     plan.route.estimatedDays,
+    plan.intent,
   );
   if (assessment.reason) return reject(assessment.reason);
 
@@ -1495,11 +1503,13 @@ export function dispatchRivalCampaignPlan(
   state.directives.push(directive);
   state.journeys.push(journey);
   state.nextId += 2;
-  recordFactionCampaign(state, plan.factionId, source.id, target.id, officerIds[0]!, directiveId);
+  // A raid is opportunistic: it does not replace the house's conquest objective.
+  if (plan.intent === 'conquer')
+    recordFactionCampaign(state, plan.factionId, source.id, target.id, officerIds[0]!, directiveId);
   if (target.factionId === state.playerFactionId) warnPlayerOfApproach(state, journey);
   pushLog(
     state,
-    `${faction.name} dispatched ${plan.requestedTroops} troops from ${source.name} toward ${target.name}; ${plan.food} food is committed for the march and campaign.`,
+    `${faction.name} dispatched ${plan.requestedTroops} troops from ${source.name} toward ${target.name}${plan.intent === 'raid' ? ' to raid it' : ''}; ${plan.food} food is committed for the march and campaign.`,
   );
   recordAiDecision({
     kind: 'campaign',

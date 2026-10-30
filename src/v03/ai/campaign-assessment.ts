@@ -10,7 +10,8 @@ import { rulerTemperament } from './temperament';
 
 /**
  * AI prudence, deliberately separate from the human command's legal minimum.
- * The attacking ruler's temperament sets the force ratio and home risk it accepts.
+ * The attacking ruler's temperament sets the force ratio and home risk it accepts;
+ * a raid uses the ruler's raid ratio and is refused outright to rulers who never raid.
  */
 export function assessCampaignDeparture(
   state: Readonly<V03GameState>,
@@ -19,12 +20,16 @@ export function assessCampaignDeparture(
   party: OrderPartyPlan,
   food: number,
   travelDays: number,
+  intent: 'conquer' | 'raid' = 'conquer',
 ) {
   const temperament = rulerTemperament(
     state,
     state.cities.find((city) => city.id === sourceCityId)?.factionId ?? null,
   );
-  const admission = temperament.admissionRatio;
+  const admission =
+    intent === 'raid'
+      ? (temperament.raidRatio ?? Number.POSITIVE_INFINITY)
+      : temperament.admissionRatio;
   const officers = state.officers.filter((officer) => party.officerIds.includes(officer.id));
   const attackers = rosterFromGroups(
     groupOfficers(officers.map((officer) => ({ ...officer, wounded: 0 }))),
@@ -70,7 +75,7 @@ export function assessCampaignDeparture(
     threats,
     temperament,
     forceDeficit:
-      matchup.ratio < admission
+      matchup.ratio < admission && Number.isFinite(admission)
         ? Math.ceil((party.troopCount * admission) / Math.max(0.01, matchup.ratio)) -
           party.troopCount
         : 0,

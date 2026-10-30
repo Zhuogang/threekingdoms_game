@@ -469,6 +469,9 @@ export const en = {
   'event.threat.title': 'Army marching on {city}',
   'event.threat.detail':
     '{faction} sent about {troops} troops from {source}. They should reach {city} around {date}, in {days} days. Strengthen the garrison, send reinforcements or supplies, or seek an alliance.',
+  'event.raid.title': 'Raiders marching on {city}',
+  'event.raid.detail':
+    '{faction} sent about {troops} raiders from {source}. They should reach {city} around {date}, in {days} days. A raid does not take the city, but a defeat costs gold, food, loyalty and development.',
   'map.battleHere': 'A battle is being fought here',
   'map.threatIn': 'Hostile army arrives in {days} days',
   'map.threatDays': '{days}d',
