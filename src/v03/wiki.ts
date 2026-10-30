@@ -39,7 +39,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
         heading: 'A 30-day month',
         body: [
           'The simulation advances one day at a time. Every month is an abstract 30 days and every year has 12 months. Monthly income, upkeep, and administration changes settle once at the month boundary.',
-          'A ten-day advance is the same as choosing one day ten times when no event pauses the game. “Next event” stops at the next visible arrival, battle, deadline, or decision and has a safe maximum distance.',
+          'A ten-day advance is the same as choosing one day ten times when no event pauses the game. “Next event” stops at the next visible arrival, battle, deadline, or decision and has a safe maximum distance. It also stops on the day a rival army departs toward one of your cities; that army is drawn in red with its arrival countdown. Every advance says why and when it stopped. Shortcuts outside text fields: Space one day, Shift+Space ten days, N next event, I inbox, O orders, C capital, D diplomacy; in battle W waits and E ends the day.',
           'An army that leaves on a day begins its journey that day. Arrival, battle, food charges, and month settlement use the same absolute-day clock, so a long march can cross several months.',
         ],
       },
@@ -193,7 +193,7 @@ const CHINESE: readonly V03WikiArticle[] = [
         heading: '每月抽象为三十日',
         body: [
           '世界按日推进，每月固定为抽象的三十日，每年十二个月。月收入、维持费用与治理变更只在月界结算一次。',
-          '没有事件暂停时，推进十日等同于连续推进十次一日。“到下个事件”会停在下一个可见的抵达、战斗、期限或待决事项，并设有安全上限。',
+          '没有事件暂停时，推进十日等同于连续推进十次一日。“到下个事件”会停在下一个可见的抵达、战斗、期限或待决事项，并设有安全上限；敌军出发进犯我方城池的当日也会停下，地图以红色标出该军及抵达倒计时。每次推进都会说明停下的原因与日期。快捷键（输入框外）：空格推进一日，Shift+空格推进十日，N 到下个事件，I 收件箱，O 军情与命令，C 君主本城，D 外交；战场中 W 待命、E 结束战斗日。',
           '部队离城当天开始行军。抵达、战斗、粮草扣除和月结使用同一绝对日，因此长途行军会跨越数月。',
         ],
       },
