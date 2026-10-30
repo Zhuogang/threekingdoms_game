@@ -10,6 +10,8 @@ import type { V03City, V03GameState } from '../types';
 import type { TroopType } from '../content/types';
 import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
 import {
+  CITY_FOOD_TRADE_FOOD,
+  CITY_FOOD_TRADE_GOLD,
   CITY_MONTHLY_WORK_GOLD_COST,
   GOVERNOR_EQUIPMENT_GOLD_COST,
   GOVERNOR_RELIEF_FOOD_COST,
@@ -327,17 +329,23 @@ export function planGovernorMonthlyWork(
     const goldCost =
       action === 'recruit'
         ? recruitmentQuote(city!, manager!.force, troopType).gold
-        : ['restore-loyalty', 'develop-farming', 'develop-commerce', 'buy-food'].includes(action)
-          ? CITY_MONTHLY_WORK_GOLD_COST
-          : action === 'reward'
-            ? GOVERNOR_REWARD_GOLD_COST
-            : action === 'relieve'
-              ? GOVERNOR_RELIEF_GOLD_COST
-              : action === 'equip'
-                ? GOVERNOR_EQUIPMENT_GOLD_COST
-                : 0;
+        : action === 'buy-food'
+          ? CITY_FOOD_TRADE_GOLD
+          : ['restore-loyalty', 'develop-farming', 'develop-commerce'].includes(action)
+            ? CITY_MONTHLY_WORK_GOLD_COST
+            : action === 'reward'
+              ? GOVERNOR_REWARD_GOLD_COST
+              : action === 'relieve'
+                ? GOVERNOR_RELIEF_GOLD_COST
+                : action === 'equip'
+                  ? GOVERNOR_EQUIPMENT_GOLD_COST
+                  : 0;
     const foodCost =
-      action === 'relieve' ? GOVERNOR_RELIEF_FOOD_COST : action === 'sell-food' ? 800 : 0;
+      action === 'relieve'
+        ? GOVERNOR_RELIEF_FOOD_COST
+        : action === 'sell-food'
+          ? CITY_FOOD_TRADE_FOOD
+          : 0;
     if (foodCost && city!.food - foodCost < protectedFood) {
       failure = 'Spending food would use the protected reserve or an approved order.';
       orderReserveBlocked ||= city!.food - foodCost < reserves.food;
@@ -426,7 +434,11 @@ export function planGovernorMonthlyWork(
   if (!workSpent && foodAtDeadline < protectedFood) {
     const alternatives = (['develop-farming', 'buy-food'] as const)
       .flatMap((action) => {
-        const after = afterWork(action, CITY_MONTHLY_WORK_GOLD_COST, 0);
+        const after = afterWork(
+          action,
+          action === 'buy-food' ? CITY_FOOD_TRADE_GOLD : CITY_MONTHLY_WORK_GOLD_COST,
+          0,
+        );
         if (!after) return [];
         const food =
           threats.length || objective?.mode === 'prepare-conquest'
@@ -607,7 +619,7 @@ export function planGovernorMonthlyWork(
   )
     return plan;
   if (
-    city.food >= protectedFood + 800 &&
+    city.food >= protectedFood + CITY_FOOD_TRADE_FOOD &&
     city.gold < reserves.gold + 80 &&
     offer('sell-food', 'market-balance', 'Sell surplus food to fund city work.')
   )

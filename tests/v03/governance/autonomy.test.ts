@@ -261,13 +261,13 @@ describe('v0.3 governor monthly work planning', () => {
       managerOfficerId: state.cities.find((city) => city.id === cityId)?.governorId,
       action: 'buy-food',
       workPoints: 1,
-      goldCost: 80,
+      goldCost: 200,
       reasonCode: 'food-security',
     });
 
     const result = applyGovernorMonthlyWork(state, first);
     expect(result.applied).toBe(true);
-    expect(result.city).toMatchObject({ farming: 25, commerce: 75, gold: 920, food: 800 });
+    expect(result.city).toMatchObject({ farming: 25, commerce: 75, gold: 800, food: 2000 });
     expect(state.cities.find((city) => city.id === cityId)?.farming).toBe(25);
 
     const afterApplying = structuredClone(state);
@@ -277,8 +277,8 @@ describe('v0.3 governor monthly work planning', () => {
     );
     const replay = applyGovernorMonthlyWork(afterApplying, first);
     expect(replay.applied).toBe(false);
-    expect(replay.city?.gold).toBe(920);
-    expect(replay.city?.food).toBe(800);
+    expect(replay.city?.gold).toBe(800);
+    expect(replay.city?.food).toBe(2000);
   });
 
   it('relieves low-loyalty cities when protected food is safe and keeps RNG unchanged', () => {
@@ -303,7 +303,7 @@ describe('v0.3 governor monthly work planning', () => {
     const result = applyGovernorMonthlyWork(state, plan);
     expect(result.applied).toBe(true);
     expect(result.city).toMatchObject({ loyalty: 57, gold: 920, food: 9400 });
-    expect(result.city?.population).toBe(city.population + 300);
+    expect(result.city?.population).toBe(city.population + 1500);
     expect(state.rng).toBe(before.rng);
   });
 
@@ -361,18 +361,18 @@ describe('v0.3 governor monthly work planning', () => {
     city.food = 0;
     city.gold = 1000;
     plan = planGovernorMonthlyWork(state, cityId, 3);
-    expect(plan).toMatchObject({ action: 'buy-food', goldCost: 80, reasonCode: 'food-security' });
+    expect(plan).toMatchObject({ action: 'buy-food', goldCost: 200, reasonCode: 'food-security' });
     result = applyGovernorMonthlyWork(state, plan);
     expect(result.applied).toBe(true);
-    expect(result.city).toMatchObject({ gold: 920, food: 800 });
+    expect(result.city).toMatchObject({ gold: 800, food: 2000 });
 
-    city.food = 5000;
+    city.food = 8000;
     city.gold = 0;
     plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({ action: 'sell-food', goldCost: 0, reasonCode: 'market-balance' });
     result = applyGovernorMonthlyWork(state, plan);
     expect(result.applied).toBe(true);
-    expect(result.city).toMatchObject({ gold: 80, food: 4200 });
+    expect(result.city).toMatchObject({ gold: 200, food: 6000 });
   });
 
   it('plans officer loyalty, local search, training, and safe troop assignment deterministically', () => {
@@ -513,7 +513,7 @@ describe('v0.3 governor monthly work planning', () => {
       gold: 920,
       food: 9400,
       loyalty: 70,
-      population: reliefPopulation + 300,
+      population: reliefPopulation + 1500,
     });
 
     const equipped = fixture();

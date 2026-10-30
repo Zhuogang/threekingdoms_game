@@ -40,6 +40,13 @@ export const GOVERNOR_REWARD_GOLD_COST = 100;
 export const GOVERNOR_EQUIPMENT_GOLD_COST = 180;
 export const GOVERNOR_RELIEF_GOLD_COST = 80;
 export const GOVERNOR_RELIEF_FOOD_COST = 600;
+/** Relief settles 1,500 people: about a year to repay its cost in tax (PF-RL-02). */
+export const GOVERNOR_RELIEF_POPULATION = 1500;
+/** One work point of market trade moves 2,000 food at ten food per gold. */
+export const CITY_FOOD_TRADE_FOOD = 2000;
+export const CITY_FOOD_TRADE_GOLD = 200;
+export const RESTORE_LOYALTY_RETIRED =
+  'Restore loyalty has been retired: security is free and restores more.';
 const RESOURCE_CAP = 9_999_999;
 
 export type OfficerGroupAction = 'feast' | 'reward' | 'equip';
@@ -164,17 +171,23 @@ export function applySharedCityWorkEffect(
 ): V03City | null {
   const city: V03City = { ...source };
   if (
-    ['restore-loyalty', 'develop-farming', 'develop-commerce', 'buy-food', 'relieve'].includes(
-      action,
-    ) &&
+    ['restore-loyalty', 'develop-farming', 'develop-commerce', 'relieve'].includes(action) &&
     city.gold < CITY_MONTHLY_WORK_GOLD_COST
   )
     return null;
   if (action === 'develop-farming' && city.farming >= 500) return null;
   if (action === 'develop-commerce' && city.commerce >= 500) return null;
   if (action === 'restore-loyalty' && city.loyalty >= 100) return null;
-  if (action === 'buy-food' && city.food + 800 > RESOURCE_CAP) return null;
-  if (action === 'sell-food' && (city.food < 800 || city.gold + 80 > RESOURCE_CAP)) return null;
+  if (
+    action === 'buy-food' &&
+    (city.gold < CITY_FOOD_TRADE_GOLD || city.food + CITY_FOOD_TRADE_FOOD > RESOURCE_CAP)
+  )
+    return null;
+  if (
+    action === 'sell-food' &&
+    (city.food < CITY_FOOD_TRADE_FOOD || city.gold + CITY_FOOD_TRADE_GOLD > RESOURCE_CAP)
+  )
+    return null;
   if (
     action === 'relieve' &&
     (city.food < GOVERNOR_RELIEF_FOOD_COST || city.population >= RESOURCE_CAP)
@@ -195,15 +208,15 @@ export function applySharedCityWorkEffect(
     city.gold -= GOVERNOR_RELIEF_GOLD_COST;
     city.food -= GOVERNOR_RELIEF_FOOD_COST;
     city.loyalty = Math.min(100, city.loyalty + 15);
-    city.population = Math.min(RESOURCE_CAP, city.population + 300);
+    city.population = Math.min(RESOURCE_CAP, city.population + GOVERNOR_RELIEF_POPULATION);
   } else if (action === 'security')
     city.loyalty = Math.min(100, city.loyalty + 8 + Math.floor(manager.intellect / 20));
   else if (action === 'buy-food') {
-    city.gold -= CITY_MONTHLY_WORK_GOLD_COST;
-    city.food += 800;
+    city.gold -= CITY_FOOD_TRADE_GOLD;
+    city.food += CITY_FOOD_TRADE_FOOD;
   } else if (action === 'sell-food') {
-    city.food -= 800;
-    city.gold += 80;
+    city.food -= CITY_FOOD_TRADE_FOOD;
+    city.gold += CITY_FOOD_TRADE_GOLD;
   } else {
     city.gold -= CITY_MONTHLY_WORK_GOLD_COST;
     if (action === 'develop-farming') city.farming = Math.min(500, city.farming + 20);
@@ -400,10 +413,8 @@ function inspectCityAction(
   let garrisonDecrease = 0;
   switch (input.action) {
     case 'restore-loyalty':
-      if (city.loyalty >= 100 || city.gold < 80)
-        return fail('The city cannot afford or benefit from loyalty recovery.');
-      goldCost = 80;
-      break;
+      // Dominated by free security; kept as a type only for old reports (PF-RL-02).
+      return fail(RESTORE_LOYALTY_RETIRED);
     case 'develop-farming':
     case 'develop-commerce':
       if (city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= 500)
@@ -502,17 +513,20 @@ function inspectCityAction(
       foodCost = GOVERNOR_RELIEF_FOOD_COST;
       break;
     case 'buy-food':
-      if (city.gold < 80) return fail('The capital needs 80 gold to buy food.');
-      if (city.food + 800 > RESOURCE_CAP)
-        return fail('The granary has no room for another 800 food.');
-      goldCost = 80;
+      if (city.gold < CITY_FOOD_TRADE_GOLD)
+        return fail(`The capital needs ${CITY_FOOD_TRADE_GOLD} gold to buy food.`);
+      if (city.food + CITY_FOOD_TRADE_FOOD > RESOURCE_CAP)
+        return fail(`The granary has no room for another ${CITY_FOOD_TRADE_FOOD} food.`);
+      goldCost = CITY_FOOD_TRADE_GOLD;
       break;
     case 'sell-food':
-      if (city.food < 800)
-        return fail('The capital needs 800 food before it can sell this amount.');
-      if (city.gold + 80 > RESOURCE_CAP)
+      if (city.food < CITY_FOOD_TRADE_FOOD)
+        return fail(
+          `The capital needs ${CITY_FOOD_TRADE_FOOD} food before it can sell this amount.`,
+        );
+      if (city.gold + CITY_FOOD_TRADE_GOLD > RESOURCE_CAP)
         return fail('The treasury has no room for the sale proceeds.');
-      foodCost = 800;
+      foodCost = CITY_FOOD_TRADE_FOOD;
       break;
     default:
       return fail('This city work action is not implemented.');
@@ -576,13 +590,8 @@ function applyCityAction(
   let message: string;
 
   switch (input.action) {
-    case 'restore-loyalty': {
-      const updated = applySharedCityWorkEffect(city, input.action);
-      if (!updated) return fail('The city cannot afford or benefit from loyalty recovery.');
-      Object.assign(city, updated);
-      message = `${actor.name} improved city loyalty by 2 for 80 gold.`;
-      break;
-    }
+    case 'restore-loyalty':
+      return fail(RESTORE_LOYALTY_RETIRED);
     case 'develop-farming':
     case 'develop-commerce': {
       const field = input.action === 'develop-farming' ? 'farming' : 'commerce';
@@ -737,7 +746,7 @@ function applyCityAction(
       const updated = applySharedCityWorkEffect(city, input.action);
       if (!updated) return fail('The city cannot afford or benefit from relief.');
       Object.assign(city, updated);
-      message = `${actor.name} distributed grain: up to 15 city loyalty and 300 population.`;
+      message = `${actor.name} distributed grain: up to 15 city loyalty and ${GOVERNOR_RELIEF_POPULATION} population.`;
       break;
     }
     case 'equip': {
@@ -752,29 +761,17 @@ function applyCityAction(
         : `${actor.name} received fine arms and gained up to 5 force.`;
       break;
     }
-    case 'buy-food': {
-      if (city.gold < 80) return fail('The capital needs 80 gold to buy food.');
-      if (city.food + 800 > RESOURCE_CAP)
-        return fail('The granary has no room for another 800 food.');
+    case 'buy-food':
+    case 'sell-food': {
       const updated = applySharedCityWorkEffect(
         city,
         input.action,
         actor,
         input.troopType ?? 'infantry',
       );
-      if (!updated) return fail('The capital cannot complete this market purchase.');
+      if (!updated) return fail('The capital cannot complete this market trade.');
       Object.assign(city, updated);
-      message = 'Merchants delivered 800 food for 80 gold.';
-      break;
-    }
-    case 'sell-food': {
-      if (city.food < 800)
-        return fail('The capital needs 800 food before it can sell this amount.');
-      if (city.gold + 80 > RESOURCE_CAP)
-        return fail('The treasury has no room for the sale proceeds.');
-      city.food -= 800;
-      city.gold += 80;
-      message = 'Merchants bought 800 food for 80 gold.';
+      message = `Merchants ${input.action === 'buy-food' ? 'delivered' : 'bought'} ${CITY_FOOD_TRADE_FOOD} food for ${CITY_FOOD_TRADE_GOLD} gold.`;
       break;
     }
     default:

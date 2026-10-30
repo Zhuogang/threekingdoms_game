@@ -18,6 +18,7 @@ import { formatEvent } from '../../src/v03/i18n/events';
 import { acceptV03Invitation, getV03AllianceFactors } from '../../src/v03/campaign/diplomacy';
 import { createV03OrderServices } from '../../src/v03/governance/services';
 import { incomingCampaignThreats } from '../../src/v03/ai/campaign-threats';
+import { localizeRoutineFeedback } from '../../src/v03/ui/feedback';
 import { createPersonnelDay } from '../../src/v03/campaign/personnel';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import { rulerTemperament, temperamentFromTraits } from '../../src/v03/ai/temperament';
@@ -502,5 +503,38 @@ describe('PF-RL-01 bank unused work', () => {
     expect(cityWorkAvailable(state, rival)).toBe(6);
     rival.factionId = null;
     expect(cityWorkAvailable(state, rival)).toBe(0);
+  });
+});
+
+describe('PF-RL-02 retire or repair dead actions', () => {
+  function capital() {
+    const state = createV03Game('cao', 31, 'divided-realm-190');
+    const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
+    Object.assign(city, { gold: 5000, food: 10_000, loyalty: 50 });
+    return { state, city };
+  }
+
+  it('refuses restore-loyalty, which free security dominates', () => {
+    const { state, city } = capital();
+    const result = applyV03CityAction(state, { cityId: city.id, action: 'restore-loyalty' });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain('retired');
+    expect(applyV03CityAction(state, { cityId: city.id, action: 'security' }).ok).toBe(true);
+  });
+
+  it('settles 1,500 people with relief and trades 2,000 food per work point', () => {
+    const { state, city } = capital();
+    const relieved = applyV03CityAction(state, { cityId: city.id, action: 'relieve' });
+    expect(relieved.ok, relieved.error).toBe(true);
+    const after = relieved.state.cities.find((entry) => entry.id === city.id)!;
+    expect(after.population).toBe(city.population + 1500);
+    expect(after.food).toBe(city.food - 600);
+
+    const bought = applyV03CityAction(relieved.state, { cityId: city.id, action: 'buy-food' });
+    expect(bought.ok, bought.error).toBe(true);
+    const stocked = bought.state.cities.find((entry) => entry.id === city.id)!;
+    expect(stocked.food - after.food).toBe(2000);
+    expect(after.gold - stocked.gold).toBe(200);
+    expect(localizeRoutineFeedback(bought.message!, 'zh', bought.state)).toContain('2000');
   });
 });

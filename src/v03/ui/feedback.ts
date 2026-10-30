@@ -77,6 +77,14 @@ const ROUTINE_ZH: Readonly<Record<string, string>> = {
   'The treasury has no room for the sale proceeds.': '金库没有容纳售粮所得的空间。',
   'Merchants delivered 800 food for 80 gold.': '商人以 80 金运来了 800 粮。',
   'Merchants bought 800 food for 80 gold.': '商人以 80 金购走了 800 粮。',
+  'The capital needs 200 gold to buy food.': '购买粮食需要 200 金。',
+  'The granary has no room for another 2000 food.': '粮仓没有容纳额外 2000 粮的空间。',
+  'The capital cannot complete this market trade.': '本城当前无法完成这笔粮食买卖。',
+  'The capital needs 2000 food before it can sell this amount.': '出售此数量需要至少 2000 粮。',
+  'Merchants delivered 2000 food for 200 gold.': '商人以 200 金运来了 2000 粮。',
+  'Merchants bought 2000 food for 200 gold.': '商人以 200 金购走了 2000 粮。',
+  'Restore loyalty has been retired: security is free and restores more.':
+    '恢复民心已取消：治安不花钱，且恢复更多。',
   'This action would spend gold reserved for an approved order.':
     '该行动会动用已批准命令预留的金钱。',
   'This action would spend food reserved for an approved order.':
@@ -202,8 +210,8 @@ export function localizeRoutineFeedback(
   if (match) return `${name(match[1]!)}举办宴饮，驻城武将忠诚提高最多 8。`;
   match = message.match(/^(.+) received a reward and gained up to 15 loyalty\.$/);
   if (match) return `${name(match[1]!)}接受赏赐，忠诚提高最多 15。`;
-  match = message.match(/^(.+) distributed grain: up to 15 city loyalty and 300 population\.$/);
-  if (match) return `${name(match[1]!)}开仓赈济，民心提高最多 15，人口增加 300。`;
+  match = message.match(/^(.+) distributed grain: up to 15 city loyalty and (\d+) population\.$/);
+  if (match) return `${name(match[1]!)}开仓赈济，民心提高最多 15，人口增加 ${match[2]}。`;
   match = message.match(/^(.+) received fine arms and gained up to 5 force\.$/);
   if (match) return `${name(match[1]!)}获配精良兵器，武力提高最多 5。`;
   match = message.match(

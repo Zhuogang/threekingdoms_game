@@ -199,7 +199,7 @@ describe('v0.3 ruler city actions', () => {
     });
   });
 
-  it('runs security, feast and the fixed-price 800-food market actions through one work point each', () => {
+  it('runs security, feast and the fixed-price 2,000-food market actions through one work point each', () => {
     const { state, cityId, officer } = fixture();
     const city = state.cities.find((entry) => entry.id === cityId)!;
     city.loyalty = 50;
@@ -217,8 +217,8 @@ describe('v0.3 ruler city actions', () => {
     const bought = applyV03CityAction(feasted.state, { cityId, action: 'buy-food' });
     expect(bought.ok).toBe(true);
     expect(bought.state.cities.find((entry) => entry.id === cityId)).toMatchObject({
-      food: city.food + 800,
-      gold: city.gold - 80,
+      food: city.food + 2000,
+      gold: city.gold - 200,
     });
     nextMonth(bought.state);
     const sold = applyV03CityAction(bought.state, { cityId, action: 'sell-food' });
@@ -302,7 +302,7 @@ describe('v0.3 ruler city actions', () => {
       gold: city.gold - 360,
       food: city.food - 600,
       loyalty: city.loyalty + 15,
-      population: population + 300,
+      population: population + 1500,
     });
   });
 });
