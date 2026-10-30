@@ -4,7 +4,7 @@
 
 **Review date:** October 29, 2026, against `v0.4` at `a5b028e`. Line references point to that commit.
 
-**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phases 0, 1 and 2 are implemented on `v0.4` (sections 7.1–7.3); the owner merged Phase 2 before the v0.4 sign-off, so the pending v0.4 player sessions evaluate its battle rules and AI. Phase 3 is implemented on the `play-feel-phase3` branch and not yet merged (section 7.4). Phase 4 is not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
+**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phases 0–3 are implemented on `v0.4` (sections 7.1–7.4); the owner merged Phases 2 and 3 before the v0.4 sign-off, so the pending v0.4 player sessions evaluate their battle rules, rival AI and economy changes. Phase 4 is not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
 
 ## 1. Goal and guardrails
 
@@ -415,7 +415,7 @@ Phase 3 later re-ran the 12-month campaign matrix on `59c6fff` and on Phase 2 (`
 
 ### 7.4 Phase 3 status
 
-Implemented on October 30, 2026 on the `play-feel-phase3` branch (from `v0.4` at `2ae44ad`), one commit per item. Regression tests are in `tests/v03/play-feel-phase3.test.ts`.
+Implemented on October 30, 2026 on the `play-feel-phase3` branch (from `v0.4` at `2ae44ad`), one commit per item, and at the owner's request fast-forwarded into `v0.4` the same day as `8d10ee6`. As with Phase 2, this is earlier than the phase table's "after v0.4 sign-off". Regression tests are in `tests/v03/play-feel-phase3.test.ts`.
 
 Each rule change was measured on its own with matched 12-month runs: the 24 scenario/faction/cohort cases of `tools/v03-campaign-diagnostics.mjs`, each step on its own commit in a separate worktree, with rival houses on the real AI and the usual adjacent-city bot as the selected player. The diagnostics now record each rival campaign's intent and the house holding each prisoner, and `tools/play-feel-campaign-summary.mjs` groups rival houses by their starting ruler's traits. The portable summary is [docs/evidence/play-feel-phase3-campaign.json](evidence/play-feel-phase3-campaign.json); raw reports are in `.artifacts/play-feel-phase3/`. The RL-01 and final runs also passed `--validate-saves` (311 and 313 checkpoints).
 
@@ -464,7 +464,7 @@ Deviations: PF-CA-02 and PF-CA-04 each needed one compatible optional save field
 
 Validation: TypeScript, the UI lint and changed-file formatting pass. All 1,067 unit and integration tests pass, 28 of them in the new Phase 3 file. As in Phase 2, the git-fingerprint test (it needs GitHub Desktop's git on PATH here) and the 50 ms tactical performance gates (which fail on this laptop at any commit; Phase 3 changes no battle code) were run separately. Existing assertions in 15 unit test files were updated to the new numbers: trade sizes, relief population, cavalry prices, the treaty-break penalty, training without +1 force and banked work. One forecast test now accounts for the random monthly festival instead of relying on the RNG stream. The full browser suite ran all 211 cases. 203 passed; the other 8 failed on intended changes: the end screen over a finished campaign, relief population, Wiki wording and banked governor work. With those 7 specs updated, all 8 pass.
 
-Not covered by automated checks: how the outcome wording, end screen and capture pulse feel in play, and how human players respond to rival temperament. The pending v0.4 player sessions play `v0.4`, not this branch.
+Not covered by automated checks: how the outcome wording, end screen and capture pulse feel in play, and how human players respond to rival temperament. The pending v0.4 player sessions now play these rules, so the four questions in section 6 should be asked alongside them.
 
 ## 8. Not in this plan
 
