@@ -2,6 +2,8 @@
 
 Active branch: `v0.4`. The [implementation plan](../implementation.md) defines the required scope and acceptance. The user's `CODEX_GOALS.md` attachment references its former name, `docs/improvement.md`; the October 29 documentation cleanup moved that plan without changing its tickets. Existing gameplay remains the [v0.3 baseline](../v0.3/README.md) until an implemented change below says otherwise.
 
+**Play-feel Phase 2 is on this branch (`ab1c3b8`, October 30).** It changes battle rules and AI after the evidence below was recorded: deployment 15 columns apart, 14-day raids, morale recovery, Fire/Rockfall/Rally retuning, routed disengagement, leader temperament and auto-command no longer withdrawing ([play-feel plan, section 7.3](../play-feel-plan.md#73-phase-2-status)). The V04 tactical comparisons, exposure measurements, campaign matrices and performance gates below describe the engine up to `59c6fff` and were not re-run. The pending player sessions now evaluate the Phase 2 battle rules.
+
 ## Ticket ledger
 
 | Ticket                    | Status                                                                                      | Evidence / next acceptance                                                                                                                 |

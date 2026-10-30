@@ -4,7 +4,7 @@
 
 **Review date:** October 29, 2026, against `v0.4` at `a5b028e`. Line references point to that commit.
 
-**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phases 0 and 1 are implemented on `v0.4` (sections 7.1 and 7.2). Phase 2 is implemented on the `play-feel-phase2` branch so that `v0.4` keeps the rules its pending player sessions evaluate (section 7.3). Later phases are not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
+**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phases 0, 1 and 2 are implemented on `v0.4` (sections 7.1–7.3); the owner merged Phase 2 before the v0.4 sign-off, so the pending v0.4 player sessions evaluate its battle rules and AI. Later phases are not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
 
 ## 1. Goal and guardrails
 
@@ -376,7 +376,7 @@ Deviation from the plan text: the officer directory keeps the full catalogue as 
 
 ### 7.3 Phase 2 status
 
-Implemented on October 30, 2026 on the `play-feel-phase2` branch (from `v0.4` at `59c6fff`), ahead of the v0.4 sign-off the phase table assumes; the branch keeps `v0.4` unchanged for its player sessions. Regression tests are in `tests/v03/play-feel-phase2.test.ts`.
+Implemented on October 30, 2026 on the `play-feel-phase2` branch (from `v0.4` at `59c6fff`) and, at the owner's request, fast-forwarded into `v0.4` the same day as `ab1c3b8`. This is earlier than the phase table's "after v0.4 sign-off": the pending v0.4 player sessions now play these battle rules and AI, and the four questions in section 6 should be asked alongside them. Regression tests are in `tests/v03/play-feel-phase2.test.ts`.
 
 Each rule change was measured on its own with `tools/battle-pacing.mjs`, which now reports tactic casts, outcome reasons and timeouts and accepts `--canvas-only` and `--day-limit=N`. Every run uses the same 300 seeded AI-vs-AI battles (20 per canvas battlefield; 3v3, force 70, intellect 65). The portable summary is [docs/evidence/play-feel-phase2-pacing.json](evidence/play-feel-phase2-pacing.json); raw reports are in `.artifacts/play-feel-phase2/`.
 
