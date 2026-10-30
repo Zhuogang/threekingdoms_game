@@ -183,13 +183,14 @@ describe('soldier experience and typed reserves', () => {
     expect(recruitmentQuote(city, 80, 'infantry')).toMatchObject({ troops: 700, gold: 200 });
     expect(recruitmentQuote(city, 80, 'archer')).toMatchObject({ troops: 525, gold: 350 });
     expect(recruitmentQuote(city, 80, 'cavalry')).toMatchObject({ troops: 420, gold: 400 });
+    // Narrowed regional spread (PF-RL-04): still a premium, never about 20x infantry.
     expect(recruitmentQuote({ ...city, id: 'chenliu' }, 80, 'cavalry')).toMatchObject({
-      troops: 245,
-      gold: 600,
+      troops: 350,
+      gold: 500,
     });
     expect(recruitmentQuote({ ...city, id: 'jianye' }, 80, 'cavalry')).toMatchObject({
-      troops: 140,
-      gold: 800,
+      troops: 280,
+      gold: 600,
     });
     expect(recruitmentQuote({ ...city, population: 1010 }, 80, 'cavalry').troops).toBe(10);
   });
