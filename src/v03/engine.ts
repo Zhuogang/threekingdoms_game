@@ -106,6 +106,9 @@ import type {
 } from './types';
 
 const RESOURCE_CAP = 9_999_999;
+/** A conquered city's loyalty starts no higher than this (PF-RL-06). */
+export const CONQUEST_LOYALTY_CAP = 50;
+export const BENEVOLENT_CONQUEST_LOYALTY_CAP = 60;
 function cloneState(state: V03GameState): V03GameState {
   return structuredClone(state);
 }
@@ -511,6 +514,13 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
     if (oldOwner) target.lostBy = { factionId: oldOwner, absoluteDay: state.absoluteDay };
     else delete target.lostBy;
     target.factionId = battle.attackerFactionId;
+    // Conquest unrest (PF-RL-06): new subjects start uneasy, less so under a benevolent ruler.
+    target.loyalty = Math.min(
+      target.loyalty,
+      rulerTemperament(state, battle.attackerFactionId).traits.includes('benevolent')
+        ? BENEVOLENT_CONQUEST_LOYALTY_CAP
+        : CONQUEST_LOYALTY_CAP,
+    );
     target.troopServiceDaysThisMonth = 0;
     target.cavalryServiceDaysThisMonth = 0;
     target.prisonerServiceDaysThisMonth = 0;

@@ -631,3 +631,35 @@ describe('PF-RL-05 captivity is a ticking clock', () => {
     expect(again.ok).toBe(false);
   });
 });
+
+describe('PF-RL-06 conquest unrest', () => {
+  it('caps a conquered city’s loyalty at 50', () => {
+    const { after } = captureYe((state) => {
+      state.cities.find((city) => city.id === 'ye')!.loyalty = 90;
+    });
+    expect(after.cities.find((city) => city.id === 'ye')!.loyalty).toBe(50);
+  });
+
+  it('lets a benevolent conqueror’s cities settle at 60', () => {
+    const { after } = captureYe((state) => {
+      state.cities.find((city) => city.id === 'ye')!.loyalty = 90;
+      // Jian Yong, benevolent, rules Cao Cao's house for this test.
+      const ruler = state.officers.find((officer) => officer.id === 'jianyong')!;
+      Object.assign(ruler, {
+        factionId: 'cao',
+        alive: true,
+        governorOfCityId: null,
+        location: { kind: 'city', cityId: state.playerCapitalCityId },
+      });
+      state.factions.find((faction) => faction.id === 'cao')!.leaderOfficerId = 'jianyong';
+    });
+    expect(after.cities.find((city) => city.id === 'ye')!.loyalty).toBe(60);
+  });
+
+  it('never raises an already uneasy city', () => {
+    const { after } = captureYe((state) => {
+      state.cities.find((city) => city.id === 'ye')!.loyalty = 30;
+    });
+    expect(after.cities.find((city) => city.id === 'ye')!.loyalty).toBe(30);
+  });
+});
