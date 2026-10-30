@@ -500,6 +500,9 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         report.params.governancePending = false;
     for (const officer of state.officers)
       if (officer.governorOfCityId === target.id) officer.governorOfCityId = null;
+    // Remember the loss so the former owner wants the city back (PF-CA-02).
+    if (oldOwner) target.lostBy = { factionId: oldOwner, absoluteDay: state.absoluteDay };
+    else delete target.lostBy;
     target.factionId = battle.attackerFactionId;
     target.troopServiceDaysThisMonth = 0;
     target.cavalryServiceDaysThisMonth = 0;

@@ -24,11 +24,77 @@ import { rulerTemperament } from './ai/temperament';
 import { estimateCampaignSupply, type SupplyEstimate, type SupplyEstimateInput } from './calendar';
 import { createV03OrderServices } from './governance/services';
 import type { OrderPartyPlan, OrderRoutePlan, PlanRouteInput } from './governance/orders';
-import { ROUTE_BY_ID, routeIdBetween, type CityId } from './geography';
-import type { V03GameState, V03Officer } from './types';
+import { ROUTE_BY_ID, ROUTE_DEFINITIONS, routeIdBetween, type CityId } from './geography';
+import type { V03City, V03GameState, V03Officer } from './types';
+import type { RulerTemperament } from './ai/temperament';
+import { V03_HEGEMON_CAPITAL_CITY_ID } from './campaign/monthly-systems';
 
 const CAMPAIGN_BATTLE_RESERVE_DAYS = 30;
 const MAX_OFFICERS_PER_PARTY = 10;
+/** A city lost by conquest stays a priority for its former owner this long. */
+export const RECENT_LOSS_DAYS = 360;
+const MAX_TARGET_VALUE = 0.5;
+
+function cityWealth(city: V03City): number {
+  return city.population / 1000 + city.commerce + city.farming / 2;
+}
+
+/** The house holding strictly more cities than any other, if one does. */
+export function leadingFactionId(state: Readonly<V03GameState>): string | null {
+  const counts = state.factions
+    .filter((faction) => !faction.eliminated)
+    .map((faction) => ({
+      id: faction.id,
+      cities: state.cities.filter((city) => city.factionId === faction.id).length,
+    }))
+    .sort((a, b) => b.cities - a.cities);
+  return counts[0] && counts[0].cities > (counts[1]?.cities ?? 0) ? counts[0].id : null;
+}
+
+/**
+ * Small, capped reasons to prefer one target over another (PF-CA-02): Luoyang, a city
+ * this house lost recently, the leading house's cities, and the ruler's own tastes
+ * (rich cities for the greedy, isolated ones for the cunning). 0 means no preference.
+ */
+export function campaignTargetValue(
+  state: Readonly<V03GameState>,
+  factionId: string,
+  targetCityId: string,
+  temperament: RulerTemperament,
+): number {
+  const target = state.cities.find((city) => city.id === targetCityId);
+  if (!target) return 0;
+  let value = 0;
+  if (target.id === V03_HEGEMON_CAPITAL_CITY_ID) value += 0.25;
+  if (
+    target.lostBy?.factionId === factionId &&
+    state.absoluteDay - target.lostBy.absoluteDay <= RECENT_LOSS_DAYS
+  )
+    value += 0.25;
+  const leader = leadingFactionId(state);
+  if (leader && leader !== factionId && target.factionId === leader) value += 0.2;
+  if (temperament.valuesWealth && state.cities.length) {
+    const mean =
+      state.cities.reduce((sum, city) => sum + cityWealth(city), 0) / state.cities.length;
+    value += 0.25 * Math.max(0, Math.min(1, (cityWealth(target) / mean - 1) * 4));
+  }
+  if (temperament.valuesIsolation && target.factionId) {
+    const supported = ROUTE_DEFINITIONS.some((route) => {
+      const other =
+        route.fromCityId === target.id
+          ? route.toCityId
+          : route.toCityId === target.id
+            ? route.fromCityId
+            : null;
+      return (
+        other !== null &&
+        state.cities.find((city) => city.id === other)?.factionId === target.factionId
+      );
+    });
+    if (!supported) value += 0.15;
+  }
+  return Math.min(MAX_TARGET_VALUE, value);
+}
 
 /** Route and ration callbacks mirror the existing order service contracts. */
 export interface StrategicAiPlannerServices {
@@ -278,9 +344,9 @@ function makeCandidate(
   );
   // Ordinal value: one city, discounted by casualties, provisions, committed
   // soldiers, travel time and credible exposure at home. Hold/preparation is zero.
-  // A cunning ruler counts expected losses twice.
+  // A cunning ruler counts expected losses twice; target value raises the city's worth.
   const score =
-    1000 /
+    (1000 * (1 + campaignTargetValue(state, factionId, targetCityId, assessment.temperament))) /
     (1 +
       (assessment.matchup.expectedLosses / 1000) * assessment.temperament.lossWeight +
       supply.totalFood / 10000 +
@@ -401,6 +467,7 @@ export function reviewStrategicRivalCampaigns(
     const ownedCities = state.cities
       .filter((city) => city.factionId === faction.id)
       .sort((a, b) => compareIds(a.id, b.id));
+    const temperament = rulerTemperament(state, faction.id);
     const candidates: Candidate[] = [];
     const blocked: CampaignEvent[] = [];
     const optionsToRank: Array<{
@@ -410,6 +477,7 @@ export function reviewStrategicRivalCampaigns(
       officers: V03Officer[];
       troopLimit: number;
       distance: number;
+      value: number;
     }> = [];
 
     for (const source of ownedCities) {
@@ -485,13 +553,16 @@ export function reviewStrategicRivalCampaigns(
           officers,
           troopLimit,
           distance: routeDefinition.segments.reduce((sum, segment) => sum + segment.lengthKm, 0),
+          value: campaignTargetValue(state, faction.id, target.id, temperament),
         });
       }
     }
+    // Defenders per deployable soldier, discounted by the target's value.
     optionsToRank.sort(
       (a, b) =>
         Number(preferred(b)) - Number(preferred(a)) ||
-        a.defenderTroops / a.troopLimit - b.defenderTroops / b.troopLimit ||
+        a.defenderTroops / a.troopLimit / (1 + a.value) -
+          b.defenderTroops / b.troopLimit / (1 + b.value) ||
         a.distance - b.distance ||
         compareIds(a.sourceCityId, b.sourceCityId) ||
         compareIds(a.targetCityId, b.targetCityId),

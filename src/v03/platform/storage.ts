@@ -216,6 +216,7 @@ const city = z
       .nullable(),
     governanceMode: z.enum(['ruler', 'governor', 'steward']),
     plunderCooldownUntilDay: nonnegative.optional(),
+    lostBy: z.object({ factionId: id, absoluteDay: nonnegative }).strict().optional(),
     workMonthIndex: nonnegative.optional(),
     workPeriodIndex: nonnegative.optional(),
     workPointsUsed: safeInt.min(0).max(3).optional(),
@@ -737,6 +738,11 @@ export function validateV03State(value: unknown): value is V03GameState {
       return false;
     if (entry.garrisonTroops === 0 && entry.garrisonExperience !== 0) return false;
     if (entry.factionId !== null && !factionIds.has(entry.factionId)) return false;
+    if (
+      entry.lostBy &&
+      (!factionIds.has(entry.lostBy.factionId) || entry.lostBy.absoluteDay > state.absoluteDay)
+    )
+      return false;
     if (
       (entry.workMonthIndex === undefined) !== (entry.workPointsUsed === undefined) ||
       (entry.workMonthIndex !== undefined && entry.workMonthIndex > state.monthIndex)

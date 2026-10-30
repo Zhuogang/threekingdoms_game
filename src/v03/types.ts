@@ -117,6 +117,8 @@ export interface V03City {
   prisonerCavalryDaysThisMonth?: number;
   /** Absolute month boundary until which raid/sack actions are unavailable. */
   plunderCooldownUntilDay?: number;
+  /** The house that last lost this city by conquest, and when; cleared on recapture. */
+  lostBy?: { factionId: string; absoluteDay: number };
 }
 
 export type V03OfficerLocation =
