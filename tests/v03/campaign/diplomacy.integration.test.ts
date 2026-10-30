@@ -7,6 +7,7 @@ import {
   acceptV03Invitation,
   breakV03Alliance,
   getV03AllianceChance,
+  getV03AllianceFactors,
   proposeV03Alliance,
 } from '../../../src/v03/campaign/diplomacy';
 import { validateV03State } from '../../../src/v03/platform/storage';
@@ -15,7 +16,10 @@ describe('v0.3 diplomacy and monthly victory integration', () => {
   it('forms six-month alliances, blocks attacks, and applies the broken-treaty penalty', () => {
     const state = createV03Game('cao', 1);
     const target = state.factions.find((faction) => faction.id === 'liu')!;
-    const chanceBefore = getV03AllianceChance(state, target.id);
+    const uncappedBefore = getV03AllianceFactors(state, target.id).reduce(
+      (sum, factor) => sum + factor.points,
+      0,
+    );
     const proposed = proposeV03Alliance(state, target.id);
     expect(proposed.ok).toBe(true);
     expect(proposed.state.alliances).toEqual([{ a: 'cao', b: 'liu', expiresMonthIndex: 6 }]);
@@ -38,7 +42,9 @@ describe('v0.3 diplomacy and monthly victory integration', () => {
     const broken = breakV03Alliance(proposed.state, target.id);
     expect(broken.ok).toBe(true);
     expect(broken.state.alliances).toHaveLength(0);
-    expect(getV03AllianceChance(broken.state, target.id)).toBe(Math.max(5, chanceBefore - 20));
+    expect(getV03AllianceChance(broken.state, target.id)).toBe(
+      Math.max(5, Math.min(90, uncappedBefore - 30)),
+    );
   });
 
   it('accepts an anti-Dong coalition invitation and forms treaties with active members', () => {

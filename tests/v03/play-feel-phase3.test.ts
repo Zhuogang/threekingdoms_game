@@ -10,6 +10,9 @@ import { executeV03Command } from '../../src/v03/commands';
 import { applyV03BattleAction, dispatchRivalCampaignPlan } from '../../src/v03/engine';
 import { estimateCampaignSupply } from '../../src/v03/calendar';
 import { formatEvent } from '../../src/v03/i18n/events';
+import { acceptV03Invitation, getV03AllianceFactors } from '../../src/v03/campaign/diplomacy';
+import { createV03OrderServices } from '../../src/v03/governance/services';
+import { incomingCampaignThreats } from '../../src/v03/ai/campaign-threats';
 import { createPersonnelDay } from '../../src/v03/campaign/personnel';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import { rulerTemperament, temperamentFromTraits } from '../../src/v03/ai/temperament';
@@ -290,5 +293,156 @@ describe('PF-CA-05 AI raids below the conquest threshold', () => {
     const plan = planStrategicRivalCampaigns(state, { factionId: 'yuan' })[0]!;
     state.factions.find((faction) => faction.id === 'yuan')!.leaderOfficerId = 'yuejin';
     expect(dispatchRivalCampaignPlan(state, plan)).toBe(false);
+  });
+});
+
+describe('PF-CA-04 diplomacy as a decision', () => {
+  const codes = (state: ReturnType<typeof createV03Game>, target: string) =>
+    Object.fromEntries(
+      getV03AllianceFactors(state, target).map((factor) => [factor.code, factor.points]),
+    );
+
+  /** Liu Bei's army leaves Pingyuan for Cao Cao's Puyang, arriving in `days`. */
+  function liuMarchesOnPuyang(state: ReturnType<typeof createV03Game>, days: number) {
+    const officer = state.officers.find((entry) => entry.id === 'zhangfei')!;
+    Object.assign(officer, {
+      troops: 3000,
+      wounded: 0,
+      reorganizationDays: 0,
+      location: { kind: 'journey', journeyId: `liu-march-${days}` },
+    });
+    const services = createV03OrderServices();
+    const composition = {
+      troopTypes: [officer.troopType],
+      cavalryTroops: 0,
+      heavySupplyTrain: true,
+    };
+    const route = services.planRoute({
+      state,
+      sourceCityId: 'pingyuan',
+      targetCityId: 'puyang',
+      movingFactionId: 'liu',
+      departureDay: state.absoluteDay,
+      troopCount: 3000,
+      kind: 'campaign',
+      composition,
+    })!;
+    const journey = services.createJourney({
+      id: `liu-march-${days}`,
+      executionId: `liu-order-${days}`,
+      ownerFactionId: 'liu',
+      kind: 'campaign',
+      intent: 'conquer',
+      sourceCityId: 'pingyuan',
+      targetCityId: 'puyang',
+      departureDay: state.absoluteDay,
+      arrivalDay: state.absoluteDay + route.estimatedDays,
+      route,
+      party: { officerIds: [officer.id], troopCount: 3000, composition },
+      cargo: { gold: 0, food: 0, troops: 0 },
+      carriedFood: 100_000,
+    });
+    journey.expectedArrivalDay = state.absoluteDay + days;
+    state.journeys.push(journey);
+    return journey;
+  }
+
+  it('itemizes every term of the acceptance chance', () => {
+    const state = createV03Game('cao', 1, 'divided-realm-190');
+    const cao = state.officers.find((officer) => officer.id === 'caocao')!;
+    expect(codes(state, 'liu')).toMatchObject({
+      base: 40 + Math.floor(cao.intellect / 2),
+      'benevolent-ruler': 10,
+    });
+    expect(codes(state, 'sun')['fierce-ruler']).toBe(-10);
+    expect(codes(state, 'yuan')['fierce-ruler']).toBeUndefined();
+    expect(codes(state, 'yuan')['player-strongest']).toBeUndefined();
+
+    for (const id of ['xiapi', 'beiping'])
+      state.cities.find((city) => city.id === id)!.factionId = 'cao';
+    expect(codes(state, 'yuan')['player-strongest']).toBe(-30);
+
+    liuMarchesOnPuyang(state, 12);
+    expect(codes(state, 'liu')['army-marching']).toBe(-30);
+    expect(codes(state, 'yuan')['army-marching']).toBeUndefined();
+
+    state.lastAllianceBreakMonthByFaction.cao = state.monthIndex;
+    expect(codes(state, 'yuan')['treaty-broken']).toBe(-30);
+    state.monthIndex += 24;
+    expect(codes(state, 'yuan')['treaty-broken']).toBeUndefined();
+  });
+
+  it('keeps an opening bonus for a house with two cities or fewer', () => {
+    const state = createV03Game('liu', 1, 'divided-realm-190');
+    expect(codes(state, 'yuan')['small-house']).toBe(15);
+    const cao = createV03Game('cao', 1, 'divided-realm-190');
+    expect(codes(cao, 'yuan')['small-house']).toBeUndefined();
+  });
+
+  it('turns back only armies more than five days out when a treaty is signed', () => {
+    const state = createV03Game('cao', 2, 'divided-realm-190');
+    const far = liuMarchesOnPuyang(state, 12);
+    state.coalitionInvitations.push({
+      id: 'invitation:test',
+      eventId: 'anti-dong-coalition',
+      targetFactionId: 'dong',
+      memberFactionIds: ['liu'],
+      expiresMonthIndex: 3,
+    });
+    const accepted = acceptV03Invitation(state, 'invitation:test');
+    expect(accepted.ok).toBe(true);
+    const recalled = accepted.state.journeys.find((journey) => journey.id === far.id)!;
+    expect(recalled.returnRequested).toBe(true);
+    expect(recalled.pressesThroughTreaty).toBeUndefined();
+
+    const near = createV03Game('cao', 2, 'divided-realm-190');
+    const close = liuMarchesOnPuyang(near, 4);
+    near.coalitionInvitations.push({ ...state.coalitionInvitations[0]! });
+    const signed = acceptV03Invitation(near, 'invitation:test').state;
+    const pressing = signed.journeys.find((journey) => journey.id === close.id)!;
+    expect(pressing.returnRequested).toBeUndefined();
+    expect(pressing.pressesThroughTreaty).toBe(true);
+    // The player's governors still see it as a threat.
+    expect(incomingCampaignThreats(signed, 'puyang').map((threat) => threat.journeyId)).toContain(
+      close.id,
+    );
+  });
+
+  it('saves the pressing-on mark, and a marked army fights on arrival despite the treaty', () => {
+    const state = createV03Game('cao', 19);
+    const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
+    city.food = 1_000_000;
+    const officer = state.officers.find((entry) => entry.id === 'caocao')!;
+    city.garrisonTroops += 5000 - officer.troops;
+    officer.troops = 5000;
+    state.personnelDay = createPersonnelDay(state);
+    const sent = executeV03Command(state, {
+      type: 'marchArmy',
+      sourceCityId: city.id,
+      targetCityId: 'ye',
+      officerIds: ['caocao'],
+      intent: 'conquer',
+    });
+    expect(sent.ok, sent.error).toBe(true);
+    const arriveAllied = (pressing: boolean) => {
+      const next = structuredClone(sent.state);
+      next.alliances.push({ a: 'cao', b: 'yuan', expiresMonthIndex: next.monthIndex + 6 });
+      const journey = next.journeys.at(-1)!;
+      if (pressing) journey.pressesThroughTreaty = true;
+      journey.routeSnapshot = journey.routeSnapshot.map((segment) => ({
+        ...segment,
+        lengthKm: 1,
+        fixedDelayDays: 0,
+      }));
+      journey.segmentProgressKm.fill(0);
+      journey.segmentWaitDays.fill(0);
+      if (pressing) {
+        expect(validateV03State(next)).toBe(true);
+        expect(decodeV03Save(encodeV03Save(next))).toEqual(next);
+      }
+      return executeV03Command(next, { type: 'advance', days: 1 }).state;
+    };
+    expect(arriveAllied(true).battles.some((battle) => battle.active)).toBe(true);
+    expect(arriveAllied(false).battles.some((battle) => battle.active)).toBe(false);
   });
 });

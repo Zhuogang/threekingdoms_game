@@ -28,12 +28,13 @@ export function incomingCampaignThreats(
       !['outbound', 'waiting'].includes(initial.status) ||
       initial.destinationCityId !== cityId ||
       initial.ownerFactionId === city.factionId ||
-      getV03AttackAllianceBlock(
-        state.alliances,
-        initial.ownerFactionId,
-        city.factionId,
-        state.monthIndex,
-      )
+      (!initial.pressesThroughTreaty &&
+        getV03AttackAllianceBlock(
+          state.alliances,
+          initial.ownerFactionId,
+          city.factionId,
+          state.monthIndex,
+        ))
     )
       continue;
     const officers = state.officers.filter(

@@ -1,6 +1,11 @@
 import { useRef } from 'react';
 import { message } from '../../i18n';
-import { getV03AllianceChance, hasProposedV03AllianceThisMonth } from '../../campaign/diplomacy';
+import {
+  getV03AllianceChance,
+  getV03AllianceFactors,
+  hasProposedV03AllianceThisMonth,
+} from '../../campaign/diplomacy';
+import { shownTraits, TraitList } from '../shared/traits';
 import { isV03AllianceActive } from '../../campaign/monthly-systems';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
@@ -138,6 +143,10 @@ export function DiplomacyFlow({
     locale === 'zh'
       ? '对同一势力每月只能提议一次；本月解盟后也须等下月再提议。'
       : 'One proposal per faction per month. After breaking a treaty, wait until next month to propose again.';
+  const ruler = state.officers.find(
+    (officer) =>
+      officer.id === state.factions.find((entry) => entry.id === faction.id)?.leaderOfficerId,
+  );
   if (page.kind === 'faction')
     return (
       <section className="v03-diplomacy v03-faction-detail">
@@ -153,8 +162,22 @@ export function DiplomacyFlow({
                 ? `${treaty!.expiresMonthIndex - state.monthIndex} ${t.monthsRemaining}`
                 : message(locale, 'flow.noAlliance'),
             },
+            ...(ruler
+              ? [
+                  { label: message(locale, 'diplomacy.ruler'), value: displayName(ruler, locale) },
+                  {
+                    label: message(locale, 'diplomacy.character'),
+                    value: shownTraits(ruler.id).length
+                      ? shownTraits(ruler.id)
+                          .map((trait) => message(locale, `trait.${trait}`))
+                          .join(' · ')
+                      : message(locale, 'diplomacy.noTraits'),
+                  },
+                ]
+              : []),
           ]}
         />
+        {ruler ? <TraitList officerId={ruler.id} locale={locale} /> : null}
         <Button
           className="v03-step-choice"
           disabled={!allied && proposalUsed}
@@ -179,7 +202,23 @@ export function DiplomacyFlow({
               { label: t.acceptChance, value: `${getV03AllianceChance(state, faction.id)}%` },
             ]}
           />
+          <table className="v03-chance-breakdown">
+            <caption>{message(locale, 'diplomacy.chanceBreakdown')}</caption>
+            <tbody>
+              {getV03AllianceFactors(state, faction.id).map((factor) => (
+                <tr key={factor.code}>
+                  <th scope="row">{message(locale, `diplomacy.factor.${factor.code}`)}</th>
+                  <td>
+                    {factor.points > 0 && factor.code !== 'base' ? '+' : ''}
+                    {factor.points}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="v03-muted">{message(locale, 'diplomacy.chanceLimit')}</p>
           <p>{message(locale, 'flow.allianceDuration')}</p>
+          <p className="v03-muted">{message(locale, 'flow.allianceRecall')}</p>
           <p className="v03-muted">{message(locale, 'flow.allianceHint')}</p>
           <p className="v03-muted">{proposalHint}</p>
         </>

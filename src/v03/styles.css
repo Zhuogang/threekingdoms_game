@@ -2763,6 +2763,37 @@ th small {
   padding: var(--space-3);
   background: var(--tone-140);
 }
+.v03-trait-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+.v03-trait-list dt {
+  font-weight: 700;
+}
+.v03-trait-list dd {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.v03-chance-breakdown {
+  width: 100%;
+  margin-top: var(--space-3);
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.v03-chance-breakdown caption {
+  text-align: start;
+  font-weight: 700;
+  padding-bottom: var(--space-2);
+}
+.v03-chance-breakdown th {
+  text-align: start;
+  font-weight: 400;
+}
+.v03-chance-breakdown td {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
 @media (max-width: 800px) {
   .v03-work-menu,
   .v03-city-affairs > .v03-stat-grid {

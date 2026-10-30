@@ -621,7 +621,35 @@ export const en = {
   'flow.allianceHint':
     'Acceptance uses the current ruler and diplomatic conditions. Confirmation resolves the offer immediately.',
   'flow.breakAllianceHint':
-    'End this alliance? Breaking it reduces the chance of future alliances for the next twelve months.',
+    'End this alliance? Breaking it costs 30 points on every alliance offer for the next 24 months.',
+  'flow.allianceRecall':
+    'Armies between your houses more than five days from their target turn back; closer ones still fight.',
+  'diplomacy.ruler': 'Ruler',
+  'diplomacy.character': 'Character',
+  'diplomacy.noTraits': 'No notable traits',
+  'diplomacy.chanceBreakdown': 'Why this chance',
+  'diplomacy.chanceLimit': 'Limited to 5–90%.',
+  'diplomacy.factor.base': 'Your ruler’s intellect',
+  'diplomacy.factor.common-enemy': 'Both of you border the strongest house',
+  'diplomacy.factor.target-strongest': 'They are the strongest house',
+  'diplomacy.factor.player-strongest': 'You are the strongest house',
+  'diplomacy.factor.army-marching': 'Their army is marching on you',
+  'diplomacy.factor.treaty-broken': 'You broke a treaty in the last 24 months',
+  'diplomacy.factor.benevolent-ruler': 'Their ruler is benevolent',
+  'diplomacy.factor.fierce-ruler': 'Their ruler is fierce',
+  'diplomacy.factor.small-house': 'You hold two cities or fewer',
+  'trait.fierce': 'Fierce',
+  'trait.fierce.effect':
+    'In battle their formation presses forward and accepts risk. As ruler: attacks at 70% estimated odds instead of 80%, leaves home more exposed, raids cities it cannot take, and is 10 points less open to alliances.',
+  'trait.benevolent': 'Benevolent',
+  'trait.benevolent.effect':
+    'As ruler: attacks only at 95% estimated odds, never leads a campaign in person, is 10 points more open to alliances, releases captives who will not serve, and newly conquered cities settle at 60 loyalty instead of 50.',
+  'trait.cunning': 'Cunning',
+  'trait.cunning.effect':
+    'In battle their tactics cost 1 point less (at least 1) and are used more readily. As ruler: counts expected losses twice and prefers targets with no friendly neighbour.',
+  'trait.greedy': 'Greedy',
+  'trait.greedy.effect':
+    'As ruler: prefers cities richer than average and raids cities it cannot take.',
   'flow.coalitionHint': 'Accept the invitation and join the coalition against the invited target.',
   'flow.coalitionTarget': 'Coalition target',
   'flow.coalitionMembers': 'Invited members',

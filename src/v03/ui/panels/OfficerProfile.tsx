@@ -3,6 +3,7 @@ import { hasNavalTraining } from '../../content/naval-commanders';
 import { troopName } from '../../rendering/presentation';
 import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { StatGrid } from '../kit';
+import { TraitList } from '../shared/traits';
 import {
   officerCopy,
   officerDossier,
@@ -89,6 +90,7 @@ export function OfficerProfile({
             : []),
         ]}
       />
+      <TraitList officerId={id} locale={locale} />
       <h4>{runtime ? t.current : t.adult}</h4>
       <StatGrid
         values={[

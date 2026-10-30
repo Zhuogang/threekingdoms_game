@@ -1190,6 +1190,7 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
       }
       if (
         target.factionId &&
+        !journey.pressesThroughTreaty &&
         getV03AttackAllianceBlock(
           state.alliances,
           journey.ownerFactionId,

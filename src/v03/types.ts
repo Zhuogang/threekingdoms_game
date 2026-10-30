@@ -172,6 +172,8 @@ export interface V03Journey extends CalendarJourney {
   intent?: V03BattleIntent;
   /** Requested return at the next safe route decision point; no cargo is discarded. */
   returnRequested?: boolean;
+  /** Within five days of its target when a treaty was signed: it still attacks on arrival. */
+  pressesThroughTreaty?: boolean;
   /** Ordered city waypoints for multi-leg land journeys; road segment snapshots remain authoritative. */
   routeCityIds?: string[];
 }

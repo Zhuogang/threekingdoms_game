@@ -259,6 +259,7 @@ const journey = z
     kind: z.enum(['requisition', 'campaign', 'appointment', 'transfer', 'return']),
     intent: intent.optional(),
     returnRequested: z.boolean().optional(),
+    pressesThroughTreaty: z.boolean().optional(),
     executionId: id,
     ownerFactionId: id,
     sourceCityId: id,
