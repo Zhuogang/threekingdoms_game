@@ -344,7 +344,8 @@ describe('R2 adulthood retains actual training and equipment', () => {
     state = training.state;
     expect(get(state, 'sunce')).toMatchObject({
       age: 17,
-      force: 100,
+      // Equipment +5 and the level-up +2; training itself adds no force (PF-RL-03).
+      force: 99,
       intellect: 74,
       equipment: 'Fine arms',
       experience: 100,
@@ -353,7 +354,7 @@ describe('R2 adulthood retains actual training and equipment', () => {
     const after = advanceV03(decodeV03Save(encodeV03Save(state)), 1).state;
     expect(get(after, 'sunce')).toMatchObject({
       age: 18,
-      force: 103,
+      force: 102,
       intellect: 76,
       equipment: 'Fine arms',
       experience: 100,
@@ -362,7 +363,7 @@ describe('R2 adulthood retains actual training and equipment', () => {
     const again = advanceV03(decodeV03Save(encodeV03Save(after)), 1).state;
     expect(get(again, 'sunce')).toMatchObject({
       age: 18,
-      force: 103,
+      force: 102,
       equipment: 'Fine arms',
       experience: 100,
       level: 1,

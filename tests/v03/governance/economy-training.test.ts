@@ -140,24 +140,37 @@ describe('existing economy and training adjustments', () => {
   );
 
   it.each([500, 10_000])(
-    'preserves saved XP %s while still allowing force-only training',
+    'preserves saved XP %s and refuses training once XP is capped, even below the force cap',
     (experience) => {
       const { state, city, officer } = fixture();
       Object.assign(officer, { experience, level: 5, force: 99 });
       const restored = reload(state);
       const input = { cityId: city.id, officerId: officer.id, action: 'train' as const };
+      // Training no longer adds a flat +1 force (PF-RL-03, decision D3).
       const result = applyV03CityAction(restored, input);
-      expect(result.ok, result.error).toBe(true);
-      expect(result.state.officers.find((entry) => entry.id === officer.id)).toMatchObject({
+      expect(result.ok).toBe(false);
+      expect(result.error).toContain('training limit');
+      expect(restored.officers.find((entry) => entry.id === officer.id)).toMatchObject({
         experience,
         level: 5,
-        force: 100,
+        force: 99,
       });
-      expect(result.message).toContain('+0 experience, +1 force and +0 intellect');
-      expect(reload(result.state)).toEqual(result.state);
-      expect(applyV03CityAction(result.state, input).ok).toBe(false);
     },
   );
+
+  it('adds only XP: force changes through level-ups, not per session', () => {
+    const { state, city, officer } = fixture();
+    Object.assign(officer, { troopType: 'infantry', experience: 50, level: 0, force: 70 });
+    const input = { cityId: city.id, officerId: officer.id, action: 'train' as const };
+    const once = applyV03CityAction(state, input);
+    expect(once.ok, once.error).toBe(true);
+    expect(once.state.officers.find((entry) => entry.id === officer.id)).toMatchObject({
+      experience: 75,
+      level: 0,
+      force: 70,
+    });
+    expect(once.message).toContain('+25 experience, +0 force and +0 intellect');
+  });
 
   it('keeps archer level-up intellect and reports the actual capped gain at full force', () => {
     const { state, city, officer } = fixture();
@@ -240,16 +253,13 @@ describe('existing economy and training adjustments', () => {
     expect(applyGovernorMonthlyWork(state, plan).applied).toBe(true);
   });
 
-  it('uses the same independent training caps in autonomous planning', () => {
+  it('uses the same XP-only training cap in autonomous planning', () => {
     const { state, city, manager } = autonomous();
-    for (const [force, experience, level] of [
-      [100, 475, 4],
-      [99, 10_000, 5],
-    ]) {
-      Object.assign(manager, { force, experience, level });
-      const plan = planGovernorMonthlyWork(state, city.id, 1);
-      expect(plan).toMatchObject({ action: 'train', targetOfficerId: manager.id });
-      expect(applyGovernorMonthlyWork(state, plan).applied).toBe(true);
-    }
+    Object.assign(manager, { force: 100, experience: 475, level: 4 });
+    const plan = planGovernorMonthlyWork(state, city.id, 1);
+    expect(plan).toMatchObject({ action: 'train', targetOfficerId: manager.id });
+    expect(applyGovernorMonthlyWork(state, plan).applied).toBe(true);
+    Object.assign(manager, { force: 99, experience: 10_000, level: 5 });
+    expect(planGovernorMonthlyWork(state, city.id, 1).action).not.toBe('train');
   });
 });

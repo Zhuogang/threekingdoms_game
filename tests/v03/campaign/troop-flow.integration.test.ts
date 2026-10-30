@@ -217,6 +217,8 @@ describe('campaign veteran flow', () => {
       expect(state.officers.find((o) => o.id === original.id)).toMatchObject({
         ...original,
         troopExperience: 1200 + attackerGain,
+        // Officers take half their troops' battle XP (PF-RL-03).
+        experience: original.experience + Math.floor(attackerGain / 2),
       });
     }
     expect(state.cities.find((c) => c.id === 'xiapi')!.garrisonExperience).toBe(750 + defenderGain);

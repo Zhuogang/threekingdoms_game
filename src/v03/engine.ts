@@ -90,6 +90,7 @@ import {
   CITY_WORK_PERIOD_DAYS,
   initializeCityWorkPeriods,
   committedCityStock,
+  gainOfficerExperience,
 } from './governance/city-actions';
 import { availableCityResources } from './governance/authority';
 import { planStrategicRivalCampaigns, type StrategicRivalCampaignPlan } from './strategic-ai';
@@ -425,6 +426,9 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
       members.map((officer) => [officer.id, officer.troopExperience]),
     );
     allocateSurvivors(unit, memberIds, state.officers, gain);
+    // Officers grow through deeds: half their troops' battle XP (PF-RL-03).
+    for (const officer of members)
+      if (officer.alive) gainOfficerExperience(officer, Math.floor(gain / 2));
     for (const officer of members) {
       const recordId = `officer:${officer.id}`;
       state.personnelDay.rations = state.personnelDay.rations.filter(

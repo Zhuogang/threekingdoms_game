@@ -12,6 +12,7 @@ import {
   applyV03CityAction,
   cityWorkAvailable,
   cityWorkRefreshDays,
+  gainOfficerExperience,
 } from '../../src/v03/governance/city-actions';
 import { estimateCampaignSupply } from '../../src/v03/calendar';
 import { formatEvent } from '../../src/v03/i18n/events';
@@ -536,5 +537,45 @@ describe('PF-RL-02 retire or repair dead actions', () => {
     expect(stocked.food - after.food).toBe(2000);
     expect(after.gold - stocked.gold).toBe(200);
     expect(localizeRoutineFeedback(bought.message!, 'zh', bought.state)).toContain('2000');
+  });
+});
+
+describe('PF-RL-03 officers grow through deeds', () => {
+  // The exact half-of-troop-XP settlement is covered in campaign/troop-flow.integration.
+  it('levels officers from battle XP with the training level-up gains', () => {
+    const officer = { experience: 90, level: 0, force: 98, intellect: 60, equipment: null };
+    gainOfficerExperience({ ...officer, troopType: 'infantry' }, 0);
+    const infantry = { ...officer, troopType: 'infantry' as const };
+    gainOfficerExperience(infantry, 70);
+    expect(infantry).toMatchObject({ experience: 160, level: 1, force: 100 });
+    const archer = { ...officer, troopType: 'archer' as const };
+    gainOfficerExperience(archer, 70);
+    expect(archer).toMatchObject({ level: 1, force: 98, intellect: 62 });
+    const veteran = { ...officer, experience: 10_000, level: 5, troopType: 'cavalry' as const };
+    gainOfficerExperience(veteran, 70);
+    expect(veteran.experience).toBe(10_000);
+  });
+
+  it('no longer adds a flat +1 force per training session', () => {
+    const state = createV03Game('cao', 3, 'divided-realm-190');
+    const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
+    const officer = state.officers.find(
+      (entry) =>
+        entry.factionId === 'cao' &&
+        entry.location.kind === 'city' &&
+        entry.location.cityId === city.id &&
+        entry.troops > 0,
+    )!;
+    Object.assign(officer, { experience: 0, level: 0, force: 40, troopType: 'infantry' });
+    const result = applyV03CityAction(state, {
+      cityId: city.id,
+      officerId: officer.id,
+      action: 'train',
+    });
+    expect(result.ok, result.error).toBe(true);
+    expect(result.state.officers.find((entry) => entry.id === officer.id)).toMatchObject({
+      experience: 25,
+      force: 40,
+    });
   });
 });

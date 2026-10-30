@@ -248,13 +248,32 @@ function levelForExperience(experience: number): number {
   return Math.min(5, Math.floor(Math.max(0, experience) / 100));
 }
 
-export function hasTrainingBenefit(
-  officer: Pick<V03Officer, 'experience' | 'level' | 'force' | 'equipment'>,
-): boolean {
-  return (
-    (officer.experience < 500 && officer.level < 5) ||
-    officer.force < (officer.equipment === 'Fine arms' ? 105 : 100)
-  );
+/** Training only adds XP now (PF-RL-03), so it helps until level 5 or 500 XP. */
+export function hasTrainingBenefit(officer: Pick<V03Officer, 'experience' | 'level'>): boolean {
+  return officer.experience < 500 && officer.level < 5;
+}
+
+/**
+ * Add officer XP (up to 500, level 5) and apply each level reached: +2 force, or +2
+ * intellect for archers, within the force limit. Shared by training and battle.
+ */
+export function gainOfficerExperience(
+  officer: Pick<
+    V03Officer,
+    'experience' | 'level' | 'force' | 'intellect' | 'equipment' | 'troopType'
+  >,
+  amount: number,
+): void {
+  // Old saves may contain more than 500 XP; stop adding without reducing it.
+  if (amount <= 0 || officer.experience >= 500 || officer.level >= 5) return;
+  officer.experience = Math.min(500, officer.experience + amount);
+  const forceLimit = officer.equipment === 'Fine arms' ? 105 : 100;
+  const targetLevel = levelForExperience(officer.experience);
+  while (officer.level < targetLevel) {
+    officer.level++;
+    if (officer.troopType === 'archer') officer.intellect = Math.min(100, officer.intellect + 2);
+    else if (officer.force < forceLimit) officer.force = Math.min(forceLimit, officer.force + 2);
+  }
 }
 
 function useWorkPoint(state: V03GameState, city: V03City, cost: 0 | 1): void {
@@ -690,7 +709,6 @@ function applyCityAction(
         officer.troops <= 0
       )
         return fail('Choose a living officer with troops stationed in the capital to train.');
-      const forceLimit = officer.equipment === 'Fine arms' ? 105 : 100;
       if (!hasTrainingBenefit(officer))
         return fail('This officer has reached the current training limit.');
       const before = {
@@ -698,18 +716,7 @@ function applyCityAction(
         force: officer.force,
         intellect: officer.intellect,
       };
-      // Old saves may contain more than 500 XP; stop adding without reducing it.
-      if (officer.experience < 500 && officer.level < 5)
-        officer.experience = Math.min(500, officer.experience + 25);
-      if (officer.force < forceLimit) officer.force++;
-      const targetLevel = levelForExperience(officer.experience);
-      while (officer.level < targetLevel) {
-        officer.level++;
-        if (officer.troopType === 'archer')
-          officer.intellect = Math.min(100, officer.intellect + 2);
-        else if (officer.force < forceLimit)
-          officer.force = Math.min(forceLimit, officer.force + 2);
-      }
+      gainOfficerExperience(officer, 25);
       message = `${officer.name} completed training: +${officer.experience - before.experience} experience, +${officer.force - before.force} force and +${officer.intellect - before.intellect} intellect.`;
       break;
     }
