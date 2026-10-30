@@ -218,6 +218,6 @@ describe('selected officer city actions', () => {
     city.workPointsUsed = 2;
     expect(
       applyV03CityAction(state, { cityId: city.id, action: 'feast', officerIds }).error,
-    ).toContain('ten-day period');
+    ).toContain('no work points left');
   });
 });

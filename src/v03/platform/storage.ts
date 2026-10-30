@@ -219,7 +219,8 @@ const city = z
     lostBy: z.object({ factionId: id, absoluteDay: nonnegative }).strict().optional(),
     workMonthIndex: nonnegative.optional(),
     workPeriodIndex: nonnegative.optional(),
-    workPointsUsed: safeInt.min(0).max(3).optional(),
+    workPointsUsed: safeInt.min(0).max(6).optional(),
+    workPointsBanked: safeInt.min(0).max(4).optional(),
     autoSearchesThisMonth: safeInt.min(0).max(1).optional(),
     autoAssignmentsThisMonth: safeInt.min(0).max(1).optional(),
     troopServiceDaysThisMonth: safeInt.min(0).max(300_000_000).optional(),
@@ -426,7 +427,8 @@ const event = z
             gold: safeInt,
             food: safeInt,
             troops: safeInt,
-            governorActions: z.array(z.string().max(100)).max(10),
+            // Up to six banked paid points (PF-RL-01) plus free preparations in one pass.
+            governorActions: z.array(z.string().max(100)).max(30),
             shortage: z.boolean(),
           })
           .strict(),
@@ -749,6 +751,7 @@ export function validateV03State(value: unknown): value is V03GameState {
       (entry.workMonthIndex !== undefined && entry.workMonthIndex > state.monthIndex)
     )
       return false;
+    if (entry.workPointsBanked !== undefined && entry.workPeriodIndex === undefined) return false;
     if (
       entry.workPeriodIndex !== undefined &&
       (entry.workMonthIndex === undefined ||

@@ -108,6 +108,8 @@ export interface V03City {
   workMonthIndex?: number;
   workPeriodIndex?: number;
   workPointsUsed?: number;
+  /** Unused points carried into `workPeriodIndex` from earlier periods (bank of six). */
+  workPointsBanked?: number;
   autoSearchesThisMonth?: number;
   autoAssignmentsThisMonth?: number;
   /** Troop-days spent stationed in this city since the last monthly settlement. */

@@ -173,6 +173,8 @@ export function localizeRoutineFeedback(
     /^The capital has used its (\d+) work points for this ten-day period\.$/,
   );
   if (match) return `本城本旬的 ${match[1]} 个工作点已用完。`;
+  match = message.match(/^The capital has no work points left; (\d+) more arrive in (\d+) days\.$/);
+  if (match) return `本城工作点已用完，${match[2]} 日后增加 ${match[1]} 点。`;
   match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);
   if (match) return `本城本月的 ${match[1]} 个工作点已用完。`;
   match = message.match(/^(.+) improved city loyalty by 2 for 80 gold\.$/);

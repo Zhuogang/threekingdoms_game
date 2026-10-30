@@ -20,7 +20,7 @@ import {
   type BattleTactic,
 } from '../../battle';
 
-import { cityWorkQuota, cityWorkUsedThisPeriod } from '../../governance/city-actions';
+import { cityWorkAvailable, cityWorkQuota } from '../../governance/city-actions';
 import { createV03OrderServices } from '../../governance/services';
 
 import { loadV03Autosave, saveV03Autosave } from '../../platform/storage';
@@ -215,10 +215,7 @@ export function useGameSession() {
         )
       : [];
   const directWorkQuota = state && selectedCity ? cityWorkQuota(state, selectedCity) : 0;
-  const directWorkRemaining =
-    state && selectedCity
-      ? Math.max(0, directWorkQuota - cityWorkUsedThisPeriod(state, selectedCity))
-      : 0;
+  const directWorkRemaining = state && selectedCity ? cityWorkAvailable(state, selectedCity) : 0;
   const governorCandidates =
     state && selectedCity
       ? state.officers.filter(

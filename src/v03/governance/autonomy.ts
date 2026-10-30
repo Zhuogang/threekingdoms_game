@@ -23,8 +23,8 @@ import {
   getAutomaticCityActionAvailability,
   hasTrainingBenefit,
   localSearchCandidates,
-  cityWorkQuota,
   cityActionWorkCost,
+  cityWorkAvailable,
   cityWorkUsedThisPeriod,
 } from './city-actions';
 
@@ -266,7 +266,7 @@ export function planGovernorMonthlyWork(
       'city-threatened',
       'City work is paused while its personnel and resources are committed to an active battle.',
     );
-  const workSpent = workUsed >= cityWorkQuota(state, city);
+  const workSpent = cityWorkAvailable(state, city) <= 0;
 
   let failure = '';
   let orderReserveBlocked = false;
@@ -405,7 +405,7 @@ export function planGovernorMonthlyWork(
   }
   const none = () =>
     workSpent
-      ? stop('monthly-work-spent', 'The city has used all work points for this ten-day period.')
+      ? stop('monthly-work-spent', 'The city has no work points left until the next refresh.')
       : stop(
           orderReserveBlocked
             ? 'approved-order-reserve'

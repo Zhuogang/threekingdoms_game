@@ -34,6 +34,8 @@ export interface V03CityActionAvailability {
 export const CITY_MONTHLY_WORK_GOLD_COST = 80;
 export const CITY_MANUAL_WORK_MAX_POINTS = 2;
 export const CITY_WORK_PERIOD_DAYS = 10;
+/** Unused work points carry over up to one month's worth (three periods). */
+export const CITY_WORK_BANK_MAX_POINTS = 6;
 export const GOVERNOR_REWARD_GOLD_COST = 100;
 export const GOVERNOR_EQUIPMENT_GOLD_COST = 180;
 export const GOVERNOR_RELIEF_GOLD_COST = 80;
@@ -93,6 +95,25 @@ export function cityWorkUsedThisPeriod(state: Readonly<V03GameState>, city: V03C
   if (city.workPeriodIndex !== undefined && city.workPeriodIndex !== cityWorkPeriodIndex(state))
     return 0;
   return city.workPointsUsed ?? 0;
+}
+
+/**
+ * Points the city can spend now (PF-RL-01). Each ten-day period adds the quota; points
+ * left unused carry over, up to one month's worth. The record holds the points carried
+ * into its period and the points spent in it, so nothing is saved per day.
+ */
+export function cityWorkAvailable(state: Readonly<V03GameState>, city: V03City): number {
+  const quota = cityWorkQuota(state, city);
+  if (!quota) return 0;
+  if (city.workPeriodIndex === undefined)
+    return Math.max(0, quota - cityWorkUsedThisPeriod(state, city));
+  const remaining = Math.max(
+    0,
+    Math.min(CITY_WORK_BANK_MAX_POINTS, (city.workPointsBanked ?? 0) + quota) -
+      (city.workPointsUsed ?? 0),
+  );
+  const periods = cityWorkPeriodIndex(state) - city.workPeriodIndex;
+  return periods > 0 ? Math.min(CITY_WORK_BANK_MAX_POINTS, remaining + quota * periods) : remaining;
 }
 
 /** Attach legacy budgets to their current period before advancing the world. */
@@ -224,15 +245,20 @@ export function hasTrainingBenefit(
 }
 
 function useWorkPoint(state: V03GameState, city: V03City, cost: 0 | 1): void {
-  const previous = cityWorkUsedThisPeriod(state, city);
+  const available = cityWorkAvailable(state, city);
+  const period = cityWorkPeriodIndex(state);
   if (city.workMonthIndex !== state.monthIndex) {
     city.workMonthIndex = state.monthIndex;
-    city.workPointsUsed = 0;
     city.autoSearchesThisMonth = 0;
     city.autoAssignmentsThisMonth = 0;
   }
-  city.workPeriodIndex = cityWorkPeriodIndex(state);
-  city.workPointsUsed = previous + cost;
+  if (city.workPeriodIndex !== period) {
+    // Start this period's record: everything above its own refresh was carried over.
+    city.workPointsBanked = Math.max(0, available - cityWorkQuota(state, city));
+    city.workPointsUsed = 0;
+    city.workPeriodIndex = period;
+  }
+  city.workPointsUsed = (city.workPointsUsed ?? 0) + cost;
 }
 
 export function committedCityStock(state: Readonly<V03GameState>, cityId: string) {
@@ -364,9 +390,10 @@ function inspectCityAction(
   const actor = officerForAction(state, city, input.officerId);
   if (!actor)
     return fail('A living officer must be stationed in the capital to organize this work.');
-  const quota = cityWorkQuota(state, city);
-  if (cityActionWorkCost(input.action) && cityWorkUsedThisPeriod(state, city) >= quota)
-    return fail(`The capital has used its ${quota} work points for this ten-day period.`);
+  if (cityActionWorkCost(input.action) && cityWorkAvailable(state, city) <= 0)
+    return fail(
+      `The capital has no work points left; ${cityWorkQuota(state, city)} more arrive in ${cityWorkRefreshDays(state)} days.`,
+    );
 
   let goldCost = 0;
   let foodCost = 0;

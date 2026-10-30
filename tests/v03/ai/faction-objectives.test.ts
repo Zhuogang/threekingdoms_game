@@ -540,7 +540,8 @@ describe('V04-08 persistent faction objectives', () => {
     for (const city of advanced.cities) {
       expect(city.autoSearchesThisMonth).toBe(1);
       expect(city.autoAssignmentsThisMonth).toBe(1);
-      expect(city.workPointsUsed ?? 0).toBeLessThanOrEqual(2);
+      // Unused points bank (PF-RL-01): a period spends its own two plus what was carried in.
+      expect(city.workPointsUsed ?? 0).toBeLessThanOrEqual(2 + (city.workPointsBanked ?? 0));
     }
     expect(validateV03State(advanced)).toBe(true);
   });

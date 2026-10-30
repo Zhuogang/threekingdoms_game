@@ -159,7 +159,7 @@ describe('fixed city work points and free preparations', () => {
     const { state, city, officer } = fixture();
     const result = applyV03CityAction(state, { cityId: city.id, action, officerId: officer.id });
     expect(result.ok).toBe(false);
-    expect(result.error).toContain('2 work points for this ten-day period');
+    expect(result.error).toContain('no work points left; 2 more arrive in');
     expect(result.state).toBe(state);
   });
 
@@ -318,6 +318,8 @@ describe('fixed city work points and free preparations', () => {
     );
     const city = cityAt(state, 'beihai');
     const officer = state.officers.find((entry) => entry.id === city.governorId)!;
+    // The governor spent its day-20 points, so the boundary brings exactly two.
+    Object.assign(city, { workMonthIndex: 0, workPeriodIndex: 2, workPointsUsed: 2 });
     city.farming = 100;
     city.commerce = 100;
     city.loyalty = 100;

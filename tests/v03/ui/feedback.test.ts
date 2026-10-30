@@ -135,6 +135,7 @@ describe('v0.3 routine feedback', () => {
     'Acknowledge the current report before completing the battle day.',
     'The capital has used its 3 monthly work points.',
     'The capital has used its 2 work points for this ten-day period.',
+    'The capital has no work points left; 2 more arrive in 7 days.',
     'The city needs 180 gold to issue fine arms.',
     'This save uses an unsupported newer version. Open it with a compatible game version; existing data was left unchanged.',
     "Cao Cao is outside this tactic's range.",

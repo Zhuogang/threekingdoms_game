@@ -4,9 +4,10 @@ import { message } from '../../i18n';
 import { forecastCityEconomy } from '../../campaign/economy';
 import { pendingCityGovernance } from '../../governance/conquest';
 import {
+  CITY_WORK_BANK_MAX_POINTS,
+  cityWorkAvailable,
   cityWorkQuota,
   cityWorkRefreshDays,
-  cityWorkUsedThisPeriod,
 } from '../../governance/city-actions';
 import { isOfficerCommitted } from '../../governance/commitments';
 import { Button } from '../kit';
@@ -63,7 +64,7 @@ export function CampaignStatus({
     ).length;
     const capital = state.cities.find((city) => city.id === state.playerCapitalCityId);
     const quota = capital ? cityWorkQuota(state, capital) : 0;
-    const work = capital ? Math.max(0, quota - cityWorkUsedThisPeriod(state, capital)) : 0;
+    const work = capital ? cityWorkAvailable(state, capital) : 0;
     const legend = state.factions
       .map((faction) => ({
         faction,
@@ -99,6 +100,7 @@ export function CampaignStatus({
           <Hammer size={14} aria-hidden="true" />
           {message(locale, 'status.work', {
             remaining: summary.work,
+            max: CITY_WORK_BANK_MAX_POINTS,
             quota: summary.quota,
             days: cityWorkRefreshDays(state),
           })}

@@ -37,7 +37,7 @@ export const en = {
   directWork: 'Capital development',
   improveFarm: 'Improve farmland · 80 gold',
   improveMarket: 'Improve commerce · 80 gold',
-  workRemaining: 'Ten-day work points remaining',
+  workRemaining: 'Work points available',
   search: 'Search for officers',
   recruit: 'Recruit soldiers',
   train: 'Train',
@@ -476,8 +476,9 @@ export const en = {
   'map.threatIn': 'Hostile army arrives in {days} days',
   'map.threatDays': '{days}d',
   'status.label': 'Campaign status',
-  'status.work': 'Capital work {remaining}/{quota} · refresh in {days}d',
-  'status.workHint': 'Your capital refreshes to two work points every ten days. Open the capital.',
+  'status.work': 'Capital work {remaining}/{max} · +{quota} in {days}d',
+  'status.workHint':
+    'Your capital gains two work points every ten days; unused points carry over up to six. Open the capital.',
   'status.netHint':
     'Stock across your cities, with the projected change at the next monthly settlement.',
   'status.threat': '{city} attacked in {days}d',
@@ -587,7 +588,7 @@ export const en = {
   'flow.workCost':
     'Uses 1 ten-day work point. After completion, you return to the previous screen.',
   'flow.noWorkCost': 'Uses no work points. Resource costs and existing restrictions still apply.',
-  'flow.workRefresh': 'Refreshes in {days} game days',
+  'flow.workRefresh': '+{quota} in {days} game days; unused points carry over up to 6',
   'flow.confirmWork': 'Confirm order',
   'flow.executor': 'Executing officer',
   'flow.changeExecutor': 'Choose another officer',

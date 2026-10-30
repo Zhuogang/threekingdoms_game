@@ -76,7 +76,7 @@ describe('ten-day work point refresh', () => {
     }
     expect(
       applyV03CityAction(next, { cityId: city.id, action: 'develop-farming' }).error,
-    ).toContain('ten-day period');
+    ).toContain('no work points left');
   });
 
   it('advancing ten days and ten separate daily advances use the same refresh and automatic work', () => {

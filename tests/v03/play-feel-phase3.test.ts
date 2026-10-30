@@ -7,7 +7,12 @@ import {
 } from '../../src/v03/strategic-ai';
 import { createV03Game } from '../../src/v03/initial-state';
 import { executeV03Command } from '../../src/v03/commands';
-import { applyV03BattleAction, dispatchRivalCampaignPlan } from '../../src/v03/engine';
+import { advanceV03, applyV03BattleAction, dispatchRivalCampaignPlan } from '../../src/v03/engine';
+import {
+  applyV03CityAction,
+  cityWorkAvailable,
+  cityWorkRefreshDays,
+} from '../../src/v03/governance/city-actions';
 import { estimateCampaignSupply } from '../../src/v03/calendar';
 import { formatEvent } from '../../src/v03/i18n/events';
 import { acceptV03Invitation, getV03AllianceFactors } from '../../src/v03/campaign/diplomacy';
@@ -444,5 +449,58 @@ describe('PF-CA-04 diplomacy as a decision', () => {
     };
     expect(arriveAllied(true).battles.some((battle) => battle.active)).toBe(true);
     expect(arriveAllied(false).battles.some((battle) => battle.active)).toBe(false);
+  });
+});
+
+describe('PF-RL-01 bank unused work', () => {
+  it('carries unused points over up to six and spends from the bank', () => {
+    let state = createV03Game('cao', 1, 'divided-realm-190');
+    // Peace everywhere, so no battle interrupts the days.
+    state.alliances = state.factions.flatMap((a, i) =>
+      state.factions.slice(i + 1).map((b) => ({ a: a.id, b: b.id, expiresMonthIndex: 6 })),
+    );
+    const advanceDays = (days: number) => {
+      for (let day = 0; day < days; day++) {
+        const result = advanceV03(state, 1);
+        expect(result.error).toBeUndefined();
+        state = result.state;
+      }
+    };
+    const capital = () => state.cities.find((city) => city.id === state.playerCapitalCityId)!;
+    expect(cityWorkAvailable(state, capital())).toBe(2);
+    advanceDays(10);
+    expect(cityWorkAvailable(state, capital())).toBe(4);
+    advanceDays(15);
+    expect(state.absoluteDay).toBe(25);
+    expect(cityWorkAvailable(state, capital())).toBe(6);
+    advanceDays(10);
+    expect(cityWorkAvailable(state, capital())).toBe(6);
+
+    Object.assign(capital(), { gold: 10_000, commerce: 100 });
+    for (let spent = 1; spent <= 6; spent++) {
+      const result = applyV03CityAction(state, {
+        cityId: capital().id,
+        action: 'develop-commerce',
+      });
+      expect(result.ok, result.error).toBe(true);
+      state = result.state;
+      expect(cityWorkAvailable(state, capital())).toBe(6 - spent);
+    }
+    expect(
+      applyV03CityAction(state, { cityId: capital().id, action: 'develop-commerce' }).error,
+    ).toContain('no work points left');
+    expect(decodeV03Save(encodeV03Save(state))).toEqual(state);
+    advanceDays(cityWorkRefreshDays(state));
+    expect(cityWorkAvailable(state, capital())).toBe(2);
+  });
+
+  it('banks for rival and governed cities too', () => {
+    const state = createV03Game('cao', 1, 'divided-realm-190');
+    const rival = state.cities.find((city) => city.factionId === 'sun')!;
+    state.absoluteDay = 25;
+    state.monthIndex = 0;
+    expect(cityWorkAvailable(state, rival)).toBe(6);
+    rival.factionId = null;
+    expect(cityWorkAvailable(state, rival)).toBe(0);
   });
 });

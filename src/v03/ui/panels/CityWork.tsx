@@ -7,6 +7,7 @@ import { cityProduction, monthlyCityUpkeep, nextEconomicBoundary } from '../../c
 import { useMemo, useRef, useState } from 'react';
 import {
   applyV03CityAction,
+  CITY_WORK_BANK_MAX_POINTS,
   cityActionWorkCost,
   cityWorkRefreshDays,
 } from '../../governance/city-actions';
@@ -56,10 +57,13 @@ export function WorkBudget({ context }: { context: GameplayContext }) {
     <p className="v03-work-budget">
       {context.t.workRemaining}:{' '}
       <strong>
-        {context.directWorkRemaining}/{context.directWorkQuota}
+        {context.directWorkRemaining}/{CITY_WORK_BANK_MAX_POINTS}
       </strong>
       {' · '}
-      {message(context.locale, 'flow.workRefresh', { days: cityWorkRefreshDays(context.state) })}
+      {message(context.locale, 'flow.workRefresh', {
+        days: cityWorkRefreshDays(context.state),
+        quota: context.directWorkQuota,
+      })}
     </p>
   );
 }
