@@ -66,7 +66,7 @@ describe('month-boundary arrival delivery', () => {
     expect(state.journeys[0]!.deliveredCargo.gold).toBe(100);
   });
 
-  it('lands a troop-free new governor candidate at day 30 and retains its next-boundary appointment', () => {
+  it('lands a troop-free new governor candidate at day 30, who takes office on arrival', () => {
     let state = order(fixture(), {
       type: 'appointGovernor',
       cityId: 'puyang',
@@ -78,11 +78,12 @@ describe('month-boundary arrival delivery', () => {
     expect(state.officers.find((officer) => officer.id === 'yuejin')).toMatchObject({
       wounded: 0,
       location: { kind: 'city', cityId: 'puyang' },
-      governorOfCityId: null,
+      governorOfCityId: 'puyang',
     });
-    expect(state.cities.find((city) => city.id === 'puyang')!.pendingAppointment).toMatchObject({
+    expect(state.cities.find((city) => city.id === 'puyang')).toMatchObject({
       governorId: 'yuejin',
-      effectiveDay: 60,
+      governanceMode: 'governor',
+      pendingAppointment: null,
     });
     expect(state.journeys[0]).toMatchObject({
       status: 'delivered',

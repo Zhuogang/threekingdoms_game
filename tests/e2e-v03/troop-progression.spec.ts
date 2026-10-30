@@ -72,6 +72,8 @@ for (const locale of ['zh', 'en'] as const) {
     const token = page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`);
     await token.click();
     await expect(page.locator('.v03-unit-detail .v03-troop-progress')).toContainText('Lv.10');
+    // Attacks are chosen first (A), then aimed at a target in the red range.
+    await page.keyboard.press('a');
     await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
     const modal = page.locator('.v03-outcome-modal');
     await expect(modal).toBeVisible();

@@ -68,8 +68,10 @@ export const en = {
   battleDaySubmitted: 'Day submitted',
   resolveOtherBattles: 'Submit the day in the other active battles to advance the campaign.',
   selectUnit: 'Select a friendly unit',
-  moveHelp: 'Green cells are reachable. Select a unit, then click a green cell to move.',
-  attackHelp: 'Choose a target in range, or click an enemy highlighted in red.',
+  moveHelp:
+    'Select a formation, then click a green cell to move it. Until it acts, Esc or right-click takes the move back; click open ground to deselect.',
+  attackHelp: 'Click an enemy inside the red range to attack. Esc or right-click goes back.',
+  battleOutOfRange: 'That enemy is outside the red range.',
   noCity: 'Select a city on the map to inspect it.',
   events: 'Reports and events',
   acknowledge: 'Acknowledge',
@@ -233,7 +235,7 @@ export const en = {
   'ui.march.30': 'March',
   'ui.battle.conditions.31': 'Battle conditions',
   'ui.any.step.touching.water.costs.at.least.2.forest..32':
-    'Any step touching water costs at least 2; forest and hills use troop-specific costs. Click a tile to inspect it; legal moves and attacks still execute normally.',
+    'Any step touching water costs at least 2; forest and hills use troop-specific costs. Click a tile to inspect it; a green tile moves the selected formation, and attacks are chosen from its orders.',
   'ui.army.33': 'Army',
   'ui.starting.34': 'Starting',
   'ui.surviving.35': 'Surviving',
@@ -312,7 +314,7 @@ export const en = {
   'ui.cancel.appointment.99': 'Cancel appointment',
   'ui.replace.governor.100': 'Replace governor',
   'ui.is.traveling.from.due.takes.effect.no.earlier.th.101':
-    '{p0} is traveling from {p1}, due {p2}; takes effect no earlier than {p3}.',
+    '{p0} is traveling from {p1} and takes office on arrival, expected {p2}.',
   'ui.pending.scheduled.to.take.effect.102': 'Pending: {p0}; scheduled to take effect {p1}.',
   'ui.player.orders.103': 'Player orders',
   'ui.prisoners.104': 'Prisoners',
@@ -461,6 +463,8 @@ export const en = {
   'feedback.advance.report': 'Stopped on {p0}: a report needs your attention.',
   'feedback.advance.quiet': 'No event in {p0} days; stopped on {p1}.',
   'feedback.advance.newReports': ' {p0} new reports in the inbox.',
+  'feedback.battleDay.reports':
+    '{p0} new reports wait in the inbox (I); they need no battle orders, so the fight goes on.',
   'battle.remainingAct': 'Let remaining officers act',
   'topbar.campaignEnded': 'Campaign ended · New campaign…',
   'topbar.hotkey': 'Shortcut: {p0}',

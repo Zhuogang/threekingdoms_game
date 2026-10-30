@@ -85,13 +85,15 @@ for (const locale of ['zh', 'en']) {
   test(`movement opens actions, attack captures the city, and a local governor retains the contingent (${locale})`, async ({
     page,
   }, info) => {
-    const { state, battle, unit } = battleFixture(1);
+    const { state, battle, unit, enemy } = battleFixture(1);
     await load(page, state, locale);
     await move(page, unit.id);
     const menu = page.getByRole('region', { name: /部队行动选择|Unit actions/ });
-    // With exactly one enemy in range, Attack strikes it without a second map click.
+    // Attack shows the red range; even a single target needs a deliberate click.
     await menu.getByRole('button', { name: /攻击|Attack/, exact: true }).click();
     await expect(menu).toHaveCount(0);
+    await expect(page.locator('.v03-outcome-modal')).toHaveCount(0);
+    await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
     await expect(page.locator('.v03-outcome-modal')).toBeVisible();
     await page.locator('.v03-outcome-modal').getByRole('button').last().click();
     const dialog = dialogForGovernance(page);
@@ -181,7 +183,9 @@ for (const locale of ['zh', 'en']) {
     ).toBeVisible();
     await expect(
       page.getByText(
-        locale === 'zh' ? /君主到达并于月界就任后/ : /After the ruler arrives and takes office/,
+        locale === 'zh'
+          ? /君主在此城时立即亲治，否则抵达后就任/
+          : /otherwise it starts when the ruler arrives/,
       ),
     ).toBeVisible();
     await expect(
@@ -247,7 +251,7 @@ for (const locale of ['zh', 'en']) {
     expect((await saved(page)).playerCapitalCityId).toBe('beiping');
   });
 
-  test(`closing and reopening the movement menu preserves the move; wait spends only the remaining action (${locale})`, async ({
+  test(`closing and reopening the movement menu keeps the provisional move; wait commits it (${locale})`, async ({
     page,
   }, info) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -259,11 +263,12 @@ for (const locale of ['zh', 'en']) {
     await page.screenshot({ path: info.outputPath(`movement-menu-mobile-${locale}.png`) });
     await menu.getByRole('button', { name: /关闭|Close/, exact: true }).click();
     await expect(menu).toHaveCount(0);
+    // The move is still provisional: the save has not changed, but the token stands at 11,10.
     expect(
       (await saved(page)).battles
         .find((entry) => entry.id === battle.id)!
         .battleData.units.find((entry) => entry.id === unit.id),
-    ).toMatchObject({ moved: true, acted: false, x: 11, y: 10 });
+    ).toMatchObject({ moved: false, acted: false, x: 10, y: 10 });
     await page.locator(`.v03-battlefield-map [data-unit-id="${unit.id}"]`).click();
     await expect(menu).toBeVisible();
     await menu.getByRole('button', { name: /待命|Wait/, exact: true }).click();
@@ -272,7 +277,38 @@ for (const locale of ['zh', 'en']) {
       (await saved(page)).battles
         .find((entry) => entry.id === battle.id)!
         .battleData.units.find((entry) => entry.id === unit.id),
-    ).toMatchObject({ moved: true, acted: true });
+    ).toMatchObject({ moved: true, acted: true, x: 11, y: 10 });
+  });
+
+  test(`Esc takes back a provisional move and clicking an enemy never attacks (${locale})`, async ({
+    page,
+  }) => {
+    const { state, battle, unit, enemy } = battleFixture(500);
+    await load(page, state, locale);
+    const before = await saved(page);
+    await move(page, unit.id);
+    const menu = page.getByRole('region', { name: /部队行动选择|Unit actions/ });
+    await page.keyboard.press('Escape');
+    await expect(menu).toHaveCount(0);
+    expect(await saved(page)).toEqual(before);
+    // Back at 10,10 the enemy at 12,10 is out of reach; clicking it only inspects it.
+    await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
+    expect(await saved(page)).toEqual(before);
+    await move(page, unit.id);
+    await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
+    expect(await saved(page)).toEqual(before);
+    await menu.getByRole('button', { name: /攻击|Attack/, exact: true }).click();
+    await page.locator(`.v03-battlefield-map [data-unit-id="${enemy.id}"]`).click();
+    const after = (await saved(page)).battles.find((entry) => entry.id === battle.id)!.battleData;
+    expect(after.units.find((entry) => entry.id === unit.id)).toMatchObject({
+      x: 11,
+      y: 10,
+      moved: true,
+      acted: true,
+    });
+    expect(after.units.find((entry) => entry.id === enemy.id)!.troops).toBeLessThan(500);
+    // Nothing is selected for the player after the attack.
+    await expect(page.locator('.v03-unit-row.selected')).toHaveCount(0);
   });
 
   test(`movement tactics use the existing selection, target and point-cost rules (${locale})`, async ({

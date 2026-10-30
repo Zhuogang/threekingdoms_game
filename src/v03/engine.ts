@@ -15,7 +15,12 @@ import { isCityCommitted } from './governance/commitments';
 import { applyTroopLoss } from './campaign/troop-experience';
 import { battleExperienceGain } from './battle/experience';
 import type { V03TroopGrowthReport } from './types';
-import { eventTier, isCriticalReport } from './campaign/reports';
+import {
+  eventTier,
+  isCriticalReport,
+  playerCommandsBattle,
+  stopsBattleDay,
+} from './campaign/reports';
 import { surrenderStrandedReturn } from './campaign/stranded-return';
 import {
   decayCaptiveLoyalty,
@@ -79,6 +84,7 @@ import {
   applyGovernanceMonthBoundary,
   cancelPendingGovernorAppointment,
   installPersonalRule,
+  takeOfficeOnArrival,
 } from './governance/appointments';
 import { applyGovernorMonthlyWork, planGovernorMonthlyWork } from './governance/autonomy';
 import {
@@ -239,6 +245,7 @@ function completeHegemonVictoryIfReady(state: V03GameState): void {
 }
 
 function toTimeline(state: V03GameState): StrategicTimeline {
+  const inPlayerBattle = playerCommandsBattle(state);
   const events: ScheduledEvent[] = state.events
     .filter(
       (event) =>
@@ -256,7 +263,8 @@ function toTimeline(state: V03GameState): StrategicTimeline {
           : event.kind === 'battleReady'
             ? 'battle'
             : 'decision',
-      pause: true,
+      // Mid-battle, other reports wait in the inbox instead of holding up the field.
+      pause: !inPlayerBattle || event.kind === 'battleReady' || event.kind === 'battleResolved',
       visibleToPlayer: true,
     }));
   for (const event of state.events)
@@ -1265,12 +1273,7 @@ function handleArrivals(state: V03GameState, previous: readonly V03Journey[]): v
         );
       continue;
     }
-    if (target.pendingAppointment?.journeyId === journey.id) {
-      target.pendingAppointment.effectiveDay = Math.max(
-        target.pendingAppointment.effectiveDay,
-        Math.ceil((state.absoluteDay + 1) / DAYS_PER_MONTH) * DAYS_PER_MONTH,
-      );
-    }
+    takeOfficeOnArrival(state, target, journey.id);
     const requisition = state.requisitions.find((entry) => entry.journeyId === journey.id);
     if (requisition) requisition.status = 'delivered';
     addEvent(
@@ -2238,7 +2241,7 @@ export function completeV03BattleDay(
     return { ok: false, state, error: 'This is not the player-controlled side.' };
   if (current.playerDayComplete)
     return { ok: false, state, error: 'This battle day is already complete.' };
-  if (state.events.some((event) => isCriticalReport(state, event)))
+  if (state.events.some((event) => stopsBattleDay(state, event)))
     return {
       ok: false,
       state,

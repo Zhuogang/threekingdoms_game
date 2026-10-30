@@ -4,10 +4,6 @@ import { estimateCampaignSupply } from '../calendar';
 import type { V03City, V03DomainEvent, V03GameState, V03Officer } from '../types';
 import type { GovernanceOrderServices } from './orders';
 
-function nextMonthBoundary(absoluteDay: number) {
-  return Math.ceil((absoluteDay + 1) / 30) * 30;
-}
-
 function eventId(state: V03GameState, kind: V03DomainEvent['kind']) {
   return `${state.scenarioId}:${kind}:${state.absoluteDay}:${state.nextId}`;
 }
@@ -102,7 +98,49 @@ export function installPersonalRule(state: V03GameState, city: V03City): void {
   state.playerCapitalCityId = city.id;
 }
 
-/** Queue a governance change. Authority only changes when its next month boundary is settled. */
+/** Put the incoming office holder (or local stewardship) in charge and report it. */
+function takeOffice(
+  state: V03GameState,
+  city: V03City,
+  incoming: V03Officer | null,
+  absoluteDay: number,
+): void {
+  const personalRule = Boolean(
+    incoming &&
+    incoming.id ===
+      state.factions.find((faction) => faction.id === state.playerFactionId)?.leaderOfficerId,
+  );
+  if (personalRule) installPersonalRule(state, city);
+  else installGovernor(state, city, incoming);
+  const event: V03DomainEvent = {
+    id: eventId(state, 'governorChanged'),
+    absoluteDay,
+    kind: 'governorChanged',
+    ...(personalRule
+      ? {
+          code: 'city.governance',
+          params: { cityId: city.id, choice: 'self', officerId: incoming!.id },
+        }
+      : {}),
+    title: incoming ? 'A new governor takes office' : 'A city returns to local stewardship',
+    detail: incoming
+      ? `${incoming.name} now governs ${city.name}.`
+      : `${city.name} has no formal governor.`,
+    entityId: city.id,
+    // The player ordered it; the inbox records it without asking for acknowledgement.
+    tier: 'notice',
+    acknowledged: false,
+  };
+  state.events.push(event);
+  state.nextId += 1;
+  state.governanceRevision += 1;
+}
+
+/**
+ * Change a city's governance. An officer already in the city, the ruler governing where
+ * they stand, or a return to local stewardship takes effect at once; a candidate from
+ * another city travels with their contingent and takes office on arrival.
+ */
 export function queueGovernorAppointment(
   state: V03GameState,
   cityId: string,
@@ -196,125 +234,117 @@ export function queueGovernorAppointment(
     next.journeys.push(journey);
     nextCity.pendingAppointment = {
       governorId: officerId,
-      effectiveDay: nextMonthBoundary(state.absoluteDay),
+      effectiveDay: journey.expectedArrivalDay,
       journeyId: journey.id,
     };
+    next.governanceRevision += 1;
   } else {
-    nextCity.pendingAppointment = {
-      governorId: officerId,
-      effectiveDay: nextMonthBoundary(state.absoluteDay),
-    };
+    nextCity.pendingAppointment = null;
+    const incoming = officerId
+      ? (next.officers.find((entry) => entry.id === officerId) ?? null)
+      : null;
+    // Clearing a pending transfer leaves the office holder (or stewardship) as it was.
+    if ((incoming?.id ?? null) !== nextCity.governorId)
+      takeOffice(next, nextCity, incoming, state.absoluteDay);
+    else next.governanceRevision += 1;
   }
-  next.governanceRevision += 1;
   next.revision += 1;
   next.nextId += 1;
   return { ok: true, state: next };
 }
 
-/** Apply pending appointments after the previous month has been settled. */
+/**
+ * Settle one pending appointment: cancel it if it can no longer complete, leave it while the
+ * candidate is still on the road, otherwise install the office. Returns whether it changed.
+ */
+function settlePendingAppointment(
+  state: V03GameState,
+  city: V03City,
+  absoluteDay: number,
+): boolean {
+  const pending = city.pendingAppointment;
+  if (!pending) return false;
+  if (city.factionId !== state.playerFactionId) {
+    cancelPendingAppointment(
+      state,
+      city.id,
+      pending.governorId,
+      'the city is no longer under your faction’s control',
+      pending.journeyId,
+    );
+    return true;
+  }
+  if (pending.journeyId) {
+    const journey = state.journeys.find((entry) => entry.id === pending.journeyId);
+    if (!journey || journey.status === 'cancelled' || journey.status === 'returning') {
+      cancelPendingAppointment(
+        state,
+        city.id,
+        pending.governorId,
+        'the transfer can no longer complete',
+        pending.journeyId,
+      );
+      return true;
+    }
+    // The candidate takes office on arrival, whenever that is.
+    if (journey.status !== 'delivered') return false;
+  }
+  const incoming =
+    pending.governorId === null
+      ? null
+      : state.officers.find((officer) => officer.id === pending.governorId);
+  if (
+    incoming &&
+    (!incoming.alive ||
+      incoming.factionId !== city.factionId ||
+      incoming.location.kind !== 'city' ||
+      incoming.location.cityId !== city.id)
+  ) {
+    const reason =
+      incoming.location.kind === 'captured'
+        ? 'the candidate has been captured'
+        : !incoming.alive
+          ? 'the candidate is no longer available'
+          : incoming.factionId !== city.factionId
+            ? 'the candidate no longer serves this faction'
+            : 'the candidate is no longer available in this city';
+    cancelPendingAppointment(state, city.id, pending.governorId, reason, pending.journeyId);
+    return true;
+  }
+  takeOffice(state, city, incoming ?? null, absoluteDay);
+  return true;
+}
+
+/** A transferred candidate takes office the day their party reaches the city. */
+export function takeOfficeOnArrival(state: V03GameState, city: V03City, journeyId: string): void {
+  if (city.pendingAppointment?.journeyId !== journeyId) return;
+  if (settlePendingAppointment(state, city, state.absoluteDay)) state.revision += 1;
+}
+
+/**
+ * Month-boundary sweep for appointments still pending: saves from before immediate
+ * appointments may hold a local one, and a transfer can fail on the road.
+ */
 export function applyGovernanceMonthBoundary(
   state: V03GameState,
   effectiveDay: number,
 ): V03GameState {
   const next = structuredClone(state);
-  const due = next.cities.filter(
-    (city) =>
-      city.pendingAppointment !== null && city.pendingAppointment.effectiveDay <= effectiveDay,
-  );
-  for (const city of due) {
-    const pending = city.pendingAppointment!;
-    if (city.factionId !== next.playerFactionId) {
-      cancelPendingAppointment(
-        next,
-        city.id,
-        pending.governorId,
-        'the city is no longer under your faction’s control',
-        pending.journeyId,
-      );
-      continue;
-    }
-    if (pending.journeyId) {
-      const journey = next.journeys.find((entry) => entry.id === pending.journeyId);
-      if (!journey || journey.status === 'cancelled' || journey.status === 'returning') {
-        cancelPendingAppointment(
-          next,
-          city.id,
-          pending.governorId,
-          'the transfer can no longer complete',
-          pending.journeyId,
-        );
-        continue;
-      }
-      if (journey.status !== 'delivered') {
-        city.pendingAppointment = { ...pending, effectiveDay: effectiveDay + 30 };
-        addAppointmentEvent(
-          next,
-          'governor-appointment-delayed',
-          city.id,
-          pending.governorId,
-          `The appointment at ${city.name} is delayed because the candidate has not arrived. Current governance remains unchanged; it will be checked again next month.`,
-          effectiveDay,
-        );
-        continue;
-      }
-    }
-    const incoming =
-      pending.governorId === null
-        ? null
-        : next.officers.find((officer) => officer.id === pending.governorId);
+  let changed = false;
+  for (const city of next.cities)
     if (
-      incoming &&
-      (!incoming.alive ||
-        incoming.factionId !== city.factionId ||
-        incoming.location.kind !== 'city' ||
-        incoming.location.cityId !== city.id)
-    ) {
-      const reason =
-        incoming.location.kind === 'captured'
-          ? 'the candidate has been captured'
-          : !incoming.alive
-            ? 'the candidate is no longer available'
-            : incoming.factionId !== city.factionId
-              ? 'the candidate no longer serves this faction'
-              : 'the candidate is no longer available in this city';
-      cancelPendingAppointment(next, city.id, pending.governorId, reason, pending.journeyId);
-      continue;
-    }
-    const personalRule = Boolean(
-      incoming &&
-      incoming.id ===
-        next.factions.find((faction) => faction.id === next.playerFactionId)?.leaderOfficerId,
-    );
-    if (personalRule) installPersonalRule(next, city);
-    else installGovernor(next, city, incoming ?? null);
-    const event: V03DomainEvent = {
-      id: eventId(next, 'governorChanged'),
-      absoluteDay: effectiveDay,
-      kind: 'governorChanged',
-      ...(personalRule
-        ? {
-            code: 'city.governance',
-            params: { cityId: city.id, choice: 'self', officerId: incoming!.id },
-          }
-        : {}),
-      title: incoming ? 'A new governor takes office' : 'A city returns to local stewardship',
-      detail: incoming
-        ? `${incoming.name} now governs ${city.name}.`
-        : `${city.name} has no formal governor.`,
-      entityId: city.id,
-      acknowledged: false,
-    };
-    next.events.push(event);
-    next.nextId += 1;
-    next.governanceRevision += 1;
-  }
-  next.revision += due.length > 0 ? 1 : 0;
+      city.pendingAppointment !== null &&
+      city.pendingAppointment.effectiveDay <= effectiveDay &&
+      settlePendingAppointment(next, city, effectiveDay)
+    )
+      changed = true;
+  next.revision += changed ? 1 : 0;
   return next;
 }
 
 function addAppointmentEvent(
   state: V03GameState,
-  key: 'governor-appointment-delayed' | 'governor-appointment-cancelled',
+  key: 'governor-appointment-cancelled',
   cityId: string,
   officerId: string | null,
   detail: string,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getBattleTacticTargets } from '../../battle';
-import { gridToWorld } from '../../rendering';
+import { gridToWorld, V03_BATTLE_CELL } from '../../rendering';
 import { Button } from '../kit';
 import { tacticLabel, localizeTacticReason } from '../shared/app-copy-2';
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -19,7 +19,10 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
     currentUnit.acted ||
     currentUnit.side !== battleState.playerSide ||
     activeBattle.autoCommand ||
-    activeBattle.playerDayComplete
+    activeBattle.playerDayComplete ||
+    // Hidden while a target is chosen on the map; Esc brings it back.
+    context.attackMode ||
+    context.selectedTactic
   )
     return null;
   const zh = locale === 'zh';
@@ -27,10 +30,18 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
     context.setBattleActionMenu(null);
     context.setSelectedTactic(null);
   };
+  const moved = context.pendingMove?.unitId === currentUnit.id;
   const point = gridToWorld(currentUnit);
   const viewport = context.battleViewport;
   const x = viewport ? ((point.x - viewport.left) / viewport.width) * 100 : 50;
   const y = viewport ? ((point.y - viewport.top) / viewport.height) * 100 : 50;
+  // Open beside the formation, clear of its column, on the side with more room, so the
+  // menu does not cover an enemy straight above or below it.
+  const gap = viewport ? (V03_BATTLE_CELL / viewport.width) * 150 : 6;
+  const side =
+    x <= 50
+      ? { left: `clamp(8px, calc(${x + gap}%), max(8px, calc(100% - 272px)))` }
+      : { right: `clamp(8px, calc(${100 - x + gap}%), max(8px, calc(100% - 272px)))` };
   const tactics = context.availableTactics.map((entry) => ({
     ...entry,
     hasTargets:
@@ -42,14 +53,14 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
       role="region"
       aria-label={zh ? '部队行动选择' : 'Unit actions'}
       style={{
-        left: `clamp(8px, calc(${x}% + 12px), max(8px, calc(100% - 272px)))`,
-        top: `clamp(8px, ${y}%, max(8px, calc(100% - 280px)))`,
+        ...side,
+        top: `clamp(8px, calc(${y}% - 48px), max(8px, calc(100% - 280px)))`,
       }}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
           event.stopPropagation();
-          close();
+          context.cancelBattleStep();
         }
       }}
     >
@@ -59,22 +70,9 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
           <Button
             disabled={!context.attackTargets.length}
             title={!context.attackTargets.length ? t.tacticNoTargets : undefined}
-            onClick={() => {
-              context.setSelectedTactic(null);
-              context.setBattleActionMenu(null);
-              // A single target needs no second click on the map.
-              if (context.attackTargets.length === 1)
-                context.dispatch({
-                  type: 'battleAction',
-                  battleId: activeBattle.id,
-                  action: {
-                    type: 'attack',
-                    unitId: currentUnit.id,
-                    targetId: context.attackTargets[0]!.id,
-                  },
-                });
-              else context.setFeedback(t.attackHelp);
-            }}
+            aria-keyshortcuts="A"
+            // The red range and forecasts appear; the target is always a deliberate click.
+            onClick={context.startAttack}
           >
             {zh ? '攻击' : 'Attack'}
           </Button>
@@ -115,7 +113,6 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
               }
               onClick={() => {
                 context.setSelectedTactic(entry.tactic);
-                context.setBattleActionMenu(null);
                 context.setFeedback(t.tacticChooseTarget);
               }}
             >
@@ -133,6 +130,11 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
           }}
         >
           {zh ? '返回行动' : 'Back to actions'}
+        </Button>
+      ) : null}
+      {moved ? (
+        <Button variant="ghost" onClick={context.cancelBattleStep}>
+          {zh ? '撤回移动' : 'Undo move'}
         </Button>
       ) : null}
       <Button variant="ghost" onClick={close}>

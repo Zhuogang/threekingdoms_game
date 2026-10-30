@@ -117,7 +117,10 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
         ? {
             ok: true,
             state: result.state,
-            message: 'The appointment is queued for the next monthly settlement.',
+            message: result.state.cities.find((city) => city.id === command.cityId)
+              ?.pendingAppointment?.journeyId
+              ? 'The candidate is on the way and takes office on arrival.'
+              : 'The new governance takes effect now.',
           }
         : { ok: false, state, error: result.error };
     }

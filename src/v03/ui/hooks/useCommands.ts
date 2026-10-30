@@ -1,6 +1,11 @@
 import { message } from '../../i18n';
 import { useEffect } from 'react';
-import { eventTier, isCriticalReport } from '../../campaign/reports';
+import {
+  eventTier,
+  isCriticalReport,
+  reportBlocksAdvance,
+  stopsBattleDay,
+} from '../../campaign/reports';
 import { useMemo } from 'react';
 
 import {
@@ -29,6 +34,7 @@ import type { V03GameState, V03JourneyCargo } from '../../types';
 import { localizeSaveError, CAMPAIGN_BOUNDS, cityScale } from '../shared/app-copy-2';
 import { deadlineFromDaysInput, displayName, mapPosition } from '../shared/app-copy-3';
 import { explainAdvance } from './advance-feedback';
+import { standOnPendingMove } from './battle-controls';
 import type { useGameSession } from './useGameSession';
 export function useCommands(context: ReturnType<typeof useGameSession>) {
   const {
@@ -89,7 +95,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   const dispatch = (command: Parameters<typeof executeV03Command>[1]) => {
     if (!state) return;
     if (command.type === 'advance' || command.type === 'completeBattleDay') {
-      const due = state.events.filter((event) => isCriticalReport(state, event));
+      const due = state.events.filter((event) => reportBlocksAdvance(state, event));
       if (due.length) {
         setShowReports(true);
         setFeedback({
@@ -102,7 +108,8 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
         return;
       }
     }
-    const result = executeV03Command(state, command);
+    const { base, battleCommand } = standOnPendingMove(state, context.pendingMove, command);
+    const result = executeV03Command(base, command);
     if (!result.ok) {
       setFeedback(
         result.error ? result.error : message(locale, 'ui.the.command.could.not.be.completed.7'),
@@ -111,12 +118,17 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
     setFeedback('');
     setState(result.state);
-    if (command.type === 'advance' || command.type === 'completeBattleDay')
+    if (battleCommand) context.setPendingMove(null);
+    if (command.type === 'advance' || command.type === 'completeBattleDay') {
       context.setBattleActionMenu(null);
+      context.setAttackMode(false);
+      setSelectedUnitId(null);
+    }
     if (command.type === 'advance') context.setMarchNotice(null);
     if (command.type === 'battleAction') {
       const battle = result.state.battles.find((entry) => entry.id === command.battleId);
       const acted = battle?.battleData.units.find((unit) => unit.id === command.action.unitId);
+      context.setAttackMode(false);
       context.setBattleActionMenu(
         command.action.type === 'move' &&
           battle?.active &&
@@ -128,12 +140,8 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
           ? { battleId: battle.id, unitId: acted.id, day: battle.battleData.day }
           : null,
       );
-      if (acted?.acted) {
-        const nextUnit = battle?.battleData.units.find(
-          (unit) => unit.side === battle.battleData.playerSide && unit.troops > 0 && !unit.acted,
-        );
-        setSelectedUnitId(nextUnit?.id ?? acted.id);
-      }
+      // After an order nothing is picked for the player; they choose who acts next.
+      if (acted?.acted) setSelectedUnitId(null);
     }
     if (result.preview && result.orderId) {
       setOrderPreview({
@@ -152,10 +160,17 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     else if (
       command.type === 'completeBattleDay' &&
       result.message === 'All active battles completed their day; the campaign advanced one day.'
-    )
+    ) {
       // The new battle day is visible on the field; a toast every day only adds noise.
-      setFeedback('');
-    else if (result.message) setFeedback(result.message);
+      // Reports that need no battle orders wait in the inbox; say so without opening it.
+      const waiting = result.state.events.filter(
+        (event) =>
+          isCriticalReport(result.state, event) &&
+          !stopsBattleDay(result.state, event) &&
+          !state.events.some((old) => old.id === event.id),
+      ).length;
+      setFeedback(waiting ? { key: 'feedback.battleDay.reports', params: { p0: waiting } } : '');
+    } else if (result.message) setFeedback(result.message);
     else if (command.type === 'marchArmy') setFeedback({ key: 'feedback.marchArmy' });
     if (command.type === 'marchArmy') {
       const journey = result.state.journeys.find(
@@ -182,6 +197,8 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   };
   const replaceCampaign = (fresh: V03GameState) => {
     context.setBattleActionMenu(null);
+    context.setPendingMove(null);
+    context.setAttackMode(false);
     context.setCityGovernanceEventId(null);
     context.setDeferredGovernanceIds([]);
     context.setCampaignWindowOpen(false);

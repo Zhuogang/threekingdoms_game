@@ -37,6 +37,8 @@ for (const locale of ['zh', 'en'])
         await page.locator('.v03-battle-tab').first().click();
       }
       await page.locator(`.v03-battlefield-map [data-unit-id="${attacker.id}"]`).click();
+      // Attacks are chosen first (A), then aimed at a target in the red range.
+      await page.keyboard.press('a');
       await page.locator(`.v03-battlefield-map [data-unit-id="${defender.id}"]`).click();
       await expect(page.locator('.v03-outcome-modal')).toBeVisible();
       expect(errors).toEqual([]);

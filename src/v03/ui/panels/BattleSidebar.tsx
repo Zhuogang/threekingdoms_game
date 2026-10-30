@@ -212,19 +212,38 @@ export function BattleSidebar({
               {currentUnit.morale}% {message(locale, 'ui.morale.4')} ·{' '}
               {unitBattleStatus(currentUnit)}
             </p>
-            <Button
-              type="button"
-              disabled={currentUnit.acted}
-              onClick={() =>
-                dispatch({
-                  type: 'battleAction',
-                  battleId: activeBattle.id,
-                  action: { type: 'wait', unitId: currentUnit.id },
-                })
-              }
-            >
-              {t.waitAction}
-            </Button>
+            <div className="v03-row">
+              <Button
+                type="button"
+                disabled={
+                  currentUnit.acted ||
+                  currentUnit.side !== battleState.playerSide ||
+                  !context.attackTargets.length
+                }
+                aria-pressed={context.attackMode}
+                aria-keyshortcuts="A"
+                title={!context.attackTargets.length ? t.tacticNoTargets : undefined}
+                onClick={() =>
+                  context.attackMode ? context.cancelBattleStep() : context.startAttack()
+                }
+              >
+                {locale === 'zh' ? '攻击' : 'Attack'}
+              </Button>
+              <Button
+                type="button"
+                disabled={currentUnit.acted}
+                aria-keyshortcuts="W"
+                onClick={() =>
+                  dispatch({
+                    type: 'battleAction',
+                    battleId: activeBattle.id,
+                    action: { type: 'wait', unitId: currentUnit.id },
+                  })
+                }
+              >
+                {t.waitAction}
+              </Button>
+            </div>
           </div>
         ) : null}
         {currentUnit ? (

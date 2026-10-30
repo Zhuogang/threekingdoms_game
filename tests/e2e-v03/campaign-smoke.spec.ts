@@ -434,6 +434,9 @@ test('battle camera, minimap, keyboard orders, feedback, and Chinese labels stay
   await expect(page.locator('.v03-battle-main')).toBeVisible();
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await acknowledgeAll(page);
+  // Nothing is selected for the player; pick the formation the keyboard orders will move.
+  await expect(page.locator('.v03-unit-row.selected')).toHaveCount(0);
+  await page.locator('.v03-unit-row:not(.enemy)').first().click();
 
   const map = page.locator('.v03-battlefield-map');
   const minimap = page.locator('.v03-battlefield-minimap');

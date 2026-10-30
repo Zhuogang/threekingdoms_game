@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { scenarioById } from '../../content/scenario';
 import {
+  applyBattleAction,
   getUnitAttackTargets,
   getUnitReachableTiles,
   predictBattleAttack,
@@ -72,6 +73,16 @@ export function useGameSession() {
   const [viewMode, setViewMode] = useState<'campaign' | 'battle'>('campaign');
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [selectedTactic, setSelectedTactic] = useState<BattleTactic | null>(null);
+  // A formation's move stays provisional until it acts, so Esc or right-click can take it back.
+  const [pendingMove, setPendingMove] = useState<{
+    battleId: string;
+    unitId: string;
+    day: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  // Attacks are chosen from the formation's orders; clicking an enemy otherwise only inspects it.
+  const [attackMode, setAttackMode] = useState(false);
   const [battleActionMenu, setBattleActionMenu] = useState<{
     battleId: string;
     unitId: string;
@@ -243,10 +254,27 @@ export function useGameSession() {
         (battle.attackerFactionId === state.playerFactionId ||
           battle.defenderFactionId === state.playerFactionId),
     ) ?? [];
-  const activeBattle =
+  const committedBattle =
     viewMode === 'battle'
       ? (activeBattles.find((battle) => battle.id === selectedBattleId) ?? activeBattles[0] ?? null)
       : null;
+  // The field as it would stand after the provisional move; orders are planned against it.
+  const activeBattle = useMemo(() => {
+    if (
+      !committedBattle ||
+      !pendingMove ||
+      pendingMove.battleId !== committedBattle.id ||
+      pendingMove.day !== committedBattle.battleData.day
+    )
+      return committedBattle;
+    const moved = applyBattleAction(committedBattle.battleData, {
+      type: 'move',
+      unitId: pendingMove.unitId,
+      x: pendingMove.x,
+      y: pendingMove.y,
+    });
+    return moved.ok ? { ...committedBattle, battleData: moved.state } : committedBattle;
+  }, [committedBattle, pendingMove]);
   const hasUnsubmittedBattleDay = activeBattles.some(
     (battle) => !battle.autoCommand && !battle.playerDayComplete,
   );
@@ -400,30 +428,37 @@ export function useGameSession() {
   ]);
   useEffect(() => {
     setSelectedTactic(null);
+    setAttackMode(false);
     setInspectedCell(null);
   }, [selectedBattleId, selectedUnitId]);
+  // A provisional move lapses when its battle, day or formation is no longer current.
+  useEffect(() => {
+    if (
+      pendingMove &&
+      (activeBattle?.id !== pendingMove.battleId ||
+        activeBattle.battleData.day !== pendingMove.day ||
+        selectedUnitId !== pendingMove.unitId ||
+        activeBattle === committedBattle)
+    )
+      setPendingMove(null);
+  }, [pendingMove, activeBattle, committedBattle, selectedUnitId]);
   useEffect(() => {
     if (!state) return;
     if (!selectedCityId || !state.cities.some((city) => city.id === selectedCityId))
       setSelectedCityId(state.playerCapitalCityId);
+    // Opening a battle selects no formation; the player chooses who acts first.
     if (activeBattles.length && !activeBattles.some((battle) => battle.id === selectedBattleId)) {
       setSelectedBattleId(activeBattles[0]!.id);
       setViewMode('battle');
-      const playerSide = activeBattles[0]!.battleData.playerSide;
-      const first = activeBattles[0]!.battleData.units.find(
-        (unit) => unit.side === playerSide && unit.troops > 0,
-      );
-      setSelectedUnitId(first?.id ?? null);
+      setSelectedUnitId(null);
     }
     const selected = activeBattles.find((battle) => battle.id === selectedBattleId);
     if (
       selected &&
+      selectedUnitId &&
       !selected.battleData.units.some((unit) => unit.id === selectedUnitId && unit.troops > 0)
     ) {
-      const first = selected.battleData.units.find(
-        (unit) => unit.side === selected.battleData.playerSide && unit.troops > 0,
-      );
-      setSelectedUnitId(first?.id ?? null);
+      setSelectedUnitId(null);
       setSelectedTactic(null);
     }
     if (!activeBattles.length && viewMode === 'battle') {
@@ -473,6 +508,10 @@ export function useGameSession() {
     setSelectedUnitId,
     selectedTactic,
     setSelectedTactic,
+    pendingMove,
+    setPendingMove,
+    attackMode,
+    setAttackMode,
     inspectedCell,
     setInspectedCell,
     showWiki,

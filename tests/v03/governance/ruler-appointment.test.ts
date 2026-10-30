@@ -41,7 +41,7 @@ function expectCapital(state: V03GameState, cityId: string) {
 }
 
 describe('ruler appointments and capital consistency', () => {
-  it('keeps local personal rule pending, then moves both capital fields at settlement without resetting stock, personnel or work', () => {
+  it('starts personal rule at once where the ruler stands, moving both capital fields without resetting stock, personnel or work', () => {
     const { state, city, old, ruler } = fixture();
     const previous = state.officers.find((entry) => entry.id === 'guanyu')!;
     city.governorId = previous.id;
@@ -53,8 +53,8 @@ describe('ruler appointments and capital consistency', () => {
       officerId: ruler.id,
     });
     expect(queued.ok, queued.error).toBe(true);
-    expectCapital(reload(queued.state), old.id);
-    const next = applyGovernanceMonthBoundary(queued.state, 30);
+    const next = queued.state;
+    expect(next.absoluteDay).toBe(state.absoluteDay);
     expectCapital(next, city.id);
     expect(next.cities.find((entry) => entry.id === old.id)).toEqual({
       ...old,
@@ -75,7 +75,7 @@ describe('ruler appointments and capital consistency', () => {
     expect(reload(next)).toEqual(next);
   });
 
-  it('does not move the capital while the ruler is travelling or merely arrived; delayed appointment switches only on the next boundary', () => {
+  it('does not move the capital while the ruler is travelling; personal rule starts the day they arrive', () => {
     const { state, city, old, ruler } = fixture(false);
     state.alliances = state.factions.flatMap((a, i) =>
       state.factions.slice(i + 1).map((b) => ({ a: a.id, b: b.id, expiresMonthIndex: 6 })),
@@ -88,14 +88,14 @@ describe('ruler appointments and capital consistency', () => {
     expect(queued.ok, queued.error).toBe(true);
     let next = reload(queued.state);
     expectCapital(next, old.id);
-    // A month boundary before arrival must leave the old capital in force.
-    const delayed = applyGovernanceMonthBoundary(next, 30);
-    expectCapital(delayed, old.id);
-    expect(
-      delayed.cities.find((entry) => entry.id === city.id)!.pendingAppointment!.effectiveDay,
-    ).toBe(60);
-    const journeyId = next.cities.find((entry) => entry.id === city.id)!.pendingAppointment!
-      .journeyId!;
+    // A month boundary before arrival leaves the old capital and the appointment as they are.
+    const pending = next.cities.find((entry) => entry.id === city.id)!.pendingAppointment;
+    const boundary = applyGovernanceMonthBoundary(next, 30);
+    expectCapital(boundary, old.id);
+    expect(boundary.cities.find((entry) => entry.id === city.id)!.pendingAppointment).toEqual(
+      pending,
+    );
+    const journeyId = pending!.journeyId!;
     for (
       let i = 0;
       i < 120 && next.journeys.find((entry) => entry.id === journeyId)!.status === 'outbound';
@@ -114,8 +114,7 @@ describe('ruler appointments and capital consistency', () => {
       kind: 'city',
       cityId: city.id,
     });
-    const due = next.cities.find((entry) => entry.id === city.id)!.pendingAppointment;
-    if (due) next = applyGovernanceMonthBoundary(next, due.effectiveDay);
+    expect(next.cities.find((entry) => entry.id === city.id)!.pendingAppointment).toBeNull();
     expectCapital(next, city.id);
     expect(next.officers.find((entry) => entry.id === ruler.id)!.governorOfCityId).toBeNull();
     expect(reload(next)).toEqual(next);

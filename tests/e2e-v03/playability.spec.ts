@@ -373,7 +373,7 @@ test('RV06 presents living small forces accurately and removes defeated units fr
   await expect(page.locator('.v03-unit-token').filter({ hasText: '500' })).toHaveCount(1);
 });
 
-test('RV05 preserves an explicitly pending dismissal after reload', async ({ page }) => {
+test('RV05 applies a dismissal at once and keeps it after reload', async ({ page }) => {
   const state = governorTransferState();
   await loadState(page, state);
   await openCity(page, 'Puyang');
@@ -381,12 +381,11 @@ test('RV05 preserves an explicitly pending dismissal after reload', async ({ pag
   await page.getByLabel('Governor candidate', { exact: true }).selectOption('');
   await page.getByRole('button', { name: 'Dismiss governor', exact: true }).click();
   await expect
-    .poll(
-      async () =>
-        (await savedState(page)).cities.find((city) => city.id === 'puyang')?.pendingAppointment
-          ?.governorId,
-    )
-    .toBe(null);
+    .poll(async () => {
+      const city = (await savedState(page)).cities.find((entry) => entry.id === 'puyang');
+      return [city?.governorId, city?.governanceMode, city?.pendingAppointment];
+    })
+    .toEqual([null, 'steward', null]);
   await page.reload();
   await openCity(page, 'Puyang');
   await showGovernor(page);

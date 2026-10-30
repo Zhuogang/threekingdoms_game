@@ -164,6 +164,8 @@ test('Escape cancels a tactic from sidebar focus and after hiding commands witho
   const before = await stored(page);
   await page.getByRole('button', { name: 'Expand battlefield', exact: true }).click();
   await panel(page, 'Command panel', true);
+  // Nothing is selected for the player; choose the formation whose tactic is cancelled.
+  await page.locator('.v03-unit-row:not(.enemy)').first().click();
   const tactic = page.locator('.v03-tactic-list button:not(:disabled)').first();
   await tactic.click();
   await expect(page.locator('.v03-tactic-preview')).toBeVisible();

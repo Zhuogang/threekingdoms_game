@@ -226,23 +226,18 @@ describe('v0.3 authority boundaries', () => {
     expect(estimate.reasons).toHaveLength(3);
   });
 
-  it('makes governor changes pending until the next monthly boundary', () => {
+  it('dismisses a governor at once; the month boundary has nothing left to settle', () => {
     const state = fixture();
     const queued = queueGovernorAppointment(state, 'province', null);
     expect(queued.ok).toBe(true);
-    expect(queued.state.cities.find((city) => city.id === 'province')?.governanceMode).toBe(
-      'governor',
-    );
-    expect(
-      queued.state.cities.find((city) => city.id === 'province')?.pendingAppointment?.effectiveDay,
-    ).toBe(30);
-    expect(
-      applyGovernanceMonthBoundary(queued.state, 29).cities.find((city) => city.id === 'province')
-        ?.governanceMode,
-    ).toBe('governor');
+    expect(queued.state.cities.find((city) => city.id === 'province')).toMatchObject({
+      governanceMode: 'steward',
+      governorId: null,
+      pendingAppointment: null,
+    });
+    expect(queued.state.events).toHaveLength(1);
     const settled = applyGovernanceMonthBoundary(queued.state, 30);
-    expect(settled.cities.find((city) => city.id === 'province')?.governanceMode).toBe('steward');
-    expect(settled.cities.find((city) => city.id === 'province')?.pendingAppointment).toBeNull();
+    expect(settled.cities).toEqual(queued.state.cities);
     expect(settled.events).toHaveLength(1);
   });
 });

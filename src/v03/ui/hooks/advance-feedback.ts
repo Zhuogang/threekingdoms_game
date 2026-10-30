@@ -1,5 +1,5 @@
 import { message } from '../../i18n';
-import { eventTier, isCriticalReport } from '../../campaign/reports';
+import { eventTier, playerCommandsBattle, reportBlocksAdvance } from '../../campaign/reports';
 import type { V03ActionResult } from '../../commands';
 import type { V03GameState } from '../../types';
 import type { V03Locale } from '../../wiki';
@@ -49,7 +49,10 @@ export function explainAdvance(
           p0: date,
           p1: localizedEvent(event, next, locale).title,
         }) + suffix,
-      openReports: isCriticalReport(next, event) || event.kind === 'hostileApproach',
+      // While the player commands a battle, only battle reports open the inbox.
+      openReports:
+        reportBlocksAdvance(next, event) ||
+        (event.kind === 'hostileApproach' && !playerCommandsBattle(next)),
     };
   if (advance.stoppedFor === 'manual-battle' || advance.stoppedFor === 'active-battle')
     return {
@@ -57,7 +60,7 @@ export function explainAdvance(
       // Auto-command hands a losing battle back with a report (play-feel PF-BA-06).
       openReports: next.events.some(
         (entry) =>
-          isCriticalReport(next, entry) && !previous.events.some((old) => old.id === entry.id),
+          reportBlocksAdvance(next, entry) && !previous.events.some((old) => old.id === entry.id),
       ),
     };
   if (advance.stoppedFor === 'step-limit')
@@ -65,7 +68,7 @@ export function explainAdvance(
       text: message(locale, 'feedback.advance.quiet', { p0: advance.daysAdvanced, p1: date }),
       openReports: false,
     };
-  if (next.events.some((entry) => isCriticalReport(next, entry)))
+  if (next.events.some((entry) => reportBlocksAdvance(next, entry)))
     return {
       text: message(locale, 'feedback.advance.report', { p0: date }) + suffix,
       openReports: true,

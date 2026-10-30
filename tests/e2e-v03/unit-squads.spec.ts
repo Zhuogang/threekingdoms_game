@@ -97,10 +97,17 @@ for (const [troops, navalCommander] of [
       await expect(token).toHaveAttribute('aria-label', /水军（楼船）/);
     }
     await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-water.png') });
+    // The move is provisional until the formation acts; waiting commits it to the save.
+    await map.press('w');
     await page.reload();
     await expect(token).toHaveAttribute('data-unit-art', boatPath);
 
     await submitBattleDay(page);
+    // A map click during the enemy-turn replay only skips it; skip first, then select.
+    const skip = page
+      .locator('.v03-battle-playback')
+      .getByRole('button', { name: /^(Skip|跳过)$/ });
+    if (await skip.count()) await skip.click();
     await token.click();
     await map.focus();
     await map.press('ArrowLeft');
@@ -108,6 +115,7 @@ for (const [troops, navalCommander] of [
     await expect(token).toHaveAttribute('data-unit-art', landPath);
     await page.screenshot({ path: testInfo.outputPath('squad-and-portrait-land.png') });
 
+    await map.press('w');
     await page.reload();
     await expect(token).toHaveAttribute('data-unit-art', landPath);
     await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
@@ -143,12 +151,16 @@ test('casualties below 500 switch the existing formation and sidebar to small ar
   await expect(page.locator(`.v03-unit-row img[src="${largePath}"]`).first()).toBeVisible();
   await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
   await token.click();
+  // Attacks are chosen first (A), then aimed at a target in the red range.
+  await page.keyboard.press('a');
   await target.click();
   await expect(token).toHaveAttribute('data-unit-art', smallPath);
   await expect(token.locator(`image[href="${smallPath}"]`)).toHaveAttribute(
     'visibility',
     'visible',
   );
+  // Nothing stays selected after an order; select the formation again to read its row.
+  await token.click();
   await expect(page.locator(`.v03-unit-row.selected img[src="${smallPath}"]`)).toBeVisible();
   await expect(token.locator('[data-leader-portrait] image')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('after-casualties.png') });

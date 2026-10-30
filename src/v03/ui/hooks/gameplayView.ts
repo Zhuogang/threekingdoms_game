@@ -40,6 +40,7 @@ import type { V03CityAction, V03GameState, TroopType } from '../../types';
 import { localizeAppMessage, CAMPAIGN_BOUNDS, dateLabel } from '../shared/app-copy-2';
 import { displayName, journeyPosition, mapPosition } from '../shared/app-copy-3';
 import type { useCampaignOrders } from './useCampaignOrders';
+import { battleControls } from './battle-controls';
 export type ApplicationBase = ReturnType<typeof useCampaignOrders>;
 export function gameplayView(context: ApplicationBase & { state: V03GameState }) {
   const {
@@ -60,13 +61,9 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     inspectedCell,
     currentUnit,
     attackTargets,
-    setInspectedCell,
+    attackMode,
     selectedTactic,
-    tacticTargets,
     dispatch,
-    setSelectedTactic,
-    setFeedback,
-    setSelectedUnitId,
     campaignMapFrame,
     setCampaignViewport,
     setSelectedCityId,
@@ -256,10 +253,25 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       : null;
   const terrainName = (value: string) => terrainLabel(value, locale);
   const weatherName = (value: string) => weatherLabel(value, locale);
-  const attackableCells = attackTargets.map((unit) => ({ x: unit.x, y: unit.y }));
+  // Targets, their forecasts and the red range show only once Attack is chosen.
+  const attackableCells = attackMode ? attackTargets.map((unit) => ({ x: unit.x, y: unit.y })) : [];
+  const attackRangeCells =
+    attackMode && battleState && currentUnit
+      ? Array.from({ length: battleState.map.width * battleState.map.height }, (_, index) => ({
+          x: index % battleState.map.width,
+          y: Math.floor(index / battleState.map.width),
+        })).filter((cell) => {
+          const distance = Math.abs(cell.x - currentUnit.x) + Math.abs(cell.y - currentUnit.y);
+          return (
+            distance > 0 &&
+            distance <= currentUnit.attackRange &&
+            battleTerrainAt(battleState.map, cell) !== null
+          );
+        })
+      : [];
   // On-map forecast beside each target in range while choosing an attack (PF-UI-07).
   const targetForecasts: BattleTargetForecastVisual[] =
-    battleState && currentUnit && !selectedTactic
+    battleState && currentUnit && attackMode && !selectedTactic
       ? attackTargets.flatMap((target) => {
           const forecast = context.attackForecasts.get(target.id) as
             BattleAttackForecast | undefined;
@@ -299,6 +311,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       !battleState ||
       !currentUnit ||
       selectedTactic ||
+      attackMode ||
       !context.reachableCells.some((entry) => entry.x === cell.x && entry.y === cell.y)
     )
       return [];
@@ -309,47 +322,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       ),
     };
     return getUnitAttackTargets(view, currentUnit.id).map((unit) => ({ x: unit.x, y: unit.y }));
-  };
-  const playerUnit = (unitId: string) =>
-    !activeBattle?.playerDayComplete &&
-    battleState?.units.some(
-      (unit) => unit.id === unitId && unit.troops > 0 && unit.side === battleState.playerSide,
-    );
-  const handleBattleUnitClick = (unitId: string) => {
-    if (!battleState || !activeBattle) return;
-    const inspected = battleState.units.find((unit) => unit.id === unitId && unit.troops > 0);
-    if (!inspected) return;
-    setInspectedCell({ x: inspected.x, y: inspected.y });
-    if (selectedTactic) {
-      if (tacticTargets.some((target) => target.id === unitId) && currentUnit) {
-        dispatch({
-          type: 'battleAction',
-          battleId: activeBattle.id,
-          action: {
-            type: 'tactic',
-            unitId: currentUnit.id,
-            tactic: selectedTactic,
-            targetId: unitId,
-          },
-        });
-        setSelectedTactic(null);
-      } else setFeedback({ key: 'tacticNoTargets' });
-      return;
-    }
-    if (currentUnit && attackTargets.some((target) => target.id === unitId)) {
-      dispatch({
-        type: 'battleAction',
-        battleId: activeBattle.id,
-        action: { type: 'attack', unitId: currentUnit.id, targetId: unitId },
-      });
-    } else if (playerUnit(unitId)) {
-      setSelectedUnitId(unitId);
-      context.setBattleActionMenu(
-        inspected.moved && !inspected.acted && !activeBattle.autoCommand
-          ? { battleId: activeBattle.id, unitId, day: battleState.day }
-          : null,
-      );
-    }
   };
   const fitCampaignMap = () => {
     const rect = campaignMapFrame.current?.getBoundingClientRect();
@@ -447,18 +419,11 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     if (canStillStrike) context.setConfirmation('end-day');
     else dispatch({ type: 'completeBattleDay', battleId: activeBattle.id });
   };
-  const nextReadyUnit = () => {
-    const units =
-      battleState?.units.filter(
-        (unit) => unit.side === battleState.playerSide && unit.troops > 0 && !unit.acted,
-      ) ?? [];
-    const index = units.findIndex((unit) => unit.id === context.selectedUnitId);
-    if (units.length) context.setSelectedUnitId(units[(index + 1) % units.length]!.id);
-  };
   return {
     ...context,
+    ...battleControls(context),
     requestEndBattleDay,
-    nextReadyUnit,
+    attackRangeCells,
     capitalAvailability,
     capitalReason,
     selectedFaction,
@@ -485,8 +450,6 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     terrainName,
     weatherName,
     attackableCells,
-    playerUnit,
-    handleBattleUnitClick,
     fitCampaignMap,
     zoomCampaignMap,
     focusCampaignCity,

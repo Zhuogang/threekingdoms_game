@@ -72,6 +72,8 @@ export interface BattlefieldMapViewProps {
   selectedCell?: GridPoint;
   reachableCells?: readonly (GridPoint & { cost?: number })[];
   attackableCells?: readonly GridPoint[];
+  /** Cells inside the selected unit's attack range while it chooses a target. */
+  rangeCells?: readonly GridPoint[];
   tacticTargetCells?: readonly GridPoint[];
   viewport?: BattlefieldViewBox;
   /**
@@ -93,6 +95,8 @@ export interface BattlefieldMapViewProps {
   /** `keyboard` when Enter/Space activated the focused cell, `pointer` for a click. */
   onCellClick?: (cell: GridPoint, source: 'pointer' | 'keyboard') => void;
   onUnitClick?: (unitId: string, cell: GridPoint) => void;
+  /** Right-click: step back (the browser menu is suppressed only when this is set). */
+  onCancel?: () => void;
   /** Forecast labels beside the targets in range (caller-owned values). */
   targetForecasts?: readonly BattleTargetForecastVisual[];
   /** Cells of enemies the selected unit could strike from a hovered reachable cell. */
@@ -547,6 +551,7 @@ export function BattlefieldMapView({
   selectedCell,
   reachableCells = [],
   attackableCells = [],
+  rangeCells = [],
   tacticTargetCells = [],
   viewport,
   background,
@@ -560,6 +565,7 @@ export function BattlefieldMapView({
   style,
   onCellClick,
   onUnitClick,
+  onCancel,
   targetForecasts = [],
   attackPreview,
   floats = [],
@@ -596,6 +602,7 @@ export function BattlefieldMapView({
   const terrain = Array.from({ length: safeLength }, (_, index) => map.terrain[index] ?? 'plain');
   const reachable = new Set(reachableCells.map(({ x, y }) => `${x},${y}`));
   const attackable = new Set(attackableCells.map(({ x, y }) => `${x},${y}`));
+  const inRange = new Set(rangeCells.map(({ x, y }) => `${x},${y}`));
   const tacticTargetable = new Set(tacticTargetCells.map(({ x, y }) => `${x},${y}`));
   const [hoverCell, setHoverCell] = useState<GridPoint | null>(null);
   const previewPath = route.length
@@ -785,6 +792,14 @@ export function BattlefieldMapView({
         p3: focusedCell.x,
       })}
       onClick={clickCell}
+      onContextMenu={
+        onCancel
+          ? (event) => {
+              event.preventDefault();
+              onCancel();
+            }
+          : undefined
+      }
       onKeyDown={handleMapKeyDown}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -875,6 +890,18 @@ export function BattlefieldMapView({
               fillOpacity={0.38}
               stroke="#4b8c71"
               strokeOpacity={0.55}
+              strokeWidth={1.2}
+            />
+          ) : null,
+          inRange.has(key) ? (
+            <CellRect
+              key="range"
+              center={gridToWorld({ x, y })}
+              inset={1}
+              fill="#d8835b"
+              fillOpacity={0.2}
+              stroke="#a94c37"
+              strokeOpacity={0.45}
               strokeWidth={1.2}
             />
           ) : null,

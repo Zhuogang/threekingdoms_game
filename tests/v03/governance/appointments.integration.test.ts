@@ -34,7 +34,7 @@ function advanceOneDay(state: V03GameState): V03GameState {
 }
 
 describe('v0.3 governor appointment journeys', () => {
-  it('transfers a troop-free officer by route and appoints them only after arrival and a month boundary', () => {
+  it('transfers a troop-free officer by route and appoints them the day they arrive', () => {
     let state = createV03Game('cao', 21);
     const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.troops = 0;
@@ -79,7 +79,7 @@ describe('v0.3 governor appointment journeys', () => {
     expect(state.cities.find((entry) => entry.id === target.id)?.pendingAppointment).toMatchObject({
       governorId: officer.id,
       journeyId: journey.id,
-      effectiveDay: 30,
+      effectiveDay: journey.expectedArrivalDay,
     });
     expect(state.cities.find((entry) => entry.id === target.id)?.governanceMode).toBe('steward');
 
@@ -92,6 +92,8 @@ describe('v0.3 governor appointment journeys', () => {
     expect(repeated.state.journeys).toHaveLength(1);
 
     while (state.journeys.find((entry) => entry.id === journey.id)?.status === 'outbound') {
+      // The source office stands until the candidate arrives.
+      expect(state.cities.find((entry) => entry.id === source.id)?.governorId).toBe(officer.id);
       state = advanceOneDay(state);
     }
     expect(state.journeys.find((entry) => entry.id === journey.id)?.status).toBe('delivered');
@@ -99,19 +101,12 @@ describe('v0.3 governor appointment journeys', () => {
       kind: 'city',
       cityId: target.id,
     });
-    expect(state.cities.find((entry) => entry.id === source.id)).toMatchObject({
-      governorId: officer.id,
-      governanceMode: 'governor',
-    });
-    expect(state.officers.find((entry) => entry.id === officer.id)?.governorOfCityId).toBe(
-      source.id,
-    );
-    expect(state.cities.find((entry) => entry.id === target.id)?.governanceMode).toBe('steward');
-    const effectiveDay = state.cities.find((entry) => entry.id === target.id)!.pendingAppointment!
-      .effectiveDay;
-    expect(effectiveDay).toBeGreaterThan(state.absoluteDay);
-
-    while (state.absoluteDay < effectiveDay) state = advanceOneDay(state);
+    expect(state.absoluteDay).toBeLessThan(30);
+    expect(
+      state.events.find(
+        (event) => event.kind === 'governorChanged' && event.entityId === target.id,
+      ),
+    ).toMatchObject({ tier: 'notice', absoluteDay: state.absoluteDay });
     expect(state.cities.find((entry) => entry.id === target.id)).toMatchObject({
       governorId: officer.id,
       governanceMode: 'governor',
@@ -181,9 +176,11 @@ describe('v0.3 governor appointment journeys', () => {
     expect(state.journeys.find((entry) => entry.id === originalJourney)?.returnRequested).toBe(
       true,
     );
-    expect(state.cities.find((entry) => entry.id === target.id)?.pendingAppointment).toEqual({
+    // The replacement is already in the city, so they take office at once.
+    expect(state.cities.find((entry) => entry.id === target.id)).toMatchObject({
       governorId: replacement.id,
-      effectiveDay: 30,
+      governanceMode: 'governor',
+      pendingAppointment: null,
     });
     expect(state.cities.find((entry) => entry.id === source.id)).toMatchObject({
       governorId: former.id,
@@ -292,7 +289,7 @@ describe('v0.3 governor appointment journeys', () => {
     expect(decodeV03Save(encodeV03Save(state))).toEqual(state);
   });
 
-  it('retries a late arrival next month and explains the delay without changing current governance', () => {
+  it('leaves a transfer still on the road pending at the month boundary, without a delay report', () => {
     const state = createV03Game('cao', 25);
     const officer = state.officers.find((entry) => entry.id === 'caohong')!;
     officer.troops = 0;
@@ -319,23 +316,22 @@ describe('v0.3 governor appointment journeys', () => {
     });
     expect(issued.ok, issued.error).toBe(true);
 
+    const pending = issued.state.cities.find((entry) => entry.id === target.id)!.pendingAppointment;
     const settled = applyGovernanceMonthBoundary(issued.state, 30);
     expect(settled.cities.find((entry) => entry.id === target.id)).toMatchObject({
       governorId: null,
       governanceMode: 'steward',
-      pendingAppointment: { governorId: officer.id, effectiveDay: 60 },
+      pendingAppointment: pending,
     });
     expect(settled.cities.find((entry) => entry.id === source.id)).toMatchObject({
       governorId: officer.id,
       governanceMode: 'governor',
     });
-    expect(settled.events.some((event) => event.title === 'governor-appointment-delayed')).toBe(
-      true,
-    );
+    expect(settled.events).toEqual(issued.state.events);
     expect(validateV03State(settled)).toBe(true);
   });
 
-  it('clears a captured candidate and preserves the city’s current governance so another can be chosen', () => {
+  it('clears a captured candidate from an older save’s pending appointment and keeps current governance', () => {
     const state = createV03Game('cao', 26);
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const candidate = state.officers.find((entry) => entry.id === 'caohong')!;
@@ -361,13 +357,9 @@ describe('v0.3 governor appointment journeys', () => {
     target.governanceMode = 'governor';
     candidate.troops = 0;
     candidate.location = { kind: 'city', cityId: target.id };
-    const queued = executeV03Command(state, {
-      type: 'appointGovernor',
-      cityId: target.id,
-      officerId: candidate.id,
-    });
-    expect(queued.ok, queued.error).toBe(true);
-    const captured = structuredClone(queued.state);
+    // Saves from before immediate appointments can still hold a local pending appointment.
+    target.pendingAppointment = { governorId: candidate.id, effectiveDay: 30 };
+    const captured = structuredClone(state);
     const capturedCandidate = captured.officers.find((entry) => entry.id === candidate.id)!;
     capturedCandidate.location = { kind: 'captured', cityId: target.id };
 
@@ -387,7 +379,7 @@ describe('v0.3 governor appointment journeys', () => {
     expect(decodeV03Save(encodeV03Save(settled))).toEqual(settled);
   });
 
-  it('cancels a pending appointment when its candidate dies before the month boundary', () => {
+  it('cancels an older save’s pending appointment when its candidate dies before the boundary', () => {
     const state = createV03Game('cao', 28);
     const target = state.cities.find((entry) => entry.id === 'xuchang')!;
     const incumbentId = target.governorId;
@@ -400,13 +392,8 @@ describe('v0.3 governor appointment journeys', () => {
     candidate.governorOfCityId = null;
     candidate.location = { kind: 'city', cityId: target.id };
     candidate.troops = 0;
-    const queued = executeV03Command(state, {
-      type: 'appointGovernor',
-      cityId: target.id,
-      officerId: candidate.id,
-    });
-    expect(queued.ok, queued.error).toBe(true);
-    const deceased = structuredClone(queued.state);
+    target.pendingAppointment = { governorId: candidate.id, effectiveDay: 30 };
+    const deceased = structuredClone(state);
     deceased.officers.find((entry) => entry.id === candidate.id)!.alive = false;
 
     const settled = applyGovernanceMonthBoundary(deceased, 30);
@@ -478,7 +465,7 @@ describe('v0.3 governor appointment journeys', () => {
     expect(validateV03State(state)).toBe(true);
   });
 
-  it('keeps a local appointment pending until settlement without creating a journey', () => {
+  it('installs and dismisses an officer already in the city at once, without a journey', () => {
     let state = createV03Game('cao', 22);
     const officer = state.officers.find((entry) => entry.id === 'yuejin')!;
     officer.troops = 0;
@@ -494,20 +481,37 @@ describe('v0.3 governor appointment journeys', () => {
       officerId: officer.id,
     });
     expect(result.ok, result.error).toBe(true);
+    expect(result.message).toBe('The new governance takes effect now.');
     state = result.state;
     expect(state.journeys).toHaveLength(0);
-    expect(state.cities.find((entry) => entry.id === target.id)?.pendingAppointment).toEqual({
-      governorId: officer.id,
-      effectiveDay: 30,
-    });
-    expect(state.cities.find((entry) => entry.id === target.id)?.governanceMode).toBe('steward');
-
-    while (state.absoluteDay < 30) state = advanceOneDay(state);
+    expect(state.absoluteDay).toBe(0);
     expect(state.cities.find((entry) => entry.id === target.id)).toMatchObject({
       governorId: officer.id,
       governanceMode: 'governor',
       pendingAppointment: null,
     });
+    expect(state.officers.find((entry) => entry.id === officer.id)?.governorOfCityId).toBe(
+      target.id,
+    );
+    // The player ordered it, so the report waits in the inbox without blocking time.
+    expect(state.events.at(-1)).toMatchObject({ kind: 'governorChanged', tier: 'notice' });
+    expect(validateV03State(state)).toBe(true);
+
+    const dismissed = executeV03Command(state, {
+      type: 'appointGovernor',
+      cityId: target.id,
+      officerId: null,
+    });
+    expect(dismissed.ok, dismissed.error).toBe(true);
+    expect(dismissed.state.cities.find((entry) => entry.id === target.id)).toMatchObject({
+      governorId: null,
+      governanceMode: 'steward',
+      pendingAppointment: null,
+    });
+    expect(
+      dismissed.state.officers.find((entry) => entry.id === officer.id)?.governorOfCityId,
+    ).toBeNull();
+    expect(decodeV03Save(encodeV03Save(dismissed.state))).toEqual(dismissed.state);
   });
 
   it('transfers an officer with troops without clearing the contingent', () => {

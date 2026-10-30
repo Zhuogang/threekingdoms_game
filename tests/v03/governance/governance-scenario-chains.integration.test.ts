@@ -93,11 +93,16 @@ describe.each([
     });
     expect(appointment.ok, appointment.error).toBe(true);
     state = appointment.state;
+    const journeyId = state.cities.find((city) => city.id === targetCityId)?.pendingAppointment
+      ?.journeyId;
+    const arrivalDay = state.journeys.find(
+      (journey) => journey.id === journeyId,
+    )!.expectedArrivalDay;
     expect(state.cities.find((city) => city.id === targetCityId)?.pendingAppointment).toMatchObject(
       {
         governorId: officerId,
         journeyId: expect.any(String),
-        effectiveDay: 30,
+        effectiveDay: arrivalDay,
       },
     );
     expect(validateV03State(state), saveValidationMessage(state)).toBe(true);
@@ -109,11 +114,11 @@ describe.each([
       day++
     ) {
       state = advanceOneDay(state);
-      if (state.absoluteDay < 30)
-        expect(state.officers.find((officer) => officer.id === officerId)!.troops).toBe(0);
+      expect(state.officers.find((officer) => officer.id === officerId)!.troops).toBe(0);
     }
 
-    expect(state.absoluteDay).toBe(30);
+    // The candidate takes office the day the party arrives, not at the month boundary.
+    expect(state.absoluteDay).toBe(arrivalDay);
     expect(state.cities.find((city) => city.id === targetCityId)).toMatchObject({
       governorId: officerId,
       governanceMode: 'governor',

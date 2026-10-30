@@ -50,10 +50,8 @@ export function Workspace({
               onClick={() => {
                 setSelectedBattleId(battle.id);
                 setViewMode('battle');
-                const friendly = battle.battleData.units.find(
-                  (unit) => unit.side === battle.battleData.playerSide && unit.troops > 0,
-                );
-                setSelectedUnitId(friendly?.id ?? null);
+                // The player picks who acts; switching fields selects no formation.
+                setSelectedUnitId(null);
               }}
             >
               {index + 1}

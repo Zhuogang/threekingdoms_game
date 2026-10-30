@@ -38,9 +38,9 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 君主本城可以直接内政。其他城市由正式太守或地方班底自治，不能逐项控制其农业、装备或编兵；你仍可查看库存、征调金粮兵、下达出征令、任免太守并临阵指挥。
 
-点击己方自治城市，进入“城务 → 太守任免”，在“太守人选”中查看候选人及不可用理由。任职和调任均无需先清空所部。跨城调任携带现有健全兵与伤兵，保留兵种、经验和整编状态；出发时扣除来源城守军和去返路粮，途中不治疗或推进整编，抵达后在合法月界就任。原职和目的地当前治理持续到实际交接，不会点击后立即换城或刷新工作点。选择君主表示亲治：实际就任时同步切换君主本城，原本城转为自治；待赴任期间仍保留原本城。
+点击己方自治城市，进入“城务 → 太守任免”，在“太守人选”中查看候选人及不可用理由。任职和调任均无需先清空所部。跨城调任携带现有健全兵与伤兵，保留兵种、经验和整编状态；出发时扣除来源城守军和去返路粮，途中不治疗或推进整编，抵达当日即就任。本城驻将任职、免去太守立即生效。原职和目的地当前治理持续到实际交接，任免都不会刷新工作点。选择君主表示亲治：君主在此城时立即切换君主本城，否则抵达当日切换，原本城转为自治；待赴任期间仍保留原本城。
 
-攻占城市并确认战报后，自动选择新城治理方式：“自任太守”需要君主已经抵达，将新城设为君主本城，原本城转为地方班底维持，两城库存、兵员和已用工作点保留；“任命太守”允许同城驻将保留所部立即就任，跨城人选沿用调任行程和月界。可点“稍后处理”，暂由地方班底维持，并从收件箱的治理待办继续；连续攻城逐城处理，未决事项读档后仍保留。
+攻占城市并确认战报后，自动选择新城治理方式：“自任太守”需要君主已经抵达，将新城设为君主本城，原本城转为地方班底维持，两城库存、兵员和已用工作点保留；“任命太守”允许同城驻将保留所部立即就任，跨城人选沿用调任行程，抵达即就任。可点“稍后处理”，暂由地方班底维持，并从收件箱的治理待办继续；连续攻城逐城处理，未决事项读档后仍保留。
 
 从城池进入“调拨物资 → 选择命令 → 选择目的地 → 填写数量 → 查看方案”，核对后再提交。核对页返回不会生成订单或扣除资源；足额请求按原规则直接出发并返回请求菜单，有缺额时进入答复页，接受、缩减、等待或取消后返回菜单。待答复方案退出后可继续查看，订单也保留在“军情与命令”中。
 
@@ -92,9 +92,9 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 ### 6. 战斗操作、计策与水战
 
-己方部队手动移动成功后，会在附近弹出“攻击、计策、待命、关闭”。选攻击或具体计策后，菜单收起，再在地图点击高亮目标才执行；关闭不撤销移动，也不消耗剩余行动，可重新选中该部队打开菜单。没有合法目标的选项显示不可用原因，自动指挥和失败移动不弹出。
+系统不会替你选中部队，战斗开始和每支部队行动后都不自动选下一支（Tab 可跳到下一支待命部队）。点己方部队选中，再点绿色可达格移动；移动在部队行动前都是暂定的，按 Esc、右键或菜单里的“撤回移动”即可回到原位，点空地取消选中（未行动的移动一并撤回）。移动后会在部队旁弹出“攻击、计策、待命、关闭”；不移动时再点一次选中的部队即可原地下令。选“攻击”（快捷键 A）后菜单收起，地图显示红色攻击范围和每个目标的预测，再点范围内的敌军才出手，只有一个目标时也不会自动攻击；平时点敌军只显示其信息。选计策同理。Esc 或右键逐层退回：瞄准 → 暂定移动 → 菜单 → 选中。没有合法目标的选项显示不可用原因，自动指挥时不弹出。
 
-战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队主体使用水墨编队图，下水后变为载兵小船、上岸恢复；按当前存活兵力显示：少于 500 人用小队，500 人及以上用大队，船只暂不分规模。左上角保留编队统领的小头像：右上角小旗是势力色，左下角是兵种，右下角"×3"表示编队里有三位武将，下方是兵力数字和兵力条。可攻击的敌军有红圈，混乱或鼓舞的部队上方有小图标，已行动的部队变灰，溃败的部队半透明。缩得很小时，保留小队图，隐藏头像和次要标记；图片无法加载时显示兵种字。"网格"按钮可以隐藏格线。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，选射程内敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
+战场是 48×32 的正俯视方格大地图，可以拖动和缩放，每方最多 10 个编队；攻方从左侧入场，守方在右侧。打哪张战场由进攻方走的最后一段路线决定（另有几种按进攻方向的特例），同一路线同一方向每次都是同一张图，例如过黄河会打"黄河津渡"，出斜谷攻长安会打"河谷川地"。战斗标题显示战场名。部队主体使用水墨编队图，下水后变为载兵小船、上岸恢复；按当前存活兵力显示：少于 500 人用小队，500 人及以上用大队，船只暂不分规模。左上角保留编队统领的小头像：右上角小旗是势力色，左下角是兵种，右下角"×3"表示编队里有三位武将，下方是兵力数字和兵力条。可攻击的敌军有红圈，混乱或鼓舞的部队上方有小图标，已行动的部队变灰，溃败的部队半透明。缩得很小时，保留小队图，隐藏头像和次要标记；图片无法加载时显示兵种字。"网格"按钮可以隐藏格线。画面只是格子的插画：每格算平原、森林、丘陵、水还是峭壁，以检查格子时显示的地形为准。选己方存活部队，点绿色可达格移动，从行动菜单选“攻击”后点红色范围内的敌军普通攻击，或先选计策再选合法目标。普通部队每战斗日通常一次移动、一次行动；“待命”用于结束该部队行动。先看伤害/反击或计策预览，再执行。
 
 | 计策               | 基础计策点 | 基础条件                                                          |
 | ------------------ | ---------- | ----------------------------------------------------------------- |
@@ -109,7 +109,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 
 两军部署相距约 15 列，通常两三日内接战。与敌军相邻的部队被牵制、不能移动，但已溃散的部队可向相邻空格退一步。士气开战为 80；粮草充足且一个战斗日内未损兵的部队，次日恢复 5 点士气（最多到 80）。低于 40 动摇（伤害 −15%、不能用计），低于 20 溃散（只能移动或待命）。
 
-“战场状况”一行显示天气→次日、双方粮草和所选部队的移动/射程；“地形与倍率”展开后显示武力/智力/等级及检查地形的倍率。“?” 可打开战斗指南。标题栏显示若此刻到时限谁胜。我方与敌方部队分列，敌方列表显示其计策点及每支部队的武力/智力。选择攻击时，射程内目标旁显示我方造成/承受的伤亡、目标攻击后士气以及是否将溃散或歼灭；鼠标停在绿色格上会圈出从该格可攻击的敌军。结束战斗日后地图回放敌军回合（“跳过”或 Esc 直接看结果），随后汇总敌军攻击、我军损失及动摇/溃散的部队。战况按日排列，双方的移动与待命各合并为一行，可展开查看。点击格子会检查状态，**合法移动或攻击仍会执行**；检查不是单独的安全浏览模式。
+“战场状况”一行显示天气→次日、双方粮草和所选部队的移动/射程；“地形与倍率”展开后显示武力/智力/等级及检查地形的倍率。“?” 可打开战斗指南。标题栏显示若此刻到时限谁胜。我方与敌方部队分列，敌方列表显示其计策点及每支部队的武力/智力。选择攻击时，射程内目标旁显示我方造成/承受的伤亡、目标攻击后士气以及是否将溃散或歼灭；鼠标停在绿色格上会圈出从该格可攻击的敌军。结束战斗日后地图回放敌军回合（“跳过”或 Esc 直接看结果），随后汇总敌军攻击、我军损失及动摇/溃散的部队。战况按日排列，双方的移动与待命各合并为一行，可展开查看。点击格子会检查状态；点绿色格会让选中部队移动（暂定，可撤回），攻击只能从行动菜单发起。
 
 所有兵种可进出可通行水格，不需要水军技能或船库存。涉及水的每步至少花 2 移动点；在水上攻击 ×0.75、受到兵力伤害 ×1.25，上岸恢复陆地规则。岸水互攻只需满足正常射程；峭壁所有兵种均不可进入。战场能涉水不代表大地图能离开配置路线任意渡海。
 
@@ -136,7 +136,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 ### 7. 镜头、快捷键与存档
 
 - 主地图：滚轮/按钮缩放，拖动或方向键平移，Home/Fit 显示全图，小地图可定位；Tab 后 Enter/空格可选城市。
-- 快捷键（输入框外）：空格推进 1 日，Shift+空格推进 10 日，N 至下一事件，I 收件箱，O 军情与命令，C 君主本城，D 外交；战场中 W 待命、E 结束战斗日。每次推进都会说明停下的原因与日期。
+- 快捷键（输入框外）：空格推进 1 日，Shift+空格推进 10 日，N 至下一事件，I 收件箱，O 军情与命令，C 君主本城，D 外交；战场中 A 攻击、W 待命、E 结束战斗日、Esc 或右键退回上一步。每次推进都会说明停下的原因与日期。亲自指挥战斗时，只有战斗报告（新战斗或战果）会拦住结束战斗日，其余报告留在收件箱，收件箱按钮变红提醒。
 - 战场显示：“放大战场”铺满窗口，“全屏”进入浏览器全屏；“显示面板”可分别切换指令栏、小地图、操作提示、全局顶栏和战场列表。退出放大恢复原布局，Escape 优先取消当前操作/弹窗。隐藏指令栏时，底部仍有托管、结束战斗日及更多行动中的撤退。
 - 战场：Fit 全图，Unit 聚焦所选部队；小地图移动视口。地图获得焦点后方向键移动格子光标，Enter/空格执行该格操作；Shift+方向键平移镜头，+/- 缩放，Home 全图。
 - 游戏中 F1 打开 Wiki，Escape 关闭 Wiki 或取消确认框。中英切换和读指南不推进时间。
@@ -150,7 +150,7 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 | 时间不走            | 确认到期报告，并提交每场己方战斗的本日；若其余战场均已提交，点“推进一日”继续结算。 |
 | 征兵后武将兵力没变  | 新兵在预备兵；还需“调整兵力”。                                                     |
 | 出征方案为零或很少  | 整支所部、武将是否可用、留守要求、已批准预留、粮食和路线；方案会列出缺口。         |
-| 任命没立刻生效      | 跨城人选可携带所部调任，须抵达后等合法月界就任。                                   |
+| 任命没立刻生效      | 跨城人选携带所部调任，抵达当日就任；本城驻将任免立即生效。                         |
 | 地图部队很小/看不全 | 开战时镜头已对准己方部队；Fit 看全图，再缩放或用 Unit 聚焦。                       |
 | 战绩不容易扩大      | 当前战略平衡仍有限；不要把诊断机器人结果当作个人胜率。记录实际体验供下一轮修订。   |
 
@@ -184,9 +184,9 @@ Feasts let you check local friendly guests or select all, costing one work point
 
 Only your capital accepts direct city work. Other cities are autonomous under governors or local stewards; use supply requests and campaign orders instead of controlling their individual internal actions. You retain tactical command of your forces.
 
-Open **City affairs → Governor appointments** in an autonomous city. Appointment submission returns to affairs, showing its pending status. Candidates show shared availability reasons. Appointment and transfer do not require clearing the contingent. A transfer carries healthy and wounded personnel with their type, XP and reorganization intact. Departure debits ready soldiers and outbound/return provisions from the source. Treatment and reorganization pause during travel; office changes at a legal monthly boundary after arrival. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. The map dock opens **Marches & orders** in its own window; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses. A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
+Open **City affairs → Governor appointments** in an autonomous city. Appointment submission returns to affairs, showing its pending status. Candidates show shared availability reasons. Appointment and transfer do not require clearing the contingent. A transfer carries healthy and wounded personnel with their type, XP and reorganization intact. Departure debits ready soldiers and outbound/return provisions from the source. Treatment and reorganization pause during travel; office changes the day the candidate arrives. Appointing an officer already in the city, or dismissing a governor, takes effect at once. Existing authority remains until handover. Accepted resource orders protect stock; dispatched parties deliver on arrival. Recall is a return request while the journey permits it, not instant teleportation or removal from an active battle. The map dock opens **Marches & orders** in its own window; reports are in the top-bar Inbox. Critical reports and unsubmitted manual battles explain clock pauses; while you command a battle, only battle reports hold up the battle day, and other reports wait in the Inbox (its button turns red). A battle blocks only its contested city and committed officers. Captured rulers are succeeded by the most loyal free officer; a house falls when no free officer remains.
 
-After a conquest report, choose the new city's governance. **Govern personally** requires the ruler to be present and moves the ruler's capital; the old capital returns to stewardship. Both cities retain stock, personnel and spent work points. **Appoint a governor** allows a local officer to take office immediately with their contingent, while remote candidates travel and wait for a monthly boundary. **Decide later** leaves local stewardship and keeps an Inbox task. Captured cities are handled in order and pending choices survive reload.
+After a conquest report, choose the new city's governance. **Govern personally** requires the ruler to be present and moves the ruler's capital; the old capital returns to stewardship. Both cities retain stock, personnel and spent work points. **Appoint a governor** allows a local officer to take office immediately with their contingent, while remote candidates travel and take office on arrival. **Decide later** leaves local stewardship and keeps an Inbox task. Captured cities are handled in order and pending choices survive reload.
 
 Open **Send supplies** in the sending city; the flow is **request kind → destination → amounts → review → submit**. Review does not issue an order or spend stock. Full requests still dispatch on submission; shortfalls open the existing accept/reduce/wait/cancel decisions. Completion returns to the request menu, and orders remain in Marches & orders.
 
@@ -221,7 +221,7 @@ City loyalty only modifies monthly tax: multiply the existing rounded base tax b
 
 ### Troops and battlefield actions
 
-Successful manual movement opens a nearby unit menu: **Attack, Tactics, Wait, Close**. Selecting attack or a specific tactic dismisses the menu so you can choose a highlighted map target before execution. Closing preserves the move and remaining action; select the unit again to reopen. Unavailable choices show a reason. Failed moves and automatic command do not open the menu.
+A move opens a unit menu beside the formation: **Attack, Tactics, Wait, Undo move, Close**; clicking the selected formation again opens it without moving. Selecting attack or a specific tactic hides the menu so you can choose a highlighted map target before execution; Esc brings it back. Closing keeps the provisional move and remaining action; select the unit again to reopen. Unavailable choices show a reason. Automatic command does not open the menu.
 
 Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker enters on the left. The attacker's last route leg picks one of 15 painted battlefields (a few attack directions have their own), and the same leg and direction always give the same field, named in the battle heading. Unit tokens show a small ink squad below 500 surviving troops and a large formation at 500 or more, changing to a crewed boat on water and back on land. The highest-level officer appears as a separate portrait badge alongside a faction pennant, a troop-type seal, a ×N badge for multi-officer formations, the troop count and a strength bar; attackable enemies have a red ring, confused or inspired units an icon, acted units turn grey and routed units fade. Zoomed far out, squad art remains while portraits and secondary badges hide; the Grid button hides the grid lines. The painting illustrates the grid; inspect a cell to see whether it counts as plain, forest, hill, water or cliff.
 
@@ -233,7 +233,7 @@ Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker 
 
 Budgets are movement points, not guaranteed tiles. Forest/hills cost more for most types; cavalry pays more. Occupation, enemy zone of control and water affect reachable cells. Formations can group same-type officers. Militia cannot use tactics. Waterborne units retain their infantry, cavalry or archer identity and share the same water penalties.
 
-Select a living friendly formation, click a highlighted reachable cell to move, then attack an enemy in range or choose a tactic and a legal target. Units normally move once and act once per battle day. Armies deploy about 15 columns apart and usually meet within two or three days. A formation next to an enemy is pinned, except that a routed one may step to a free neighbouring cell. Read the forecasts first: while choosing an attack, each target in range shows what you deal, what you take back, its morale afterwards and whether it routs or is destroyed, and hovering a green cell rings the enemies you could strike from there. The conditions line shows weather → next weather, both sides' food and the selected unit's movement/range; **Terrain and multipliers** expands force/intellect/level and the inspected terrain's multipliers. The header says who would win if time ran out now. Your formations and the enemy's are listed separately; the enemy list shows its tactic points and each formation's force and intellect. Clicking a tile inspects it **and still executes a legal move or attack**.
+Nothing is selected for you, at the start of a battle or after a formation acts (Tab jumps to the next ready one). Select a living friendly formation and click a highlighted reachable cell to move. The move stays provisional until the formation acts: Esc, right-click or **Undo move** returns it, and clicking open ground deselects it (taking back an unfinished move). After a move its orders open beside it; to act where it stands, click the selected formation again. Choose **Attack** (A) to show its red range and each target's forecast, then click a target inside the range; a single target is never attacked automatically, and clicking an enemy otherwise only shows its details. Tactics work the same way. Esc or right-click steps back one layer: targeting → provisional move → orders → selection. Units normally move once and act once per battle day. Armies deploy about 15 columns apart and usually meet within two or three days. A formation next to an enemy is pinned, except that a routed one may step to a free neighbouring cell. Read the forecasts first: while choosing an attack, each target in range shows what you deal, what you take back, its morale afterwards and whether it routs or is destroyed, and hovering a green cell rings the enemies you could strike from there. The conditions line shows weather → next weather, both sides' food and the selected unit's movement/range; **Terrain and multipliers** expands force/intellect/level and the inspected terrain's multipliers. The header says who would win if time ran out now. Your formations and the enemy's are listed separately; the enemy list shows its tactic points and each formation's force and intellect. Clicking a tile inspects it; a green tile also moves the selected formation (provisionally), and attacks come only from its orders.
 
 Morale starts at 80. A fed formation that lost no troops during a battle day regains 5 morale the next dawn, up to 80. Below 40 a formation wavers (−15% damage, no tactics); below 20 it routs and can only move or hold. After you end a day, the enemy turn replays on the map (Skip or Esc jumps to the end), followed by a summary of its attacks, your losses and any formation that wavers or routs. The battle log is grouped by day; each side's moves and holds collapse into one expandable line.
 
@@ -277,13 +277,13 @@ Autonomous cities also allow whole-contingent returns without a work point. Retu
 ### Controls, saves, endings and troubleshooting
 
 - Campaign: wheel/buttons zoom, drag/arrows pan, Home/Fit shows the atlas; minimap repositions. Tab/Enter/Space selects cities.
-- Shortcuts (outside text fields): Space advances 1 day, Shift+Space 10 days, N to the next event, I opens the inbox, O marches & orders, C the ruler's capital, D diplomacy; in battle, W waits and E ends the battle day. Every advance says why and when it stopped.
+- Shortcuts (outside text fields): Space advances 1 day, Shift+Space 10 days, N to the next event, I opens the inbox, O marches & orders, C the ruler's capital, D diplomacy; in battle, A attacks, W waits, E ends the battle day and Esc or right-click steps back. Every advance says why and when it stopped.
 - Battlefield display: Expand battlefield fills the window; Fullscreen enters native fullscreen when allowed. Show panels toggles commands, minimap, help, top bar and battle list. Restore layout restores prior settings. With commands hidden, the compact bar retains auto-command, End battle day and More actions → Withdraw.
 - Battlefield: Fit shows the field; Unit focuses selection. With map focus, arrows move the cell cursor and Enter/Space executes; Shift+arrows pans, +/- zooms, Home fits. Minimap moves the viewport.
 - Wiki: F1 opens during play, Escape closes or cancels a confirmation. Language/camera/help do not change the date.
 - Saves: one autosave per browser profile/address; Export creates a portable backup independently. A different port/browser/private session has separate storage. Keep the tab open and export if saving fails, then Retry save. Valid v0.3 saves now require the personnel schema marker. Saves from before wounded troops are incompatible; export their raw data from the start screen before replacing them. Cancel preserves the old save. Invalid imports preserve the campaign/drafts; valid imports reset transient controls.
 - Victory: all-city unification or Luoyang plus at least 16 cities held across 12 consecutive monthly boundaries for Hegemon. Protect your capital; losing it can end your campaign.
 
-If time stops, inspect due reports and unfinished player battle submissions. If a march is empty, check whole-officer strength, garrison, food, available officers, reserved stock and route. If recruitment seems ineffective, assign reserve soldiers. If a governor has not changed, check travel and the month boundary. Fit before zooming when a map is confusing.
+If time stops, inspect due reports and unfinished player battle submissions. If a march is empty, check whole-officer strength, garrison, food, available officers, reserved stock and route. If recruitment seems ineffective, assign reserve soldiers. If a governor has not changed, check whether the candidate is still travelling. Fit before zooming when a map is confusing.
 
 The candidate's strategic pacing and artwork still need player review. Report scenario/house, game date, locale, browser/viewport, exported save and reproduction steps using the [test record](next-steps.md#player-test-record). Four long sessions, real low-end hardware and draft-art approval remain open; automated diagnostics are not a player win-rate claim.

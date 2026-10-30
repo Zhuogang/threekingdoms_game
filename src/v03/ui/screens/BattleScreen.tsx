@@ -52,8 +52,6 @@ export function BattleScreen({
     locale,
     handleBattleUnitClick,
     setInspectedCell,
-    selectedTactic,
-    setFeedback,
     dispatch,
     zoomBattleMap,
     fitBattleMap,
@@ -103,6 +101,10 @@ export function BattleScreen({
         if (event.key === 'Tab' && !event.shiftKey) {
           event.preventDefault();
           context.nextReadyUnit();
+        }
+        if (event.key.toLowerCase() === 'a' && currentUnit) {
+          event.preventDefault();
+          context.startAttack();
         }
         if (event.key.toLowerCase() === 'w' && currentUnit) {
           event.preventDefault();
@@ -154,6 +156,7 @@ export function BattleScreen({
           }
           reachableCells={playback.playing ? [] : reachableCells}
           attackableCells={playback.playing ? [] : attackableCells}
+          rangeCells={playback.playing ? [] : context.attackRangeCells}
           tacticTargetCells={
             playback.playing ? [] : tacticTargets.map((target) => ({ x: target.x, y: target.y }))
           }
@@ -171,26 +174,11 @@ export function BattleScreen({
           onCellClick={(cell, source) => {
             if (playback.playing) return playback.skip();
             setInspectedCell(cell);
-            if (selectedTactic) {
-              setFeedback({ key: 'tacticChooseTarget' });
-              return;
-            }
-            if (!currentUnit) {
-              setFeedback({ key: 'selectUnit' });
-              return;
-            }
-            // A click outside the green cells only inspects the tile. Keyboard Enter still
-            // submits the move so the rules can explain why that cell cannot be reached.
-            if (
-              source === 'pointer' &&
-              !reachableCells.some((reachable) => reachable.x === cell.x && reachable.y === cell.y)
-            )
-              return;
-            dispatch({
-              type: 'battleAction',
-              battleId: activeBattle.id,
-              action: { type: 'move', unitId: currentUnit.id, x: cell.x, y: cell.y },
-            });
+            context.battleCellClick(cell, source);
+          }}
+          onCancel={() => {
+            if (playback.playing) return playback.skip();
+            context.cancelBattleStep();
           }}
         />
         {display.panels.minimap ? (

@@ -20,6 +20,20 @@ function day(state: V03GameState) {
   expect(validateV03State(next.state)).toBe(true);
   return next.state;
 }
+/**
+ * Saves from before arrival-time appointments can hold a candidate who has arrived and is
+ * still waiting for the month boundary. Reproduce one by landing the party without the
+ * pending appointment, then restoring it.
+ */
+function arriveAsOlderSave(state: V03GameState, journeyId: string) {
+  const cityId = state.cities.find((city) => city.pendingAppointment?.journeyId === journeyId)!.id;
+  const pending = state.cities.find((city) => city.id === cityId)!.pendingAppointment;
+  state.cities.find((city) => city.id === cityId)!.pendingAppointment = null;
+  while (state.journeys.find((journey) => journey.id === journeyId)!.status === 'outbound')
+    state = day(reload(state));
+  state.cities.find((city) => city.id === cityId)!.pendingAppointment = pending;
+  return state;
+}
 function peace(state: V03GameState) {
   state.alliances = state.factions.flatMap((a, i) =>
     state.factions
@@ -276,7 +290,8 @@ describe('conquest governance and retained contingents', () => {
       });
       // Recruitment during a ten-day settlement converts residents, without creating people.
       expect(factionPersonnel(state) + residents(state)).toBe(people);
-      while (state.absoluteDay < 30) state = day(state);
+      // The candidate takes office on arrival.
+      expect(state.absoluteDay).toBeLessThan(30);
       expect(state.cities.find((entry) => entry.id === target.id)!.governorId).toBe(officer.id);
       expect(state.cities.find((entry) => entry.id === source.id)!.governorId).toBeNull();
       expect(state.officers.find((entry) => entry.id === officer.id)!.troopExperience).toBe(1200);
@@ -300,9 +315,7 @@ describe('conquest governance and retained contingents', () => {
       expect(result.ok, result.error).toBe(true);
       state = result.state;
       const journeyId = state.journeys[0]!.id;
-      if (afterArrival)
-        while (state.journeys.find((journey) => journey.id === journeyId)!.status === 'outbound')
-          state = day(reload(state));
+      if (afterArrival) state = arriveAsOlderSave(state, journeyId);
       state = executeV03Command(state, {
         type: 'appointGovernor',
         cityId: target,
@@ -441,8 +454,7 @@ describe('conquest governance and retained contingents', () => {
       officerId: 'caocao',
     }).state;
     const oldJourneyId = state.journeys[0]!.id;
-    while (state.journeys.find((journey) => journey.id === oldJourneyId)!.status === 'outbound')
-      state = day(state);
+    state = arriveAsOlderSave(state, oldJourneyId);
     const later = executeV03Command(state, {
       type: 'appointGovernor',
       cityId: 'xuchang',

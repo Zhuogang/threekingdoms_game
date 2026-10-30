@@ -82,10 +82,9 @@ export function GameShell({
           menu.querySelector('summary')?.focus();
           return;
         }
-        if (context.isBattleView && (context.selectedTactic || context.inspectedCell)) {
+        // Targeting → provisional move → orders → selection, one layer per press.
+        if (context.isBattleView && context.cancelBattleStep()) {
           event.preventDefault();
-          context.setSelectedTactic(null);
-          context.setInspectedCell(null);
           return;
         }
         if (display.expanded && !display.fullscreen) {

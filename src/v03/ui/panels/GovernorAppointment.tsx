@@ -113,8 +113,8 @@ export function GovernorAppointment({
       {personalRule ? (
         <p className="v03-muted">
           {locale === 'zh'
-            ? '君主到达并于月界就任后，此城成为君主本城，原本城转为自治；生效前本城不变。'
-            : 'After the ruler arrives and takes office at a monthly boundary, this city becomes the ruler’s capital and the previous capital becomes autonomous. Until then, the capital stays unchanged.'}
+            ? '君主在此城时立即亲治，否则抵达后就任：此城成为君主本城，原本城转为自治；就任前本城不变。'
+            : 'If the ruler is in this city, personal rule starts at once; otherwise it starts when the ruler arrives. This city then becomes the ruler’s capital and the previous capital becomes autonomous; until then, the capital stays unchanged.'}
         </p>
       ) : null}
       {!preview.ok ? (
@@ -182,7 +182,6 @@ export function PendingGovernor({
                       p0: subject,
                       p1: source ? displayName(source, locale) : transfer.sourceCityId,
                       p2: arrival,
-                      p3: effective,
                     })
                   : message(locale, 'ui.pending.scheduled.to.take.effect.102', {
                       p0: subject,
