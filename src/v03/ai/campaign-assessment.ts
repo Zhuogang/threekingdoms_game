@@ -6,8 +6,12 @@ import { forecastCityEconomy } from '../campaign/economy';
 import { incomingCampaignThreats } from './campaign-threats';
 import { estimateCampaignMatchup } from './campaign-strength';
 import type { CampaignDecisionReason } from './decision-trace';
+import { rulerTemperament } from './temperament';
 
-/** AI prudence, deliberately separate from the human command's legal minimum. */
+/**
+ * AI prudence, deliberately separate from the human command's legal minimum.
+ * The attacking ruler's temperament sets the force ratio and home risk it accepts.
+ */
 export function assessCampaignDeparture(
   state: Readonly<V03GameState>,
   sourceCityId: string,
@@ -16,6 +20,11 @@ export function assessCampaignDeparture(
   food: number,
   travelDays: number,
 ) {
+  const temperament = rulerTemperament(
+    state,
+    state.cities.find((city) => city.id === sourceCityId)?.factionId ?? null,
+  );
+  const admission = temperament.admissionRatio;
   const officers = state.officers.filter((officer) => party.officerIds.includes(officer.id));
   const attackers = rosterFromGroups(
     groupOfficers(officers.map((officer) => ({ ...officer, wounded: 0 }))),
@@ -46,11 +55,11 @@ export function assessCampaignDeparture(
     ).ratio;
   }
   const reason: CampaignDecisionReason | null =
-    matchup.ratio < 0.8
+    matchup.ratio < admission
       ? 'insufficient-force'
       : economy.projectedAvailable.food < 0
         ? 'home-food-shortage'
-        : homeRisk > 0.9
+        : homeRisk > temperament.homeRiskLimit
           ? 'home-defense-exposed'
           : null;
   return {
@@ -59,9 +68,11 @@ export function assessCampaignDeparture(
     economy,
     homeRisk,
     threats,
+    temperament,
     forceDeficit:
-      matchup.ratio < 0.8
-        ? Math.ceil((party.troopCount * 0.8) / Math.max(0.01, matchup.ratio)) - party.troopCount
+      matchup.ratio < admission
+        ? Math.ceil((party.troopCount * admission) / Math.max(0.01, matchup.ratio)) -
+          party.troopCount
         : 0,
     foodDeficit: Math.max(0, -economy.projectedAvailable.food),
   };

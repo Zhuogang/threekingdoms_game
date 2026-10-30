@@ -12,6 +12,7 @@ import {
 import { committedCityStock } from './governance/city-actions';
 import { cityBattleRoster } from './campaign/roster';
 import { assessCampaignDeparture } from './ai/campaign-assessment';
+import { rulerTemperament } from './ai/temperament';
 /**
  * Deterministic monthly rival campaign planning for v0.3.
  *
@@ -109,8 +110,13 @@ function availableOfficers(
   cityId: string,
   leaderOfficerId: string,
 ): V03Officer[] {
+  const rulerStaysHome = rulerTemperament(state, factionId).rulerStaysHome;
   return state.officers
-    .filter((officer) => isRivalCampaignOfficerAvailable(state, officer, factionId, cityId))
+    .filter(
+      (officer) =>
+        isRivalCampaignOfficerAvailable(state, officer, factionId, cityId) &&
+        !(rulerStaysHome && officer.id === leaderOfficerId),
+    )
     .sort((a, b) => {
       const leaderOrder = Number(b.id === leaderOfficerId) - Number(a.id === leaderOfficerId);
       return leaderOrder || b.force - a.force || b.troops - a.troops || compareIds(a.id, b.id);
@@ -272,10 +278,11 @@ function makeCandidate(
   );
   // Ordinal value: one city, discounted by casualties, provisions, committed
   // soldiers, travel time and credible exposure at home. Hold/preparation is zero.
+  // A cunning ruler counts expected losses twice.
   const score =
     1000 /
     (1 +
-      assessment.matchup.expectedLosses / 1000 +
+      (assessment.matchup.expectedLosses / 1000) * assessment.temperament.lossWeight +
       supply.totalFood / 10000 +
       party.troopCount / 10000 +
       route.estimatedDays / 30 +
