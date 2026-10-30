@@ -343,7 +343,7 @@ describe('v0.3 governor monthly work planning', () => {
     plan = planGovernorMonthlyWork(state, cityId, 3);
     expect(plan).toMatchObject({
       action: 'recruit',
-      goldCost: 600,
+      goldCost: 500,
       reasonCode: 'reserve-recruitment',
     });
     result = applyGovernorMonthlyWork(state, plan);
