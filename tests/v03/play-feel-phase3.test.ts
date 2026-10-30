@@ -663,3 +663,19 @@ describe('PF-RL-06 conquest unrest', () => {
     expect(after.cities.find((city) => city.id === 'ye')!.loyalty).toBe(30);
   });
 });
+
+describe('PF-UI-09 moments', () => {
+  it('writes battle outcomes from the player’s side with the reason and day', () => {
+    const { after } = captureYe();
+    const report = after.events.find((event) => event.battleOutcome)!;
+    expect(formatEvent(report, after, 'en')).toEqual({
+      title: 'Defeat: Ye lost',
+      detail: 'Your army withdrew · Ended on battle day 1',
+    });
+    expect(formatEvent(report, after, 'zh')!.title).toBe('失利：邺失守');
+    // The same battle seen by an uninvolved house keeps the neutral chronicle line.
+    const neutral = structuredClone(after);
+    neutral.playerFactionId = 'sun';
+    expect(formatEvent(report, neutral, 'en')!.title).toContain('Battle at Ye');
+  });
+});

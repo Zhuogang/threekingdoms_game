@@ -58,15 +58,49 @@ export function formatEvent(
       report.winner === 'attacker' ? battle?.attackerFactionId : battle?.defenderFactionId,
       'factions',
     );
+    if (!playerSide)
+      return {
+        title: message(locale, 'ui.battle.at.holds.162', { p0: city, p1: winner }),
+        detail: `${city} · ${held}`,
+      };
+    // Written from the player's side (PF-UI-09): what happened to the city, why, and how long.
+    const won = report.winner === playerSide;
+    const raid = battle?.intent === 'raid';
+    const title =
+      report.winner === 'draw'
+        ? message(locale, 'outcome.draw', { city })
+        : won
+          ? message(
+              locale,
+              playerSide === 'defender'
+                ? 'outcome.won.held'
+                : raid
+                  ? 'outcome.won.plundered'
+                  : 'outcome.won.taken',
+              { city },
+            )
+          : message(
+              locale,
+              playerSide === 'attacker'
+                ? 'outcome.lost.attack'
+                : raid
+                  ? 'outcome.lost.plundered'
+                  : 'outcome.lost.city',
+              { city },
+            );
+    const outcome = battle?.battleData.outcome;
+    const reason = outcome
+      ? outcome.reason === 'dayLimit'
+        ? message(locale, 'outcome.reason.dayLimit')
+        : message(locale, `outcome.reason.${outcome.reason}.${won ? 'won' : 'lost'}`)
+      : null;
+    const days = battle
+      ? message(locale, 'outcome.duration', { days: battle.battleData.day })
+      : null;
     return {
-      title: playerSide
-        ? report.winner === 'draw'
-          ? message(locale, 'ui.battle.drawn.159')
-          : report.winner === playerSide
-            ? message(locale, 'ui.field.victory.160')
-            : message(locale, 'ui.field.defeat.161')
-        : message(locale, 'ui.battle.at.holds.162', { p0: city, p1: winner }),
-      detail: `${city} · ${held}`,
+      title,
+      detail:
+        [reason, days].filter(Boolean).join(locale === 'zh' ? '，' : ' · ') || `${city} · ${held}`,
     };
   }
   if (event.code === 'threat.approach') {

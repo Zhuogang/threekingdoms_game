@@ -3423,3 +3423,93 @@ h3.v03-inbox-section {
     animation: none;
   }
 }
+/* PF-UI-09 moments: outcomes read from the player's side, and a little motion. */
+.v03-outcome-title.is-victory {
+  color: var(--success);
+}
+.v03-outcome-title.is-defeat {
+  color: var(--danger);
+}
+.v03-outcome-formations {
+  width: 100%;
+  margin-block: var(--space-3);
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.v03-outcome-formations caption {
+  text-align: start;
+  font-weight: 700;
+  padding-bottom: var(--space-2);
+}
+.v03-outcome-formations th[scope='rowgroup'] {
+  text-align: start;
+  padding-top: var(--space-2);
+}
+.v03-outcome-formations td + td,
+.v03-outcome-formations thead th + th {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+.v03-campaign-end {
+  text-align: center;
+}
+.v03-campaign-end .v03-proposal-actions {
+  justify-content: center;
+}
+.v03-modal-backdrop {
+  animation: v03-fade-in 160ms ease-out;
+}
+.v03-outcome-modal,
+.v03-wiki-modal {
+  animation: v03-rise-in 220ms ease-out;
+}
+.v03-toast {
+  animation: v03-toast-in 200ms ease-out;
+}
+.v03-capture-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: v03-capture-pulse 1.4s ease-out 3;
+  opacity: 0;
+}
+@keyframes v03-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes v03-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes v03-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes v03-capture-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v03-modal-backdrop,
+  .v03-outcome-modal,
+  .v03-wiki-modal,
+  .v03-toast {
+    animation: none;
+  }
+  /* Without motion, the recent capture stays marked by a steady outer ring. */
+  .v03-capture-pulse {
+    animation: none;
+    opacity: 0.8;
+    transform: scale(1.4);
+  }
+}

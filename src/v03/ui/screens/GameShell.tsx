@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Button, Input } from '../kit';
+import { CampaignEnd } from '../panels/CampaignEnd';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { useBattleDisplay } from '../hooks/useBattleDisplay';
 import { RetreatPreview } from '../panels/RetreatPreview';
@@ -56,6 +58,10 @@ export function GameShell({
           !entry.acknowledged &&
           entry.tier === 'critical',
       );
+  // The end screen follows any last battle report; dismissing it leaves the map to browse.
+  const endKey = `${context.state.scenarioId}:${context.state.winnerFactionId}:${context.state.absoluteDay}`;
+  const [dismissedEnd, setDismissedEnd] = useState<string | null>(null);
+  const showEnd = context.state.phase === 'finished' && !outcomeEvent && dismissedEnd !== endKey;
   return (
     <main
       ref={display.root}
@@ -107,6 +113,19 @@ export function GameShell({
           />
         ) : null;
       })()}
+      {showEnd ? (
+        <CampaignEnd
+          state={context.state}
+          locale={locale}
+          onViewMap={() => setDismissedEnd(endKey)}
+          onNewCampaign={() => {
+            setDismissedEnd(endKey);
+            context.setScenarioId(context.state.scenarioId);
+            context.setFactionId(context.state.playerFactionId);
+            context.setShowCampaignMenu(true);
+          }}
+        />
+      ) : null}
       <CityGovernancePrompt context={context} />
 
       {!context.isBattleView || display.panels.topbar ? <TopBar context={{ ...context }} /> : null}

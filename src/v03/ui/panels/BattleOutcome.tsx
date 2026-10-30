@@ -30,9 +30,44 @@ export function BattleOutcome({
       })
       .join(', ') || '—';
   const copy = formatEvent(event, state, locale)!;
+  const playerSide =
+    battle?.attackerFactionId === state.playerFactionId
+      ? 'attacker'
+      : battle?.defenderFactionId === state.playerFactionId
+        ? 'defender'
+        : null;
+  const sideLabel = (side: 'attacker' | 'defender') =>
+    playerSide
+      ? message(locale, side === playerSide ? 'outcome.yourArmy' : 'outcome.enemyArmy')
+      : message(locale, side === 'attacker' ? 'ui.attacker.37' : 'ui.defender.38');
+  const won = playerSide !== null && report.winner === playerSide;
+  const lost = playerSide !== null && report.winner !== 'draw' && !won;
+  // Each formation's real exchange, from the battle data the report points to.
+  const formations = (side: 'attacker' | 'defender') =>
+    (battle?.battleData.units ?? [])
+      .filter((unit) => unit.side === side)
+      .map((unit) => {
+        const ids =
+          (side === 'attacker'
+            ? battle!.attackerFormationOfficerIds
+            : battle!.defenderFormationOfficerIds)[unit.id] ?? [];
+        const leader = state.officers.find((officer) => officer.id === ids[0]);
+        return {
+          id: unit.id,
+          name: leader
+            ? displayName(leader, locale)
+            : unit.isMilitia
+              ? message(locale, 'ui.militia.393')
+              : unit.name,
+          dealt: unit.combatCasualtiesDealt,
+          received: unit.combatCasualtiesReceived,
+        };
+      });
   const content = (
     <>
-      <h2>{copy.title}</h2>
+      <h2 className={`v03-outcome-title${won ? ' is-victory' : lost ? ' is-defeat' : ''}`}>
+        {copy.title}
+      </h2>
       <p>{copy.detail}</p>
       {(battle?.rearDispersed ?? 0) > 0 ? (
         <p>
@@ -65,11 +100,7 @@ export function BattleOutcome({
         <tbody>
           {(['attacker', 'defender'] as const).map((side) => (
             <tr key={side}>
-              <th>
-                {side === 'attacker'
-                  ? message(locale, 'ui.attacker.37')
-                  : message(locale, 'ui.defender.38')}
-              </th>
+              <th>{sideLabel(side)}</th>
               <td>{report[side].startingTroops.toLocaleString()}</td>
               <td>{report[side].survivingTroops.toLocaleString()}</td>
               <td>{report[side].woundedTroops.toLocaleString()}</td>
@@ -85,12 +116,42 @@ export function BattleOutcome({
           ))}
         </tbody>
       </table>
+      {formations('attacker').length + formations('defender').length > 0 ? (
+        <table className="v03-outcome-formations">
+          <caption>{message(locale, 'outcome.formations')}</caption>
+          <thead>
+            <tr>
+              <th>{message(locale, 'outcome.leader')}</th>
+              <th>{message(locale, 'outcome.dealt')}</th>
+              <th>{message(locale, 'outcome.received')}</th>
+            </tr>
+          </thead>
+          {(['attacker', 'defender'] as const).map((side) => (
+            <tbody key={side}>
+              <tr>
+                <th colSpan={3} scope="rowgroup">
+                  {sideLabel(side)}
+                </th>
+              </tr>
+              {formations(side).map((row) => (
+                <tr key={row.id}>
+                  <td>{row.name}</td>
+                  <td>{row.dealt.toLocaleString()}</td>
+                  <td>{row.received.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      ) : null}
       {(['attacker', 'defender'] as const).map((side) => (
         <div key={side}>
           <h3>
-            {side === 'attacker'
-              ? message(locale, 'ui.attacking.officers.39')
-              : message(locale, 'ui.defending.officers.40')}
+            {playerSide
+              ? sideLabel(side)
+              : side === 'attacker'
+                ? message(locale, 'ui.attacking.officers.39')
+                : message(locale, 'ui.defending.officers.40')}
           </h3>
           <p>
             {message(locale, 'ui.returned.41')}: {names(report[side].returned)}

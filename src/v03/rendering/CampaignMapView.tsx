@@ -128,6 +128,19 @@ function CitySymbol({
             strokeWidth={1.8}
           />
         ) : null}
+        {city.captured ? (
+          <ellipse
+            className="v03-capture-pulse"
+            cx={0}
+            cy={-3}
+            rx={art.width * 0.38}
+            ry={6}
+            fill="none"
+            stroke={color}
+            strokeWidth={3}
+            aria-hidden="true"
+          />
+        ) : null}
         {/* Owner colour reads at Fit zoom: a solid ground ring plus a pennant. */}
         <ellipse
           cx={0}

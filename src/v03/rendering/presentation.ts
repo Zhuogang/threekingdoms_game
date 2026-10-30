@@ -167,6 +167,8 @@ export interface CampaignCityVisual {
   threatDays?: number;
   /** A field battle is being fought for this city. */
   battle?: boolean;
+  /** Changed hands by conquest in the last few days: the map pulses its ownership ring. */
+  captured?: boolean;
 }
 
 export interface WorldPolyline {

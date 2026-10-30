@@ -334,6 +334,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
         selected: city.id === selectedCityId,
         threatDays: threatDays.get(city.id),
         battle: battleCityIds.has(city.id),
+        captured: Boolean(city.lostBy && state.absoluteDay - city.lostBy.absoluteDay <= 5),
         info: `${displayName(city, locale)} · ${faction ? displayName(faction, locale) : message(locale, 'ui.independent.10')} · ${message(locale, 'ui.governor.11')}: ${state.officers.find((officer) => officer.id === city.governorId)?.[locale === 'zh' ? 'chinese' : 'name'] ?? message(locale, 'ui.local.stewardship.13')} · ${message(locale, 'ui.garrison.14')}: ${city.garrisonTroops.toLocaleString()}${(() => {
           if (!selectedCityId || selectedCityId === city.id) return '';
           const route = orderServices.planRoute({
