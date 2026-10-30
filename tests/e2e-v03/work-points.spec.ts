@@ -117,8 +117,7 @@ for (const locale of ['zh', 'en']) {
     }
     const exhausted = await saved(page);
     await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
-    const executor = page.locator('.v03-work-assignment .v03-roster-list').getByRole('button');
-    await executor.click();
+    await expect(page.locator('.v03-assigned-officer')).toBeVisible();
     await expect(
       page.getByRole('button', { name: /确认执行|Confirm order/, exact: true }),
     ).toBeDisabled();

@@ -4,7 +4,7 @@
 
 **Review date:** October 29, 2026, against `v0.4` at `a5b028e`. Line references point to that commit.
 
-**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phase 0 is implemented (see section 7.1); later phases are not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
+**Status:** Accepted October 29, 2026, with every recommendation in section 5. Phases 0 and 1 are implemented (see sections 7.1 and 7.2); later phases are not started. It does not replace the [v0.4 plan](implementation.md) or its pending player/hardware gates; section 7 explains how the two fit together.
 
 ## 1. Goal and guardrails
 
@@ -356,6 +356,23 @@ Implemented on `v0.4` on October 29, 2026. Regression tests are in `tests/v03/pl
 | Framing, toasts | Battles open framing both armies. Toasts dismiss after six seconds and hide behind the battle outcome; the per-day "campaign advanced" toast is gone.                                                                                                      |
 
 Deferred from Phase 0: opening the Wiki over the city window (it needs the Wiki in the dialog top layer) and the hover preview of attackable enemies, which moves to Phase 2 with the on-map forecast (PF-UI-07).
+
+### 7.2 Phase 1 status
+
+Implemented on `v0.4` on October 30, 2026. Regression tests are in `tests/v03/play-feel-phase1.test.ts`.
+
+| Item     | Result                                                                                                                                                                                                                                                                                                                                                                          |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PF-UI-01 | A new `hostileApproach` report (notice tier, compatible optional save value) is issued when a rival campaign departs toward a player city, with source, strength rounded to hundreds and arrival date. **Next event** stops that day; it never blocks day advances or simulations. Hostile parties aimed at the player are drawn in red and never merged with friendly markers. |
+| PF-UI-02 | The static map heading is replaced by a status strip: capital work and refresh, gold and food totals with the next-settlement change, threatened cities with days, battles by city, waiting decisions, officers with troops, and a house legend with city counts. Dock battle buttons name their city.                                                                          |
+| PF-UI-04 | The inbox separates **Needs your decision** from **Updates**, can acknowledge all updates at once (`acknowledgeEvents`), offers **Go to city**, lists monthly shortages first with totals, and the inbox button turns to danger styling only when something needs a decision.                                                                                                   |
+| PF-UI-05 | The city overview shows monthly gold and food (income and upkeep) and food runway from the governors' forecast; the reserve is labelled as not defending. Work previews show each action's lasting monthly effect and a development's payback.                                                                                                                                  |
+| PF-UI-06 | Stronger ownership ring plus a house pennant, a capital star only on the player's capital (the R/G/L letters are gone), battle and threat badges on cities, icons instead of CJK glyphs on army markers, and jumps from reports, the strip and the directory pan the map to the city.                                                                                           |
+| PF-UI-10 | The directory gains a **Show** filter (all, yours, yours with troops, yours without troops); the strip opens it on "yours with troops". Cards for your officers show location and troops. The dock keeps the full catalogue by default.                                                                                                                                         |
+| PF-CT-02 | City work opens on its review with the recommended executor; Back returns to City affairs. Recruitment suggests the cheapest type a local officer can lead and names who can. **Fill officers from reserve** is a free command over the ordinary assignment rule. The troop-count field defaults to the most the reserve allows.                                                |
+| PF-CT-03 | **March here** picks the nearest city with officers ready to march. The march form lists reachable destinations by travel time, disables blocked ones with the shared dispatch reason, shows provisions needed against stock, lists officers still without troops, and no longer moves the city window when the source changes.                                                 |
+
+Deviation from the plan text: the officer directory keeps the full catalogue as its default when opened from the dock, because it is also the historical reference; the "who is idle" view is one click away from the status strip.
 
 ## 8. Not in this plan
 

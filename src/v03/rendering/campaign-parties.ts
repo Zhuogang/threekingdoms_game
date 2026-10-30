@@ -6,17 +6,21 @@ export interface CampaignPartyCandidate<T> {
   ownerFactionId: string;
   position: Point;
   value: T;
+  /** A foreign army marching on one of the player's cities; it is reported at departure. */
+  hostile?: boolean;
 }
 
 export interface CampaignPartyCluster<T> {
   id: string;
   position: Point;
   parties: T[];
+  hostile: boolean;
 }
 
 /**
- * Keep undiscovered opponents off the player map and combine markers that
- * would overlap at the current camera scale.
+ * Show the player's parties and hostile armies aimed at the player's cities; keep other
+ * opponents off the map. Combine markers that would overlap at the current camera scale,
+ * never mixing hostile and friendly parties in one marker.
  */
 export function clusterVisibleCampaignParties<T>(
   candidates: readonly CampaignPartyCandidate<T>[],
@@ -26,7 +30,7 @@ export function clusterVisibleCampaignParties<T>(
   overlapPixels = 30,
 ): CampaignPartyCluster<T>[] {
   const visible = candidates
-    .filter((candidate) => candidate.ownerFactionId === playerFactionId)
+    .filter((candidate) => candidate.ownerFactionId === playerFactionId || candidate.hostile)
     .slice()
     .sort((a, b) => a.id.localeCompare(b.id));
   if (frame.width <= 0 || frame.height <= 0) {
@@ -34,6 +38,7 @@ export function clusterVisibleCampaignParties<T>(
       id: candidate.id,
       position: candidate.position,
       parties: [candidate.value],
+      hostile: Boolean(candidate.hostile),
     }));
   }
 
@@ -44,14 +49,18 @@ export function clusterVisibleCampaignParties<T>(
     sumX: number;
     sumY: number;
     parties: T[];
+    hostile: boolean;
   }> = [];
   for (const candidate of visible) {
     const screen = {
       x: ((candidate.position.x - viewport.left) / viewport.width) * frame.width,
       y: ((candidate.position.y - viewport.top) / viewport.height) * frame.height,
     };
+    const hostile = Boolean(candidate.hostile);
     const cluster = clusters.find(
-      (entry) => Math.hypot(entry.x - screen.x, entry.y - screen.y) < overlapPixels,
+      (entry) =>
+        entry.hostile === hostile &&
+        Math.hypot(entry.x - screen.x, entry.y - screen.y) < overlapPixels,
     );
     if (!cluster) {
       clusters.push({
@@ -61,6 +70,7 @@ export function clusterVisibleCampaignParties<T>(
         sumX: screen.x,
         sumY: screen.y,
         parties: [candidate.value],
+        hostile,
       });
       continue;
     }
@@ -78,5 +88,6 @@ export function clusterVisibleCampaignParties<T>(
       y: viewport.top + (cluster.y / frame.height) * viewport.height,
     },
     parties: cluster.parties,
+    hostile: cluster.hostile,
   }));
 }

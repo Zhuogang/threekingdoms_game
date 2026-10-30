@@ -27,13 +27,8 @@ import { createV03Game } from '../../initial-state';
 import type { V03GameState, V03JourneyCargo } from '../../types';
 
 import { localizeSaveError, CAMPAIGN_BOUNDS, cityScale } from '../shared/app-copy-2';
-import {
-  absoluteDateLabel,
-  deadlineFromDaysInput,
-  displayName,
-  mapPosition,
-} from '../shared/app-copy-3';
-import { localizedEvent } from '../shared/legacy-events';
+import { deadlineFromDaysInput, displayName, mapPosition } from '../shared/app-copy-3';
+import { explainAdvance } from './advance-feedback';
 import type { useGameSession } from './useGameSession';
 export function useCommands(context: ReturnType<typeof useGameSession>) {
   const {
@@ -91,59 +86,6 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     requestedFood,
     intent,
   } = context;
-  /** Say what stopped the clock and open the inbox when a report is waiting. */
-  const explainAdvance = (
-    next: V03GameState,
-    advance: NonNullable<ReturnType<typeof executeV03Command>['advance']>,
-  ): string | null => {
-    if (!state) return null;
-    const date = absoluteDateLabel(next.startYear, next.absoluteDay, locale);
-    const newReports = next.events.filter(
-      (event) =>
-        eventTier(next, event) !== 'chronicle' && !state.events.some((old) => old.id === event.id),
-    ).length;
-    const suffix =
-      advance.daysAdvanced > 1 && newReports > 0
-        ? message(locale, 'feedback.advance.newReports', { p0: newReports })
-        : '';
-    const arrival = advance.eventId?.startsWith('arrival:')
-      ? state.journeys.find((journey) => `arrival:${journey.id}` === advance.eventId)
-      : undefined;
-    if (arrival) {
-      const city = next.cities.find((entry) => entry.id === arrival.destinationCityId);
-      return (
-        message(locale, 'feedback.advance.arrival', {
-          p0: date,
-          p1: city ? displayName(city, locale) : arrival.destinationCityId,
-        }) + suffix
-      );
-    }
-    const event = advance.eventId
-      ? next.events.find((entry) => entry.id === advance.eventId)
-      : undefined;
-    if (event) {
-      if (isCriticalReport(next, event)) setShowReports(true);
-      return (
-        message(locale, 'feedback.advance.event', {
-          p0: date,
-          p1: localizedEvent(event, next, locale).title,
-        }) + suffix
-      );
-    }
-    if (advance.stoppedFor === 'manual-battle' || advance.stoppedFor === 'active-battle')
-      return message(locale, 'feedback.advance.battle', { p0: date }) + suffix;
-    if (advance.stoppedFor === 'step-limit')
-      return message(locale, 'feedback.advance.quiet', { p0: advance.daysAdvanced, p1: date });
-    if (next.events.some((entry) => isCriticalReport(next, entry))) {
-      setShowReports(true);
-      return message(locale, 'feedback.advance.report', { p0: date }) + suffix;
-    }
-    return (
-      (advance.daysAdvanced === 1
-        ? message(locale, 'feedback.advance.oneDay', { p0: date })
-        : message(locale, 'feedback.advance.days', { p0: advance.daysAdvanced, p1: date })) + suffix
-    );
-  };
   const dispatch = (command: Parameters<typeof executeV03Command>[1]) => {
     if (!state) return;
     if (command.type === 'advance' || command.type === 'completeBattleDay') {
@@ -203,9 +145,10 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     }
     const advanceExplanation =
       command.type === 'advance' && result.advance
-        ? explainAdvance(result.state, result.advance)
+        ? explainAdvance(state, result.state, result.advance, locale)
         : null;
-    if (advanceExplanation) setFeedback(advanceExplanation);
+    if (advanceExplanation?.openReports) setShowReports(true);
+    if (advanceExplanation) setFeedback(advanceExplanation.text);
     else if (
       command.type === 'completeBattleDay' &&
       result.message === 'All active battles completed their day; the campaign advanced one day.'
@@ -346,6 +289,30 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
   };
   const campaignCities = useMemo<CampaignCityVisual[]>(() => {
     if (!state) return [];
+    // Hostile campaigns aimed at the player's cities are reported when they depart.
+    const threatDays = new Map<string, number>();
+    for (const journey of state.journeys) {
+      if (
+        journey.kind !== 'campaign' ||
+        journey.ownerFactionId === state.playerFactionId ||
+        (journey.status !== 'outbound' && journey.status !== 'waiting')
+      )
+        continue;
+      const target = state.cities.find((city) => city.id === journey.destinationCityId);
+      if (target?.factionId !== state.playerFactionId) continue;
+      const days = Math.max(0, journey.expectedArrivalDay - state.absoluteDay);
+      threatDays.set(target.id, Math.min(days, threatDays.get(target.id) ?? days));
+    }
+    const battleCityIds = new Set(
+      state.battles
+        .filter((battle) => battle.active)
+        .map(
+          (battle) =>
+            state.journeys.find((journey) => journey.id === battle.attackerJourneyId)
+              ?.destinationCityId,
+        )
+        .filter((id): id is string => Boolean(id)),
+    );
     return state.cities.map((city) => {
       const geo = CITY_GEOGRAPHY.find((entry) => entry.id === city.id)!;
       const faction = state.factions.find((entry) => entry.id === city.factionId);
@@ -355,13 +322,18 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
         position: mapPosition(geo.latitude, geo.longitude),
         scale: cityScale(city.id),
         controllerColor: faction?.color ?? '#746c5d',
+        // Governance marks only the player's own cities; rival administration is noise here.
         governance:
-          city.governanceMode === 'ruler'
-            ? 'direct'
-            : city.governanceMode === 'governor'
-              ? 'governed'
-              : 'local',
+          city.factionId !== state.playerFactionId
+            ? undefined
+            : city.governanceMode === 'ruler'
+              ? 'direct'
+              : city.governanceMode === 'governor'
+                ? 'governed'
+                : 'local',
         selected: city.id === selectedCityId,
+        threatDays: threatDays.get(city.id),
+        battle: battleCityIds.has(city.id),
         info: `${displayName(city, locale)} · ${faction ? displayName(faction, locale) : message(locale, 'ui.independent.10')} · ${message(locale, 'ui.governor.11')}: ${state.officers.find((officer) => officer.id === city.governorId)?.[locale === 'zh' ? 'chinese' : 'name'] ?? message(locale, 'ui.local.stewardship.13')} · ${message(locale, 'ui.garrison.14')}: ${city.garrisonTroops.toLocaleString()}${(() => {
           if (!selectedCityId || selectedCityId === city.id) return '';
           const route = orderServices.planRoute({

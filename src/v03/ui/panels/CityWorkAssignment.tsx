@@ -4,6 +4,18 @@ import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
 import { WorkBudget, type CityWorkAction } from './CityWork';
 
+/** Best executor first: force drives recruitment; intellect drives the other city work. */
+export function rankWorkExecutors<T extends { id: string; force: number; intellect: number }>(
+  officers: readonly T[],
+  action: CityWorkAction,
+): T[] {
+  return [...officers].sort(
+    (a, b) =>
+      (action === 'recruit' ? b.force - a.force : b.intellect - a.intellect) ||
+      a.id.localeCompare(b.id),
+  );
+}
+
 export function CityWorkAssignment({
   context,
   action,
@@ -14,11 +26,7 @@ export function CityWorkAssignment({
   onSelect: (id: string) => void;
 }) {
   const { locale, directCityOfficers } = context;
-  const officers = [...directCityOfficers].sort(
-    (a, b) =>
-      (action === 'recruit' ? b.force - a.force : b.intellect - a.intellect) ||
-      a.id.localeCompare(b.id),
-  );
+  const officers = rankWorkExecutors(directCityOfficers, action);
   return (
     <section className="v03-work-assignment">
       <p className="v03-step-intro">{message(locale, 'flow.assignWorkHint')}</p>

@@ -80,8 +80,7 @@ for (const width of [390, 1366, 1920])
       await expect(page.locator('#campaign-window-title')).toBeFocused();
       await expect(page.locator('.v03-work-detail')).toContainText('5,000 → 4,920');
       expect(await current(page)).toEqual(before);
-      await page.keyboard.press('Escape');
-      await expect(page.locator('.v03-work-assignment')).toBeVisible();
+      // The review opens directly with the recommended executor, so one Escape returns to affairs.
       await page.keyboard.press('Escape');
       await expect(page.locator('.v03-city-affairs')).toBeVisible();
       expect(await current(page)).toEqual(before);
@@ -157,6 +156,8 @@ test('each city task returns to affairs and retains the existing rule result', a
     await showCityManagement(page);
     await page.getByRole('button', { name }).click();
     expect(await current(page)).toEqual(before);
+    if (action === 'recruit')
+      await page.getByLabel('Recruit troop type', { exact: true }).selectOption('infantry');
     await confirmWork(page);
     await expect(page.locator('.v03-city-affairs')).toBeVisible();
     expect(await current(page)).toEqual(

@@ -75,7 +75,9 @@ export function useHotkeys(context: HotkeyContext) {
       if (key === 'n' && !manualBattle)
         return run(() => current.dispatch({ type: 'advance', days: 'nextEvent' }));
       if (key === 'c')
-        return run(() => current.focusCampaignCity(current.state.playerCapitalCityId));
+        return run(() =>
+          current.focusCampaignCity(current.state.playerCapitalCityId, { pan: true }),
+        );
       if (key === 'o' || key === 'd')
         return run(() => {
           current.setCampaignTab(key === 'o' ? 'orders' : 'diplomacy');

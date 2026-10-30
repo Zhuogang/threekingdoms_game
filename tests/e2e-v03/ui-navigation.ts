@@ -70,6 +70,14 @@ export async function showAssignment(page: Page, name?: string) {
 }
 export async function chooseWorkExecutor(page: Page, name?: string) {
   const list = page.locator('.v03-work-assignment .v03-roster-list');
+  // City work opens on its review with the recommended executor; choosing someone else goes
+  // through "Change executor".
+  const assigned = page.locator('.v03-assigned-officer');
+  if (!(await list.count()) && name && (await assigned.count())) {
+    if ((await assigned.innerText()).includes(name)) return;
+    await assigned.getByRole('button').click();
+    await list.waitFor();
+  }
   if (await list.count()) {
     if (name) await list.getByRole('button', { name, exact: true }).click();
     else await list.getByRole('button').first().click();

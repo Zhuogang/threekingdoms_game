@@ -15,26 +15,60 @@ import {
 } from '../shared/officer-view';
 
 const PAGE_SIZE = 12;
+/** Narrow the catalogue to the player's own officers when the question is "who can act?". */
+export type DirectoryScope = 'all' | 'mine' | 'mine-troops' | 'mine-empty';
+const SCOPES: DirectoryScope[] = ['all', 'mine', 'mine-troops', 'mine-empty'];
 export default function OfficerDirectory({
   state,
   locale,
   onClose,
   onVisitCity,
+  initialScope = 'all',
 }: {
   state: V03GameState;
   locale: 'zh' | 'en';
   onClose: () => void;
   onVisitCity: (id: string) => void;
+  initialScope?: DirectoryScope;
 }) {
   const t = officerCopy[locale];
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<OfficerStatus | 'all'>('all');
+  const [scope, setScope] = useState<DirectoryScope>(initialScope);
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const all = useMemo(() => officerDirectory(state), [state]);
-  const matching = useMemo(() => officerDirectory(state, query, status), [state, query, status]);
+  const runtime = useMemo(
+    () => new Map(state.officers.map((officer) => [officer.id, officer])),
+    [state],
+  );
+  const matching = useMemo(
+    () =>
+      officerDirectory(state, query, status).filter(({ definition }) => {
+        if (scope === 'all') return true;
+        const officer = runtime.get(definition.id);
+        if (!officer?.alive || officer.factionId !== state.playerFactionId) return false;
+        if (scope === 'mine') return true;
+        const stationed = officer.location.kind === 'city';
+        return scope === 'mine-troops'
+          ? stationed && officer.troops > 0
+          : stationed && officer.troops === 0;
+      }),
+    [state, query, status, scope, runtime],
+  );
+  const placeOf = (id: string) => {
+    const officer = runtime.get(id);
+    if (!officer || officer.factionId !== state.playerFactionId || !officer.alive) return null;
+    const city =
+      officer.location.kind === 'city'
+        ? state.cities.find(
+            (entry) => officer.location.kind === 'city' && entry.id === officer.location.cityId,
+          )
+        : undefined;
+    return `${city ? (locale === 'zh' ? city.chinese : city.name) : t.away} · ${officer.troops.toLocaleString()} ${t.troops}`;
+  };
   const pages = Math.max(1, Math.ceil(matching.length / PAGE_SIZE));
   const currentPage = Math.min(page, pages - 1);
   const data = selected ? officerDossier(state, selected) : null;
@@ -54,7 +88,7 @@ export default function OfficerDirectory({
   useEffect(() => {
     const body = dialog.current?.querySelector('.v03-window-body');
     if (body) body.scrollTop = 0;
-  }, [selected, currentPage, query, status]);
+  }, [selected, currentPage, query, status, scope]);
   return (
     <dialog
       ref={dialog}
@@ -116,6 +150,23 @@ export default function OfficerDirectory({
                 />
               </label>
               <label>
+                {t.show}
+                <Select
+                  aria-label={t.show}
+                  value={scope}
+                  onChange={(event) => {
+                    setScope(event.target.value as DirectoryScope);
+                    setPage(0);
+                  }}
+                >
+                  {SCOPES.map((key) => (
+                    <option value={key} key={key}>
+                      {t.scopes[key]}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label>
                 {locale === 'zh' ? '人物状态' : 'Officer status'}
                 <Select
                   aria-label={locale === 'zh' ? '人物状态' : 'Officer status'}
@@ -159,7 +210,7 @@ export default function OfficerDirectory({
                         {troopName(person.troopType, locale)}
                       </small>
                       <small>
-                        {t.debut}: {person.timeline.debutYear}
+                        {placeOf(person.id) ?? `${t.debut}: ${person.timeline.debutYear}`}
                       </small>
                     </span>
                   </Button>

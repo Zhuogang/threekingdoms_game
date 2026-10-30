@@ -153,7 +153,7 @@ test('city window and return controls fit at 200 percent zoom; F1 opens accessib
   await expect(page.getByRole('dialog', { name: 'Field guide / Wiki' })).toBeVisible();
 });
 
-test('changing source resets officer selection and returns to the selected city', async ({
+test('changing source resets officer selection without moving the city window', async ({
   page,
 }) => {
   await page.goto('/?debug=1');
@@ -162,8 +162,9 @@ test('changing source resets officer selection and returns to the selected city'
   await page.getByRole('button', { name: /March out/ }).click();
   await page.locator('.v03-army-officer input').first().check();
   await page.getByLabel('Source city').selectOption('puyang');
-  await expect(page.locator('.v03-window-header')).toContainText('Puyang');
+  await expect(page.getByLabel('Source city')).toHaveValue('puyang');
+  await expect(page.locator('.v03-window-header')).toContainText('Chenliu');
   await expect(page.locator('.v03-army-officer input:checked')).toHaveCount(0);
   await page.getByRole('button', { name: 'Back to city', exact: true }).click();
-  await expect(page.getByRole('dialog')).toHaveAccessibleName('Puyang');
+  await expect(page.getByRole('dialog')).toHaveAccessibleName('Chenliu');
 });

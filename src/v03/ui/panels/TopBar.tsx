@@ -116,6 +116,12 @@ export function TopBar({
         )}
         <Button
           aria-keyshortcuts="I"
+          // Danger styling only when something needs a decision; routine notices stay quiet.
+          variant={
+            context.dueReports.length || pendingCityGovernance(state).length
+              ? 'danger'
+              : 'secondary'
+          }
           title={message(locale, 'topbar.hotkey', { p0: 'I' })}
           onClick={() => context.setShowReports(true)}
         >

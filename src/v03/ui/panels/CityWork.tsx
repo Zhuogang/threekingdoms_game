@@ -3,6 +3,7 @@ import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
 import { recruitmentQuote } from '../../campaign/recruitment';
 import { availableReserveTroops } from '../../campaign/personnel';
+import { cityProduction, monthlyCityUpkeep, nextEconomicBoundary } from '../../campaign/economy';
 import { useMemo, useRef, useState } from 'react';
 import {
   applyV03CityAction,
@@ -77,9 +78,43 @@ export function CityWork({
   onChangeOfficer?: () => void;
 }) {
   const { state, selectedCity: city, locale, t } = context;
-  const [troopType, setTroopType] = useState<TroopType>('infantry');
+  // A reserve nobody can command does not defend the city or march.
+  const absorbers = (type: TroopType) =>
+    city
+      ? state.officers.filter(
+          (entry) =>
+            entry.alive &&
+            entry.factionId === city.factionId &&
+            entry.troopType === type &&
+            entry.location.kind === 'city' &&
+            entry.location.cityId === city.id,
+        )
+      : [];
+  const openCapacity = (type: TroopType) =>
+    absorbers(type).reduce((sum, entry) => sum + 10_000 - entry.troops - entry.wounded, 0) -
+    (city ? availableReserveTroops(state, city.id, type) : 0);
+  // Among types a local officer can still absorb, suggest the cheapest per soldier.
+  const [troopType, setTroopType] = useState<TroopType>(() => {
+    const absorbable = TROOP_TYPES.filter((type) => openCapacity(type) > 0);
+    if (!city || !absorbable.length) return 'infantry';
+    const executor = state.officers.find((entry) => entry.id === officerId);
+    const price = (type: TroopType) => {
+      const quote = recruitmentQuote(city, executor?.force ?? 70, type);
+      return quote.troops > 0 ? quote.gold / quote.troops : Infinity;
+    };
+    return absorbable.reduce((best, type) => (price(type) < price(best) ? type : best));
+  });
   const officer = state.officers.find((entry) => entry.id === officerId);
-  const amount = officer ? (context.troopAssignments[officer.id] ?? officer.troops) : undefined;
+  // Default to the most this officer can take from the matching reserve; the player can lower it.
+  const amount = officer
+    ? (context.troopAssignments[officer.id] ??
+      (action === 'assign-troops' && city
+        ? Math.min(
+            10_000 - officer.wounded,
+            officer.troops + availableReserveTroops(state, city.id, officer.troopType),
+          )
+        : officer.troops))
+    : undefined;
   const input = { cityId: city?.id ?? '', action, officerId, amount, troopType };
   const availability = context.capitalAvailability(action, officerId, amount, troopType);
   const submitted = useRef(false);
@@ -124,6 +159,32 @@ export function CityWork({
     add(message(locale, 'flow.farming'), city.farming, afterCity.farming);
     add(message(locale, 'flow.commerce'), city.commerce, afterCity.commerce);
   }
+  // Lasting monthly effect: production change at the next settlement minus the upkeep of any
+  // new reserve soldiers. This makes the army-versus-tax-base tradeoff visible before confirming.
+  const lasting = (() => {
+    if (!afterCity) return null;
+    const month = nextEconomicBoundary(state).harvestMonth;
+    const before = cityProduction(city, month);
+    const after = cityProduction(afterCity, month);
+    const recruits = Math.max(0, afterCity.reserve - city.reserve);
+    const upkeep = monthlyCityUpkeep({
+      troops: recruits,
+      cavalry: action === 'recruit' && troopType === 'cavalry' ? recruits : 0,
+    });
+    const gold = after.gold - before.gold - upkeep.gold;
+    const food = after.food - before.food - upkeep.food;
+    if (!gold && !food) return null;
+    const goldValue = gold + food / 10;
+    const cost = city.gold - afterCity.gold;
+    return {
+      gold,
+      food,
+      payback:
+        (action === 'develop-farming' || action === 'develop-commerce') && goldValue > 0 && cost > 0
+          ? Math.ceil(cost / goldValue)
+          : null,
+    };
+  })();
   if (officer && afterOfficer) {
     add(t.troops, officer.troops, afterOfficer.troops);
     add(message(locale, 'ui.loyalty.52'), officer.loyalty, afterOfficer.loyalty);
@@ -160,6 +221,15 @@ export function CityWork({
               ))}
             </Select>
           </Field>
+          <p className="v03-muted">
+            {absorbers(troopType).length
+              ? message(locale, 'recruit.absorbers', {
+                  names: absorbers(troopType)
+                    .map((entry) => displayName(entry, locale))
+                    .join(locale === 'zh' ? '、' : ', '),
+                })
+              : message(locale, 'recruit.noAbsorbers')}
+          </p>
           {officer ? (
             <StatGrid
               values={[
@@ -224,6 +294,17 @@ export function CityWork({
         <ReinforcementPreview before={officer} after={afterOfficer} locale={locale} />
       ) : null}
       {changes.length ? <StatGrid values={changes} /> : null}
+      {lasting ? (
+        <p className="v03-work-lasting">
+          {message(locale, 'work.lasting', {
+            gold: `${lasting.gold >= 0 ? '+' : '−'}${Math.abs(lasting.gold).toLocaleString()}`,
+            food: `${lasting.food >= 0 ? '+' : '−'}${Math.abs(lasting.food).toLocaleString()}`,
+          })}
+          {lasting.payback
+            ? ` ${message(locale, 'work.payback', { months: lasting.payback })}`
+            : ''}
+        </p>
+      ) : null}
       {action === 'search' || action === 'feast' || action === 'equip' || action === 'recruit' ? (
         <p>{message(locale, `flow.workHint.${action}`)}</p>
       ) : null}

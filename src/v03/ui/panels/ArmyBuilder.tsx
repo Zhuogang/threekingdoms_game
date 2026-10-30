@@ -1,7 +1,10 @@
 import { message } from '../../i18n';
 import { useEffect, useMemo, useState } from 'react';
 import type { GameplayContext } from '../hooks/gameplayView';
-import { armyPreview } from '../../governance/army';
+import { armyPreview, marchDestinationBlock } from '../../governance/army';
+import { availableCityResources } from '../../governance/authority';
+import { localizeAppMessage } from '../shared/app-copy-2';
+import { ReserveFillButton } from './ReserveFill';
 import { isCityCommitted } from '../../governance/commitments';
 import { troopName } from '../../rendering/presentation';
 import { Button, Input, Select, Field, StatGrid } from '../kit';
@@ -21,21 +24,21 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
   } = context;
   const [officerIds, setOfficerIds] = useState<string[]>([]);
   const [foodOverride, setFoodOverride] = useState('');
-  const source = state.cities.find(
-    (city) =>
-      city.id ===
-      (selectedCity?.factionId === state.playerFactionId
-        ? selectedCity.id
-        : state.playerCapitalCityId),
+  // The source is local to this form; changing it does not move the city window's selection.
+  const [sourceId, setSourceId] = useState(() =>
+    selectedCity?.factionId === state.playerFactionId ? selectedCity.id : state.playerCapitalCityId,
   );
-  const officers = state.officers.filter(
+  const source = state.cities.find((city) => city.id === sourceId);
+  const stationed = state.officers.filter(
     (officer) =>
       officer.alive &&
       officer.factionId === state.playerFactionId &&
       officer.location.kind === 'city' &&
-      officer.location.cityId === source?.id &&
-      officer.troops > 0,
+      officer.location.cityId === source?.id,
   );
+  const officers = stationed.filter((officer) => officer.troops > 0);
+  // Officers without troops are listed so the player sees who could march once assigned.
+  const unarmed = stationed.filter((officer) => officer.troops === 0);
   const availableIds = officers.map((officer) => officer.id).join(',');
   useEffect(() => {
     setOfficerIds([]);
@@ -43,6 +46,7 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
   }, [source?.id]);
   const selectedIds = officerIds.filter((id) => availableIds.split(',').includes(id));
   const preview = armyPreview(state, source?.id ?? '', targetCityId, selectedIds, intent);
+  // Reachable destinations, nearest first; a blocked one says why before Confirm.
   const targets = useMemo(
     () =>
       state.cities
@@ -50,14 +54,16 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
         .map((city) => ({
           city,
           ...armyPreview(state, source?.id ?? '', city.id, selectedIds, intent),
+          blocked: source ? marchDestinationBlock(state, source.id, city.id, intent) : null,
         }))
+        .filter((entry) => entry.route)
         .sort(
           (a, b) =>
-            (a.city.factionId ?? '').localeCompare(b.city.factionId ?? '') ||
-            (a.route?.estimatedDays ?? Infinity) - (b.route?.estimatedDays ?? Infinity),
+            a.route!.estimatedDays - b.route!.estimatedDays || a.city.id.localeCompare(b.city.id),
         ),
     [state, source?.id, selectedIds.join(','), intent],
   );
+  const availableFood = source ? availableCityResources(state, source.id).food : 0;
   const target = state.cities.find((city) => city.id === targetCityId);
   const committed = source ? isCityCommitted(state, source.id) : false;
   return (
@@ -65,10 +71,7 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
       <section className="v03-army-selection">
         <h3>{message(locale, 'flow.chooseOfficers')}</h3>
         <Field label={message(locale, 'ui.source.city.21')}>
-          <Select
-            value={source?.id ?? ''}
-            onChange={(event) => context.setSelectedCityId(event.target.value)}
-          >
+          <Select value={source?.id ?? ''} onChange={(event) => setSourceId(event.target.value)}>
             {state.cities
               .filter((city) => city.factionId === state.playerFactionId)
               .map((city) => (
@@ -106,6 +109,13 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
             </span>
           </label>
         ))}
+        {unarmed.map((officer) => (
+          <p key={officer.id} className="v03-army-officer is-unarmed">
+            <strong>{displayName(officer, locale)}</strong>{' '}
+            <small>{message(locale, 'army.noTroops')}</small>
+          </p>
+        ))}
+        {source ? <ReserveFillButton context={context} cityId={source.id} /> : null}
         {committed ? (
           <p role="status">{message(locale, 'ui.this.city.is.committed.to.an.active.battle.24')}</p>
         ) : null}
@@ -116,18 +126,15 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
         <Field label={message(locale, 'ui.destination.house.then.eta.25')}>
           <Select value={targetCityId} onChange={(event) => setTargetCityId(event.target.value)}>
             <option value="">—</option>
-            {targets.map(({ city, route }) => {
+            {targets.map(({ city, route, blocked }) => {
               const owner = state.factions.find((faction) => faction.id === city.factionId);
               return (
-                <option
-                  key={city.id}
-                  value={city.id}
-                  disabled={isCityCommitted(state, city.id) || !route}
-                >
+                <option key={city.id} value={city.id} disabled={Boolean(blocked)}>
                   {displayName(city, locale)} ·{' '}
                   {owner ? displayName(owner, locale) : message(locale, 'ui.independent.10')} ·{' '}
                   {city.garrisonTroops.toLocaleString()} · {route?.estimatedDays ?? '—'}{' '}
                   {message(locale, 'ui.days.15')}
+                  {blocked ? ` · ${localizeAppMessage(blocked, locale, state)}` : ''}
                 </option>
               );
             })}
@@ -171,6 +178,13 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
               value: preview.route
                 ? `${preview.route.estimatedDays} ${message(locale, 'ui.days.15')}`
                 : '—',
+            },
+            {
+              label: message(locale, 'army.provisions'),
+              value: message(locale, 'army.provisionsValue', {
+                need: (Number(foodOverride) || preview.food).toLocaleString(),
+                have: availableFood.toLocaleString(),
+              }),
             },
           ]}
         />

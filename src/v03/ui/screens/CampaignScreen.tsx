@@ -9,13 +9,14 @@ import { displayName } from '../shared/app-copy-3';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { CampaignMap } from '../panels/CampaignMap';
+import { CampaignStatus } from '../panels/CampaignStatus';
 export function CampaignScreen({
   context,
 }: {
   context: GameplayContext & { state: NonNullable<GameplayContext['state']> };
 }) {
   const { t, state, locale } = context;
-  const [directoryOpen, setDirectoryOpen] = useState(false);
+  const [directoryOpen, setDirectoryOpen] = useState<false | 'all' | 'mine-troops'>(false);
   const open = (tab: 'orders' | 'diplomacy') => {
     context.setCampaignTab(tab);
     context.setCampaignWindowOpen(true);
@@ -23,27 +24,12 @@ export function CampaignScreen({
   };
   return (
     <section className="v03-campaign-main">
-      <div className="v03-view-heading">
-        <div>
-          <span className="v03-kicker">
-            {t.campaign} ·{' '}
-            {locale === 'zh'
-              ? state.scenarioId === 'guandu-200'
-                ? '官渡前夕'
-                : '群雄割据'
-              : state.scenarioId === 'guandu-200'
-                ? 'On the eve of Guandu'
-                : 'A divided realm'}
-          </span>
-          <h1>{t.territory}</h1>
-        </div>
-        <p className="v03-map-instruction">{message(locale, 'flow.mapHint')}</p>
-      </div>
+      <CampaignStatus context={context} onOpenDirectory={() => setDirectoryOpen('mine-troops')} />
       <div className="v03-campaign-map-stage">
         <CampaignMap context={context} />
       </div>
       <footer className="v03-campaign-dock">
-        <Button onClick={() => setDirectoryOpen(true)}>
+        <Button onClick={() => setDirectoryOpen('all')}>
           <BookUser size={18} />
           {officerCopy[locale].directory}
         </Button>
@@ -80,7 +66,17 @@ export function CampaignScreen({
               context.setViewMode('battle');
             }}
           >
-            {message(locale, 'ui.open.battle.397')}
+            {message(locale, 'status.battle', {
+              city: displayName(
+                state.cities.find(
+                  (city) =>
+                    city.id ===
+                    state.journeys.find((journey) => journey.id === battle.attackerJourneyId)
+                      ?.destinationCityId,
+                ) ?? { name: '—', chinese: '—' },
+                locale,
+              ),
+            })}
           </Button>
         ))}
       </footer>
@@ -89,10 +85,11 @@ export function CampaignScreen({
           <OfficerDirectory
             state={state}
             locale={locale}
+            initialScope={directoryOpen}
             onClose={() => setDirectoryOpen(false)}
             onVisitCity={(id) => {
               setDirectoryOpen(false);
-              context.focusCampaignCity(id);
+              context.focusCampaignCity(id, { pan: true });
             }}
           />
         </Suspense>

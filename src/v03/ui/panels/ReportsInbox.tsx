@@ -12,6 +12,100 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
   const reports = state.events
     .filter((event) => !event.acknowledged && eventTier(state, event) !== 'chronicle')
     .sort((a, b) => b.absoluteDay - a.absoluteDay);
+  // Decisions first; routine updates can be cleared together.
+  const decisions = reports.filter((event) => eventTier(state, event) === 'critical');
+  const updates = reports.filter((event) => eventTier(state, event) !== 'critical');
+  const reportCityId = (event: (typeof reports)[number]) =>
+    event.battleOutcome?.cityId ??
+    (event.kind === 'hostileApproach' || event.kind === 'governorChanged' ? event.entityId : null);
+  const renderReport = (event: (typeof reports)[number]) => {
+    const copy = localizedEvent(event, state, locale);
+    return (
+      <article key={event.id} className="v03-event">
+        <strong>{copy.title}</strong>
+        <small>
+          {eventTier(state, event) === 'critical'
+            ? message(locale, 'ui.acknowledgement.required.115')
+            : message(locale, 'ui.notice.116')}
+        </small>
+        <p>{copy.detail}</p>
+        {event.monthlySummary ? (
+          <table>
+            <thead>
+              <tr>
+                <th>{context.t.city}</th>
+                <th>{context.t.gold} Δ</th>
+                <th>{context.t.food} Δ</th>
+                <th>{context.t.troops} Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...event.monthlySummary]
+                // Shortages first, so a problem is never buried under routine rows.
+                .sort((a, b) => Number(Boolean(b.shortage)) - Number(Boolean(a.shortage)))
+                .map((row) => {
+                  const city = state.cities.find((entry) => entry.id === row.cityId)!;
+                  return (
+                    <tr key={row.cityId}>
+                      <th>
+                        {displayName(city, locale)}
+                        {row.shortage ? ' ⚠' : ''}
+                        <small>
+                          {row.governorActions
+                            .map(
+                              (action) =>
+                                context.t[
+                                  action === 'develop-farming'
+                                    ? 'improveFarm'
+                                    : action === 'develop-commerce'
+                                      ? 'improveMarket'
+                                      : action === 'buy-food'
+                                        ? 'buyFood'
+                                        : action === 'sell-food'
+                                          ? 'sellFood'
+                                          : action === 'restore-loyalty'
+                                            ? 'security'
+                                            : (action as 'search')
+                                ],
+                            )
+                            .join(', ')}
+                        </small>
+                      </th>
+                      <td>{row.gold}</td>
+                      <td>{row.food}</td>
+                      <td>{row.troops}</td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>{message(locale, 'inbox.total')}</th>
+                {(['gold', 'food', 'troops'] as const).map((key) => (
+                  <td key={key}>{event.monthlySummary!.reduce((sum, row) => sum + row[key], 0)}</td>
+                ))}
+              </tr>
+            </tfoot>
+          </table>
+        ) : null}
+        {event.battleOutcome ? <BattleOutcome event={event} state={state} locale={locale} /> : null}
+        {reportCityId(event) ? (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowReports(false);
+              context.focusCampaignCity(reportCityId(event)!, { pan: true });
+            }}
+          >
+            {message(locale, 'inbox.goToCity')}
+          </Button>
+        ) : null}
+        <Button onClick={() => dispatch({ type: 'acknowledgeEvent', eventId: event.id })}>
+          {context.t.acknowledge}
+        </Button>
+      </article>
+    );
+  };
   return (
     <div
       className="v03-inbox-backdrop"
@@ -53,6 +147,9 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
             ×
           </Button>
         </header>
+        {decisions.length || pendingCityGovernance(state).length ? (
+          <h3 className="v03-inbox-section">{message(locale, 'inbox.decisions')}</h3>
+        ) : null}
         {pendingCityGovernance(state).map((event) => (
           <article className="v03-governance-pending" key={event.id}>
             <strong>
@@ -72,74 +169,21 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
             </Button>
           </article>
         ))}
-        {reports.map((event) => {
-          const copy = localizedEvent(event, state, locale);
-          return (
-            <article key={event.id} className="v03-event">
-              <strong>{copy.title}</strong>
-              <small>
-                {eventTier(state, event) === 'critical'
-                  ? message(locale, 'ui.acknowledgement.required.115')
-                  : message(locale, 'ui.notice.116')}
-              </small>
-              <p>{copy.detail}</p>
-              {event.monthlySummary ? (
-                <table>
-                  <thead>
-                    <tr>
-                      <th>{context.t.city}</th>
-                      <th>{context.t.gold} Δ</th>
-                      <th>{context.t.food} Δ</th>
-                      <th>{context.t.troops} Δ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {event.monthlySummary.map((row) => {
-                      const city = state.cities.find((entry) => entry.id === row.cityId)!;
-                      return (
-                        <tr key={row.cityId}>
-                          <th>
-                            {displayName(city, locale)}
-                            {row.shortage ? ' ⚠' : ''}
-                            <small>
-                              {row.governorActions
-                                .map(
-                                  (action) =>
-                                    context.t[
-                                      action === 'develop-farming'
-                                        ? 'improveFarm'
-                                        : action === 'develop-commerce'
-                                          ? 'improveMarket'
-                                          : action === 'buy-food'
-                                            ? 'buyFood'
-                                            : action === 'sell-food'
-                                              ? 'sellFood'
-                                              : action === 'restore-loyalty'
-                                                ? 'security'
-                                                : (action as 'search')
-                                    ],
-                                )
-                                .join(', ')}
-                            </small>
-                          </th>
-                          <td>{row.gold}</td>
-                          <td>{row.food}</td>
-                          <td>{row.troops}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : null}
-              {event.battleOutcome ? (
-                <BattleOutcome event={event} state={state} locale={locale} />
-              ) : null}
-              <Button onClick={() => dispatch({ type: 'acknowledgeEvent', eventId: event.id })}>
-                {context.t.acknowledge}
-              </Button>
-            </article>
-          );
-        })}
+        {decisions.map(renderReport)}
+        {updates.length ? (
+          <div className="v03-inbox-section">
+            <h3>{message(locale, 'inbox.updates')}</h3>
+            <Button
+              size="sm"
+              onClick={() =>
+                dispatch({ type: 'acknowledgeEvents', eventIds: updates.map((event) => event.id) })
+              }
+            >
+              {message(locale, 'inbox.acknowledgeUpdates', { count: updates.length })}
+            </Button>
+          </div>
+        ) : null}
+        {updates.map(renderReport)}
         <details>
           <summary>{message(locale, 'ui.world.chronicle.117')}</summary>
           {state.events

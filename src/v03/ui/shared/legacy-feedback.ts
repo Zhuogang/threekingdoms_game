@@ -94,6 +94,7 @@ export function localizeAppMessage(
   if (match) return `战役推进了 ${match[1]} 日。`;
   const exact: Record<string, string> = {
     'The party will return by a safe route.': '部队将沿安全路线返回。',
+    'No reserve soldiers match the officers stationed here.': '本城没有可补入驻将的同兵种预备兵。',
     'Journeys can only be recalled during campaign planning.': '只能在战略阶段召回行程。',
     'This journey cannot be recalled.': '此行程当前无法召回。',
     'A return is already requested for this journey.': '此行程已请求返程。',

@@ -25,6 +25,7 @@ import {
   focusBattlefieldViewport,
   gridToWorld,
   recenterBattlefieldViewport,
+  recenterCampaignViewport,
   V03_BATTLE_CELL,
   V03_BATTLE_READABLE_CELL_PIXELS,
   zoomBattlefieldViewport,
@@ -34,7 +35,7 @@ import {
 import type { V03CityAction, V03GameState, TroopType } from '../../types';
 
 import { localizeAppMessage, CAMPAIGN_BOUNDS, dateLabel } from '../shared/app-copy-2';
-import { displayName, journeyPosition } from '../shared/app-copy-3';
+import { displayName, journeyPosition, mapPosition } from '../shared/app-copy-3';
 import type { useCampaignOrders } from './useCampaignOrders';
 export type ApplicationBase = ReturnType<typeof useCampaignOrders>;
 export function gameplayView(context: ApplicationBase & { state: V03GameState }) {
@@ -152,8 +153,22 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
   const journeyCandidates = state.journeys.flatMap((journey) => {
     if (!['outbound', 'returning', 'waiting'].includes(journey.status)) return [];
     const position = journeyPosition(journey);
+    const hostile =
+      journey.ownerFactionId !== state.playerFactionId &&
+      journey.kind === 'campaign' &&
+      journey.status !== 'returning' &&
+      state.cities.find((city) => city.id === journey.destinationCityId)?.factionId ===
+        state.playerFactionId;
     return position
-      ? [{ id: journey.id, ownerFactionId: journey.ownerFactionId, position, value: journey }]
+      ? [
+          {
+            id: journey.id,
+            ownerFactionId: journey.ownerFactionId,
+            position,
+            value: journey,
+            hostile,
+          },
+        ]
       : [];
   });
   const journeyClusters = clusterVisibleCampaignParties(
@@ -269,7 +284,18 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         factor,
       ),
     );
-  const focusCampaignCity = (cityId: string) => {
+  const focusCampaignCity = (cityId: string, options: { pan?: boolean } = {}) => {
+    // Jumps from reports, the status strip or the directory also bring the city into view;
+    // clicking a city on the map leaves the camera where the player put it.
+    const geo = options.pan ? CITY_GEOGRAPHY.find((entry) => entry.id === cityId) : undefined;
+    if (geo)
+      setCampaignViewport((viewport) =>
+        recenterCampaignViewport(
+          viewport,
+          CAMPAIGN_BOUNDS,
+          mapPosition(geo.latitude, geo.longitude),
+        ),
+      );
     setSelectedCityId(cityId);
     context.setCampaignTab('city');
     context.setCampaignWindowOpen(true);

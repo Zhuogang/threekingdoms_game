@@ -233,6 +233,7 @@ export type V03DomainEventKind =
   | 'monthBoundary'
   | 'campaignEvent'
   | 'hegemonWarning'
+  | 'hostileApproach'
   | 'diplomacy'
   | 'factionEliminated'
   | 'victory';
@@ -476,7 +477,9 @@ export type V03Command =
       exchangeOfficerId?: string;
     }
   | { type: 'completeBattleDay'; battleId: string; remainingAct?: boolean }
-  | { type: 'acknowledgeEvent'; eventId: string };
+  | { type: 'acknowledgeEvent'; eventId: string }
+  | { type: 'acknowledgeEvents'; eventIds: string[] }
+  | { type: 'fillOfficersFromReserve'; cityId: string };
 
 export interface V03CommandResult {
   ok: boolean;

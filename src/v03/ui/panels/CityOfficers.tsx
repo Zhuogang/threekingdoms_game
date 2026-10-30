@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { ReserveFillButton } from './ReserveFill';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button } from '../kit';
 import { displayName } from '../shared/app-copy-3';
@@ -49,6 +50,7 @@ export function CityOfficers({
       <p className="v03-step-intro">
         {message(locale, prisoners ? 'flow.choosePrisoner' : 'flow.chooseOfficer')}
       </p>
+      {!prisoners ? <ReserveFillButton context={context} /> : null}
       {officers.length ? (
         groups
           .filter((group) => group.people.length)

@@ -26,6 +26,10 @@ for (const locale of ['zh', 'en']) {
     await load(page, state, locale);
     await showAssignment(page, locale === 'zh' ? '曹操' : 'Cao Cao');
     const confirm = page.getByRole('button', { name: /Confirm order|确认执行/, exact: true });
+    // The count defaults to the most the reserve allows; entering the current count is rejected.
+    await page
+      .locator('.v03-work-detail input')
+      .fill(String(state.officers.find((entry) => entry.id === 'caocao')!.troops));
     await expect(confirm).toBeDisabled();
     await expect(page.locator('.v03-action-reason')).toContainText(
       locale === 'zh' ? '兵力没有变化' : 'different',

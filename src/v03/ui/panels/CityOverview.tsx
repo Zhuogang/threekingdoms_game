@@ -1,6 +1,7 @@
 import { Landmark, Swords, Package, Users } from 'lucide-react';
 import { message } from '../../i18n';
 import { isCityCommitted } from '../../governance/commitments';
+import { forecastCityEconomy } from '../../campaign/economy';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
@@ -33,6 +34,15 @@ export function CityOverview({
         .filter((unit) => unit.side === 'defender')
         .reduce((sum, unit) => sum + unit.troops, 0)
     : city.garrisonTroops;
+  // The same next-settlement forecast governors use, shown to the player for their own cities.
+  const economy = friendly && !field ? forecastCityEconomy(state, city.id) : null;
+  const net = economy
+    ? {
+        gold: economy.production.gold - economy.upkeep.gold,
+        food: economy.production.food - economy.upkeep.food,
+      }
+    : null;
+  const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value).toLocaleString()}`;
   const officers = state.officers.filter(
     (officer) =>
       officer.alive && officer.location.kind === 'city' && officer.location.cityId === city.id,
@@ -57,7 +67,27 @@ export function CityOverview({
           }),
         }))
         .filter((entry) => entry.route)
-        .sort((a, b) => a.route!.estimatedDays - b.route!.estimatedDays)[0];
+        // Prefer a source that can actually march: officers with troops who are not
+        // reorganizing. Then the nearest, with the capital winning ties.
+        .map((entry) => ({
+          ...entry,
+          ready: state.officers.some(
+            (officer) =>
+              officer.alive &&
+              officer.factionId === state.playerFactionId &&
+              officer.location.kind === 'city' &&
+              officer.location.cityId === entry.city.id &&
+              officer.troops > 0 &&
+              officer.reorganizationDays === 0,
+          ),
+        }))
+        .sort(
+          (a, b) =>
+            Number(b.ready) - Number(a.ready) ||
+            a.route!.estimatedDays - b.route!.estimatedDays ||
+            Number(b.city.id === state.playerCapitalCityId) -
+              Number(a.city.id === state.playerCapitalCityId),
+        )[0];
       if (nearest) context.setSelectedCityId(nearest.city.id);
     }
     context.setCampaignTab('forces');
@@ -88,7 +118,7 @@ export function CityOverview({
         values={[
           { label: t.garrison, value: troops.toLocaleString() },
           {
-            label: message(locale, 'ui.reserve.soldiers.93'),
+            label: message(locale, 'city.reserveNotDefending'),
             value: city.reserve.toLocaleString(),
           },
           { label: t.food, value: (field?.defenderFood ?? city.food).toLocaleString() },
@@ -97,6 +127,35 @@ export function CityOverview({
           { label: message(locale, 'flow.commerce'), value: city.commerce.toLocaleString() },
           { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },
           { label: message(locale, 'flow.publicOrder'), value: `${city.loyalty}%` },
+          ...(economy && net
+            ? [
+                {
+                  label: message(locale, 'city.monthlyGold'),
+                  value: message(locale, 'city.monthlyFlow', {
+                    net: signed(net.gold),
+                    income: economy.production.gold.toLocaleString(),
+                    upkeep: economy.upkeep.gold.toLocaleString(),
+                  }),
+                },
+                {
+                  label: message(locale, 'city.monthlyFood'),
+                  value: message(locale, 'city.monthlyFlow', {
+                    net: signed(net.food),
+                    income: economy.production.food.toLocaleString(),
+                    upkeep: economy.upkeep.food.toLocaleString(),
+                  }),
+                },
+                {
+                  label: message(locale, 'city.foodRunway'),
+                  value:
+                    net.food >= 0
+                      ? message(locale, 'city.foodGrowing')
+                      : message(locale, 'city.foodMonths', {
+                          months: Math.floor(city.food / -net.food),
+                        }),
+                },
+              ]
+            : []),
         ]}
       />
       <div className="v03-city-actions-grid">

@@ -89,6 +89,19 @@ function serviceCost(service: Service, owned: boolean) {
   };
 }
 
+/** Monthly upkeep for a steady headcount stationed in an owned city (same rates as settlement). */
+export function monthlyCityUpkeep(headcount: { troops: number; cavalry: number }) {
+  return serviceCost(
+    {
+      own: headcount.troops * DAYS_PER_MONTH,
+      cavalry: headcount.cavalry * DAYS_PER_MONTH,
+      prisoners: 0,
+      prisonerCavalry: 0,
+    },
+    true,
+  );
+}
+
 /** Preserve legacy absent-ledger settlement semantics as well as recorded service. */
 export function cityAccruedUpkeep(state: Readonly<V03GameState>, city: V03City) {
   const serving = state.officers.filter(

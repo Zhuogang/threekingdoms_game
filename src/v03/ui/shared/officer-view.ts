@@ -121,6 +121,15 @@ export function officerLocation(
 export const officerCopy = {
   zh: {
     directory: '人物名册',
+    show: '显示',
+    away: '在外',
+    troops: '兵',
+    scopes: {
+      all: '全部人物',
+      mine: '我方武将',
+      'mine-troops': '我方带兵驻将',
+      'mine-empty': '我方无兵驻将',
+    },
     search: '查找姓名或复姓',
     all: '全部状态',
     profile: '人物资料',
@@ -173,6 +182,15 @@ export const officerCopy = {
   },
   en: {
     directory: 'Officer directory',
+    show: 'Show',
+    away: 'Away',
+    troops: 'troops',
+    scopes: {
+      all: 'All officers',
+      mine: 'Your officers',
+      'mine-troops': 'Yours with troops in a city',
+      'mine-empty': 'Yours without troops',
+    },
     search: 'Search names or surnames',
     all: 'All statuses',
     profile: 'Officer profile',

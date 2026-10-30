@@ -144,6 +144,10 @@ export interface CampaignCityVisual {
   controllerColor?: string;
   governance?: 'direct' | 'governed' | 'local';
   selected?: boolean;
+  /** Days until the nearest hostile army reaches this player city; absent when none. */
+  threatDays?: number;
+  /** A field battle is being fought for this city. */
+  battle?: boolean;
 }
 
 export interface WorldPolyline {

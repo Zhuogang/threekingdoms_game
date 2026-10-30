@@ -24,6 +24,10 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 6. 方案若需要决策，可接受、接受缩减、等待足额或取消。出发后会出现实际行程；未抵达不会瞬间获得目的地资源或开战。
 7. 推进一日或到下个事件。关键报告需要确认，普通月报与天下纪事不会暂停；军队会行军、吃粮、到达并开战。胜败之后仍需处理驻留或返程。
 
+地图上方的状态栏显示本城工作点、各城金粮合计及下月变化、进犯我方的敌军、进行中的战斗、待决事项和带兵武将；点击即可前往对应城池、战场或名单。敌军一旦出发进犯我方城池，收件箱会通报来源、约数兵力与抵达日期，地图以红色标出该军，城池旁显示剩余天数；“下个事件”会在当日停下，但不阻止逐日推进。不针对我方的诸侯征战仍只记入天下纪事。
+
+城务直接进入核对页并预选推荐执行武将（可点“重新指派武将”更换）。征兵会建议本城武将可统领的最便宜兵种，并列出可统领者。“预备兵补入武将”（城务、驻城武将或出征页）不耗工作点，按武力从高到低把同兵种预备兵补入驻将。预览会显示每项事务此后每月的影响，例如新兵的开支与税基损失、开发的回本时间；城池概况显示每月收入、开支与存粮可支撑时长。出征页只列出可达目的地并按行程排序，说明不可选原因，对比所需与可用军粮，并列出尚需配兵的武将。
+
 配兵、归还所部、赏赐和装备不耗工作点，保留原有资源成本与限制；其他城务每次消耗 1 点，用尽需等下个旬界。太守和 AI 同样执行。迁都或任免不会刷新额度。长途出征要留够城市运转、行军和战斗的粮食。
 
 ### 3. 太守、地方自治与订单
@@ -161,6 +165,10 @@ Launch using the [project README](../../README.md#start-playing). On a fresh bro
 5. Army strength is the sum of the chosen **whole officer forces**. Governor-city proposals may have a shortfall because they protect a minimum garrison, provisions and prior commitments.
 6. If a plan needs a decision, accept, accept a reduced amount, wait or cancel. Approved stock is reserved. Departure creates a journey; delivery and battle wait for arrival.
 7. Advance one day, ten days or to the next event. Acknowledge critical reports, command your arriving troops in battle, then read the aftermath and follow the order through its return. Routine monthly summaries and rival battles do not pause the clock.
+
+The strip above the map shows your capital's work points, total gold and food with next month's change, armies marching on your cities, active battles, decisions waiting and officers with troops; each entry opens the relevant city, battle or list. When a rival army departs toward one of your cities, an inbox update gives its source, approximate strength and arrival date, the army appears on the map in red, and the city shows the days remaining. **Next event** stops on that day; it does not block day advances. Rival wars that do not target you stay in the world chronicle.
+
+City work opens directly on its review with the recommended executor (**Choose another officer** to change it). Recruitment suggests the cheapest troop type a local officer can lead and lists who can lead it. **Fill officers from reserve** (City affairs, Officers in the city or March out) moves matching reserve soldiers to the stationed officers for free, strongest commanders first. Previews show each action's lasting monthly effect, such as a recruit's upkeep and lost tax or a development's payback time, and the city overview shows monthly income, upkeep and food runway. The march form lists only reachable destinations, nearest first, explains blocked ones, shows provisions needed against stock and lists officers who still need troops.
 
 Each city refreshes to two work points every ten actual game days; unused points do not accumulate. Monthly income and office handovers remain monthly. Capital changes, appointments and departing officers do not refund points. Long journeys need food for travel and fighting. The world uses 30-day months; reading help and moving the camera do not advance it.
 

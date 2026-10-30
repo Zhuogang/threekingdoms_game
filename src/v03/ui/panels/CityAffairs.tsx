@@ -4,6 +4,7 @@ import { TroopProgress } from './TroopProgress';
 import { UnitIcon } from '../../rendering/UnitIcon';
 import { getCityCapabilities } from '../../governance/authority';
 import { message } from '../../i18n';
+import { ReserveFillButton } from './ReserveFill';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, StatGrid } from '../kit';
 import { localizeAppMessage } from '../shared/app-copy-2';
@@ -62,6 +63,7 @@ export function CityAffairs({
       {direct ? (
         <>
           <WorkBudget context={context} />
+          <ReserveFillButton context={context} />
           <p className="v03-step-intro">{message(locale, 'flow.chooseWork')}</p>
           <div className="v03-work-menu">
             {cityWorkActions.map((action) => (

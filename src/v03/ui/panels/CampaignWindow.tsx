@@ -19,7 +19,7 @@ import {
   type DiplomacyPage,
 } from './DiplomacyFlow';
 import { SupplyFlow, type SupplyPage } from './SupplyFlow';
-import { CityWorkAssignment } from './CityWorkAssignment';
+import { CityWorkAssignment, rankWorkExecutors } from './CityWorkAssignment';
 import { OfficerGroupWork } from './OfficerGroupWork';
 import { OfficerTransfer } from './OfficerTransfer';
 import { isOfficerGroupAction } from '../../governance/city-actions';
@@ -35,12 +35,9 @@ type CityPage =
 function parentPage(page: CityPage): CityPage {
   switch (page.kind) {
     case 'work':
-      if (page.action === 'feast') return { kind: 'affairs' };
-      return isCityWork(page.action)
-        ? { kind: 'work-actor', action: page.action }
-        : page.officerId
-          ? { kind: 'officer', officerId: page.officerId }
-          : { kind: 'officers' };
+      // City work opens on its review with a recommended executor, so Back returns to affairs.
+      if (page.action === 'feast' || isCityWork(page.action)) return { kind: 'affairs' };
+      return page.officerId ? { kind: 'officer', officerId: page.officerId } : { kind: 'officers' };
     case 'officer':
     case 'prisoners':
       return { kind: 'officers' };
@@ -258,9 +255,19 @@ export function CampaignWindow({ context }: { context: GameplayContext }) {
             {page.kind === 'affairs' ? (
               <CityAffairs
                 context={nested}
-                onWork={(action) =>
-                  navigate({ kind: action === 'feast' ? 'work' : 'work-actor', action })
-                }
+                onWork={(action) => {
+                  // Go straight to the review with the recommended executor; "Change executor"
+                  // on that page still opens the full list.
+                  const executor =
+                    action === 'feast'
+                      ? undefined
+                      : rankWorkExecutors(nested.directCityOfficers, action)[0];
+                  navigate(
+                    action === 'feast' || executor
+                      ? { kind: 'work', action, officerId: executor?.id }
+                      : { kind: 'work-actor', action },
+                  );
+                }}
                 onGovernor={() => navigate({ kind: 'governor' })}
                 onTransfer={() => navigate({ kind: 'transfer' })}
               />

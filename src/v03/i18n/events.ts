@@ -1,5 +1,6 @@
 import { message } from './';
 import type { V03DomainEvent, V03GameState } from '../types';
+import { gameDate } from '../types';
 import type { V03Locale } from '../wiki';
 
 /** New reports use stable data; old saves fall back to the legacy reader. */
@@ -66,6 +67,24 @@ export function formatEvent(
             : message(locale, 'ui.field.defeat.161')
         : message(locale, 'ui.battle.at.holds.162', { p0: city, p1: winner }),
       detail: `${city} · ${held}`,
+    };
+  }
+  if (event.code === 'threat.approach') {
+    const arrival = gameDate({ startYear: state.startYear, absoluteDay: Number(p.arrivalDay) });
+    return {
+      title: message(locale, 'event.threat.title', { city: name(p.targetCityId, 'cities') }),
+      detail: message(locale, 'event.threat.detail', {
+        faction: name(p.factionId, 'factions'),
+        source: name(p.sourceCityId, 'cities'),
+        city: name(p.targetCityId, 'cities'),
+        troops: Number(p.troops).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US'),
+        date: message(locale, 'ui.month.day.137', {
+          p0: arrival.year,
+          p1: arrival.month,
+          p2: arrival.day,
+        }),
+        days: Math.max(0, Number(p.arrivalDay) - event.absoluteDay),
+      }),
     };
   }
   if (event.code === 'month.summary')

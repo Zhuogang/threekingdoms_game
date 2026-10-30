@@ -59,7 +59,8 @@ for (const width of [390, 1366, 1920])
       await load(page, before, lang);
       await showCityManagement(page);
       await page.getByRole('button', { name: /Recruit soldiers|征募士兵/, exact: true }).click();
-      await expect(page.locator('.v03-work-assignment')).toBeVisible();
+      // Recruitment opens its review with the recommended executor already chosen.
+      await expect(page.locator('.v03-assigned-officer')).toBeVisible();
       expect(await current(page)).toEqual(before);
       const officers = before.officers.filter(
         (entry) =>
@@ -79,6 +80,10 @@ for (const width of [390, 1366, 1920])
         action: 'recruit',
         officerId: officer.id,
       });
+      // The screen suggests a troop type the local officers can lead; this case uses infantry.
+      await page
+        .getByLabel(lang === 'zh' ? '招募兵种' : 'Recruit troop type', { exact: true })
+        .selectOption('infantry');
       await confirmWork(page);
       await expect(page.locator('.v03-city-affairs')).toBeVisible();
       expect(await current(page)).toEqual(expectedWork.state);

@@ -386,6 +386,7 @@ const event = z
       'monthBoundary',
       'campaignEvent',
       'hegemonWarning',
+      'hostileApproach',
       'diplomacy',
       'factionEliminated',
       'victory',
@@ -1170,6 +1171,7 @@ export function validateV03State(value: unknown): value is V03GameState {
       case 'requisitionResponse':
         return requisitionIds.has(entry.entityId);
       case 'governorChanged':
+      case 'hostileApproach':
         return cityIds.has(entry.entityId);
       case 'factionEliminated':
       case 'victory':

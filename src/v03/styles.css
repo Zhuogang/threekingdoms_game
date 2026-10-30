@@ -546,6 +546,11 @@ button:disabled {
   border-color: var(--tone-49);
   background: var(--tone-50);
 }
+/* A foreign army marching on one of the player's cities. */
+.v03-army-marker.hostile {
+  border-color: var(--tone-45);
+  background: var(--danger);
+}
 .v03-army-marker.grouped {
   width: 38px;
   height: 30px;
@@ -3193,4 +3198,86 @@ th small {
   .v03-directory-card {
     padding: var(--space-3);
   }
+}
+
+/* Live campaign status strip (replaces the static map heading). */
+.v03-campaign-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--tone-10);
+}
+.v03-status-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+.v03-campaign-status .v03-button,
+.v03-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+}
+.v03-status-item.is-warning {
+  color: var(--danger);
+  font-weight: 700;
+}
+.v03-faction-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-xs);
+}
+.v03-faction-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.v03-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--tone-45);
+}
+
+/* Army markers are kit buttons; keep them as small round tokens around their icon. */
+.v03-button.v03-army-marker {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  color: white;
+  line-height: 1;
+}
+.v03-button.v03-army-marker.grouped {
+  border-radius: 15px;
+}
+.v03-button.v03-army-marker svg {
+  flex-shrink: 0;
+}
+
+/* Inbox sections: decisions first, then routine updates with a bulk acknowledge. */
+.v03-inbox-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--text-sm);
+}
+.v03-inbox-section h3 {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+h3.v03-inbox-section {
+  color: var(--danger);
 }

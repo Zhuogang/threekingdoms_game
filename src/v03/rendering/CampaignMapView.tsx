@@ -128,16 +128,25 @@ function CitySymbol({
             strokeWidth={1.8}
           />
         ) : null}
+        {/* Owner colour reads at Fit zoom: a solid ground ring plus a pennant. */}
         <ellipse
           cx={0}
           cy={-3}
-          rx={art.width * 0.35}
-          ry={5}
+          rx={art.width * 0.38}
+          ry={6}
           fill={color}
-          fillOpacity={0.18}
+          fillOpacity={0.45}
           stroke={color}
-          strokeWidth={1.5}
+          strokeWidth={2.6}
         />
+        <g
+          className="v03-city-pennant"
+          transform={`translate(${-art.width * 0.42} ${art.y + art.height * 0.2})`}
+          aria-hidden="true"
+        >
+          <line x1={0} y1={0} x2={0} y2={20} stroke="#3a2f22" strokeWidth={1.6} />
+          <path d="M 0 0 L 13 4 L 0 9 Z" fill={color} stroke="#3a2f22" strokeWidth={0.8} />
+        </g>
         {!artFailed ? (
           <image
             href={resolvePublicAsset(art.asset.path, import.meta.env.BASE_URL)}
@@ -154,41 +163,59 @@ function CitySymbol({
             <path d="M -4 -3 V -14 H 4 V -3" fill="#514a3b" />
           </g>
         )}
-        {governance ? (
+        {governance === 'direct' ? (
           <g
+            className="v03-city-capital"
             transform={`translate(${art.width * 0.36} ${art.y + art.height * 0.25})`}
-            aria-label={
-              governance === 'direct'
-                ? message(locale, 'ui.ruler.s.capital.126')
-                : governance === 'governed'
-                  ? message(locale, 'ui.governor.145')
-                  : message(locale, 'ui.local.stewardship.13')
-            }
+            aria-label={message(locale, 'ui.ruler.s.capital.126')}
           >
-            <circle
-              r={8}
-              fill={
-                governance === 'direct'
-                  ? '#3c7374'
-                  : governance === 'governed'
-                    ? '#966c3c'
-                    : '#72634d'
-              }
+            <circle r={9} fill="#3c7374" stroke="#fff8e9" strokeWidth={1.5} />
+            <path
+              d="M 0 -6 L 1.8 -1.9 L 6 -1.9 L 2.6 0.8 L 3.8 5 L 0 2.5 L -3.8 5 L -2.6 0.8 L -6 -1.9 L -1.8 -1.9 Z"
+              fill="#fffaf0"
+            />
+          </g>
+        ) : null}
+        {city.battle ? (
+          <g
+            className="v03-city-battle"
+            transform={`translate(${-art.width * 0.05} ${art.y - 4})`}
+            aria-label={message(locale, 'map.battleHere')}
+          >
+            <circle r={11} fill="#fff8e9" stroke="#8b302b" strokeWidth={1.8} />
+            <path
+              d="M -6 -6 L 6 6 M 6 -6 L -6 6"
+              stroke="#8b302b"
+              strokeWidth={2.6}
+              strokeLinecap="round"
+            />
+          </g>
+        ) : null}
+        {city.threatDays !== undefined ? (
+          <g
+            className="v03-city-threat"
+            transform={`translate(${art.width * 0.42} ${art.y + art.height * 0.62})`}
+            aria-label={message(locale, 'map.threatIn', { days: city.threatDays })}
+          >
+            <rect
+              x={-14}
+              y={-13}
+              width={60}
+              height={26}
+              rx={13}
+              fill="#8b302b"
               stroke="#fff8e9"
               strokeWidth={1.5}
             />
             <text
+              x={16}
               textAnchor="middle"
               dominantBaseline="central"
               fill="#fffaf0"
-              fontSize={8}
+              fontSize={15}
               fontWeight={700}
             >
-              {governance === 'direct'
-                ? message(locale, 'ui.r.146')
-                : governance === 'governed'
-                  ? message(locale, 'ui.g.147')
-                  : message(locale, 'ui.l.148')}
+              {message(locale, 'map.threatDays', { days: city.threatDays })}
             </text>
           </g>
         ) : null}

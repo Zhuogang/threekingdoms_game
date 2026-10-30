@@ -42,6 +42,44 @@ export function armyPreview(
   return { officers, troops, composition, route, food };
 }
 
+/**
+ * Destination checks a capital march applies before dispatch, shared with the march form so a
+ * blocked destination explains itself before Confirm. Party, route and food are checked later.
+ */
+export function marchDestinationBlock(
+  state: V03GameState,
+  sourceCityId: string,
+  targetCityId: string,
+  intent: Extract<V03Command, { type: 'marchArmy' }>['intent'],
+): string | null {
+  const source = state.cities.find((city) => city.id === sourceCityId);
+  const target = state.cities.find((city) => city.id === targetCityId);
+  if (!source || !target) return 'Choose a friendly source and a different destination.';
+  if (isCityCommitted(state, target.id)) return 'This city is committed to an active battle.';
+  if (target.factionId === state.playerFactionId)
+    return 'A campaign directive must target an enemy or independent city.';
+  if (
+    state.alliances.some(
+      (alliance) =>
+        alliance.expiresMonthIndex > state.monthIndex &&
+        ((alliance.a === source.factionId && alliance.b === target.factionId) ||
+          (alliance.b === source.factionId && alliance.a === target.factionId)),
+    )
+  )
+    return 'An active alliance prevents this attack.';
+  if (intent !== 'conquer' && state.absoluteDay < (target.plunderCooldownUntilDay ?? 0))
+    return 'This city is recovering from a recent raid or sack.';
+  if (
+    state.directives.some(
+      (order) =>
+        order.sourceCityId === source.id &&
+        ['proposed', 'waiting', 'accepted', 'reserved', 'dispatched'].includes(order.status),
+    )
+  )
+    return 'This source city already has an active campaign directive.';
+  return null;
+}
+
 export function marchArmy(
   state: V03GameState,
   command: Extract<V03Command, { type: 'marchArmy' }>,
@@ -94,27 +132,8 @@ export function marchArmy(
     );
     return { ...result, error: result.ok ? undefined : result.message, orderId: result.order?.id };
   }
-  if (target.factionId === state.playerFactionId)
-    return fail('A campaign directive must target an enemy or independent city.');
-  if (
-    state.alliances.some(
-      (alliance) =>
-        alliance.expiresMonthIndex > state.monthIndex &&
-        ((alliance.a === source.factionId && alliance.b === target.factionId) ||
-          (alliance.b === source.factionId && alliance.a === target.factionId)),
-    )
-  )
-    return fail('An active alliance prevents this attack.');
-  if (command.intent !== 'conquer' && state.absoluteDay < (target.plunderCooldownUntilDay ?? 0))
-    return fail('This city is recovering from a recent raid or sack.');
-  if (
-    state.directives.some(
-      (order) =>
-        order.sourceCityId === source.id &&
-        ['proposed', 'waiting', 'accepted', 'reserved', 'dispatched'].includes(order.status),
-    )
-  )
-    return fail('This source city already has an active campaign directive.');
+  const blocked = marchDestinationBlock(state, source.id, target.id, command.intent);
+  if (blocked) return fail(blocked);
   const food = command.food ?? preview.food;
   const available = availableCityResources(state, source.id);
   if (!preview.route) return fail('There is no currently usable route to the destination.');

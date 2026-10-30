@@ -1,3 +1,4 @@
+import { BadgeCheck, Shield, Swords, Users, Wheat } from 'lucide-react';
 import { Button } from '../kit';
 import { message } from '../../i18n';
 
@@ -91,22 +92,25 @@ export function CampaignMap({ context }: { context: GameplayContext }) {
           left: `${((cluster.position.x - campaignViewport.left) / campaignViewport.width) * 100}%`,
           top: `${((cluster.position.y - campaignViewport.top) / campaignViewport.height) * 100}%`,
         };
-        const symbol =
+        // Icons read the same in both languages: army, officer transfer, appointment,
+        // troop shipment, supply shipment.
+        const Symbol =
           first.kind === 'campaign'
-            ? '軍'
+            ? Swords
             : first.kind === 'transfer'
-              ? '调'
+              ? Users
               : first.kind === 'appointment'
-                ? '任'
+                ? BadgeCheck
                 : first.manifest.troopCount > 0
-                  ? '兵'
-                  : '糧';
+                  ? Shield
+                  : Wheat;
+        const symbol = <Symbol size={14} strokeWidth={2.4} aria-hidden="true" />;
         const groupedLabel = `${cluster.parties.length} ${t.journeyGroup}: ${descriptions.join(' · ')}`;
         return (
           <Button
             type="button"
             key={cluster.id}
-            className={`v03-army-marker ${cluster.parties.length > 1 ? 'grouped' : ''} ${first.status === 'waiting' ? 'waiting' : first.kind === 'campaign' ? 'marching' : 'transport'}`}
+            className={`v03-army-marker ${cluster.parties.length > 1 ? 'grouped' : ''} ${cluster.hostile ? 'hostile' : first.status === 'waiting' ? 'waiting' : first.kind === 'campaign' ? 'marching' : 'transport'}`}
             style={style}
             onClick={() => setFeedback(cluster.parties.length > 1 ? label : descriptions[0]!)}
             aria-label={cluster.parties.length > 1 ? groupedLabel : descriptions[0]}

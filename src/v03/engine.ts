@@ -110,6 +110,36 @@ function pushLog(state: V03GameState, message: string): void {
   if (state.log.length > 400) state.log.splice(0, state.log.length - 400);
 }
 
+/**
+ * A hostile campaign aimed at a player city is reported when it departs, as the player's own
+ * governors already see it. Strength is rounded to hundreds; rival-vs-rival wars stay quiet.
+ */
+function warnPlayerOfApproach(state: V03GameState, journey: V03Journey): void {
+  const target = state.cities.find((city) => city.id === journey.destinationCityId);
+  if (!target) return;
+  state.events.push({
+    id: `${state.scenarioId}:hostileApproach:${state.absoluteDay}:${journey.id}`,
+    absoluteDay: state.absoluteDay,
+    kind: 'hostileApproach',
+    code: 'threat.approach',
+    params: {
+      factionId: journey.ownerFactionId,
+      sourceCityId: journey.sourceCityId,
+      targetCityId: target.id,
+      journeyId: journey.id,
+      troops: Math.max(100, Math.round(journey.manifest.troopCount / 100) * 100),
+      arrivalDay: journey.expectedArrivalDay,
+    },
+    title: 'Hostile army approaching',
+    detail: `An army is marching on ${target.name}.`,
+    entityId: target.id,
+    acknowledged: false,
+    // A notice, not a blocking report: "Next event" stops on the day it is issued (see
+    // toTimeline), while day advances and simulations continue without acknowledgement.
+    tier: 'notice',
+  });
+}
+
 function addEvent(
   state: V03GameState,
   kind: V03DomainEvent['kind'],
@@ -220,6 +250,20 @@ function toTimeline(state: V03GameState): StrategicTimeline {
       pause: true,
       visibleToPlayer: true,
     }));
+  for (const event of state.events)
+    if (
+      event.kind === 'hostileApproach' &&
+      !event.acknowledged &&
+      event.absoluteDay === state.absoluteDay &&
+      !events.some((entry) => entry.id === event.id)
+    )
+      events.push({
+        id: event.id,
+        absoluteDay: event.absoluteDay,
+        kind: 'decision',
+        pause: false,
+        visibleToPlayer: true,
+      });
   for (const journey of state.journeys) {
     if (
       (journey.status !== 'outbound' && journey.status !== 'returning') ||
@@ -1447,6 +1491,7 @@ export function dispatchRivalCampaignPlan(
   state.journeys.push(journey);
   state.nextId += 2;
   recordFactionCampaign(state, plan.factionId, source.id, target.id, officerIds[0]!, directiveId);
+  if (target.factionId === state.playerFactionId) warnPlayerOfApproach(state, journey);
   pushLog(
     state,
     `${faction.name} dispatched ${plan.requestedTroops} troops from ${source.name} toward ${target.name}; ${plan.food} food is committed for the march and campaign.`,

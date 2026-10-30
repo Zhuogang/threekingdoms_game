@@ -298,7 +298,7 @@ test('new commander portraits resolve on the battlefield and sidebar and fall ba
   // The session may initially show the campaign map; open the actual active battle.
   if (!(await page.locator('.v03-battle-shell').count()))
     await page
-      .getByRole('button', { name: /打开战斗|Open battle/ })
+      .getByRole('button', { name: /打开战斗|Open battle|之战|Battle at/ })
       .first()
       .click();
   await expect(page.locator('.v03-unit-list [data-portrait-id="caohong"] img')).toHaveCount(0);

@@ -14,6 +14,7 @@ import { queueGovernorAppointment } from './governance/appointments';
 import { resolveCityGovernance } from './governance/conquest';
 import { acceptV03Invitation, breakV03Alliance, proposeV03Alliance } from './campaign/diplomacy';
 import { applyV03CityAction } from './governance/city-actions';
+import { fillOfficersFromReserve } from './governance/reserve-fill';
 import { createV03OrderServices } from './governance/services';
 import {
   answerCampaignDirective,
@@ -30,6 +31,8 @@ export interface V03ActionResult {
   error?: string;
   orderId?: string;
   preview?: unknown;
+  /** Soldiers moved by a reserve fill. */
+  assigned?: number;
   /** Why an advance stopped, so the interface can explain the pause. */
   advance?: {
     daysAdvanced: number;
@@ -42,7 +45,11 @@ const services = createV03OrderServices();
 
 /** Single application command boundary for the independent v0.3 ruleset. */
 function executeCommand(state: V03GameState, command: V03Command): V03ActionResult {
-  if (state.phase === 'finished' && command.type !== 'acknowledgeEvent') {
+  if (
+    state.phase === 'finished' &&
+    command.type !== 'acknowledgeEvent' &&
+    command.type !== 'acknowledgeEvents'
+  ) {
     return { ok: false, state, error: 'This campaign has ended.' };
   }
   switch (command.type) {
@@ -238,6 +245,20 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
     }
     case 'acknowledgeEvent':
       return { ok: true, state: acknowledgeV03Event(state, command.eventId) };
+    case 'fillOfficersFromReserve': {
+      const result = fillOfficersFromReserve(state, command.cityId);
+      return result.ok
+        ? { ok: true, state: result.state, assigned: result.assigned }
+        : { ok: false, state, error: result.error };
+    }
+    case 'acknowledgeEvents':
+      return {
+        ok: true,
+        state: command.eventIds.reduce(
+          (current, eventId) => acknowledgeV03Event(current, eventId),
+          state,
+        ),
+      };
   }
 }
 
