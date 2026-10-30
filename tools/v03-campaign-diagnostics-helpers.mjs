@@ -232,6 +232,7 @@ function rivalCampaignMetrics(state, selectedFactionId) {
         factionId: directive.factionId,
         sourceCityId: directive.sourceCityId,
         targetCityId: directive.targetCityId,
+        intent: directive.intent ?? 'conquer',
         requestedTroops: directive.proposedTroops,
         status: directive.status,
         journeyId: directive.journeyId,
@@ -249,9 +250,11 @@ function rivalCampaignMetrics(state, selectedFactionId) {
       repulse: 0,
       draw: 0,
       unknown: 0,
+      raids: 0,
     };
     faction.dispatched++;
     faction[campaign.outcome]++;
+    if (campaign.intent === 'raid') faction.raids++;
     byFaction.set(campaign.factionId, faction);
   }
   return {
@@ -261,6 +264,27 @@ function rivalCampaignMetrics(state, selectedFactionId) {
     byFaction: [...byFaction.values()].sort((a, b) => a.factionId.localeCompare(b.factionId)),
     raw: dispatched,
   };
+}
+
+/** Captives by holding house at the checkpoint, and every prisoner decision so far. */
+function prisonerMetrics(state) {
+  const held = {};
+  for (const officer of state.officers ?? []) {
+    if (!officer.alive || officer.location.kind !== 'captured' || !officer.location.cityId)
+      continue;
+    const holder =
+      state.cities.find((city) => city.id === officer.location.cityId)?.factionId ?? 'none';
+    held[holder] = (held[holder] ?? 0) + 1;
+  }
+  const decisions = {};
+  for (const event of state.events ?? []) {
+    if (event.code !== 'prisoner.decision') continue;
+    const holder = event.params?.holderFactionId ?? 'unknown';
+    const entry = (decisions[holder] ??= {});
+    const key = `${event.params?.action}${event.params?.accepted === false ? '-refused' : ''}`;
+    entry[key] = (entry[key] ?? 0) + 1;
+  }
+  return { held, decisions };
 }
 
 export function summarize(state, factionId, month, initialIndependentCityIds = [], trace = null) {
@@ -321,6 +345,7 @@ export function summarize(state, factionId, month, initialIndependentCityIds = [
     },
     factionOwnership: factionOwnershipMetrics(state),
     rivalCampaigns: rivalCampaignMetrics(state, factionId),
+    prisoners: prisonerMetrics(state),
     journeys: {
       outbound: state.journeys.filter((item) => item.status === 'outbound').length,
       returning: state.journeys.filter((item) => item.status === 'returning').length,
