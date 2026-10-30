@@ -57,7 +57,7 @@ for (const locale of ['zh', 'en']) {
     const { state, city, officer } = await load(page, locale, 3);
     await openCity(page);
     await showOfficer(page, locale === 'zh' ? officer.chinese : officer.name);
-    await expect(page.locator('.v03-work-budget')).toContainText('0/2');
+    await expect(page.locator('.v03-work-budget')).toContainText('0/6');
     await expect(page.getByRole('button', { name: /训练|Train/, exact: true })).toBeDisabled();
     for (const name of [/赏赐武将|Reward officer/, /配发精良兵器|Issue fine arms/]) {
       await page.getByRole('button', { name }).click();
@@ -104,7 +104,7 @@ for (const locale of ['zh', 'en']) {
     const { city } = await load(page, locale, 0);
     await openCity(page);
     await showCityManagement(page);
-    await expect(page.locator('.v03-work-budget')).toContainText('2/2');
+    await expect(page.locator('.v03-work-budget')).toContainText('2/6');
     for (let used = 1; used <= 2; used++) {
       await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
       await confirmWork(page);
@@ -113,7 +113,7 @@ for (const locale of ['zh', 'en']) {
         farming: 100 + used * 20,
         gold: 5000 - used * 80,
       });
-      await expect(page.locator('.v03-work-budget')).toContainText(`${2 - used}/2`);
+      await expect(page.locator('.v03-work-budget')).toContainText(`${2 - used}/6`);
     }
     const exhausted = await saved(page);
     await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
@@ -121,11 +121,11 @@ for (const locale of ['zh', 'en']) {
     await expect(
       page.getByRole('button', { name: /确认执行|Confirm order/, exact: true }),
     ).toBeDisabled();
-    await expect(page.locator('.v03-action-reason')).toContainText(/ten-day period|工作点/);
+    await expect(page.locator('.v03-action-reason')).toContainText(/no work points left|工作点/);
     expect(await saved(page)).toEqual(exhausted);
   });
 
-  test(`ten-day advancement refreshes two points and displays the actual countdown (${locale})`, async ({
+  test(`ten-day advancement adds two points, banks the unused one and displays the countdown (${locale})`, async ({
     page,
   }) => {
     const { city } = await load(page, locale, 2);
@@ -133,9 +133,9 @@ for (const locale of ['zh', 'en']) {
       await openCity(page);
       await showCityManagement(page);
       const budget = page.locator('.v03-work-budget');
-      await expect(budget).toContainText(`${remaining}/2`);
+      await expect(budget).toContainText(`${remaining}/6`);
       await expect(budget).toContainText(
-        locale === 'zh' ? `距下次刷新 ${days} 个游戏日` : `Refreshes in ${days} game days`,
+        locale === 'zh' ? `${days} 个游戏日后 +2` : `+2 in ${days} game days`,
       );
     };
     await showBudget(0, 10);
@@ -157,6 +157,7 @@ for (const locale of ['zh', 'en']) {
     await closeCityWindow(page);
     await page.getByRole('button', { name: /推进十日|Advance 10 days/, exact: true }).click();
     await expect.poll(async () => (await saved(page)).absoluteDay).toBe(21);
-    await showBudget(2, 9);
+    // The unused point carries over (PF-RL-01): 1 + 2.
+    await showBudget(3, 9);
   });
 }

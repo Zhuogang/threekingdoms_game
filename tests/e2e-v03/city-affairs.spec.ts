@@ -147,8 +147,8 @@ test('each city task returns to affairs and retains the existing rule result', a
     ['recruit', /Recruit soldiers/],
     ['security', /Restore public order/],
     ['feast', /Host a feast/],
-    ['buy-food', /Buy 800 food/],
-    ['sell-food', /Sell 800 food/],
+    ['buy-food', /Buy 2,000 food/],
+    ['sell-food', /Sell 2,000 food/],
     ['relieve', /Relieve people/],
   ];
   for (const [action, name] of actions) {
@@ -205,8 +205,8 @@ test('officer training returns to the selected officer; exhausted work stays blo
   const exhausted = await current(page);
   const train = page.getByRole('button', { name: 'Train', exact: true });
   await expect(train).toBeDisabled();
-  await expect(train).toHaveAttribute('title', /ten-day period/);
-  await expect(page.locator('.v03-officer-detail')).toContainText('0/2');
+  await expect(train).toHaveAttribute('title', /no work points left/);
+  await expect(page.locator('.v03-officer-detail')).toContainText('0/6');
   await expect(page.locator('.v03-work-detail')).toHaveCount(0);
   await expect(page.locator('.v03-officer-detail')).toBeVisible();
   expect(await current(page)).toEqual(exhausted);

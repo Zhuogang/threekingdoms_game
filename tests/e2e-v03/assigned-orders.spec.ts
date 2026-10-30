@@ -304,6 +304,9 @@ test('a declined alliance returns with its result and finished campaigns block d
   );
   const finished = { ...before, phase: 'finished' as const, winnerFactionId: 'cao' };
   await load(page, finished);
+  // A finished campaign opens on its end screen (PF-UI-09); the map stays browsable.
+  await expect(page.locator('.v03-campaign-end')).toBeVisible();
+  await page.getByRole('button', { name: 'View the map', exact: true }).click();
   await page.getByRole('button', { name: 'Diplomacy', exact: true }).click();
   await page.locator('.v03-diplomacy-menu').getByRole('button').first().click();
   await page.locator('.v03-faction-detail .v03-step-choice').click();

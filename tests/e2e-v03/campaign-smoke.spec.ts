@@ -336,7 +336,8 @@ test('charges work only for relief while preserving reward and equipment costs',
       entry.location.kind === 'city' &&
       entry.location.cityId === saved.state.playerCapitalCityId,
   );
-  expect(city).toMatchObject({ gold: 640, food: 1400, loyalty: 65, population: 100_300 });
+  // Relief settles 1,500 people (PF-RL-02).
+  expect(city).toMatchObject({ gold: 640, food: 1400, loyalty: 65, population: 101_500 });
   expect(officer).toMatchObject({ loyalty: 65, force: 95, equipment: 'Fine arms' });
 });
 
@@ -575,8 +576,11 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(englishWiki.getByText(/Six tactics are available/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Governors', exact: true }).click();
   await expect(
-    englishWiki.getByText(/Every owned city refreshes to two work points every ten game days/),
+    englishWiki.getByText(/Every owned city gains two work points every ten game days/),
   ).toContainText('Assignment, contingent returns, rewards and equipment use no work points.');
+  await englishWiki.getByRole('button', { name: 'Rival houses', exact: true }).click();
+  await expect(englishWiki.getByText('Character comes from the ruler')).toBeVisible();
+  await englishWiki.getByRole('button', { name: 'Governors', exact: true }).click();
   await expect(englishWiki.getByText(/Recruit → assign → march/)).toBeVisible();
   await englishWiki.getByRole('button', { name: 'Close' }).click();
 
@@ -593,7 +597,7 @@ test('opens the wiki in English and Chinese while keeping the campaign available
   await expect(chineseWiki.getByText('战场部队')).toBeVisible();
   await expect(chineseWiki.getByText(/步兵稳定守线/)).toBeVisible();
   await chineseWiki.getByRole('button', { name: '太守', exact: true }).click();
-  await expect(chineseWiki.getByText(/每城每旬（10 个游戏日）固定 2 点/)).toContainText(
+  await expect(chineseWiki.getByText(/每城每旬（10 个游戏日）增加 2 点/)).toContainText(
     '配兵、归还所部、赏赐和装备不耗工作点',
   );
   await expect(chineseWiki.getByText(/征募 → 分配 → 出征/)).toBeVisible();

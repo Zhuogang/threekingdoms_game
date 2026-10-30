@@ -112,7 +112,8 @@ for (const locale of ['zh', 'en'] as const) {
         const place = after.cities.find((city) => city.id === cityId)!;
         expect(place.reservePools.cavalry.troops).toBe(0);
         expect(place.autoAssignmentsThisMonth).toBe(1);
-        expect(place.workPointsUsed).toBeLessThanOrEqual(3);
+        // Banked work (PF-RL-01): a period spends its own two points plus what it carried in.
+        expect(place.workPointsUsed).toBeLessThanOrEqual(2 + (place.workPointsBanked ?? 0));
         await page.reload();
         const restored = await stored(page);
         expect(restored.cities.find((city) => city.id === cityId)!.autoAssignmentsThisMonth).toBe(

@@ -142,6 +142,8 @@ test('RV03 resumes without replacing a save, confirms a new campaign, and reopen
   finished.phase = 'finished';
   finished.winnerFactionId = 'cao';
   await importState(page, finished);
+  // The finished campaign opens on its end screen (PF-UI-09).
+  await page.getByRole('button', { name: 'View the map', exact: true }).click();
   await openMenu(page);
   await page.getByRole('button', { name: 'Campaign menu', exact: true }).click();
   await expect(page.getByRole('button', { name: 'New campaign', exact: true })).toBeEnabled();

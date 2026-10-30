@@ -75,23 +75,23 @@ for (const locale of ['zh', 'en']) {
       );
       await load(page, state, locale);
       await showOfficer(page, locale === 'zh' ? officer.chinese : officer.name);
+      if (legacy) {
+        // Training adds no flat force any more (PF-RL-03): capped XP means nothing to train.
+        await expect(page.getByRole('button', { name: /训练|Train/, exact: true })).toBeDisabled();
+        expect(await saved(page)).toEqual(state);
+        return;
+      }
       await page.getByRole('button', { name: /训练|Train/, exact: true }).click();
       const preview = page.locator('.v03-work-detail');
-      await expect(preview).toContainText(legacy ? '10,000 → 10,000' : '475 → 500');
-      await expect(preview).toContainText(legacy ? '99 → 100' : '100 → 100');
+      await expect(preview).toContainText('475 → 500');
+      await expect(preview).toContainText('100 → 100');
       expect(await saved(page)).toEqual(state);
       await page.getByRole('button', { name: /确认执行|Confirm order/, exact: true }).click();
       await expect(page.locator('.v03-window-feedback')).toContainText(
-        locale === 'zh'
-          ? legacy
-            ? '经验 +0，武力 +1'
-            : '经验 +25，武力 +0'
-          : legacy
-            ? '+0 experience, +1 force'
-            : '+25 experience, +0 force',
+        locale === 'zh' ? '经验 +25，武力 +0' : '+25 experience, +0 force',
       );
       await expect(page.getByRole('button', { name: /训练|Train/, exact: true })).toBeDisabled();
-      const expected = { force: 100, experience: legacy ? 10_000 : 500, level: 5 };
+      const expected = { force: 100, experience: 500, level: 5 };
       expect((await saved(page)).officers.find((entry) => entry.id === officer.id)).toMatchObject(
         expected,
       );

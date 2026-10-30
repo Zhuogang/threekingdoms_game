@@ -1,0 +1,1336 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-30T07:25:34.500Z",
+  "description": "Play-feel Phase 3 matched campaign runs: the 24 scenario/faction/cohort cases of tools/v03-campaign-diagnostics.mjs (deterministic adjacent-city bot as the selected player; rival houses run the real AI), 12 months each, one rule change per step on immutable git worktrees. Grouping by ruler trait uses each rival house’s starting ruler; loyal is ignored and rulers without the other traits count as neutral (none appear here).",
+  "command": "node tools/v03-campaign-diagnostics.mjs --runtime <worktree> --months 12 --only-run <scenario>/<faction>/<cohort> --output <dir>/<case>.json; summarized with node tools/play-feel-campaign-summary.mjs <dir>...",
+  "saveValidation": {
+    "rl01": "all 24 runs passed --validate-saves (311 checkpoints)",
+    "rl06": "all 24 runs passed --validate-saves (313 checkpoints)"
+  },
+  "caveats": [
+    "The selected player is a narrow expansion bot that sends small armies against large garrisons; its eliminations are noisy and are not a difficulty measure.",
+    "Prisoner decisions are attributed to the holding house only from PF-RL-05 on; earlier steps record them without a holder.",
+    "Diplomacy (PF-CA-04) is player-initiated and is not exercised by the bot; it is covered by unit tests."
+  ],
+  "steps": [
+    {
+      "id": "pre2",
+      "commit": "59c6fff",
+      "label": "v0.4 before play-feel Phase 2",
+      "selectedEliminations": 3,
+      "npc": {
+        "dispatched": 606,
+        "captures": 208,
+        "repulses": 329,
+        "raids": 0
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 9,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 178,
+          "raids": 0,
+          "captures": 59,
+          "repulses": 93,
+          "citiesAtEnd": 149,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.45,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.73
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 160,
+          "raids": 0,
+          "captures": 45,
+          "repulses": 96,
+          "citiesAtEnd": 151,
+          "prisonersHeld": 4,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.77
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 154,
+          "raids": 0,
+          "captures": 54,
+          "repulses": 87,
+          "citiesAtEnd": 126,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 5.13,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.2
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 178,
+          "raids": 0,
+          "captures": 69,
+          "repulses": 95,
+          "citiesAtEnd": 115,
+          "prisonersHeld": 5,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.9,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.75
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 2,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 6,
+        "divided-realm-190/dong/held-out": 4,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 6,
+        "divided-realm-190/sun/held-out": 6,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 1,
+        "guandu-200/cao/development": 4,
+        "guandu-200/cao/held-out": 1,
+        "guandu-200/liu/development": 1,
+        "guandu-200/liu/held-out": 1,
+        "guandu-200/ma/development": 2,
+        "guandu-200/ma/held-out": 2,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 6,
+        "guandu-200/yan/development": 5,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 4,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "base",
+      "commit": "2ae44ad",
+      "label": "Baseline: v0.4 with Phase 2 (battles that move)",
+      "selectedEliminations": 7,
+      "npc": {
+        "dispatched": 595,
+        "captures": 215,
+        "repulses": 311,
+        "raids": 0
+      },
+      "leaderCities": {
+        "median": 6.5,
+        "max": 9,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 170,
+          "raids": 0,
+          "captures": 63,
+          "repulses": 83,
+          "citiesAtEnd": 146,
+          "prisonersHeld": 8,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.25,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.65
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 158,
+          "raids": 0,
+          "captures": 46,
+          "repulses": 94,
+          "citiesAtEnd": 153,
+          "prisonersHeld": 13,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.95,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.83
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 166,
+          "raids": 0,
+          "captures": 51,
+          "repulses": 98,
+          "citiesAtEnd": 124,
+          "prisonersHeld": 10,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 5.53,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.13
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 161,
+          "raids": 0,
+          "captures": 71,
+          "repulses": 76,
+          "citiesAtEnd": 126,
+          "prisonersHeld": 18,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.05,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 6.3
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 1,
+        "divided-realm-190/cao/held-out": 0,
+        "divided-realm-190/dong/development": 2,
+        "divided-realm-190/dong/held-out": 4,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 0,
+        "guandu-200/cao/development": 5,
+        "guandu-200/cao/held-out": 6,
+        "guandu-200/liu/development": 0,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 2,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 5,
+        "guandu-200/yan/development": 5,
+        "guandu-200/yan/held-out": 4,
+        "guandu-200/yuan/development": 2,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "ca01",
+      "commit": "97e025b",
+      "label": "+ PF-CA-01 ruler temperament",
+      "selectedEliminations": 4,
+      "npc": {
+        "dispatched": 598,
+        "captures": 224,
+        "repulses": 299,
+        "raids": 0
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 8,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 164,
+          "raids": 0,
+          "captures": 58,
+          "repulses": 82,
+          "citiesAtEnd": 144,
+          "prisonersHeld": 4,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.1,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.6
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 170,
+          "raids": 0,
+          "captures": 56,
+          "repulses": 96,
+          "citiesAtEnd": 167,
+          "prisonersHeld": 10,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.25,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.17
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 171,
+          "raids": 0,
+          "captures": 55,
+          "repulses": 99,
+          "citiesAtEnd": 128,
+          "prisonersHeld": 12,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 5.7,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.27
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 162,
+          "raids": 0,
+          "captures": 72,
+          "repulses": 69,
+          "citiesAtEnd": 111,
+          "prisonersHeld": 7,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.1,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.55
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 5,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 6,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 1,
+        "guandu-200/cao/development": 4,
+        "guandu-200/cao/held-out": 5,
+        "guandu-200/liu/development": 2,
+        "guandu-200/liu/held-out": 0,
+        "guandu-200/ma/development": 2,
+        "guandu-200/ma/held-out": 1,
+        "guandu-200/sun/development": 4,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 4,
+        "guandu-200/yuan/development": 2,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "ca02",
+      "commit": "6adb45c",
+      "label": "+ PF-CA-02 target value terms",
+      "selectedEliminations": 7,
+      "npc": {
+        "dispatched": 567,
+        "captures": 206,
+        "repulses": 308,
+        "raids": 0
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 8,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 152,
+          "raids": 0,
+          "captures": 57,
+          "repulses": 79,
+          "citiesAtEnd": 151,
+          "prisonersHeld": 13,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.8,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.77
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 171,
+          "raids": 0,
+          "captures": 51,
+          "repulses": 103,
+          "citiesAtEnd": 161,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.28,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.03
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 156,
+          "raids": 0,
+          "captures": 50,
+          "repulses": 92,
+          "citiesAtEnd": 122,
+          "prisonersHeld": 13,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 5.2,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.07
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 153,
+          "raids": 0,
+          "captures": 66,
+          "repulses": 75,
+          "citiesAtEnd": 117,
+          "prisonersHeld": 14,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 7.65,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.85
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 6,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 5,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 1,
+        "guandu-200/cao/development": 6,
+        "guandu-200/cao/held-out": 5,
+        "guandu-200/liu/development": 1,
+        "guandu-200/liu/held-out": 0,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 2,
+        "guandu-200/yuan/held-out": 2
+      }
+    },
+    {
+      "id": "ca05",
+      "commit": "3a166fb",
+      "label": "+ PF-CA-05 fierce and greedy raids",
+      "selectedEliminations": 5,
+      "npc": {
+        "dispatched": 619,
+        "captures": 205,
+        "repulses": 344,
+        "raids": 48
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 9,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 150,
+          "raids": 0,
+          "captures": 53,
+          "repulses": 79,
+          "citiesAtEnd": 145,
+          "prisonersHeld": 10,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.75,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.63
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 183,
+          "raids": 25,
+          "captures": 53,
+          "repulses": 110,
+          "citiesAtEnd": 162,
+          "prisonersHeld": 8,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.58,
+          "raidsPerFactionYear": 0.63,
+          "meanCitiesAtEnd": 4.05
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 200,
+          "raids": 27,
+          "captures": 61,
+          "repulses": 119,
+          "citiesAtEnd": 132,
+          "prisonersHeld": 11,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 6.67,
+          "raidsPerFactionYear": 0.9,
+          "meanCitiesAtEnd": 4.4
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 159,
+          "raids": 0,
+          "captures": 61,
+          "repulses": 81,
+          "citiesAtEnd": 112,
+          "prisonersHeld": 10,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 7.95,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.6
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 2,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 6,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 2,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 1,
+        "guandu-200/cao/development": 3,
+        "guandu-200/cao/held-out": 6,
+        "guandu-200/liu/development": 0,
+        "guandu-200/liu/held-out": 3,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 4,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 3,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "rl01",
+      "commit": "bf4f0d9",
+      "label": "+ PF-CA-04 diplomacy (no bot effect) and PF-RL-01 work bank",
+      "selectedEliminations": 5,
+      "npc": {
+        "dispatched": 612,
+        "captures": 200,
+        "repulses": 335,
+        "raids": 61
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 9,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 152,
+          "raids": 2,
+          "captures": 51,
+          "repulses": 81,
+          "citiesAtEnd": 143,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.8,
+          "raidsPerFactionYear": 0.05,
+          "meanCitiesAtEnd": 3.58
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 196,
+          "raids": 39,
+          "captures": 55,
+          "repulses": 114,
+          "citiesAtEnd": 163,
+          "prisonersHeld": 5,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.9,
+          "raidsPerFactionYear": 0.97,
+          "meanCitiesAtEnd": 4.08
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 186,
+          "raids": 34,
+          "captures": 56,
+          "repulses": 105,
+          "citiesAtEnd": 132,
+          "prisonersHeld": 10,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 6.2,
+          "raidsPerFactionYear": 1.13,
+          "meanCitiesAtEnd": 4.4
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 153,
+          "raids": 0,
+          "captures": 59,
+          "repulses": 78,
+          "citiesAtEnd": 109,
+          "prisonersHeld": 4,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 7.65,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.45
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 1,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 4,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 4,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 5,
+        "guandu-200/cao/held-out": 6,
+        "guandu-200/liu/development": 1,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 5,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 2,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "rl02",
+      "commit": "bdfdda7",
+      "label": "+ PF-RL-02 relief, food trade, restore-loyalty retired",
+      "selectedEliminations": 6,
+      "npc": {
+        "dispatched": 610,
+        "captures": 204,
+        "repulses": 333,
+        "raids": 71
+      },
+      "leaderCities": {
+        "median": 6.5,
+        "max": 8,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 158,
+          "raids": 3,
+          "captures": 52,
+          "repulses": 83,
+          "citiesAtEnd": 144,
+          "prisonersHeld": 7,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.95,
+          "raidsPerFactionYear": 0.07,
+          "meanCitiesAtEnd": 3.6
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 190,
+          "raids": 38,
+          "captures": 54,
+          "repulses": 113,
+          "citiesAtEnd": 162,
+          "prisonersHeld": 1,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.75,
+          "raidsPerFactionYear": 0.95,
+          "meanCitiesAtEnd": 4.05
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 183,
+          "raids": 38,
+          "captures": 52,
+          "repulses": 112,
+          "citiesAtEnd": 127,
+          "prisonersHeld": 14,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 6.1,
+          "raidsPerFactionYear": 1.27,
+          "meanCitiesAtEnd": 4.23
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 148,
+          "raids": 0,
+          "captures": 66,
+          "repulses": 66,
+          "citiesAtEnd": 119,
+          "prisonersHeld": 6,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 7.4,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.95
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 3,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 4,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 5,
+        "guandu-200/cao/held-out": 4,
+        "guandu-200/liu/development": 1,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 3,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "rl03",
+      "commit": "db1259d",
+      "label": "+ PF-RL-03 officer XP from battle, no training force",
+      "selectedEliminations": 5,
+      "npc": {
+        "dispatched": 629,
+        "captures": 206,
+        "repulses": 348,
+        "raids": 63
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 9,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 154,
+          "raids": 0,
+          "captures": 54,
+          "repulses": 79,
+          "citiesAtEnd": 143,
+          "prisonersHeld": 7,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.85,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.58
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 198,
+          "raids": 37,
+          "captures": 49,
+          "repulses": 124,
+          "citiesAtEnd": 157,
+          "prisonersHeld": 4,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.95,
+          "raidsPerFactionYear": 0.93,
+          "meanCitiesAtEnd": 3.92
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 191,
+          "raids": 36,
+          "captures": 51,
+          "repulses": 118,
+          "citiesAtEnd": 123,
+          "prisonersHeld": 14,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 6.37,
+          "raidsPerFactionYear": 1.2,
+          "meanCitiesAtEnd": 4.1
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 162,
+          "raids": 0,
+          "captures": 72,
+          "repulses": 75,
+          "citiesAtEnd": 123,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.1,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 6.15
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 3,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 6,
+        "guandu-200/cao/held-out": 7,
+        "guandu-200/liu/development": 1,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 2,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 5,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 2,
+        "guandu-200/yuan/held-out": 3
+      }
+    },
+    {
+      "id": "rl04",
+      "commit": "c89589d",
+      "label": "+ PF-RL-04 regional cavalry cost",
+      "selectedEliminations": 6,
+      "npc": {
+        "dispatched": 618,
+        "captures": 211,
+        "repulses": 339,
+        "raids": 55
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 10,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 154,
+          "raids": 1,
+          "captures": 56,
+          "repulses": 81,
+          "citiesAtEnd": 141,
+          "prisonersHeld": 8,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 3.85,
+          "raidsPerFactionYear": 0.03,
+          "meanCitiesAtEnd": 3.52
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 193,
+          "raids": 33,
+          "captures": 53,
+          "repulses": 115,
+          "citiesAtEnd": 163,
+          "prisonersHeld": 3,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 4.83,
+          "raidsPerFactionYear": 0.82,
+          "meanCitiesAtEnd": 4.08
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 179,
+          "raids": 28,
+          "captures": 55,
+          "repulses": 109,
+          "citiesAtEnd": 129,
+          "prisonersHeld": 15,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 5.97,
+          "raidsPerFactionYear": 0.93,
+          "meanCitiesAtEnd": 4.3
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 164,
+          "raids": 0,
+          "captures": 69,
+          "repulses": 79,
+          "citiesAtEnd": 119,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.2,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.95
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 3,
+        "divided-realm-190/dong/held-out": 4,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 6,
+        "guandu-200/cao/held-out": 3,
+        "guandu-200/liu/development": 0,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 2,
+        "guandu-200/sun/development": 4,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 4,
+        "guandu-200/yuan/held-out": 4
+      }
+    },
+    {
+      "id": "rl05",
+      "commit": "6069dee",
+      "label": "+ PF-RL-05 captivity decay and AI holding",
+      "selectedEliminations": 4,
+      "npc": {
+        "dispatched": 643,
+        "captures": 190,
+        "repulses": 378,
+        "raids": 54
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 8,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 155,
+          "raids": 1,
+          "captures": 48,
+          "repulses": 88,
+          "citiesAtEnd": 141,
+          "prisonersHeld": 3,
+          "prisonerDecisions": {
+            "recruit": 16,
+            "recruit-refused": 21,
+            "release": 11,
+            "exchange-refused": 3,
+            "exchange": 6
+          },
+          "dispatchesPerFactionYear": 3.88,
+          "raidsPerFactionYear": 0.03,
+          "meanCitiesAtEnd": 3.52
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 202,
+          "raids": 28,
+          "captures": 48,
+          "repulses": 127,
+          "citiesAtEnd": 162,
+          "prisonersHeld": 8,
+          "prisonerDecisions": {
+            "recruit": 34,
+            "recruit-refused": 77,
+            "exchange": 4
+          },
+          "dispatchesPerFactionYear": 5.05,
+          "raidsPerFactionYear": 0.7,
+          "meanCitiesAtEnd": 4.05
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 194,
+          "raids": 28,
+          "captures": 50,
+          "repulses": 123,
+          "citiesAtEnd": 129,
+          "prisonersHeld": 19,
+          "prisonerDecisions": {
+            "recruit-refused": 99,
+            "recruit": 35,
+            "exchange": 3
+          },
+          "dispatchesPerFactionYear": 6.47,
+          "raidsPerFactionYear": 0.93,
+          "meanCitiesAtEnd": 4.3
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 166,
+          "raids": 0,
+          "captures": 63,
+          "repulses": 89,
+          "citiesAtEnd": 115,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {
+            "recruit-refused": 88,
+            "recruit": 48,
+            "exchange": 6,
+            "exchange-refused": 2
+          },
+          "dispatchesPerFactionYear": 8.3,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.75
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 4,
+        "divided-realm-190/dong/held-out": 4,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 3,
+        "divided-realm-190/sun/held-out": 6,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 7,
+        "guandu-200/cao/held-out": 5,
+        "guandu-200/liu/development": 2,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 2,
+        "guandu-200/ma/held-out": 2,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 5,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 3,
+        "guandu-200/yuan/held-out": 2
+      }
+    },
+    {
+      "id": "rl06",
+      "commit": "598e86c",
+      "label": "+ PF-RL-06 conquest unrest (final rules)",
+      "selectedEliminations": 4,
+      "npc": {
+        "dispatched": 618,
+        "captures": 196,
+        "repulses": 344,
+        "raids": 43
+      },
+      "leaderCities": {
+        "median": 6,
+        "max": 8,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 153,
+          "raids": 0,
+          "captures": 50,
+          "repulses": 86,
+          "citiesAtEnd": 140,
+          "prisonersHeld": 3,
+          "prisonerDecisions": {
+            "recruit-refused": 32,
+            "recruit": 17,
+            "exchange-refused": 2,
+            "exchange": 4,
+            "release": 10
+          },
+          "dispatchesPerFactionYear": 3.83,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.5
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 198,
+          "raids": 26,
+          "captures": 50,
+          "repulses": 122,
+          "citiesAtEnd": 163,
+          "prisonersHeld": 9,
+          "prisonerDecisions": {
+            "recruit": 34,
+            "recruit-refused": 70,
+            "exchange": 7,
+            "exchange-refused": 1
+          },
+          "dispatchesPerFactionYear": 4.95,
+          "raidsPerFactionYear": 0.65,
+          "meanCitiesAtEnd": 4.08
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 177,
+          "raids": 19,
+          "captures": 53,
+          "repulses": 100,
+          "citiesAtEnd": 125,
+          "prisonersHeld": 24,
+          "prisonerDecisions": {
+            "recruit-refused": 97,
+            "recruit": 39,
+            "exchange": 3
+          },
+          "dispatchesPerFactionYear": 5.9,
+          "raidsPerFactionYear": 0.63,
+          "meanCitiesAtEnd": 4.17
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 157,
+          "raids": 0,
+          "captures": 61,
+          "repulses": 79,
+          "citiesAtEnd": 116,
+          "prisonersHeld": 11,
+          "prisonerDecisions": {
+            "recruit-refused": 82,
+            "recruit": 48,
+            "exchange": 3,
+            "exchange-refused": 2
+          },
+          "dispatchesPerFactionYear": 7.85,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 5.8
+        }
+      },
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 1,
+        "divided-realm-190/dong/development": 4,
+        "divided-realm-190/dong/held-out": 6,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 4,
+        "divided-realm-190/sun/held-out": 7,
+        "divided-realm-190/yan/development": 5,
+        "divided-realm-190/yan/held-out": 5,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 2,
+        "guandu-200/cao/development": 5,
+        "guandu-200/cao/held-out": 4,
+        "guandu-200/liu/development": 2,
+        "guandu-200/liu/held-out": 2,
+        "guandu-200/ma/development": 2,
+        "guandu-200/ma/held-out": 2,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 3,
+        "guandu-200/yuan/held-out": 2
+      }
+    }
+  ],
+  "longRun48Months": {
+    "base": {
+      "runs": 24,
+      "selectedEliminations": 14,
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 0,
+        "divided-realm-190/dong/development": 0,
+        "divided-realm-190/dong/held-out": 3,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 2,
+        "divided-realm-190/sun/held-out": 3,
+        "divided-realm-190/yan/development": 4,
+        "divided-realm-190/yan/held-out": 4,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 0,
+        "guandu-200/cao/development": 0,
+        "guandu-200/cao/held-out": 0,
+        "guandu-200/liu/development": 0,
+        "guandu-200/liu/held-out": 0,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 0,
+        "guandu-200/sun/held-out": 1,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 4,
+        "guandu-200/yuan/development": 1,
+        "guandu-200/yuan/held-out": 3
+      },
+      "npc": {
+        "dispatched": 1377,
+        "captures": 476,
+        "repulses": 854,
+        "raids": 0
+      },
+      "leaderCities": {
+        "median": 7.5,
+        "max": 12,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 390,
+          "raids": 0,
+          "captures": 118,
+          "repulses": 259,
+          "citiesAtEnd": 158,
+          "prisonersHeld": 20,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 9.75,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 3.95
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 356,
+          "raids": 0,
+          "captures": 98,
+          "repulses": 241,
+          "citiesAtEnd": 165,
+          "prisonersHeld": 23,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 8.9,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.13
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 370,
+          "raids": 0,
+          "captures": 127,
+          "repulses": 229,
+          "citiesAtEnd": 121,
+          "prisonersHeld": 32,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 12.33,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 4.03
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 367,
+          "raids": 0,
+          "captures": 164,
+          "repulses": 193,
+          "citiesAtEnd": 144,
+          "prisonersHeld": 30,
+          "prisonerDecisions": {},
+          "dispatchesPerFactionYear": 18.35,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 7.2
+        }
+      }
+    },
+    "rl06": {
+      "runs": 24,
+      "selectedEliminations": 14,
+      "selectedCities": {
+        "divided-realm-190/cao/development": 0,
+        "divided-realm-190/cao/held-out": 0,
+        "divided-realm-190/dong/development": 0,
+        "divided-realm-190/dong/held-out": 1,
+        "divided-realm-190/liu/development": 0,
+        "divided-realm-190/liu/held-out": 0,
+        "divided-realm-190/sun/development": 0,
+        "divided-realm-190/sun/held-out": 4,
+        "divided-realm-190/yan/development": 4,
+        "divided-realm-190/yan/held-out": 4,
+        "divided-realm-190/yuan/development": 0,
+        "divided-realm-190/yuan/held-out": 0,
+        "guandu-200/cao/development": 0,
+        "guandu-200/cao/held-out": 2,
+        "guandu-200/liu/development": 0,
+        "guandu-200/liu/held-out": 0,
+        "guandu-200/ma/development": 0,
+        "guandu-200/ma/held-out": 0,
+        "guandu-200/sun/development": 5,
+        "guandu-200/sun/held-out": 4,
+        "guandu-200/yan/development": 4,
+        "guandu-200/yan/held-out": 5,
+        "guandu-200/yuan/development": 1,
+        "guandu-200/yuan/held-out": 0
+      },
+      "npc": {
+        "dispatched": 1501,
+        "captures": 435,
+        "repulses": 1013,
+        "raids": 195
+      },
+      "leaderCities": {
+        "median": 8,
+        "max": 11,
+        "min": 5
+      },
+      "byRulerTrait": {
+        "benevolent": {
+          "factionRuns": 40,
+          "dispatched": 337,
+          "raids": 10,
+          "captures": 87,
+          "repulses": 236,
+          "citiesAtEnd": 153,
+          "prisonersHeld": 11,
+          "prisonerDecisions": {
+            "recruit-refused": 76,
+            "recruit": 52,
+            "release": 38,
+            "exchange-refused": 2,
+            "exchange": 5
+          },
+          "dispatchesPerFactionYear": 8.43,
+          "raidsPerFactionYear": 0.25,
+          "meanCitiesAtEnd": 3.83
+        },
+        "fierce": {
+          "factionRuns": 40,
+          "dispatched": 493,
+          "raids": 105,
+          "captures": 121,
+          "repulses": 357,
+          "citiesAtEnd": 169,
+          "prisonersHeld": 19,
+          "prisonerDecisions": {
+            "recruit": 96,
+            "recruit-refused": 183,
+            "exchange": 22,
+            "exchange-refused": 9
+          },
+          "dispatchesPerFactionYear": 12.32,
+          "raidsPerFactionYear": 2.63,
+          "meanCitiesAtEnd": 4.22
+        },
+        "greedy": {
+          "factionRuns": 30,
+          "dispatched": 429,
+          "raids": 101,
+          "captures": 113,
+          "repulses": 302,
+          "citiesAtEnd": 120,
+          "prisonersHeld": 25,
+          "prisonerDecisions": {
+            "recruit-refused": 223,
+            "recruit": 111,
+            "exchange": 13,
+            "exchange-refused": 5
+          },
+          "dispatchesPerFactionYear": 14.3,
+          "raidsPerFactionYear": 3.37,
+          "meanCitiesAtEnd": 4
+        },
+        "cunning": {
+          "factionRuns": 20,
+          "dispatched": 379,
+          "raids": 0,
+          "captures": 148,
+          "repulses": 218,
+          "citiesAtEnd": 148,
+          "prisonersHeld": 20,
+          "prisonerDecisions": {
+            "recruit-refused": 284,
+            "recruit": 160,
+            "exchange": 9,
+            "exchange-refused": 3
+          },
+          "dispatchesPerFactionYear": 18.95,
+          "raidsPerFactionYear": 0,
+          "meanCitiesAtEnd": 7.4
+        }
+      }
+    }
+  }
+}
