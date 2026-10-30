@@ -31,6 +31,25 @@ export interface BattleUnitVisual {
   condition?: 'confused' | 'inspired';
   /** Morale below the rout threshold: drawn semi-transparent. */
   routed?: boolean;
+  /** Wavering or routed morale, shown with a badge as well as in the status text. */
+  moraleState?: 'wavering' | 'routed';
+}
+
+/** A forecast label drawn beside a target token while the player is choosing an attack. */
+export interface BattleTargetForecastVisual {
+  id: string;
+  position: GridPoint;
+  lines: readonly string[];
+  /** Whether the exchange favours the player: deals more than it takes, or breaks the target. */
+  tone: 'good' | 'even' | 'bad';
+}
+
+/** A casualty number floating over a token during enemy-turn playback. */
+export interface BattleFloatVisual {
+  key: string;
+  position: GridPoint;
+  text: string;
+  tone: 'player' | 'enemy';
 }
 
 export interface WaterCombatDisplay {

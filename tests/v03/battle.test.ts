@@ -957,9 +957,10 @@ describe('serializable tactical battle operations', () => {
     state.tacticPoints.attacker = BATTLE_TACTIC_POINT_CAP;
 
     const tactics = getAvailableBattleTactics(state, 'a1');
+    // Rally rose from the legacy 2 to 3 in play-feel PF-RL-12.
     expect(Object.fromEntries(tactics.map((entry) => [entry.tactic, entry.cost]))).toEqual({
       fire: 3,
-      rally: 1,
+      rally: 2,
       confuse: 2,
       raidSupply: 3,
       ambush: 2,
@@ -968,7 +969,7 @@ describe('serializable tactical battle operations', () => {
     expect(BATTLE_TACTIC_COST).toEqual({
       fire: 4,
       confuse: 3,
-      rally: 2,
+      rally: 3,
       raidSupply: 4,
       ambush: 3,
       rockfall: 4,

@@ -128,6 +128,15 @@ export function formatEvent(
       detail: message(locale, 'ui.the.armies.have.deployed.in.the.field.176'),
     };
   }
+  if (event.code === 'battle.withdrawalAsked') {
+    const battle = state.battles.find((entry) => entry.id === event.entityId);
+    const journey = state.journeys.find((entry) => entry.id === battle?.attackerJourneyId);
+    const city = name(journey?.destinationCityId, 'cities');
+    return {
+      title: message(locale, 'event.withdrawalAsked', { city }),
+      detail: message(locale, 'event.withdrawalAskedDetail'),
+    };
+  }
   if (event.code === 'journey.strandedSurrender')
     return {
       title: locale === 'zh' ? '归途无援，队伍投降' : 'Stranded return party surrendered',

@@ -12,6 +12,12 @@ export const BATTLE_MAP_SIZES: readonly (readonly [width: number, height: number
   [CANVAS_BATTLE_WIDTH, CANVAS_BATTLE_HEIGHT],
 ];
 export const MAX_UNITS_PER_SIDE = 10;
+/** Campaign battle day limits; raids were 10 days until play-feel PF-RL-10. */
+export const CONQUEST_BATTLE_DAYS = 30;
+export const RAID_BATTLE_DAYS = 14;
+/** Day limit (and provisioned battle days) for a campaign battle of this intent. */
+export const campaignBattleDays = (intent: 'conquer' | 'raid' | 'sack' | undefined): number =>
+  intent === 'raid' ? RAID_BATTLE_DAYS : CONQUEST_BATTLE_DAYS;
 export const BATTLE_MAP_TEMPLATE_VERSION = 'v0.3.1';
 /** Canvas battlefields built from a character layout. */
 export const CANVAS_BATTLE_MAP_VERSION = 'v0.3.2';
@@ -95,6 +101,8 @@ export interface BattleRosterEntry {
   level?: number;
   isMilitia?: boolean;
   cunning?: boolean;
+  /** A fierce leader's formation leans aggressive under AI command (PF-BA-01). */
+  fierce?: boolean;
   /** Defaults to one tile, except archers (three tiles). */
   attackRange?: number;
 }
@@ -116,6 +124,8 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   level: number;
   isMilitia: boolean;
   cunning: boolean;
+  /** Optional so battles saved before play-feel Phase 2 still load; absent means not fierce. */
+  fierce?: boolean;
   attackRange: number;
   morale: number;
   /** Confused skips one next activation; Inspired boosts one normal/counterattack/Ambush hit. Neither expires at day rollover. */

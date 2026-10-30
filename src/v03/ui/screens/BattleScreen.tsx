@@ -6,7 +6,9 @@ import {
   WATER_ATTACK_MULTIPLIER,
   WATER_INCOMING_DAMAGE_MULTIPLIER,
   battlefieldName,
+  getBattleTimeoutOutcome,
 } from '../../battle';
+import { useBattlePlayback } from '../hooks/useBattlePlayback';
 
 import {
   BattlefieldMapView,
@@ -62,6 +64,15 @@ export function BattleScreen({
   } = context;
   // Faint grid lines are on by default and can be hidden (plan §3).
   const [showGrid, setShowGrid] = useState(true);
+  // The rest of the day (enemy turn, delegated officers) replays before the board updates.
+  const playback = useBattlePlayback(activeBattle.id, battleState, troopVisuals);
+  const timeout = getBattleTimeoutOutcome(battleState);
+  const formationNames = (ids: readonly string[]) =>
+    ids
+      .map((id) => battleState.units.find((unit) => unit.id === id))
+      .filter((unit) => Boolean(unit))
+      .map((unit) => localizedOfficerName(unit!.name))
+      .join(locale === 'zh' ? '、' : ', ');
   // Follow the selected unit when it changes (auto-advance or Tab) if it is off-screen.
   const followedUnitId = currentUnit?.id;
   useEffect(() => {
@@ -81,6 +92,12 @@ export function BattleScreen({
     <section
       className="v03-battle-main"
       onKeyDown={(event) => {
+        if (event.key === 'Escape' && (playback.playing || playback.summary)) {
+          event.preventDefault();
+          if (playback.playing) playback.skip();
+          else playback.dismiss();
+          return;
+        }
         // Map shortcuts must not intercept Tab or typing in display controls.
         if (!(event.target as Element).closest('.v03-battlefield-map')) return;
         if (event.key === 'Tab' && !event.shiftKey) {
@@ -115,28 +132,44 @@ export function BattleScreen({
         </div>
         <div className="v03-battle-day">
           {t.battleDayLabel} {battleState.day} / {battleState.dayLimit}
+          <small
+            className={`v03-battle-standing ${timeout.winner === battleState.playerSide ? 'winning' : 'losing'}`}
+            title={t.battleTimeoutRule}
+          >
+            {timeout.winner === battleState.playerSide ? t.battleTimeoutWin : t.battleTimeoutLose}
+          </small>
         </div>
         <BattleDisplayControls display={display} locale={locale} />
       </div>
       <div ref={battleMapFrame} className="v03-battle-board">
         <BattlefieldMapView
           map={battleState.map}
-          units={troopVisuals}
+          units={playback.visuals}
           viewport={battleViewport ?? undefined}
           interactive
           showGrid={showGrid}
           onViewportChange={setBattleViewport}
-          selectedCell={currentUnit ? { x: currentUnit.x, y: currentUnit.y } : undefined}
-          reachableCells={reachableCells}
-          attackableCells={attackableCells}
-          tacticTargetCells={tacticTargets.map((target) => ({ x: target.x, y: target.y }))}
+          selectedCell={
+            currentUnit && !playback.playing ? { x: currentUnit.x, y: currentUnit.y } : undefined
+          }
+          reachableCells={playback.playing ? [] : reachableCells}
+          attackableCells={playback.playing ? [] : attackableCells}
+          tacticTargetCells={
+            playback.playing ? [] : tacticTargets.map((target) => ({ x: target.x, y: target.y }))
+          }
+          targetForecasts={playback.playing ? [] : context.targetForecasts}
+          attackPreview={playback.playing ? undefined : context.attackPreview}
+          floats={playback.floats}
+          animateTokens={playback.playing}
           locale={locale}
           waterAttackMultiplier={WATER_ATTACK_MULTIPLIER}
           waterIncomingDamageMultiplier={WATER_INCOMING_DAMAGE_MULTIPLIER}
           onUnitClick={(unitId) => {
+            if (playback.playing) return playback.skip();
             handleBattleUnitClick(unitId);
           }}
           onCellClick={(cell, source) => {
+            if (playback.playing) return playback.skip();
             setInspectedCell(cell);
             if (selectedTactic) {
               setFeedback({ key: 'tacticChooseTarget' });
@@ -176,6 +209,43 @@ export function BattleScreen({
           key={`${context.battleActionMenu?.battleId}:${context.battleActionMenu?.unitId}:${context.battleActionMenu?.day}`}
           context={context}
         />
+        {playback.playing || playback.summary ? (
+          <div className="v03-battle-playback" role="status" aria-live="polite">
+            <strong>{t.playbackTitle}</strong>
+            {playback.summary ? (
+              <span>
+                {[
+                  playback.summary.attacks || playback.summary.tactics || playback.summary.lost
+                    ? message(locale, 'playbackSummary', {
+                        attacks: playback.summary.attacks,
+                        tactics: playback.summary.tactics,
+                        lost: playback.summary.lost.toLocaleString(),
+                      })
+                    : t.playbackQuiet,
+                  playback.summary.wavering.length
+                    ? message(locale, 'playbackShaken', {
+                        units: formationNames(playback.summary.wavering),
+                      })
+                    : null,
+                  playback.summary.routed.length
+                    ? message(locale, 'playbackBroken', {
+                        units: formationNames(playback.summary.routed),
+                      })
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              </span>
+            ) : null}
+            <Button
+              type="button"
+              className="text-button"
+              onClick={playback.playing ? playback.skip : playback.dismiss}
+            >
+              {playback.playing ? t.playbackSkip : t.playbackDismiss}
+            </Button>
+          </div>
+        ) : null}
       </div>
       <div className="v03-battle-camera-controls" role="group" aria-label={t.battleMapCamera}>
         <Button type="button" aria-label={t.battleMapZoomOut} onClick={() => zoomBattleMap(0.8)}>

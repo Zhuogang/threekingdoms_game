@@ -1,3 +1,4 @@
+import { campaignBattleDays } from '../battle/types';
 import { estimateCampaignSupply } from '../calendar';
 import { detachWoundedToCity } from '../campaign/personnel';
 import type { V03Command, V03GameState } from '../types';
@@ -35,7 +36,7 @@ export function armyPreview(
         troopCount: troops,
         cavalryTroops: composition.cavalryTroops,
         outboundDays: route.estimatedDays,
-        battleDays: intent === 'raid' ? 10 : 30,
+        battleDays: campaignBattleDays(intent),
         returnDays: route.estimatedDays,
       }).totalFood
     : 0;

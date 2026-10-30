@@ -85,6 +85,7 @@ export function rosterFromGroups(
         : 0,
       isMilitia: Boolean(group.militia),
       cunning: group.officers.some((officer) => hasTrait(officer.id, 'cunning')),
+      ...(group.officers.some((officer) => hasTrait(officer.id, 'fierce')) ? { fierce: true } : {}),
       attackRange: group.type === 'archer' ? 3 : undefined,
     } satisfies BattleRosterEntry;
   });

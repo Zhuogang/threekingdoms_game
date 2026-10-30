@@ -50,7 +50,8 @@ export const BATTLE_TACTIC_POINT_REGEN = 2;
 export const BATTLE_TACTIC_COST: Readonly<Record<BattleTactic, number>> = {
   fire: 4,
   confuse: 3,
-  rally: 2,
+  // 2 until PF-RL-12: at the daily regeneration of 2 it was free upkeep.
+  rally: 3,
   raidSupply: 4,
   ambush: 3,
   rockfall: 4,
@@ -58,7 +59,14 @@ export const BATTLE_TACTIC_COST: Readonly<Record<BattleTactic, number>> = {
 const WAVERING_MORALE = 40;
 const ROUTED_MORALE = 20;
 const MIN_MORALE = 5;
+/** A fed formation that lost no troops during a day regains this much morale at rollover, up to the opening 80 (PF-RL-11). */
+export const BATTLE_MORALE_RECOVERY = 5;
+export const BATTLE_MORALE_RECOVERY_CAP = 80;
 const AMBUSH_DAMAGE_MULTIPLIER = 1.4;
+// PF-RL-12: Fire (0.1584) and Rockfall (0.1296) lost to an ordinary 0.3 hit almost everywhere.
+// Fire now beats one in Wind or forest; Rockfall keeps its morale blow on top.
+const FIRE_DAMAGE_COEFFICIENT = 0.21;
+const ROCKFALL_DAMAGE_COEFFICIENT = 0.18;
 const ROCKFALL_MORALE_LOSS = 10;
 const RAID_SUPPLY_MINIMUM = 100;
 const INSPIRED_DAMAGE_MULTIPLIER = 1.2;
@@ -82,6 +90,8 @@ const isWavering = (unit: Pick<TacticalBattleUnit, 'morale'>): boolean =>
 const isRouted = (unit: Pick<TacticalBattleUnit, 'morale'>): boolean => unit.morale < ROUTED_MORALE;
 /** Whether a unit's morale is below the rout threshold (display and rules share it). */
 export const isBattleUnitRouted = isRouted;
+/** Whether a unit's morale is below the wavering threshold (it includes routed units). */
+export const isBattleUnitWavering = isWavering;
 
 function tacticalSeed(id: string, seed: number): number {
   let hash = (2166136261 ^ (seed >>> 0)) >>> 0;
@@ -139,6 +149,7 @@ function makeUnits(
       level: entry.level ?? 0,
       isMilitia: entry.isMilitia ?? entry.id.includes('militia'),
       cunning: entry.cunning ?? false,
+      ...(entry.fierce ? { fierce: true } : {}),
       attackRange: entry.attackRange ?? (entry.troopType === 'archer' ? 3 : 1),
       x: position.x,
       y: position.y,
@@ -278,7 +289,19 @@ export function getUnitReachableTiles(
   const unit = unitById(state, unitId);
   if (!unit || unit.status === 'confused' || unit.moved || unit.acted || state.outcome) return [];
   const enemyZone = getEnemyZoneOfControl(state, otherSide(unit.side));
-  if (enemyZone.some((position) => position.x === unit.x && position.y === unit.y)) return [];
+  if (enemyZone.some((position) => position.x === unit.x && position.y === unit.y)) {
+    // A formation in contact is pinned, except that a routed one may take a single
+    // disengaging step to any free neighbouring cell (PF-RL-13).
+    if (!isRouted(unit)) return [];
+    return getReachableBattleTiles(
+      state.map,
+      unit,
+      unit,
+      movementBudget(unit.troopType),
+      otherUnitsAsBlockers(state, unit),
+      enemyZone,
+    ).filter((tile) => manhattanDistance(tile, unit) === 1);
+  }
   return getReachableBattleTiles(
     state.map,
     unit,
@@ -412,12 +435,17 @@ function fireBaseDamage(
   // Water's legacy fire immunity is removed: water uses the shared attack/defense modifiers.
   const forest = fireTerrainMultiplier(ground);
   const intellect = Math.max(0.35, (source.intellect + 30) / (target.intellect + 55));
-  return Math.max(12, source.troops * 0.1584 * intellect * weather * forest * variation);
+  return Math.max(
+    12,
+    source.troops * FIRE_DAMAGE_COEFFICIENT * intellect * weather * forest * variation,
+  );
 }
 
 function rockfallBaseDamage(source: TacticalBattleUnit, target: TacticalBattleUnit): number {
   return Math.floor(
-    source.troops * 0.1296 * Math.max(0.35, (source.intellect + 30) / (target.intellect + 55)),
+    source.troops *
+      ROCKFALL_DAMAGE_COEFFICIENT *
+      Math.max(0.35, (source.intellect + 30) / (target.intellect + 55)),
   );
 }
 
@@ -444,6 +472,11 @@ export interface BattleAttackForecast {
   attackMultiplier: number;
   incomingDamageMultiplier: number;
   estimatedCasualties: number | null;
+  /** Target morale after the hit, and what the hit does to it (for the on-map forecast). */
+  targetMoraleAfter: number | null;
+  targetResult: 'destroyed' | 'routs' | null;
+  /** The attacker's morale after the forecast counterattack (unchanged without one). */
+  sourceMoraleAfter: number;
   counterattack: {
     possible: boolean;
     estimatedCasualties: number | null;
@@ -498,6 +531,11 @@ function forecastAttack(
   const counterCasualties = counterattackPossible
     ? estimateDamage(counterSource, source, map).casualties
     : null;
+  const targetMoraleAfter =
+    estimatedCasualties === null ? null : Math.max(MIN_MORALE, target.morale - targetMoraleLoss);
+  const sourceMoraleLoss = counterCasualties
+    ? Math.min(45, Math.max(1, Math.ceil((counterCasualties / Math.max(1, source.troops)) * 55)))
+    : 0;
   return {
     sourceId: source.id,
     targetId: target.id,
@@ -507,6 +545,16 @@ function forecastAttack(
     attackMultiplier: initial.attackMultiplier,
     incomingDamageMultiplier: initial.incomingDamageMultiplier,
     estimatedCasualties,
+    targetMoraleAfter,
+    targetResult:
+      estimatedCasualties === null
+        ? null
+        : estimatedCasualties >= target.troops
+          ? 'destroyed'
+          : !isRouted(target) && targetMoraleAfter! < ROUTED_MORALE
+            ? 'routs'
+            : null,
+    sourceMoraleAfter: Math.max(MIN_MORALE, source.morale - sourceMoraleLoss),
     counterattack: {
       possible: counterattackPossible,
       estimatedCasualties: counterCasualties,
@@ -707,6 +755,7 @@ function attackOneWay(
   state: V03TacticalBattleState,
   source: TacticalBattleUnit,
   target: TacticalBattleUnit,
+  counter = false,
 ): number {
   const { casualties, modifiers } = estimateDamage(source, target, state.map);
   state.engaged = true;
@@ -729,7 +778,7 @@ function attackOneWay(
       : '';
   append(
     state,
-    `${source.name} attacks ${target.name}: ${casualties} casualties${waterNote}.`,
+    `${source.name} ${counter ? 'counterattacks' : 'attacks'} ${target.name}: ${casualties} casualties${waterNote}.`,
     'log.attack',
     {
       sourceId: source.id,
@@ -738,6 +787,7 @@ function attackOneWay(
       water: modifiers.sourceOnWater || modifiers.targetOnWater,
       attackMultiplier: modifiers.attackMultiplier,
       incomingMultiplier: modifiers.incomingDamageMultiplier,
+      ...(counter ? { counter: true } : {}),
     },
   );
   return casualties;
@@ -793,7 +843,7 @@ function performAttack(
     !isRouted(target) &&
     isBattleAttackInRange(state.map, target, source, target.attackRange)
   ) {
-    attackOneWay(state, target, source);
+    attackOneWay(state, target, source, true);
     checkImmediateOutcome(state);
   }
   return null;
@@ -1023,6 +1073,27 @@ function tacticOpportunityCost(points: number, cost: number): number {
   return TACTICAL_VALUE.pointRecoveryDay * regenerationDays * scarcity;
 }
 
+/**
+ * A formation leader's temperament under AI command, from -1 (cautious) to 1
+ * (aggressive): force against intellect, leaning aggressive when fierce (PF-BA-01).
+ * A Lü Bu charges; a Zhuge Liang holds ground. Deterministic, so a battle still replays.
+ */
+export function battleTemperament(
+  unit: Pick<TacticalBattleUnit, 'force' | 'intellect' | 'fierce'>,
+): number {
+  return Math.max(-1, Math.min(1, (unit.force - unit.intellect) / 60 + (unit.fierce ? 0.35 : 0)));
+}
+
+/** Appetite for spending tactic points, from -1 to 1: intellect, plus the cunning trait. */
+function tacticAppetite(unit: Pick<TacticalBattleUnit, 'intellect' | 'cunning'>): number {
+  return Math.max(-1, Math.min(1, (unit.intellect - 60) / 40 + (unit.cunning ? 0.25 : 0)));
+}
+
+/** Weight of next-exchange exposure: 0.65 for a balanced leader, 0.42–0.88 by temperament. */
+function exposureWeight(unit: TacticalBattleUnit): number {
+  return isRouted(unit) ? 1 : 0.65 * (1 - 0.35 * battleTemperament(unit));
+}
+
 /** Pure legal alternatives in the unit's current position. Stable ties prefer
  * lower spending, then target/action identity. This never consumes RNG or actions.
  */
@@ -1101,7 +1172,9 @@ function battleActionCandidates(
       const forecast = predictBattleTactic(state, unitId, entry.tactic, target.id);
       if (!forecast?.inRange) continue;
       const action = candidate(entry.tactic, target.id);
-      action.pointCost = tacticOpportunityCost(state.tacticPoints[unit.side], entry.cost);
+      action.pointCost =
+        tacticOpportunityCost(state.tacticPoints[unit.side], entry.cost) *
+        (1 - 0.3 * tacticAppetite(unit));
       if (entry.tactic === 'rally') {
         const restored = {
           ...target,
@@ -1110,9 +1183,14 @@ function battleActionCandidates(
         };
         const opportunity =
           target.acted || target.id === unit.id ? (state.day < state.dayLimit ? 0.45 : 0) : 1;
+        // Rested formations recover to 80 on their own, so only morale restored below
+        // that protects against wavering and rout; extra damage is in the capability term.
+        const restoredMorale =
+          Math.min(BATTLE_MORALE_RECOVERY_CAP, restored.morale) -
+          Math.min(BATTLE_MORALE_RECOVERY_CAP, target.morale);
         action.supportValue =
           opportunity * Math.max(0, capability(restored) - capability(target)) +
-          (forecast.moraleChange / 100) * (target.troops + target.wounded * 0.3) * 0.3;
+          (restoredMorale / 100) * (target.troops + target.wounded * 0.3) * 0.3;
         if (isRouted(target) && !isRouted(restored)) action.supportValue += target.troops * 0.08;
       } else if (entry.tactic === 'confuse') {
         if (
@@ -1311,6 +1389,24 @@ function nextEnemyDamage(
   return position ? estimateDamage({ ...enemy, ...position }, target, state.map).casualties : 0;
 }
 
+/**
+ * Damage and return hits from the two strongest likely attackers (PF-BA-04).
+ * Summing every enemy able to reach a cell overstated edge-of-reach risk and
+ * stalled approaches; in practice two formations rarely all strike one target.
+ */
+function strongestTwo(
+  replies: readonly { damage: number; returned: number }[],
+): [damage: number, returned: number] {
+  let first = { damage: 0, returned: 0 },
+    second = first;
+  for (const reply of replies)
+    if (reply.damage > first.damage) {
+      second = first;
+      first = reply;
+    } else if (reply.damage > second.damage) second = reply;
+  return [first.damage + second.damage, first.returned + second.returned];
+}
+
 const CARDINAL_STEPS = [
   [0, -1],
   [1, 0],
@@ -1363,9 +1459,15 @@ export function evaluateBattleTurn(
   const route = routed ? null : tacticalRoute(state, unit, turn);
   const remainingDays = state.dayLimit - state.day + 1;
   const behind = turn.timeoutWinner !== unit.side;
+  // A side behind on the timeout count starts pressing in the last ~30% of the
+  // limit (PF-BA-02; it was the last 3 days), so river standoffs and raids resolve.
+  const urgent = behind && remainingDays <= Math.max(3, Math.ceil(state.dayLimit * 0.3));
+  const temperament = battleTemperament(unit);
+  const exposureFactor = exposureWeight(unit);
   // A full move toward contact is worth at most roughly one normal hit. Scaling
   // by capability lets viable infantry cross an archer's firing zone without
   // treating a handful of route cells as more valuable than an army's survival.
+  // Aggressive leaders value closing in more, cautious ones less (PF-BA-01).
   const approachHit = Math.max(
     0,
     ...turn.enemies.map((enemy) => estimateDamage(unit, enemy, state.map).casualties),
@@ -1374,6 +1476,7 @@ export function evaluateBattleTurn(
     remainingDays === 1
       ? 0
       : Math.max(40, (approachHit * 0.9) / movementBudget(unit.troopType)) *
+        (1 + 0.3 * temperament) *
         (!behind && remainingDays <= 3 ? 0.5 : 1);
   const currentRoute = route?.[battlePositionIndex(state.map, unit.x, unit.y)] ?? 0;
   const rescuers = routed
@@ -1411,14 +1514,7 @@ export function evaluateBattleTurn(
       movingThreat.attackFields.set(enemy.id, enemyAttackField(view, enemy, turn.fields));
     return movingThreat;
   };
-  const exchanges = new Map<
-    string,
-    {
-      totalDamage: number;
-      totalReturn: number;
-      hits: Map<string, { damage: number; returned: number }>;
-    }
-  >();
+  const exchanges = new Map<string, Map<string, { damage: number; returned: number }>>();
   const risk = (candidate: TacticalBattleUnit, action?: TacticalActionCandidate) => {
     const retaliation = action?.retaliation ?? 0;
     const own = {
@@ -1462,32 +1558,28 @@ export function evaluateBattleTurn(
         returned: forecast.counterattack.estimatedCasualties ?? 0,
       };
     };
-    let base = exchanges.get(key);
-    if (!base) {
-      base = { totalDamage: 0, totalReturn: 0, hits: new Map() };
-      for (const enemy of turn.enemies) {
-        const hit = exchange(enemy, 0);
-        base.hits.set(enemy.id, hit);
-        base.totalDamage += hit.damage;
-        base.totalReturn += hit.returned;
-      }
-      exchanges.set(key, base);
+    let hits = exchanges.get(key);
+    if (!hits) {
+      hits = new Map();
+      for (const enemy of turn.enemies) hits.set(enemy.id, exchange(enemy, 0));
+      exchanges.set(key, hits);
     }
-    let damage = base.totalDamage,
-      returned = base.totalReturn;
     const target = turn.enemies.find((enemy) => enemy.id === action?.targetId);
+    let revised: { damage: number; returned: number } | undefined;
     if (target && action) {
-      const before = base.hits.get(target.id)!;
+      const before = hits.get(target.id)!;
       const after = action.outgoing > 0 ? exchange(target, action.outgoing) : before;
       const denial =
         action.action === 'confuse'
           ? (predictBattleTactic(state, unit.id, 'confuse', target.id)?.chance ?? 0) / 100
           : 0;
-      damage += after.damage * (1 - denial) - before.damage;
-      returned += after.returned * (1 - denial) - before.returned;
+      revised = { damage: after.damage * (1 - denial), returned: after.returned * (1 - denial) };
     }
     // Reuse unchanged next exchanges across actions; only the struck or confused
     // target needs a revised reply. Return hits prevent equal forces freezing.
+    const [damage, returned] = strongestTwo(
+      [...hits].map(([id, hit]) => (id === target?.id && revised ? revised : hit)),
+    );
     return (
       Math.max(0, Math.min(own.troops, damage) - returned) +
       (own.troops > 0 && damage >= own.troops ? 80 + candidate.wounded * 0.6 : 0)
@@ -1508,9 +1600,11 @@ export function evaluateBattleTurn(
     // The destination shortlist only needs a cheap incoming-damage bound.
     // Full damage/counterattack exchanges are evaluated at the six retained cells.
     const threat = replyContext(candidate);
-    const incoming = turn.enemies.reduce(
-      (sum, enemy) => sum + nextEnemyDamage(state, enemy, candidate, threat),
-      0,
+    const [incoming] = strongestTwo(
+      turn.enemies.map((enemy) => ({
+        damage: nextEnemyDamage(state, enemy, candidate, threat),
+        returned: 0,
+      })),
     );
     const exposure =
       Math.min(unit.troops, incoming) + (incoming >= unit.troops ? 80 + unit.wounded * 0.6 : 0);
@@ -1529,7 +1623,7 @@ export function evaluateBattleTurn(
       exposure,
       blocking,
       shot,
-      cheap: shot + progressValue - exposure * 0.65 - blocking,
+      cheap: shot + progressValue - exposure * exposureFactor - blocking,
     };
   });
   const [current, ...moves] = positions;
@@ -1588,8 +1682,7 @@ export function evaluateBattleTurn(
         action.supportValue = support;
       }
       const exposure = risk(position.candidate, action);
-      const urgency =
-        behind && remainingDays <= 3 ? (action.outgoing + action.finishValue) * 0.15 : 0;
+      const urgency = urgent ? (action.outgoing + action.finishValue) * 0.15 : 0;
       choices.push({
         ...action,
         x: position.x,
@@ -1602,7 +1695,7 @@ export function evaluateBattleTurn(
           action.score +
           urgency +
           position.progressValue -
-          exposure * (routed ? 1 : 0.65) -
+          exposure * exposureFactor -
           position.blocking -
           position.cost * 0.1,
       });
@@ -1639,13 +1732,65 @@ function traceTacticalChoices(
     });
 }
 
+/** The AI's opening-force withdrawal rule: a side well below its opening and the enemy's strength. */
+function withdrawalThresholdReached(state: V03TacticalBattleState, side: BattleSide): boolean {
+  const current = totalTroops(state, side);
+  const opening = state.units
+    .filter((unit) => unit.side === side)
+    .reduce((sum, unit) => sum + unit.initialTroops, 0);
+  return (
+    current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
+    current * 100 <= totalTroops(state, otherSide(side)) * PERSONNEL_RULES.aiRetreatEnemyPercent
+  );
+}
+
+/**
+ * Whether AI command would withdraw this side now. Auto-command asks the player
+ * instead of withdrawing their army (PF-BA-06).
+ */
+export function battleWithdrawalDue(state: V03TacticalBattleState, side: BattleSide): boolean {
+  return !state.outcome && state.retreatAllowed[side] && withdrawalThresholdReached(state, side);
+}
+
+export type BattlePosture = 'attack' | 'advance' | 'hold' | 'fallback';
+
+function nearestEnemyDistance(state: V03TacticalBattleState, unit: TacticalBattleUnit): number {
+  return Math.min(
+    ...livingUnits(state, otherSide(unit.side)).map((enemy) => manhattanDistance(unit, enemy)),
+  );
+}
+
+/**
+ * Log the army's posture when it changes, so the player can read the enemy's intent
+ * (PF-BA-05). Only behaviour the player can see is described: strikes and moves.
+ */
+function announcePosture(state: V03TacticalBattleState, side: BattleSide, posture: BattlePosture) {
+  const entries = state.logEntries ?? [];
+  for (let index = entries.length - 1; index >= 0; index--)
+    if (entries[index]!.code === 'log.posture' && entries[index]!.params.side === side) {
+      if (entries[index]!.params.posture === posture) return;
+      break;
+    }
+  const text = {
+    attack: 'presses the attack',
+    advance: 'advances',
+    hold: 'holds its ground',
+    fallback: 'falls back',
+  }[posture];
+  append(state, `${side} army ${text}.`, 'log.posture', { side, posture });
+}
+
 /** Deterministic, single-side tactical AI; it never advances the global battle day. */
 export function runBattleAiTurn(
   state: V03TacticalBattleState,
   side: BattleSide,
   rationRemainders: BattleRationRemainders = {},
-  /** Delegated player formations act, but only the player may withdraw the army. */
-  options: { allowWithdrawal?: boolean } = {},
+  options: {
+    /** Delegated player formations act, but only the player may withdraw the army. */
+    allowWithdrawal?: boolean;
+    /** Log a change of posture for the player to read (the enemy's turn only). */
+    announcePosture?: boolean;
+  } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   const draft = structuredClone(state);
@@ -1674,15 +1819,8 @@ export function runBattleAiTurn(
       y: unit?.y,
     });
   if (checkImmediateOutcome(draft) || resolveRout(draft)) return draft;
-  const current = livingUnits(draft, side).reduce((sum, unit) => sum + unit.troops, 0);
-  const opening = draft.units
-    .filter((unit) => unit.side === side)
-    .reduce((sum, unit) => sum + unit.initialTroops, 0);
-  const enemy = livingUnits(draft, otherSide(side)).reduce((sum, unit) => sum + unit.troops, 0);
   const withdrawalThreshold =
-    options.allowWithdrawal !== false &&
-    current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
-    current * 100 <= enemy * PERSONNEL_RULES.aiRetreatEnemyPercent;
+    options.allowWithdrawal !== false && withdrawalThresholdReached(draft, side);
   if (withdrawalThreshold) {
     const context = tacticalTurnContext(draft, side);
     const own = livingUnits(draft, side);
@@ -1735,6 +1873,7 @@ export function runBattleAiTurn(
   }
   const routes = new Map<string, number[]>();
   const fields = new Map<string, Map<number, BattlePosition>>();
+  const posture = { strikes: 0, toward: 0, away: 0 };
   // Reconsider all unspent formations after each committed move/action. A cheap
   // finisher with no useful alternative can act before an otherwise stronger unit.
   for (let activation = 0; activation < MAX_UNITS_PER_SIDE && !draft.outcome; activation++) {
@@ -1762,21 +1901,27 @@ export function runBattleAiTurn(
     const { unit, choices, choice } = options[0]!;
     traceTacticalChoices(draft, unit, choices);
     if (choice.moveCost > 0) {
+      const before = nearestEnemyDistance(draft, unit);
       const error = performMove(draft, unit, choice);
       trace('move', unit, undefined, error);
       if (error) {
         unit.acted = true;
         continue;
       }
+      const after = nearestEnemyDistance(draft, unit);
+      if (after < before) posture.toward++;
+      else if (after > before) posture.away++;
     }
     if (draft.outcome) break;
     const target = choice.targetId ? unitById(draft, choice.targetId) : undefined;
     if (choice.action === 'attack' && target) {
       const error = performAttack(draft, unit, target);
       trace('attack', unit, target, error);
+      if (!error) posture.strikes++;
     } else if (choice.action !== 'hold' && choice.action !== 'attack' && target) {
       const error = performTactic(draft, unit, choice.action, target);
       trace(choice.action, unit, target, error);
+      if (!error && target.side !== side && choice.action !== 'raidSupply') posture.strikes++;
     } else {
       unit.moved = true;
       unit.acted = true;
@@ -1784,6 +1929,18 @@ export function runBattleAiTurn(
       trace('hold', unit);
     }
   }
+  if (options.announcePosture && !draft.outcome)
+    announcePosture(
+      draft,
+      side,
+      posture.strikes
+        ? 'attack'
+        : posture.toward > posture.away
+          ? 'advance'
+          : posture.away > posture.toward
+            ? 'fallback'
+            : 'hold',
+    );
   return draft;
 }
 
@@ -1871,7 +2028,9 @@ export function advanceBattleDay(
       append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
-  draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders);
+  draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders, {
+    announcePosture: true,
+  });
   if (draft.outcome) return draft;
   if (resolveRout(draft)) return draft;
   if (draft.day >= draft.dayLimit) {
@@ -1886,6 +2045,12 @@ export function advanceBattleDay(
     );
     return draft;
   }
+  const struck = unitsStruckOnDay(draft, draft.day);
+  // The campaign charges this ration right after rollover; a hungry side does not recover.
+  const fed: Record<BattleSide, boolean> = {
+    attacker: !forecastBattleRations(draft, 'attacker', rationRemainders.attacker).shortage,
+    defender: !forecastBattleRations(draft, 'defender', rationRemainders.defender).shortage,
+  };
   draft.day++;
   draft.weather = draft.nextWeather;
   draft.nextWeather = WEATHER_OPTIONS[nextRandomInt(draft, WEATHER_OPTIONS.length)]!;
@@ -1894,11 +2059,47 @@ export function advanceBattleDay(
       BATTLE_TACTIC_POINT_CAP,
       draft.tacticPoints[side] + BATTLE_TACTIC_POINT_REGEN,
     );
+  const recovered: Record<BattleSide, number> = { attacker: 0, defender: 0 };
   for (const unit of draft.units) {
     unit.moved = false;
     unit.acted = false;
     // Effects survive rollover until their promised activation or hit is consumed.
+    if (
+      unit.troops > 0 &&
+      fed[unit.side] &&
+      !struck.has(unit.id) &&
+      unit.morale < BATTLE_MORALE_RECOVERY_CAP
+    ) {
+      unit.morale = Math.min(BATTLE_MORALE_RECOVERY_CAP, unit.morale + BATTLE_MORALE_RECOVERY);
+      recovered[unit.side]++;
+    }
   }
   append(draft, `Battle day ${draft.day} begins.`, 'log.day', { day: draft.day });
+  for (const side of ['attacker', 'defender'] as const)
+    if (recovered[side])
+      append(
+        draft,
+        `${side}: ${recovered[side]} fed formation(s) that lost no troops yesterday regain morale (+${BATTLE_MORALE_RECOVERY}, up to ${BATTLE_MORALE_RECOVERY_CAP}).`,
+        'log.recover',
+        {
+          side,
+          count: recovered[side],
+          amount: BATTLE_MORALE_RECOVERY,
+          cap: BATTLE_MORALE_RECOVERY_CAP,
+        },
+      );
   return draft;
+}
+
+/** Formations that lost troops (or morale to Rockfall) to an attack or tactic on this day. */
+function unitsStruckOnDay(state: V03TacticalBattleState, day: number): Set<string> {
+  const struck = new Set<string>();
+  for (const entry of state.logEntries ?? [])
+    if (
+      entry.day === day &&
+      (entry.code === 'log.attack' || entry.code === 'log.tactic') &&
+      (Number(entry.params.casualties) > 0 || Number(entry.params.morale) < 0)
+    )
+      struck.add(String(entry.params.targetId));
+  return struck;
 }

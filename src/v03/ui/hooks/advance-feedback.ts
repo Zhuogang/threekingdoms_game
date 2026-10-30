@@ -54,7 +54,11 @@ export function explainAdvance(
   if (advance.stoppedFor === 'manual-battle' || advance.stoppedFor === 'active-battle')
     return {
       text: message(locale, 'feedback.advance.battle', { p0: date }) + suffix,
-      openReports: false,
+      // Auto-command hands a losing battle back with a report (play-feel PF-BA-06).
+      openReports: next.events.some(
+        (entry) =>
+          isCriticalReport(next, entry) && !previous.events.some((old) => old.id === entry.id),
+      ),
     };
   if (advance.stoppedFor === 'step-limit')
     return {

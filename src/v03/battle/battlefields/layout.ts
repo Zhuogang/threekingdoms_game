@@ -36,13 +36,30 @@ export const CANVAS_CELL_TERRAIN: Readonly<Record<string, BattleTerrain>> = {
 
 export interface CanvasBattlefieldLayout {
   id: string;
-  /** Inclusive deployment rows; columns are fixed at x 10–13 and x 34–37. */
+  /** Inclusive deployment rows; columns come from `deploymentColumns`. */
   deploymentRows: { attacker: readonly number[]; defender: readonly number[] };
   rows: readonly string[];
 }
 
-/** Attacker enters on the left, defender on the right (plan B1). */
-const DEPLOYMENT_COLUMNS = { attacker: [10, 13], defender: [34, 37] } as const;
+type DeploymentColumns = Readonly<Record<'attacker' | 'defender', readonly [number, number]>>;
+
+/**
+ * Attacker enters on the left, defender on the right (plan B1). The fronts are
+ * 15 columns apart so armies meet in about three days (play-feel PF-RL-10;
+ * they were x 10–13 and x 34–37 before).
+ */
+const DEPLOYMENT_COLUMNS: DeploymentColumns = { attacker: [13, 16], defender: [31, 34] };
+
+/** The wetland channel winds through x 14–16; keep the attacker on its west bank. */
+const DEPLOYMENT_COLUMN_OVERRIDES: Readonly<Record<string, DeploymentColumns>> = {
+  'bf04-wetland-north': { attacker: [11, 14], defender: [31, 34] },
+  'bf04-wetland-south': { attacker: [11, 14], defender: [31, 34] },
+};
+
+/** Inclusive deployment columns for a canvas battlefield. */
+export function deploymentColumns(battlefieldId: string): DeploymentColumns {
+  return DEPLOYMENT_COLUMN_OVERRIDES[battlefieldId] ?? DEPLOYMENT_COLUMNS;
+}
 
 // Until battlefield selection lands (plan P5), each canvas reuses the nearest
 // legacy region for the battle heading.
@@ -97,8 +114,9 @@ function deploymentCells(
   terrain: readonly BattleTerrain[],
   side: 'attacker' | 'defender',
   rows: readonly number[],
+  columns: DeploymentColumns,
 ): BattlePosition[] {
-  const [left, right] = DEPLOYMENT_COLUMNS[side];
+  const [left, right] = columns[side];
   const [top, bottom] = [rows[0]!, rows[1]!];
   const columnOrder =
     side === 'attacker'
@@ -147,8 +165,18 @@ export function createCanvasBattleMap(
     width: CANVAS_BATTLE_WIDTH,
     height: CANVAS_BATTLE_HEIGHT,
     terrain,
-    attackerDeployment: deploymentCells(terrain, 'attacker', layout.deploymentRows.attacker),
-    defenderDeployment: deploymentCells(terrain, 'defender', layout.deploymentRows.defender),
+    attackerDeployment: deploymentCells(
+      terrain,
+      'attacker',
+      layout.deploymentRows.attacker,
+      deploymentColumns(battlefieldId),
+    ),
+    defenderDeployment: deploymentCells(
+      terrain,
+      'defender',
+      layout.deploymentRows.defender,
+      deploymentColumns(battlefieldId),
+    ),
     landmarks: [],
   };
   const errors = validateBattleMap(map);

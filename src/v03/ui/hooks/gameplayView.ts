@@ -8,9 +8,12 @@ import {
   getBattleTacticTargets,
   getUnitAttackTargets,
   isBattleUnitRouted,
+  isBattleUnitWavering,
   terrainMovementCost,
   waterCombatModifiers,
+  type BattleAttackForecast,
 } from '../../battle';
+import type { BattleTargetForecastVisual } from '../../rendering/presentation';
 import { CITY_GEOGRAPHY } from '../../geography';
 import { formationLeaderVisual } from '../../rendering/unit-leader';
 
@@ -179,14 +182,26 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
   );
   const unitActionStatus = (unit: NonNullable<typeof battleState>['units'][number]) =>
     unit.acted ? t.unitActed : unit.moved ? t.unitMoved : t.unitReady;
+  const unitMoraleState = (
+    unit: NonNullable<typeof battleState>['units'][number],
+  ): 'wavering' | 'routed' | undefined =>
+    isBattleUnitRouted(unit) ? 'routed' : isBattleUnitWavering(unit) ? 'wavering' : undefined;
   const unitBattleStatus = (unit: NonNullable<typeof battleState>['units'][number]) => {
+    const morale = unitMoraleState(unit);
     const condition =
       unit.status === 'confused'
         ? t.unitConfused
         : unit.status === 'inspired'
           ? t.unitInspired
           : null;
-    return [condition, unitActionStatus(unit)].filter(Boolean).join(' · ');
+    // Enemy formations reset each day; "Ready to act" would read as if they were yours.
+    return [
+      morale === 'routed' ? t.unitRouted : morale === 'wavering' ? t.unitWavering : null,
+      condition,
+      unit.side === battleState?.playerSide ? unitActionStatus(unit) : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
   };
   const formationOfficerIds = (unit: NonNullable<typeof battleState>['units'][number]) =>
     activeBattle
@@ -204,6 +219,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         acted: unit.acted,
         condition: unit.status === 'normal' ? undefined : unit.status,
         routed: isBattleUnitRouted(unit),
+        moraleState: unitMoraleState(unit),
         id: unit.id,
         troopType: unit.troopType,
         troopExperience: unit.troopExperience,
@@ -212,7 +228,19 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         strength: unit.troops,
         label: localizedOfficerName(unit.name),
         selected: unit.id === selectedUnitId,
-        status: `${unit.morale}% ${message(locale, 'ui.morale.4')} · ${unitBattleStatus(unit)}`,
+        status: [
+          `${unit.morale}% ${message(locale, 'ui.morale.4')}`,
+          unitBattleStatus(unit),
+          // Enemy force and intellect on hover (PF-UI-07).
+          unit.side !== battleState.playerSide
+            ? message(locale, 'battleForceIntellect', {
+                force: unit.force,
+                intellect: unit.intellect,
+              })
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' · '),
       })) ?? [];
   const inspectionPosition =
     inspectedCell ?? (currentUnit ? { x: currentUnit.x, y: currentUnit.y } : null);
@@ -229,6 +257,59 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
   const terrainName = (value: string) => terrainLabel(value, locale);
   const weatherName = (value: string) => weatherLabel(value, locale);
   const attackableCells = attackTargets.map((unit) => ({ x: unit.x, y: unit.y }));
+  // On-map forecast beside each target in range while choosing an attack (PF-UI-07).
+  const targetForecasts: BattleTargetForecastVisual[] =
+    battleState && currentUnit && !selectedTactic
+      ? attackTargets.flatMap((target) => {
+          const forecast = context.attackForecasts.get(target.id) as
+            BattleAttackForecast | undefined;
+          if (!forecast || forecast.estimatedCasualties === null) return [];
+          const deal = forecast.estimatedCasualties;
+          const take = forecast.counterattack.estimatedCasualties ?? 0;
+          const result =
+            forecast.targetResult === 'destroyed'
+              ? message(locale, 'forecastDestroyed')
+              : forecast.targetResult === 'routs'
+                ? message(locale, 'forecastRouts')
+                : null;
+          return [
+            {
+              id: target.id,
+              position: { x: target.x, y: target.y },
+              lines: [
+                `${message(locale, 'forecastDeal', { damage: deal.toLocaleString() })} · ${message(locale, 'forecastTake', { damage: take.toLocaleString() })}`,
+                [
+                  message(locale, 'forecastMorale', {
+                    before: target.morale,
+                    after: forecast.targetMoraleAfter,
+                  }),
+                  result,
+                ]
+                  .filter(Boolean)
+                  .join(' · '),
+              ],
+              tone: result || deal > take ? 'good' : deal < take ? 'bad' : 'even',
+            },
+          ];
+        })
+      : [];
+  // Hovering a green cell rings the enemies the selected unit could strike from there.
+  const attackPreview = (cell: { x: number; y: number }) => {
+    if (
+      !battleState ||
+      !currentUnit ||
+      selectedTactic ||
+      !context.reachableCells.some((entry) => entry.x === cell.x && entry.y === cell.y)
+    )
+      return [];
+    const view = {
+      ...battleState,
+      units: battleState.units.map((unit) =>
+        unit.id === currentUnit.id ? { ...unit, x: cell.x, y: cell.y } : unit,
+      ),
+    };
+    return getUnitAttackTargets(view, currentUnit.id).map((unit) => ({ x: unit.x, y: unit.y }));
+  };
   const playerUnit = (unitId: string) =>
     !activeBattle?.playerDayComplete &&
     battleState?.units.some(
@@ -392,8 +473,11 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     journeyCandidates,
     journeyClusters,
     unitActionStatus,
+    unitMoraleState,
     unitBattleStatus,
     troopVisuals,
+    targetForecasts,
+    attackPreview,
     inspectionPosition,
     inspectionTerrain,
     inspectionModifiers,

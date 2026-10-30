@@ -158,7 +158,7 @@ describe('bounded formation choices', () => {
       intellect: 90,
     });
     Object.assign(battle.units[2]!, { x: 1, y: 5 });
-    battle.tacticPoints.attacker = 2;
+    battle.tacticPoints.attacker = 3;
     const choice = evaluateBattleTurn(battle, 'actor')[0]!;
     expect(choice.action).toBe('hold');
     expect(choice.x).toBeGreaterThan(5);

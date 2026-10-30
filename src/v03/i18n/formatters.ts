@@ -46,18 +46,40 @@ export function formatBattleLog(
       locale === 'zh' ? 'chinese' : 'name'
     ] ?? (locale === 'zh' ? '野外' : 'the field');
   if (params.tactic) params.tactic = message(locale, `tactic.${params.tactic}` as MessageKey);
+  if (entry.code === 'log.posture') {
+    params.army = message(
+      locale,
+      entry.params.side === battle.playerSide ? 'army.player' : 'army.enemy',
+    );
+    params.posture = message(locale, `posture.${entry.params.posture}` as MessageKey);
+  }
   params.success = message(locale, params.success ? 'success' : 'refused');
+  // Coordinates read 1-based, like the inspection readout.
+  if (entry.code === 'log.move') {
+    params.x = Number(entry.params.x) + 1;
+    params.y = Number(entry.params.y) + 1;
+  }
+  // Rally and Confuse rules live in the tactic panel and Wiki, not on every log line.
   return (
-    message(locale, entry.code as MessageKey, params) +
-    (entry.code === 'log.tactic' &&
-    entry.params.success &&
-    ['rally', 'confuse'].includes(String(entry.params.tactic))
-      ? ' ' +
-        message(
-          locale,
-          entry.params.tactic === 'rally' ? 'tacticRallyEffect' : 'tacticConfuseEffect',
-        )
-      : '') +
+    message(
+      locale,
+      (entry.code === 'log.attack' && entry.params.counter
+        ? 'log.counterattack'
+        : entry.code) as MessageKey,
+      params,
+    ) +
     (entry.code === 'log.attack' && entry.params.water ? message(locale, 'log.water', params) : '')
   );
+}
+
+/** The side a battle log entry belongs to, for colouring: its acting unit's side. */
+export function battleLogSide(
+  entry: V03BattleLogEntry,
+  battle: V03TacticalBattleState,
+): 'attacker' | 'defender' | null {
+  const id = entry.params.sourceId ?? entry.params.unitId;
+  const unit = id ? battle.units.find((item) => item.id === id) : undefined;
+  if (unit) return unit.side;
+  const side = entry.params.side;
+  return side === 'attacker' || side === 'defender' ? side : null;
 }

@@ -41,6 +41,8 @@ import {
   getForcedBattleOutcome,
   advanceBattleDay,
   applyBattleAction,
+  battleWithdrawalDue,
+  campaignBattleDays,
   createCanvasBattleMap,
   createTacticalBattle,
   runBattleAiTurn,
@@ -689,7 +691,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
   const defender = cityBattleRoster(state, target.id, `${journey.id}:defend`);
   const { officers: defenders, militia } = defender;
   const id = `battle-${state.nextId}`;
-  const battleDays = journey.intent === 'raid' ? 10 : 30;
+  const battleDays = campaignBattleDays(journey.intent);
   const fieldFoodCount = defenders.reduce(
     (sum, officer) => sum + officer.troops * (officer.troopType === 'cavalry' ? 2 : 1),
     militia,
@@ -729,7 +731,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
     attackerUnits: attacker.roster,
     defenderUnits: defender.roster,
     playerSide: journey.ownerFactionId === state.playerFactionId ? 'attacker' : 'defender',
-    dayLimit: journey.intent === 'raid' ? 10 : 30,
+    dayLimit: battleDays,
     timeoutPolicy: 'survivor-count',
     supplies: { attacker: journey.manifest.carriedFood, defender: defenderFood },
     seed: state.rng + state.nextId,
@@ -1943,6 +1945,21 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
     attacker: battle.attackerFoodRemainderMicro,
     defender: battle.defenderFoodRemainderMicro,
   };
+  if (playerFights && battle.autoCommand && battleWithdrawalDue(tactical, tactical.playerSide)) {
+    // Auto-command never withdraws the player's army (PF-BA-06): it hands this day back and
+    // asks. The day cursor stays open until the player commands or withdraws.
+    battle.autoCommand = false;
+    battle.playerDayComplete = false;
+    addEvent(
+      state,
+      'battleReady',
+      'Your officers ask to withdraw',
+      'Auto-command is off. Take command of the battle, or withdraw.',
+      battle.id,
+    );
+    state.events.at(-1)!.code = 'battle.withdrawalAsked';
+    return false;
+  }
   if (!playerFights || battle.autoCommand)
     tactical = runBattleAiTurn(tactical, tactical.playerSide, rationRemainders);
   tactical = advanceBattleDay(tactical, rationRemainders);

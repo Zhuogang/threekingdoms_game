@@ -446,8 +446,12 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
     await expect(conditions).toContainText(language === 'en' ? /weather/i : /天气/);
     await expect(conditions).toContainText(language === 'en' ? /suppl|food/i : /粮/);
     if (language === 'zh') {
-      await expect(page.locator('.v03-unit-list')).toContainText('夏侯渊');
-      await expect(page.locator('.v03-unit-list')).not.toContainText(/Cavalry|Militia|Xiahou Yuan/);
+      // Your formations and the enemy's are listed separately (play-feel PF-UI-07).
+      const rosters = page.locator('.v03-unit-list');
+      await expect(rosters).toHaveCount(2);
+      await expect(rosters.first()).toContainText('夏侯渊');
+      for (const roster of await rosters.all())
+        await expect(roster).not.toContainText(/Cavalry|Militia|Xiahou Yuan/);
     }
     await showWithdrawal(page);
     await page

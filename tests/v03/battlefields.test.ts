@@ -9,6 +9,7 @@ import {
   createBattleMap,
   createCanvasBattleMap,
   createTacticalBattle,
+  deploymentColumns,
   getBattleRouteDistanceField,
   parseCanvasLayout,
   selectCampaignBattlefield,
@@ -79,10 +80,15 @@ describe('48×32 canvas battlefields', () => {
       expect(map.battlefieldId).toBe(id);
       expect(map).not.toHaveProperty('objectives');
       // The two middle columns of each zone fill first; outer columns only after them.
-      for (const [cells, middle] of [
-        [map.attackerDeployment, [12, 13]],
-        [map.defenderDeployment, [34, 35]],
+      const columns = deploymentColumns(id);
+      for (const [cells, [left, right], middle] of [
+        [map.attackerDeployment, columns.attacker, [columns.attacker[0] + 2, columns.attacker[1]]],
+        [map.defenderDeployment, columns.defender, [columns.defender[0], columns.defender[1] - 2]],
       ] as const) {
+        expect(
+          cells.every((cell) => cell.x >= left && cell.x <= right),
+          id,
+        ).toBe(true);
         const firstOuter = cells.findIndex((cell) => !middle.includes(cell.x as never));
         const lastMiddle = cells.map((cell) => middle.includes(cell.x as never)).lastIndexOf(true);
         expect(firstOuter < 0 || firstOuter > lastMiddle, id).toBe(true);

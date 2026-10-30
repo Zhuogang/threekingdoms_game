@@ -49,6 +49,8 @@ import {
   troopDisplayType,
   troopExperienceText,
   unitIsOnWater,
+  type BattleFloatVisual,
+  type BattleTargetForecastVisual,
   type BattleUnitVisual,
 } from './presentation';
 
@@ -91,6 +93,14 @@ export interface BattlefieldMapViewProps {
   /** `keyboard` when Enter/Space activated the focused cell, `pointer` for a click. */
   onCellClick?: (cell: GridPoint, source: 'pointer' | 'keyboard') => void;
   onUnitClick?: (unitId: string, cell: GridPoint) => void;
+  /** Forecast labels beside the targets in range (caller-owned values). */
+  targetForecasts?: readonly BattleTargetForecastVisual[];
+  /** Cells of enemies the selected unit could strike from a hovered reachable cell. */
+  attackPreview?: (cell: GridPoint) => readonly GridPoint[];
+  /** Casualty numbers floating during enemy-turn playback. */
+  floats?: readonly BattleFloatVisual[];
+  /** Tokens glide to new cells instead of jumping (enemy-turn playback). */
+  animateTokens?: boolean;
 }
 
 const BASE_URL = import.meta.env.BASE_URL;
@@ -211,6 +221,23 @@ function ConditionIcon({ condition }: { condition: 'confused' | 'inspired' }) {
   );
 }
 
+/** Wavering: an amber exclamation; routed: a white flag on red. */
+function MoraleIcon({ state }: { state: 'wavering' | 'routed' }) {
+  return state === 'wavering' ? (
+    <g transform="translate(0 -27)" aria-hidden="true" data-morale-icon="wavering">
+      <circle r={8} fill="#b9772a" stroke="#f8f1df" strokeWidth={1.5} />
+      <path d="M 0 -4.5 L 0 1" stroke="#fffaf0" strokeWidth={2} strokeLinecap="round" />
+      <circle cy={4} r={1.2} fill="#fffaf0" />
+    </g>
+  ) : (
+    <g transform="translate(0 -27)" aria-hidden="true" data-morale-icon="routed">
+      <circle r={8} fill="#9b3328" stroke="#f8f1df" strokeWidth={1.5} />
+      <path d="M -3 5 L -3 -5" stroke="#fffaf0" strokeWidth={1.4} strokeLinecap="round" />
+      <path d="M -3 -5 L 4 -3.5 L -3 -1 Z" fill="#fffaf0" />
+    </g>
+  );
+}
+
 function UnitSprite({
   unit,
   map,
@@ -296,7 +323,7 @@ function UnitSprite({
       data-unit-id={unit.id}
       data-detail={compact ? 'compact' : 'squad'}
       data-unit-art={unitHref}
-      transform={`translate(${x} ${y})`}
+      data-morale={unit.moraleState}
       role="button"
       tabIndex={0}
       aria-label={aria}
@@ -310,7 +337,8 @@ function UnitSprite({
           onClick?.(unit.id, unit.position);
         }
       }}
-      style={{ cursor: 'pointer', outline: 'none' }}
+      // A CSS transform (not the attribute) so enemy-turn playback can glide tokens.
+      style={{ cursor: 'pointer', outline: 'none', transform: `translate(${x}px, ${y}px)` }}
     >
       {selected ? (
         <rect
@@ -435,7 +463,16 @@ function UnitSprite({
                 </text>
               </g>
             ) : null}
-            {unit.condition ? <ConditionIcon condition={unit.condition} /> : null}
+            {unit.condition ? (
+              <g transform={unit.moraleState ? 'translate(-9 0)' : undefined}>
+                <ConditionIcon condition={unit.condition} />
+              </g>
+            ) : null}
+            {unit.moraleState ? (
+              <g transform={unit.condition ? 'translate(9 0)' : undefined}>
+                <MoraleIcon state={unit.moraleState} />
+              </g>
+            ) : null}
             {countLabel !== undefined ? (
               <g transform="translate(0 20)">
                 <rect
@@ -523,6 +560,10 @@ export function BattlefieldMapView({
   style,
   onCellClick,
   onUnitClick,
+  targetForecasts = [],
+  attackPreview,
+  floats = [],
+  animateTokens = false,
 }: BattlefieldMapViewProps) {
   const [focusedCell, setFocusedCell] = useState<GridPoint>(
     () => selectedCell ?? { x: Math.floor(map.width / 2), y: Math.floor(map.height / 2) },
@@ -725,10 +766,14 @@ export function BattlefieldMapView({
   }, [view.width, view.height]);
   const compactTokens =
     screenScale !== null && screenScale * V03_BATTLE_CELL < TOKEN_BADGES_MIN_CELL_PIXELS;
+  const previewTargets = useMemo(
+    () => (hoverCell && attackPreview ? attackPreview(hoverCell) : []),
+    [hoverCell?.x, hoverCell?.y, attackPreview],
+  );
   return (
     <svg
       ref={svgRef}
-      className={`v03-battlefield-map ${className ?? ''}`.trim()}
+      className={`v03-battlefield-map ${animateTokens ? 'v03-battle-animating' : ''} ${className ?? ''}`.trim()}
       viewBox={`${view.left} ${view.top} ${view.width} ${view.height}`}
       preserveAspectRatio="xMidYMid meet"
       role={onCellClick || canNavigate ? 'application' : 'img'}
@@ -927,6 +972,47 @@ export function BattlefieldMapView({
           />
         );
       })}
+      {previewTargets.map((cell) => {
+        const center = gridToWorld(cell);
+        return (
+          <circle
+            key={`preview-${cell.x},${cell.y}`}
+            className="v03-attack-preview"
+            cx={center.x}
+            cy={center.y + (compactTokens ? 0 : TOKEN_FACE_Y)}
+            r={TOKEN_FACE_RADIUS + 6}
+            fill="none"
+            stroke="#c2412f"
+            strokeWidth={2.5}
+            strokeDasharray="6 4"
+            pointerEvents="none"
+            aria-hidden="true"
+          />
+        );
+      })}
+      {compactTokens
+        ? null
+        : targetForecasts.map((forecast) => (
+            <TargetForecastLabel key={forecast.id} forecast={forecast} />
+          ))}
+      {floats.map((float) => {
+        const center = gridToWorld(float.position);
+        return (
+          <text
+            key={float.key}
+            className={`v03-battle-float ${float.tone}`}
+            x={center.x}
+            y={center.y - V03_BATTLE_HALF_CELL}
+            textAnchor="middle"
+            fontSize={20}
+            fontWeight="800"
+            pointerEvents="none"
+            aria-hidden="true"
+          >
+            {float.text}
+          </text>
+        );
+      })}
       <rect
         x={grid.left}
         y={grid.top}
@@ -938,6 +1024,52 @@ export function BattlefieldMapView({
         pointerEvents="none"
       />
     </svg>
+  );
+}
+
+/** Deal/take, morale and rout/destroy outcome, above the target token (PF-UI-07). */
+function TargetForecastLabel({ forecast }: { forecast: BattleTargetForecastVisual }) {
+  const center = gridToWorld(forecast.position);
+  const fontSize = 12;
+  // Approximate text width: CJK glyphs are a full em, Latin glyphs a little over half.
+  const ems = (line: string) =>
+    [...line].reduce((sum, glyph) => sum + (/[　-鿿＀-￯]/.test(glyph) ? 1 : 0.56), 0);
+  const width = Math.max(...forecast.lines.map(ems)) * fontSize + 14;
+  const height = forecast.lines.length * (fontSize + 3) + 8;
+  const stroke =
+    forecast.tone === 'good' ? '#376f73' : forecast.tone === 'bad' ? '#a6493d' : '#6b6152';
+  return (
+    <g
+      className="v03-target-forecast"
+      data-target-id={forecast.id}
+      transform={`translate(${center.x} ${center.y - V03_BATTLE_HALF_CELL - height / 2 - 4})`}
+      pointerEvents="none"
+    >
+      <rect
+        x={-width / 2}
+        y={-height / 2}
+        width={width}
+        height={height}
+        rx={6}
+        fill="#fbf6ea"
+        fillOpacity={0.94}
+        stroke={stroke}
+        strokeWidth={2}
+      />
+      {forecast.lines.map((line, index) => (
+        <text
+          key={index}
+          y={-height / 2 + 4 + (index + 0.5) * (fontSize + 3)}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={fontSize}
+          fontWeight={index === 0 ? 700 : 600}
+          fill="#29251f"
+        >
+          {line}
+        </text>
+      ))}
+    </g>
   );
 }
 

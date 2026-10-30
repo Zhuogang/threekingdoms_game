@@ -64,111 +64,145 @@ export function BattleSidebar({
         </div>
         <p className="v03-muted">{t.moveHelp}</p>
         <BattleConditions context={{ ...context, battleState: battleState! }} />
-        <div className="v03-unit-list">
-          {battleState.units
-            .filter((unit) => unit.troops > 0)
-            .map((unit) => {
-              const visual = troopVisuals.find((visual) => visual.id === unit.id);
-              const portraitKey = visual?.portraitKey;
-              return (
-                <Button
-                  type="button"
-                  key={unit.id}
-                  className={`v03-unit-row ${unit.id === selectedUnitId ? 'selected' : ''} ${unit.side === battleState.playerSide ? '' : 'enemy'}`}
-                  onClick={() => handleBattleUnitClick(unit.id)}
-                >
-                  <span className="v03-unit-art-pair">
-                    {portraitKey ? (
-                      <OfficerPortrait
-                        id={portraitKey}
+        {(['player', 'enemy'] as const).map((group) => (
+          <div className="v03-unit-list" key={group} data-roster={group}>
+            <div className="v03-section-title v03-roster-title">
+              <strong>
+                {group === 'player' ? t.battleYourFormations : t.battleEnemyFormations}
+              </strong>
+              {group === 'enemy' ? (
+                <small>
+                  {t.battleEnemyTacticPoints}:{' '}
+                  {
+                    battleState.tacticPoints[
+                      battleState.playerSide === 'attacker' ? 'defender' : 'attacker'
+                    ]
+                  }
+                </small>
+              ) : null}
+            </div>
+            {battleState.units
+              .filter(
+                (unit) =>
+                  unit.troops > 0 &&
+                  (unit.side === battleState.playerSide) === (group === 'player'),
+              )
+              .map((unit) => {
+                const visual = troopVisuals.find((visual) => visual.id === unit.id);
+                const portraitKey = visual?.portraitKey;
+                return (
+                  <Button
+                    type="button"
+                    key={unit.id}
+                    className={`v03-unit-row ${unit.id === selectedUnitId ? 'selected' : ''} ${unit.side === battleState.playerSide ? '' : 'enemy'}`}
+                    onClick={() => handleBattleUnitClick(unit.id)}
+                  >
+                    <span className="v03-unit-art-pair">
+                      {portraitKey ? (
+                        <OfficerPortrait
+                          id={portraitKey}
+                          locale={locale}
+                          className="v03-unit-leader"
+                        />
+                      ) : null}
+                      <UnitIcon
+                        troopType={unit.troopType}
+                        troopExperience={unit.troopExperience}
+                        troops={unit.troops}
+                        navalTraining={visual?.navalTraining}
+                        onWater={battleTerrainAt(battleState.map, unit) === 'water'}
                         locale={locale}
-                        className="v03-unit-leader"
                       />
-                    ) : null}
-                    <UnitIcon
-                      troopType={unit.troopType}
-                      troopExperience={unit.troopExperience}
-                      troops={unit.troops}
-                      navalTraining={visual?.navalTraining}
-                      onWater={battleTerrainAt(battleState.map, unit) === 'water'}
-                      locale={locale}
-                    />
-                  </span>
-                  <span>
-                    <strong>{localizedOfficerName(unit.name)}</strong>
-                    <TroopProgress unit={unit} locale={locale} compact />
-                    <small>
-                      {unit.troops.toLocaleString()} · {unit.morale}% · {unitBattleStatus(unit)}
-                    </small>
-                    {unit.side !== battleState.playerSide && attackForecasts.has(unit.id) ? (
-                      <small className="v03-attack-forecast">
-                        {t.estimatedLosses}{' '}
-                        {attackForecasts.get(unit.id)?.estimatedCasualties?.toLocaleString() ?? '—'}
-                        {' · '}
-                        {t.counterattackLabel}{' '}
-                        {attackForecasts
-                          .get(unit.id)
-                          ?.counterattack.estimatedCasualties?.toLocaleString() ?? '—'}
-                        {' · '}
-                        {attackForecasts.get(unit.id)?.targetOnWater
-                          ? t.waterTargetDamage
-                          : attackForecasts.get(unit.id)?.sourceOnWater
-                            ? t.waterAttackPenalty
-                            : t.landModifiers}
+                    </span>
+                    <span>
+                      <strong>{localizedOfficerName(unit.name)}</strong>
+                      <TroopProgress unit={unit} locale={locale} compact />
+                      <small>
+                        {[
+                          unit.troops.toLocaleString(),
+                          `${unit.morale}%`,
+                          unitBattleStatus(unit),
+                          unit.side !== battleState.playerSide
+                            ? message(locale, 'battleForceIntellect', {
+                                force: unit.force,
+                                intellect: unit.intellect,
+                              })
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </small>
-                    ) : null}
-                    {selectedTactic && tacticForecasts.has(unit.id) ? (
-                      <small className="v03-tactic-forecast">
-                        {selectedTactic === 'confuse' || selectedTactic === 'rally' ? (
-                          <>
-                            {selectedTactic === 'confuse'
-                              ? t.tacticConfuseEffect
-                              : t.tacticRallyEffect}
-                            {' · '}
-                          </>
-                        ) : null}
-                        {tacticLabel(selectedTactic, locale)} · {t.tacticChance}{' '}
-                        {tacticForecasts.get(unit.id)?.chance ?? 0}%
-                        {(tacticForecasts.get(unit.id)?.maxCasualties ?? 0) > 0 ? (
-                          <>
-                            {' · '}
-                            {t.tacticCasualties}{' '}
-                            {tacticForecasts.get(unit.id)?.minCasualties.toLocaleString()}–
-                            {tacticForecasts.get(unit.id)?.maxCasualties.toLocaleString()}
-                          </>
-                        ) : null}
-                        {(tacticForecasts.get(unit.id)?.moraleChange ?? 0) !== 0 ? (
-                          <>
-                            {' · '}
-                            {t.tacticMorale}{' '}
-                            {tacticForecasts.get(unit.id)!.moraleChange > 0 ? '+' : ''}
-                            {tacticForecasts.get(unit.id)?.moraleChange}%
-                          </>
-                        ) : null}
-                        {(tacticForecasts.get(unit.id)?.suppliesTransferred ?? 0) > 0 ? (
-                          <>
-                            {' · '}
-                            {t.tacticSupplies}{' '}
-                            {tacticForecasts.get(unit.id)?.suppliesTransferred.toLocaleString()}
-                          </>
-                        ) : null}
-                        {tacticForecasts.get(unit.id)?.sourceOnWater ||
-                        tacticForecasts.get(unit.id)?.targetOnWater ? (
-                          <>
-                            {' · '}
-                            {tacticForecasts.get(unit.id)?.sourceOnWater
+                      {unit.side !== battleState.playerSide && attackForecasts.has(unit.id) ? (
+                        <small className="v03-attack-forecast">
+                          {t.estimatedLosses}{' '}
+                          {attackForecasts.get(unit.id)?.estimatedCasualties?.toLocaleString() ??
+                            '—'}
+                          {' · '}
+                          {t.counterattackLabel}{' '}
+                          {attackForecasts
+                            .get(unit.id)
+                            ?.counterattack.estimatedCasualties?.toLocaleString() ?? '—'}
+                          {' · '}
+                          {attackForecasts.get(unit.id)?.targetOnWater
+                            ? t.waterTargetDamage
+                            : attackForecasts.get(unit.id)?.sourceOnWater
                               ? t.waterAttackPenalty
-                              : t.waterTargetDamage}
-                          </>
-                        ) : null}
-                      </small>
-                    ) : null}
-                  </span>
-                  <i>{unit.side === battleState.playerSide ? '●' : '○'}</i>
-                </Button>
-              );
-            })}
-        </div>
+                              : t.landModifiers}
+                        </small>
+                      ) : null}
+                      {selectedTactic && tacticForecasts.has(unit.id) ? (
+                        <small className="v03-tactic-forecast">
+                          {selectedTactic === 'confuse' || selectedTactic === 'rally' ? (
+                            <>
+                              {selectedTactic === 'confuse'
+                                ? t.tacticConfuseEffect
+                                : t.tacticRallyEffect}
+                              {' · '}
+                            </>
+                          ) : null}
+                          {tacticLabel(selectedTactic, locale)} · {t.tacticChance}{' '}
+                          {tacticForecasts.get(unit.id)?.chance ?? 0}%
+                          {(tacticForecasts.get(unit.id)?.maxCasualties ?? 0) > 0 ? (
+                            <>
+                              {' · '}
+                              {t.tacticCasualties}{' '}
+                              {tacticForecasts.get(unit.id)?.minCasualties.toLocaleString()}–
+                              {tacticForecasts.get(unit.id)?.maxCasualties.toLocaleString()}
+                            </>
+                          ) : null}
+                          {(tacticForecasts.get(unit.id)?.moraleChange ?? 0) !== 0 ? (
+                            <>
+                              {' · '}
+                              {t.tacticMorale}{' '}
+                              {tacticForecasts.get(unit.id)!.moraleChange > 0 ? '+' : ''}
+                              {tacticForecasts.get(unit.id)?.moraleChange}%
+                            </>
+                          ) : null}
+                          {(tacticForecasts.get(unit.id)?.suppliesTransferred ?? 0) > 0 ? (
+                            <>
+                              {' · '}
+                              {t.tacticSupplies}{' '}
+                              {tacticForecasts.get(unit.id)?.suppliesTransferred.toLocaleString()}
+                            </>
+                          ) : null}
+                          {tacticForecasts.get(unit.id)?.sourceOnWater ||
+                          tacticForecasts.get(unit.id)?.targetOnWater ? (
+                            <>
+                              {' · '}
+                              {tacticForecasts.get(unit.id)?.sourceOnWater
+                                ? t.waterAttackPenalty
+                                : t.waterTargetDamage}
+                            </>
+                          ) : null}
+                        </small>
+                      ) : null}
+                    </span>
+                    <i>{unit.side === battleState.playerSide ? '●' : '○'}</i>
+                  </Button>
+                );
+              })}
+          </div>
+        ))}
         {currentUnit ? (
           <div className="v03-card v03-unit-detail">
             <strong>{localizedOfficerName(currentUnit.name)}</strong>

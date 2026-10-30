@@ -49,7 +49,8 @@ describe('V04-04 meaningful tactical alternatives', () => {
       x: 20,
       y: 15,
     });
-    battle.tacticPoints.attacker = 2;
+    // Exactly one Rally (3 points since PF-RL-12).
+    battle.tacticPoints.attacker = 3;
     expect(evaluateBattleActions(battle, 'actor')[0]).toMatchObject({
       action: 'rally',
       targetId: 'weak',
@@ -64,9 +65,9 @@ describe('V04-04 meaningful tactical alternatives', () => {
   it('does not waste the last useful tactic points refreshing a healthy Inspired unit', () => {
     const battle = decisionBattle();
     Object.assign(battle.units[0]!, { morale: 100, status: 'inspired' });
-    battle.tacticPoints.attacker = 2;
+    battle.tacticPoints.attacker = 3;
     expect(evaluateBattleActions(battle, 'actor')[0]!.action).toBe('attack');
-    expect(runBattleAiTurn(battle, 'attacker').tacticPoints.attacker).toBe(2);
+    expect(runBattleAiTurn(battle, 'attacker').tacticPoints.attacker).toBe(3);
   });
 
   it('values an effective supply raid against a hungry army using actual healthy/wounded demand', () => {

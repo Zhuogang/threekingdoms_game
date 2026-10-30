@@ -98,18 +98,20 @@ Updated October 28, 2026 against the current working tree. [Overview](README.md)
 | ------------------ | ---------- | ----------------------------------------------------------------- |
 | 火计 Fire          | 4          | 智力 60；天气、地形和水上状态会影响伤害。                         |
 | 混乱 Confuse       | 3          | 智力 70；有成功率，命中会让目标失去下一次行动。                   |
-| 鼓舞 Rally         | 2          | 智力 50 或武力 85；对己方目标恢复士气、清除混乱并提供下一击加成。 |
+| 鼓舞 Rally         | 3          | 智力 50 或武力 85；对己方目标恢复士气、清除混乱并提供下一击加成。 |
 | 劫粮 Raid supplies | 4          | 智力 60 或骑兵；针对敌军粮草。                                    |
 | 伏兵 Ambush        | 3          | 智力 60，自己在森林，且当天尚未移动。                             |
 | 落石 Rockfall      | 4          | 智力 65，自己在丘陵；丘陵目标不在合法目标中。                     |
 
-这是基础值：等级达到 3 时智力要求降低 10，机谋特性可减计策点费用；以当前计策面板列出的实际费用、范围和禁用理由为准。普通计策范围通常 2 格，弓兵或智力 ≥80 可到 3 格；伏兵/落石最多 2 格。计策点由同一方共用，每战斗日恢复 2，上限 30。溃败、动摇、已行动、民兵、点数不足或无合法目标均可能阻止施放。
+这是基础值：等级达到 3 时智力要求降低 10，机谋特性可减计策点费用；以当前计策面板列出的实际费用、范围和禁用理由为准。普通计策范围通常 2 格，弓兵或智力 ≥80 可到 3 格；伏兵/落石最多 2 格。计策点由同一方共用，每战斗日恢复 2，上限 30。溃败、动摇、已行动、民兵、点数不足或无合法目标均可能阻止施放。火计打林中目标、或智力远高于对手时在风天施放，伤害高于普通攻击且不受反击；落石另扣 10 点士气，雨天照样有效。
 
-“战场状况”显示天气/次日预报、双方粮草、移动/射程、武力/智力/等级及检查地形的倍率。“?” 可打开战斗指南。点击格子会检查状态，**合法移动或攻击仍会执行**；检查不是单独的安全浏览模式。
+两军部署相距约 15 列，通常两三日内接战。与敌军相邻的部队被牵制、不能移动，但已溃散的部队可向相邻空格退一步。士气开战为 80；粮草充足且一个战斗日内未损兵的部队，次日恢复 5 点士气（最多到 80）。低于 40 动摇（伤害 −15%、不能用计），低于 20 溃散（只能移动或待命）。
+
+“战场状况”一行显示天气→次日、双方粮草和所选部队的移动/射程；“地形与倍率”展开后显示武力/智力/等级及检查地形的倍率。“?” 可打开战斗指南。标题栏显示若此刻到时限谁胜。我方与敌方部队分列，敌方列表显示其计策点及每支部队的武力/智力。选择攻击时，射程内目标旁显示我方造成/承受的伤亡、目标攻击后士气以及是否将溃散或歼灭；鼠标停在绿色格上会圈出从该格可攻击的敌军。结束战斗日后地图回放敌军回合（“跳过”或 Esc 直接看结果），随后汇总敌军攻击、我军损失及动摇/溃散的部队。战况按日排列，双方的移动与待命各合并为一行，可展开查看。点击格子会检查状态，**合法移动或攻击仍会执行**；检查不是单独的安全浏览模式。
 
 所有兵种可进出可通行水格，不需要水军技能或船库存。涉及水的每步至少花 2 移动点；在水上攻击 ×0.75、受到兵力伤害 ×1.25，上岸恢复陆地规则。岸水互攻只需满足正常射程；峭壁所有兵种均不可进入。战场能涉水不代表大地图能离开配置路线任意渡海。
 
-全部己方战场都提交“结束战斗日”后，全局只推进一天。一场结束后，关闭战报会显示未完战斗；若剩余战场都已提交，可点“推进一日”继续本日结算，读档后同样可继续，不会重复推进日期。非玩家战场自动处理。正常/突袭上限分别为 30/10 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败或撤退可提前结束。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
+全部己方战场都提交“结束战斗日”后，全局只推进一天。一场结束后，关闭战报会显示未完战斗；若剩余战场都已提交，可点“推进一日”继续本日结算，读档后同样可继续，不会重复推进日期。非玩家战场自动处理。正常/突袭上限分别为 30/14 日，到时可战兵力多者胜、平手守方胜；击溃、士气溃败或撤退可提前结束。敌将按性格作战：武力远高于智力或勇猛者冒进，智谋之士固守并多用计；敌军改变态势时战况会写明。委任指挥不会擅自撤退，诸将想撤时会关闭委任并发出报告，请你亲自指挥或下令撤退。“整军撤退”无需选择棋子，确认后放弃整场战斗，取消或 Escape 不改变战况或抽取被俘结果。
 
 任务分别是占领、突袭和洗劫：突袭胜利后掠取并返程，不夺城；洗劫在夺城基础上破坏和掠夺，会损害城市。需要资源时也要考虑长期损失。
 
@@ -227,22 +229,24 @@ Battles are fought on a draggable, zoomable 48×32 top-down board; the attacker 
 
 Budgets are movement points, not guaranteed tiles. Forest/hills cost more for most types; cavalry pays more. Occupation, enemy zone of control and water affect reachable cells. Formations can group same-type officers. Militia cannot use tactics. Waterborne units retain their infantry, cavalry or archer identity and share the same water penalties.
 
-Select a living friendly formation, click a highlighted reachable cell to move, then attack an enemy in range or choose a tactic and a legal target. Units normally move once and act once per battle day. Read damage/counterattack/tactic forecasts first. The conditions panel shows weather/next weather, food, range/movement, force/intellect/level and terrain multipliers. Clicking a tile inspects it **and still executes a legal move or attack**.
+Select a living friendly formation, click a highlighted reachable cell to move, then attack an enemy in range or choose a tactic and a legal target. Units normally move once and act once per battle day. Armies deploy about 15 columns apart and usually meet within two or three days. A formation next to an enemy is pinned, except that a routed one may step to a free neighbouring cell. Read the forecasts first: while choosing an attack, each target in range shows what you deal, what you take back, its morale afterwards and whether it routs or is destroyed, and hovering a green cell rings the enemies you could strike from there. The conditions line shows weather → next weather, both sides' food and the selected unit's movement/range; **Terrain and multipliers** expands force/intellect/level and the inspected terrain's multipliers. The header says who would win if time ran out now. Your formations and the enemy's are listed separately; the enemy list shows its tactic points and each formation's force and intellect. Clicking a tile inspects it **and still executes a legal move or attack**.
+
+Morale starts at 80. A fed formation that lost no troops during a battle day regains 5 morale the next dawn, up to 80. Below 40 a formation wavers (−15% damage, no tactics); below 20 it routs and can only move or hold. After you end a day, the enemy turn replays on the map (Skip or Esc jumps to the end), followed by a summary of its attacks, your losses and any formation that wavers or routs. The battle log is grouped by day; each side's moves and holds collapse into one expandable line.
 
 | Tactic        | Base side-wide point cost | Basic requirement                                                                 |
 | ------------- | ------------------------- | --------------------------------------------------------------------------------- |
 | Fire          | 4                         | Intellect 60; weather/terrain/water affect damage.                                |
 | Confuse       | 3                         | Intellect 70; chance to make the enemy lose its next turn.                        |
-| Rally         | 2                         | Intellect 50 or force 85; friendly morale, confusion recovery and next-hit bonus. |
+| Rally         | 3                         | Intellect 50 or force 85; friendly morale, confusion recovery and next-hit bonus. |
 | Raid supplies | 4                         | Intellect 60 or cavalry; targets enemy provisions.                                |
 | Ambush        | 3                         | Intellect 60, standing in forest, not moved today.                                |
 | Rockfall      | 4                         | Intellect 65, standing on a hill; hill targets are excluded.                      |
 
-At level 3, intellect thresholds drop by 10. Cunning can reduce point costs. Use the actual panel for current cost, range, legal targets and rejection reasons. General tactic range is two, or three for archers/intellect ≥80; Ambush/Rockfall cap at two. Points are shared by your side, regenerate two per battle day and cap at 30. Low morale, militia, prior action, missing points or missing legal targets can prevent a tactic.
+At level 3, intellect thresholds drop by 10. Cunning can reduce point costs. Use the actual panel for current cost, range, legal targets and rejection reasons. General tactic range is two, or three for archers/intellect ≥80; Ambush/Rockfall cap at two. Points are shared by your side, regenerate two per battle day and cap at 30. Low morale, militia, prior action, missing points or missing legal targets can prevent a tactic. Fire outdamages an ordinary hit on a forest target, or in Wind for a much cleverer caster, and draws no counterattack; Rockfall adds a 10-point morale blow and still works in rain.
 
 All types can cross passable water without a naval skill or boat inventory. A step touching water costs at least two movement points. A unit on water deals ×0.75 attack damage and receives ×1.25 troop damage. Shore/water attacks are legal in normal range. Cliffs are impassable for everyone. Tactical water access does not create arbitrary strategic sea routes.
 
-Submit End battle day in **every player battle**; the global day advances once. Closing a finished battle report exposes the remaining fields. If they already submitted, use **Advance 1 day** to resume the shared day; reload preserves this state. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 10: more combat-ready troops wins, defender wins ties. Defeat, rout or withdrawal can end a battle earlier. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
+Submit End battle day in **every player battle**; the global day advances once. Closing a finished battle report exposes the remaining fields. If they already submitted, use **Advance 1 day** to resume the shared day; reload preserves this state. NPC-only battles resolve automatically. Normal battles time out at 30 days, raids at 14: more combat-ready troops wins, defender wins ties. Defeat, rout or withdrawal can end a battle earlier. Rival commanders fight in character: a leader with far more force than intellect, or a fierce one, presses forward; a clever one holds ground and uses more tactics. The log notes when the enemy army changes posture. Auto-command never withdraws your army: when your officers would withdraw, it switches itself off and a report asks you to take command or withdraw. Withdraw army works without selecting a unit and concedes the whole battle; Cancel/Escape preserves state and RNG.
 
 Soldier level is separate from officer level. Mean soldier XP starts at 0, with one level per 100 XP up to level 20 / 1900 XP. Levels 11–20 display heavy infantry, elite cavalry or strong archers; reinforcement can dilute mean XP and return them to ordinary art. The 500-soldier size threshold, leader portraits and commander-based boat/tower-warship selection still apply independently. Officer details, battle details and reserves show mean XP and distance to the next level.
 

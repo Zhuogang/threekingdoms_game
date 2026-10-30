@@ -1,0 +1,2725 @@
+{
+  "tool": "node tools/battle-pacing.mjs <out> 20 --canvas-only [--day-limit=N]",
+  "roster": "3v3 (infantry, cavalry, archer), force 70, intellect 65, 1,200–1,600 troops, 100,000 food each side; both sides AI",
+  "battlesPerRun": 300,
+  "runs": [
+    {
+      "step": "00-baseline",
+      "change": "v0.4 HEAD 59c6fff (raids at the old 10-day limit)",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-00-baseline-30d.json",
+      "reportSha256": "ab711e42b4ee38a9401a00c5a87e20c33f17affb93125533f2e9da5cec5557c8",
+      "engineSha256": "ed8d5440f32f829247be5a73fcb23ad6aee934cae50549b4fba8f8a267ba6188",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 3,
+        "lengthMedian": 12,
+        "timeoutShare": 0.09333333333333334,
+        "outcomes": {
+          "elimination": 205,
+          "rout": 67,
+          "retreat": 0,
+          "dayLimit": 28
+        },
+        "tactics": {
+          "rally": 4268,
+          "fire": 1124,
+          "ambush": 293,
+          "rockfall": 19
+        },
+        "rallyShare": 0.7482468443197756
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 289,
+            "fire": 73,
+            "ambush": 19
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 30,
+          "timeouts": 16,
+          "tactics": {
+            "rally": 308,
+            "fire": 132,
+            "rockfall": 19
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 4,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 275,
+            "fire": 66,
+            "ambush": 70
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 234,
+            "fire": 35,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 234,
+            "fire": 35,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 262,
+            "fire": 56,
+            "ambush": 2
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 18,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 309,
+            "fire": 133,
+            "ambush": 3
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 272,
+            "fire": 78
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 272,
+            "fire": 78
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 298,
+            "fire": 68
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 298,
+            "fire": 68
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 3,
+          "lengthMedian": 12,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 270,
+            "fire": 62,
+            "ambush": 87
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 278,
+            "fire": 76
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 19,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 406,
+            "fire": 108
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 263,
+            "fire": 56
+          }
+        }
+      }
+    },
+    {
+      "step": "00-baseline",
+      "change": "v0.4 HEAD 59c6fff (raids at the old 10-day limit)",
+      "mode": "raid10",
+      "report": ".artifacts/play-feel-phase2/pacing-00-baseline-raid10.json",
+      "reportSha256": "95dda2e31d81721d0e4f5d5849161a8238a5154bfcd9817e577105dc6a0e4268",
+      "engineSha256": "ed8d5440f32f829247be5a73fcb23ad6aee934cae50549b4fba8f8a267ba6188",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 10,
+        "firstContactMedian": 3,
+        "lengthMedian": 10,
+        "timeoutShare": 0.73,
+        "outcomes": {
+          "elimination": 53,
+          "rout": 28,
+          "retreat": 0,
+          "dayLimit": 219
+        },
+        "tactics": {
+          "rally": 3864,
+          "fire": 995,
+          "ambush": 223,
+          "rockfall": 18
+        },
+        "rallyShare": 0.7576470588235295
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 9,
+          "tactics": {
+            "rally": 256,
+            "fire": 71,
+            "ambush": 18
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 20,
+          "tactics": {
+            "rally": 232,
+            "fire": 120,
+            "rockfall": 18
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 4,
+          "lengthMedian": 10,
+          "timeouts": 20,
+          "tactics": {
+            "rally": 230,
+            "fire": 46,
+            "ambush": 23
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 11,
+          "tactics": {
+            "rally": 234,
+            "fire": 35,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 11,
+          "tactics": {
+            "rally": 234,
+            "fire": 35,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 253,
+            "fire": 57,
+            "ambush": 1
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 10,
+          "timeouts": 20,
+          "tactics": {
+            "rally": 224,
+            "fire": 102
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 15,
+          "tactics": {
+            "rally": 249,
+            "fire": 69
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 15,
+          "tactics": {
+            "rally": 249,
+            "fire": 69
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 14,
+          "tactics": {
+            "rally": 282,
+            "fire": 61
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 15,
+          "tactics": {
+            "rally": 282,
+            "fire": 61
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 15,
+          "tactics": {
+            "rally": 255,
+            "fire": 64,
+            "ambush": 69
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 8,
+          "tactics": {
+            "rally": 272,
+            "fire": 68
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 20,
+          "tactics": {
+            "rally": 356,
+            "fire": 84
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 256,
+            "fire": 53
+          }
+        }
+      }
+    },
+    {
+      "step": "10-deploy",
+      "change": "PF-RL-10: fronts 15 apart; raids 14 days",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-10-deploy-30d.json",
+      "reportSha256": "75638293e73cabe6cc6eae331419dd94c16e203a4ea2499feaec9b7ea575c3b0",
+      "engineSha256": "ed8d5440f32f829247be5a73fcb23ad6aee934cae50549b4fba8f8a267ba6188",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.08,
+        "outcomes": {
+          "elimination": 219,
+          "rout": 57,
+          "retreat": 0,
+          "dayLimit": 24
+        },
+        "tactics": {
+          "rally": 4057,
+          "fire": 856,
+          "rockfall": 14,
+          "ambush": 70
+        },
+        "rallyShare": 0.8118871322793676
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 282,
+            "fire": 49
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 20,
+          "timeouts": 10,
+          "tactics": {
+            "rally": 437,
+            "fire": 149,
+            "rockfall": 14
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 38
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 255,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 255,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 31
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 18,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 402,
+            "fire": 123,
+            "ambush": 4
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 251,
+            "fire": 68
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 251,
+            "fire": 68
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 15,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 165,
+            "fire": 21
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 15,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 166,
+            "fire": 22
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 30,
+          "timeouts": 12,
+          "tactics": {
+            "rally": 249,
+            "fire": 41
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 317,
+            "fire": 78
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 330,
+            "fire": 69
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 237,
+            "fire": 23
+          }
+        }
+      }
+    },
+    {
+      "step": "10-deploy",
+      "change": "PF-RL-10: fronts 15 apart; raids 14 days",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-10-deploy-raid14.json",
+      "reportSha256": "87a0096036f7399987b03c1bf0cd3ecf7229b65fa485f7d52ad8de9697e53b8c",
+      "engineSha256": "ed8d5440f32f829247be5a73fcb23ad6aee934cae50549b4fba8f8a267ba6188",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.36,
+        "outcomes": {
+          "elimination": 142,
+          "rout": 50,
+          "retreat": 0,
+          "dayLimit": 108
+        },
+        "tactics": {
+          "rally": 3960,
+          "fire": 842,
+          "rockfall": 14,
+          "ambush": 68
+        },
+        "rallyShare": 0.8108108108108109
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 282,
+            "fire": 49
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 392,
+            "fire": 143,
+            "rockfall": 14
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 38
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 255,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 255,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 31
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 14,
+          "tactics": {
+            "rally": 357,
+            "fire": 119,
+            "ambush": 2
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 249,
+            "fire": 68
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 249,
+            "fire": 68
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 165,
+            "fire": 21
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 166,
+            "fire": 22
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 248,
+            "fire": 41
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 317,
+            "fire": 75
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 328,
+            "fire": 68
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 237,
+            "fire": 23
+          }
+        }
+      }
+    },
+    {
+      "step": "11-morale",
+      "change": "+ PF-RL-11: fed, unstruck formations regain 5 morale (to 80)",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-11-morale-30d.json",
+      "reportSha256": "b419d1fd7b63c191f2b5df0e3f1eea002700ec41c2e7afa4f70f07e31c6b7111",
+      "engineSha256": "038dc6ff66114368d90d23574e95a97415673c28452e3a6fcf8aaf34ac35cc6a",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.07666666666666666,
+        "outcomes": {
+          "elimination": 219,
+          "rout": 58,
+          "retreat": 0,
+          "dayLimit": 23
+        },
+        "tactics": {
+          "rally": 4112,
+          "fire": 862,
+          "rockfall": 14,
+          "ambush": 70
+        },
+        "rallyShare": 0.8129695531830763
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 283,
+            "fire": 50
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 20,
+          "timeouts": 10,
+          "tactics": {
+            "rally": 433,
+            "fire": 151,
+            "rockfall": 14
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 38
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 260,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 260,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 31
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 18,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 386,
+            "fire": 127,
+            "ambush": 4
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 250,
+            "fire": 68
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 250,
+            "fire": 68
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 15,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 196,
+            "fire": 21
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 15,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 196,
+            "fire": 21
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 30,
+          "timeouts": 12,
+          "tactics": {
+            "rally": 250,
+            "fire": 41
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 317,
+            "fire": 78
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 334,
+            "fire": 69
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 237,
+            "fire": 23
+          }
+        }
+      }
+    },
+    {
+      "step": "11-morale",
+      "change": "+ PF-RL-11: fed, unstruck formations regain 5 morale (to 80)",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-11-morale-raid14.json",
+      "reportSha256": "4f058a6b517060e814180f17ae1bc96185594e3de653c86d6ae3d5195465456a",
+      "engineSha256": "038dc6ff66114368d90d23574e95a97415673c28452e3a6fcf8aaf34ac35cc6a",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.35333333333333333,
+        "outcomes": {
+          "elimination": 141,
+          "rout": 53,
+          "retreat": 0,
+          "dayLimit": 106
+        },
+        "tactics": {
+          "rally": 4030,
+          "fire": 844,
+          "rockfall": 14,
+          "ambush": 68
+        },
+        "rallyShare": 0.8131557707828895
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 283,
+            "fire": 50
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 392,
+            "fire": 143,
+            "rockfall": 14
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 38
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 260,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 260,
+            "fire": 38,
+            "ambush": 33
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 31
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 14,
+          "tactics": {
+            "rally": 350,
+            "fire": 121,
+            "ambush": 2
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 248,
+            "fire": 68
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 248,
+            "fire": 68
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 196,
+            "fire": 21
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 18,
+          "tactics": {
+            "rally": 196,
+            "fire": 21
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 249,
+            "fire": 41
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 317,
+            "fire": 75
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 334,
+            "fire": 68
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 6,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 237,
+            "fire": 23
+          }
+        }
+      }
+    },
+    {
+      "step": "12-tactics",
+      "change": "+ PF-RL-12: Fire 0.21, Rockfall 0.18, Rally costs 3",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-12-tactics-30d.json",
+      "reportSha256": "3c5dc938aa63a1401842dc067f470bbb1e917d3bee0604c726d0e23e48b2a04d",
+      "engineSha256": "e0fa67fd61ba6c3d1f6e610001286f823d55e53c6ad8a96e3fc4b8b36f6ab444",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.1,
+        "outcomes": {
+          "elimination": 158,
+          "rout": 112,
+          "retreat": 0,
+          "dayLimit": 30
+        },
+        "tactics": {
+          "rally": 3340,
+          "fire": 1337,
+          "rockfall": 17,
+          "ambush": 57
+        },
+        "rallyShare": 0.703009892654178
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 245,
+            "fire": 59
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 17,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 265,
+            "fire": 157,
+            "rockfall": 17,
+            "ambush": 9
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 219,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 208,
+            "fire": 67,
+            "ambush": 20
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 208,
+            "fire": 67,
+            "ambush": 20
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 232,
+            "fire": 80
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 277,
+            "fire": 146
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 12,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 217,
+            "fire": 121
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 12,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 217,
+            "fire": 121
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 181,
+            "fire": 61
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 180,
+            "fire": 61
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 30,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 200,
+            "fire": 62,
+            "ambush": 8
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 224,
+            "fire": 93
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 214,
+            "fire": 93
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 253,
+            "fire": 63
+          }
+        }
+      }
+    },
+    {
+      "step": "12-tactics",
+      "change": "+ PF-RL-12: Fire 0.21, Rockfall 0.18, Rally costs 3",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-12-tactics-raid14.json",
+      "reportSha256": "42b60ac37006cf39d10f603b36d08d825fd8cb21c05f95ab19cbf9872f5c6d41",
+      "engineSha256": "e0fa67fd61ba6c3d1f6e610001286f823d55e53c6ad8a96e3fc4b8b36f6ab444",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.25333333333333335,
+        "outcomes": {
+          "elimination": 120,
+          "rout": 104,
+          "retreat": 0,
+          "dayLimit": 76
+        },
+        "tactics": {
+          "rally": 3308,
+          "fire": 1316,
+          "rockfall": 17,
+          "ambush": 48
+        },
+        "rallyShare": 0.7054809127745788
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 245,
+            "fire": 59
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 4,
+          "lengthMedian": 14,
+          "timeouts": 11,
+          "tactics": {
+            "rally": 251,
+            "fire": 152,
+            "rockfall": 17
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 219,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 207,
+            "fire": 67,
+            "ambush": 20
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 207,
+            "fire": 67,
+            "ambush": 20
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 236,
+            "fire": 80
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 10,
+          "tactics": {
+            "rally": 263,
+            "fire": 138
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 12,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 215,
+            "fire": 121
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 12,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 215,
+            "fire": 121
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 9,
+          "tactics": {
+            "rally": 181,
+            "fire": 58
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 9,
+          "tactics": {
+            "rally": 180,
+            "fire": 58
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 14,
+          "timeouts": 13,
+          "tactics": {
+            "rally": 200,
+            "fire": 62,
+            "ambush": 8
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 224,
+            "fire": 92
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 212,
+            "fire": 92
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 253,
+            "fire": 63
+          }
+        }
+      }
+    },
+    {
+      "step": "12b-rallyvalue",
+      "change": "+ PF-RL-12 AI recheck: Rally values only morale restored below 80",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-12b-rallyvalue-30d.json",
+      "reportSha256": "48c584e63acd80a7a8e1f094662928843f8d80e22f62b57e5783e042af00a6a7",
+      "engineSha256": "8f397f82d0b1cd73cb0f946bb21985fb4971677a979c73c2015c80937fcbdfd0",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.06666666666666667,
+        "outcomes": {
+          "elimination": 129,
+          "rout": 151,
+          "retreat": 0,
+          "dayLimit": 20
+        },
+        "tactics": {
+          "rally": 2484,
+          "fire": 1502,
+          "rockfall": 10,
+          "ambush": 118
+        },
+        "rallyShare": 0.6037919299951385
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 198,
+            "fire": 91
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 230,
+            "fire": 121,
+            "rockfall": 10
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 102,
+            "fire": 62,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 102,
+            "fire": 62,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 198,
+            "fire": 86
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 172,
+            "fire": 123
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 120
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 120
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 192,
+            "fire": 69
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 190,
+            "fire": 69
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 8,
+          "tactics": {
+            "rally": 182,
+            "fire": 87,
+            "ambush": 6
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 144,
+            "fire": 143
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 158,
+            "fire": 179
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 195,
+            "fire": 84
+          }
+        }
+      }
+    },
+    {
+      "step": "12b-rallyvalue",
+      "change": "+ PF-RL-12 AI recheck: Rally values only morale restored below 80",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-12b-rallyvalue-raid14.json",
+      "reportSha256": "b3210ba1d3ca8046f9c61b0afaf8a3292de13581be03dc4c98a25041412f40f9",
+      "engineSha256": "8f397f82d0b1cd73cb0f946bb21985fb4971677a979c73c2015c80937fcbdfd0",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.16666666666666666,
+        "outcomes": {
+          "elimination": 100,
+          "rout": 150,
+          "retreat": 0,
+          "dayLimit": 50
+        },
+        "tactics": {
+          "rally": 2463,
+          "fire": 1496,
+          "rockfall": 9,
+          "ambush": 118
+        },
+        "rallyShare": 0.6027900146842878
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 198,
+            "fire": 91
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 228,
+            "fire": 121,
+            "rockfall": 9
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 102,
+            "fire": 62,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 102,
+            "fire": 62,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 198,
+            "fire": 84
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 168,
+            "fire": 122
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 132,
+            "fire": 120
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 132,
+            "fire": 120
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 192,
+            "fire": 69
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 190,
+            "fire": 69
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 9,
+          "tactics": {
+            "rally": 182,
+            "fire": 87,
+            "ambush": 6
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 144,
+            "fire": 143
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 8,
+          "tactics": {
+            "rally": 145,
+            "fire": 176
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 195,
+            "fire": 84
+          }
+        }
+      }
+    },
+    {
+      "step": "13-disengage",
+      "change": "+ PF-RL-13: routed formations may step out of contact",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-13-disengage-30d.json",
+      "reportSha256": "990a44b0469b258efb88d039cd30814fc8bd7d6af373231fb42c62f4df1956ba",
+      "engineSha256": "f820b98e104d5b213a2606c82c8f8bd21aeea828d161ace8b788cf1907b90fa2",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.07,
+        "outcomes": {
+          "elimination": 140,
+          "rout": 139,
+          "retreat": 0,
+          "dayLimit": 21
+        },
+        "tactics": {
+          "rally": 2490,
+          "fire": 1506,
+          "rockfall": 9,
+          "ambush": 118
+        },
+        "rallyShare": 0.6039291777831676
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 198,
+            "fire": 92
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 231,
+            "fire": 122,
+            "rockfall": 9
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 103,
+            "fire": 59,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 103,
+            "fire": 59,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 198,
+            "fire": 86
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 172,
+            "fire": 123
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 120
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 120
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 192,
+            "fire": 69
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 190,
+            "fire": 69
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 8,
+          "tactics": {
+            "rally": 182,
+            "fire": 88,
+            "ambush": 6
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 152,
+            "fire": 148
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 153,
+            "fire": 181
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 195,
+            "fire": 84
+          }
+        }
+      }
+    },
+    {
+      "step": "13-disengage",
+      "change": "+ PF-RL-13: routed formations may step out of contact",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-13-disengage-raid14.json",
+      "reportSha256": "a64c04b4d9421e9aa7921913f783336e773024a709bc3e7c6029d64e98f5b201",
+      "engineSha256": "f820b98e104d5b213a2606c82c8f8bd21aeea828d161ace8b788cf1907b90fa2",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 10,
+        "timeoutShare": 0.17333333333333334,
+        "outcomes": {
+          "elimination": 111,
+          "rout": 137,
+          "retreat": 0,
+          "dayLimit": 52
+        },
+        "tactics": {
+          "rally": 2473,
+          "fire": 1497,
+          "rockfall": 9,
+          "ambush": 118
+        },
+        "rallyShare": 0.6036123993165731
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 9,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 198,
+            "fire": 92
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 229,
+            "fire": 121,
+            "rockfall": 9
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 86
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 103,
+            "fire": 59,
+            "ambush": 56
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 8,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 103,
+            "fire": 59,
+            "ambush": 56
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 198,
+            "fire": 84
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 168,
+            "fire": 122
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 132,
+            "fire": 120
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 132,
+            "fire": 120
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 192,
+            "fire": 69
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 190,
+            "fire": 69
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 9,
+          "tactics": {
+            "rally": 182,
+            "fire": 88,
+            "ambush": 6
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 151,
+            "fire": 148
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 8,
+          "tactics": {
+            "rally": 145,
+            "fire": 176
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 10,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 195,
+            "fire": 84
+          }
+        }
+      }
+    },
+    {
+      "step": "20-ai",
+      "change": "+ PF-BA-01..06: temperament, earlier urgency, two strongest attackers",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-20-ai-30d.json",
+      "reportSha256": "9d46ea0e65b1906e3d86b91f2a515f2ffb77eb31d0505f847eff56c0ba17e28b",
+      "engineSha256": "967bc74d3d7672b03b46e0b1aeee30747ac0b9af4642bde9cb43cba30c51e596",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 11,
+        "timeoutShare": 0.03333333333333333,
+        "outcomes": {
+          "elimination": 132,
+          "rout": 158,
+          "retreat": 0,
+          "dayLimit": 10
+        },
+        "tactics": {
+          "rally": 2370,
+          "fire": 1582,
+          "rockfall": 10,
+          "ambush": 133
+        },
+        "rallyShare": 0.5787545787545788
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 13,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 189,
+            "fire": 93
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 244,
+            "fire": 120,
+            "rockfall": 10
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 103
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 158,
+            "fire": 96,
+            "ambush": 8
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 173,
+            "fire": 123
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 138,
+            "fire": 126
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 138,
+            "fire": 126
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 175,
+            "fire": 94
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 169,
+            "fire": 84
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 178,
+            "fire": 83,
+            "ambush": 11
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 153
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 182
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 169,
+            "fire": 83
+          }
+        }
+      }
+    },
+    {
+      "step": "20-ai",
+      "change": "+ PF-BA-01..06: temperament, earlier urgency, two strongest attackers",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-20-ai-raid14.json",
+      "reportSha256": "ceba72e87b5cb260b1b415b22e889c6145a7751185b78aa7a2d5936794c0262d",
+      "engineSha256": "967bc74d3d7672b03b46e0b1aeee30747ac0b9af4642bde9cb43cba30c51e596",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 11,
+        "timeoutShare": 0.16333333333333333,
+        "outcomes": {
+          "elimination": 92,
+          "rout": 159,
+          "retreat": 0,
+          "dayLimit": 49
+        },
+        "tactics": {
+          "rally": 2345,
+          "fire": 1566,
+          "rockfall": 10,
+          "ambush": 134
+        },
+        "rallyShare": 0.5782983970406905
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 193,
+            "fire": 94
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 236,
+            "fire": 120,
+            "rockfall": 10
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 103
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 163,
+            "fire": 94,
+            "ambush": 8
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 169,
+            "fire": 119,
+            "ambush": 1
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 138,
+            "fire": 124
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 138,
+            "fire": 124
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 173,
+            "fire": 92
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 166,
+            "fire": 84
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 178,
+            "fire": 83,
+            "ambush": 11
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 126,
+            "fire": 152
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 150,
+            "fire": 178
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 164,
+            "fire": 83
+          }
+        }
+      }
+    },
+    {
+      "step": "21-final",
+      "change": "Final engine with display-only forecast and log changes (same behaviour as 20-ai)",
+      "mode": "30d",
+      "report": ".artifacts/play-feel-phase2/pacing-21-final-30d.json",
+      "reportSha256": "9b34a5132b8cd32268a15493c700da6e2dfaaab838890a5c0204755469b6c88e",
+      "engineSha256": "25bd317afa25608a031dea0ef76092ca60ac3752487122599a3f9cb6e76bd077",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 30,
+        "firstContactMedian": 2,
+        "lengthMedian": 11,
+        "timeoutShare": 0.03333333333333333,
+        "outcomes": {
+          "elimination": 132,
+          "rout": 158,
+          "retreat": 0,
+          "dayLimit": 10
+        },
+        "tactics": {
+          "rally": 2370,
+          "fire": 1582,
+          "rockfall": 10,
+          "ambush": 133
+        },
+        "rallyShare": 0.5787545787545788
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 13,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 189,
+            "fire": 93
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 244,
+            "fire": 120,
+            "rockfall": 10
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 103
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 158,
+            "fire": 96,
+            "ambush": 8
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 173,
+            "fire": 123
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 138,
+            "fire": 126
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 138,
+            "fire": 126
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 175,
+            "fire": 94
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 169,
+            "fire": 84
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 178,
+            "fire": 83,
+            "ambush": 11
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 133,
+            "fire": 153
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 182
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 169,
+            "fire": 83
+          }
+        }
+      }
+    },
+    {
+      "step": "21-final",
+      "change": "Final engine with display-only forecast and log changes (same behaviour as 20-ai)",
+      "mode": "raid14",
+      "report": ".artifacts/play-feel-phase2/pacing-21-final-raid14.json",
+      "reportSha256": "51f451729dc0ed3072f11008a0dbcd65ce5a73ae3938a4a10bc19419e5a29337",
+      "engineSha256": "25bd317afa25608a031dea0ef76092ca60ac3752487122599a3f9cb6e76bd077",
+      "summary": {
+        "battles": 300,
+        "dayLimit": 14,
+        "firstContactMedian": 2,
+        "lengthMedian": 11,
+        "timeoutShare": 0.16333333333333333,
+        "outcomes": {
+          "elimination": 92,
+          "rout": 159,
+          "retreat": 0,
+          "dayLimit": 49
+        },
+        "tactics": {
+          "rally": 2345,
+          "fire": 1566,
+          "rockfall": 10,
+          "ambush": 134
+        },
+        "rallyShare": 0.5782983970406905
+      },
+      "perBattlefield": {
+        "bf01-north-plain": {
+          "firstContactMedian": 2,
+          "lengthMedian": 12,
+          "timeouts": 5,
+          "tactics": {
+            "rally": 193,
+            "fire": 94
+          }
+        },
+        "bf02-central-farmland": {
+          "firstContactMedian": 3,
+          "lengthMedian": 13,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 236,
+            "fire": 120,
+            "rockfall": 10
+          }
+        },
+        "bf03-yellow-river-ford": {
+          "firstContactMedian": 3,
+          "lengthMedian": 9,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 155,
+            "fire": 103
+          }
+        },
+        "bf04-wetland-north": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf04-wetland-south": {
+          "firstContactMedian": 2,
+          "lengthMedian": 7,
+          "timeouts": 0,
+          "tactics": {
+            "rally": 98,
+            "fire": 58,
+            "ambush": 57
+          }
+        },
+        "bf05-yangtze-bank": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 163,
+            "fire": 94,
+            "ambush": 8
+          }
+        },
+        "bf05-yangtze-crossing": {
+          "firstContactMedian": 5,
+          "lengthMedian": 14,
+          "timeouts": 6,
+          "tactics": {
+            "rally": 169,
+            "fire": 119,
+            "ambush": 1
+          }
+        },
+        "bf06-valley-north": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 138,
+            "fire": 124
+          }
+        },
+        "bf06-valley-south": {
+          "firstContactMedian": 3,
+          "lengthMedian": 10,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 138,
+            "fire": 124
+          }
+        },
+        "bf07-taihang": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 1,
+          "tactics": {
+            "rally": 173,
+            "fire": 92
+          }
+        },
+        "bf07-rolling-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 166,
+            "fire": 84
+          }
+        },
+        "bf08-south-hills": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 178,
+            "fire": 83,
+            "ambush": 11
+          }
+        },
+        "bf09-gorge": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 3,
+          "tactics": {
+            "rally": 126,
+            "fire": 152
+          }
+        },
+        "bf09-three-gorges": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 7,
+          "tactics": {
+            "rally": 150,
+            "fire": 178
+          }
+        },
+        "bf10-mountain-pass": {
+          "firstContactMedian": 2,
+          "lengthMedian": 11,
+          "timeouts": 2,
+          "tactics": {
+            "rally": 164,
+            "fire": 83
+          }
+        }
+      }
+    }
+  ]
+}

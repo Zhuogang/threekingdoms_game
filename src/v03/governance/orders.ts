@@ -1,4 +1,5 @@
 import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
+import { campaignBattleDays } from '../battle/types';
 import { detachWoundedToCity } from '../campaign/personnel';
 import type { TravelComposition, JourneySegmentSnapshot } from '../calendar';
 import { estimateCampaignSupply } from '../calendar';
@@ -777,7 +778,7 @@ function previewCampaign(
           )
         : 0,
       outboundDays: route!.estimatedDays,
-      battleDays: input.intent === 'raid' ? 10 : 30,
+      battleDays: campaignBattleDays(input.intent),
       returnDays,
     });
     return { ...supply, totalFood: Math.max(supply.totalFood, input.food ?? 0) };
@@ -1337,7 +1338,7 @@ function directiveJourneyInput(
     troopCount: troops,
     cavalryTroops: party.composition.cavalryTroops,
     outboundDays: route.estimatedDays,
-    battleDays: order.intent === 'raid' ? 10 : 30,
+    battleDays: campaignBattleDays(order.intent),
     returnDays: route.estimatedDays,
   });
   return {
