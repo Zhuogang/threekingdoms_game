@@ -18,6 +18,7 @@ import type { V03TroopGrowthReport } from './types';
 import { eventTier, isCriticalReport } from './campaign/reports';
 import { surrenderStrandedReturn } from './campaign/stranded-return';
 import {
+  decayCaptiveLoyalty,
   resolveSuccessions,
   resolveAiPrisoners,
   syncFactionRulerNames,
@@ -1882,6 +1883,7 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
   }
   if (hegemon.declared) completeHegemonVictoryIfReady(governed);
   resolveSuccessions(governed);
+  decayCaptiveLoyalty(governed);
   const refreshed = resolveAiPrisoners(refreshWaitingOrders(governed, createV03OrderServices()));
   if (refreshed.phase !== 'finished') {
     updateFactionObjectives(refreshed);

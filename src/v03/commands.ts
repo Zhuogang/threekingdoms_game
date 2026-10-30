@@ -2,7 +2,7 @@ import { reconcileFactionObjectives } from './ai/faction-objectives';
 import { marchArmy } from './governance/army';
 import { transferOfficers } from './governance/officer-transfer';
 import { applyCityPersonnelCommand } from './campaign/city-personnel';
-import { decidePrisoner } from './campaign/prisoners';
+import { decidePrisoner, recruitCityPrisoners } from './campaign/prisoners';
 import {
   acknowledgeV03Event,
   advanceV03,
@@ -75,6 +75,8 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
         command.action,
         command.exchangeOfficerId,
       );
+    case 'recruitPrisoners':
+      return recruitCityPrisoners(state, command.cityId);
     case 'setBattleAutoCommand': {
       const current = state.battles.find(
         (battle) => battle.id === command.battleId && battle.active,

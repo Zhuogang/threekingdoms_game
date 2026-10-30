@@ -482,6 +482,7 @@ export type V03Command =
       action: 'release' | 'recruit' | 'exchange' | 'execute';
       exchangeOfficerId?: string;
     }
+  | { type: 'recruitPrisoners'; cityId: string }
   | { type: 'completeBattleDay'; battleId: string; remainingAct?: boolean }
   | { type: 'acknowledgeEvent'; eventId: string }
   | { type: 'acknowledgeEvents'; eventIds: string[] }

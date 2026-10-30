@@ -8,6 +8,7 @@ import { createV03OrderServices } from '../governance/services';
 import type { V03GameState, V03Officer } from '../types';
 import { recordEvent } from './reports';
 import { cancelPendingGovernorAppointment } from '../governance/appointments';
+import { rulerTemperament } from '../ai/temperament';
 
 export type PrisonerAction = 'release' | 'recruit' | 'exchange' | 'execute';
 export const RULER_DEFECTION_LOYALTY_LOSS = 10;
@@ -343,6 +344,7 @@ export function decidePrisoner(
         : 'chronicle',
     params: {
       officerId,
+      holderFactionId: holderId,
       action,
       accepted,
       ...(rulerFactionId && action === 'recruit' && accepted
@@ -358,6 +360,52 @@ export function decidePrisoner(
   resolveSuccessions(next);
   next.revision++;
   return { ok: true, state: next };
+}
+
+/** Captivity wears loyalty down at every month boundary (PF-RL-05). */
+export const CAPTIVITY_MONTHLY_LOYALTY_LOSS = 5;
+
+export function decayCaptiveLoyalty(state: V03GameState): void {
+  for (const officer of state.officers)
+    if (officer.alive && officer.location.kind === 'captured')
+      officer.loyalty = Math.max(0, officer.loyalty - CAPTIVITY_MONTHLY_LOYALTY_LOSS);
+}
+
+/** Player helper: try to recruit every prisoner held in one city not yet asked this month. */
+export function recruitCityPrisoners(
+  state: V03GameState,
+  cityId: string,
+): { ok: boolean; state: V03GameState; message?: string; error?: string } {
+  const eligible = state.officers.filter(
+    (officer) =>
+      officer.alive &&
+      officer.location.kind === 'captured' &&
+      officer.location.cityId === cityId &&
+      !officer.location.journeyId &&
+      officer.prisonerActionMonth !== state.monthIndex &&
+      prisonerHolder(state, officer) === state.playerFactionId &&
+      officer.factionId !== state.playerFactionId,
+  );
+  if (!eligible.length)
+    return { ok: false, state, error: 'No prisoner here can be asked again this month.' };
+  let next = state;
+  let joined = 0;
+  for (const prisoner of eligible) {
+    const result = decidePrisoner(next, state.playerFactionId, prisoner.id, 'recruit');
+    if (!result.ok) continue;
+    next = result.state;
+    if (
+      next.officers.find((entry) => entry.id === prisoner.id)?.factionId === state.playerFactionId
+    )
+      joined++;
+  }
+  if (next === state)
+    return { ok: false, state, error: 'No prisoner here can be asked again this month.' };
+  return {
+    ok: true,
+    state: next,
+    message: `${joined} of ${eligible.length} prisoners agreed to serve.`,
+  };
 }
 
 export function resolveAiPrisoners(state: V03GameState): V03GameState {
@@ -384,14 +432,16 @@ export function resolveAiPrisoners(state: V03GameState): V03GameState {
     );
     const burden =
       (officer.troops + officer.wounded) * (officer.troopType === 'cavalry' ? 2 : 1) * 0.004 * 30;
+    // Houses hold captives and ask again each month while they can feed them (PF-RL-05);
+    // a benevolent ruler still lets go those too loyal to turn.
     const action: PrisonerAction =
       (holdingCity?.food ?? 0) < burden
         ? 'release'
         : exchange
           ? 'exchange'
-          : officer.loyalty < 75
-            ? 'recruit'
-            : 'release';
+          : officer.loyalty >= 75 && rulerTemperament(next, holderId).traits.includes('benevolent')
+            ? 'release'
+            : 'recruit';
     const result = decidePrisoner(next, holderId, officer.id, action, exchange?.id);
     if (result.ok) next = result.state;
   }

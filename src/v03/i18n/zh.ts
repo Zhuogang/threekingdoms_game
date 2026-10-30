@@ -596,6 +596,9 @@ export const zh: Record<MessageKey, string> = {
   'flow.allianceHint': '成功率由当前君主与外交形势决定，确认后立即得到答复。',
   'flow.breakAllianceHint': '确认解除同盟？此后二十四个月内，每次提议同盟的成功率降低 30 点。',
   'flow.allianceRecall': '双方距目标超过五日的出征部队将折返；五日以内的部队仍会交战。',
+  'prisoners.recruitAll': '劝降本城全部俘虏（{count}）',
+  'prisoners.captivityHint':
+    '每名俘虏每月可劝降一次，成功率为 100 减其忠诚（5%–90%）。每到月界，俘虏忠诚下降 5，今日拒绝，日后或许归顺。',
   'diplomacy.ruler': '君主',
   'diplomacy.character': '性格',
   'diplomacy.noTraits': '无显著性格',

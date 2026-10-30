@@ -625,6 +625,9 @@ export const en = {
     'End this alliance? Breaking it costs 30 points on every alliance offer for the next 24 months.',
   'flow.allianceRecall':
     'Armies between your houses more than five days from their target turn back; closer ones still fight.',
+  'prisoners.recruitAll': 'Ask every prisoner here to serve ({count})',
+  'prisoners.captivityHint':
+    'Each prisoner can be asked once a month; the chance is 100 minus their loyalty (5–90%). Captivity costs 5 loyalty at every month boundary, so a refusal now may become a yes later.',
   'diplomacy.ruler': 'Ruler',
   'diplomacy.character': 'Character',
   'diplomacy.noTraits': 'No notable traits',

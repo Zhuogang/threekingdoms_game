@@ -85,6 +85,7 @@ const ROUTINE_ZH: Readonly<Record<string, string>> = {
   'Merchants bought 2000 food for 200 gold.': '商人以 200 金购走了 2000 粮。',
   'Restore loyalty has been retired: security is free and restores more.':
     '恢复民心已取消：治安不花钱，且恢复更多。',
+  'No prisoner here can be asked again this month.': '本城没有本月还能劝降的俘虏。',
   'This action would spend gold reserved for an approved order.':
     '该行动会动用已批准命令预留的金钱。',
   'This action would spend food reserved for an approved order.':
@@ -183,6 +184,8 @@ export function localizeRoutineFeedback(
   if (match) return `本城本旬的 ${match[1]} 个工作点已用完。`;
   match = message.match(/^The capital has no work points left; (\d+) more arrive in (\d+) days\.$/);
   if (match) return `本城工作点已用完，${match[2]} 日后增加 ${match[1]} 点。`;
+  match = message.match(/^(\d+) of (\d+) prisoners agreed to serve\.$/);
+  if (match) return `${match[2]} 名俘虏中有 ${match[1]} 名愿意归顺。`;
   match = message.match(/^The capital has used its (\d+) monthly work points?\.$/);
   if (match) return `本城本月的 ${match[1]} 个工作点已用完。`;
   match = message.match(/^(.+) improved city loyalty by 2 for 80 gold\.$/);

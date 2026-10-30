@@ -45,12 +45,28 @@ export function CityOfficers({
       !officer.location.journeyId &&
       officer.location.cityId === city?.id,
   ).length;
+  const askable =
+    prisoners && city?.factionId === state.playerFactionId
+      ? officers.filter((officer) => officer.prisonerActionMonth !== state.monthIndex).length
+      : 0;
   return (
     <section className="v03-roster">
       <p className="v03-step-intro">
         {message(locale, prisoners ? 'flow.choosePrisoner' : 'flow.chooseOfficer')}
       </p>
       {!prisoners ? <ReserveFillButton context={context} /> : null}
+      {prisoners && city?.factionId === state.playerFactionId ? (
+        <>
+          <Button
+            className="v03-step-choice"
+            disabled={!askable || state.phase === 'finished'}
+            onClick={() => context.dispatch({ type: 'recruitPrisoners', cityId: city.id })}
+          >
+            {message(locale, 'prisoners.recruitAll', { count: askable })}
+          </Button>
+          <p className="v03-muted">{message(locale, 'prisoners.captivityHint')}</p>
+        </>
+      ) : null}
       {officers.length ? (
         groups
           .filter((group) => group.people.length)

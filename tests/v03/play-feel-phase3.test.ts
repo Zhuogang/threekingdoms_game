@@ -20,6 +20,7 @@ import { acceptV03Invitation, getV03AllianceFactors } from '../../src/v03/campai
 import { createV03OrderServices } from '../../src/v03/governance/services';
 import { incomingCampaignThreats } from '../../src/v03/ai/campaign-threats';
 import { localizeRoutineFeedback } from '../../src/v03/ui/feedback';
+import { decayCaptiveLoyalty, resolveAiPrisoners } from '../../src/v03/campaign/prisoners';
 import { createPersonnelDay } from '../../src/v03/campaign/personnel';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../src/v03/platform/storage';
 import { rulerTemperament, temperamentFromTraits } from '../../src/v03/ai/temperament';
@@ -577,5 +578,56 @@ describe('PF-RL-03 officers grow through deeds', () => {
       experience: 25,
       force: 40,
     });
+  });
+});
+
+describe('PF-RL-05 captivity is a ticking clock', () => {
+  /** Zhang Fei (loyalty 90) is held at Ye by Yuan Shao's house. */
+  function heldAtYe(holderRuler = 'yuanshao') {
+    const state = createV03Game('cao', 7, 'divided-realm-190');
+    const prisoner = state.officers.find((officer) => officer.id === 'zhangfei')!;
+    Object.assign(prisoner, {
+      loyalty: 90,
+      troops: 0,
+      wounded: 0,
+      governorOfCityId: null,
+      location: { kind: 'captured', cityId: 'ye' },
+    });
+    state.factions.find((faction) => faction.id === 'yuan')!.leaderOfficerId = holderRuler;
+    return { state, prisoner };
+  }
+  const decision = (state: ReturnType<typeof createV03Game>) =>
+    state.events.filter((event) => event.code === 'prisoner.decision').at(-1)?.params;
+
+  it('wears captive loyalty down by five at each month boundary', () => {
+    const { state, prisoner } = heldAtYe();
+    decayCaptiveLoyalty(state);
+    expect(prisoner.loyalty).toBe(85);
+    prisoner.loyalty = 3;
+    decayCaptiveLoyalty(state);
+    expect(prisoner.loyalty).toBe(0);
+  });
+
+  it('keeps asking instead of releasing a loyal captive, unless the holder is benevolent', () => {
+    const { state } = heldAtYe();
+    const held = resolveAiPrisoners(state);
+    expect(decision(held)).toMatchObject({
+      officerId: 'zhangfei',
+      holderFactionId: 'yuan',
+      action: 'recruit',
+    });
+    const benevolent = resolveAiPrisoners(heldAtYe('liuyan').state);
+    expect(decision(benevolent)).toMatchObject({ officerId: 'zhangfei', action: 'release' });
+  });
+
+  it('lets the player ask every prisoner in a city once a month', () => {
+    const { state } = heldAtYe();
+    state.cities.find((city) => city.id === 'ye')!.factionId = 'cao';
+    const asked = executeV03Command(state, { type: 'recruitPrisoners', cityId: 'ye' });
+    expect(asked.ok, asked.error).toBe(true);
+    expect(asked.message).toMatch(/^[01] of 1 prisoners agreed to serve\.$/);
+    expect(localizeRoutineFeedback(asked.message!, 'zh', asked.state)).toContain('俘虏');
+    const again = executeV03Command(asked.state, { type: 'recruitPrisoners', cityId: 'ye' });
+    expect(again.ok).toBe(false);
   });
 });
