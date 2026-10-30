@@ -22,12 +22,13 @@ describe('V04-09 diagnostic player policies', () => {
   it('buys food with real gold and work while preserving other cities and total personnel', () => {
     const initial = createV03Game('cao', 17);
     const city = initial.cities.find((city) => city.id === initial.playerCapitalCityId)!;
-    Object.assign(city, { food: 0, gold: 160 });
+    Object.assign(city, { food: 0, gold: 400 });
     const before = structuredClone(initial);
     const result = prepareProbeCapital(initial, api);
     expect(initial).toEqual(before);
     const after = result.state.cities.find((entry) => entry.id === city.id)!;
-    expect(after).toMatchObject({ food: 1600, gold: 0, workPointsUsed: 2 });
+    // Two 2,000-food purchases at 200 gold each (PF-RL-02).
+    expect(after).toMatchObject({ food: 4000, gold: 0, workPointsUsed: 2 });
     expect(after.reserve + after.garrisonTroops).toBe(city.reserve + city.garrisonTroops);
     expect(result.state.cities.filter((entry) => entry.id !== city.id)).toEqual(
       initial.cities.filter((entry) => entry.id !== city.id),

@@ -86,8 +86,16 @@ describe('V04-02 forecast and real settlement parity', () => {
         expect(result.daysAdvanced).toBe(1);
         next = result.state;
       }
+      // A random monthly festival is not part of the forecast; account for one that fired here.
+      const festivalGold = next.events
+        .filter((event) => event.kind === 'campaignEvent')
+        .map((event) => JSON.parse(event.detail) as { key?: string; entityIds?: string[] })
+        .filter((detail) => detail.key === 'festival' && detail.entityIds?.includes(city.id))
+        .reduce((sum) => sum + 150, 0);
       expect(next.cities.find((entry) => entry.id === city.id)!.food).toBe(forecast.projectedFood);
-      expect(next.cities.find((entry) => entry.id === city.id)!.gold).toBe(forecast.projectedGold);
+      expect(next.cities.find((entry) => entry.id === city.id)!.gold).toBe(
+        forecast.projectedGold - festivalGold,
+      );
     },
   );
 
@@ -215,8 +223,8 @@ describe('V04-02 forecast and real settlement parity', () => {
     expect(preview.projectedAvailable.food).toBe(preview.projectedFood - 500);
     expect(requested).toEqual(before);
     const bought = command(requested, { type: 'cityAction', cityId: city.id, action: 'buy-food' });
-    expect(forecastCityEconomy(bought, city.id).projectedFood).toBe(preview.projectedFood + 800);
-    expect(forecastCityEconomy(bought, city.id).projectedGold).toBe(preview.projectedGold - 80);
+    expect(forecastCityEconomy(bought, city.id).projectedFood).toBe(preview.projectedFood + 2000);
+    expect(forecastCityEconomy(bought, city.id).projectedGold).toBe(preview.projectedGold - 200);
   });
 
   it.each([1, 2])(

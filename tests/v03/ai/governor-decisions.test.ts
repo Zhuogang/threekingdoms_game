@@ -162,7 +162,7 @@ describe('V04-07 governor decisions', () => {
     expect(
       forecastCityEconomy(result.state!, city.id).projectedAvailable.food,
     ).toBeGreaterThanOrEqual(0);
-    expect(result.city).toMatchObject({ food: 800, gold: 920, farming: 0, workPointsUsed: 1 });
+    expect(result.city).toMatchObject({ food: 2000, gold: 800, farming: 0, workPointsUsed: 1 });
   });
 
   it('prefers recurring farming when its real next-harvest gain covers the reserve shortfall', () => {
