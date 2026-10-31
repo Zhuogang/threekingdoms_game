@@ -551,9 +551,11 @@ describe('PF-RL-03 officers grow through deeds', () => {
     const infantry = { ...officer, troopType: 'infantry' as const };
     gainOfficerExperience(infantry, 70);
     expect(infantry).toMatchObject({ experience: 160, level: 1, force: 100 });
+    // Archers gain intellect on top of the force every officer gains (owner's choice,
+    // October 30, 2026), since their normal attacks also use force.
     const archer = { ...officer, troopType: 'archer' as const };
     gainOfficerExperience(archer, 70);
-    expect(archer).toMatchObject({ level: 1, force: 98, intellect: 62 });
+    expect(archer).toMatchObject({ level: 1, force: 100, intellect: 62 });
     const veteran = { ...officer, experience: 10_000, level: 5, troopType: 'cavalry' as const };
     gainOfficerExperience(veteran, 70);
     expect(veteran.experience).toBe(10_000);

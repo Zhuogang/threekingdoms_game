@@ -71,7 +71,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'Infantry, cavalry and archers remain the three base troop types. Soldier level is independent of officer level: levels 1–10 use ordinary art; levels 11–20 use heavy infantry, elite cavalry or strong archers. Below 500 troops uses small squads; 500 or more uses large formations. On water, the approved naval commanders use tower warships and others use crewed boats, regardless of soldier level or size.',
           'The officer detail and battlefield show soldier level, mean XP and XP to the next level. New recruits have zero XP; reinforcement mixes experience by headcount and can downgrade an elite force. The assignment preview shows both formations, counts, levels and experience before confirmation. Veterans returning to the matching reserve pool retain their experience.',
           'Survivors that caused or received combat casualties gain 40 participation XP, up to 80 damage XP relative to starting troop count, and 20 victory XP after battle; each battle awards at most 140 and total XP is capped at 1900. Each level above 1 adds 2% normal/counterattack damage and reduces incoming normal/counterattack damage by 1%; tactics receive no level multiplier. Growth reports preserve each original contingent’s XP and level change, promotion, or annihilation even after later reinforcement.',
-          'Unit strength depends on troop count, officer leadership, morale, status, and the actual terrain under the unit.',
+          'A normal attack or counterattack scales with the attacker’s healthy troops and with force: the formation’s force (its officers’, weighted by their troops) against the defender’s. Ten more force deals about 8% more and takes about 7% less. Morale, matchup (cavalry beats archers, infantry beats cavalry, archers beat infantry), status, hills or forest under the defender, water and soldier level also apply. Intellect matters only for tactics. Each officer level adds 2 force; archer officers also gain 2 intellect.',
           'Each officer commands one base type. Healthy and attached wounded share a 10,000-person cap. Effective combat loss becomes 60% wounded and 40% permanent loss; zero healthy means defeated, while zero healthy and wounded means annihilation. Wounded retain XP but cannot act or heal on the field. Starvation losses are permanent.',
           'Existing wounded automatically stay in the departure city with their own source and XP. Each full supplied city day heals 10% per city/type group, rounded up: 3,000 heals 300 first and about 90% over 22 effective days. Travel and outside waiting give no treatment. Rear veterans rejoin their original officer only in the same city, under the same house, when available and within capacity; otherwise they remain a separate source.',
           'All military personnel consume food, including reserves, rear veterans, wounded and captives; cavalry counts twice. Expand Personnel, recovery & disbanding under Military on the city page or in officer details to review upkeep and disband selected soldiers without a work point. Returning the whole contingent uses no work points in any city; wounded stay in city care and still eat.',
@@ -87,7 +87,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
       {
         heading: 'Move and attack',
         body: [
-          'Select one of your units. Highlighted cells are legal destinations for its remaining movement; click one to move. Select an enemy inside the displayed attack range to attack it.',
+          'Select one of your units. Highlighted cells are legal destinations for its remaining movement; click one to move. To attack, choose Attack (A) from the unit’s orders, then click an enemy inside the red range.',
           'A unit normally moves once and acts once per battle day. When your side has finished, end the battle day. Rivals then take their turn and the battle day resolves.',
           'A successful manual move opens the unit action menu: Attack, Tactics, Wait or Close. Attack and tactic selection return you to the highlighted map targets before executing. Close keeps the move and remaining action; select the moved unit to reopen the menu. Unavailable options explain their restrictions.',
           'A battle begins outside the destination city. This version has no walls, gates, siege weapons, climbing, or city-street battle phase. Battles end through defeat, withdrawal or the day limit.',
@@ -138,7 +138,7 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'Feasts allow checked local guests for one work point; only selected officers gain up to 8 loyalty. Rewards and fine arms support multiple recipients at 100 and 180 gold per officer, without work points. Select all includes eligible recipients. Review totals and actual gains before confirming; insufficient funds or an invalid recipient reject the whole order.',
           'Development costs 80 gold and one work point: farming gains up to 20, commerce up to 10, capped at 500. Preview shows the actual gain near the cap. Existing city values are not rescaled.',
           'Monthly tax is the existing base tax, rounded down, multiplied by (0.8 + city loyalty / 500), then rounded down again: 80–100% of base tax. Food and recruitment formulas are unchanged. Officer loyalty retains its succession and prisoner-decision roles; autonomy only considers rewards or feasts when a local officer is below 55 loyalty.',
-          'Officers grow through deeds. Training adds 25 officer XP and no longer raises force by itself; officers who fight gain half their troops’ battle XP when the battle settles. Every 100 XP is a level (up to level 5 at 500 XP), and each level adds 2 force, or 2 intellect for archers, within the force cap of 100 (105 with fine arms). Training is unavailable at 500 XP or level 5; existing higher XP is preserved. Preview and feedback show actual gains.',
+          'Officers grow through deeds. Training adds 25 officer XP and no longer raises force by itself; officers who fight gain half their troops’ battle XP when the battle settles. Every 100 XP is a level (up to level 5 at 500 XP), and each level adds 2 force (archers also gain 2 intellect), within the force cap of 100 (105 with fine arms). Training is unavailable at 500 XP or level 5; existing higher XP is preserved. Preview and feedback show actual gains.',
           'Autonomy does not remove tactical command. If your forces enter a manual battle, you can still command your units regardless of which city sent them.',
         ],
       },
@@ -251,7 +251,7 @@ const CHINESE: readonly V03WikiArticle[] = [
           '基础兵种仍只有步、骑、弓。部队等级独立于武将等级：1–10 级使用普通图，11–20 级分别使用重步兵、精锐骑兵、强弓兵图；少于 500 人用小队，500 人及以上用大队。下水后按既定主将资格使用楼船或载兵小船，部队等级和人数不改变船型。',
           '武将详情和战场显示兵员等级、平均经验及距下一级经验。新兵经验为零，补兵按人数平均经验，可能使精锐降回普通；确认前会预览人数、等级、经验和图标变化。交回兵池的老兵保留经验，只能补入同兵种部队。',
           '造成或承受过有效战斗伤亡的幸存部队，战后获得 40 点参战经验、按战果与开战人数计算的最多 80 点经验，以及胜方 20 点经验；每战最多 140 点，总经验上限 1900。每升一级，普攻与反击伤害增加 2%，承受普攻与反击伤害减少 1%，计策不叠加等级倍率。成长战报保存各原部队当时的经验、等级变化、精锐晋升或全灭清零，之后补兵不会改写旧战报。',
-          '部队战力受兵力、将领统率、士气、状态以及脚下真实地形影响。',
+          '普攻与反击伤害与攻方可战兵力成正比，并取决于武力对比：部队武力（多将同队时按各自兵力加权）对守方武力，每高 10 点约多造成 8%、少承受 7%。士气、兵种克制（骑克弓、步克骑、弓克步）、状态、守方所在丘陵或森林、水上修正及部队等级同样计入。智力只影响计策。武将每升一级武力 +2，弓兵武将另加智力 +2。',
           '一将只带一个基础兵种，可战与随将伤兵合计最多 10000 人。有效战斗减员的 60% 成为伤兵，40% 永久损失；可战归零是击溃，两者归零才是全灭。伤兵保留经验，不能在战场行动或恢复。断粮减员是永久损失。',
           '新出征自动将旧伤兵留城，保留来源和经验。有粮完整驻城一日后，按每城同兵种汇总恢复 10% 并向上取整：3000 首日恢复 300，约 22 个有效日恢复九成。在途和城外等待不恢复。留城老兵仅在原将同城、同势力、可用且有容量时自动归队，否则作为独立兵源保留。',
           '所部、预备兵、待归队老兵、伤兵与俘虏都吃粮，骑兵两倍；看押方承担俘虏口粮，不另付己方兵饷。城池页“军事”分组或武将详情中可展开“兵员、养伤与遣散”，查看粮耗并无工作点遣散指定人员。各城“归还全部所部”均不耗工作点，伤兵继续留城休养和吃粮。',
@@ -267,7 +267,7 @@ const CHINESE: readonly V03WikiArticle[] = [
       {
         heading: '移动与攻击',
         body: [
-          '先选择己方部队。高亮格为当前可到达位置；点选一格即可移动。选择显示在攻击范围内的敌军即可发起攻击。',
+          '先选择己方部队。高亮格为当前可到达位置；点选一格即可移动。要攻击，先在部队行动菜单选“攻击”（A），再点红色范围内的敌军。',
           '每支部队通常每天可以移动一次并行动一次。己方完成操作后结束战斗日，随后由对手行动并结算本日战斗。',
           '手动移动成功后弹出攻击、计策、待命和关闭。选择攻击或具体计策后菜单收起，点击地图高亮目标才执行；关闭保留移动及剩余行动，可重新选中该部队打开菜单。不可用选项说明限制原因。',
           '战斗发生在目标城市外围。本版没有城墙、城门、攻城器、攀墙或城内巷战阶段。战斗通过击败敌军、撤退或达到时限结束。',
@@ -318,7 +318,7 @@ const CHINESE: readonly V03WikiArticle[] = [
           '宴饮可勾选本城己方驻将，整场消耗 1 点，仅所选者获得最多 8 忠诚。赏赐与精良兵器支持多选，分别按每人 100 金和 180 金合计，不耗工作点。全选仅包括可用人选；确认前显示总费用和实际变化，资金不足或任何人选失效时整批不执行。',
           '发展农业或商业各花 80 金和一个工作点，农业最多 +20、商业最多 +10，上限 500。临近上限时预览实际增量；已有城市数值不重算。',
           '每月税收为原基础税收向下取整后，乘以（0.8＋城市民心／500），再向下取整，即原税收的 80%–100%。粮食与征兵公式不变。武将忠诚保留继位与俘虏处置作用，自治仅在驻将忠诚低于 55 时考虑赏赐或宴饮。',
-          '武将靠战功成长。训练每次 +25 武将经验，不再直接加武力；参战武将在战斗结算时获得所部战斗经验的一半。每 100 经验升一级（500 经验即 5 级封顶），每级武力 +2，弓兵改为智力 +2，武力上限 100（精良兵器 105）。经验到 500 或 5 级后不能再训练，旧档更高经验保留；预览和结果显示实际增量。',
+          '武将靠战功成长。训练每次 +25 武将经验，不再直接加武力；参战武将在战斗结算时获得所部战斗经验的一半。每 100 经验升一级（500 经验即 5 级封顶），每级武力 +2（弓兵另加智力 +2），武力上限 100（精良兵器 105）。经验到 500 或 5 级后不能再训练，旧档更高经验保留；预览和结果显示实际增量。',
           '自治不影响临阵指挥。来自任何城市的部队进入手动战斗后，玩家仍可控制自己的部队。',
         ],
       },

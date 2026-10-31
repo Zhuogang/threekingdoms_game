@@ -290,8 +290,9 @@ export function hasTrainingBenefit(officer: Pick<V03Officer, 'experience' | 'lev
 }
 
 /**
- * Add officer XP (up to 500, level 5) and apply each level reached: +2 force, or +2
- * intellect for archers, within the force limit. Shared by training and battle.
+ * Add officer XP (up to 500, level 5) and apply each level reached: +2 force within the
+ * force limit, and archers also +2 intellect, since their normal attacks use force too.
+ * Shared by training and battle.
  */
 export function gainOfficerExperience(
   officer: Pick<
@@ -308,7 +309,7 @@ export function gainOfficerExperience(
   while (officer.level < targetLevel) {
     officer.level++;
     if (officer.troopType === 'archer') officer.intellect = Math.min(100, officer.intellect + 2);
-    else if (officer.force < forceLimit) officer.force = Math.min(forceLimit, officer.force + 2);
+    if (officer.force < forceLimit) officer.force = Math.min(forceLimit, officer.force + 2);
   }
 }
 

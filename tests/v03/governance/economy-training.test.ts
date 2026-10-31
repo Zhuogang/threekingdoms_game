@@ -172,7 +172,7 @@ describe('existing economy and training adjustments', () => {
     expect(once.message).toContain('+25 experience, +0 force and +0 intellect');
   });
 
-  it('keeps archer level-up intellect and reports the actual capped gain at full force', () => {
+  it('gives archers level-up intellect too and reports the actual capped gain at full force', () => {
     const { state, city, officer } = fixture();
     Object.assign(officer, {
       troopType: 'archer',
