@@ -1,0 +1,320 @@
+{
+  "asset": "s1-01-city-vignette",
+  "size": [1536, 1024],
+  "cell": [64, 48],
+  "level": 24,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-768, -48],
+  "objects": [
+    {
+      "id": "corner-nw",
+      "kind": "corner-tower",
+      "layer": "L3",
+      "cells": [14, 4, 14, 4],
+      "height": 5,
+      "anchor": [128, 192],
+      "bbox": [125, 40, 195, 120],
+      "mask": "masks/corner-nw.png"
+    },
+    {
+      "id": "wall-north-w",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [15, 4, 21, 4],
+      "height": 3,
+      "anchor": [192, 192],
+      "bbox": [191, 83, 640, 192],
+      "mask": "masks/wall-north-w.png"
+    },
+    {
+      "id": "wall-north-w-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [15, 4, 21, 4],
+      "height": 3.5,
+      "anchor": [192, 192],
+      "bbox": [191, 59, 640, 83],
+      "mask": "masks/wall-north-w-parapet.png"
+    },
+    {
+      "id": "wall-north-e",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [26, 4, 32, 4],
+      "height": 3,
+      "anchor": [896, 192],
+      "bbox": [896, 83, 1344, 192],
+      "mask": "masks/wall-north-e.png"
+    },
+    {
+      "id": "wall-north-e-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [26, 4, 32, 4],
+      "height": 3.5,
+      "anchor": [896, 192],
+      "bbox": [896, 59, 1341, 83],
+      "mask": "masks/wall-north-e-parapet.png"
+    },
+    {
+      "id": "gate-north",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [22, 4, 25, 4],
+      "height": 5,
+      "anchor": [640, 192],
+      "bbox": [639, 21, 897, 192],
+      "mask": "masks/gate-north.png"
+    },
+    {
+      "id": "corner-ne",
+      "kind": "corner-tower",
+      "layer": "L3",
+      "cells": [33, 4, 33, 4],
+      "height": 5,
+      "anchor": [1344, 192],
+      "bbox": [1341, 40, 1411, 120],
+      "mask": "masks/corner-ne.png"
+    },
+    {
+      "id": "residence-hall",
+      "kind": "building",
+      "layer": "L3",
+      "cells": [25, 6, 28, 6],
+      "height": 2.5,
+      "anchor": [832, 288],
+      "bbox": [830, 198, 1090, 283],
+      "mask": "masks/residence-hall.png"
+    },
+    {
+      "id": "armoury",
+      "kind": "building",
+      "layer": "L3",
+      "cells": [17, 6, 21, 7],
+      "height": 2,
+      "anchor": [320, 336],
+      "bbox": [318, 214, 642, 294],
+      "mask": "masks/armoury.png"
+    },
+    {
+      "id": "residence-wall",
+      "kind": "courtyard-wall",
+      "layer": "L3",
+      "cells": [25, 7, 28, 8],
+      "height": 0.6,
+      "anchor": [832, 384],
+      "bbox": [831, 273, 1089, 384],
+      "mask": "masks/residence-wall.png"
+    },
+    {
+      "id": "granary",
+      "kind": "building",
+      "layer": "L3",
+      "cells": [17, 7, 21, 8],
+      "height": 2,
+      "anchor": [320, 384],
+      "bbox": [318, 293, 642, 378],
+      "mask": "masks/granary.png"
+    },
+    {
+      "id": "wall-west-n",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [14, 5, 14, 8],
+      "height": 3,
+      "anchor": [128, 384],
+      "bbox": [142, 119, 193, 281],
+      "mask": "masks/wall-west-n.png"
+    },
+    {
+      "id": "wall-west-n-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [14, 5, 14, 8],
+      "height": 3.5,
+      "anchor": [128, 384],
+      "bbox": [127, 107, 143, 281],
+      "mask": "masks/wall-west-n-parapet.png"
+    },
+    {
+      "id": "wall-east-n",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [33, 5, 33, 8],
+      "height": 3,
+      "anchor": [1344, 384],
+      "bbox": [1343, 119, 1394, 281],
+      "mask": "masks/wall-east-n.png"
+    },
+    {
+      "id": "wall-east-n-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [33, 5, 33, 8],
+      "height": 3.5,
+      "anchor": [1344, 384],
+      "bbox": [1393, 107, 1409, 281],
+      "mask": "masks/wall-east-n-parapet.png"
+    },
+    {
+      "id": "gate-west",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [14, 9, 14, 11],
+      "height": 5,
+      "anchor": [128, 528],
+      "bbox": [124, 280, 196, 456],
+      "mask": "masks/gate-west.png"
+    },
+    {
+      "id": "gate-east",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [33, 9, 33, 11],
+      "height": 5,
+      "anchor": [1344, 528],
+      "bbox": [1340, 280, 1412, 456],
+      "mask": "masks/gate-east.png"
+    },
+    {
+      "id": "barracks-sw",
+      "kind": "building",
+      "layer": "L3",
+      "cells": [17, 12, 21, 13],
+      "height": 2,
+      "anchor": [320, 624],
+      "bbox": [318, 502, 642, 618],
+      "mask": "masks/barracks-sw.png"
+    },
+    {
+      "id": "barracks-se",
+      "kind": "building",
+      "layer": "L3",
+      "cells": [26, 12, 30, 13],
+      "height": 2,
+      "anchor": [896, 624],
+      "bbox": [894, 502, 1218, 618],
+      "mask": "masks/barracks-se.png"
+    },
+    {
+      "id": "wall-west-s",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [14, 12, 14, 15],
+      "height": 3,
+      "anchor": [128, 720],
+      "bbox": [142, 455, 193, 617],
+      "mask": "masks/wall-west-s.png"
+    },
+    {
+      "id": "wall-west-s-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [14, 12, 14, 15],
+      "height": 3.5,
+      "anchor": [128, 720],
+      "bbox": [127, 443, 143, 617],
+      "mask": "masks/wall-west-s-parapet.png"
+    },
+    {
+      "id": "wall-east-s",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [33, 12, 33, 15],
+      "height": 3,
+      "anchor": [1344, 720],
+      "bbox": [1343, 455, 1394, 617],
+      "mask": "masks/wall-east-s.png"
+    },
+    {
+      "id": "wall-east-s-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [33, 12, 33, 15],
+      "height": 3.5,
+      "anchor": [1344, 720],
+      "bbox": [1393, 443, 1409, 617],
+      "mask": "masks/wall-east-s-parapet.png"
+    },
+    {
+      "id": "wall-south-w",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [15, 16, 21, 16],
+      "height": 3,
+      "anchor": [192, 768],
+      "bbox": [192, 647, 640, 769],
+      "mask": "masks/wall-south-w.png"
+    },
+    {
+      "id": "wall-south-w-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [15, 16, 21, 16],
+      "height": 3.5,
+      "anchor": [192, 768],
+      "bbox": [192, 673, 640, 697],
+      "mask": "masks/wall-south-w-parapet.png"
+    },
+    {
+      "id": "wall-south-e",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [26, 16, 32, 16],
+      "height": 3,
+      "anchor": [896, 768],
+      "bbox": [896, 647, 1344, 769],
+      "mask": "masks/wall-south-e.png"
+    },
+    {
+      "id": "wall-south-e-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [26, 16, 32, 16],
+      "height": 3.5,
+      "anchor": [896, 768],
+      "bbox": [896, 673, 1344, 697],
+      "mask": "masks/wall-south-e-parapet.png"
+    },
+    {
+      "id": "corner-sw",
+      "kind": "corner-tower",
+      "layer": "L3",
+      "cells": [14, 16, 14, 16],
+      "height": 5,
+      "anchor": [128, 768],
+      "bbox": [125, 616, 195, 769],
+      "mask": "masks/corner-sw.png"
+    },
+    {
+      "id": "corner-se",
+      "kind": "corner-tower",
+      "layer": "L3",
+      "cells": [33, 16, 33, 16],
+      "height": 5,
+      "anchor": [1344, 768],
+      "bbox": [1341, 616, 1411, 769],
+      "mask": "masks/corner-se.png"
+    },
+    {
+      "id": "gate-south",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [22, 16, 25, 16],
+      "height": 7,
+      "anchor": [640, 768],
+      "bbox": [639, 543, 897, 769],
+      "mask": "masks/gate-south.png"
+    },
+    {
+      "id": "gate-south-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [22, 16, 25, 16],
+      "height": 3.5,
+      "anchor": [640, 768],
+      "bbox": [639, 673, 897, 697],
+      "mask": "masks/gate-south-parapet.png"
+    }
+  ]
+}

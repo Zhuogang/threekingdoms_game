@@ -1,0 +1,64 @@
+{
+  "asset": "s1-02-south-gate",
+  "size": [1024, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-2560, -879],
+  "objects": [
+    {
+      "id": "wall-south-w",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [21, 16, 21, 16],
+      "height": 3,
+      "anchor": [128, 753],
+      "bbox": [127, 512, 256, 754]
+    },
+    {
+      "id": "wall-south-w-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [21, 16, 21, 16],
+      "height": 3.5,
+      "anchor": [128, 753],
+      "bbox": [127, 563, 256, 610]
+    },
+    {
+      "id": "wall-south-e",
+      "kind": "wall",
+      "layer": "L3",
+      "cells": [26, 16, 26, 16],
+      "height": 3,
+      "anchor": [768, 753],
+      "bbox": [768, 512, 897, 754]
+    },
+    {
+      "id": "wall-south-e-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [26, 16, 26, 16],
+      "height": 3.5,
+      "anchor": [768, 753],
+      "bbox": [768, 563, 897, 610]
+    },
+    {
+      "id": "gate-south",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [22, 16, 25, 16],
+      "height": 7,
+      "anchor": [256, 753],
+      "bbox": [255, 304, 769, 754]
+    },
+    {
+      "id": "gate-south-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [22, 16, 25, 16],
+      "height": 3.5,
+      "anchor": [256, 753],
+      "bbox": [255, 563, 769, 610]
+    }
+  ]
+}
