@@ -2842,6 +2842,160 @@ const EFFECT_ASSETS = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// S7 story illustrations and key visual (MVP plan §3, §8.2; art plan A07,
+// I01–I03). Full painted scenes in the map's ink-and-light-colour style but
+// framed like narrative paintings, not with the game camera. Every upload
+// starts with a crop of the approved S2-01 map (s7-01-key-visual/
+// style-reference.png) for style and architecture; scenes with named people
+// add their portraits for costume and identity only.
+const STORY_STYLE_REF =
+  '`docs/siege/chencang/art/s7-01-key-visual/style-reference.png`（第一张：S2-01 定稿全图南半城，风格和建筑参考）';
+const PORTRAIT_REF = {
+  zhuge: '`public/assets/v03/portraits/zhugeliang.webp`（诸葛亮立绘，只作人物参考）',
+  hao: '`docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp`（郝昭立绘，只作人物参考）',
+  jin: '`docs/siege/chencang/art/s5-09-portrait-jin-xiang/attempts/v2.webp`（靳详立绘，只作人物参考）',
+};
+const STORY_STYLE =
+  'Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.';
+const STORY_CAST =
+  'The attached portraits after the first image only show who the named people are (face, headwear and dress); paint them as small or medium figures in the scene, not as portraits. Shu-Han soldiers wear jade-green padded coats with red trim and rounded iron helmets; Wei soldiers wear deep indigo coats over black lacquered lamellar and round iron helmets.';
+const EXCLUDE_STORY =
+  'Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.';
+const storyAsset = ({ id, zh, about, scene, refs = [], checks }) => ({
+  id,
+  stage: 'S7',
+  zh,
+  size: [1536, 1024],
+  noImage: true,
+  about,
+  prompts: () => [
+    {
+      text: [
+        `Output: a landscape painting exactly 1536 by 1024 pixels. ${scene}`,
+        'Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.',
+        ...(refs.length ? [STORY_CAST] : []),
+        STORY_STYLE,
+        EXCLUDE_STORY,
+      ].join('\n\n'),
+    },
+  ],
+  uploads: [STORY_STYLE_REF, ...refs.map((r) => PORTRAIT_REF[r])],
+  checks: [
+    '和 S2-01 全图、S5 立绘放在一起是同一套画风；城门楼、城墙和全图里的一致。',
+    '没有任何文字、印章、外框；没有血腥。',
+    ...checks,
+  ],
+  naming: '依次命名 `v1.webp`、`v2.webp`……（1536×1024）。',
+});
+
+// Chosen attempt per S7 illustration, with why (details in generation-manifest.json).
+const STORY_PICKS = {
+  's7-01-key-visual': [
+    'v2.webp',
+    '左上是安静的夜空，能放标题；燃烧的云梯、城头的郝昭、近景的诸葛亮都清楚',
+  ],
+  's7-02-opening-persuasion': ['v1.webp', '纸色天空和全图一致；靳详在桥头举手喊话，郝昭在城头听'],
+  's7-03-opening-refusal': ['v1.webp', '拒绝的手势最有力，郝昭和立绘一致；旗面空白'],
+  's7-04-fire-arrows': [
+    'v2.webp',
+    '火箭往下射、两架云梯着火、蜀兵后撤；v1、v3 照搬了全图那块的构图（连城内都画了）',
+  ],
+  's7-05-ending-fall': [
+    'v3.webp',
+    '只有这张是四轮小车由兵推着（v1、v2 画成了马拉的有篷车）；城门破、城头换上红旗',
+  ],
+  's7-06-ending-withdrawal': ['v1.webp', '远处蜀军撤上山道，近景魏骑冲进伏弩，没有血腥'],
+  's7-07-ending-rout': [
+    'v1.webp',
+    '器械焦毁、蜀军扶伤后撤、魏军城头欢呼、山脊上援军出现；v3 画了配重投石机，不合时代',
+  ],
+};
+const withStoryPick = (asset) => {
+  const [final, why] = STORY_PICKS[asset.id] ?? [];
+  if (!final) return asset;
+  return {
+    ...asset,
+    final,
+    about: [
+      ...asset.about,
+      `**2026-11-02 选定 \`attempts/${final}\`**：${why}。四角和旗面在原尺寸下查过，没有印章、落款和文字。运行时用的 1536×1024 和 768×512 在 \`runtime/\`；每张的提示词、源文件和选择理由记在 \`generation-manifest.json\`。`,
+    ],
+  };
+};
+const STORY_ASSETS = [
+  storyAsset({
+    id: 's7-01-key-visual',
+    zh: 'S7-01 主视觉：雪中陈仓',
+    about: [
+      '主视觉，也是开始画面"特别战役 · 陈仓之战"卡的底图（美术 A07、H07）。左上留出一块安静的地方给程序写标题。',
+      '雪夜：一架云梯靠在南墙上烧着，火光映在雪上；郝昭立在门楼前的城头；诸葛亮坐四轮车在城下近景（背影或侧背影）。',
+    ],
+    refs: ['zhuge', 'hao'],
+    scene:
+      'The key visual of a strategy game campaign: the south gate of Chencang on a snowy night. The wall and its two-storey gate tower rise across the right two thirds of the picture, seen from the south and a little below; a scaling ladder leans against the wall to the left of the gate and is burning, its fire throwing warm orange light over the snow and the brick and sending smoke up into the falling snow. On the wall top beside the gate tower stands Hao Zhao, the Wei commander, in a dark red cloak and an iron helmet with a short red plume, looking down, with a few Wei archers along the parapet. In the near foreground at lower left, seen from behind and a little to the side, Zhuge Liang sits in his small four-wheeled carriage in a white crane-feather cloak and dark silk kerchief cap, holding a white feather fan, looking up at the wall, with a line of Shu-Han soldiers and banners on blank silk behind him. Keep the upper left third of the picture quiet (dark sky and falling snow) for a title the game will add.',
+    checks: [
+      '左上三分之一安静，能放标题。',
+      '火光是画面的焦点；诸葛亮和郝昭一个在城下、一个在城头，一眼看得出对峙。',
+    ],
+  }),
+  storyAsset({
+    id: 's7-02-opening-persuasion',
+    zh: 'S7-02 开场一：靳详城下劝降',
+    about: ['开场第一张（美术 I01）：靳详在城下喊话劝降，郝昭在城头听。白天，雪后。'],
+    refs: ['jin', 'hao'],
+    scene:
+      'Opening scene: Jin Xiang, an envoy and old acquaintance of the defender, stands before the south gate of Chencang on a clear winter morning after snow and calls up to the wall to urge its surrender. He is a civilian in a soft black headcloth, a plain dark-green travelling robe and a fur-trimmed cloak, standing at the near end of the wooden bridge over the frozen trench with one hand raised, two Shu-Han attendants a few steps behind him. Above him the brick wall and the closed gate rise steeply; on the wall top Hao Zhao in his dark red cloak and red-plumed helmet leans on the parapet listening, among a few Wei soldiers. In the far distance to the south, the tents and banners of the Shu-Han camp under the snowy foothills. A calm, tense moment, no fighting.',
+    checks: ['靳详是文人、没有甲胄；郝昭在城头。', '没有交战，气氛平静而紧张。'],
+  }),
+  storyAsset({
+    id: 's7-03-opening-refusal',
+    zh: 'S7-03 开场二：郝昭城头拒降',
+    about: ['开场第二张（美术 I01）：郝昭在门楼前的城头拒绝，手按剑，守军张弓待命。'],
+    refs: ['hao'],
+    scene:
+      'Opening scene: Hao Zhao refuses to surrender. A closer view on the wall top of Chencang beside the two-storey gate tower, seen from slightly below along the parapet: Hao Zhao stands at the crenellated parapet in his dark red cloak, black lacquered armour and iron helmet with a short red plume, one hand on his sword hilt, the other raised flat in refusal, his face stern. Along the wall behind him Wei archers in deep indigo coats stand ready with arrows nocked, and a square deep-indigo banner with a blank face flies from the gate tower. Below and beyond the wall, small in the distance, the Shu-Han army waits on the snowy plain before its camp. Late afternoon light, light snow.',
+    checks: ['郝昭的拒绝姿态清楚，像 S5-07 立绘里的那个人。', '旗面空白，没有字。'],
+  }),
+  storyAsset({
+    id: 's7-04-fire-arrows',
+    zh: 'S7-04 幕间：火箭逆射，烧毁云梯',
+    about: ['第一幕中的事件插画（美术 I02）：守军火箭逆射，云梯着火，梯上的蜀兵往下撤。'],
+    scene:
+      'Event scene: the defenders burn the scaling ladders. Dusk, snow falling. Along the south wall of Chencang, Wei archers in deep indigo lean between the crenels and loose fire arrows downward, the burning arrowheads drawing short streaks of light. Two Shu-Han scaling ladders leaning against the wall have caught fire; flames climb their rails and black smoke rolls up the brick face; Shu-Han soldiers in jade green scramble down the ladders and fall back across the half-filled trench, shields raised. In the foreground, the wheeled ladder carts and a few soldiers with earth baskets, lit orange by the fire. Dramatic but without gore.',
+    checks: ['火箭从城头往下射，云梯在烧；没有血腥。'],
+  }),
+  storyAsset({
+    id: 's7-05-ending-fall',
+    zh: 'S7-05 结局：陈仓陷落（架空）',
+    about: ['架空结局"陈仓陷落"（美术 I03）：南门已破，蜀军涌入，城头换上蜀军的旗。'],
+    refs: ['zhuge'],
+    scene:
+      'Ending scene, the fall of Chencang: a grey winter morning after the battle. The south gate of Chencang stands broken open, its iron-studded doors smashed and hanging, the gate tower scorched and missing tiles but standing; red Shu-Han banners with blank faces now fly from the gate tower and along the wall. A column of Shu-Han soldiers marches in through the gate over the wooden bridge; at the head of the column, Zhuge Liang rides in his small four-wheeled carriage in his white crane-feather cloak and kerchief cap, feather fan in hand. Thin smoke rises from inside the city; broken siege engines and scattered arrows lie in the snow in the foreground. Victorious but sober, not triumphant.',
+    checks: ['城门破、城头换上蜀旗（旗面空白）；诸葛亮的车在入城队伍前头。'],
+  }),
+  storyAsset({
+    id: 's7-06-ending-withdrawal',
+    zh: 'S7-06 结局：粮尽退兵，王双追击被斩（史实）',
+    about: [
+      '史实结局（美术 I02）：粮尽，蜀军退回散关的山道；王双率魏骑追击，中伏。画成中伏的一刻，不画血腥。',
+    ],
+    scene:
+      'Ending scene, the historical outcome: the Shu-Han army, its grain exhausted, withdraws southward into the snowy Qinling mountains. A long column of soldiers in jade green, carts and banners winds up a narrow valley road between steep snowy slopes and pines, small in the middle distance. In the foreground below a rocky bend of the road, a troop of Wei cavalry in deep indigo, led by a commander with a tall plume on a dark horse, gallops in pursuit straight into an ambush: Shu-Han crossbowmen rise from behind rocks and pines on the slopes above them, crossbows levelled, and the leading horses rear in alarm. Cold blue-grey evening light, falling snow. The moment of the trap springing, without gore.',
+    checks: ['蜀军在远处撤入山道；近景魏骑中伏，没有血腥。'],
+  }),
+  storyAsset({
+    id: 's7-07-ending-rout',
+    zh: 'S7-07 结局：蜀军溃败（架空）',
+    about: [
+      '架空结局"蜀军溃败"（美术 I03）：器械烧毁，蜀军在雪地里溃退，城头魏军欢呼，远山上张郃援军的旗出现。',
+    ],
+    scene:
+      'Ending scene, the defeat of the attackers: before the south wall of Chencang on a grey winter afternoon. Siege engines lie burnt and broken in the snow before the trench, still smoking; Shu-Han soldiers in jade green fall back across the snowy plain in disorder, some helping wounded comrades, banners trailing. On the intact wall the Wei defenders in deep indigo raise their weapons and banners, the deep-indigo commander’s banner flying from the gate tower. On the hills far to the east, a dark line of Wei cavalry with many banners appears over the ridge: the relief army arriving. Bleak and cold, without gore.',
+    checks: ['城墙完好、魏军在城头；蜀军溃退；远处山脊出现援军。'],
+  }),
+];
+
 const ASSETS = [
   {
     id: 's1-01-city-vignette',
@@ -3370,6 +3524,7 @@ const ASSETS = [
   ...ENGINE_ASSETS,
   ...ROSTER_ASSETS.map(withRosterPick),
   ...EFFECT_ASSETS.map(withEffectPick),
+  ...STORY_ASSETS.map(withStoryPick),
 ];
 
 // ---------------------------------------------------------------------------
@@ -3520,6 +3675,12 @@ ${table('S5')}
 ${table('S6')}
 
 都是静态元素，动起来全靠程序（移动、缩放、淡入淡出、换图，MVP 计划 §8.3）。这一阶段要 ImageGen 直接出透明底（烟、尘、光晕要半透明，品红抠不出来）；特效以 S2-01 定稿全图的一块作风格参考，图标和纸纹不上传参考。
+
+## S7 叙事与主视觉
+
+${table('S7')}
+
+完整的叙事画，和全图同一套水墨淡彩，但构图按插画，不用游戏机位。每张先上传 S2-01 定稿全图南半城作风格和建筑参考；有名有姓的人物再上传立绘，只作人物参考。旗面都空白，没有文字和血腥。
 
 ## 每个文件夹里有什么
 

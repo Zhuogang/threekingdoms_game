@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S7 叙事插画</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:14px; flex-wrap:wrap; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  img { max-width:100%; height:auto; display:block; border:1px solid var(--line); }
+  .card { position:relative; max-width:900px; }
+  .card .t { position:absolute; left:5%; top:7%; color:#f3ead8; font:600 44px/1.2 "Noto Serif SC","Songti SC",serif; letter-spacing:.2em; text-shadow:0 2px 8px rgba(0,0,0,.6); }
+  .card .t small { display:block; font-size:20px; letter-spacing:.3em; opacity:.85; }
+  details { margin-top:10px; } summary { cursor:pointer; color:var(--accent); }
+</style>
+</head>
+<body>
+<header><b>陈仓 S7 叙事与主视觉</b><span id="nav"></span></header>
+<main>
+<section id="card"><h2>开始画面战役卡（S7-01 加程序写的标题）</h2><p class="note">标题是网页文字，游戏里同样由程序写。看左上的空处够不够放标题。</p>
+<div class="card"><img src="../docs/siege/chencang/art/s7-01-key-visual/runtime/illustration.webp" alt=""><div class="t">陈仓之战<small>建兴六年冬 · 特别战役</small></div></div></section>
+<div id="host"></div>
+</main>
+<script>
+const ART='../docs/siege/chencang/art/';
+const S=[
+ ['s7-01-key-visual','s7-01','S7-01 主视觉：雪中陈仓','v2','左上是安静的夜空，能放标题；燃烧的云梯、城头的郝昭、近景的诸葛亮都清楚。'],
+ ['s7-02-opening-persuasion','s7-02','S7-02 开场一：靳详城下劝降','v1','纸色天空和全图一致；靳详在桥头举手喊话，郝昭在城头听。'],
+ ['s7-03-opening-refusal','s7-03','S7-03 开场二：郝昭城头拒降','v1','拒绝的手势最有力，郝昭和立绘一致；旗面空白。'],
+ ['s7-04-fire-arrows','s7-04','S7-04 幕间：火箭逆射，烧毁云梯','v2','火箭往下射、两架云梯着火、蜀兵后撤；v1、v3 照搬了全图那块的构图。'],
+ ['s7-05-ending-fall','s7-05','S7-05 结局：陈仓陷落（架空）','v3','只有这张是四轮小车由兵推着（v1、v2 是马拉的有篷车）。'],
+ ['s7-06-ending-withdrawal','s7-06','S7-06 结局：粮尽退兵，王双追击被斩','v1','远处蜀军撤上山道，近景魏骑冲进伏弩，没有血腥。'],
+ ['s7-07-ending-rout','s7-07','S7-07 结局：蜀军溃败（架空）','v1','器械焦毁、蜀军扶伤后撤、城头欢呼、山脊援军；v3 有配重投石机，不合时代。'],
+];
+const nav=document.getElementById('nav'), host=document.getElementById('host');
+for(const [f,s,t,p,n] of S){
+  nav.insertAdjacentHTML('beforeend',`<a href="#${s}" style="margin-right:10px">${t.split(' ')[0]}</a>`);
+  host.insertAdjacentHTML('beforeend',`<section id="${s}"><h2>${t}（定 <span class="pick">${p}</span>）</h2><p class="note">${n}</p>
+  <img loading="lazy" src="${ART}${f}/runtime/illustration.webp"><details><summary>全部候选</summary><img loading="lazy" src="${s}/comparison.png"></details></section>`);
+}
+</script>
+</body>
+</html>

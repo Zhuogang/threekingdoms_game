@@ -1,0 +1,107 @@
+[
+  {
+    "id": "v1",
+    "source": "v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "304118de454b49acca22a0ecb35047b615a09efa9b7d140b855ecca537e57272",
+    "path": "attempts/v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2042864,
+    "sha256": "e3bed70ccf77e0ea23dd9398b14e009ce38424612fc84ca6dfa105003339ca49",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        77,
+        78,
+        82
+      ],
+      [
+        67,
+        67,
+        74
+      ],
+      [
+        139,
+        121,
+        108
+      ],
+      [
+        215,
+        200,
+        194
+      ]
+    ]
+  },
+  {
+    "id": "v2",
+    "source": "v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "0c2d7b8ec6fc996c81db1598969a686867ea08f29aa3c04ab20303958a9233b5",
+    "path": "attempts/v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2042616,
+    "sha256": "5611f52394b37dac9d4d1412cc6f98f8daea6663e1bf910ef5f9337308a27103",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        63,
+        67,
+        74
+      ],
+      [
+        60,
+        64,
+        73
+      ],
+      [
+        73,
+        61,
+        55
+      ],
+      [
+        213,
+        195,
+        191
+      ]
+    ]
+  },
+  {
+    "id": "v3",
+    "source": "v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "1c9f2f6a092c4b718f920a6b1cea8861c3e99fb92f30cd0728087cb33064d914",
+    "path": "attempts/v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 2087656,
+    "sha256": "9865c9f47873eeaced49415b2a6937abc6acde6ee08e304233b442a2670789be",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        66,
+        66,
+        71
+      ],
+      [
+        77,
+        76,
+        77
+      ],
+      [
+        161,
+        144,
+        117
+      ],
+      [
+        203,
+        178,
+        164
+      ]
+    ]
+  }
+]

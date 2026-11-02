@@ -1,0 +1,84 @@
+{
+  "id": "s7-05",
+  "folder": "s7-05-ending-fall",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [
+    "s7-01-key-visual/style-reference.png (S2-01 map crop)",
+    "  attached image 2: zhugeliang.webp"
+  ],
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene, the fall of Chencang: a grey winter morning after the battle. The south gate of Chencang stands broken open, its iron-studded doors smashed and hanging, the gate tower scorched and missing tiles but standing; red Shu-Han banners with blank faces now fly from the gate tower and along the wall. A column of Shu-Han soldiers marches in through the gate over the wooden bridge; at the head of the column, Zhuge Liang rides in his small four-wheeled carriage in his white crane-feather cloak and kerchief cap, feather fan in hand. Thin smoke rises from inside the city; broken siege engines and scattered arrows lie in the snow in the foreground. Victorious but sober, not triumphant.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nThe attached portraits after the first image only show who the named people are (face, headwear and dress); paint them as small or medium figures in the scene, not as portraits. Shu-Han soldiers wear jade-green padded coats with red trim and rounded iron helmets; Wei soldiers wear deep indigo coats over black lacquered lamellar and round iron helmets.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+  "status": "picked and checked by agent (no seals, text or gore; corners inspected at full size)",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-3c51f020-b53c-42d7-b970-7022c9bbdca1.png",
+      "sourcePath": "../../../../../attempts/s7-05/sources/v1.png",
+      "sourceSha256": "28336755295641e01a7d8c21e145e85a8e4a8634f77f902d467f386cdf7ca423",
+      "path": "attempts/v1.webp",
+      "sha256": "9b0fb69d0a548b27f73632fa7e263f51cb351e49d77247bf3ad168c0b21fc54e",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-18ac0fc4-af3d-4ee4-8562-e662614657e3.png",
+      "sourcePath": "../../../../../attempts/s7-05/sources/v2.png",
+      "sourceSha256": "2f339df0653b6ffb328a01f8ba58c809058a1962468e3d030538f40ab55e01f3",
+      "path": "attempts/v2.webp",
+      "sha256": "46e39b1779b5d58e7e43935c7bf50ea0bc4eafcbf27ed86882b9cef9f36199fc",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-86bb5d24-1491-42d4-830e-7c1a82c29eb6.png",
+      "sourcePath": "../../../../../attempts/s7-05/sources/v3.png",
+      "sourceSha256": "feb6e3941f652c8ac6e7567601ecd977bde28d2319a61311f894ff82a14dc777",
+      "path": "attempts/v3.webp",
+      "sha256": "e2d027ba00e223d12270d9855f55ddd0ea58ae58c4fd5ca5d55a9c037da25409",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "agent",
+    "reason": "Only candidate with the small four-wheeled carriage pushed by soldiers (v1, v2 drew a horse-drawn canopied coach); broken gate, red banners on the wall.",
+    "runtime": [
+      {
+        "path": "runtime/illustration.webp",
+        "size": [
+          1536,
+          1024
+        ],
+        "quality": 88
+      },
+      {
+        "path": "runtime/illustration-small.webp",
+        "size": [
+          768,
+          512
+        ],
+        "quality": 85
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}

@@ -1,0 +1,83 @@
+{
+  "id": "s7-06",
+  "folder": "s7-06-ending-withdrawal",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [
+    "s7-01-key-visual/style-reference.png (S2-01 map crop)"
+  ],
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene, the historical outcome: the Shu-Han army, its grain exhausted, withdraws southward into the snowy Qinling mountains. A long column of soldiers in jade green, carts and banners winds up a narrow valley road between steep snowy slopes and pines, small in the middle distance. In the foreground below a rocky bend of the road, a troop of Wei cavalry in deep indigo, led by a commander with a tall plume on a dark horse, gallops in pursuit straight into an ambush: Shu-Han crossbowmen rise from behind rocks and pines on the slopes above them, crossbows levelled, and the leading horses rear in alarm. Cold blue-grey evening light, falling snow. The moment of the trap springing, without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+  "status": "picked and checked by agent (no seals, text or gore; corners inspected at full size)",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-911f5701-8cd9-446d-a8fc-e3fc3d11d1a9.png",
+      "sourcePath": "../../../../../attempts/s7-06/sources/v1.png",
+      "sourceSha256": "09e3b5166b95538af2500b68701dfd9c317e379bdfeb55c99028e320709cedba",
+      "path": "attempts/v1.webp",
+      "sha256": "23e0c8f6b9c3894c3b3bd69a9b3354bb661966b948b39a97c6bb6ccdc69ae685",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-e38ab942-f9b0-4bc7-935c-7ec70a62b1be.png",
+      "sourcePath": "../../../../../attempts/s7-06/sources/v2.png",
+      "sourceSha256": "5cf2bdc14cdf88694ecb7ac3caa3e154b3de953ad9076eb6c556fd3e63cead58",
+      "path": "attempts/v2.webp",
+      "sha256": "e0a003542a135811e890669264f85f9985146e2c0df8027ece7bca22e0adf2c5",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-5c438349-6117-415b-b4f5-3945d76391ac.png",
+      "sourcePath": "../../../../../attempts/s7-06/sources/v3.png",
+      "sourceSha256": "8616f7974e55fb8fa32ca2cc48069407a4e38930a637bd489ce5d945968a6346",
+      "path": "attempts/v3.webp",
+      "sha256": "ea09dd4bc74a0868dd463f7fd1163bc97e01104a8076d0aed52c5155966a66da",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Column withdrawing up the mountain road, Wei cavalry led by a plumed commander riding into crossbowmen on the slopes; no gore.",
+    "runtime": [
+      {
+        "path": "runtime/illustration.webp",
+        "size": [
+          1536,
+          1024
+        ],
+        "quality": 88
+      },
+      {
+        "path": "runtime/illustration-small.webp",
+        "size": [
+          768,
+          512
+        ],
+        "quality": 85
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}

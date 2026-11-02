@@ -1,0 +1,83 @@
+{
+  "id": "s7-07",
+  "folder": "s7-07-ending-rout",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [
+    "s7-01-key-visual/style-reference.png (S2-01 map crop)"
+  ],
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene, the defeat of the attackers: before the south wall of Chencang on a grey winter afternoon. Siege engines lie burnt and broken in the snow before the trench, still smoking; Shu-Han soldiers in jade green fall back across the snowy plain in disorder, some helping wounded comrades, banners trailing. On the intact wall the Wei defenders in deep indigo raise their weapons and banners, the deep-indigo commander’s banner flying from the gate tower. On the hills far to the east, a dark line of Wei cavalry with many banners appears over the ridge: the relief army arriving. Bleak and cold, without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+  "status": "picked and checked by agent (no seals, text or gore; corners inspected at full size)",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-5c68c714-ca61-4526-b9f7-bcdd6352d996.png",
+      "sourcePath": "../../../../../attempts/s7-07/sources/v1.png",
+      "sourceSha256": "b484679496a901252f67d37f07965733a9388137acd1d20c67788af86e956138",
+      "path": "attempts/v1.webp",
+      "sha256": "2eb336db6081afe9518d970439d4bf667ba5f75cc1da191b1aef25bf893f0a73",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-3112586d-a247-4380-9f23-03a72f54d085.png",
+      "sourcePath": "../../../../../attempts/s7-07/sources/v2.png",
+      "sourceSha256": "4c513915b31c0dcddd52dc52c44b476e8b555f89f0e53b06210a302b75eb1ac1",
+      "path": "attempts/v2.webp",
+      "sha256": "7a4f7d11ba75ae4fe49b7cb1d2a0491c9b2b34ff1009241e80b39cd929f0f01a",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-327c1280-4975-4118-bb8e-7f63b895d04d.png",
+      "sourcePath": "../../../../../attempts/s7-07/sources/v3.png",
+      "sourceSha256": "b0160de5f6de34fdedab41e4922f6eb266ed769a52adc55008d9bb9973f2ca22",
+      "path": "attempts/v3.webp",
+      "sha256": "cef736e5f14f61485f9e543cf230d3a1f09d9b52edba145242f0c73c30686499",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Burnt engines, Shu falling back helping the wounded, Wei cheering under the indigo banner, relief cavalry on the ridge; v3 has an anachronistic counterweight trebuchet.",
+    "runtime": [
+      {
+        "path": "runtime/illustration.webp",
+        "size": [
+          1536,
+          1024
+        ],
+        "quality": 88
+      },
+      {
+        "path": "runtime/illustration-small.webp",
+        "size": [
+          768,
+          512
+        ],
+        "quality": 85
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}

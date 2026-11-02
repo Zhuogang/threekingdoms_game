@@ -1,0 +1,83 @@
+{
+  "id": "s7-04",
+  "folder": "s7-04-fire-arrows",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [
+    "s7-01-key-visual/style-reference.png (S2-01 map crop)"
+  ],
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: the defenders burn the scaling ladders. Dusk, snow falling. Along the south wall of Chencang, Wei archers in deep indigo lean between the crenels and loose fire arrows downward, the burning arrowheads drawing short streaks of light. Two Shu-Han scaling ladders leaning against the wall have caught fire; flames climb their rails and black smoke rolls up the brick face; Shu-Han soldiers in jade green scramble down the ladders and fall back across the half-filled trench, shields raised. In the foreground, the wheeled ladder carts and a few soldiers with earth baskets, lit orange by the fire. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+  "status": "picked and checked by agent (no seals, text or gore; corners inspected at full size)",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-597e090a-aa23-4f9a-a15c-1873710db18e.png",
+      "sourcePath": "../../../../../attempts/s7-04/sources/v1.png",
+      "sourceSha256": "e7008954c199941c2eec409878b8c03e42910228a6fa61e5fb073f7d1d2965d7",
+      "path": "attempts/v1.webp",
+      "sha256": "a6db78f65d58349e78b42efb51742cbc71457e834e911de862874213df51d6a9",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-aba62800-a30c-42d4-aed8-0d3fc17d7fbd.png",
+      "sourcePath": "../../../../../attempts/s7-04/sources/v2.png",
+      "sourceSha256": "eb56dfbfe6857da8f2fa4d7166be73c63868d852bae2e6b32122334c403b376a",
+      "path": "attempts/v2.webp",
+      "sha256": "842154887ffe0263395ff2b68baa4f278cc4d6a46434b3ab9aa76c9901f285d7",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-5afe8505-4955-417d-9525-5133a7e043da.png",
+      "sourcePath": "../../../../../attempts/s7-04/sources/v3.png",
+      "sourceSha256": "d989f3b0becddd8e07cd768715399269cbe3bbb8544bae24714723a8ef3bbc88",
+      "path": "attempts/v3.webp",
+      "sha256": "422dd99e4b07386c75a3b436cad17cfc95845799e55aa1dae346534b843616cb",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Wei archers loose fire arrows down, two ladders burn, Shu fall back with earth baskets; v1 and v3 copied the map crop layout including the city interior.",
+    "runtime": [
+      {
+        "path": "runtime/illustration.webp",
+        "size": [
+          1536,
+          1024
+        ],
+        "quality": 88
+      },
+      {
+        "path": "runtime/illustration-small.webp",
+        "size": [
+          768,
+          512
+        ],
+        "quality": 85
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}
