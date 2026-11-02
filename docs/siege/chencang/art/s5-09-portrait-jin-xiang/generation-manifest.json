@@ -1,0 +1,97 @@
+{
+  "id": "s5-09",
+  "folder": "s5-09-portrait-jin-xiang",
+  "name": "立绘：靳详",
+  "slug": "jinxiang",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh), no reference images, v0.3 portrait brief",
+  "brief": "docs/assets/v0.3-portraits/three_kingdoms_portrait_master_assets_98.json (base_prompt) plus the v0.3 production emphasis",
+  "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game.\n\nOriginal imagined historical character illustration, one Chinese person only, centered head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose.\n\nElegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained late-Han / Three Kingdoms period clothing and headwear.\n\nNo frame, no lettering, no Chinese characters, no watermark, no scenery, no extra people, no modern clothing, no exaggerated fantasy armor, no commercial-game copy. Make this person clearly distinctive in facial structure, age, hair, expression, clothing, and headwear.\n\nSubject: Portray 靳详 (jinxiang) as a Chinese historical figure of the late Han / Three Kingdoms era. Age impression: 35-45. Face: open, earnest face with gentle features and slightly anxious eyes. Facial hair: thin neat moustache and a small pointed beard. Headwear / hairstyle: soft black civilian headcloth (介帻). Distinctive cues: persuasive envoy and old acquaintance; plain dark-green travelling robe with a fur-trimmed cloak, no armour. Character goal: must read as a civilian go-between, earnest rather than cunning. Avoid: armour, weapons, a scholar-strategist look like Zhuge Liang.\n\nProduction emphasis:  Square 1:1 canvas, zoomed-out bust framing: the top 10 percent of canvas is plain parchment; entire headwear and hair lie below that margin, full head and shoulders visible; unobscured face. Every individual must have a distinct natural face, matching the supplied age and identity cues.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-4f9dd3f8-4269-49af-b9ab-97847abb4cb9.png",
+      "sourcePath": "../../../../../attempts/s5-09/sources/v1.png",
+      "sourceSha256": "7957ff7300b4588fe519c284d8e7370cd20460047d49341482f3ba959c56cd5e",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "7a513ab4e5ab5fee49f5bab83b3c4a825991c179450d151a5c021258bbd2458c",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-8ad11b35-f45b-4ef6-b893-7895dffdd480.png",
+      "sourcePath": "../../../../../attempts/s5-09/sources/v2.png",
+      "sourceSha256": "137b4652d4de44667e3e4f266e84364790447afa2d59c23c97fbf27317fc43c6",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "6f2e822383bd882ee3d5382a8c31c8db3a7e0a46e61b51169d7bb7b8e3b48b1a",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-1a037a2f-3766-42a1-a244-bb2b69d9582d.png",
+      "sourcePath": "../../../../../attempts/s5-09/sources/v3.png",
+      "sourceSha256": "b827d1c24c65e6ea4bc57f442e17ca6d1f63fce836099c9ab4cdb957c29c79f8",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "68a16a60a5b3defac0b9330e2b0b9d6f95c1bec495d8a8b88489ac7bc9cb3727",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Earnest, slightly anxious civilian envoy (headcloth, travelling cloak, no armour); clearly not a strategist like Zhuge Liang.",
+    "runtime": [
+      {
+        "path": "runtime/jinxiang.webp",
+        "size": 256,
+        "quality": 87,
+        "sha256": "6cd014992ffc86df1164a77448bc09ac0ee78ea56811c4157d75285b18f930c7"
+      },
+      {
+        "path": "runtime/jinxiang-small.webp",
+        "size": 128,
+        "quality": 82,
+        "sha256": "4ca657456102328ba25eed22949d78efdd17aeba7a9c1077edd81e5b03fff40a"
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}

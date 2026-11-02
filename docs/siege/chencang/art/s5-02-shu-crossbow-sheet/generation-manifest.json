@@ -1,0 +1,209 @@
+{
+  "id": "s5-02",
+  "folder": "s5-02-shu-crossbow-sheet",
+  "name": "蜀弓弩兵姿态表",
+  "directory": "docs/siege/chencang/art/s5-02-shu-crossbow-sheet",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-05",
+    "id": "v5",
+    "path": "../s1-05-shu-halberd-sheet/attempts/v5.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Shu-Han crossbowman for a strategy game, the same soldier drawn nine times, from the same army as the halberdier on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the cap, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready, crossbow held across the body; marching mid-stride, crossbow on the shoulder; shooting, crossbow raised to the shoulder and aimed in the facing direction.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, but lighter than the halberdier: a leather lamellar vest instead of full iron armour, a close-fitting leather cap with ear flaps instead of the iron helmet, no shield, a Han crossbow (弩) with a bronze trigger mechanism, and a quiver of bolts at the right hip. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-56e2169c-8cd0-4a54-8450-4274add299f7.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-02/sources/v1.png",
+      "sourceSha256": "f80bd39a706bc58741d35c2282996f6ef87696e1471b0d6fce358070e8d95499",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1031076,
+      "sha256": "681127a96ae0c620adadb086c0f7487199076e30c7a5374d7d6caedf19ad4df2",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          253
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          254,
+          1,
+          253
+        ],
+        [
+          251,
+          4,
+          253
+        ]
+      ],
+      "registration": "nine poses, crossbow and quiver clear"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Shu-Han crossbowman for a strategy game, the same soldier drawn nine times, from the same army as the halberdier on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the cap, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready, crossbow held across the body; marching mid-stride, crossbow on the shoulder; shooting, crossbow raised to the shoulder and aimed in the facing direction.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, but lighter than the halberdier: a leather lamellar vest instead of full iron armour, a close-fitting leather cap with ear flaps instead of the iron helmet, no shield, a Han crossbow (弩) with a bronze trigger mechanism, and a quiver of bolts at the right hip. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-d1a3f1b9-9340-4787-bf89-7329240c22f2.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-02/sources/v2.png",
+      "sourceSha256": "24e298e3794a1924c6d486f0eab38a0d365bca33b01f0dc0775429ea8ae0cdc8",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1084312,
+      "sha256": "c87f5555b129f2fd688e864e27bf54b7d0ef56cee64736ea0c33fbf89df1e45c",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          4,
+          253
+        ],
+        [
+          253,
+          8,
+          252
+        ],
+        [
+          253,
+          2,
+          253
+        ],
+        [
+          252,
+          6,
+          253
+        ]
+      ],
+      "registration": "march row holds the crossbow upright"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Shu-Han crossbowman for a strategy game, the same soldier drawn nine times, from the same army as the halberdier on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the cap, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready, crossbow held across the body; marching mid-stride, crossbow on the shoulder; shooting, crossbow raised to the shoulder and aimed in the facing direction.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, but lighter than the halberdier: a leather lamellar vest instead of full iron armour, a close-fitting leather cap with ear flaps instead of the iron helmet, no shield, a Han crossbow (弩) with a bronze trigger mechanism, and a quiver of bolts at the right hip. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-2e194e7b-b837-4aa1-a8e7-3e3deae1aae2.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-02/sources/v3.png",
+      "sourceSha256": "568107af3ba7cd541a433cd4e355f31f451cb5f4bb6a52bf6752955c4c7dd359",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1045638,
+      "sha256": "16aa1ff00174273df2c3b9590603a208386e8d647d617a97c965b464ddb8eaa8",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          2,
+          253
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "similar to v1"
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Readable crossbow poses; leather cap, no shield and the bolt quiver separate it from the halberdier.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "0a23a64122547e0d71b37d123cb4760df74795ee5b65ed50488bfb0fa44625e2",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "Front-row shooting aims to the side in every candidate (aiming straight at the viewer is hard to draw); acceptable."
+    ]
+  },
+  "guide": "guide.png"
+}

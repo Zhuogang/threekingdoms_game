@@ -1,0 +1,209 @@
+{
+  "id": "s5-01",
+  "folder": "s5-01-shu-siege-poses",
+  "name": "蜀步兵攀梯、运土",
+  "directory": "docs/siege/chencang/art/s5-01-shu-siege-poses",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-05",
+    "id": "v5",
+    "path": "../s1-05-shu-halberd-sheet/attempts/v5.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Shu-Han halberd infantryman as on the second attached sheet, for a strategy game, drawn six times in siege work. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from behind (facing north, away from the viewer), climbing a scaling ladder that is NOT drawn (the ladder is a separate piece he will be placed on): reaching up with the right hand, left foot raised to the next rung; reaching up with the left hand, right foot raised; at the top, one leg swung up and over as if onto a wall top.\nBottom row, carrying earth to fill the city trench: seen from behind (north), marching with a wicker basket of earth on his right shoulder; seen from the side facing right (east), marching with the basket on his shoulder; seen from behind (north), tipping the basket forward so the earth pours out in front of him.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, a rounded iron helmet with a neck guard; for this work his ji halberd and small round wooden shield are slung on his back. No facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-d5889902-07f5-4759-bb64-470df8f3a12f.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-01/sources/v1.png",
+      "sourceSha256": "74a183e494e61c2973e1393444b13325b6a433248bbd339137cfeb8f58db829f",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1066742,
+      "sha256": "78c81a3a0131c628d6f7d17ed1f3177e90f74a654973d0875cfc20ace84ce2d5",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          253
+        ],
+        [
+          253,
+          6,
+          253
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "all six poses read; tipping pours sideways"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Shu-Han halberd infantryman as on the second attached sheet, for a strategy game, drawn six times in siege work. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from behind (facing north, away from the viewer), climbing a scaling ladder that is NOT drawn (the ladder is a separate piece he will be placed on): reaching up with the right hand, left foot raised to the next rung; reaching up with the left hand, right foot raised; at the top, one leg swung up and over as if onto a wall top.\nBottom row, carrying earth to fill the city trench: seen from behind (north), marching with a wicker basket of earth on his right shoulder; seen from the side facing right (east), marching with the basket on his shoulder; seen from behind (north), tipping the basket forward so the earth pours out in front of him.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, a rounded iron helmet with a neck guard; for this work his ji halberd and small round wooden shield are slung on his back. No facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-5d687076-d171-4d15-8f17-96e3cba8ac1b.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-01/sources/v2.png",
+      "sourceSha256": "b6c6927c461335e67b3cb33387e32726f737fc9f32b88c86a7a86de235b3a654",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1057070,
+      "sha256": "4405c5019b6955ab409e2862597aecb10c4e988c1d1bc946e3b0084d529cfaa9",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          254
+        ],
+        [
+          253,
+          5,
+          251
+        ],
+        [
+          253,
+          1,
+          251
+        ],
+        [
+          251,
+          3,
+          253
+        ]
+      ],
+      "registration": "clearest climbing sequence (hands and feet alternate, leg over at the top)"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Shu-Han halberd infantryman as on the second attached sheet, for a strategy game, drawn six times in siege work. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from behind (facing north, away from the viewer), climbing a scaling ladder that is NOT drawn (the ladder is a separate piece he will be placed on): reaching up with the right hand, left foot raised to the next rung; reaching up with the left hand, right foot raised; at the top, one leg swung up and over as if onto a wall top.\nBottom row, carrying earth to fill the city trench: seen from behind (north), marching with a wicker basket of earth on his right shoulder; seen from the side facing right (east), marching with the basket on his shoulder; seen from behind (north), tipping the basket forward so the earth pours out in front of him.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots, a rounded iron helmet with a neck guard; for this work his ji halberd and small round wooden shield are slung on his back. No facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-67532d7e-58d2-4c21-a2d4-b14a207c34a5.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-01/sources/v3.png",
+      "sourceSha256": "42b401d7c1c8ea420931ff76b22a039f004ce19ea6a9d3205928d5ac979e9eba",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1099144,
+      "sha256": "7015761eb84d536a767c2baffd647b5a154aefca0673b373ab63508abf0ef609",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          1,
+          253
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "climbing poses similar to v1"
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Clearest climbing sequence; same soldier as S1-05 with halberd and shield on his back; ladder not drawn as asked.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "c88780fe15df4e45bb808b118dc5d41205830cf324d4b74ec52c560a71dd281e",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "Earth is tipped out to the side and down rather than straight north in every candidate; reads fine at 36px."
+    ]
+  },
+  "guide": "guide.png"
+}

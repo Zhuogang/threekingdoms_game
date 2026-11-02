@@ -1,0 +1,137 @@
+{
+  "sheet": "selected-transparent.png",
+  "cols": 2,
+  "rows": 2,
+  "gameScale": 0.12,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 64 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "north-idle",
+      "cell": [
+        0,
+        0,
+        768,
+        512
+      ],
+      "box": [
+        217,
+        43,
+        305,
+        445
+      ],
+      "anchor": [
+        126.7,
+        445
+      ],
+      "path": "poses/north-idle.png",
+      "game": {
+        "path": "poses-game/north-idle.png",
+        "size": [
+          37,
+          53
+        ],
+        "anchor": [
+          15.2,
+          53.4
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "north-command",
+      "cell": [
+        768,
+        0,
+        768,
+        512
+      ],
+      "box": [
+        985,
+        25,
+        338,
+        463
+      ],
+      "anchor": [
+        126.7,
+        463
+      ],
+      "path": "poses/north-command.png",
+      "game": {
+        "path": "poses-game/north-command.png",
+        "size": [
+          41,
+          56
+        ],
+        "anchor": [
+          15.2,
+          55.6
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-idle",
+      "cell": [
+        0,
+        512,
+        768,
+        512
+      ],
+      "box": [
+        235,
+        553,
+        282,
+        444
+      ],
+      "anchor": [
+        140.2,
+        444
+      ],
+      "path": "poses/south-idle.png",
+      "game": {
+        "path": "poses-game/south-idle.png",
+        "size": [
+          34,
+          53
+        ],
+        "anchor": [
+          16.8,
+          53.3
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-command",
+      "cell": [
+        768,
+        512,
+        768,
+        512
+      ],
+      "box": [
+        982,
+        553,
+        304,
+        444
+      ],
+      "anchor": [
+        160.7,
+        444
+      ],
+      "path": "poses/south-command.png",
+      "game": {
+        "path": "poses-game/south-command.png",
+        "size": [
+          36,
+          53
+        ],
+        "anchor": [
+          19.3,
+          53.3
+        ]
+      },
+      "droppedIslands": 0
+    }
+  ]
+}

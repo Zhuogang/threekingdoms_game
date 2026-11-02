@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S5 出图审阅</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:16px; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  .viewport { overflow:auto; border:1px solid var(--line); }
+  .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  @media (max-width:900px) { .row { grid-template-columns:1fr; } }
+  figure { margin:0; }
+  figure img { max-width:100%; height:auto; display:block; border:1px solid var(--line); }
+  figcaption { color:var(--muted); font-size:13px; margin-top:4px; }
+  .strip { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; background:#efeadf; border:1px solid var(--line); padding:10px; }
+  .strip figure { text-align:center; }
+  .strip img { border:0; image-rendering:auto; }
+  .strip figcaption { font-size:11px; }
+  button { border:1px solid var(--line); background:#fff; padding:3px 10px; border-radius:4px; cursor:pointer; }
+</style>
+</head>
+<body>
+<header>
+  <b>陈仓 S5 部队与武将审阅</b>
+  <a href="#scene">摆在图上</a>
+  <span id="nav"></span>
+  <span class="note" style="margin:0">选择都是暂定，待你确认</span>
+</header>
+<main>
+<section id="scene">
+  <h2>全部部队在场（游戏 100% 大小，小兵约 36px）</h2>
+  <p class="note">在 S4 的场景上加部队：南墙头魏弓兵、魏步兵、郝昭和"郝"字旗；西边云梯上蜀兵在攀，堑边运土；堑外蜀弩兵、蜀戟兵（S1-05）各一队带认旗；诸葛亮四轮车和丞相帅旗在后。阶段关口是"全部部队在场时可读"，再切灰度看蜀魏分不分得开。</p>
+  <p><button id="grey">切换灰度</button></p>
+  <div class="viewport"><img id="sceneimg" src="s5-scene.webp" width="1536" height="768" alt="S5 scene"></div>
+</section>
+<div id="sheets"></div>
+</main>
+<script>
+const ART = '../docs/siege/chencang/art/';
+const SHEETS = [
+  ['s5-01-shu-siege-poses', 's5-01', 'S5-01 蜀步兵攀梯、运土', 'v2', '攀梯三格手脚交替最清楚，翻墙那格看得懂；和 S1-05 是同一个兵。倒土三张都往侧下方倒，36px 下看得懂。', ['north-climb-a','north-climb-b','north-climb-top','north-carry','east-carry','north-dump']],
+  ['s5-02-shu-crossbow-sheet', 's5-02', 'S5-02 蜀弓弩兵', 'v1', '弩和箭箙清楚；皮帽、无盾，和戟兵一眼分得开。正面射击三张都朝侧面瞄（正对镜头很难画）。', ['north-idle','north-march','north-shoot','east-idle','east-march','east-shoot','south-idle','south-march','south-shoot']],
+  ['s5-03-wei-infantry-sheet', 's5-03', 'S5-03 魏步兵', 'v1', '背面一行看得出是背面（没有脸、没有带扣），格挡那一列大盾举过头；和 S1-06 魏弓兵同一支军队。', ['north-idle','north-block','north-attack','east-idle','east-block','east-attack','south-idle','south-block','south-attack']],
+  ['s5-04-banners', 's5-04', 'S5-04 旗帜', 'v2', '旗面都空着（字和颜色由程序加），旗杆竖直，丞相帅旗最气派。第一次出图的排除项里还写着"不画旗"，停掉重出。', ['unit-flag','chancellor-banner','hao-banner']],
+  ['s5-05-zhuge-liang-carriage', 's5-05', 'S5-05 诸葛亮乘四轮车', 'v1', '羽扇纶巾一眼认得出，推车的两名蜀兵和 S1-05 一致。', ['north-idle','north-command','south-idle','south-command']],
+  ['s5-06-hao-zhao-wall', 's5-06', 'S5-06 郝昭城头形象', 'v3', '指挥那格按剑、另一手前指最清楚，背面披风最好；红披风、红缨在魏兵里一眼认得出。', ['south-idle','south-command','south-bow','east-idle','east-walk','north-idle']],
+];
+const PORTRAITS = [
+  ['s5-07-portrait-hao-zhao', 's5-07', 'S5-07 立绘：郝昭', 'v1', 'haozhao', '冷峻的边关守将，红缨铁盔、深靛披风，和张郃分得开。'],
+  ['s5-08-portrait-wang-sheng', 's5-08', 'S5-08 立绘：王生', 'v2', 'wangsheng', '敦实、朴素，比郝昭粗壮，正脸 48px 也认得出。'],
+  ['s5-09-portrait-jin-xiang', 's5-09', 'S5-09 立绘：靳详', 'v2', 'jinxiang', '恳切、略带不安的文人说客，没有甲胄，和诸葛亮分得开。'],
+];
+const nav = document.getElementById('nav'), host = document.getElementById('sheets');
+for (const [folder, short, title, pick, note, poses] of SHEETS) {
+  nav.insertAdjacentHTML('beforeend', `<a href="#${short}" style="margin-right:10px">${title.split(' ')[0]}</a>`);
+  const s = document.createElement('section'); s.id = short;
+  s.innerHTML = `<h2>${title}（定 <span class="pick">${pick}</span>）</h2><p class="note">${note}</p>
+    <p class="note">切出的姿态，游戏大小（左）和 3 倍放大（右）：</p>
+    <div class="row"><div class="strip">${poses.map(p => `<figure><img src="${ART}${folder}/poses-game/${p}.png"><figcaption>${p}</figcaption></figure>`).join('')}</div>
+    <div class="strip">${poses.map(p => `<figure><img class="x3" data-src="${ART}${folder}/poses-game/${p}.png"><figcaption>${p}</figcaption></figure>`).join('')}</div></div>
+    <figure style="margin-top:12px"><img loading="lazy" src="${short}/comparison.png"><figcaption>全部候选（品红底原图）</figcaption></figure>`;
+  host.appendChild(s);
+}
+for (const [folder, short, title, pick, slug, note] of PORTRAITS) {
+  nav.insertAdjacentHTML('beforeend', `<a href="#${short}" style="margin-right:10px">${title.split(' ')[0]}</a>`);
+  const s = document.createElement('section'); s.id = short;
+  s.innerHTML = `<h2>${title}（定 <span class="pick">${pick}</span>）</h2><p class="note">${note}</p>
+    <div class="strip">
+      <figure><img src="${ART}${folder}/runtime/${slug}.webp" width="256"><figcaption>选定 256px</figcaption></figure>
+      <figure><img src="${ART}${folder}/runtime/${slug}-small.webp" width="48"><figcaption>48px</figcaption></figure>
+      <figure><img src="../public/assets/v03/portraits/zhugeliang.webp" width="256"><figcaption>对照：诸葛亮</figcaption></figure>
+      <figure><img src="../public/assets/v03/portraits/caozhen.webp" width="256"><figcaption>对照：曹真</figcaption></figure>
+    </div>
+    <figure style="margin-top:12px"><img loading="lazy" src="${short}/comparison.png"><figcaption>全部候选</figcaption></figure>`;
+  host.appendChild(s);
+}
+document.querySelectorAll('img.x3').forEach((img) => {
+  const probe = new Image();
+  probe.onload = () => { img.width = probe.naturalWidth * 3; img.height = probe.naturalHeight * 3; img.src = probe.src; };
+  probe.src = img.dataset.src;
+});
+let grey = false;
+document.getElementById('grey').onclick = () => { grey = !grey; document.getElementById('sceneimg').src = grey ? 's5-scene-grey.webp' : 's5-scene.webp'; };
+</script>
+</body>
+</html>

@@ -2254,6 +2254,352 @@ const ENGINE_ASSETS = [
   }),
 ];
 
+// ---------------------------------------------------------------------------
+// S5 troops and commanders (MVP plan §8.2, art plan E01–E07, F01–F02).
+// Pose sheets work like S1-05/S1-06: a guide sets the cells, baselines and
+// figure height; the approved S1 sheets are uploaded so every sheet draws the
+// same armies. Portraits follow the v0.3 portrait brief
+// (docs/assets/v0.3-portraits/), one square image each, no reference.
+const SHU_SHEET =
+  '`docs/siege/chencang/art/s1-05-shu-halberd-sheet/attempts/v5.webp`（第二张，蜀戟兵定稿）';
+const WEI_SHEET =
+  '`docs/siege/chencang/art/s1-06-wei-archer-sheet/attempts/v4.webp`（第二张，魏弓兵定稿）';
+const SHU_COAT =
+  'a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots';
+const WEI_COAT =
+  'a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold';
+const UNIT_CAMERA =
+  'Camera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.';
+const UNIT_LIGHT =
+  'Light: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.';
+const unitStyle = (whose) =>
+  `Style: match the second attached sheet (${whose}) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.`;
+const grid = (cols, rows, [w, h]) =>
+  `${cols} by ${rows} grid of equal cells (${w}×${h} pixels each)`;
+const poseSheet = ({
+  id,
+  zh,
+  guide,
+  about,
+  cells,
+  subject,
+  rows,
+  columns,
+  figure,
+  extra = [],
+  ref,
+  whose,
+  checks,
+  exclude = EXCLUDE_UNIT_SHEET,
+}) => ({
+  id,
+  stage: 'S5',
+  zh,
+  size: [1536, 1024],
+  guide,
+  about,
+  prompts: () => [
+    {
+      text: [
+        [
+          `Subject: ${subject} Arrange the sheet as a ${grid(guide.cols, guide.rows, cells)} exactly as in the first attached guide: one figure per cell, every figure the same size (${figure}), feet on the solid baseline.`,
+          rows,
+          columns,
+          UNIT_CAMERA,
+          ...extra,
+          unitStyle(whose),
+          UNIT_LIGHT,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        SPRITE,
+        exclude,
+      ].join('\n\n'),
+    },
+  ],
+  uploads: ['`guide.png`', ref],
+  checks: [
+    '把图缩到人物约 36px 高看：每个朝向、每个姿势都看得懂，转成灰度也分得出蜀魏。',
+    '和参考的 S1 定稿表是同一支军队、同一套画风；各格是同一个人，脚都踩在基线上。',
+    ...checks,
+  ],
+  naming: '依次命名 `v1.webp`、`v2.webp`……',
+});
+
+const PORTRAIT_BRIEF = [
+  'Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game.',
+  'Original imagined historical character illustration, one Chinese person only, centered head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose.',
+  'Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained late-Han / Three Kingdoms period clothing and headwear.',
+  'No frame, no lettering, no Chinese characters, no watermark, no scenery, no extra people, no modern clothing, no exaggerated fantasy armor, no commercial-game copy. Make this person clearly distinctive in facial structure, age, hair, expression, clothing, and headwear.',
+];
+const PORTRAIT_FRAMING =
+  'Production emphasis:  Square 1:1 canvas, zoomed-out bust framing: the top 10 percent of canvas is plain parchment; entire headwear and hair lie below that margin, full head and shoulders visible; unobscured face. Every individual must have a distinct natural face, matching the supplied age and identity cues.';
+const portrait = ({ id, zh, slug, name, about, age, face, hair, headwear, cues, goal, avoid }) => ({
+  id,
+  stage: 'S5',
+  zh,
+  size: [1024, 1024],
+  portrait: true,
+  about,
+  prompts: () => [
+    {
+      text: [
+        ...PORTRAIT_BRIEF,
+        `Subject: Portray ${name} (${slug}) as a Chinese historical figure of the late Han / Three Kingdoms era. Age impression: ${age}. Face: ${face}. Facial hair: ${hair}. Headwear / hairstyle: ${headwear}. Distinctive cues: ${cues}. Character goal: ${goal}. Avoid: ${avoid}.`,
+        PORTRAIT_FRAMING,
+      ].join('\n\n'),
+    },
+  ],
+  uploads: ['不上传参考图（和 v0.3 立绘同一套做法）。'],
+  checks: [
+    '和 `public/assets/v03/portraits/` 里的诸葛亮、姜维、曹真放在一起，是同一套画风、同样的取景和底色。',
+    '缩到 48px 还认得出脸；和郝昭、王生、靳详彼此一眼分得开。',
+  ],
+  naming:
+    '依次命名 `v1.webp`、`v2.webp`……（1024×1024）。选定后另存运行时用的 256px 和 128px（`-small`）webp，同 v0.3。',
+});
+
+// Chosen attempt per S5 asset, with why (details in generation-manifest.json).
+const ROSTER_PICKS = {
+  's5-01-shu-siege-poses': [
+    'v2.webp',
+    '攀梯三格手脚交替最清楚，翻墙那格看得懂；和 S1-05 是同一个兵',
+  ],
+  's5-02-shu-crossbow-sheet': [
+    'v1.webp',
+    '弩和箭箙清楚；皮帽、无盾，和戟兵一眼分得开。正面射击三张都朝侧面瞄（正对镜头很难画），可以接受',
+  ],
+  's5-03-wei-infantry-sheet': [
+    'v1.webp',
+    '背面一行看得出是背面（没有脸、没有带扣，和 S1-06 的背面一致），格挡那一列大盾举过头',
+  ],
+  's5-04-banners': [
+    'v2.webp',
+    '旗面都空着，旗杆竖直，丞相帅旗最气派。第一次出图时排除项里还写着"不画旗"，停掉重出',
+  ],
+  's5-05-zhuge-liang-carriage': ['v1.webp', '羽扇纶巾一眼认得出，推车的两名蜀兵和 S1-05 一致'],
+  's5-06-hao-zhao-wall': ['v3.webp', '指挥那格按剑、另一手前指最清楚，背面披风最好'],
+  's5-07-portrait-hao-zhao': ['v1.webp', '冷峻的边关守将，红缨铁盔、深靛披风，和张郃分得开'],
+  's5-08-portrait-wang-sheng': ['v2.webp', '敦实、朴素，比郝昭粗壮，正脸 48px 也认得出'],
+  's5-09-portrait-jin-xiang': ['v2.webp', '恳切、略带不安的文人说客，没有甲胄，和诸葛亮分得开'],
+};
+const withRosterPick = (asset) => {
+  const [final, why] = ROSTER_PICKS[asset.id] ?? [];
+  if (!final) return asset;
+  const files = asset.portrait
+    ? `运行时用的 256px 和 128px 在 \`runtime/\`（同 v0.3 的质量设置）`
+    : `透明版 \`selected-transparent.png\` 由 \`attempts/key.py\` 确定性抠出品红；逐格切出的姿态在 \`poses/\`，游戏尺寸的在 \`poses-game/\`，脚底锚点见 \`poses.json\`（\`attempts/cut_poses.py\` 切的，不重画）`;
+  return {
+    ...asset,
+    final,
+    about: [
+      ...asset.about,
+      `**2026-11-02 选定 \`attempts/${final}\`**（待你确认）：${why}。${files}；每张的提示词、源文件和选择理由记在 \`generation-manifest.json\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh）。`,
+    ],
+  };
+};
+const ROSTER_ASSETS = [
+  poseSheet({
+    id: 's5-01-shu-siege-poses',
+    zh: 'S5-01 蜀步兵攀梯、运土',
+    guide: { cols: 3, rows: 2, figure: 300, foot: 56 },
+    cells: [512, 512],
+    about: [
+      '3×2 宫格，每格 512×512，同 S1-06 的版式。第一行攀梯（背面，朝北）：伸手、迈步、翻上墙头；第二行运土：背面扛土筐行进、侧面（朝东）扛土筐行进、背面把土倒下去。',
+      '同一个 S1-05 戟兵：攀梯和运土时戟和盾背在背上。梯子是 S4-02 的分件，这里不画，游戏把人摆在梯上。',
+    ],
+    subject:
+      'a character pose sheet of the same Shu-Han halberd infantryman as on the second attached sheet, for a strategy game, drawn six times in siege work.',
+    figure: 'about 300 pixels from the soles to the top of the helmet, up to the dashed line',
+    rows: [
+      'Top row, all seen from behind (facing north, away from the viewer), climbing a scaling ladder that is NOT drawn (the ladder is a separate piece he will be placed on): reaching up with the right hand, left foot raised to the next rung; reaching up with the left hand, right foot raised; at the top, one leg swung up and over as if onto a wall top.',
+      'Bottom row, carrying earth to fill the city trench: seen from behind (north), marching with a wicker basket of earth on his right shoulder; seen from the side facing right (east), marching with the basket on his shoulder; seen from behind (north), tipping the basket forward so the earth pours out in front of him.',
+    ].join('\n'),
+    columns: '',
+    extra: [
+      `The soldier: ${SHU_COAT}, a rounded iron helmet with a neck guard; for this work his ji halberd and small round wooden shield are slung on his back. No facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.`,
+    ],
+    ref: SHU_SHEET,
+    whose: 'the Shu-Han halberdier pose sheet',
+    checks: [
+      '攀梯三格手脚交替，看得出在往上爬；梯子没画。',
+      '运土三格的土筐一样大，倒土那格土是往前（北）倒的。',
+    ],
+  }),
+  poseSheet({
+    id: 's5-02-shu-crossbow-sheet',
+    zh: 'S5-02 蜀弓弩兵姿态表',
+    guide: { cols: 3, rows: 3, figure: 240, foot: 24 },
+    cells: [512, 341],
+    about: [
+      '3×3 宫格，每格约 512×341，同 S1-05 的版式：行是背面（朝北）、侧面（朝东）、正面（朝南），列是待机、行进、射击。',
+      '和戟兵同一支蜀军：同样的绿袍红边，但轻甲、皮盔、无盾，手持弩，腰挂箭箙，剪影要和戟兵分得开。井阑上射击用射击这一格。',
+    ],
+    subject:
+      'a character pose sheet of one Shu-Han crossbowman for a strategy game, the same soldier drawn nine times, from the same army as the halberdier on the second attached sheet.',
+    figure: 'about 240 pixels from the soles to the top of the cap, up to the dashed line',
+    rows: 'Rows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).',
+    columns:
+      'Columns, left to right: standing ready, crossbow held across the body; marching mid-stride, crossbow on the shoulder; shooting, crossbow raised to the shoulder and aimed in the facing direction.',
+    extra: [
+      `The soldier: ${SHU_COAT}, but lighter than the halberdier: a leather lamellar vest instead of full iron armour, a close-fitting leather cap with ear flaps instead of the iron helmet, no shield, a Han crossbow (弩) with a bronze trigger mechanism, and a quiver of bolts at the right hip. No facial features. Identical gear, colours and proportions in every cell.`,
+    ],
+    ref: SHU_SHEET,
+    whose: 'the Shu-Han halberdier pose sheet',
+    checks: ['和戟兵一眼分得开：无盾、皮帽、弩。', '射击那一列弩都朝着这一行的朝向。'],
+  }),
+  poseSheet({
+    id: 's5-03-wei-infantry-sheet',
+    zh: 'S5-03 魏步兵姿态表',
+    guide: { cols: 3, rows: 3, figure: 240, foot: 24 },
+    cells: [512, 341],
+    about: [
+      '3×3 宫格，每格约 512×341：行是背面（朝北）、侧面（朝东）、正面（朝南），列是待机、格挡、攻击。守城时多是正面。',
+      '和 S1-06 魏弓兵同一支魏军：深靛袍、黑漆甲；环首刀加长方大盾，和蜀戟兵（戟、小圆盾）分得开。',
+    ],
+    subject:
+      'a character pose sheet of one Wei infantryman for a strategy game, the same soldier drawn nine times, from the same army as the archer on the second attached sheet.',
+    figure: 'about 240 pixels from the soles to the top of the helmet, up to the dashed line',
+    rows: 'Rows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).',
+    columns:
+      'Columns, left to right: standing ready behind his shield; blocking, the shield raised high and braced against a blow from above; attacking, slashing forward with the sabre past the shield.',
+    extra: [
+      `The soldier: ${WEI_COAT}, a round iron helmet with a neck guard like the archer's, a ring-pommel sabre (环首刀) and a tall rectangular wooden shield faced with lacquered hide. No facial features. Identical gear, colours and proportions in every cell.`,
+    ],
+    ref: WEI_SHEET,
+    whose: 'the Wei archer pose sheet',
+    checks: [
+      '和 S1-06 魏弓兵放在一起是同一支军队。',
+      '格挡那一列盾举过头，能看懂是在挡上面砸下来的东西。',
+    ],
+  }),
+  poseSheet({
+    id: 's5-04-banners',
+    zh: 'S5-04 旗帜',
+    guide: { cols: 3, rows: 1, figure: 820, foot: 60 },
+    cells: [512, 1024],
+    about: [
+      '三面旗，每格 512×1024，旗杆底端踩在基线上：认旗（每支部队一面，旗面浅色，由程序按势力着色）、丞相帅旗（大旗，深红）、"郝"字旗（魏，深靛）。',
+      '旗面都留白，字由程序写；旗面画得平一点，飘动由程序做（MVP 计划 §8.3）。',
+    ],
+    subject:
+      'three separate flags for a strategy game, each on its own pole, one centred in each cell.',
+    figure: 'each pole from its foot on the baseline up to about the dashed line',
+    rows: [
+      'Left: a unit recognition flag (认旗): a slim bamboo pole with a small iron spearhead finial and a narrow vertical rectangular flag of plain off-white silk hanging from a crossbar near the top, with a short dark border; the flag face is left blank so the game can colour and letter it.',
+      "Middle: the chancellor's great banner (丞相帅旗): a tall heavy lacquered pole with a gilded finial and red tassels, carrying a large vertical deep-red silk banner with a black border and a scalloped edge; a large plain panel in the middle is left blank for a character the game writes.",
+      "Right: the Wei commander's banner of Hao Zhao (郝字旗): a sturdy pole with an iron finial carrying a square deep-indigo (#2f4a6e) silk banner with a white border; the middle is left blank for a character the game writes.",
+    ].join('\n'),
+    columns:
+      'Each flag hangs almost flat with only a gentle wave, seen from the front, so the game can animate it.',
+    extra: [],
+    ref: SHU_SHEET,
+    whose: 'the Shu-Han halberdier pose sheet',
+    // The flags are the subject here, so only figures and writing are excluded.
+    exclude: EXCLUDE_SPRITE.replace(
+      'people, soldiers, horses, flags, banners or pennants;',
+      'people, soldiers or horses; any writing, characters or emblems on the flags;',
+    ),
+    checks: [
+      '三面旗的旗面都是空的，没有任何字或花纹。',
+      '旗面平整、轻微飘动，方便程序做飘动；旗杆竖直。',
+    ],
+  }),
+  poseSheet({
+    id: 's5-05-zhuge-liang-carriage',
+    zh: 'S5-05 诸葛亮乘四轮车',
+    guide: { cols: 2, rows: 2, figure: 330, foot: 56 },
+    cells: [768, 512],
+    about: [
+      '2×2 宫格，每格 768×512：行是朝北（背面）、朝南（正面），列是端坐、挥扇指挥。人连车从轮底到纶巾顶约 330px，比小兵（300px）略高。',
+      '羽扇纶巾、鹤氅，坐四轮小车，由两名蜀兵在后推（战场武将形象，美术 F01）。和小兵一样不画五官。',
+    ],
+    subject:
+      'a character pose sheet of Zhuge Liang, the Shu-Han chancellor, seated in his small four-wheeled carriage (四轮车) and pushed by two Shu-Han soldiers, for a strategy game, drawn four times.',
+    figure:
+      'about 330 pixels from the bottom of the wheels to the top of his kerchief cap, up to the dashed line',
+    rows: 'Top row: the whole group seen from behind, heading north, away from the viewer (the two soldiers pushing at the near end). Bottom row: the group seen from the front, facing the viewer (south), the soldiers behind the carriage.',
+    columns:
+      'Left column: Zhuge Liang sitting upright and calm, the feather fan resting in his lap. Right column: commanding, the white feather fan raised and pointing forward.',
+    extra: [
+      `Zhuge Liang: a white crane-feather cloak (鹤氅) over a pale robe, a dark silk kerchief cap (纶巾), a white feather fan (羽扇); the carriage is a light open timber chair on four spoked wheels with a low railing and a small canopy-less seat. The two soldiers wear ${SHU_COAT} and rounded iron helmets, as on the second attached sheet. No facial features on anyone. Same carriage, figures and proportions in every cell.`,
+    ],
+    ref: SHU_SHEET,
+    whose: 'the Shu-Han halberdier pose sheet',
+    checks: [
+      '羽扇纶巾一眼认得出是诸葛亮；车是四轮的。',
+      '推车的两名蜀兵和 S1-05 戟兵是同一支军队。',
+    ],
+  }),
+  poseSheet({
+    id: 's5-06-hao-zhao-wall',
+    zh: 'S5-06 郝昭城头形象',
+    guide: { cols: 3, rows: 2, figure: 300, foot: 56 },
+    cells: [512, 512],
+    about: [
+      '3×2 宫格，每格 512×512：第一行正面（朝南）：按剑而立、拔剑指挥、张弓；第二行侧面（朝东）站立、侧面行进、背面（朝北）站立。',
+      '魏将：比 S1-06 魏弓兵的甲更重、有披风和红缨，站在城头时一眼认得出是主将（战场武将形象，美术 F01）。',
+    ],
+    subject:
+      'a character pose sheet of Hao Zhao, the Wei general defending Chencang, for a strategy game, the same man drawn six times, from the same army as the archer on the second attached sheet.',
+    figure:
+      'about 300 pixels from the soles to the top of the helmet, not counting its plume, up to the dashed line',
+    rows: [
+      'Top row, all seen from the front, facing the viewer (south): standing firm with his left hand on his sword hilt; commanding, his sword drawn and pointing forward and down over a wall; drawing a bow.',
+      'Bottom row: standing, seen from the side facing right (east); walking, seen from the side facing right; standing, seen from behind (north).',
+    ].join('\n'),
+    columns: '',
+    extra: [
+      `Hao Zhao: ${WEI_COAT}, but a general's heavier armour with shoulder guards, a dark red cloak, a round iron helmet with a short red plume, a straight sword at his hip and a bow on his back. No facial features. Identical gear, colours and proportions in every cell.`,
+    ],
+    ref: WEI_SHEET,
+    whose: 'the Wei archer pose sheet',
+    checks: ['放在魏弓兵、魏步兵中间，一眼看得出是主将（披风、红缨）。', '六格是同一个人。'],
+  }),
+  portrait({
+    id: 's5-07-portrait-hao-zhao',
+    zh: 'S5-07 立绘：郝昭',
+    slug: 'haozhao',
+    name: '郝昭',
+    about: ['魏将，太原人，镇守陈仓（MVP 计划 §4.2）。按 v0.3 立绘的同一套提示词结构出图。'],
+    age: '35-45',
+    face: 'lean, weathered, angular face with high cheekbones and a firm jaw',
+    hair: 'short dark beard and moustache, neatly kept',
+    headwear: 'plain practical iron helmet with a short red plume over a dark headcloth',
+    cues: 'unyielding frontier fortress commander; calm, stern, watchful eyes; worn but well-kept lamellar armour under a dark indigo cloak',
+    goal: 'must feel immovable and incorruptible, a soldier rather than a courtier',
+    avoid: 'flamboyant nobleman, old grizzled veteran, resemblance to Zhang He',
+  }),
+  portrait({
+    id: 's5-08-portrait-wang-sheng',
+    zh: 'S5-08 立绘：王生',
+    slug: 'wangsheng',
+    name: '王生',
+    about: ['魏将，郝昭的副将（《资治通鉴》载曹真派郝昭、王生守陈仓，MVP 计划 §4.2）。'],
+    age: '30-40',
+    face: 'broad, round, sturdy face with a heavy brow',
+    hair: 'thick drooping moustache and a short square chin beard',
+    headwear: 'low rounded iron cap with leather ear flaps',
+    cues: 'loyal, practical deputy; steady and watchful; plain dark lamellar armour, no cloak',
+    goal: "must read as Hao Zhao's reliable second: plainer and heavier-set than him",
+    avoid: 'looking like Hao Zhao, scholar, nobleman',
+  }),
+  portrait({
+    id: 's5-09-portrait-jin-xiang',
+    zh: 'S5-09 立绘：靳详',
+    slug: 'jinxiang',
+    name: '靳详',
+    about: ['郝昭的同乡，诸葛亮派他到城下两次劝降（开场，MVP 计划 §3）。是说客，不是武将。'],
+    age: '35-45',
+    face: 'open, earnest face with gentle features and slightly anxious eyes',
+    hair: 'thin neat moustache and a small pointed beard',
+    headwear: 'soft black civilian headcloth (介帻)',
+    cues: 'persuasive envoy and old acquaintance; plain dark-green travelling robe with a fur-trimmed cloak, no armour',
+    goal: 'must read as a civilian go-between, earnest rather than cunning',
+    avoid: 'armour, weapons, a scholar-strategist look like Zhuge Liang',
+  }),
+];
+
 const ASSETS = [
   {
     id: 's1-01-city-vignette',
@@ -2780,6 +3126,7 @@ const ASSETS = [
   }),
   ...STATE_ASSETS,
   ...ENGINE_ASSETS,
+  ...ROSTER_ASSETS.map(withRosterPick),
 ];
 
 // ---------------------------------------------------------------------------
@@ -2848,11 +3195,15 @@ function assetReadme(asset, prompts) {
 
 ${asset.about.map((line) => `- ${line}`).join('\n')}
 
-## 参考图
+${
+  asset.portrait
+    ? ''
+    : `## 参考图
 
 ![${image.replace('.png', '')}](${image})
 ${asset.guide ? '' : `\n叠图检查用 \`grid.png\`（透明底）：黑线是地面格子，红线是立体件的面，橙线是墙顶等顶面上的格子。\n`}
-## 上传与提示词
+`
+}## 上传与提示词
 
 尺寸 ${asset.size.join('×')}。上传：
 
@@ -2915,6 +3266,12 @@ ${table('S4')}
 
 和 S2-08 到 S2-11 一样是品红底的 2 倍分件表，上传 S1-02 当标准件，各件互不相干。燃烧态只画焦黑和余烬，火苗和烟由程序加（MVP 计划 §8.3）；朝西推行由程序把朝东那件左右翻转。
 
+## S5 部队与武将
+
+${table('S5')}
+
+姿态表的做法同 S1-05、S1-06：上传版式图 \`guide.png\` 和对应阵营的 S1 定稿表（蜀用 S1-05 v5，魏用 S1-06 v4），保证是同一支军队。旗面留白，字和颜色由程序加。立绘照 v0.3 立绘的提示词结构（\`docs/assets/v0.3-portraits/\`），不上传参考图。
+
 ## 每个文件夹里有什么
 
 - \`blockout.png\`（姿态表是 \`guide.png\`）：上传 ImageGen 的参考图。
@@ -2960,7 +3317,7 @@ for (const asset of ASSETS) {
       join(dir, 'guide.png'),
       png(...asset.size, 3, guideImage(...asset.size, cols, n, figure, foot)),
     );
-  } else {
+  } else if (asset.render) {
     rendered = asset.render();
     const { canvas, frame, masks, pieces, objects: drawn = objects } = rendered;
     const r = resolve(canvas);

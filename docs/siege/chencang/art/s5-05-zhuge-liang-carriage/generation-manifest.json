@@ -1,0 +1,207 @@
+{
+  "id": "s5-05",
+  "folder": "s5-05-zhuge-liang-carriage",
+  "name": "诸葛亮乘四轮车",
+  "directory": "docs/siege/chencang/art/s5-05-zhuge-liang-carriage",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-05",
+    "id": "v5",
+    "path": "../s1-05-shu-halberd-sheet/attempts/v5.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Zhuge Liang, the Shu-Han chancellor, seated in his small four-wheeled carriage (四轮车) and pushed by two Shu-Han soldiers, for a strategy game, drawn four times. Arrange the sheet as a 2 by 2 grid of equal cells (768×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 330 pixels from the bottom of the wheels to the top of his kerchief cap, up to the dashed line), feet on the solid baseline.\nTop row: the whole group seen from behind, heading north, away from the viewer (the two soldiers pushing at the near end). Bottom row: the group seen from the front, facing the viewer (south), the soldiers behind the carriage.\nLeft column: Zhuge Liang sitting upright and calm, the feather fan resting in his lap. Right column: commanding, the white feather fan raised and pointing forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nZhuge Liang: a white crane-feather cloak (鹤氅) over a pale robe, a dark silk kerchief cap (纶巾), a white feather fan (羽扇); the carriage is a light open timber chair on four spoked wheels with a low railing and a small canopy-less seat. The two soldiers wear a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots and rounded iron helmets, as on the second attached sheet. No facial features on anyone. Same carriage, figures and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-d4274676-af5e-49f7-8fe3-d4eae8a40306.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-05/sources/v1.png",
+      "sourceSha256": "51944181db7f523707c9d6ab824d261fd3f864b836d32dd5fa6e13e3d4c0d40b",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1165256,
+      "sha256": "f9cd46cc44e04e3021fd364a9d7e365e2d5c3fbf55b6433cdf3dc3f1576d37d1",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          8,
+          253
+        ],
+        [
+          253,
+          13,
+          252
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          251,
+          11,
+          253
+        ]
+      ],
+      "registration": "cleanest; four-wheeled carriage, fan raised in the command column"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Zhuge Liang, the Shu-Han chancellor, seated in his small four-wheeled carriage (四轮车) and pushed by two Shu-Han soldiers, for a strategy game, drawn four times. Arrange the sheet as a 2 by 2 grid of equal cells (768×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 330 pixels from the bottom of the wheels to the top of his kerchief cap, up to the dashed line), feet on the solid baseline.\nTop row: the whole group seen from behind, heading north, away from the viewer (the two soldiers pushing at the near end). Bottom row: the group seen from the front, facing the viewer (south), the soldiers behind the carriage.\nLeft column: Zhuge Liang sitting upright and calm, the feather fan resting in his lap. Right column: commanding, the white feather fan raised and pointing forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nZhuge Liang: a white crane-feather cloak (鹤氅) over a pale robe, a dark silk kerchief cap (纶巾), a white feather fan (羽扇); the carriage is a light open timber chair on four spoked wheels with a low railing and a small canopy-less seat. The two soldiers wear a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots and rounded iron helmets, as on the second attached sheet. No facial features on anyone. Same carriage, figures and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-4e42f1cc-1f2a-41c6-8423-0310cd72f0f1.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-05/sources/v2.png",
+      "sourceSha256": "0248c94bb6ee290b6bf3ce39242a5c18a14920bde49f7a87e8d1b0236a4a0c85",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1201144,
+      "sha256": "0efa4551a387e7fdf11676e4fa86d5648711bea78b0aa154281fca67adcff929",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          253,
+          2,
+          253
+        ],
+        [
+          252,
+          6,
+          252
+        ],
+        [
+          253,
+          2,
+          252
+        ],
+        [
+          251,
+          3,
+          253
+        ]
+      ],
+      "registration": "pushers stand to the sides in the north view"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Zhuge Liang, the Shu-Han chancellor, seated in his small four-wheeled carriage (四轮车) and pushed by two Shu-Han soldiers, for a strategy game, drawn four times. Arrange the sheet as a 2 by 2 grid of equal cells (768×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 330 pixels from the bottom of the wheels to the top of his kerchief cap, up to the dashed line), feet on the solid baseline.\nTop row: the whole group seen from behind, heading north, away from the viewer (the two soldiers pushing at the near end). Bottom row: the group seen from the front, facing the viewer (south), the soldiers behind the carriage.\nLeft column: Zhuge Liang sitting upright and calm, the feather fan resting in his lap. Right column: commanding, the white feather fan raised and pointing forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nZhuge Liang: a white crane-feather cloak (鹤氅) over a pale robe, a dark silk kerchief cap (纶巾), a white feather fan (羽扇); the carriage is a light open timber chair on four spoked wheels with a low railing and a small canopy-less seat. The two soldiers wear a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, wrapped leggings and boots and rounded iron helmets, as on the second attached sheet. No facial features on anyone. Same carriage, figures and proportions in every cell.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-6124d735-0c59-4d93-a937-b5472894b181.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (Shu halberdier)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-05/sources/v3.png",
+      "sourceSha256": "88449126a161fea0c557c8c9a1c56fae3e2fb238118cb315cea57c5d4c820888",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1229652,
+      "sha256": "196755ebe06d1fa0f18742bdb98739245e642b5193cdab1521ff02d6effdbe0c",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          253
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          251,
+          2,
+          250
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "similar to v1"
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Feather fan and kerchief cap read at once; the two pushers match the S1-05 soldiers.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "f5612bae145f177a1b7575b01be54abcbd55785e91953643677271074f9177a6",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": []
+  },
+  "guide": "guide.png"
+}

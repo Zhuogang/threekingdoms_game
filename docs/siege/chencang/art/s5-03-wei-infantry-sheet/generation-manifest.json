@@ -1,0 +1,209 @@
+{
+  "id": "s5-03",
+  "folder": "s5-03-wei-infantry-sheet",
+  "name": "魏步兵姿态表",
+  "directory": "docs/siege/chencang/art/s5-03-wei-infantry-sheet",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-06",
+    "id": "v4",
+    "path": "../s1-06-wei-archer-sheet/attempts/v4.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Wei infantryman for a strategy game, the same soldier drawn nine times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready behind his shield; blocking, the shield raised high and braced against a blow from above; attacking, slashing forward with the sabre past the shield.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard like the archer's, a ring-pommel sabre (环首刀) and a tall rectangular wooden shield faced with lacquered hide. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-89df5d62-254e-4097-9a1f-94ff1099d1b2.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-03/sources/v1.png",
+      "sourceSha256": "6e0301e3c1ded923899b1c37afbe7ed5a82528df7a4eaac5cd4d192049c85f5a",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1165516,
+      "sha256": "f7d87b56a0e602b426c7c5cf71e8b6de6244206357e6a51863f9ed86f025bab5",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          253
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          253,
+          2,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "back row reads as back views; shield raised high in the block column"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Wei infantryman for a strategy game, the same soldier drawn nine times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready behind his shield; blocking, the shield raised high and braced against a blow from above; attacking, slashing forward with the sabre past the shield.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard like the archer's, a ring-pommel sabre (环首刀) and a tall rectangular wooden shield faced with lacquered hide. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-a968f978-91df-47d2-8f95-b3602e07921b.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-03/sources/v2.png",
+      "sourceSha256": "a93b8ec3caa1f98fe166bdb8f20e367b209d92efe1e98b43423055ab7d2a6841",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1190882,
+      "sha256": "9fc45262432ebdde1e5adbb713a0e97115153d2d2f1bab90d09d81a33b5af080",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          253
+        ],
+        [
+          253,
+          8,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "similar"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of one Wei infantryman for a strategy game, the same soldier drawn nine times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready behind his shield; blocking, the shield raised high and braced against a blow from above; attacking, slashing forward with the sabre past the shield.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard like the archer's, a ring-pommel sabre (环首刀) and a tall rectangular wooden shield faced with lacquered hide. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-2758968b-30d2-48aa-b161-658bd1aea274.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-03/sources/v3.png",
+      "sourceSha256": "b63e46f4fb59c5b6050c1df1b7515c156a2b644500cf4062db482049fc27b966",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1162232,
+      "sha256": "fc04833a9fe29c0e30b5906756fc7da5b20832d2347be84f58bfd876b21ac226",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          2,
+          253
+        ],
+        [
+          252,
+          7,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "front attack slashes across the body"
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Back views read clearly; block poses raise the tall shield over the head; same army as the S1-06 archer.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "d2204db32a8ff36ae57d79e913268f8be0e3158ab865aa2af39c8590fb3ceb6b",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "With faceless figures, back and front differ only by the missing face patch and belt buckle; checked against the S1-06 back view."
+    ]
+  },
+  "guide": "guide.png"
+}

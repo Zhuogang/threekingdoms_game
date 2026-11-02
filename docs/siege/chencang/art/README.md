@@ -65,6 +65,22 @@ S1-02 以后的提示词按脚本里的 `CHOSEN_STYLE`（风格字母）和 `CHO
 
 和 S2-08 到 S2-11 一样是品红底的 2 倍分件表，上传 S1-02 当标准件，各件互不相干。燃烧态只画焦黑和余烬，火苗和烟由程序加（MVP 计划 §8.3）；朝西推行由程序把朝东那件左右翻转。
 
+## S5 部队与武将
+
+| ID    | 资产                                                   | 尺寸      | 出图                 |
+| ----- | ------------------------------------------------------ | --------- | -------------------- |
+| S5-01 | [蜀步兵攀梯、运土](s5-01-shu-siege-poses/README.md)    | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S5-02 | [蜀弓弩兵姿态表](s5-02-shu-crossbow-sheet/README.md)   | 1536×1024 | 3 张，定稿 `v1.webp` |
+| S5-03 | [魏步兵姿态表](s5-03-wei-infantry-sheet/README.md)     | 1536×1024 | 3 张，定稿 `v1.webp` |
+| S5-04 | [旗帜](s5-04-banners/README.md)                        | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S5-05 | [诸葛亮乘四轮车](s5-05-zhuge-liang-carriage/README.md) | 1536×1024 | 3 张，定稿 `v1.webp` |
+| S5-06 | [郝昭城头形象](s5-06-hao-zhao-wall/README.md)          | 1536×1024 | 3 张，定稿 `v3.webp` |
+| S5-07 | [立绘：郝昭](s5-07-portrait-hao-zhao/README.md)        | 1024×1024 | 3 张，定稿 `v1.webp` |
+| S5-08 | [立绘：王生](s5-08-portrait-wang-sheng/README.md)      | 1024×1024 | 3 张，定稿 `v2.webp` |
+| S5-09 | [立绘：靳详](s5-09-portrait-jin-xiang/README.md)       | 1024×1024 | 3 张，定稿 `v2.webp` |
+
+姿态表的做法同 S1-05、S1-06：上传版式图 `guide.png` 和对应阵营的 S1 定稿表（蜀用 S1-05 v5，魏用 S1-06 v4），保证是同一支军队。旗面留白，字和颜色由程序加。立绘照 v0.3 立绘的提示词结构（`docs/assets/v0.3-portraits/`），不上传参考图。
+
 ## 每个文件夹里有什么
 
 - `blockout.png`（姿态表是 `guide.png`）：上传 ImageGen 的参考图。

@@ -1,0 +1,207 @@
+{
+  "id": "s5-06",
+  "folder": "s5-06-hao-zhao-wall",
+  "name": "郝昭城头形象",
+  "directory": "docs/siege/chencang/art/s5-06-hao-zhao-wall",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-06",
+    "id": "v4",
+    "path": "../s1-06-wei-archer-sheet/attempts/v4.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Hao Zhao, the Wei general defending Chencang, for a strategy game, the same man drawn six times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, not counting its plume, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front, facing the viewer (south): standing firm with his left hand on his sword hilt; commanding, his sword drawn and pointing forward and down over a wall; drawing a bow.\nBottom row: standing, seen from the side facing right (east); walking, seen from the side facing right; standing, seen from behind (north).\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nHao Zhao: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, but a general's heavier armour with shoulder guards, a dark red cloak, a round iron helmet with a short red plume, a straight sword at his hip and a bow on his back. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-de8e58be-a4fe-48f2-99bf-ff1b31458293.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-06/sources/v1.png",
+      "sourceSha256": "d55060e66bb7e017e8e70d2a5b51b54cf572da705c9c666aecb3b5764b6ef3a3",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1112408,
+      "sha256": "6d6c23890c2d310b26adeb16731b11ce1bc9fd822db7349686ea0195bae55195",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          253
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          5,
+          253
+        ]
+      ],
+      "registration": "sword held low in the command pose"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Hao Zhao, the Wei general defending Chencang, for a strategy game, the same man drawn six times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, not counting its plume, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front, facing the viewer (south): standing firm with his left hand on his sword hilt; commanding, his sword drawn and pointing forward and down over a wall; drawing a bow.\nBottom row: standing, seen from the side facing right (east); walking, seen from the side facing right; standing, seen from behind (north).\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nHao Zhao: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, but a general's heavier armour with shoulder guards, a dark red cloak, a round iron helmet with a short red plume, a straight sword at his hip and a bow on his back. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-3da5be0c-549d-4e3f-bd0d-05962f057fe0.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-06/sources/v2.png",
+      "sourceSha256": "478c556aa3f6f798e89d333a9755a60e2a2c63eaa718723a8cbea78bc050d671",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1109742,
+      "sha256": "80da239d2049339224953fb993ce167d42de9f6acf13c708d7e4a2889f3f3ae5",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          252
+        ],
+        [
+          252,
+          1,
+          252
+        ],
+        [
+          252,
+          2,
+          253
+        ]
+      ],
+      "registration": "similar"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of Hao Zhao, the Wei general defending Chencang, for a strategy game, the same man drawn six times, from the same army as the archer on the second attached sheet. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, not counting its plume, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front, facing the viewer (south): standing firm with his left hand on his sword hilt; commanding, his sword drawn and pointing forward and down over a wall; drawing a bow.\nBottom row: standing, seen from the side facing right (east); walking, seen from the side facing right; standing, seen from behind (north).\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nHao Zhao: a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, but a general's heavier armour with shoulder guards, a dark red cloak, a round iron helmet with a short red plume, a straight sword at his hip and a bow on his back. No facial features. Identical gear, colours and proportions in every cell.\nStyle: match the second attached sheet (the Wei archer pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-ec185f11-4f99-4a98-8298-5246e6c2352f.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-06 v4 (Wei archer)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-06/sources/v3.png",
+      "sourceSha256": "661b2903f648fa2327cd934edc1d2d8f0b89d15aa41bd0916e110dc9b8e8a5be",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1155296,
+      "sha256": "4b0ae9b62cc8097be5bb2e1f7695770d4acbdd06dfc30a9a3f80bcb178ce81c2",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          2,
+          253
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          252,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "sword down and free hand pointing; strongest cloak in the back view"
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "agent",
+    "reason": "Clearest commanding pose; the red cloak and plume single him out among Wei soldiers.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "474fd6376d3eae7bc6e592c07ece9dd33f5b4ac6fdd3308594a6123a54d7335c",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": []
+  },
+  "guide": "guide.png"
+}

@@ -1,0 +1,97 @@
+{
+  "id": "s5-07",
+  "folder": "s5-07-portrait-hao-zhao",
+  "name": "立绘：郝昭",
+  "slug": "haozhao",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh), no reference images, v0.3 portrait brief",
+  "brief": "docs/assets/v0.3-portraits/three_kingdoms_portrait_master_assets_98.json (base_prompt) plus the v0.3 production emphasis",
+  "prompt": "Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game.\n\nOriginal imagined historical character illustration, one Chinese person only, centered head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose.\n\nElegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained late-Han / Three Kingdoms period clothing and headwear.\n\nNo frame, no lettering, no Chinese characters, no watermark, no scenery, no extra people, no modern clothing, no exaggerated fantasy armor, no commercial-game copy. Make this person clearly distinctive in facial structure, age, hair, expression, clothing, and headwear.\n\nSubject: Portray 郝昭 (haozhao) as a Chinese historical figure of the late Han / Three Kingdoms era. Age impression: 35-45. Face: lean, weathered, angular face with high cheekbones and a firm jaw. Facial hair: short dark beard and moustache, neatly kept. Headwear / hairstyle: plain practical iron helmet with a short red plume over a dark headcloth. Distinctive cues: unyielding frontier fortress commander; calm, stern, watchful eyes; worn but well-kept lamellar armour under a dark indigo cloak. Character goal: must feel immovable and incorruptible, a soldier rather than a courtier. Avoid: flamboyant nobleman, old grizzled veteran, resemblance to Zhang He.\n\nProduction emphasis:  Square 1:1 canvas, zoomed-out bust framing: the top 10 percent of canvas is plain parchment; entire headwear and hair lie below that margin, full head and shoulders visible; unobscured face. Every individual must have a distinct natural face, matching the supplied age and identity cues.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-ed4f7d1b-60bd-4118-a392-98028c1699df.png",
+      "sourcePath": "../../../../../attempts/s5-07/sources/v1.png",
+      "sourceSha256": "38b3575aacd0269d63bcf75ecc9871e27aa5f851f6a107598436c76025322207",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "e4b2eab3cb22360a2e67da66d2bfea9a7f0398e887f59d55602f4e5f27c83044",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-c4f61e96-b99b-4f73-bbc6-c683165d657e.png",
+      "sourcePath": "../../../../../attempts/s5-07/sources/v2.png",
+      "sourceSha256": "3a103c32e31ca2aa596104909d248d3b64d488dcc0ff004b31676d1ab14e9d6f",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "81792bbbec18011dd55e7edd203c8327412f1b26035d58c55faced7f58c8b7b7",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-1acc5d2b-062f-431d-b438-f369786565a7.png",
+      "sourcePath": "../../../../../attempts/s5-07/sources/v3.png",
+      "sourceSha256": "13541cc46a00fbc261e5ed95058ba02bcdeda37136c8f22f074bc431f890397f",
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1024,
+      "height": 1024,
+      "sha256": "6195f13dc53b9b3884828cadc440cd4f746be50d222852f0516778947d97aee9",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Stern frontier commander; calm watchful eyes; red-plumed iron helmet and dark indigo cloak set him apart from Zhang He.",
+    "runtime": [
+      {
+        "path": "runtime/haozhao.webp",
+        "size": 256,
+        "quality": 87,
+        "sha256": "6a1d37431387014892091aefdfb3a0cbde005a80202e9ae560b1490d721e3f5f"
+      },
+      {
+        "path": "runtime/haozhao-small.webp",
+        "size": 128,
+        "quality": 82,
+        "sha256": "41ea3de302bd11ddd25eb02fc400ed9be600e021525e68d916c0fbebbeebdbc7"
+      }
+    ]
+  },
+  "comparison": "comparison.png"
+}

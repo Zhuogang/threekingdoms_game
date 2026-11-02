@@ -1,0 +1,105 @@
+{
+  "sheet": "selected-transparent.png",
+  "cols": 3,
+  "rows": 1,
+  "gameScale": 0.08,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 64 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "unit-flag",
+      "cell": [
+        0,
+        0,
+        512,
+        1024
+      ],
+      "box": [
+        173,
+        126,
+        205,
+        844
+      ],
+      "anchor": [
+        29.4,
+        844
+      ],
+      "path": "poses/unit-flag.png",
+      "game": {
+        "path": "poses-game/unit-flag.png",
+        "size": [
+          16,
+          68
+        ],
+        "anchor": [
+          2.4,
+          67.5
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "chancellor-banner",
+      "cell": [
+        512,
+        0,
+        512,
+        1024
+      ],
+      "box": [
+        534,
+        47,
+        406,
+        924
+      ],
+      "anchor": [
+        90.7,
+        924
+      ],
+      "path": "poses/chancellor-banner.png",
+      "game": {
+        "path": "poses-game/chancellor-banner.png",
+        "size": [
+          32,
+          74
+        ],
+        "anchor": [
+          7.3,
+          73.9
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "hao-banner",
+      "cell": [
+        1024,
+        0,
+        512,
+        1024
+      ],
+      "box": [
+        1051,
+        88,
+        396,
+        882
+      ],
+      "anchor": [
+        46.1,
+        882
+      ],
+      "path": "poses/hao-banner.png",
+      "game": {
+        "path": "poses-game/hao-banner.png",
+        "size": [
+          32,
+          71
+        ],
+        "anchor": [
+          3.7,
+          70.6
+        ]
+      },
+      "droppedIslands": 0
+    }
+  ]
+}

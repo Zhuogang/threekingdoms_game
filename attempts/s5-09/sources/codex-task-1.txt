@@ -1,0 +1,23 @@
+You are producing game art with your built-in image generation tool. This is an image job, not a coding job.
+
+Generate 3 separate candidate images for job S5-09. For each candidate, call the image generation tool once, passing ALL the attached images as references/inputs in the same order they are attached, and use the IMAGE PROMPT below verbatim as the prompt (do not shorten, paraphrase or add to it). If the prompt describes an edit of the first attached image, perform an image edit of that image.
+Attached images, in order:
+
+After each generation, copy the tool's output file, byte for byte and unaltered (no resizing, re-encoding, cropping or background removal), to:
+  /home/ubuntu/GAMES/threekingdoms_game/attempts/s5-09/sources/v<k>.png   (k = 1..3)
+If the output is not PNG, keep its real extension instead. Do not write any other files. Finally reply with one line per candidate: file path, pixel size, and the original tool output path.
+
+IMAGE PROMPT:
+<<<
+Use case: historical-scene. Asset type: one individual square officer portrait for a Three Kingdoms strategy game.
+
+Original imagined historical character illustration, one Chinese person only, centered head and shoulders, head and all headwear entirely inside image with a little empty headroom, face large and readable at 48 pixels, slight three-quarter pose.
+
+Elegant hand-painted historical portrait with precise dark ink contours, muted mineral watercolor, warm plain parchment backdrop, soft even lighting, realistic individual facial anatomy, premium illustrated strategy game asset. Restrained late-Han / Three Kingdoms period clothing and headwear.
+
+No frame, no lettering, no Chinese characters, no watermark, no scenery, no extra people, no modern clothing, no exaggerated fantasy armor, no commercial-game copy. Make this person clearly distinctive in facial structure, age, hair, expression, clothing, and headwear.
+
+Subject: Portray 靳详 (jinxiang) as a Chinese historical figure of the late Han / Three Kingdoms era. Age impression: 35-45. Face: open, earnest face with gentle features and slightly anxious eyes. Facial hair: thin neat moustache and a small pointed beard. Headwear / hairstyle: soft black civilian headcloth (介帻). Distinctive cues: persuasive envoy and old acquaintance; plain dark-green travelling robe with a fur-trimmed cloak, no armour. Character goal: must read as a civilian go-between, earnest rather than cunning. Avoid: armour, weapons, a scholar-strategist look like Zhuge Liang.
+
+Production emphasis:  Square 1:1 canvas, zoomed-out bust framing: the top 10 percent of canvas is plain parchment; entire headwear and hair lie below that margin, full head and shoulders visible; unobscured face. Every individual must have a distinct natural face, matching the supplied age and identity cues.
+>>>

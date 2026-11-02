@@ -1,0 +1,210 @@
+{
+  "id": "s5-04",
+  "folder": "s5-04-banners",
+  "name": "旗帜",
+  "directory": "docs/siege/chencang/art/s5-04-banners",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-05",
+    "id": "v5",
+    "path": "../s1-05-shu-halberd-sheet/attempts/v5.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "guide",
+      "references": [
+        "guide.png",
+        "S1-05 v5 (style only)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: three separate flags for a strategy game, each on its own pole, one centred in each cell. Arrange the sheet as a 3 by 1 grid of equal cells (512×1024 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (each pole from its foot on the baseline up to about the dashed line), feet on the solid baseline.\nLeft: a unit recognition flag (认旗): a slim bamboo pole with a small iron spearhead finial and a narrow vertical rectangular flag of plain off-white silk hanging from a crossbar near the top, with a short dark border; the flag face is left blank so the game can colour and letter it.\nMiddle: the chancellor's great banner (丞相帅旗): a tall heavy lacquered pole with a gilded finial and red tassels, carrying a large vertical deep-red silk banner with a black border and a scalloped edge; a large plain panel in the middle is left blank for a character the game writes.\nRight: the Wei commander's banner of Hao Zhao (郝字旗): a sturdy pole with an iron finial carrying a square deep-indigo (#2f4a6e) silk banner with a white border; the middle is left blank for a character the game writes.\nEach flag hangs almost flat with only a gentle wave, seen from the front, so the game can animate it.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers or horses; any writing, characters or emblems on the flags; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-9b2c96ad-9ead-4b55-a739-5c22f589591e.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (style only)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-04/sources/v1.png",
+      "sourceSha256": "1b80f7d1698be042782787a7889cfef96e113c46590c411462d5cb92b07418e5",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1056196,
+      "sha256": "6f12c94581387153e440288ee60b817172d63257466e22ee68b7fa9ce2704fb3",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          2,
+          253
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          251,
+          1,
+          250
+        ],
+        [
+          252,
+          2,
+          253
+        ]
+      ],
+      "registration": "faces blank"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: three separate flags for a strategy game, each on its own pole, one centred in each cell. Arrange the sheet as a 3 by 1 grid of equal cells (512×1024 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (each pole from its foot on the baseline up to about the dashed line), feet on the solid baseline.\nLeft: a unit recognition flag (认旗): a slim bamboo pole with a small iron spearhead finial and a narrow vertical rectangular flag of plain off-white silk hanging from a crossbar near the top, with a short dark border; the flag face is left blank so the game can colour and letter it.\nMiddle: the chancellor's great banner (丞相帅旗): a tall heavy lacquered pole with a gilded finial and red tassels, carrying a large vertical deep-red silk banner with a black border and a scalloped edge; a large plain panel in the middle is left blank for a character the game writes.\nRight: the Wei commander's banner of Hao Zhao (郝字旗): a sturdy pole with an iron finial carrying a square deep-indigo (#2f4a6e) silk banner with a white border; the middle is left blank for a character the game writes.\nEach flag hangs almost flat with only a gentle wave, seen from the front, so the game can animate it.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers or horses; any writing, characters or emblems on the flags; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-fb0103f4-069c-4d51-8db9-5b501aed9917.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (style only)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-04/sources/v2.png",
+      "sourceSha256": "ff863181345dae57e9d7f4071208edc645e0d45d687d1f5ce0c2383c577eae04",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1086606,
+      "sha256": "0a0dfbffc68d67f4900e4c2d29d47797e11ace920f83f40442556330a8623e98",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          250,
+          2,
+          252
+        ],
+        [
+          253,
+          4,
+          253
+        ],
+        [
+          250,
+          1,
+          250
+        ],
+        [
+          251,
+          1,
+          253
+        ]
+      ],
+      "registration": "faces blank; poles straight; dovetailed red banner"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: three separate flags for a strategy game, each on its own pole, one centred in each cell. Arrange the sheet as a 3 by 1 grid of equal cells (512×1024 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (each pole from its foot on the baseline up to about the dashed line), feet on the solid baseline.\nLeft: a unit recognition flag (认旗): a slim bamboo pole with a small iron spearhead finial and a narrow vertical rectangular flag of plain off-white silk hanging from a crossbar near the top, with a short dark border; the flag face is left blank so the game can colour and letter it.\nMiddle: the chancellor's great banner (丞相帅旗): a tall heavy lacquered pole with a gilded finial and red tassels, carrying a large vertical deep-red silk banner with a black border and a scalloped edge; a large plain panel in the middle is left blank for a character the game writes.\nRight: the Wei commander's banner of Hao Zhao (郝字旗): a sturdy pole with an iron finial carrying a square deep-indigo (#2f4a6e) silk banner with a white border; the middle is left blank for a character the game writes.\nEach flag hangs almost flat with only a gentle wave, seen from the front, so the game can animate it.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nStyle: match the second attached sheet (the Shu-Han halberdier pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers or horses; any writing, characters or emblems on the flags; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-b5efb6c0-c713-47b0-8448-ed9340657f25.png",
+      "referenceImages": [
+        "guide.png",
+        "S1-05 v5 (style only)"
+      ],
+      "sourcePath": "../../../../../attempts/s5-04/sources/v3.png",
+      "sourceSha256": "8ff9cff9cfe885388549f5cb18128a3b841247e4f93379046088ee026a456d33",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1027654,
+      "sha256": "5ce9c97342b75038ec0f8d2834e1332f564a70a0ae9cbb12ae7a66cfbbde420d",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          1,
+          253
+        ],
+        [
+          252,
+          6,
+          253
+        ],
+        [
+          250,
+          1,
+          250
+        ],
+        [
+          251,
+          2,
+          253
+        ]
+      ],
+      "registration": "faces blank, slightly shorter poles"
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Blank faces for the game to colour and letter; straight poles; the chancellor banner reads grandest.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "98cf9957872ed71c22256a62cad4c6e92ed2e3a3d64d5345de911cf00e6649d3",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g (and (r+b)/2-g within 3px of the background), edge colours un-mixed from the measured background; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "The first run was stopped: its prompt still excluded flags; rerun with a banner-specific exclusion line.",
+      "Game-size copies use scale 0.08 (unit flag about 68px, about twice a soldier)."
+    ]
+  },
+  "guide": "guide.png"
+}

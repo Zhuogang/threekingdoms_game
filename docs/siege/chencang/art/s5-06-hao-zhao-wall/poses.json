@@ -1,0 +1,201 @@
+{
+  "sheet": "selected-transparent.png",
+  "cols": 3,
+  "rows": 2,
+  "gameScale": 0.12,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 64 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "south-idle",
+      "cell": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        110,
+        121,
+        277,
+        355
+      ],
+      "anchor": [
+        140.9,
+        355
+      ],
+      "path": "poses/south-idle.png",
+      "game": {
+        "path": "poses-game/south-idle.png",
+        "size": [
+          33,
+          43
+        ],
+        "anchor": [
+          16.9,
+          42.6
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-command",
+      "cell": [
+        512,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        596,
+        132,
+        325,
+        367
+      ],
+      "anchor": [
+        193.8,
+        367
+      ],
+      "path": "poses/south-command.png",
+      "game": {
+        "path": "poses-game/south-command.png",
+        "size": [
+          39,
+          44
+        ],
+        "anchor": [
+          23.3,
+          44.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-bow",
+      "cell": [
+        1024,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        1119,
+        96,
+        321,
+        380
+      ],
+      "anchor": [
+        148.5,
+        380
+      ],
+      "path": "poses/south-bow.png",
+      "game": {
+        "path": "poses-game/south-bow.png",
+        "size": [
+          39,
+          46
+        ],
+        "anchor": [
+          17.8,
+          45.6
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "east-idle",
+      "cell": [
+        0,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        131,
+        607,
+        208,
+        368
+      ],
+      "anchor": [
+        117.7,
+        368
+      ],
+      "path": "poses/east-idle.png",
+      "game": {
+        "path": "poses-game/east-idle.png",
+        "size": [
+          25,
+          44
+        ],
+        "anchor": [
+          14.1,
+          44.2
+        ]
+      },
+      "droppedIslands": 1
+    },
+    {
+      "name": "east-walk",
+      "cell": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        611,
+        605,
+        257,
+        356
+      ],
+      "anchor": [
+        148.5,
+        356
+      ],
+      "path": "poses/east-walk.png",
+      "game": {
+        "path": "poses-game/east-walk.png",
+        "size": [
+          31,
+          43
+        ],
+        "anchor": [
+          17.8,
+          42.7
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "north-idle",
+      "cell": [
+        1024,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        1181,
+        607,
+        210,
+        364
+      ],
+      "anchor": [
+        104.5,
+        364
+      ],
+      "path": "poses/north-idle.png",
+      "game": {
+        "path": "poses-game/north-idle.png",
+        "size": [
+          25,
+          44
+        ],
+        "anchor": [
+          12.5,
+          43.7
+        ]
+      },
+      "droppedIslands": 0
+    }
+  ]
+}
