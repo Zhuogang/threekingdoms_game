@@ -1,0 +1,17 @@
+{
+  "canvas": [1536, 1024],
+  "crop": [768, 0],
+  "map": "../s2-01-full-map/composite.webp",
+  "states": [
+    {
+      "id": "gate-east-broken",
+      "name": "门破",
+      "paint": "steps/gate-east-broken-paint.png",
+      "blend": "steps/gate-east-broken-blend.png",
+      "overlay": null,
+      "input": "inputs/gate-east-broken.png",
+      "chosen": "attempts/gate-east-broken-v2.webp",
+      "patch": "patches/gate-east-broken.png"
+    }
+  ]
+}

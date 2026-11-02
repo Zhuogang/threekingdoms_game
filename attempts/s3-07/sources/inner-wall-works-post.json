@@ -1,0 +1,107 @@
+[
+  {
+    "id": "inner-wall-works-v1",
+    "source": "inner-wall-works-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "5e5f88354e8a05b4c3ad13aea29359e4b6171ee9285d9b532f744a14fb36a8a5",
+    "path": "attempts/inner-wall-works-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1745710,
+    "sha256": "15ce7ad03c486f43b6e37a3d0f66a83914d0a53010109f4f42d668dd565fd07e",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        185,
+        158,
+        119
+      ],
+      [
+        183,
+        159,
+        127
+      ],
+      [
+        193,
+        165,
+        136
+      ],
+      [
+        197,
+        171,
+        146
+      ]
+    ]
+  },
+  {
+    "id": "inner-wall-works-v2",
+    "source": "inner-wall-works-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "998e5edd47f9ee4634674d7b2664cb2d2fdb24c113e2393b9532d7ba746c74b6",
+    "path": "attempts/inner-wall-works-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1717394,
+    "sha256": "09e95b11125217127b73e2e9ee4ddd470d4abeed64c3645ab8e8a62f08de34d3",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        182,
+        152,
+        118
+      ],
+      [
+        185,
+        161,
+        129
+      ],
+      [
+        194,
+        168,
+        142
+      ],
+      [
+        198,
+        173,
+        149
+      ]
+    ]
+  },
+  {
+    "id": "inner-wall-works-v3",
+    "source": "inner-wall-works-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "bd11bd024bd2a02b116fc6f9fcd77a4fb8fd2b32d171b9a96ac1a1b8be91b802",
+    "path": "attempts/inner-wall-works-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1700050,
+    "sha256": "366d073b5583b1f31500c8e92ca936e828ec8ced5c11d110f56a81cbb6912f1d",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        185,
+        156,
+        120
+      ],
+      [
+        183,
+        159,
+        126
+      ],
+      [
+        196,
+        170,
+        142
+      ],
+      [
+        192,
+        166,
+        140
+      ]
+    ]
+  }
+]

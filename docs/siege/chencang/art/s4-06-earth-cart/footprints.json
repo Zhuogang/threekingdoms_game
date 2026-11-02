@@ -1,0 +1,60 @@
+{
+  "asset": "s4-06-earth-cart",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "朝北",
+      "cell": [0, 0, 512, 1024],
+      "origin": [-4928, -281],
+      "objects": [
+        {
+          "id": "cart-n",
+          "kind": "earth-cart",
+          "layer": "L3",
+          "cells": [40, 8, 40, 8],
+          "height": 0.9,
+          "anchor": [192, 583],
+          "bbox": [217, 469, 295, 567]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "朝东",
+      "cell": [512, 0, 512, 1024],
+      "origin": [-4672, -281],
+      "objects": [
+        {
+          "id": "cart-e",
+          "kind": "earth-cart",
+          "layer": "L3",
+          "cells": [42, 8, 42, 8],
+          "height": 0.9,
+          "anchor": [704, 583],
+          "bbox": [729, 469, 807, 567]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "倾倒",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [-4416, -296],
+      "objects": [
+        {
+          "id": "cart-tipped",
+          "kind": "earth-cart",
+          "layer": "L3",
+          "cells": [44, 8, 44, 8],
+          "height": 0.45,
+          "anchor": [1216, 568],
+          "bbox": [1222, 459, 1338, 564]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S4 出图审阅</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:16px; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  .viewport { overflow:auto; border:1px solid var(--line); max-height:85vh; }
+  .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  @media (max-width:900px) { .row { grid-template-columns:1fr; } }
+  figure { margin:0; }
+  figure img { max-width:100%; height:auto; display:block; border:1px solid var(--line); }
+  figcaption { color:var(--muted); font-size:13px; margin-top:4px; }
+  .piece { background:#ece8dc; border:1px solid var(--line); }
+  .piece.dark { background:#26262b; }
+  .piece img { border:0; width:100%; }
+  .bgsel { margin-bottom:8px; }
+  .bgsel button { border:1px solid var(--line); background:#fff; padding:3px 10px; border-radius:4px; cursor:pointer; }
+  .bgsel button.on { border-color:var(--accent); color:var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <b>陈仓 S4 器械与反制审阅</b>
+  <a href="#scene">摆在图上</a>
+  <span id="nav"></span>
+  <span class="note" style="margin:0">选择都是暂定，待你确认</span>
+</header>
+<main>
+<section id="scene">
+  <h2>摆在图上（游戏 100% 大小）</h2>
+  <p class="note">抠好的分件缩到 50%，按占地西南角摆在 S2-01 定稿全图上（城堑用 S3-01 半填）：南墙两架云梯（右边是燃烧态），桥上一辆冲车，墙头一架石磨吊架，堑外井阑、土车、云梯车，远处几件残骸。只看大小、对位和风格；遮挡和排序由渲染器做，这里是简单叠放。</p>
+  <div class="viewport"><img src="s4-scene.webp" width="2048" height="1248" alt="S4 pieces on the map"></div>
+</section>
+<div id="sheets"></div>
+</main>
+<script>
+const ART = '../docs/siege/chencang/art/';
+const SHEETS = [
+  ['s4-01-ladder-cart', 's4-01', 'S4-01 云梯车', 'v2', '对位最准；侧面梯架升向东、乘员棚在后。三张的三种视角都是同一辆车。'],
+  ['s4-02-ladder-on-wall', 's4-02', 'S4-02 云梯架上墙面', 'v3', '车底正好落在地面框上；v1、v2 两头各长 20px 左右。'],
+  ['s4-03-ram', 's4-03', 'S4-03 冲车', 'v1', '两种推行朝向的撞木都在前；砸毁那件石磨压在塌下的棚顶上。v3 朝北那件撞木画在了近端（南），不对。'],
+  ['s4-04-siege-tower', 's4-04', 'S4-04 井阑', 'v1', '对位最准（12px 以内），射台朝南有女墙；v2 高了约一层。'],
+  ['s4-05-siege-tower-wrecks', 's4-05', 'S4-05 井阑燃烧、倾覆', 'v3', '两件对位都最准；倾覆的井阑东西向躺倒、一只轮子朝天、射台压在东头。燃烧那件蒙皮烧没了，露出焦黑的框架。'],
+  ['s4-06-earth-cart', 's4-06', 'S4-06 土车', 'v3', '最贴灰盒，三件是同一辆车；侧面的车把伸出灰盒约 70px（每张都这样）；v2 画大了。'],
+  ['s4-07-millstone-crane', 's4-07', 'S4-07 城头石磨吊架', 'v3', '对位更准。第 2 张被出图服务的安全过滤拒了三次，只有两张候选。'],
+];
+const nav = document.getElementById('nav'), host = document.getElementById('sheets');
+for (const [folder, short, title, pick, note] of SHEETS) {
+  nav.insertAdjacentHTML('beforeend', `<a href="#${short}" style="margin-right:12px">${title.split(' ')[0]}</a>`);
+  const s = document.createElement('section');
+  s.id = short;
+  s.innerHTML = `<h2>${title}（定 <span class="pick">${pick}</span>）</h2><p class="note">${note}</p>
+    <div class="row">
+      <figure><div class="bgsel"><button class="on" data-bg="">纸色底</button> <button data-bg="dark">深色底</button></div>
+        <div class="piece"><img src="${ART}${folder}/selected-transparent.png"></div><figcaption>选定，透明版</figcaption></figure>
+      <figure><img loading="lazy" src="${short}/review.png"><figcaption>灰盒和全部候选（裁到有东西的地方）</figcaption></figure>
+    </div>`;
+  const box = s.querySelector('.piece');
+  s.querySelectorAll('.bgsel button').forEach((b) => (b.onclick = () => {
+    box.className = 'piece ' + b.dataset.bg;
+    s.querySelectorAll('.bgsel button').forEach((x) => x.classList.toggle('on', x === b));
+  }));
+  host.appendChild(s);
+}
+</script>
+</body>
+</html>

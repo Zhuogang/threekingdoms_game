@@ -1,0 +1,208 @@
+{
+  "id": "s4-01",
+  "folder": "s4-01-ladder-cart",
+  "name": "云梯车",
+  "directory": "docs/siege/chencang/art/s4-01-ladder-cart",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "original",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the ladder cart, heading north:\n- whole piece: x=205..307, y=370..654\n- ground footprint, where it stands: x=192..320, y=476..668\nPiece 2, the ladder cart, heading east:\n- whole piece: x=646..890, y=423..601\n- ground footprint, where it stands: x=640..896, y=524..620\nPiece 3, the ladder cart, burnt out:\n- whole piece: x=1229..1331, y=406..618\n- ground footprint, where it stands: x=1216..1344, y=440..632\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege ladder cart (云梯车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. The cart is a heavy four-wheeled timber chassis carrying a folded scaling ladder on a triangular timber truss, with a small hide-covered shelter at the rear for the crew. Left: heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the same cart burnt out where it stood, charred black and smouldering, with glowing orange embers along the burnt timbers but no large flames and no smoke (the game adds flames and smoke on top), the ladder collapsed onto the chassis. Same cart, same size and timber in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-cc54e6a5-b0fb-44e9-afa0-bd3636185217.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-01/sources/v1.png",
+      "sourceSha256": "31bfcd5f3421aed3ec8427654b6ab15945b5a3d48f76e86fde98ba17bbbf8932",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 785022,
+      "sha256": "19eadebf28f3a1cb28ce04f5672166808ae3fd9e90769a153509591dfee97de4",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          252
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          253,
+          0,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "within 13px; side and wreck about 28px low (wheels)"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the ladder cart, heading north:\n- whole piece: x=205..307, y=370..654\n- ground footprint, where it stands: x=192..320, y=476..668\nPiece 2, the ladder cart, heading east:\n- whole piece: x=646..890, y=423..601\n- ground footprint, where it stands: x=640..896, y=524..620\nPiece 3, the ladder cart, burnt out:\n- whole piece: x=1229..1331, y=406..618\n- ground footprint, where it stands: x=1216..1344, y=440..632\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege ladder cart (云梯车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. The cart is a heavy four-wheeled timber chassis carrying a folded scaling ladder on a triangular timber truss, with a small hide-covered shelter at the rear for the crew. Left: heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the same cart burnt out where it stood, charred black and smouldering, with glowing orange embers along the burnt timbers but no large flames and no smoke (the game adds flames and smoke on top), the ladder collapsed onto the chassis. Same cart, same size and timber in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-adb0cfd3-5e69-4719-a3a9-b84f739af391.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-01/sources/v2.png",
+      "sourceSha256": "b9b67c2737d4bf8ca6620b24d8e3a9d4c2f2f796392984303ad3a358ef9e9ac3",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 772400,
+      "sha256": "bc86ea677b99166e7b91520a5009111a842ffafab3b2ec2016f32bc38bb611ca",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          252
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          253,
+          1,
+          253
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "within 9px except the wreck (36px low)"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the ladder cart, heading north:\n- whole piece: x=205..307, y=370..654\n- ground footprint, where it stands: x=192..320, y=476..668\nPiece 2, the ladder cart, heading east:\n- whole piece: x=646..890, y=423..601\n- ground footprint, where it stands: x=640..896, y=524..620\nPiece 3, the ladder cart, burnt out:\n- whole piece: x=1229..1331, y=406..618\n- ground footprint, where it stands: x=1216..1344, y=440..632\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege ladder cart (云梯车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. The cart is a heavy four-wheeled timber chassis carrying a folded scaling ladder on a triangular timber truss, with a small hide-covered shelter at the rear for the crew. Left: heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the same cart burnt out where it stood, charred black and smouldering, with glowing orange embers along the burnt timbers but no large flames and no smoke (the game adds flames and smoke on top), the ladder collapsed onto the chassis. Same cart, same size and timber in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-dc789beb-a58f-43f1-8294-e09da30b06d4.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-01/sources/v3.png",
+      "sourceSha256": "910f218fa4b84ed6cbd7b2bfe2e592fb4cdaf902d855e292935c5aad81539816",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 773324,
+      "sha256": "da88302bd68683b27c22fbd8b20e1cd56f5ec7cdbe75f1c453664e2cd3f908f0",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          252
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          253,
+          0,
+          251
+        ],
+        [
+          252,
+          3,
+          252
+        ]
+      ],
+      "registration": "north view 14px short"
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Tightest registration; clean side view with the truss rising east and the crew shelter at the rear.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "a7877bb88cac30027d0dec0b9e6377baa522d34324f0246298eb7e12bb2c762a",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "All three keep one cart across the three views.",
+      "Wrecks show embers but no large flames, as asked."
+    ]
+  }
+}

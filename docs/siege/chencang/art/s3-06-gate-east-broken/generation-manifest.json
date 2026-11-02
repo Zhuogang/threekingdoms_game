@@ -1,0 +1,99 @@
+{
+  "id": "s3-06",
+  "folder": "s3-06-gate-east-broken",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    0
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "gate-east-broken",
+      "name": "门破",
+      "prompt": "Edit task: change one part of a finished painting to show the east gate broken. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe east gate has been broken through. Its doors face east and cannot be seen from this camera, so show the break by what spills out of the gate passage: splintered door planks, iron straps and broken brick strewn across the road and the bridge where they meet the gate, trampled mud, soot streaks on the gate tower's south face, and a few roof tiles knocked off its eaves. The gate tower and the wall still stand.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the east gate with its tower: x=1340..1412, y=328..504\n\nRepaint only the east gate inside this box and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "gate-east-broken-v1",
+          "type": "edit",
+          "input": "inputs/gate-east-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-east-broken-codex-1.log"
+          },
+          "sourceFile": "exec-0e26f92a-db1c-4ade-a1c8-88abaffedf6a.png",
+          "sourcePath": "../../../../../attempts/s3-06/sources/gate-east-broken-v1.png",
+          "sourceSha256": "938eb721a0a8e3bad81557c6309b4760f2af7be4d1c5188eb45a443dd4974da2",
+          "path": "attempts/gate-east-broken-v1.webp",
+          "bytes": 1859856,
+          "sha256": "5303e1a0eabba36ce2813ec0c1214e717395d76cbb8eca150659e8ad540fc8c0",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-east-broken-v2",
+          "type": "edit",
+          "input": "inputs/gate-east-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-east-broken-codex-1.log"
+          },
+          "sourceFile": "exec-abab78bc-f5e4-47df-8b82-46b61c429354.png",
+          "sourcePath": "../../../../../attempts/s3-06/sources/gate-east-broken-v2.png",
+          "sourceSha256": "a5614ecfc1de34375988ba0db5a869765b86499901eab6fe3f8f583a35fe2e1a",
+          "path": "attempts/gate-east-broken-v2.webp",
+          "bytes": 1856838,
+          "sha256": "444ec88f640b4d1c322a376959cff7f40ceb1093713cf15e22f453c2fefdb4b3",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-east-broken-v3",
+          "type": "edit",
+          "input": "inputs/gate-east-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-east-broken-codex-1.log"
+          },
+          "sourceFile": "exec-8ef91119-bbd8-41e0-81d9-f0ffd002a7dc.png",
+          "sourcePath": "../../../../../attempts/s3-06/sources/gate-east-broken-v3.png",
+          "sourceSha256": "a90b80b5fe1debacc59ea99296161f02bebf563e3aa38be77c7370ae05b8a134",
+          "path": "attempts/gate-east-broken-v3.webp",
+          "bytes": 1840942,
+          "sha256": "f9be3a1f09efbcfd358159daede19d435abdd40cba1762fa8833636c3aed5346",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "gate-east-broken-v2",
+        "path": "attempts/gate-east-broken-v2.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/gate-east-broken.png",
+        "sha256": "0709144a3f479ea40d690ffcef5f13d6736c3e5dc18a1335564705b9f793bd5e",
+        "at": [
+          2091,
+          311
+        ],
+        "size": [
+          106,
+          210
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 8.44,
+        "changeInside": 32.5
+      },
+      "preview": "previews/gate-east-broken.webp",
+      "review": "v1 south-facing doorway (wrong); v3 erased the tower window; v2 keeps the tower with soot and debris at both passage ends."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "asset": "s4-07-millstone-crane",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "吊架",
+      "cell": [0, 0, 768, 1024],
+      "origin": [-4800, -231],
+      "objects": [
+        {
+          "id": "crane",
+          "kind": "mill-crane",
+          "layer": "L3",
+          "cells": [40, 8, 40, 8],
+          "height": 2.35,
+          "anchor": [320, 633],
+          "bbox": [338, 447, 430, 576]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "石磨",
+      "cell": [768, 0, 768, 1024],
+      "origin": [-4288, -296],
+      "objects": [
+        {
+          "id": "stone",
+          "kind": "millstone",
+          "layer": "L3",
+          "cells": [42, 8, 42, 8],
+          "height": 0.35,
+          "anchor": [1088, 568],
+          "bbox": [1119, 478, 1185, 545]
+        }
+      ]
+    }
+  ]
+}

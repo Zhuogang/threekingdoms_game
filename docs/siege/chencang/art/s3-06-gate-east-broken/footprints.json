@@ -1,0 +1,19 @@
+{
+  "asset": "s3-06-gate-east-broken",
+  "size": [1536, 1024],
+  "cell": [64, 48],
+  "level": 24,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-768, 0],
+  "objects": [
+    {
+      "id": "gate-east",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [33, 9, 33, 11],
+      "height": 5,
+      "anchor": [1344, 576],
+      "bbox": [1340, 328, 1412, 504]
+    }
+  ]
+}

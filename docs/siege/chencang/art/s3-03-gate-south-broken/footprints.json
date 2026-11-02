@@ -1,0 +1,28 @@
+{
+  "asset": "s3-03-gate-south-broken",
+  "size": [1536, 1024],
+  "cell": [64, 48],
+  "level": 24,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-768, -512],
+  "objects": [
+    {
+      "id": "gate-south",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [22, 16, 25, 16],
+      "height": 7,
+      "anchor": [640, 304],
+      "bbox": [639, 79, 897, 305]
+    },
+    {
+      "id": "gate-south-parapet",
+      "kind": "parapet",
+      "layer": "L4",
+      "cells": [22, 16, 25, 16],
+      "height": 3.5,
+      "anchor": [640, 304],
+      "bbox": [639, 209, 897, 233]
+    }
+  ]
+}

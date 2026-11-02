@@ -1,0 +1,207 @@
+{
+  "id": "s4-06",
+  "folder": "s4-06-earth-cart",
+  "name": "土车",
+  "directory": "docs/siege/chencang/art/s4-06-earth-cart",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "original",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth cart, heading north:\n- whole piece: x=218..294, y=470..566\n- ground footprint, where it stands: x=192..320, y=487..583\nPiece 2, the earth cart, heading east:\n- whole piece: x=730..806, y=470..566\n- ground footprint, where it stands: x=704..832, y=487..583\nPiece 3, the earth cart, tipped over:\n- whole piece: x=1222..1338, y=460..563\n- ground footprint, where it stands: x=1216..1344, y=472..568\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han earth cart (土车) for filling the city trench, for a strategy game, three separate pieces side by side, one centred in each third of the image. A small two-wheeled timber cart with a deep plank box heaped with earth and a few bundles of brushwood, pushed by handles. Left: heading north, away from the viewer, handles at the near (south) end. Middle: heading east, seen from its side, handles at its left (west) end. Right: tipped forward with its earth spilled out in a heap in front of it. Same cart, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-01845427-0fc9-4b2c-9c79-d1bac2f8e716.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-06/sources/v1.png",
+      "sourceSha256": "ff0766ff50e19b9d20c2530c5bbe69e763f34c788a733029d9c29d6b1f2654e4",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 713010,
+      "sha256": "51f11f78517ffc4a419616cadbd5ea0913eb37693fada3443afaf9e406bffd34",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          5,
+          252
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          252
+        ]
+      ],
+      "registration": "handles reach 70px west in the side view (not in the block-out); tipped 35px low"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth cart, heading north:\n- whole piece: x=218..294, y=470..566\n- ground footprint, where it stands: x=192..320, y=487..583\nPiece 2, the earth cart, heading east:\n- whole piece: x=730..806, y=470..566\n- ground footprint, where it stands: x=704..832, y=487..583\nPiece 3, the earth cart, tipped over:\n- whole piece: x=1222..1338, y=460..563\n- ground footprint, where it stands: x=1216..1344, y=472..568\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han earth cart (土车) for filling the city trench, for a strategy game, three separate pieces side by side, one centred in each third of the image. A small two-wheeled timber cart with a deep plank box heaped with earth and a few bundles of brushwood, pushed by handles. Left: heading north, away from the viewer, handles at the near (south) end. Middle: heading east, seen from its side, handles at its left (west) end. Right: tipped forward with its earth spilled out in a heap in front of it. Same cart, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-48bcf2fe-c985-46cf-91b5-3dab495926b2.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-06/sources/v2.png",
+      "sourceSha256": "8794b99bdb8fffbb04a8ff7162b4deedc05f752db2680e216801d857904331b1",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 726396,
+      "sha256": "2768b1e1e316580be316b07c11913d550d523fd55614b7223da7c329d13721fc",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          252
+        ],
+        [
+          253,
+          6,
+          253
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          252
+        ]
+      ],
+      "registration": "drawn about 1.5x too large"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth cart, heading north:\n- whole piece: x=218..294, y=470..566\n- ground footprint, where it stands: x=192..320, y=487..583\nPiece 2, the earth cart, heading east:\n- whole piece: x=730..806, y=470..566\n- ground footprint, where it stands: x=704..832, y=487..583\nPiece 3, the earth cart, tipped over:\n- whole piece: x=1222..1338, y=460..563\n- ground footprint, where it stands: x=1216..1344, y=472..568\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han earth cart (土车) for filling the city trench, for a strategy game, three separate pieces side by side, one centred in each third of the image. A small two-wheeled timber cart with a deep plank box heaped with earth and a few bundles of brushwood, pushed by handles. Left: heading north, away from the viewer, handles at the near (south) end. Middle: heading east, seen from its side, handles at its left (west) end. Right: tipped forward with its earth spilled out in a heap in front of it. Same cart, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-6eb41002-0492-42dd-8705-854cc1f92bf9.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-06/sources/v3.png",
+      "sourceSha256": "9c9b6c3f1a9400c6b558ce102771e2607a9d03e34b015a736cf19ae509fae82f",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 698404,
+      "sha256": "fff1f7b633b484cd15f17e9fa38fbe30602a7e4a7bd6afa3a2b9e8dc398abe5a",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          253
+        ],
+        [
+          253,
+          6,
+          253
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          252
+        ]
+      ],
+      "registration": "handles reach 71px west in the side view; others within 33px"
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "agent",
+    "reason": "Closest to the block-out; one cart in all three views; earth spills south as in the block-out.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "1240d2cf781113acf29ca5c919795904271c9756ec4b95e4a19c0608bf934d0a",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "The side view's handles stick out west of the block-out in every candidate; they belong to the cart."
+    ]
+  }
+}

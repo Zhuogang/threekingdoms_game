@@ -1,0 +1,107 @@
+[
+  {
+    "id": "nw-v1",
+    "source": "nw-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "d0e459cf12b7ec441a69823d46126aed543d010a0a295f1ff67b7ef99ca20aea",
+    "path": "attempts/nw-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1910060,
+    "sha256": "c03ab23fd9270db53c98fc0aaf8337fa266da4fc858f3e6fc79cea1a28dd5e30",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        128,
+        153,
+        164
+      ],
+      [
+        179,
+        191,
+        195
+      ],
+      [
+        233,
+        227,
+        221
+      ],
+      [
+        145,
+        113,
+        79
+      ]
+    ]
+  },
+  {
+    "id": "nw-v2",
+    "source": "nw-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "7eb4fed18232bb09d55227d51af342f8115b918bcaa33a3172927382428fd6ad",
+    "path": "attempts/nw-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1887966,
+    "sha256": "beab89c3b21139e5ca9adece57e5f75d21daccb3368585276b137b825c03d34d",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        204,
+        209,
+        210
+      ],
+      [
+        191,
+        204,
+        202
+      ],
+      [
+        232,
+        225,
+        217
+      ],
+      [
+        137,
+        103,
+        70
+      ]
+    ]
+  },
+  {
+    "id": "nw-v3",
+    "source": "nw-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "58c4e19a603f7f9d678ec31a45881b658d1001dae21416f9b8945476f6e72745",
+    "path": "attempts/nw-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1913452,
+    "sha256": "6342d011fd273a3181b499cc86e08fb8d10508f0ca158cf5262e1ab0d77b4fac",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        131,
+        158,
+        175
+      ],
+      [
+        197,
+        210,
+        211
+      ],
+      [
+        234,
+        228,
+        221
+      ],
+      [
+        143,
+        111,
+        78
+      ]
+    ]
+  }
+]

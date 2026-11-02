@@ -1,0 +1,107 @@
+[
+  {
+    "id": "gate-west-broken-v1",
+    "source": "gate-west-broken-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "1d03e002b2eb38135eb418c81d02ab1c5a4c51783e98651011c6cec1677233d7",
+    "path": "attempts/gate-west-broken-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1841802,
+    "sha256": "2593c57af8d3bab0b72cb0735ead97f3ceb859fb08aaaf64a052eab91dec3e61",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        98,
+        129,
+        140
+      ],
+      [
+        85,
+        117,
+        137
+      ],
+      [
+        232,
+        227,
+        217
+      ],
+      [
+        226,
+        220,
+        212
+      ]
+    ]
+  },
+  {
+    "id": "gate-west-broken-v2",
+    "source": "gate-west-broken-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "3b633639d436ae9e2a9054aa97647594254d4617cfb16bebf180d912b9562ab6",
+    "path": "attempts/gate-west-broken-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1837382,
+    "sha256": "e0990cb392309ba23ef025044c52875a7eacdb87f87de4419fab909bbcae2092",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        97,
+        128,
+        139
+      ],
+      [
+        89,
+        122,
+        145
+      ],
+      [
+        233,
+        227,
+        220
+      ],
+      [
+        227,
+        221,
+        213
+      ]
+    ]
+  },
+  {
+    "id": "gate-west-broken-v3",
+    "source": "gate-west-broken-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "47a86e58abe6762e5b495ba946e3eed80d9a16f29986558a8ca0c9335346134b",
+    "path": "attempts/gate-west-broken-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1859772,
+    "sha256": "c9bb0c32f4544cc0f7794946775b53c8fac6ab2b3c80a791e582a0947d8ec7d6",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        101,
+        133,
+        143
+      ],
+      [
+        88,
+        121,
+        142
+      ],
+      [
+        232,
+        227,
+        219
+      ],
+      [
+        228,
+        222,
+        214
+      ]
+    ]
+  }
+]

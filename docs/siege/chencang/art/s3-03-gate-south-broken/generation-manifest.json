@@ -1,0 +1,99 @@
+{
+  "id": "s3-03",
+  "folder": "s3-03-gate-south-broken",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    512
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "gate-south-broken",
+      "name": "门破",
+      "prompt": "Edit task: change one part of a finished painting to show the south gate broken. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe south gate has been broken through by a battering ram. The heavy iron-studded doors are smashed in: one hangs askew from its upper hinge, the other has fallen inward, both split into jagged planks. The gate passage is now open and dark, with splintered timber, iron straps and broken brick across the threshold and spilling onto the bridge end. Soot streaks rise from the gateway over the brick face, and a few roof tiles are missing from the lower eaves of the gate tower. The gate tower and the wall still stand.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the south gate with its tower: x=639..897, y=79..305\n\nRepaint only the south gate inside this box and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "gate-south-broken-v1",
+          "type": "edit",
+          "input": "inputs/gate-south-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-broken-codex-1.log"
+          },
+          "sourceFile": "exec-bd96c7a6-cc10-4578-89d5-5c72b5d1bd0c.png",
+          "sourcePath": "../../../../../attempts/s3-03/sources/gate-south-broken-v1.png",
+          "sourceSha256": "f7b564b33598b7df75816d583cebc4541cc654448fb1c5f3d56aea936b58f59e",
+          "path": "attempts/gate-south-broken-v1.webp",
+          "bytes": 1711788,
+          "sha256": "b6bae809c62196345295d58d051159dfaedf86fba3ee3dbbd2ef77b907ee9a79",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-south-broken-v2",
+          "type": "edit",
+          "input": "inputs/gate-south-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-broken-codex-1.log"
+          },
+          "sourceFile": "exec-1c0c1765-b4e6-4cf1-ac23-35b0ec539f7c.png",
+          "sourcePath": "../../../../../attempts/s3-03/sources/gate-south-broken-v2.png",
+          "sourceSha256": "3cc4530dc99e2ea75246806d5d1e0f3d45197a67ef3cf22d2b3f28bd76bc94fd",
+          "path": "attempts/gate-south-broken-v2.webp",
+          "bytes": 1705488,
+          "sha256": "832c27505998582e69415ffd2ec867ea5ef5f8146e575456099d9127b981cc5a",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-south-broken-v3",
+          "type": "edit",
+          "input": "inputs/gate-south-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-broken-codex-1.log"
+          },
+          "sourceFile": "exec-16ccfc68-a0e2-4976-9b5e-88a0171af5d5.png",
+          "sourcePath": "../../../../../attempts/s3-03/sources/gate-south-broken-v3.png",
+          "sourceSha256": "c792e9405d8d5ca8f4969692d28cf66aa074ef0215973413a4e708a1e6921766",
+          "path": "attempts/gate-south-broken-v3.webp",
+          "bytes": 1733362,
+          "sha256": "75dbb9aa13fe4f0bbfc89cfaafdc1a46d33ae29f38d2dc1d4421029e1ebfc2c4",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "gate-south-broken-v2",
+        "path": "attempts/gate-south-broken-v2.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/gate-south-broken.png",
+        "sha256": "a95ecff1fa82123ea2e4ab86bf5e714bb21f4254efddbedbf7de512f3472d793",
+        "at": [
+          1390,
+          574
+        ],
+        "size": [
+          292,
+          260
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 5.76,
+        "changeInside": 23.2
+      },
+      "preview": "previews/gate-south-broken.webp",
+      "review": "v1 and v3 turned the rectangular gateway into a round arch and buried the bridge; v2 keeps the rectangular passage with the doors fallen in."
+    }
+  ]
+}

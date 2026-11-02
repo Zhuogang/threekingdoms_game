@@ -1,0 +1,43 @@
+{
+  "asset": "s4-02-ladder-on-wall",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "完好",
+      "cell": [0, 0, 768, 1024],
+      "origin": [-4800, -366],
+      "objects": [
+        {
+          "id": "ladder-up",
+          "kind": "ladder-raised",
+          "layer": "L3",
+          "cells": [40, 8, 40, 11],
+          "height": 3,
+          "anchor": [320, 786],
+          "bbox": [332, 257, 436, 768]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "燃烧",
+      "cell": [768, 0, 768, 1024],
+      "origin": [-4288, -366],
+      "objects": [
+        {
+          "id": "ladder-up-burnt",
+          "kind": "ladder-raised",
+          "layer": "L3",
+          "cells": [42, 8, 42, 11],
+          "height": 3,
+          "anchor": [1088, 786],
+          "bbox": [1100, 257, 1204, 768]
+        }
+      ]
+    }
+  ]
+}

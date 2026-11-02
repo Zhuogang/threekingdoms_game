@@ -1,0 +1,107 @@
+[
+  {
+    "id": "trench-filled-v1",
+    "source": "trench-filled-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "b2b72ead921c0f9a23a5d3f84ff554c5803eeadbcfe0c0f3a15781f77fdbb014",
+    "path": "attempts/trench-filled-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1763224,
+    "sha256": "e7de5fe519bce7ff1b233abd46d7f9884bd4ea7c93f75238b4985e993627cf1a",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        179,
+        148,
+        111
+      ],
+      [
+        183,
+        155,
+        121
+      ],
+      [
+        197,
+        173,
+        146
+      ],
+      [
+        204,
+        181,
+        159
+      ]
+    ]
+  },
+  {
+    "id": "trench-filled-v2",
+    "source": "trench-filled-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "320c09968bf8a36e8c7a1fb1c1f97bc28a72641e4e0d90fc0554062b2ee7ea3f",
+    "path": "attempts/trench-filled-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1770848,
+    "sha256": "7b440d032e49a93a83968f04658d680abfe456b93208dc6d9b6783dc305724cf",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        182,
+        154,
+        120
+      ],
+      [
+        193,
+        171,
+        139
+      ],
+      [
+        197,
+        172,
+        144
+      ],
+      [
+        197,
+        175,
+        153
+      ]
+    ]
+  },
+  {
+    "id": "trench-filled-v3",
+    "source": "trench-filled-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "51ad5601ec80910a55adabc3cfa3c0b1463c5a2bd3af308b76402209a2866a9b",
+    "path": "attempts/trench-filled-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1744870,
+    "sha256": "1e7661b21834030e621435a84717950627b79cc87c289abbb64fce6dc33fe7fd",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        182,
+        150,
+        112
+      ],
+      [
+        184,
+        158,
+        126
+      ],
+      [
+        197,
+        173,
+        146
+      ],
+      [
+        196,
+        172,
+        148
+      ]
+    ]
+  }
+]

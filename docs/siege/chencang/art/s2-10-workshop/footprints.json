@@ -9,16 +9,16 @@
       "piece": 1,
       "name": "空工棚",
       "cell": [0, 0, 768, 1024],
-      "origin": [-1792, -1739],
+      "origin": [-1792, -1715],
       "objects": [
         {
           "id": "workshop-1",
           "kind": "workshop",
           "layer": "L3",
           "cells": [15, 23, 18, 24],
-          "height": 2,
-          "anchor": [128, 661],
-          "bbox": [125, 417, 643, 650]
+          "height": 3,
+          "anchor": [128, 685],
+          "bbox": [125, 398, 643, 674]
         }
       ]
     },
@@ -26,16 +26,16 @@
       "piece": 2,
       "name": "造器械中",
       "cell": [768, 0, 768, 1024],
-      "origin": [-2816, -1739],
+      "origin": [-2816, -1715],
       "objects": [
         {
           "id": "workshop-2",
           "kind": "workshop",
           "layer": "L3",
           "cells": [29, 23, 32, 24],
-          "height": 2,
-          "anchor": [896, 661],
-          "bbox": [893, 417, 1411, 650]
+          "height": 3,
+          "anchor": [896, 685],
+          "bbox": [893, 398, 1411, 674]
         }
       ]
     }

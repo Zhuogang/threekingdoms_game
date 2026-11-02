@@ -9,6 +9,7 @@
 - 拼接：每块只取它新画的部分，在已画好的一侧留 48px 渐变；马道补画只取马道外扩 12px、再渐变 10px 的一圈。编辑会把已画的部分也轻微重画，所以脚本拼之前先找出整块的错位（±8px），对齐后再拼，并报出偏移和差值。
 - 选定一张后，把文件名填进 `tools/build-siege-blockout.mjs` 的 `MAP_PICKS`，重跑这个脚本，再跑 compose 脚本，就得到下一步的输入。
 - `steps/` 里每步两张：`<步>-paint.png`（白色是这一步要画的地方；工具支持蒙版编辑时可以一起上传）和 `<步>-blend.png`（拼接权重）。`masks/`、`footprints.json` 用全图坐标，游戏按它们切层；`steps.json` 给 compose 脚本读。
+- **2026-11-02 六步都已选定**（2026-11-02 你在审阅页确认）：马道 `city-v3`、西北 `nw-v1`、东北 `ne-v2`、南 `s-v6`、西南 `sw-v3`、东南 `se-v3`；compose 报的偏移都是 0,0，差值 5.3–9.0。南块第一轮（v1–v3）把十字路画到了营地边上，于是南、西南、东南三块的场景描述里写明了路和营地的像素位置，第二轮起都对。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每步每张的提示词、源文件和选择理由记在 `generation-manifest.json`。
 
 ## 参考图
 
@@ -138,7 +139,7 @@ The block-out area is a colour-coded 3D block-out, not a style reference. Strict
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
 
-Subject of the block-out area: the ground south of the fortress where the Shu-Han army is encamped: the main road from the south running straight up to the south gate, a cross road, the trampled yards of two siege workshops, and the trampled ground of the camp; the camp is still empty because its tents, fences and sheds are added later. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
+Subject of the block-out area: the ground south of the fortress where the Shu-Han army is encamped: the main road from the south running straight up to the south gate (x=704..832); a cross road that comes in from the left edge and joins the main road from the west only, along y=544..592, and does not continue east of the main road; the trampled yards of two siege workshops (x=192..448 and x=1088..1344, y=592..688); and, below y=784, the trampled ground of the camp, which meets the snow directly, with no road along its edge; the camp is still empty because its tents, fences and sheds are added later. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
 
 Block-out legend (each colour means exactly this):
 - pale grey-white (#e6e4dc): open ground under fresh snow
@@ -171,7 +172,7 @@ The block-out area is a colour-coded 3D block-out, not a style reference. Strict
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
 
-Subject of the block-out area: the south-west of the battlefield: open snowy ground, the road from the south-west, low snowy hills in the bottom-left corner, and the western edge of the empty camp ground. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
+Subject of the block-out area: the south-west of the battlefield: open snowy ground; the road that comes down from the west gate along x=448..512 and, at y=544..592, turns east and runs to the right edge as the cross road (it does not continue south or west); low snowy hills in the bottom-left corner (x=0..448, below y=760); and, along the right edge below y=784 (x=704..768), the western edge of the empty camp ground. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
 
 Block-out legend (each colour means exactly this):
 - pale grey-white (#e6e4dc): open ground under fresh snow
@@ -205,7 +206,7 @@ The block-out area is a colour-coded 3D block-out, not a style reference. Strict
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
 
-Subject of the block-out area: the south-east of the battlefield: open snowy ground, the eastern edge of the empty camp ground, and plain snow where a small wood will stand (its trees are added later). In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
+Subject of the block-out area: the south-east of the battlefield: open snowy ground, no roads; the eastern edge of the empty camp ground, running straight down at x=832 below y=784; and plain snow where a small wood will stand (its trees are added later). In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.
 
 Block-out legend (each colour means exactly this):
 - pale grey-white (#e6e4dc): open ground under fresh snow

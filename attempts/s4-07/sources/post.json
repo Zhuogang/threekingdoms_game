@@ -1,0 +1,72 @@
+[
+  {
+    "id": "v1",
+    "source": "v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "67fda9f066ed92b241a450f711774627c772028993f3f7cf750452e8d17b8084",
+    "path": "attempts/v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 677658,
+    "sha256": "03878c06f0d09787875e93da1babda5250209b9cfdb7eb1a53c5f0bf15e37891",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        251,
+        3,
+        252
+      ],
+      [
+        253,
+        4,
+        252
+      ],
+      [
+        253,
+        1,
+        253
+      ],
+      [
+        252,
+        4,
+        252
+      ]
+    ]
+  },
+  {
+    "id": "v3",
+    "source": "v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "eb473bdf5215b6b28ffb1cee05f0e88d6bcc02433dd3db78e1e4642920baa93e",
+    "path": "attempts/v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 673232,
+    "sha256": "b54afde0228034128a8e403f16a3213d6dcf811638352635e02dbd1e8e1c4226",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        250,
+        3,
+        251
+      ],
+      [
+        253,
+        7,
+        253
+      ],
+      [
+        252,
+        2,
+        251
+      ],
+      [
+        252,
+        4,
+        252
+      ]
+    ]
+  }
+]

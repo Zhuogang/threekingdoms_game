@@ -1,0 +1,60 @@
+{
+  "asset": "s4-01-ladder-cart",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "朝北",
+      "cell": [0, 0, 512, 1024],
+      "origin": [-4928, -196],
+      "objects": [
+        {
+          "id": "ladder-n",
+          "kind": "ladder-cart",
+          "layer": "L3",
+          "cells": [40, 7, 40, 8],
+          "height": 2.5,
+          "anchor": [192, 668],
+          "bbox": [204, 370, 308, 654]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "朝东",
+      "cell": [512, 0, 512, 1024],
+      "origin": [-4736, -244],
+      "objects": [
+        {
+          "id": "ladder-e",
+          "kind": "ladder-cart",
+          "layer": "L3",
+          "cells": [42, 8, 43, 8],
+          "height": 2.5,
+          "anchor": [640, 620],
+          "bbox": [646, 422, 890, 602]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "烧毁",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [-4544, -232],
+      "objects": [
+        {
+          "id": "ladder-burnt",
+          "kind": "ladder-cart",
+          "layer": "L3",
+          "cells": [45, 7, 45, 8],
+          "height": 1,
+          "anchor": [1216, 632],
+          "bbox": [1228, 406, 1332, 618]
+        }
+      ]
+    }
+  ]
+}

@@ -11,7 +11,7 @@
       "paint": "steps/city-paint.png",
       "blend": "steps/city-blend.png",
       "input": "inputs/city.png",
-      "chosen": null
+      "chosen": "attempts/city-v3.webp"
     },
     {
       "id": "nw",
@@ -21,7 +21,7 @@
       "paint": "steps/nw-paint.png",
       "blend": "steps/nw-blend.png",
       "input": "inputs/nw.png",
-      "chosen": null
+      "chosen": "attempts/nw-v1.webp"
     },
     {
       "id": "ne",
@@ -31,7 +31,7 @@
       "paint": "steps/ne-paint.png",
       "blend": "steps/ne-blend.png",
       "input": "inputs/ne.png",
-      "chosen": null
+      "chosen": "attempts/ne-v2.webp"
     },
     {
       "id": "s",
@@ -41,7 +41,7 @@
       "paint": "steps/s-paint.png",
       "blend": "steps/s-blend.png",
       "input": "inputs/s.png",
-      "chosen": null
+      "chosen": "attempts/s-v6.webp"
     },
     {
       "id": "sw",
@@ -51,7 +51,7 @@
       "paint": "steps/sw-paint.png",
       "blend": "steps/sw-blend.png",
       "input": "inputs/sw.png",
-      "chosen": null
+      "chosen": "attempts/sw-v3.webp"
     },
     {
       "id": "se",
@@ -61,7 +61,7 @@
       "paint": "steps/se-paint.png",
       "blend": "steps/se-blend.png",
       "input": "inputs/se.png",
-      "chosen": null
+      "chosen": "attempts/se-v3.webp"
     }
   ]
 }

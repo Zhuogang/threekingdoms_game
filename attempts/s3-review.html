@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S3 出图审阅</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:16px; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  .controls { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .viewport { overflow:auto; border:1px solid var(--line); background:#e9e5da; max-height:80vh; }
+  .stack { position:relative; display:inline-block; line-height:0; }
+  .stack img { display:block; }
+  .stack img.top { position:absolute; inset:0; width:100%; height:100%; transition:opacity .25s; }
+  .row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.6fr); gap:16px; align-items:start; }
+  @media (max-width:900px) { .row { grid-template-columns:1fr; } }
+  figure { margin:0; }
+  figure img { max-width:100%; height:auto; display:block; border:1px solid var(--line); background:#fff; }
+  figcaption { color:var(--muted); font-size:13px; margin-top:4px; }
+</style>
+</head>
+<body>
+<header>
+  <b>陈仓 S3 状态变体审阅</b>
+  <a href="#all">全图·攻城后期</a>
+  <a href="#trench-half">填堑</a>
+  <a href="#gate-south-damaged">南门</a>
+  <a href="#gate-north-broken">北门</a>
+  <a href="#gate-west-broken">西门</a>
+  <a href="#gate-east-broken">东门</a>
+  <a href="#inner-wall-works">重墙</a>
+  <span class="note" style="margin:0">选择都是暂定，待你确认</span>
+</header>
+<main>
+<section id="all">
+  <h2>全图：完好 ⇄ 攻城后期（城堑填平、四门都破、重墙建成）</h2>
+  <p class="note">同一张 S2-01 定稿全图，只把六块补丁贴上去。按按钮或勾"自动切换"来回切，看补丁边上有没有破绽。</p>
+  <div class="controls">
+    <button id="flip">切换</button>
+    <label><input type="checkbox" id="auto"> 自动切换（1.2 秒）</label>
+    <label>缩放 <select id="zoom"><option value="0.5">50%</option><option value="1" selected>100%</option><option value="1.5">150%</option></select></label>
+    <span id="which" class="pick">完好</span>
+  </div>
+  <div class="viewport">
+    <div class="stack">
+      <img id="base" src="../docs/siege/chencang/art/s2-01-full-map/composite.webp" width="3072" height="1536" alt="intact">
+      <img id="late" class="top" src="s3-all-states.webp" alt="late siege" style="opacity:0">
+    </div>
+  </div>
+</section>
+<div id="states"></div>
+</main>
+<script>
+const ART = '../docs/siege/chencang/art/';
+const STATES = [
+  ['s3-01-trench-fill', 's3-01', 'trench-half', 'S3-01 城堑半填', 'v1', '三张都从外岸往里堆土，靠墙一侧留水；v1 土堆最干净、靠墙的水面清楚。游戏按格从整条里切。'],
+  ['s3-01-trench-fill', 's3-01', 'trench-filled', 'S3-01 城堑填平', 'v3', 'v2 角上还留着水；v1、v3 都填成平土道，v3 踩踏纹理和旧岸线更自然。'],
+  ['s3-02-gate-south-damaged', 's3-02', 'gate-south-damaged', 'S3-02 南门受损', 'v2', 'v2 最像"撞坏了但还关着"：门板开裂、铁条弯折、檐瓦掉了几片、有烟痕；v3 太轻，v1 把门画大了。'],
+  ['s3-03-gate-south-broken', 's3-03', 'gate-south-broken', 'S3-03 南门门破', 'v2', 'v1、v3 把方门洞改成了圆拱、还埋掉了桥；v2 保持方门洞，门扇倒在里面。'],
+  ['s3-04-gate-north-broken', 's3-04', 'gate-north-broken', 'S3-04 北门门破', 'v2', 'v1、v3 画成圆拱；v2 保持方门洞，破门和碎砖。'],
+  ['s3-05-gate-west-broken', 's3-05', 'gate-west-broken', 'S3-05 西门门破', 'v2', 'v1 在门楼南面开了个朝南的门（不对，门洞是东西向）；v2 门楼完好、下面有烟痕、门洞两头散出碎木，和东门成对。'],
+  ['s3-06-gate-east-broken', 's3-06', 'gate-east-broken', 'S3-06 东门门破', 'v2', 'v1 同样开了朝南的门；v3 把门楼窗子抹掉了；v2 和西门一致。'],
+  ['s3-07-inner-wall', 's3-07', 'inner-wall-works', 'S3-07 重墙施工中', 'v1', 'v2 把南面两条马道画没了；v1、v3 保留马道；v1 的木板墙一直接到门楼（这一段到 x 22，对）。'],
+  ['s3-07-inner-wall', 's3-07', 'inner-wall-built', 'S3-08 重墙建成', 'v1', 'v1、v3 都是比城墙矮、带朝南垛口的夯土墙；v1 墙在马道后面一直接到门楼（对），v3 停在马道处。'],
+];
+const host = document.getElementById('states');
+for (const [folder, short, id, title, pick, note] of STATES) {
+  const s = document.createElement('section');
+  s.id = id;
+  s.innerHTML = `<h2>${title}（定 <span class="pick">${pick}</span>）</h2><p class="note">${note}</p>
+    <div class="row">
+      <figure><img loading="lazy" src="${ART}${folder}/previews/${id}.webp"><figcaption>补丁贴回全图：上为原图，下为这一态</figcaption></figure>
+      <figure><img loading="lazy" src="${short}/${id}-review.png"><figcaption>输入（灰盒贴在原图上）和三张候选，裁到改动的地方</figcaption></figure>
+    </div>`;
+  host.appendChild(s);
+}
+const late = document.getElementById('late'), which = document.getElementById('which');
+let on = false;
+const flip = () => { on = !on; late.style.opacity = on ? 1 : 0; which.textContent = on ? '攻城后期' : '完好'; };
+document.getElementById('flip').onclick = flip;
+let timer = null;
+document.getElementById('auto').onchange = (e) => { clearInterval(timer); if (e.target.checked) timer = setInterval(flip, 1200); };
+const zoom = document.getElementById('zoom'), base = document.getElementById('base');
+zoom.onchange = () => { base.width = 3072 * zoom.value; base.height = 1536 * zoom.value; };
+</script>
+</body>
+</html>

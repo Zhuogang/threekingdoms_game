@@ -1,0 +1,46 @@
+{
+  "asset": "s3-07-inner-wall",
+  "size": [1536, 1024],
+  "cell": [64, 48],
+  "level": 24,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-768, -512],
+  "objects": [
+    {
+      "id": "inner-wall-1",
+      "kind": "inner-wall",
+      "layer": "L3",
+      "cells": [15, 14, 15, 14],
+      "height": 2,
+      "anchor": [192, 208],
+      "bbox": [192, 121, 257, 184]
+    },
+    {
+      "id": "inner-wall-2",
+      "kind": "inner-wall",
+      "layer": "L3",
+      "cells": [17, 14, 22, 14],
+      "height": 2,
+      "anchor": [320, 208],
+      "bbox": [319, 121, 653, 184]
+    },
+    {
+      "id": "inner-wall-3",
+      "kind": "inner-wall",
+      "layer": "L3",
+      "cells": [25, 14, 30, 14],
+      "height": 2,
+      "anchor": [832, 208],
+      "bbox": [883, 121, 1217, 184]
+    },
+    {
+      "id": "inner-wall-4",
+      "kind": "inner-wall",
+      "layer": "L3",
+      "cells": [32, 14, 32, 14],
+      "height": 2,
+      "anchor": [1280, 208],
+      "bbox": [1279, 121, 1344, 184]
+    }
+  ]
+}

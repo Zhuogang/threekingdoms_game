@@ -377,8 +377,10 @@ const workshop = (n, x) => ({
   cells: [x, 23, x + 3, 24],
   symbols: 'S',
   parts: [
-    box(x + 0.1, x + 3.9, 23.15, 24.88, 0, 1.1, C.shedBody, C.shedBody),
-    roof(x - 0.02, x + 4.02, 23.02, 25, 1.1, 2, 'ew', 0.4, C.shed),
+    // Eaves at 2 levels so a ladder cart fits under the roof (S2-10 round 1
+    // drew taller posts on its own when the eaves were at 1.1).
+    box(x + 0.1, x + 3.9, 23.15, 24.88, 0, 2, C.shedBody, C.shedBody),
+    roof(x - 0.02, x + 4.02, 23.02, 25, 2, 3, 'ew', 0.4, C.shed),
   ],
 });
 const hqTent = () => ({
@@ -1281,7 +1283,14 @@ const CITY_AT = [-VIGNETTE.ox, -VIGNETTE.oy];
 const TILE = [1536, 1024];
 // Chosen attempt per S2-01 step (a file in s2-01-full-map/attempts/), or null
 // while the step is open. tools/compose-siege-map.mjs reads them via steps.json.
-const MAP_PICKS = { city: null, nw: null, ne: null, s: null, sw: null, se: null };
+const MAP_PICKS = {
+  city: 'city-v3.webp',
+  nw: 'nw-v1.webp',
+  ne: 'ne-v2.webp',
+  s: 's-v6.webp',
+  sw: 'sw-v3.webp',
+  se: 'se-v3.webp',
+};
 // Outpainting tiles, in order. `paint` is the new area in tile pixels; the rest
 // of each tile is already painted by the time its turn comes (checked below).
 const MAP_TILES = [
@@ -1316,7 +1325,9 @@ const MAP_TILES = [
     paint: [[0, 560, 1536, 1024]],
     where: 'the bottom part of the image, below y=560',
     scene:
-      'the ground south of the fortress where the Shu-Han army is encamped: the main road from the south running straight up to the south gate, a cross road, the trampled yards of two siege workshops, and the trampled ground of the camp; the camp is still empty because its tents, fences and sheds are added later',
+      // Round 1 (2026-11-02) moved the cross road to the camp edge on all three
+      // candidates, so the scene now names where each feature lies.
+      'the ground south of the fortress where the Shu-Han army is encamped: the main road from the south running straight up to the south gate (x=704..832); a cross road that comes in from the left edge and joins the main road from the west only, along y=544..592, and does not continue east of the main road; the trampled yards of two siege workshops (x=192..448 and x=1088..1344, y=592..688); and, below y=784, the trampled ground of the camp, which meets the snow directly, with no road along its edge; the camp is still empty because its tents, fences and sheds are added later',
   },
   {
     id: 'sw',
@@ -1325,7 +1336,8 @@ const MAP_TILES = [
     paint: [[0, 512, 768, 1024]],
     where: 'the bottom-left quarter of the image',
     scene:
-      'the south-west of the battlefield: open snowy ground, the road from the south-west, low snowy hills in the bottom-left corner, and the western edge of the empty camp ground',
+      // Positions named after the s tile's round 1 moved its cross road.
+      'the south-west of the battlefield: open snowy ground; the road that comes down from the west gate along x=448..512 and, at y=544..592, turns east and runs to the right edge as the cross road (it does not continue south or west); low snowy hills in the bottom-left corner (x=0..448, below y=760); and, along the right edge below y=784 (x=704..768), the western edge of the empty camp ground',
   },
   {
     id: 'se',
@@ -1334,7 +1346,7 @@ const MAP_TILES = [
     paint: [[768, 512, 1536, 1024]],
     where: 'the bottom-right quarter of the image',
     scene:
-      'the south-east of the battlefield: open snowy ground, the eastern edge of the empty camp ground, and plain snow where a small wood will stand (its trees are added later)',
+      'the south-east of the battlefield: open snowy ground, no roads; the eastern edge of the empty camp ground, running straight down at x=832 below y=784; and plain snow where a small wood will stand (its trees are added later)',
   },
 ];
 // Blend widths: a tile fades into the painted side over 48px; the ramp patch
@@ -1454,10 +1466,11 @@ const EXCLUDE_PIECES = EXCLUDE_SPRITE.replace(
   'ground, scenery or cast shadows;',
   'ground, snowfield, cast shadows or anything besides the requested pieces;',
 );
-const sheetAsset = ({ id, zh, about, slots, subject, checks }) => ({
+const sheetAsset = ({ id, zh, stage = 'S2', final, about, slots, subject, checks }) => ({
   id,
-  stage: 'S2',
+  stage,
   zh,
+  final,
   size: [1536, 1024],
   about,
   render() {
@@ -1506,6 +1519,741 @@ const sceneChecks = [
   '灰盒里的红色门洞、蓝灰墙体有没有被照搬成颜色。',
 ];
 
+// ---------------------------------------------------------------------------
+// S3 state variants (MVP plan §8.2, art plan §9.2): local repaints of the
+// approved S2-01 map. Each state is one ImageGen edit of a 1536×1024 crop of
+// s2-01-full-map/composite.webp. Per state the builder writes
+// `steps/<state>-paint.png` (what may change), `steps/<state>-blend.png` (how
+// much of the result goes into the patch) and, for new geometry,
+// `steps/<state>-overlay.png` (block-out pixels pasted onto the crop).
+// `job.json` lists them for tools/compose-siege-states.mjs, which writes the
+// edit input `inputs/<state>.png` and, for each chosen state, the patch
+// `patches/<state>.png` with its place on the map.
+const STATE_PICKS = {
+  'trench-half': 'trench-half-v1.webp',
+  'trench-filled': 'trench-filled-v3.webp',
+  'gate-south-damaged': 'gate-south-damaged-v2.webp',
+  'gate-south-broken': 'gate-south-broken-v2.webp',
+  'gate-north-broken': 'gate-north-broken-v2.webp',
+  'gate-west-broken': 'gate-west-broken-v2.webp',
+  'gate-east-broken': 'gate-east-broken-v2.webp',
+  'inner-wall-works': 'inner-wall-works-v1.webp',
+  'inner-wall-built': 'inner-wall-built-v1.webp',
+};
+const CROP_SOUTH = [768, 512];
+const CROP_NORTH = [768, 0];
+const STATE_MARGIN = { gate: [6, 12], trench: [4, 12], wall: [8, 12] };
+// The inner wall (MVP plan §4.8): four runs on row 14, gaps at x 16, 23–24, 31.
+const INNER_WALL_RUNS = [
+  [15, 16],
+  [17, 23],
+  [25, 31],
+  [32, 33],
+];
+const innerWall = (built) =>
+  INNER_WALL_RUNS.map(([x0, x1], i) => ({
+    id: `inner-wall-${i + 1}`,
+    kind: 'inner-wall',
+    key: 'works',
+    row: 14,
+    cells: [x0, 14, x1 - 1, 14],
+    symbols: 'R',
+    parts: [
+      box(
+        x0,
+        x1,
+        14.2,
+        14.8,
+        0,
+        built ? 2 : 1,
+        built ? '#c9b48c' : '#bfa97f',
+        built ? '#8f7a58' : '#86714f',
+      ),
+    ],
+  }));
+// The south trench (MVP plan §4.6): rows 17–18, x 12–35, minus the bridge.
+const TRENCH_ROWS = [17, 18];
+const TRENCH_X = [12, 36];
+const BRIDGE_X = [23, 25];
+
+const cropFrame = ([cx, cy]) => ({ ...SCALE_1X, ox: -cx, oy: -cy });
+const toCrop = ([cx, cy], [x0, y0, x1, y1]) => [x0 - cx, y0 - cy, x1 - cx, y1 - cy];
+function objectMask(canvas, r, ids) {
+  const [w, h] = TILE;
+  const out = new Uint8Array(w * h);
+  for (const id of ids) {
+    const m = r.masks.get(canvas.objects.indexOf(id));
+    if (!m) throw new Error(`S3: no mask for ${id}`);
+    for (let i = 0; i < out.length; i++) if (m[i] > 127) out[i] = 255;
+  }
+  return out;
+}
+function rectMask(list) {
+  const [w, h] = TILE;
+  const out = new Uint8Array(w * h);
+  for (const [x0, y0, x1, y1] of list)
+    for (let y = Math.max(0, y0); y < Math.min(h, y1); y++)
+      out.fill(255, y * w + Math.max(0, x0), y * w + Math.min(w, x1));
+  return out;
+}
+const grow = (mask, px) => {
+  const [w, h] = TILE;
+  return feather(mask, w, h, px, 1).map((v) => (v > 127 ? 255 : 0));
+};
+const maskBox = (mask) => {
+  const [w, h] = TILE;
+  let [x0, y0, x1, y1] = [w, h, -1, -1];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (mask[y * w + x]) {
+        x0 = Math.min(x0, x);
+        y0 = Math.min(y0, y);
+        x1 = Math.max(x1, x + 1);
+        y1 = Math.max(y1, y + 1);
+      }
+  return [x0, y0, x1, y1];
+};
+const boxText = ([x0, y0, x1, y1]) => `x=${x0}..${x1}, y=${y0}..${y1}`;
+const trenchRects = (crop) => {
+  // Floor of a level −1 cell plus the north bank face above it.
+  const y0 = TRENCH_ROWS[0] * 48;
+  const y1 = (TRENCH_ROWS.at(-1) + 1) * 48 + 24;
+  return [
+    toCrop(crop, [TRENCH_X[0] * 64, y0, BRIDGE_X[0] * 64, y1]),
+    toCrop(crop, [BRIDGE_X[1] * 64, y0, TRENCH_X[1] * 64, y1]),
+  ];
+};
+
+const statePrompt = ({ what, overlay, change, positions, region }) =>
+  [
+    `Edit task: change one part of a finished painting to show ${what}. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.`,
+    `It is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.${overlay ? ` ${overlay}` : ''}`,
+    change,
+    ['Positions on this canvas (pixel boxes measured from the block-out):', ...positions].join(
+      '\n',
+    ),
+    `Repaint only ${region} and the few pixels around it needed to blend it in. ${EDIT_KEEP.replace('the finished area', 'everything else')}`,
+    'Paint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.',
+    PROJECTION,
+    LIGHT,
+    STYLES[CHOSEN_STYLE].text,
+    EXCLUDE_SCENE,
+  ].join('\n\n');
+
+// What a broken gate looks like from this camera: the south gate shows its
+// doors; the north gate is seen from inside; the side gates' doors face east
+// and west, which the camera never sees, so they break through debris.
+const BROKEN_GATE = {
+  south:
+    'The south gate has been broken through by a battering ram. The heavy iron-studded doors are smashed in: one hangs askew from its upper hinge, the other has fallen inward, both split into jagged planks. The gate passage is now open and dark, with splintered timber, iron straps and broken brick across the threshold and spilling onto the bridge end. Soot streaks rise from the gateway over the brick face, and a few roof tiles are missing from the lower eaves of the gate tower. The gate tower and the wall still stand.',
+  north:
+    'The north gate has been broken through, seen from inside the city: inside the dark gate passage the doors at its far end are smashed and hanging open, splintered timber and broken brick lie across the passage mouth and the street just inside it, soot streaks rise over the brick face above the passage, and a few roof tiles are missing from the tower eaves. The gate tower and the wall still stand.',
+  side: (side) =>
+    `The ${side} gate has been broken through. Its doors face ${side} and cannot be seen from this camera, so show the break by what spills out of the gate passage: splintered door planks, iron straps and broken brick strewn across the road and the bridge where they meet the gate, trampled mud, soot streaks on the gate tower's south face, and a few roof tiles knocked off its eaves. The gate tower and the wall still stand.`,
+};
+
+function stateAsset({ id, zh, crop, about, states, checks }) {
+  const renderState = (s) => {
+    const canvas = createCanvas(...TILE, C.ice);
+    const extra = s.objects ?? [];
+    const ids = new Set(extra.map((o) => o.id));
+    const objects = [...mapObjects().filter((o) => !ids.has(o.id)), ...extra];
+    const frame = cropFrame(crop);
+    renderScene(canvas, frame, objects, { terrain: mapTerrain });
+    const focus = new Set([...(s.focus ?? []), ...ids]);
+    return { canvas, frame, r: resolve(canvas), objects: objects.filter((o) => focus.has(o.id)) };
+  };
+  const picked = states.filter((s) => STATE_PICKS[s.id]);
+  return {
+    id,
+    stage: 'S3',
+    zh,
+    size: TILE,
+    final: picked.length ? picked.map((s) => STATE_PICKS[s.id]).join('`、`') : undefined,
+    about: [
+      ...about,
+      ...(picked.length
+        ? [
+            `**2026-11-02 选定**（待你确认）：${picked.map((s) => `${s.zh} \`${STATE_PICKS[s.id]}\``).join('，')}。补丁在 \`patches/\`（\`<态>.json\` 记它在全图上的位置），贴回全图的前后对比在 \`previews/\`；每张的提示词、源文件和选择理由记在 \`generation-manifest.json\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh）。`,
+          ]
+        : []),
+    ],
+    // blockout.png and footprints.json show the last state (for the inner
+    // wall: built, whose outline is the cut-out mask); each state with its
+    // own geometry is rendered again for its masks and overlay.
+    render() {
+      return renderState(states.at(-1));
+    },
+    async write(dir) {
+      const [w, h] = TILE;
+      await mkdir(join(dir, 'steps'), { recursive: true });
+      const job = { canvas: TILE, crop, map: '../s2-01-full-map/composite.webp', states: [] };
+      for (const s of states) {
+        const { canvas, r } = renderState(s);
+        const area = s.area(canvas, r);
+        const paint = grow(area, s.margin[0]);
+        const blend = feather(area, w, h, s.margin[0], s.margin[1]);
+        await writeFile(join(dir, 'steps', `${s.id}-paint.png`), png(w, h, 1, paint));
+        await writeFile(join(dir, 'steps', `${s.id}-blend.png`), png(w, h, 1, blend));
+        let overlay = null;
+        if (s.objects) {
+          const keep = new Set(s.objects.map((o) => canvas.objects.indexOf(o.id)));
+          const rgba = new Uint8Array(w * h * 4);
+          for (let i = 0; i < w * h; i++)
+            if (keep.has(r.obj[i]))
+              rgba.set([r.rgb[i * 3], r.rgb[i * 3 + 1], r.rgb[i * 3 + 2], 255], i * 4);
+          overlay = `steps/${s.id}-overlay.png`;
+          await writeFile(join(dir, overlay), png(w, h, 4, rgba));
+        }
+        job.states.push({
+          id: s.id,
+          name: s.zh,
+          paint: `steps/${s.id}-paint.png`,
+          blend: `steps/${s.id}-blend.png`,
+          overlay,
+          input: `inputs/${s.id}.png`,
+          chosen: STATE_PICKS[s.id] ? `attempts/${STATE_PICKS[s.id]}` : null,
+          patch: `patches/${s.id}.png`,
+          ...(s.cells ? { cells: s.cells } : {}),
+        });
+      }
+      await writeFile(join(dir, 'job.json'), await pretty(JSON.stringify(job), 'json'));
+    },
+    prompts: () =>
+      states.map((s) => ({
+        title: `${s.zh}（${s.id}）`,
+        note: `上传 \`inputs/${s.id}.png\`（先跑 \`node tools/compose-siege-states.mjs\` 生成）${s.objects ? '：画面上贴了这一态的灰盒' : ''}。出图存为 \`attempts/${s.id}-v1.webp\`……`,
+        text: (({ canvas, r }) => s.prompt(maskBox(s.area(canvas, r))))(renderState(s)),
+      })),
+    uploads: [
+      '每一态只上传一张：`inputs/<态>.png`（编辑对象，由 `node tools/compose-siege-states.mjs` 从 S2-01 定稿全图裁出）。工具支持蒙版编辑时，可以同时给 `steps/<态>-paint.png`。',
+    ],
+    checks: [
+      ...checks,
+      '只有标出的地方变了；compose 报的偏移应在 ±4px 以内、差值和 S2-01 各步相近，补丁 `patches/<态>.png` 贴回全图后（`previews/<态>.webp`）看不出边。',
+    ],
+    naming:
+      '每态分开编号：`<态>-v1.webp`、`<态>-v2.webp`……，保持 1536×1024 原尺寸，不缩放、不裁切。',
+  };
+}
+
+const STATE_ASSETS = [
+  stateAsset({
+    id: 's3-01-trench-fill',
+    zh: 'S3-01 城堑填堑',
+    crop: CROP_SOUTH,
+    about: [
+      '南墙外的城堑两行（y 17–18，x 12–35，桥下 x 23–24 不动），画两态：半填、填平。规则见 MVP 计划 §4.6：外侧一行先填平，内侧一行才能填。',
+      '定 α 后不再出单格贴片：整条城堑各画一张半填、一张填平，游戏按格从里面切（`job.json` 的 `cells` 给出每格的像素框），一格一格换状态，所以三种花样从整条里自然得来。',
+      '裁取全图 (768, 512) 起的 1536×1024，和 S2-01 南块同一块。',
+    ],
+    states: ['half', 'filled'].map((k) => ({
+      id: `trench-${k}`,
+      zh: k === 'half' ? '半填' : '填平',
+      margin: STATE_MARGIN.trench,
+      area: () => rectMask(trenchRects(CROP_SOUTH)),
+      cells: TRENCH_ROWS.flatMap((y) =>
+        Array.from({ length: TRENCH_X[1] - TRENCH_X[0] }, (_, i) => TRENCH_X[0] + i)
+          .filter((x) => x < BRIDGE_X[0] || x >= BRIDGE_X[1])
+          .map((x) => ({ cell: [x, y], box: [x * 64, y * 48, x * 64 + 64, y * 48 + 72] })),
+      ),
+      prompt: () =>
+        statePrompt({
+          what: k === 'half' ? 'the city trench half filled in' : 'the city trench filled level',
+          change:
+            k === 'half'
+              ? 'The attackers have begun to fill the trench along the south wall, on both sides of the gate bridge. Loose earth, rubble and bundles of brushwood have been tipped in from the outer (south) bank and form uneven mounds that cover about half of the trench, mostly along its south side; broken ice and dark water still show between the mounds, mostly along the wall side. Fresh earth is trodden into the snow along the outer bank. The bridge, the wall and the bank on the wall side stay as they are.'
+              : 'The attackers have filled the trench along the south wall, on both sides of the gate bridge, level with the ground: packed earth, rubble and brushwood trampled flat, muddy and trodden into the snow, so that it reads as a rough causeway along the foot of the wall. Only a faint dip and a few stones of the old bank edges remain; no water or ice shows. The bridge and the wall stay as they are.',
+          positions: [
+            `- the trench west of the bridge: ${boxText(trenchRects(CROP_SOUTH)[0])}`,
+            `- the trench east of the bridge: ${boxText(trenchRects(CROP_SOUTH)[1])}`,
+            `- the gate bridge, which stays unchanged: ${boxText(toCrop(CROP_SOUTH, [BRIDGE_X[0] * 64, 816, BRIDGE_X[1] * 64, 936]))}`,
+          ],
+          region: 'the trench inside these two boxes',
+        }),
+    })),
+    checks: [
+      '半填：土堆从外岸（南）往里堆，盖住约一半，靠墙一侧还见冰和水；填平：和地面齐平，看不到水和冰，像一条土道。',
+      '桥、城墙、墙脚不变；城堑以外的雪地、路不变。',
+      '按格切出来拼（外侧一行填平、内侧一行完好）时，两行之间的过渡说得过去。',
+    ],
+  }),
+  ...[
+    ['s3-02-gate-south-damaged', 'S3-02 南门受损', 'south', 'damaged'],
+    ['s3-03-gate-south-broken', 'S3-03 南门门破', 'south', 'broken'],
+    ['s3-04-gate-north-broken', 'S3-04 北门门破', 'north', 'broken'],
+    ['s3-05-gate-west-broken', 'S3-05 西门门破', 'west', 'broken'],
+    ['s3-06-gate-east-broken', 'S3-06 东门门破', 'east', 'broken'],
+  ].map(([id, zh, side, state]) => {
+    const gate = `gate-${side}`;
+    const crop = side === 'south' ? CROP_SOUTH : CROP_NORTH;
+    const ids = side === 'south' ? [gate, 'gate-south-parapet'] : [gate];
+    return stateAsset({
+      id,
+      zh,
+      crop,
+      about: [
+        `${{ south: '南', north: '北', west: '西', east: '东' }[side]}门${state === 'damaged' ? '受损：门还关着，被冲车撞得开裂，门楼掉了几片瓦。耐久过半时换这一态（MVP 计划 §4.5）' : '门破：门洞变成双方都能进的格（MVP 计划 §4.5）'}。补丁只取门楼蒙版${side === 'south' ? '（连女墙前沿）' : ''}外扩 6px、再渐变 12px 的一圈。`,
+        side === 'west' || side === 'east'
+          ? '东西门的门扇朝东西，这个机位看不到，所以门破靠门洞两头散出来的碎门板、铁件和碎砖、门楼南面的烟痕来表现。'
+          : side === 'north'
+            ? '北门是从城内看：门扇在门洞北头，画成门洞里门扇破开、门洞口一地碎木。'
+            : '南门正对镜头，门扇看得清。',
+        `裁取全图 (${crop.join(', ')}) 起的 1536×1024。`,
+      ],
+      states: [
+        {
+          id: `${gate}-${state}`,
+          zh: state === 'damaged' ? '受损' : '门破',
+          margin: STATE_MARGIN.gate,
+          focus: [gate],
+          area: (canvas, r) => objectMask(canvas, r, ids),
+          prompt: (b) =>
+            statePrompt({
+              what: state === 'damaged' ? `the ${side} gate battered` : `the ${side} gate broken`,
+              change:
+                state === 'damaged'
+                  ? 'The south gate has been battered by a ram but still holds. The iron-studded doors stay closed, but their planks are split and gouged, several iron straps are bent and torn loose, and a dark bruised scar marks where the ram struck; splinters and a few fallen bricks lie on the threshold. A few roof tiles are knocked off the lower eaves of the gate tower, and faint scorch marks stain the brick around the gateway. The gate tower and the wall still stand.'
+                  : side === 'south' || side === 'north'
+                    ? BROKEN_GATE[side]
+                    : BROKEN_GATE.side(side),
+              positions: [`- the ${side} gate with its tower: ${boxText(b)}`],
+              region: `the ${side} gate inside this box`,
+            }),
+        },
+      ],
+      checks: [
+        state === 'damaged'
+          ? '门还关着、看得出被撞过；门楼大体完好。'
+          : '门洞看得出已经打开、能走人；门楼和城墙还在，没有塌。',
+        '只改了这座门：两边的墙段、别的门楼、路和桥不变。',
+      ],
+    });
+  }),
+  stateAsset({
+    id: 's3-07-inner-wall',
+    zh: 'S3-07/08 重墙（施工中、建成）',
+    crop: CROP_SOUTH,
+    about: [
+      '重墙在 y 14，分四段：x 15、x 17–22、x 25–30、x 32；缺口在 x 16、x 23–24（路口）、x 31（MVP 计划 §4.8）。两态各是一次编辑：施工中（灰盒 1 层高）、建成（灰盒 2 层高，比城墙矮一层，顶上能站人）。',
+      '输入图上按这一态的高度贴了重墙灰盒；补丁取灰盒蒙版外扩 8px、再渐变 12px。建成的墙在 y 14 那一行，挡住南营房的墙脚，排序时和城墙同一层（L3）。',
+      '`steps/inner-wall-*-overlay.png` 就是贴上去的灰盒；切层蒙版按建成态的灰盒（`footprints.json`）。',
+      '裁取全图 (768, 512) 起的 1536×1024。',
+    ],
+    states: [
+      {
+        id: 'inner-wall-works',
+        zh: '施工中（S3-07）',
+        margin: STATE_MARGIN.wall,
+        objects: innerWall(false),
+        area: (canvas, r) =>
+          objectMask(
+            canvas,
+            r,
+            INNER_WALL_RUNS.map((_, i) => `inner-wall-${i + 1}`),
+          ),
+        prompt: (b) =>
+          statePrompt({
+            what: 'an inner wall being built',
+            overlay: `Four flat sandy shapes (a pale top and a darker front) have been pasted onto it across the city, between the southern barracks and the south wall; each marks one run of a new inner wall that the defenders are building in haste overnight. Paint over the four shapes; they are the block-out, not part of the painting.`,
+            change:
+              'Paint each run as rammed earth (夯土) half raised: a long low body of fresh tamped yellow-brown earth exactly filling the marked shape, held between timber shuttering boards lashed to upright poles and cross-ties; the poles stand about twice as high as the earth. Along the runs lie baskets of earth, wooden rammers, a ladder and loose planks, and fresh earth is spilled and trodden into the snow around them. The four runs stay separate, with the gaps between them clear (the street to the south gate passes through the middle gap).',
+            positions: [`- the four runs of the inner wall, all inside: ${boxText(b)}`],
+            region: 'the four marked shapes',
+          }),
+      },
+      {
+        id: 'inner-wall-built',
+        zh: '建成（S3-08）',
+        margin: STATE_MARGIN.wall,
+        objects: innerWall(true),
+        area: (canvas, r) =>
+          objectMask(
+            canvas,
+            r,
+            INNER_WALL_RUNS.map((_, i) => `inner-wall-${i + 1}`),
+          ),
+        prompt: (b) =>
+          statePrompt({
+            what: 'a finished inner wall',
+            overlay: `Four flat sandy shapes (a pale top and a darker front) have been pasted onto it across the city, between the southern barracks and the south wall; each marks one run of a new inner wall (重墙) that the defenders built in haste. Paint over the four shapes; they are the block-out, not part of the painting.`,
+            change:
+              'Paint each run as a finished rammed-earth wall exactly filling its marked shape: smooth tamped yellow-brown earth with faint horizontal layer lines left by the shuttering, lower than the city wall, with a narrow flat walkway on top under fresh snow and a low crenellated earth parapet along its south (front) edge only. It is plainer and rougher than the brick-faced city wall, clearly new work. The four runs stay separate, with the gaps between them clear (the street to the south gate passes through the middle gap).',
+            positions: [`- the four runs of the inner wall, all inside: ${boxText(b)}`],
+            region: 'the four marked shapes',
+          }),
+      },
+    ],
+    checks: [
+      '四段都在灰盒的位置上，缺口留着；建成的墙比城墙矮、顶上有走道和朝南的矮垛口。',
+      '施工中看得出是夯土版筑：木板夹着半截土墙、立杆、土筐。',
+      '南营房和城墙不变。',
+    ],
+  }),
+];
+
+// ---------------------------------------------------------------------------
+// S4 siege engines and countermeasures (MVP plan §4.7, §4.8, §8.2): piece
+// sheets like S2-08 to S2-11, magenta, 2× scale, S1-02 as the standard. Each
+// factory takes a unique id and a cell (x, y) on an empty part of the map; the
+// sheet centres every piece in its slot, so only sizes and heights matter.
+// Burning states are painted charred and smouldering; the game adds flames and
+// smoke (S6-01, MVP plan §8.3).
+const WOOD = '#9a7650';
+const WOOD_DARK = '#6e5438';
+const HIDE = '#8c7a5c';
+const CHAR = '#4a4036';
+const EARTH = '#a88d62';
+const STONE = '#9c9a94';
+const engine = (id, kind, x, y, cells, parts) => ({
+  id,
+  kind,
+  key: 'shed',
+  row: cells[3],
+  cells,
+  symbols: 'E',
+  parts,
+});
+const slope = (x0, x1, y0, y1, t, rise, top = WOOD, front = WOOD_DARK) => ({
+  ...ramp(x0, x1, y0, y1, t, rise),
+  top,
+  front,
+});
+// 云梯车: a wheeled chassis with a triangular ladder truss rising to 2.5 levels.
+const ladderCart = (id, x, y, side = false, burnt = false) =>
+  side
+    ? engine(
+        id,
+        'ladder-cart',
+        x,
+        y,
+        [x, y, x + 1, y],
+        [
+          box(x + 0.05, x + 1.95, y + 0.1, y + 0.9, 0.2, burnt ? 0.5 : 0.75, burnt ? CHAR : WOOD),
+          slope(x + 0.15, x + 1.85, y + 0.2, y + 0.8, burnt ? 1 : 2.5, 'e', burnt ? CHAR : WOOD),
+        ],
+      )
+    : engine(
+        id,
+        'ladder-cart',
+        x,
+        y,
+        [x, y - 1, x, y],
+        [
+          box(x + 0.1, x + 0.9, y - 0.95, y + 0.95, 0.2, burnt ? 0.5 : 0.75, burnt ? CHAR : WOOD),
+          slope(x + 0.2, x + 0.8, y - 0.85, y + 0.85, burnt ? 1 : 2.5, 'n', burnt ? CHAR : WOOD),
+        ],
+      );
+// The ladder raised against the south wall: the cart stands south of the
+// trench (row y + 3), the ladder spans the two trench rows to the wall top
+// (3 levels) at the wall's front edge (y).
+const ladderOnWall = (id, x, y, burnt = false) =>
+  engine(
+    id,
+    'ladder-raised',
+    x,
+    y,
+    [x, y, x, y + 3],
+    [
+      box(x + 0.1, x + 0.9, y + 2.9, y + 3.9, 0.2, 0.75, burnt ? CHAR : WOOD),
+      slope(x + 0.25, x + 0.75, y, y + 3.4, 3, 'n', burnt ? CHAR : WOOD),
+    ],
+  );
+// 冲车: a roofed shed of timber and hides on wheels, its ram beam out front.
+const ram = (id, x, y, side = false, wrecked = false) => {
+  const h = wrecked ? 0.45 : 0.9;
+  const top = wrecked ? 0.7 : 1.5;
+  return side
+    ? engine(
+        id,
+        'ram',
+        x,
+        y,
+        [x, y, x + 1, y],
+        [
+          box(x + 0.05, x + 1.95, y + 0.1, y + 0.9, 0.15, h, HIDE),
+          roof(x, x + 2, y + 0.05, y + 0.95, h, top, 'ew', 0, HIDE),
+          ...(wrecked ? [] : [box(x + 1.95, x + 2.45, y + 0.42, y + 0.58, 0.35, 0.55, WOOD_DARK)]),
+        ],
+      )
+    : engine(
+        id,
+        'ram',
+        x,
+        y,
+        [x, y - 1, x, y],
+        [
+          box(x + 0.1, x + 0.9, y - 0.95, y + 0.95, 0.15, h, HIDE),
+          roof(x + 0.05, x + 0.95, y - 1, y + 1, h, top, 'ns', 0, HIDE),
+          ...(wrecked ? [] : [box(x + 0.42, x + 0.58, y - 1.5, y - 0.95, 0.35, 0.55, WOOD_DARK)]),
+        ],
+      );
+};
+// 井阑: a wheeled timber tower 2×2 cells and 6 levels high (the tallest thing
+// on the map after the gate towers), a fighting platform with a parapet on top.
+const siegeTower = (id, x, y, burnt = false) =>
+  engine(
+    id,
+    'siege-tower',
+    x,
+    y,
+    [x, y - 1, x + 1, y],
+    [
+      box(
+        x + 0.15,
+        x + 1.85,
+        y - 0.85,
+        y + 0.85,
+        0.2,
+        5.3,
+        burnt ? CHAR : WOOD,
+        burnt ? CHAR : WOOD_DARK,
+      ),
+      box(x, x + 2, y - 1, y + 1, 5.3, 5.5, burnt ? CHAR : WOOD),
+      box(x, x + 2, y + 0.8, y + 1, 5.5, 6, burnt ? CHAR : WOOD_DARK),
+    ],
+  );
+// The toppled tower lies east-west, four cells long.
+const towerWreck = (id, x, y) =>
+  engine(
+    id,
+    'siege-tower-wreck',
+    x,
+    y,
+    [x, y - 1, x + 3, y],
+    [box(x + 0.1, x + 3.9, y - 0.8, y + 0.9, 0, 1.3, CHAR)],
+  );
+// 土车: a one-cell barrow cart heaped with earth.
+const earthCart = (id, x, y, tipped = false) =>
+  engine(
+    id,
+    'earth-cart',
+    x,
+    y,
+    [x, y, x, y],
+    tipped
+      ? [
+          box(x + 0.15, x + 0.85, y + 0.1, y + 0.6, 0, 0.45, WOOD),
+          roof(x + 0.05, x + 0.95, y + 0.55, y + 0.95, 0, 0.3, 'ew', 0.1, EARTH),
+        ]
+      : [
+          box(x + 0.2, x + 0.8, y + 0.1, y + 0.9, 0.15, 0.55, WOOD),
+          roof(x + 0.2, x + 0.8, y + 0.15, y + 0.85, 0.55, 0.9, 'ns', 0.15, EARTH),
+        ],
+  );
+// 石磨吊架: a timber crane that stands on the wall walkway (the game lifts it by
+// 3 levels), its arm reaching south over the parapet; the millstone is its
+// own piece so the game can drop it on a rope it draws itself.
+const millCrane = (id, x, y) =>
+  engine(
+    id,
+    'mill-crane',
+    x,
+    y,
+    [x, y, x, y],
+    [
+      box(x + 0.15, x + 0.3, y + 0.25, y + 0.4, 0, 2.2, WOOD, WOOD_DARK),
+      box(x + 0.7, x + 0.85, y + 0.25, y + 0.4, 0, 2.2, WOOD, WOOD_DARK),
+      box(x + 0.15, x + 0.85, y + 0.25, y + 0.4, 2.0, 2.2, WOOD, WOOD_DARK),
+      box(x + 0.44, x + 0.56, y + 0.25, y + 1.5, 2.2, 2.35, WOOD, WOOD_DARK),
+    ],
+  );
+const millstone = (id, x, y) =>
+  engine(
+    id,
+    'millstone',
+    x,
+    y,
+    [x, y, x, y],
+    [box(x + 0.25, x + 0.75, y + 0.25, y + 0.75, 0, 0.35, STONE)],
+  );
+
+// Chosen attempt per S4 sheet, with why (details in generation-manifest.json).
+const ENGINE_PICKS = {
+  's4-01-ladder-cart': ['v2.webp', '对位最准，侧面梯架升向东、乘员棚在后'],
+  's4-02-ladder-on-wall': ['v3.webp', '车底正好落在地面框上，梯顶的钩子标出搭墙的位置'],
+  's4-03-ram': [
+    'v1.webp',
+    '两种推行朝向的撞木都在前；砸毁那件石磨压在塌下的棚顶上。v3 朝北那件撞木画在了近端（南），不对',
+  ],
+  's4-04-siege-tower': ['v1.webp', '对位最准（12px 以内），射台朝南有女墙；v2 高了约一层'],
+  's4-05-siege-tower-wrecks': [
+    'v3.webp',
+    '两件对位都最准；倾覆的井阑东西向躺倒、一只轮子朝天、射台压在东头',
+  ],
+  's4-06-earth-cart': [
+    'v3.webp',
+    '最贴灰盒，三件是同一辆车；侧面的车把伸出灰盒约 70px（每张都这样，属于车本身）；v2 画大了',
+  ],
+  's4-07-millstone-crane': ['v3.webp', '对位更准；第 2 张被出图服务的安全过滤拒了三次，没有出图'],
+};
+const engineSheet = (o) => {
+  const [final, why] = ENGINE_PICKS[o.id] ?? [];
+  return sheetAsset({
+    stage: 'S4',
+    ...o,
+    final,
+    about: [
+      ...o.about,
+      ...(final
+        ? [
+            `**2026-11-02 选定 \`attempts/${final}\`**（待你确认）：${why}。透明版 \`selected-transparent.png\` 由 \`attempts/key.py\` 确定性抠出品红（不重画）；每张的提示词、源文件和对位量测记在 \`generation-manifest.json\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh）。`,
+          ]
+        : []),
+    ],
+  });
+};
+const CHARRED =
+  'charred black and smouldering, with glowing orange embers along the burnt timbers but no large flames and no smoke (the game adds flames and smoke on top)';
+const ENGINE_ASSETS = [
+  engineSheet({
+    id: 's4-01-ladder-cart',
+    zh: 'S4-01 云梯车',
+    about: [
+      '三格各一件：朝北推行（1×2 格，梯架升向北端，高 2.5 层）、朝东推行（2×1 格）、烧毁残骸（1×2 格）。每格 128×96、每层 48px。',
+      '朝西推行由程序把朝东那件左右翻转（美术计划 §9.5）。',
+    ],
+    slots: () => [
+      [
+        'the ladder cart, heading north',
+        '朝北',
+        [0, 0, 512, 1024],
+        [ladderCart('ladder-n', 40, 8)],
+      ],
+      [
+        'the ladder cart, heading east',
+        '朝东',
+        [512, 0, 512, 1024],
+        [ladderCart('ladder-e', 42, 8, true)],
+      ],
+      [
+        'the ladder cart, burnt out',
+        '烧毁',
+        [1024, 0, 512, 1024],
+        [ladderCart('ladder-burnt', 45, 8, false, true)],
+      ],
+    ],
+    subject: `Subject: a Shu-Han siege ladder cart (云梯车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. The cart is a heavy four-wheeled timber chassis carrying a folded scaling ladder on a triangular timber truss, with a small hide-covered shelter at the rear for the crew. Left: heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the same cart burnt out where it stood, ${CHARRED}, the ladder collapsed onto the chassis. Same cart, same size and timber in all three.`,
+    checks: ['三件是同一辆车：同样的轮、架和大小。', '残骸看得出是烧坏的云梯车，没有大火苗和烟。'],
+  }),
+  engineSheet({
+    id: 's4-02-ladder-on-wall',
+    zh: 'S4-02 云梯架上墙面',
+    about: [
+      '车停在城堑外沿（墙前第 3 行），梯子跨过两行城堑，搭到 3 层高的墙头前沿。左完好，右燃烧（焦黑、余烬，火苗和烟由程序加）。',
+      '整件按南墙对位：梯顶在墙的正面前沿，游戏把这件放在墙格正南、车在第 3 行。',
+    ],
+    slots: () => [
+      [
+        'the scaling ladder raised against the wall',
+        '完好',
+        [0, 0, 768, 1024],
+        [ladderOnWall('ladder-up', 40, 8)],
+      ],
+      [
+        'the scaling ladder raised against the wall, burning',
+        '燃烧',
+        [768, 0, 768, 1024],
+        [ladderOnWall('ladder-up-burnt', 42, 8, true)],
+      ],
+    ],
+    subject: `Subject: a Shu-Han siege ladder cart (云梯车) with its scaling ladder raised, for a strategy game, two separate pieces side by side, one centred in each half of the image. The four-wheeled timber cart stands at the near (south) end; from it a long timber scaling ladder with hooked tips rises steeply away from the viewer, northward, to the top of a city wall that is not drawn (the ladder's top end, at the far end of the piece, rests where the wall top will be). Nothing under the ladder: the city trench it spans is not part of the piece. Left: intact. Right: the same, ${CHARRED}. Same cart and ladder in both.`,
+    checks: [
+      '梯子从车上往北升，梯顶在框的最北端；梯下是空的（城堑不画）。',
+      '燃烧那件焦黑、有余烬，没有大火苗和烟。',
+    ],
+  }),
+  engineSheet({
+    id: 's4-03-ram',
+    zh: 'S4-03 冲车',
+    about: [
+      '三格各一件：朝北推行（1×2 格，撞木伸向北）、朝东推行（2×1 格，撞木伸向东）、被石磨砸毁（1×2 格，棚顶塌下）。每格 128×96、每层 48px。',
+      '冲车只能走路和桥，撞门时在门前前后来回（程序做）；被石磨砸毁时换第三件，碎木由程序加（MVP 计划 §8.3）。',
+    ],
+    slots: () => [
+      ['the battering ram, heading north', '朝北', [0, 0, 512, 1024], [ram('ram-n', 40, 8)]],
+      ['the battering ram, heading east', '朝东', [512, 0, 512, 1024], [ram('ram-e', 42, 8, true)]],
+      [
+        'the battering ram, smashed by a millstone',
+        '砸毁',
+        [1024, 0, 512, 1024],
+        [ram('ram-wreck', 45, 8, false, true)],
+      ],
+    ],
+    subject:
+      'Subject: a Shu-Han battering ram (冲车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. It is a low four-wheeled timber shed with a steep gabled roof covered in wet ox hides against fire, and inside it a heavy ram beam slung on ropes, its iron-shod head sticking out of the front. Left: heading north, away from the viewer, the ram head at its far (north) end. Middle: the same ram heading east, seen from its side, the ram head at its right (east) end. Right: the same ram smashed by a falling millstone: the roof caved in and split, beams broken, the ram beam fallen askew, hides torn. Same machine, same size in all three.',
+    checks: ['撞木头朝着行进方向伸出来。', '砸毁那件看得出是被重物从上砸塌的。'],
+  }),
+  engineSheet({
+    id: 's4-04-siege-tower',
+    zh: 'S4-04 井阑',
+    about: [
+      '2×2 格，高 6 层（全图第二高，只比门楼矮）：四轮木架塔，顶上是带女墙的射台，第二幕解锁（MVP 计划 §4.7）。每格 128×96、每层 48px。',
+      '只有完好一件；燃烧和倾覆在 S4-05。',
+    ],
+    slots: () => [['the siege tower', '井阑', [384, 0, 768, 1024], [siegeTower('tower', 40, 8)]]],
+    subject:
+      'Subject: a Shu-Han siege tower (井阑) of the Three Kingdoms period for a strategy game, one piece centred in the image. A tall square tower of heavy timber framing on four solid wheels, braced with diagonal timbers and partly boarded with planks and wet hides, with a ladder inside; at the top, a square fighting platform with a timber parapet along its front (south) edge for archers. Seen from the south. It must be tall and narrow, exactly as high as the block-out.',
+    checks: [
+      '高度和灰盒一样（6 层），不要画矮或画高。',
+      '顶上射台有朝南的女墙，看得出弓兵能站上去。',
+    ],
+  }),
+  engineSheet({
+    id: 's4-05-siege-tower-wrecks',
+    zh: 'S4-05 井阑燃烧、倾覆',
+    about: [
+      '左：燃烧（同 S4-04 的形体，焦黑、余烬，火苗和烟由程序加）。右：倾覆残骸，东西向倒在地上，4×2 格、高 1.3 层。',
+      '被毁的器械原地挡路（MVP 计划 §4.7）。',
+    ],
+    slots: () => [
+      [
+        'the siege tower, burning',
+        '燃烧',
+        [0, 0, 768, 1024],
+        [siegeTower('tower-burnt', 40, 8, true)],
+      ],
+      ['the siege tower, toppled', '倾覆', [768, 0, 768, 1024], [towerWreck('tower-wreck', 44, 8)]],
+    ],
+    subject: `Subject: two states of a Shu-Han siege tower (井阑) for a strategy game, two separate pieces side by side, one centred in each half of the image. The tower is a tall square timber tower on four wheels with a fighting platform on top. Left: the tower still standing, ${CHARRED}, planks burnt through so the frame shows. Right: the tower toppled over onto its side, lying east-west along the ground: a long heap of broken, charred framing timbers, a wheel in the air, the platform crushed at its east end.`,
+    checks: ['燃烧那件和 S4-04 同一个形体，只是烧黑。', '倾覆那件是东西向躺倒的长条残骸，不高。'],
+  }),
+  engineSheet({
+    id: 's4-06-earth-cart',
+    zh: 'S4-06 土车',
+    about: [
+      '三格各一件，都是 1×1 格：朝北推行、朝东推行、倾倒（土倒在南边，填堑时用）。每格 128×96、每层 48px。',
+    ],
+    slots: () => [
+      ['the earth cart, heading north', '朝北', [0, 0, 512, 1024], [earthCart('cart-n', 40, 8)]],
+      ['the earth cart, heading east', '朝东', [512, 0, 512, 1024], [earthCart('cart-e', 42, 8)]],
+      [
+        'the earth cart, tipped over',
+        '倾倒',
+        [1024, 0, 512, 1024],
+        [earthCart('cart-tipped', 44, 8, true)],
+      ],
+    ],
+    subject:
+      'Subject: a Shu-Han earth cart (土车) for filling the city trench, for a strategy game, three separate pieces side by side, one centred in each third of the image. A small two-wheeled timber cart with a deep plank box heaped with earth and a few bundles of brushwood, pushed by handles. Left: heading north, away from the viewer, handles at the near (south) end. Middle: heading east, seen from its side, handles at its left (west) end. Right: tipped forward with its earth spilled out in a heap in front of it. Same cart, same size in all three.',
+    checks: ['三件是同一辆小车。', '倾倒那件的土堆看得出是从车里倒出来的。'],
+  }),
+  engineSheet({
+    id: 's4-07-millstone-crane',
+    zh: 'S4-07 城头石磨吊架',
+    about: [
+      '左：吊架，1 格，高 2.35 层，臂伸向南、越过女墙。游戏把它放在墙顶走道上（抬高 3 层）。右：石磨单独一件，绳子由程序画（MVP 计划 §8.3）。',
+    ],
+    slots: () => [
+      ['the millstone crane', '吊架', [0, 0, 768, 1024], [millCrane('crane', 40, 8)]],
+      ['the millstone', '石磨', [768, 0, 768, 1024], [millstone('stone', 42, 8)]],
+    ],
+    subject:
+      'Subject: two separate pieces for a strategy game, one centred in each half of the image. Left: a simple timber crane that Wei defenders set up on a city wall walkway: two upright posts joined by a crossbeam, braced, and a single heavy arm reaching out toward the viewer (south) beyond where the parapet will be, with a pulley block at its tip. No rope, no stone. Right: a heavy round millstone (石磨) lying flat, with a square hole in the middle and grinding grooves on its face. Nothing else.',
+    checks: ['吊架的臂朝南伸出；不画绳子和石磨。', '石磨是平放的厚圆盘。'],
+  }),
+];
+
 const ASSETS = [
   {
     id: 's1-01-city-vignette',
@@ -1521,7 +2269,8 @@ const ASSETS = [
     ],
     render() {
       const canvas = createCanvas(1536, 1024, C.snow);
-      const objects = cityObjects({ ramps: false });
+      // Camp pieces stay out of the locked S1 frame (the workshop roofs reach it).
+      const objects = cityObjects({ ramps: false }).filter((o) => !PIECE_KINDS.has(o.kind));
       renderScene(canvas, VIGNETTE, objects);
       return { canvas, frame: VIGNETTE, masks: true, objects };
     },
@@ -1698,7 +2447,14 @@ const ASSETS = [
     ],
     render() {
       const canvas = createCanvas(1536, 1024, C.snow);
-      renderScene(canvas, VIGNETTE, cityObjects({ ramps: false }), { flat: true });
+      renderScene(
+        canvas,
+        VIGNETTE,
+        cityObjects({ ramps: false }).filter((o) => !PIECE_KINDS.has(o.kind)),
+        {
+          flat: true,
+        },
+      );
       return { canvas, frame: VIGNETTE };
     },
     prompts: (keys) => [
@@ -1817,6 +2573,7 @@ const ASSETS = [
       '拼接：每块只取它新画的部分，在已画好的一侧留 48px 渐变；马道补画只取马道外扩 12px、再渐变 10px 的一圈。编辑会把已画的部分也轻微重画，所以脚本拼之前先找出整块的错位（±8px），对齐后再拼，并报出偏移和差值。',
       '选定一张后，把文件名填进 `tools/build-siege-blockout.mjs` 的 `MAP_PICKS`，重跑这个脚本，再跑 compose 脚本，就得到下一步的输入。',
       '`steps/` 里每步两张：`<步>-paint.png`（白色是这一步要画的地方；工具支持蒙版编辑时可以一起上传）和 `<步>-blend.png`（拼接权重）。`masks/`、`footprints.json` 用全图坐标，游戏按它们切层；`steps.json` 给 compose 脚本读。',
+      '**2026-11-02 六步都已选定**（2026-11-02 你在审阅页确认）：马道 `city-v3`、西北 `nw-v1`、东北 `ne-v2`、南 `s-v6`、西南 `sw-v3`、东南 `se-v3`；compose 报的偏移都是 0,0，差值 5.3–9.0。南块第一轮（v1–v3）把十字路画到了营地边上，于是南、西南、东南三块的场景描述里写明了路和营地的像素位置，第二轮起都对。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每步每张的提示词、源文件和选择理由记在 `generation-manifest.json`。',
     ],
     render() {
       const canvas = createCanvas(...MAP_SIZE, C.ice);
@@ -1890,10 +2647,12 @@ const ASSETS = [
   sheetAsset({
     id: 's2-08-camp-tents',
     zh: 'S2-08 中军帐和营帐',
+    final: 'v2.webp',
     about: [
       '2×2 宫格，每格 768×512 放一件；每格 128×96、每层 48px，同 S1-02。',
       '左上是丞相中军帐（4×2 格，高 1.5 层）；其余三格是三种一格的营帐（高 1 层），游戏里随机排成行，所以大小、形状要一样，只是细节不同。',
       '帐上的旗由程序画，这里不画。',
+      '**2026-11-02 选定 `attempts/v2.webp`**（2026-11-02 你在审阅页确认）：对位最准，中军帐在框内 16px 以内（雪檐略高），营帐连拉绳在 22px 以内；营帐的拉绳和地钉每边伸出约 20px，排成行时地钉相碰。透明版 `selected-transparent.png` 由 `attempts/key.py`（仓库根目录出图工作区）确定性抠出品红：不重画，不透明像素原样保留，边缘按背景色反混合去品红边。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每张的提示词、源文件和对位量测记在 `generation-manifest.json`。',
     ],
     slots: () => [
       ["the chancellor's command tent", '中军帐', [0, 0, 768, 512], [hqTent()]],
@@ -1914,9 +2673,11 @@ const ASSETS = [
   sheetAsset({
     id: 's2-09-palisade-kit',
     zh: 'S2-09 木栅模块',
+    final: 'v2.webp',
     about: [
       '五件：上排是东西向直段（3 格）、营地西北角、东北角；下排是南北向直段（3 格）和辕门（门两侧各带两格木栅）。每格 128×96、每层 48px。',
       '游戏按每格的邻居拼：直段从中间裁一格出来重复用，所以左右（上下）两端要能接上。',
+      '**2026-11-02 选定 `attempts/v2.webp`**（2026-11-02 你在审阅页确认）：三张都在 7px 以内，v2 最准（直段 1px、转角 3px），木桩节奏均匀，重复拼接看不出接缝；辕门横梁三张都比灰盒高 6–7px。透明版 `selected-transparent.png` 由 `attempts/key.py`（仓库根目录出图工作区）确定性抠出品红：不重画，不透明像素原样保留，边缘按背景色反混合去品红边。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每张的提示词、源文件和对位量测记在 `generation-manifest.json`。',
     ],
     slots: () => [
       [
@@ -1978,8 +2739,11 @@ const ASSETS = [
   sheetAsset({
     id: 's2-10-workshop',
     zh: 'S2-10 器械工棚',
+    final: 'v6.webp',
     about: [
-      '同一座工棚画两态：左边空着，右边正在造器械。4×2 格，屋脊高 2 层；每格 128×96、每层 48px。',
+      '同一座工棚画两态：左边空着，右边正在造器械。4×2 格，檐高 2 层、屋脊 3 层；每格 128×96、每层 48px。',
+      '第一轮（v1–v3）灰盒檐高只有 1.1 层（游戏里 26px，比 36px 的小兵还矮），三张都自己把柱子画高，底边落到地面框以南 100px 以上；于是灰盒改成檐 2 层、脊 3 层，出第二轮（v4–v6）。',
+      '**2026-11-02 选定 `attempts/v6.webp`**（2026-11-02 你在审阅页确认）：仍在屋顶下画了整面立面，画出来的底边在 y=717，比地面框前沿（685）低 32px，所以游戏按画出来的底边（y=717）对齐，不按灰盒。透明版 `selected-transparent.png` 由 `attempts/key.py`（仓库根目录出图工作区）确定性抠出品红：不重画，不透明像素原样保留，边缘按背景色反混合去品红边。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每张的提示词、源文件和对位量测记在 `generation-manifest.json`。',
       '打造进度由界面显示，这里只要两态；造好的器械是 S4 的分件。',
     ],
     slots: () => [
@@ -1993,9 +2757,11 @@ const ASSETS = [
   sheetAsset({
     id: 's2-11-field-scenery',
     zh: 'S2-11 野外点缀',
+    final: 'v3.webp',
     about: [
       '3×2 宫格，每格 512×512：上排三种雪松，下排枯树、乱石、鹿角（2 格）。每格 128×96、每层 48px。',
       '布局里的林子（`T`）每格放一到两棵雪松，三种随机；乱石、枯树、鹿角由我在布局里另摆。',
+      '**2026-11-02 选定 `attempts/v3.webp`**（2026-11-02 你在审阅页确认）：对位最准，除雪松 C 外都在 26px 以内；雪松 C（伞形老松）三张都比灰盒宽，每边约 40px，树冠伸出格子属正常。透明版 `selected-transparent.png` 由 `attempts/key.py`（仓库根目录出图工作区）确定性抠出品红：不重画，不透明像素原样保留，边缘按背景色反混合去品红边。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每张的提示词、源文件和对位量测记在 `generation-manifest.json`。',
     ],
     slots: () => [
       ['a tall snow-laden pine', '雪松 A', [0, 0, 512, 512], [pine(40, 6, 'pine-a')]],
@@ -2012,6 +2778,8 @@ const ASSETS = [
       '鹿角是一道低矮的尖枝障碍，东西走向。',
     ],
   }),
+  ...STATE_ASSETS,
+  ...ENGINE_ASSETS,
 ];
 
 // ---------------------------------------------------------------------------
@@ -2073,7 +2841,7 @@ function assetReadme(asset, prompts) {
     )
     .join('\n\n');
   const image = asset.guide ? 'guide.png' : 'blockout.png';
-  const section = asset.stage === 'S2' ? '§9.2、§13' : '§10';
+  const section = asset.stage === 'S1' || !asset.stage ? '§10' : '§9.2、§13';
   return `# ${asset.zh}
 
 \`${asset.id}\` · 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${PLAN}](../../../${PLAN}) ${section}。
@@ -2127,13 +2895,25 @@ ${table('S1')}
 
 **画法：α 整画切层**（2026-11-01 在预览页对比后定，计划 §9.2）。城池是一整张画，按 \`masks/\` 切层，会变的部分在整画上局部重画；营地、器械、部队等不在城池画里的东西才出分件。S1-03、S1-04 只在预览页作 β 对照。
 
-## S2 全图与完好态
+## S2 全图与完好态（2026-11-02 通过）
 
 ${table('S2')}
 
 顺序：S2-01 分六步，一步一步来：先在 S1-01 v2-a 上补画马道，再按西北、东北、南、西南、东南五块向外扩画；每步选定后跑 \`node tools/compose-siege-map.mjs\` 拿到下一步的输入（见 S2-01 的说明）。S2-08 到 S2-11 是分件表，和 S2-01、和彼此都不相干，随时可以出。
 
 S1-02 以后的提示词按脚本里的 \`CHOSEN_STYLE\`（风格字母）和 \`CHOSEN_VIGNETTE\`（作风格参考上传的那张 S1-01）生成，现在是 A 和 \`v2-a.webp\`；S1-03 起上传的标准件是 \`CHOSEN_GATE\`，现在是 S1-02 的 \`v4.webp\`。改选别的，就改这几项再重新生成。分件的提示词开头有一段由灰盒算出的像素坐标（对位坐标段），帮 ImageGen 把屋顶、门、女墙放准。
+
+## S3 状态变体
+
+${table('S3')}
+
+做法（计划 §9.2）：每一态是 S2-01 定稿全图上一块 1536×1024 的局部重画。跑 \`node tools/compose-siege-states.mjs\` 从全图裁出每一态的输入 \`inputs/<态>.png\`（新几何如重墙，先贴上灰盒）；选定后把文件名填进脚本的 \`STATE_PICKS\`，重跑两个脚本，就切出和全图对齐的补丁 \`patches/<态>.png\`（位置在 \`patches/<态>.json\`），以及贴回全图的对比 \`previews/<态>.webp\`。各件互不相干，可以同时出。
+
+## S4 器械与反制
+
+${table('S4')}
+
+和 S2-08 到 S2-11 一样是品红底的 2 倍分件表，上传 S1-02 当标准件，各件互不相干。燃烧态只画焦黑和余烬，火苗和烟由程序加（MVP 计划 §8.3）；朝西推行由程序把朝东那件左右翻转。
 
 ## 每个文件夹里有什么
 

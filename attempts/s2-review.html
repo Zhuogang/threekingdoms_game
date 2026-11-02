@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S2 出图审阅</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:16px; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  .controls { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+  .controls label { cursor:pointer; user-select:none; }
+  .viewport { overflow:auto; border:1px solid var(--line); background:#e9e5da; max-height:80vh; }
+  .stack { position:relative; display:inline-block; line-height:0; }
+  .stack img { display:block; }
+  .stack img.overlay { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(460px,1fr)); gap:16px; }
+  figure { margin:0; }
+  figure img { width:100%; height:auto; display:block; border:1px solid var(--line); background:#fff; }
+  figcaption { color:var(--muted); font-size:13px; margin-top:4px; }
+  .bgsel button { border:1px solid var(--line); background:#fff; padding:3px 10px; border-radius:4px; cursor:pointer; }
+  .bgsel button.on { border-color:var(--accent); color:var(--accent); }
+  .piece { background:#ece8dc; border:1px solid var(--line); }
+  .piece.dark { background:#26262b; }
+  .piece.snow { background:#f2efe6 url("../docs/siege/chencang/art/s2-01-full-map/composite.webp") -1100px -1150px / 3072px 1536px; }
+  .piece img { border:0; background:transparent; }
+</style>
+</head>
+<body>
+<header>
+  <b>陈仓 S2 出图审阅</b>
+  <a href="#map">S2-01 全图</a>
+  <a href="#steps">分步对比</a>
+  <a href="#s2-08">S2-08 营帐</a>
+  <a href="#s2-09">S2-09 木栅</a>
+  <a href="#s2-10">S2-10 工棚</a>
+  <a href="#s2-11">S2-11 点缀</a>
+  <span class="note" style="margin:0">选择都是暂定，待你确认</span>
+</header>
+<main>
+
+<section id="map">
+  <h2>S2-01 全图整画（3072×1536，100% = 游戏 100% 缩放）</h2>
+  <p class="note">城池 v2-a + 马道 <span class="pick">city-v3</span>，扩画 西北 <span class="pick">nw-v1</span>、东北 <span class="pick">ne-v2</span>、南 <span class="pick">s-v6</span>、西南 <span class="pick">sw-v3</span>、东南 <span class="pick">se-v3</span>。可拖滚动条看局部；叠格子检查对位。</p>
+  <div class="controls">
+    <label>缩放 <select id="zoom"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1" selected>100%</option><option value="1.5">150%</option></select></label>
+    <label><input type="checkbox" id="grid"> 叠格子（grid.png）</label>
+    <label><input type="checkbox" id="block"> 看灰盒</label>
+    <label>灰盒透明度 <input type="range" id="blockop" min="0" max="100" value="50"></label>
+  </div>
+  <div class="viewport">
+    <div class="stack" id="mapstack">
+      <img id="mapimg" src="../docs/siege/chencang/art/s2-01-full-map/composite.webp" width="3072" height="1536" alt="S2-01 composite">
+      <img class="overlay" id="blockimg" src="../docs/siege/chencang/art/s2-01-full-map/blockout.png" alt="" hidden>
+      <img class="overlay" id="gridimg" src="../docs/siege/chencang/art/s2-01-full-map/grid.png" alt="" hidden>
+    </div>
+  </div>
+</section>
+
+<section id="steps">
+  <h2>分步对比</h2>
+  <p class="note">左上是这一步的输入（灰盒部分要画），其余三格是候选。南块出了两轮：第一轮把十字路画到了营地边上。</p>
+  <div class="grid2">
+    <figure><img loading="lazy" src="s2-01/city-ramps-check.png"><figcaption>第 1 步 马道：input / v1 / v2 / v3（局部），选 v3</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/nw-comparison.png"><figcaption>第 2 步 西北：input / v1 / v2 / v3，选 v1</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/ne-comparison.png"><figcaption>第 3 步 东北：input / v1 / v2 / v3，选 v2</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/s-comparison.png"><figcaption>第 4 步 南，第一轮：input / v1 / v2 / v3（十字路位置错）</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/s-comparison-r2.png"><figcaption>第 4 步 南，第二轮：input / v4 / v5 / v6，选 v6</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/sw-comparison.png"><figcaption>第 5 步 西南：input / v1 / v2 / v3，选 v3</figcaption></figure>
+    <figure><img loading="lazy" src="s2-01/se-comparison.png"><figcaption>第 6 步 东南：input / v1 / v2 / v3，选 v3</figcaption></figure>
+  </div>
+</section>
+
+<template id="piece-tpl">
+  <section>
+    <h2></h2>
+    <p class="note"></p>
+    <div class="controls bgsel"><span>透明版底色：</span><button data-bg="">纸色</button><button data-bg="dark">深色</button><button data-bg="snow">雪地（全图截取）</button></div>
+    <div class="grid2">
+      <figure><div class="piece"><img class="sel"></div><figcaption>选定，透明版（selected-transparent.png）</figcaption></figure>
+      <figure><div class="stack" style="width:100%"><img class="raw" style="width:100%"><img class="overlay gridov" hidden></div>
+        <figcaption><label><input type="checkbox" class="gridtoggle"> 叠格子</label> 选定原图（品红底）</figcaption></figure>
+      <figure><img class="blockout"><figcaption>灰盒</figcaption></figure>
+      <figure><img class="cmp" loading="lazy"><figcaption>全部候选</figcaption></figure>
+    </div>
+  </section>
+</template>
+<div id="pieces"></div>
+
+</main>
+<script>
+const ART = '../docs/siege/chencang/art/';
+const PIECES = [
+  { id:'s2-08', dir:'s2-08-camp-tents', title:'S2-08 中军帐和营帐', pick:'v2',
+    note:'选 v2：对位最准。营帐拉绳和地钉每边伸出约 20px（2 倍图），排成行时地钉相碰。' },
+  { id:'s2-09', dir:'s2-09-palisade-kit', title:'S2-09 木栅模块', pick:'v2',
+    note:'选 v2：五件都在 7px 以内，直段 1px；辕门横梁比灰盒高 6–7px（三张都是）。' },
+  { id:'s2-10', dir:'s2-10-workshop', title:'S2-10 器械工棚', pick:'v6',
+    note:'选 v6（第二轮）。第一轮灰盒檐太低，三张都自己画高了；灰盒改成檐 2 层、脊 3 层后重出。v6 底边仍比地面框前沿低 32px，游戏按画出来的底边对齐。候选里 v1–v3 是第一轮。' },
+  { id:'s2-11', dir:'s2-11-field-scenery', title:'S2-11 野外点缀', pick:'v3',
+    note:'选 v3：对位最准；伞形老松三张都比灰盒宽约 40px/边。' },
+];
+const tpl = document.getElementById('piece-tpl');
+for (const p of PIECES) {
+  const n = tpl.content.cloneNode(true);
+  const s = n.querySelector('section'); s.id = p.id;
+  n.querySelector('h2').textContent = p.title + '（定 ' + p.pick + '）';
+  n.querySelector('.note').textContent = p.note;
+  n.querySelector('.sel').src = ART + p.dir + '/selected-transparent.png';
+  n.querySelector('.sel').style.width = '100%';
+  n.querySelector('.raw').src = ART + p.dir + '/attempts/' + p.pick + '.webp';
+  n.querySelector('.gridov').src = ART + p.dir + '/grid.png';
+  n.querySelector('.blockout').src = ART + p.dir + '/blockout.png';
+  n.querySelector('.cmp').src = ART + p.dir + '/comparison.png';
+  const box = n.querySelector('.piece');
+  n.querySelectorAll('.bgsel button').forEach((b, i) => {
+    if (i === 0) b.classList.add('on');
+    b.onclick = () => { box.className = 'piece ' + b.dataset.bg; s.querySelectorAll('.bgsel button').forEach(x => x.classList.toggle('on', x === b)); };
+  });
+  const tg = n.querySelector('.gridtoggle'), ov = n.querySelector('.gridov');
+  tg.onchange = () => { ov.hidden = !tg.checked; };
+  document.getElementById('pieces').appendChild(n);
+}
+const img = document.getElementById('mapimg'), stack = document.getElementById('mapstack');
+const zoom = document.getElementById('zoom');
+const applyZoom = () => { const z = +zoom.value; img.width = 3072 * z; img.height = 1536 * z; };
+zoom.onchange = applyZoom;
+const g = document.getElementById('grid'), gi = document.getElementById('gridimg');
+g.onchange = () => { gi.hidden = !g.checked; };
+const b = document.getElementById('block'), bi = document.getElementById('blockimg'), bo = document.getElementById('blockop');
+const applyBlock = () => { bi.hidden = !b.checked; bi.style.opacity = bo.value / 100; };
+b.onchange = applyBlock; bo.oninput = applyBlock; applyBlock();
+</script>
+</body>
+</html>

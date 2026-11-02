@@ -1,0 +1,17 @@
+{
+  "canvas": [1536, 1024],
+  "crop": [768, 512],
+  "map": "../s2-01-full-map/composite.webp",
+  "states": [
+    {
+      "id": "gate-south-broken",
+      "name": "门破",
+      "paint": "steps/gate-south-broken-paint.png",
+      "blend": "steps/gate-south-broken-blend.png",
+      "overlay": null,
+      "input": "inputs/gate-south-broken.png",
+      "chosen": "attempts/gate-south-broken-v2.webp",
+      "patch": "patches/gate-south-broken.png"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "canvas": [1536, 1024],
+  "crop": [768, 512],
+  "map": "../s2-01-full-map/composite.webp",
+  "states": [
+    {
+      "id": "inner-wall-works",
+      "name": "施工中（S3-07）",
+      "paint": "steps/inner-wall-works-paint.png",
+      "blend": "steps/inner-wall-works-blend.png",
+      "overlay": "steps/inner-wall-works-overlay.png",
+      "input": "inputs/inner-wall-works.png",
+      "chosen": "attempts/inner-wall-works-v1.webp",
+      "patch": "patches/inner-wall-works.png"
+    },
+    {
+      "id": "inner-wall-built",
+      "name": "建成（S3-08）",
+      "paint": "steps/inner-wall-built-paint.png",
+      "blend": "steps/inner-wall-built-blend.png",
+      "overlay": "steps/inner-wall-built-overlay.png",
+      "input": "inputs/inner-wall-built.png",
+      "chosen": "attempts/inner-wall-built-v1.webp",
+      "patch": "patches/inner-wall-built.png"
+    }
+  ]
+}

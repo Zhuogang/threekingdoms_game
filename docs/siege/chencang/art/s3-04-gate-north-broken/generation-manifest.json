@@ -1,0 +1,99 @@
+{
+  "id": "s3-04",
+  "folder": "s3-04-gate-north-broken",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    0
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "gate-north-broken",
+      "name": "门破",
+      "prompt": "Edit task: change one part of a finished painting to show the north gate broken. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe north gate has been broken through, seen from inside the city: inside the dark gate passage the doors at its far end are smashed and hanging open, splintered timber and broken brick lie across the passage mouth and the street just inside it, soot streaks rise over the brick face above the passage, and a few roof tiles are missing from the tower eaves. The gate tower and the wall still stand.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the north gate with its tower: x=639..897, y=69..240\n\nRepaint only the north gate inside this box and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "gate-north-broken-v1",
+          "type": "edit",
+          "input": "inputs/gate-north-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-north-broken-codex-1.log"
+          },
+          "sourceFile": "exec-992cdae4-9c37-456b-8f76-d5a3827e4c5d.png",
+          "sourcePath": "../../../../../attempts/s3-04/sources/gate-north-broken-v1.png",
+          "sourceSha256": "cf339e945cadd6fd4e5ad191856446821cfb28b46aed07e0b378e086076e4290",
+          "path": "attempts/gate-north-broken-v1.webp",
+          "bytes": 1831314,
+          "sha256": "cc359a0f1fc76eebe7752bad728f76f06fdc008dcc81e848952ed0b0ae518741",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-north-broken-v2",
+          "type": "edit",
+          "input": "inputs/gate-north-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-north-broken-codex-1.log"
+          },
+          "sourceFile": "exec-a7fe7c91-88fa-42b4-8697-1d203ff0cbe8.png",
+          "sourcePath": "../../../../../attempts/s3-04/sources/gate-north-broken-v2.png",
+          "sourceSha256": "7bb64c1afd4825e49a570e3770160042c7ff79ed843aa3276ae7cd87c1aade2d",
+          "path": "attempts/gate-north-broken-v2.webp",
+          "bytes": 1827580,
+          "sha256": "ab09738c2333c01848f1260f5aec5cdc9e051e394748b960799e85fd1291a065",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-north-broken-v3",
+          "type": "edit",
+          "input": "inputs/gate-north-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-north-broken-codex-1.log"
+          },
+          "sourceFile": "exec-5b906b78-855a-4124-9673-fb4caa46732e.png",
+          "sourcePath": "../../../../../attempts/s3-04/sources/gate-north-broken-v3.png",
+          "sourceSha256": "a45030e173618aaf06e706170de61ce4b87282db23751440aafeb72ad331166d",
+          "path": "attempts/gate-north-broken-v3.webp",
+          "bytes": 1822742,
+          "sha256": "91415c966f17996115b4adcb54d6c64e8da3e11fcf1405e660925e6189c318bc",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "gate-north-broken-v2",
+        "path": "attempts/gate-north-broken-v2.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/gate-north-broken.png",
+        "sha256": "c04a669644724d01e9647a2c65bf2ab3523f651b5a2224a6b766842d3f28855a",
+        "at": [
+          1390,
+          52
+        ],
+        "size": [
+          292,
+          205
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 7.71,
+        "changeInside": 20.2
+      },
+      "preview": "previews/gate-north-broken.webp",
+      "review": "v1 and v3 drew arches; v2 keeps the rectangular passage, broken doors and rubble."
+    }
+  ]
+}

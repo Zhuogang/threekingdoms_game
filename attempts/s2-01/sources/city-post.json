@@ -1,0 +1,107 @@
+[
+  {
+    "id": "city-v1",
+    "source": "city-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "8c98f0e54bc8e0287b1eb3a24a94e178200ed95ca39cd9a7df51e2990d8e48fb",
+    "path": "attempts/city-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1819430,
+    "sha256": "1021a972d4aae60782dacfd78ec03126848f30337facccdd6300cfb9ef87bcad",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        235,
+        231,
+        222
+      ],
+      [
+        232,
+        226,
+        217
+      ],
+      [
+        162,
+        134,
+        105
+      ],
+      [
+        227,
+        220,
+        212
+      ]
+    ]
+  },
+  {
+    "id": "city-v2",
+    "source": "city-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "54ef937614acd6ad7751ced57859a88431180b9be7deec5dc4ea7edd5ac07fc8",
+    "path": "attempts/city-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1844926,
+    "sha256": "bfb047c6677b65b21ee46125c92f71c5a571ca774524cf26880de758158ed85e",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        234,
+        229,
+        222
+      ],
+      [
+        231,
+        224,
+        215
+      ],
+      [
+        166,
+        139,
+        107
+      ],
+      [
+        223,
+        215,
+        206
+      ]
+    ]
+  },
+  {
+    "id": "city-v3",
+    "source": "city-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "a995028b1ca20ceb068c7072c6975a403c92f160dfdd504f9dbea7ce907863fb",
+    "path": "attempts/city-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1891678,
+    "sha256": "605a0e82bfbafcd65d4d712e32db1006eb6e8c03e3c5b81029f2f0b1e7e2f493",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        235,
+        231,
+        223
+      ],
+      [
+        230,
+        223,
+        215
+      ],
+      [
+        170,
+        141,
+        109
+      ],
+      [
+        226,
+        217,
+        208
+      ]
+    ]
+  }
+]

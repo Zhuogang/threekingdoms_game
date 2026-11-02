@@ -1,0 +1,19 @@
+{
+  "state": "gate-south-damaged",
+  "chosen": "attempts/gate-south-damaged-v2.webp",
+  "at": [
+    1390,
+    574
+  ],
+  "size": [
+    292,
+    260
+  ],
+  "offset": [
+    0,
+    0
+  ],
+  "difference": 6.12,
+  "differenceUnshifted": 6.12,
+  "changeInside": 20.9
+}

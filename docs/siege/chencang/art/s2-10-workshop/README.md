@@ -2,7 +2,9 @@
 
 `s2-10-workshop` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [01-chencang-art-plan.md](../../../01-chencang-art-plan.md) §9.2、§13。
 
-- 同一座工棚画两态：左边空着，右边正在造器械。4×2 格，屋脊高 2 层；每格 128×96、每层 48px。
+- 同一座工棚画两态：左边空着，右边正在造器械。4×2 格，檐高 2 层、屋脊 3 层；每格 128×96、每层 48px。
+- 第一轮（v1–v3）灰盒檐高只有 1.1 层（游戏里 26px，比 36px 的小兵还矮），三张都自己把柱子画高，底边落到地面框以南 100px 以上；于是灰盒改成檐 2 层、脊 3 层，出第二轮（v4–v6）。
+- **2026-11-02 选定 `attempts/v6.webp`**（2026-11-02 你在审阅页确认）：仍在屋顶下画了整面立面，画出来的底边在 y=717，比地面框前沿（685）低 32px，所以游戏按画出来的底边（y=717）对齐，不按灰盒。透明版 `selected-transparent.png` 由 `attempts/key.py`（仓库根目录出图工作区）确定性抠出品红：不重画，不透明像素原样保留，边缘按背景色反混合去品红边。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），每张的提示词、源文件和对位量测记在 `generation-manifest.json`。
 - 打造进度由界面显示，这里只要两态；造好的器械是 S4 的分件。
 
 ## 参考图
@@ -23,11 +25,11 @@ Output requirements: create an image exactly 1536 by 1024 pixels. Treat the firs
 
 Registration landmarks on this canvas (pixel boxes measured from the block-out):
 Piece 1, the workshop, empty:
-- whole piece: x=125..643, y=418..649
-- ground footprint, where it stands: x=128..640, y=469..661
+- whole piece: x=125..643, y=399..673
+- ground footprint, where it stands: x=128..640, y=493..685
 Piece 2, the workshop, building a siege engine:
-- whole piece: x=893..1411, y=418..649
-- ground footprint, where it stands: x=896..1408, y=469..661
+- whole piece: x=893..1411, y=399..673
+- ground footprint, where it stands: x=896..1408, y=493..685
 Keep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.
 
 Match the brushwork, line weight, colours and lighting of the second attached image exactly.

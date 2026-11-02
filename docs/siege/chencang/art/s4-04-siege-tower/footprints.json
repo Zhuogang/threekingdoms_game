@@ -1,0 +1,26 @@
+{
+  "asset": "s4-04-siege-tower",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "井阑",
+      "cell": [384, 0, 768, 1024],
+      "origin": [-4480, -112],
+      "objects": [
+        {
+          "id": "tower",
+          "kind": "siege-tower",
+          "layer": "L3",
+          "cells": [40, 7, 41, 8],
+          "height": 6,
+          "anchor": [640, 752],
+          "bbox": [639, 295, 897, 729]
+        }
+      ]
+    }
+  ]
+}

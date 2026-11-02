@@ -1,0 +1,107 @@
+[
+  {
+    "id": "trench-half-v1",
+    "source": "trench-half-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "93f0b5bd5945a5bb58cc2ad865ae6b9842c6a3e42f4de5333a0e42ff620e9674",
+    "path": "attempts/trench-half-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1764952,
+    "sha256": "7c6e7f66c8e2017b228d37ba0da4a1dfeb2562d3d092fad3d40ac3956091c11b",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        185,
+        154,
+        115
+      ],
+      [
+        179,
+        156,
+        123
+      ],
+      [
+        194,
+        169,
+        142
+      ],
+      [
+        191,
+        164,
+        142
+      ]
+    ]
+  },
+  {
+    "id": "trench-half-v2",
+    "source": "trench-half-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "6351403adb66307bd6e18a52d03307a885ae5617ef34817a38821dadbf33ff86",
+    "path": "attempts/trench-half-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1738270,
+    "sha256": "404a8b174197c5dad248d3146c59b0bd55ff2cda58c837a42df2c662f45ea24c",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        179,
+        150,
+        114
+      ],
+      [
+        180,
+        154,
+        121
+      ],
+      [
+        196,
+        173,
+        147
+      ],
+      [
+        200,
+        175,
+        152
+      ]
+    ]
+  },
+  {
+    "id": "trench-half-v3",
+    "source": "trench-half-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "4f57982dead24007eae791fce9e1a19ebdf8979fc3d0d9fbdcc8678dddade5e8",
+    "path": "attempts/trench-half-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1767068,
+    "sha256": "b90c08bd44a4523acb2f0f66b32f0333fc747ab8da211c166e5eb5c27a26417d",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        185,
+        155,
+        117
+      ],
+      [
+        187,
+        165,
+        129
+      ],
+      [
+        194,
+        168,
+        142
+      ],
+      [
+        194,
+        170,
+        148
+      ]
+    ]
+  }
+]

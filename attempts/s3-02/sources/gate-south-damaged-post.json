@@ -1,0 +1,107 @@
+[
+  {
+    "id": "gate-south-damaged-v1",
+    "source": "gate-south-damaged-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "f0348323bb471f6403067bd96826ac7ff6b61e7f00da26cd2140d3204b3d3ebc",
+    "path": "attempts/gate-south-damaged-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1703036,
+    "sha256": "3646660b3f2ff060f64953ecdfe910c93928c14bf9fadc7dbf2f1bcafa5918ff",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        179,
+        152,
+        120
+      ],
+      [
+        181,
+        154,
+        121
+      ],
+      [
+        191,
+        165,
+        138
+      ],
+      [
+        191,
+        167,
+        142
+      ]
+    ]
+  },
+  {
+    "id": "gate-south-damaged-v2",
+    "source": "gate-south-damaged-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "0aaf6d1f2052c729eeb641f8842ad1eec157468a8866ddd13f8467b4f253627c",
+    "path": "attempts/gate-south-damaged-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1710924,
+    "sha256": "6abd21361abd07c87166ff1ca9a820864d243a8020732fb0855e8fce3a6b7313",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        180,
+        152,
+        118
+      ],
+      [
+        182,
+        158,
+        124
+      ],
+      [
+        194,
+        169,
+        142
+      ],
+      [
+        192,
+        169,
+        145
+      ]
+    ]
+  },
+  {
+    "id": "gate-south-damaged-v3",
+    "source": "gate-south-damaged-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "67ebc3ab453693af0c2dbf79fbd10c44f32e8669b4503f9a967cd189e53a2671",
+    "path": "attempts/gate-south-damaged-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1726436,
+    "sha256": "bb3e5fe5a8aa2212df3c1106c8b7b8f139a0c78f5ad3e4efbbb829025fe79635",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        177,
+        149,
+        112
+      ],
+      [
+        183,
+        161,
+        128
+      ],
+      [
+        196,
+        172,
+        144
+      ],
+      [
+        198,
+        173,
+        149
+      ]
+    ]
+  }
+]

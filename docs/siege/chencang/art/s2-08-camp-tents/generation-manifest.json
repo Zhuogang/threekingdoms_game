@@ -1,0 +1,209 @@
+{
+  "id": "s2-08",
+  "folder": "s2-08-camp-tents",
+  "name": "中军帐和营帐",
+  "directory": "docs/siege/chencang/art/s2-08-camp-tents",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "approved",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "original",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the chancellor's command tent:\n- whole piece: x=128..640, y=175..379\n- ground footprint, where it stands: x=128..640, y=199..391\nPiece 2, soldiers' tent, variant A:\n- whole piece: x=1098..1206, y=195..316\n- ground footprint, where it stands: x=1088..1216, y=230..326\nPiece 3, soldiers' tent, variant B:\n- whole piece: x=330..438, y=707..828\n- ground footprint, where it stands: x=320..448, y=742..838\nPiece 4, soldiers' tent, variant C:\n- whole piece: x=1098..1206, y=707..828\n- ground footprint, where it stands: x=1088..1216, y=742..838\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: tents for the Shu-Han army camp in a strategy game, four separate pieces arranged in a 2 by 2 grid exactly as in the block-out, one piece centred in each 768×512 cell, with clear empty space between pieces.\nTop left: the chancellor's command tent (中军帐): a large rectangular ridge tent, four cells wide and two deep, of heavy dark red-lacquered canvas on a timber frame, the front curtain tied open, low wooden steps at the entrance, snow along the ridge. The grandest tent in the camp, but still a field tent rather than a building.\nTop right, bottom left and bottom right: three variants of a one-cell soldiers' tent: a small ridge tent of undyed hemp canvas with snow on its slopes and guy ropes pegged close. Variant A is closed; variant B has its front flap tied back, showing a dark interior; variant C is older and patched, with a short stack of firewood against its side. All three the same size and shape, so they can stand in rows.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-92761433-fb45-49a7-95f7-868bf1fd6e20.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-08/sources/v1.png",
+      "sourceSha256": "eab8207b3e5d35a5cf4e3c2b0ff57e5c4723bf5dae36ea03f6333b95829fe9c0",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 851106,
+      "sha256": "5c1633384696e9323e264647b4de879358dbc13e5d9e5bf02a8ad0bf2aa0499c",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          252
+        ],
+        [
+          253,
+          6,
+          253
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "HQ tent within 25px; soldiers' tents' guy ropes reach 35px past the footprint"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the chancellor's command tent:\n- whole piece: x=128..640, y=175..379\n- ground footprint, where it stands: x=128..640, y=199..391\nPiece 2, soldiers' tent, variant A:\n- whole piece: x=1098..1206, y=195..316\n- ground footprint, where it stands: x=1088..1216, y=230..326\nPiece 3, soldiers' tent, variant B:\n- whole piece: x=330..438, y=707..828\n- ground footprint, where it stands: x=320..448, y=742..838\nPiece 4, soldiers' tent, variant C:\n- whole piece: x=1098..1206, y=707..828\n- ground footprint, where it stands: x=1088..1216, y=742..838\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: tents for the Shu-Han army camp in a strategy game, four separate pieces arranged in a 2 by 2 grid exactly as in the block-out, one piece centred in each 768×512 cell, with clear empty space between pieces.\nTop left: the chancellor's command tent (中军帐): a large rectangular ridge tent, four cells wide and two deep, of heavy dark red-lacquered canvas on a timber frame, the front curtain tied open, low wooden steps at the entrance, snow along the ridge. The grandest tent in the camp, but still a field tent rather than a building.\nTop right, bottom left and bottom right: three variants of a one-cell soldiers' tent: a small ridge tent of undyed hemp canvas with snow on its slopes and guy ropes pegged close. Variant A is closed; variant B has its front flap tied back, showing a dark interior; variant C is older and patched, with a short stack of firewood against its side. All three the same size and shape, so they can stand in rows.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-2.log"
+      },
+      "sourceFile": "exec-1d28842b-8c27-4da0-baa4-0ae472099b12.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-08/sources/v2.png",
+      "sourceSha256": "f51602dc920b877902f42fe3cd4b06241f14eec3db874d37d9ce76ebaa5d00b6",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 815476,
+      "sha256": "64167691b8c36a394a78bd433c35d446f6cf8767a627bdb2b8e75b310983e528",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          252
+        ],
+        [
+          253,
+          6,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          252
+        ]
+      ],
+      "registration": "HQ tent within 16px (snow on the ridge); tents within 22px including guy ropes"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the chancellor's command tent:\n- whole piece: x=128..640, y=175..379\n- ground footprint, where it stands: x=128..640, y=199..391\nPiece 2, soldiers' tent, variant A:\n- whole piece: x=1098..1206, y=195..316\n- ground footprint, where it stands: x=1088..1216, y=230..326\nPiece 3, soldiers' tent, variant B:\n- whole piece: x=330..438, y=707..828\n- ground footprint, where it stands: x=320..448, y=742..838\nPiece 4, soldiers' tent, variant C:\n- whole piece: x=1098..1206, y=707..828\n- ground footprint, where it stands: x=1088..1216, y=742..838\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: tents for the Shu-Han army camp in a strategy game, four separate pieces arranged in a 2 by 2 grid exactly as in the block-out, one piece centred in each 768×512 cell, with clear empty space between pieces.\nTop left: the chancellor's command tent (中军帐): a large rectangular ridge tent, four cells wide and two deep, of heavy dark red-lacquered canvas on a timber frame, the front curtain tied open, low wooden steps at the entrance, snow along the ridge. The grandest tent in the camp, but still a field tent rather than a building.\nTop right, bottom left and bottom right: three variants of a one-cell soldiers' tent: a small ridge tent of undyed hemp canvas with snow on its slopes and guy ropes pegged close. Variant A is closed; variant B has its front flap tied back, showing a dark interior; variant C is older and patched, with a short stack of firewood against its side. All three the same size and shape, so they can stand in rows.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-2.log"
+      },
+      "sourceFile": "exec-571740cc-b7bb-419c-af60-9f6e7dfa68ea.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-08/sources/v3.png",
+      "sourceSha256": "3db20a198073385baf29939d67f125e4ae96d2d46f2602f0e6cfbd2fe3a3c511",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 851668,
+      "sha256": "107384f2a80c81af2172e16d8e4255aeb63b26a80da71fdeda47cc0829b68de0",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          9,
+          252
+        ],
+        [
+          253,
+          15,
+          253
+        ],
+        [
+          253,
+          5,
+          253
+        ],
+        [
+          252,
+          10,
+          252
+        ]
+      ],
+      "registration": "HQ tent 28px wide each side; tent C firewood 37px past the footprint"
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "agent",
+    "reason": "Tightest registration; the HQ tent reads as the grandest tent without looking like a building; the three soldiers' tents have one outline.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "a6d9b1f2aba5120fe2ac4ee320bea9ff42e5fff616a2b1116d94db500ee8da64",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "approved by you on the review page (attempts/s2-review.html)",
+    "findings": [
+      "Bodies sit on their footprints; guy ropes and pegs reach about 20px (2x) past each side, so tents in a row touch at the pegs.",
+      "Background is near-magenta (252,3,250), keyed locally."
+    ]
+  },
+  "approvedOn": "2026-11-02"
+}

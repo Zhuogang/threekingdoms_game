@@ -1,0 +1,185 @@
+{
+  "id": "s3-01",
+  "folder": "s3-01-trench-fill",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    512
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "trench-half",
+      "name": "半填",
+      "prompt": "Edit task: change one part of a finished painting to show the city trench half filled in. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe attackers have begun to fill the trench along the south wall, on both sides of the gate bridge. Loose earth, rubble and bundles of brushwood have been tipped in from the outer (south) bank and form uneven mounds that cover about half of the trench, mostly along its south side; broken ice and dark water still show between the mounds, mostly along the wall side. Fresh earth is trodden into the snow along the outer bank. The bridge, the wall and the bank on the wall side stay as they are.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the trench west of the bridge: x=0..704, y=304..424\n- the trench east of the bridge: x=832..1536, y=304..424\n- the gate bridge, which stays unchanged: x=704..832, y=304..424\n\nRepaint only the trench inside these two boxes and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "trench-half-v1",
+          "type": "edit",
+          "input": "inputs/trench-half.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-half-codex-1.log"
+          },
+          "sourceFile": "exec-60979e52-2948-4157-90ac-044cd9b40924.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-half-v1.png",
+          "sourceSha256": "93f0b5bd5945a5bb58cc2ad865ae6b9842c6a3e42f4de5333a0e42ff620e9674",
+          "path": "attempts/trench-half-v1.webp",
+          "bytes": 1764952,
+          "sha256": "7c6e7f66c8e2017b228d37ba0da4a1dfeb2562d3d092fad3d40ac3956091c11b",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "trench-half-v2",
+          "type": "edit",
+          "input": "inputs/trench-half.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-half-codex-1.log"
+          },
+          "sourceFile": "exec-085f5eeb-560a-4811-aca6-32727fa9a59f.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-half-v2.png",
+          "sourceSha256": "6351403adb66307bd6e18a52d03307a885ae5617ef34817a38821dadbf33ff86",
+          "path": "attempts/trench-half-v2.webp",
+          "bytes": 1738270,
+          "sha256": "404a8b174197c5dad248d3146c59b0bd55ff2cda58c837a42df2c662f45ea24c",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "trench-half-v3",
+          "type": "edit",
+          "input": "inputs/trench-half.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-half-codex-1.log"
+          },
+          "sourceFile": "exec-46b11d44-1e75-46c6-9709-f71f890856b8.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-half-v3.png",
+          "sourceSha256": "4f57982dead24007eae791fce9e1a19ebdf8979fc3d0d9fbdcc8678dddade5e8",
+          "path": "attempts/trench-half-v3.webp",
+          "bytes": 1767068,
+          "sha256": "b90c08bd44a4523acb2f0f66b32f0333fc747ab8da211c166e5eb5c27a26417d",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "trench-half-v1",
+        "path": "attempts/trench-half-v1.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/trench-half.png",
+        "sha256": "27d3dfde29e12b8630cea5eeeaa09d6b517fd938ec31e508940fe95588bc313e",
+        "at": [
+          768,
+          801
+        ],
+        "size": [
+          1536,
+          150
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 5.66,
+        "changeInside": 33.7
+      },
+      "preview": "previews/trench-half.webp",
+      "review": "All three pile mounds from the outer bank with water along the wall; v1 has the cleanest mounds and clear water on the wall side."
+    },
+    {
+      "state": "trench-filled",
+      "name": "填平",
+      "prompt": "Edit task: change one part of a finished painting to show the city trench filled level. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe attackers have filled the trench along the south wall, on both sides of the gate bridge, level with the ground: packed earth, rubble and brushwood trampled flat, muddy and trodden into the snow, so that it reads as a rough causeway along the foot of the wall. Only a faint dip and a few stones of the old bank edges remain; no water or ice shows. The bridge and the wall stay as they are.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the trench west of the bridge: x=0..704, y=304..424\n- the trench east of the bridge: x=832..1536, y=304..424\n- the gate bridge, which stays unchanged: x=704..832, y=304..424\n\nRepaint only the trench inside these two boxes and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "trench-filled-v1",
+          "type": "edit",
+          "input": "inputs/trench-filled.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-filled-codex-1.log"
+          },
+          "sourceFile": "exec-5154da26-b84a-4428-81d7-3386c4df9ea7.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-filled-v1.png",
+          "sourceSha256": "b2b72ead921c0f9a23a5d3f84ff554c5803eeadbcfe0c0f3a15781f77fdbb014",
+          "path": "attempts/trench-filled-v1.webp",
+          "bytes": 1763224,
+          "sha256": "e7de5fe519bce7ff1b233abd46d7f9884bd4ea7c93f75238b4985e993627cf1a",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "trench-filled-v2",
+          "type": "edit",
+          "input": "inputs/trench-filled.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-filled-codex-1.log"
+          },
+          "sourceFile": "exec-173432d0-7d1a-4e7d-9135-63a0dff09365.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-filled-v2.png",
+          "sourceSha256": "320c09968bf8a36e8c7a1fb1c1f97bc28a72641e4e0d90fc0554062b2ee7ea3f",
+          "path": "attempts/trench-filled-v2.webp",
+          "bytes": 1770848,
+          "sha256": "7b440d032e49a93a83968f04658d680abfe456b93208dc6d9b6783dc305724cf",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "trench-filled-v3",
+          "type": "edit",
+          "input": "inputs/trench-filled.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "trench-filled-codex-1.log"
+          },
+          "sourceFile": "exec-8255d327-5316-4d36-9607-630cdea654e6.png",
+          "sourcePath": "../../../../../attempts/s3-01/sources/trench-filled-v3.png",
+          "sourceSha256": "51ad5601ec80910a55adabc3cfa3c0b1463c5a2bd3af308b76402209a2866a9b",
+          "path": "attempts/trench-filled-v3.webp",
+          "bytes": 1744870,
+          "sha256": "1e7661b21834030e621435a84717950627b79cc87c289abbb64fce6dc33fe7fd",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "trench-filled-v3",
+        "path": "attempts/trench-filled-v3.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/trench-filled.png",
+        "sha256": "c66da22fed24206fb571465ab06662a2853c3340cc8c953bec615398c332ac6e",
+        "at": [
+          768,
+          801
+        ],
+        "size": [
+          1536,
+          150
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 9.51,
+        "changeInside": 24.2
+      },
+      "preview": "previews/trench-filled.webp",
+      "review": "v2 leaves water in the corners; v1 and v3 are level causeways; v3 keeps more trampled texture and faint bank lines."
+    }
+  ]
+}

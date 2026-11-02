@@ -1,0 +1,17 @@
+{
+  "canvas": [1536, 1024],
+  "crop": [768, 0],
+  "map": "../s2-01-full-map/composite.webp",
+  "states": [
+    {
+      "id": "gate-north-broken",
+      "name": "门破",
+      "paint": "steps/gate-north-broken-paint.png",
+      "blend": "steps/gate-north-broken-blend.png",
+      "overlay": null,
+      "input": "inputs/gate-north-broken.png",
+      "chosen": "attempts/gate-north-broken-v2.webp",
+      "patch": "patches/gate-north-broken.png"
+    }
+  ]
+}

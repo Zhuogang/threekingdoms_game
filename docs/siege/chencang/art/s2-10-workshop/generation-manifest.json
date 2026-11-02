@@ -1,0 +1,378 @@
+{
+  "id": "s2-10",
+  "folder": "s2-10-workshop",
+  "name": "器械工棚",
+  "directory": "docs/siege/chencang/art/s2-10-workshop",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "approved",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "eaves 1.1 levels, ridge 2",
+      "references": [
+        "blockout.png (round 1)",
+        "S1-02 v4 (standard piece)"
+      ]
+    },
+    {
+      "round": 2,
+      "ids": [
+        4,
+        5,
+        6
+      ],
+      "blockout": "eaves 2 levels, ridge 3 (tools/build-siege-blockout.mjs workshop())",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=418..649\n- ground footprint, where it stands: x=128..640, y=469..661\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=418..649\n- ground footprint, where it stands: x=896..1408, y=469..661\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-efa4b795-1949-4a49-be68-7cf771253366.png",
+      "referenceImages": [
+        "blockout.png (round 1)",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v1.png",
+      "sourceSha256": "dfaf23f227bb24e161081f67cf123fee9b2153528807e26bb0cb8550ffa5e1e6",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1015734,
+      "sha256": "d50ae0e844563afc251777abd6ba3a7aa97abef4f1af25f124c0f0a1ea59d366",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          2,
+          252
+        ],
+        [
+          253,
+          5,
+          252
+        ],
+        [
+          253,
+          0,
+          252
+        ],
+        [
+          252,
+          2,
+          252
+        ]
+      ],
+      "registration": "base 102px below the round-1 block-out"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=418..649\n- ground footprint, where it stands: x=128..640, y=469..661\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=418..649\n- ground footprint, where it stands: x=896..1408, y=469..661\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-5ddd94b8-0ffd-497a-9bb8-d1b6cc049a71.png",
+      "referenceImages": [
+        "blockout.png (round 1)",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v2.png",
+      "sourceSha256": "280a01ee1c444fc70cb01f2e6281f1e1b7805d90de42947f2abb6dce1105542f",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1037762,
+      "sha256": "833b91110cbe88ff07efdabca30009056fd11d52916b55598756f62f731a89c0",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          1,
+          253
+        ],
+        [
+          254,
+          6,
+          252
+        ],
+        [
+          253,
+          0,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "base 103px below"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=418..649\n- ground footprint, where it stands: x=128..640, y=469..661\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=418..649\n- ground footprint, where it stands: x=896..1408, y=469..661\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-15dba713-606e-4332-8ed8-f2f39314e66c.png",
+      "referenceImages": [
+        "blockout.png (round 1)",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v3.png",
+      "sourceSha256": "7f09642c87575271305f424a582f79f7075350ae2e3b247ab8e8feee8b416a72",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1053270,
+      "sha256": "2c0a9b5f8f77d731513a15cc9e5b764179cbae9336bb9fd87e70fc847231dc24",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          252
+        ],
+        [
+          253,
+          10,
+          253
+        ],
+        [
+          252,
+          2,
+          252
+        ],
+        [
+          251,
+          6,
+          252
+        ]
+      ],
+      "registration": "base 142px below"
+    },
+    {
+      "id": "v4",
+      "round": 2,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=399..673\n- ground footprint, where it stands: x=128..640, y=493..685\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=399..673\n- ground footprint, where it stands: x=896..1408, y=493..685\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-4.log"
+      },
+      "sourceFile": "exec-729f1247-90ab-4eea-92bb-8e4ef4345b40.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v4.png",
+      "sourceSha256": "3d6e8fff954bab8d52791cdfba912ffabcd075e5b22986782b9c022e055dccc0",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v4.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1032088,
+      "sha256": "e98e68dc89ac50a2ac1b95c70f85d4bf0f53c06b73c159b97cbbe1d360722616",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          253
+        ],
+        [
+          253,
+          4,
+          253
+        ],
+        [
+          253,
+          0,
+          253
+        ],
+        [
+          252,
+          3,
+          252
+        ]
+      ],
+      "registration": "base 71px below the round-2 block-out (32px more posts than drawn)"
+    },
+    {
+      "id": "v5",
+      "round": 2,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=399..673\n- ground footprint, where it stands: x=128..640, y=493..685\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=399..673\n- ground footprint, where it stands: x=896..1408, y=493..685\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-5.log"
+      },
+      "sourceFile": "exec-62a1ff1b-ee9b-4fd8-b153-3721e9ad32c2.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v5.png",
+      "sourceSha256": "81cb2b1f92148aa6c1b0488c6e0654064ae68accd199828e82c188b4ed5e0a3f",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v5.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1032812,
+      "sha256": "ded0d26c70f222c78f8ddeb66fa1e9e4922e2c8df67f2ff1ffd3202d7a646dca",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          252
+        ],
+        [
+          253,
+          5,
+          253
+        ],
+        [
+          252,
+          1,
+          251
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "base 71px below"
+    },
+    {
+      "id": "v6",
+      "round": 2,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the workshop, empty:\n- whole piece: x=125..643, y=399..673\n- ground footprint, where it stands: x=128..640, y=493..685\nPiece 2, the workshop, building a siege engine:\n- whole piece: x=893..1411, y=399..673\n- ground footprint, where it stands: x=896..1408, y=493..685\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-6.log"
+      },
+      "sourceFile": "exec-087ff7e6-5e5b-439e-9a1f-66b85028bc1a.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-10/sources/v6.png",
+      "sourceSha256": "4b90db8662490ee72476d7ad31d34244e638e3f3b28d620df7811e4db6967586",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v6.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 997232,
+      "sha256": "99fd438a7b03d7bd4496fd2df62ed8e2e897026afd1db658ad673cc618a8950e",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          253
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          253,
+          1,
+          253
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "base 43px below the block-out bottom; 32px below the footprint's front edge"
+    }
+  ],
+  "selected": {
+    "id": "v6",
+    "path": "attempts/v6.webp",
+    "selectedBy": "agent",
+    "reason": "Closest to the raised block-out; tiled eave edge and ladder-cart frame read clearly at 50%.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "28737113beefcba58cf83c7d797e47b2abaa9dc581d082a90a014dc9eb2488b9",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "approved by you on the review page (attempts/s2-review.html)",
+    "findings": [
+      "Round 1: the block-out's eaves at 1.1 levels (26px in game, below a 36px soldier) were too low; all three drew realistic posts and stood 100px+ below the footprint. The block-out was raised to eaves 2 / ridge 3.",
+      "Round 2: still a full front elevation under the roof; v6's painted base is at y=717 against the footprint front edge at 685. Anchor the sprite by its painted base (y=717), not by the block-out."
+    ]
+  },
+  "approvedOn": "2026-11-02"
+}

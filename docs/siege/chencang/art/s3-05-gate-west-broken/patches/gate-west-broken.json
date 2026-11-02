@@ -1,0 +1,19 @@
+{
+  "state": "gate-west-broken",
+  "chosen": "attempts/gate-west-broken-v2.webp",
+  "at": [
+    875,
+    311
+  ],
+  "size": [
+    106,
+    210
+  ],
+  "offset": [
+    0,
+    0
+  ],
+  "difference": 7.86,
+  "differenceUnshifted": 7.86,
+  "changeInside": 31.5
+}

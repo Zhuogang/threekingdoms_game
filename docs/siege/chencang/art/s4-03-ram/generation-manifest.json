@@ -1,0 +1,208 @@
+{
+  "id": "s4-03",
+  "folder": "s4-03-ram",
+  "name": "冲车",
+  "directory": "docs/siege/chencang/art/s4-03-ram",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "original",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the battering ram, heading north:\n- whole piece: x=198..314, y=385..639\n- ground footprint, where it stands: x=192..320, y=459..651\nPiece 2, the battering ram, heading east:\n- whole piece: x=611..925, y=468..585\n- ground footprint, where it stands: x=611..867, y=506..602\nPiece 3, the battering ram, smashed by a millstone:\n- whole piece: x=1222..1338, y=405..619\n- ground footprint, where it stands: x=1216..1344, y=439..631\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han battering ram (冲车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. It is a low four-wheeled timber shed with a steep gabled roof covered in wet ox hides against fire, and inside it a heavy ram beam slung on ropes, its iron-shod head sticking out of the front. Left: heading north, away from the viewer, the ram head at its far (north) end. Middle: the same ram heading east, seen from its side, the ram head at its right (east) end. Right: the same ram smashed by a falling millstone: the roof caved in and split, beams broken, the ram beam fallen askew, hides torn. Same machine, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-4d65fbce-3930-42f1-9819-59888937e0b4.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-03/sources/v1.png",
+      "sourceSha256": "57c32322ad8f94e82ef3503b47250a342add2e61831d2af699d857866b17d115",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 784676,
+      "sha256": "ef4e3f273c1dd12d69cc0c2899c31edc5bffea64d0de1cbec356705625283d24",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          253
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          3,
+          253
+        ]
+      ],
+      "registration": "within 25px"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the battering ram, heading north:\n- whole piece: x=198..314, y=385..639\n- ground footprint, where it stands: x=192..320, y=459..651\nPiece 2, the battering ram, heading east:\n- whole piece: x=611..925, y=468..585\n- ground footprint, where it stands: x=611..867, y=506..602\nPiece 3, the battering ram, smashed by a millstone:\n- whole piece: x=1222..1338, y=405..619\n- ground footprint, where it stands: x=1216..1344, y=439..631\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han battering ram (冲车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. It is a low four-wheeled timber shed with a steep gabled roof covered in wet ox hides against fire, and inside it a heavy ram beam slung on ropes, its iron-shod head sticking out of the front. Left: heading north, away from the viewer, the ram head at its far (north) end. Middle: the same ram heading east, seen from its side, the ram head at its right (east) end. Right: the same ram smashed by a falling millstone: the roof caved in and split, beams broken, the ram beam fallen askew, hides torn. Same machine, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-e8094406-8ae9-4421-99e5-e2f1ad348b86.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-03/sources/v2.png",
+      "sourceSha256": "78d69d09f68ca5b9221c9705d827a14cc97f979f26a20af7a05f918f740a7116",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 779438,
+      "sha256": "cbc1678aded04cb60f0f50c42e0be697579a0471a3a6e5b700fc47c12346c73d",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          3,
+          252
+        ],
+        [
+          253,
+          4,
+          252
+        ],
+        [
+          253,
+          2,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "side view 35px low"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the battering ram, heading north:\n- whole piece: x=198..314, y=385..639\n- ground footprint, where it stands: x=192..320, y=459..651\nPiece 2, the battering ram, heading east:\n- whole piece: x=611..925, y=468..585\n- ground footprint, where it stands: x=611..867, y=506..602\nPiece 3, the battering ram, smashed by a millstone:\n- whole piece: x=1222..1338, y=405..619\n- ground footprint, where it stands: x=1216..1344, y=439..631\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han battering ram (冲车) of the Three Kingdoms period for a strategy game, three separate pieces side by side, one centred in each third of the image. It is a low four-wheeled timber shed with a steep gabled roof covered in wet ox hides against fire, and inside it a heavy ram beam slung on ropes, its iron-shod head sticking out of the front. Left: heading north, away from the viewer, the ram head at its far (north) end. Middle: the same ram heading east, seen from its side, the ram head at its right (east) end. Right: the same ram smashed by a falling millstone: the roof caved in and split, beams broken, the ram beam fallen askew, hides torn. Same machine, same size in all three.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-57f4dfc0-ed0a-434a-83b2-5ef0139ca70a.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s4-03/sources/v3.png",
+      "sourceSha256": "8e3d6714ceb70fc7d3e7856923a157c42fd98963dde0857a941bac06f8edff4d",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 775402,
+      "sha256": "a86bfa439893da6f957469418d0c1b25e6212894ca32310d34494a0486629c29",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          2,
+          252
+        ],
+        [
+          253,
+          8,
+          253
+        ],
+        [
+          254,
+          0,
+          252
+        ],
+        [
+          252,
+          3,
+          252
+        ]
+      ],
+      "registration": "side view 33px low; north view puts the ram head at the near end"
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "agent",
+    "reason": "Ram head out front in both moving views; the wreck has the millstone lying in the caved-in roof.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "cd69c16ed4508212e995e7aa38b36c17174b997bf88ee1820c3bfcadc9d4f2cf",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "agent-reviewed, awaiting your confirmation",
+    "findings": [
+      "v3's north-facing view has the ram head at the south (near) end, which is wrong.",
+      "All wrecks include the millstone, which suits the swap after the drop."
+    ]
+  }
+}

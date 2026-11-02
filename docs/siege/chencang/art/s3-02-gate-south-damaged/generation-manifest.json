@@ -1,0 +1,99 @@
+{
+  "id": "s3-02",
+  "folder": "s3-02-gate-south-damaged",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    512
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "gate-south-damaged",
+      "name": "受损",
+      "prompt": "Edit task: change one part of a finished painting to show the south gate battered. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe south gate has been battered by a ram but still holds. The iron-studded doors stay closed, but their planks are split and gouged, several iron straps are bent and torn loose, and a dark bruised scar marks where the ram struck; splinters and a few fallen bricks lie on the threshold. A few roof tiles are knocked off the lower eaves of the gate tower, and faint scorch marks stain the brick around the gateway. The gate tower and the wall still stand.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the south gate with its tower: x=639..897, y=79..305\n\nRepaint only the south gate inside this box and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "gate-south-damaged-v1",
+          "type": "edit",
+          "input": "inputs/gate-south-damaged.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-damaged-codex-1.log"
+          },
+          "sourceFile": "exec-2a2b0a35-2dea-41db-b5ab-6874911893bd.png",
+          "sourcePath": "../../../../../attempts/s3-02/sources/gate-south-damaged-v1.png",
+          "sourceSha256": "f0348323bb471f6403067bd96826ac7ff6b61e7f00da26cd2140d3204b3d3ebc",
+          "path": "attempts/gate-south-damaged-v1.webp",
+          "bytes": 1703036,
+          "sha256": "3646660b3f2ff060f64953ecdfe910c93928c14bf9fadc7dbf2f1bcafa5918ff",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-south-damaged-v2",
+          "type": "edit",
+          "input": "inputs/gate-south-damaged.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-damaged-codex-1.log"
+          },
+          "sourceFile": "exec-d8b17b89-dc86-486c-8997-dd49df9a64dd.png",
+          "sourcePath": "../../../../../attempts/s3-02/sources/gate-south-damaged-v2.png",
+          "sourceSha256": "0aaf6d1f2052c729eeb641f8842ad1eec157468a8866ddd13f8467b4f253627c",
+          "path": "attempts/gate-south-damaged-v2.webp",
+          "bytes": 1710924,
+          "sha256": "6abd21361abd07c87166ff1ca9a820864d243a8020732fb0855e8fce3a6b7313",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-south-damaged-v3",
+          "type": "edit",
+          "input": "inputs/gate-south-damaged.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-south-damaged-codex-1.log"
+          },
+          "sourceFile": "exec-029a15d7-8a03-4235-9aba-bff2957c7ef7.png",
+          "sourcePath": "../../../../../attempts/s3-02/sources/gate-south-damaged-v3.png",
+          "sourceSha256": "67ebc3ab453693af0c2dbf79fbd10c44f32e8669b4503f9a967cd189e53a2671",
+          "path": "attempts/gate-south-damaged-v3.webp",
+          "bytes": 1726436,
+          "sha256": "bb3e5fe5a8aa2212df3c1106c8b7b8f139a0c78f5ad3e4efbbb829025fe79635",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "gate-south-damaged-v2",
+        "path": "attempts/gate-south-damaged-v2.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/gate-south-damaged.png",
+        "sha256": "a9a7a3382b0a978a21179650b919d5f19552c8fa37ef19f36b94d0d758e2680a",
+        "at": [
+          1390,
+          574
+        ],
+        "size": [
+          292,
+          260
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 6.12,
+        "changeInside": 20.9
+      },
+      "preview": "previews/gate-south-damaged.webp",
+      "review": "v2 reads best as battered but closed (split planks, bent straps, missing eave tiles, scorch); v3 too subtle; v1 enlarged the doors."
+    }
+  ]
+}

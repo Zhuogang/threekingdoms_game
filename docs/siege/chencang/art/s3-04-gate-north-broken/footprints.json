@@ -1,0 +1,19 @@
+{
+  "asset": "s3-04-gate-north-broken",
+  "size": [1536, 1024],
+  "cell": [64, 48],
+  "level": 24,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-768, 0],
+  "objects": [
+    {
+      "id": "gate-north",
+      "kind": "gate-tower",
+      "layer": "L3",
+      "cells": [22, 4, 25, 4],
+      "height": 5,
+      "anchor": [640, 240],
+      "bbox": [639, 69, 897, 240]
+    }
+  ]
+}

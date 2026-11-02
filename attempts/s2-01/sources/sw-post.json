@@ -1,0 +1,107 @@
+[
+  {
+    "id": "sw-v1",
+    "source": "sw-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "34f9c1fbbfbbfb6dbda4f8462dc7ca9c77fbeb5fc4c1c6989e3854e88d11fc26",
+    "path": "attempts/sw-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1738232,
+    "sha256": "03a4401d8f226f981eb77ef970c551f109684a516cfe170d0fb8615dd4f27a40",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        238,
+        234,
+        228
+      ],
+      [
+        168,
+        132,
+        98
+      ],
+      [
+        209,
+        191,
+        168
+      ],
+      [
+        144,
+        107,
+        71
+      ]
+    ]
+  },
+  {
+    "id": "sw-v2",
+    "source": "sw-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "da1428618072e7fddce9861d30c98b303afdb40cbf46011c94e9e4b6c8dc51c0",
+    "path": "attempts/sw-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1689520,
+    "sha256": "fbbd8fd6f74180cb65b6c18c4beea6c728cd2c21a7331a957500244ceeb8af91",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        238,
+        234,
+        228
+      ],
+      [
+        158,
+        122,
+        87
+      ],
+      [
+        193,
+        176,
+        153
+      ],
+      [
+        144,
+        107,
+        70
+      ]
+    ]
+  },
+  {
+    "id": "sw-v3",
+    "source": "sw-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "bf298822f430d66a502e29b85e93575a5f88d96ee86154e361907da9cfa8a1b1",
+    "path": "attempts/sw-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1700310,
+    "sha256": "2e902da295ec46622ba1a1dec9503244a86db33ddf75ae927b74e710182ec1c8",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        238,
+        234,
+        228
+      ],
+      [
+        154,
+        122,
+        90
+      ],
+      [
+        193,
+        168,
+        138
+      ],
+      [
+        153,
+        115,
+        76
+      ]
+    ]
+  }
+]

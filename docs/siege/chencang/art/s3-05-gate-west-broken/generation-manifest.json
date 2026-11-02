@@ -1,0 +1,99 @@
+{
+  "id": "s3-05",
+  "folder": "s3-05-gate-west-broken",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    0
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "gate-west-broken",
+      "name": "门破",
+      "prompt": "Edit task: change one part of a finished painting to show the west gate broken. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting.\n\nThe west gate has been broken through. Its doors face west and cannot be seen from this camera, so show the break by what spills out of the gate passage: splintered door planks, iron straps and broken brick strewn across the road and the bridge where they meet the gate, trampled mud, soot streaks on the gate tower's south face, and a few roof tiles knocked off its eaves. The gate tower and the wall still stand.\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the west gate with its tower: x=124..196, y=328..504\n\nRepaint only the west gate inside this box and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "gate-west-broken-v1",
+          "type": "edit",
+          "input": "inputs/gate-west-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-west-broken-codex-1.log"
+          },
+          "sourceFile": "exec-6bbb960f-ced8-4b0a-a9d4-af7ceefd8ba6.png",
+          "sourcePath": "../../../../../attempts/s3-05/sources/gate-west-broken-v1.png",
+          "sourceSha256": "1d03e002b2eb38135eb418c81d02ab1c5a4c51783e98651011c6cec1677233d7",
+          "path": "attempts/gate-west-broken-v1.webp",
+          "bytes": 1841802,
+          "sha256": "2593c57af8d3bab0b72cb0735ead97f3ceb859fb08aaaf64a052eab91dec3e61",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-west-broken-v2",
+          "type": "edit",
+          "input": "inputs/gate-west-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-west-broken-codex-1.log"
+          },
+          "sourceFile": "exec-d4ec0480-7ff9-4d1f-bf04-0613b517d034.png",
+          "sourcePath": "../../../../../attempts/s3-05/sources/gate-west-broken-v2.png",
+          "sourceSha256": "3b633639d436ae9e2a9054aa97647594254d4617cfb16bebf180d912b9562ab6",
+          "path": "attempts/gate-west-broken-v2.webp",
+          "bytes": 1837382,
+          "sha256": "e0990cb392309ba23ef025044c52875a7eacdb87f87de4419fab909bbcae2092",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "gate-west-broken-v3",
+          "type": "edit",
+          "input": "inputs/gate-west-broken.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "gate-west-broken-codex-1.log"
+          },
+          "sourceFile": "exec-d03feb29-c0d7-4792-9691-d4ddc647da3c.png",
+          "sourcePath": "../../../../../attempts/s3-05/sources/gate-west-broken-v3.png",
+          "sourceSha256": "47a86e58abe6762e5b495ba946e3eed80d9a16f29986558a8ca0c9335346134b",
+          "path": "attempts/gate-west-broken-v3.webp",
+          "bytes": 1859772,
+          "sha256": "c9bb0c32f4544cc0f7794946775b53c8fac6ab2b3c80a791e582a0947d8ec7d6",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "gate-west-broken-v2",
+        "path": "attempts/gate-west-broken-v2.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/gate-west-broken.png",
+        "sha256": "5621bb9c4b8774f56af307d1f494fda839d22fba469e22163c4df193f620ea5c",
+        "at": [
+          875,
+          311
+        ],
+        "size": [
+          106,
+          210
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 7.86,
+        "changeInside": 31.5
+      },
+      "preview": "previews/gate-west-broken.webp",
+      "review": "v1 drew a south-facing doorway in the tower (wrong: the passage runs east-west); v2 keeps the tower, soot below it and debris at both passage ends; picked to match the east gate."
+    }
+  ]
+}

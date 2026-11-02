@@ -1,0 +1,60 @@
+{
+  "asset": "s4-03-ram",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "朝北",
+      "cell": [0, 0, 512, 1024],
+      "origin": [-4928, -213],
+      "objects": [
+        {
+          "id": "ram-n",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [40, 7, 40, 8],
+          "height": 1.5,
+          "anchor": [192, 651],
+          "bbox": [198, 384, 314, 640]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "朝东",
+      "cell": [512, 0, 512, 1024],
+      "origin": [-4765, -262],
+      "objects": [
+        {
+          "id": "ram-e",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [42, 8, 43, 8],
+          "height": 1.5,
+          "anchor": [611, 602],
+          "bbox": [610, 467, 925, 586]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "砸毁",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [-4544, -233],
+      "objects": [
+        {
+          "id": "ram-wreck",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [45, 7, 45, 8],
+          "height": 0.7,
+          "anchor": [1216, 631],
+          "bbox": [1222, 405, 1338, 620]
+        }
+      ]
+    }
+  ]
+}

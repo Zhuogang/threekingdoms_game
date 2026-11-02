@@ -1,0 +1,19 @@
+{
+  "state": "inner-wall-works",
+  "chosen": "attempts/inner-wall-works-v1.webp",
+  "at": [
+    941,
+    638
+  ],
+  "size": [
+    1190,
+    77
+  ],
+  "offset": [
+    0,
+    0
+  ],
+  "difference": 7.01,
+  "differenceUnshifted": 7.01,
+  "changeInside": 49.3
+}

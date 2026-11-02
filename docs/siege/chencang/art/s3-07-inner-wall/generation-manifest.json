@@ -1,0 +1,185 @@
+{
+  "id": "s3-07",
+  "folder": "s3-07-inner-wall",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
+  "crop": [
+    768,
+    512
+  ],
+  "status": "picked by agent; awaiting your review",
+  "states": [
+    {
+      "state": "inner-wall-works",
+      "name": "施工中（S3-07）",
+      "prompt": "Edit task: change one part of a finished painting to show an inner wall being built. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting. Four flat sandy shapes (a pale top and a darker front) have been pasted onto it across the city, between the southern barracks and the south wall; each marks one run of a new inner wall that the defenders are building in haste overnight. Paint over the four shapes; they are the block-out, not part of the painting.\n\nPaint each run as rammed earth (夯土) half raised: a long low body of fresh tamped yellow-brown earth exactly filling the marked shape, held between timber shuttering boards lashed to upright poles and cross-ties; the poles stand about twice as high as the earth. Along the runs lie baskets of earth, wooden rammers, a ladder and loose planks, and fresh earth is spilled and trodden into the snow around them. The four runs stay separate, with the gaps between them clear (the street to the south gate passes through the middle gap).\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the four runs of the inner wall, all inside: x=192..1344, y=145..184\n\nRepaint only the four marked shapes and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "inner-wall-works-v1",
+          "type": "edit",
+          "input": "inputs/inner-wall-works.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-works-codex-1.log"
+          },
+          "sourceFile": "exec-bf154dbc-d9c4-46c6-bd72-32eb7635dbdb.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-works-v1.png",
+          "sourceSha256": "5e5f88354e8a05b4c3ad13aea29359e4b6171ee9285d9b532f744a14fb36a8a5",
+          "path": "attempts/inner-wall-works-v1.webp",
+          "bytes": 1745710,
+          "sha256": "15ce7ad03c486f43b6e37a3d0f66a83914d0a53010109f4f42d668dd565fd07e",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "inner-wall-works-v2",
+          "type": "edit",
+          "input": "inputs/inner-wall-works.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-works-codex-1.log"
+          },
+          "sourceFile": "exec-895c9063-05e5-4482-bcc0-b74da7eb73cc.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-works-v2.png",
+          "sourceSha256": "998e5edd47f9ee4634674d7b2664cb2d2fdb24c113e2393b9532d7ba746c74b6",
+          "path": "attempts/inner-wall-works-v2.webp",
+          "bytes": 1717394,
+          "sha256": "09e95b11125217127b73e2e9ee4ddd470d4abeed64c3645ab8e8a62f08de34d3",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "inner-wall-works-v3",
+          "type": "edit",
+          "input": "inputs/inner-wall-works.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-works-codex-1.log"
+          },
+          "sourceFile": "exec-909d3aee-d362-4017-9f24-3194f5ee720f.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-works-v3.png",
+          "sourceSha256": "bd11bd024bd2a02b116fc6f9fcd77a4fb8fd2b32d171b9a96ac1a1b8be91b802",
+          "path": "attempts/inner-wall-works-v3.webp",
+          "bytes": 1700050,
+          "sha256": "366d073b5583b1f31500c8e92ca936e828ec8ced5c11d110f56a81cbb6912f1d",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "inner-wall-works-v1",
+        "path": "attempts/inner-wall-works-v1.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/inner-wall-works.png",
+        "sha256": "5c9ff4651c5d8255c1ecd7bfb1c4b5fbcdc42b3aa3ddc24f7ff23db283a6544a",
+        "at": [
+          941,
+          638
+        ],
+        "size": [
+          1190,
+          77
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 7.01,
+        "changeInside": 49.3
+      },
+      "preview": "previews/inner-wall-works.webp",
+      "review": "v2 painted over the south ramps; v1 and v3 keep them; v1 continues the shuttering behind the ramp to the gate tower, as the run reaches x=22."
+    },
+    {
+      "state": "inner-wall-built",
+      "name": "建成（S3-08）",
+      "prompt": "Edit task: change one part of a finished painting to show a finished inner wall. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.\n\nIt is part of a finished battlefield map of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting. Four flat sandy shapes (a pale top and a darker front) have been pasted onto it across the city, between the southern barracks and the south wall; each marks one run of a new inner wall (重墙) that the defenders built in haste. Paint over the four shapes; they are the block-out, not part of the painting.\n\nPaint each run as a finished rammed-earth wall exactly filling its marked shape: smooth tamped yellow-brown earth with faint horizontal layer lines left by the shuttering, lower than the city wall, with a narrow flat walkway on top under fresh snow and a low crenellated earth parapet along its south (front) edge only. It is plainer and rougher than the brick-faced city wall, clearly new work. The four runs stay separate, with the gaps between them clear (the street to the south gate passes through the middle gap).\n\nPositions on this canvas (pixel boxes measured from the block-out):\n- the four runs of the inner wall, all inside: x=192..1344, y=121..184\n\nRepaint only the four marked shapes and the few pixels around it needed to blend it in. Keep everything else exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.\n\nPaint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light, top faces carry fresh snow, and soft cool blue-grey shadows fall toward the upper right.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "images": [
+        {
+          "id": "inner-wall-built-v1",
+          "type": "edit",
+          "input": "inputs/inner-wall-built.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-built-codex-1.log"
+          },
+          "sourceFile": "exec-1ae7c289-698e-4d99-8eb4-52da4cebedbe.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-built-v1.png",
+          "sourceSha256": "e556255f982385f8cf54758aadd04af716a2d2e64185551a4b66d4b1d63fb8e6",
+          "path": "attempts/inner-wall-built-v1.webp",
+          "bytes": 1707746,
+          "sha256": "a30bf6aae99e539fe3792addd3150b18baf4f96d03b825ab5f05c21249c9bb0e",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "inner-wall-built-v2",
+          "type": "edit",
+          "input": "inputs/inner-wall-built.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-built-codex-1.log"
+          },
+          "sourceFile": "exec-f3babc8f-f888-47a1-ae4c-53528899d4f7.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-built-v2.png",
+          "sourceSha256": "3bab68c598d1d89a9d35b6886d078318447bdd03a903dcf2304990fbf7d20b40",
+          "path": "attempts/inner-wall-built-v2.webp",
+          "bytes": 1679824,
+          "sha256": "b1265244a9ff1fcb0443a6e91661aeb7810e9fd55e36996b6f3121881569adf9",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "inner-wall-built-v3",
+          "type": "edit",
+          "input": "inputs/inner-wall-built.png",
+          "generator": {
+            "tool": "Codex built-in image_gen",
+            "model": "gpt-6.1-sol",
+            "reasoningEffort": "xhigh",
+            "codexRun": "inner-wall-built-codex-1.log"
+          },
+          "sourceFile": "exec-685f38f2-726c-471a-a79e-0052d3656c25.png",
+          "sourcePath": "../../../../../attempts/s3-07/sources/inner-wall-built-v3.png",
+          "sourceSha256": "af773b4c0ec7a62b48ae9a994a3c9c3a9b5cac6d835809403e2a910478940dd6",
+          "path": "attempts/inner-wall-built-v3.webp",
+          "bytes": 1724448,
+          "sha256": "f31dd09f71bd1d4c54514c92c537fe93e81a523a0bc1261607a09a543b32517b",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "inner-wall-built-v1",
+        "path": "attempts/inner-wall-built-v1.webp",
+        "selectedBy": "agent"
+      },
+      "patch": {
+        "path": "patches/inner-wall-built.png",
+        "sha256": "edad07fa3f72ee4e93cb7714ba49457d1ae94da7c20605072e3a22a956fa6cda",
+        "at": [
+          941,
+          614
+        ],
+        "size": [
+          1190,
+          101
+        ],
+        "offset": [
+          0,
+          0
+        ],
+        "difference": 5.59,
+        "changeInside": 44.4
+      },
+      "preview": "previews/inner-wall-built.webp",
+      "review": "v1 and v3 both show a crenellated rammed-earth wall lower than the city wall; v1 continues the wall behind the ramp to the gate tower (correct), v3 stops at the ramp."
+    }
+  ]
+}

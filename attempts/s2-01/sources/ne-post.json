@@ -1,0 +1,107 @@
+[
+  {
+    "id": "ne-v1",
+    "source": "ne-v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "a075c646f46ce253add41bc44e67b22d6e365cbcc419c1b7ab06682b517fd8c9",
+    "path": "attempts/ne-v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1827676,
+    "sha256": "bed6beb042bb24e49de621f019a7ddeb22d87d357b2a5a4296710a72bc53e6d7",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        225,
+        225,
+        221
+      ],
+      [
+        154,
+        174,
+        185
+      ],
+      [
+        162,
+        129,
+        97
+      ],
+      [
+        231,
+        223,
+        217
+      ]
+    ]
+  },
+  {
+    "id": "ne-v2",
+    "source": "ne-v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "5f28faca64359790afc74775548c14bf3c81e7c861572da6b71b1efeb26d8430",
+    "path": "attempts/ne-v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1835994,
+    "sha256": "9466d1be53532f50499e1ec8fdf1318b4c5a95eeb37a159f0b1bb6376146376b",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        126,
+        156,
+        170
+      ],
+      [
+        137,
+        162,
+        173
+      ],
+      [
+        166,
+        133,
+        104
+      ],
+      [
+        232,
+        225,
+        217
+      ]
+    ]
+  },
+  {
+    "id": "ne-v3",
+    "source": "ne-v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "7e44e9ba02a5a4ac7f2ec72a460e291ac488afbf1def083b66cc692d23652968",
+    "path": "attempts/ne-v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 1800742,
+    "sha256": "4dd3f4d0c693d133d299b40b669c5e730ecf7d01345e9f04aaad2ca5310b737c",
+    "losslessEncodingVerified": true,
+    "cornerPixels": [
+      [
+        142,
+        161,
+        177
+      ],
+      [
+        127,
+        154,
+        171
+      ],
+      [
+        167,
+        135,
+        103
+      ],
+      [
+        227,
+        220,
+        213
+      ]
+    ]
+  }
+]

@@ -1,0 +1,209 @@
+{
+  "id": "s2-11",
+  "folder": "s2-11-field-scenery",
+  "name": "野外点缀",
+  "directory": "docs/siege/chencang/art/s2-11-field-scenery",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "status": "approved",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blockout": "original",
+      "references": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ]
+    }
+  ],
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, a tall snow-laden pine:\n- whole piece: x=205..307, y=214..335\n- ground footprint, where it stands: x=192..320, y=272..368\nPiece 2, a pair of younger pines:\n- whole piece: x=709..827, y=208..329\n- ground footprint, where it stands: x=704..832, y=257..353\nPiece 3, a broad old pine:\n- whole piece: x=1208..1352, y=211..346\n- ground footprint, where it stands: x=1216..1344, y=278..374\nPiece 4, a dead tree:\n- whole piece: x=207..305, y=719..851\n- ground footprint, where it stands: x=192..320, y=795..891\nPiece 5, a cluster of boulders:\n- whole piece: x=720..817, y=730..806\n- ground footprint, where it stands: x=707..835, y=723..819\nPiece 6, an abatis, two cells long:\n- whole piece: x=1157..1403, y=748..811\n- ground footprint, where it stands: x=1152..1408, y=734..830\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: scenery pieces for the snowy battlefield of a strategy game, six separate pieces in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell. Top row, left to right: a tall snow-laden pine; a pair of younger pines growing together; a broad old pine with spreading snowy boughs. Bottom row, left to right: a leafless dead tree with bare twisted branches; a cluster of grey boulders with snow on top; an abatis (鹿角), a low barrier of sharpened branches lashed together, two cells long, running east-west.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-628cb566-6d95-4fab-8da4-c0a0de30cc93.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-11/sources/v1.png",
+      "sourceSha256": "9a2d6c5650b644894cf07dc5e0cec7188e2c33b9ce47b1bfc6f8fbdf7739196f",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 783752,
+      "sha256": "5c6ef10965e2391be24e74cdb21491e24d6032c58b8e15e7078c15a9b0decac5",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          251,
+          4,
+          252
+        ],
+        [
+          254,
+          8,
+          252
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          5,
+          253
+        ]
+      ],
+      "registration": "pine A 35px taller; pine C 45px wider each side"
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, a tall snow-laden pine:\n- whole piece: x=205..307, y=214..335\n- ground footprint, where it stands: x=192..320, y=272..368\nPiece 2, a pair of younger pines:\n- whole piece: x=709..827, y=208..329\n- ground footprint, where it stands: x=704..832, y=257..353\nPiece 3, a broad old pine:\n- whole piece: x=1208..1352, y=211..346\n- ground footprint, where it stands: x=1216..1344, y=278..374\nPiece 4, a dead tree:\n- whole piece: x=207..305, y=719..851\n- ground footprint, where it stands: x=192..320, y=795..891\nPiece 5, a cluster of boulders:\n- whole piece: x=720..817, y=730..806\n- ground footprint, where it stands: x=707..835, y=723..819\nPiece 6, an abatis, two cells long:\n- whole piece: x=1157..1403, y=748..811\n- ground footprint, where it stands: x=1152..1408, y=734..830\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: scenery pieces for the snowy battlefield of a strategy game, six separate pieces in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell. Top row, left to right: a tall snow-laden pine; a pair of younger pines growing together; a broad old pine with spreading snowy boughs. Bottom row, left to right: a leafless dead tree with bare twisted branches; a cluster of grey boulders with snow on top; an abatis (鹿角), a low barrier of sharpened branches lashed together, two cells long, running east-west.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-bae5fee9-9705-4d2c-8c65-41a85f21ec2d.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-11/sources/v2.png",
+      "sourceSha256": "f2405daeb3ce4cb186b694d5393972847f826dfd3306131fcf3a42f988bab235",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 801688,
+      "sha256": "3c5353d76ac39e274007da40a7e44fcf4e54fee19564d0e8ab6ab29479f12d39",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          3,
+          252
+        ],
+        [
+          253,
+          5,
+          253
+        ],
+        [
+          253,
+          1,
+          252
+        ],
+        [
+          252,
+          4,
+          253
+        ]
+      ],
+      "registration": "pine A 49px taller; pine C 51px wider"
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, a tall snow-laden pine:\n- whole piece: x=205..307, y=214..335\n- ground footprint, where it stands: x=192..320, y=272..368\nPiece 2, a pair of younger pines:\n- whole piece: x=709..827, y=208..329\n- ground footprint, where it stands: x=704..832, y=257..353\nPiece 3, a broad old pine:\n- whole piece: x=1208..1352, y=211..346\n- ground footprint, where it stands: x=1216..1344, y=278..374\nPiece 4, a dead tree:\n- whole piece: x=207..305, y=719..851\n- ground footprint, where it stands: x=192..320, y=795..891\nPiece 5, a cluster of boulders:\n- whole piece: x=720..817, y=730..806\n- ground footprint, where it stands: x=707..835, y=723..819\nPiece 6, an abatis, two cells long:\n- whole piece: x=1157..1403, y=748..811\n- ground footprint, where it stands: x=1152..1408, y=734..830\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: scenery pieces for the snowy battlefield of a strategy game, six separate pieces in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell. Top row, left to right: a tall snow-laden pine; a pair of younger pines growing together; a broad old pine with spreading snowy boughs. Bottom row, left to right: a leafless dead tree with bare twisted branches; a cluster of grey boulders with snow on top; an abatis (鹿角), a low barrier of sharpened branches lashed together, two cells long, running east-west.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log"
+      },
+      "sourceFile": "exec-79f90b4c-619b-4ecf-84e8-3dfdb3a4ec80.png",
+      "referenceImages": [
+        "blockout.png",
+        "S1-02 v4 (standard piece)"
+      ],
+      "sourcePath": "../../../../../attempts/s2-11/sources/v3.png",
+      "sourceSha256": "7ab1b3958509867d3d5f392aae1e945330ffd69e7e943713e44827fc907bde9e",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 784596,
+      "sha256": "eaa05b89bad4486882d5dd40d3fe991f5e5ad55605ad3996b1f847b9b681dce6",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [
+          252,
+          4,
+          252
+        ],
+        [
+          253,
+          8,
+          253
+        ],
+        [
+          254,
+          0,
+          252
+        ],
+        [
+          252,
+          5,
+          252
+        ]
+      ],
+      "registration": "all within 26px except pine C, 41px wider each side"
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "agent",
+    "reason": "Best registration; three clearly different pines, the dead tree and the abatis read at 50%.",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "ab77c10e7d382819215ea282af00cd46d4b5900285cd107e72ae7e8b06ca4624",
+    "transparency": {
+      "method": "deterministic magenta key (no repainting): alpha from b-g, from min(r,b)-g (shaded magenta inside frames) and from (r+b)/2-g within 3px of the background; edge colours un-mixed from the measured background, faint or magenta-tinted edge pixels given a neutral ink tone; opaque pixels unchanged",
+      "script": "attempts/key.py"
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "approved by you on the review page (attempts/s2-review.html)",
+    "findings": [
+      "The spreading pine (C) is wider than its block-out in every candidate (natural feature; crowns overhang their cell).",
+      "Abatis (鹿角) stakes are sharp and short; the rocks keep a flat base."
+    ]
+  },
+  "approvedOn": "2026-11-02"
+}
