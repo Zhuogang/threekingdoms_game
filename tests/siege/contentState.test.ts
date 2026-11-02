@@ -23,7 +23,7 @@ import {
   advanceRandomState,
   tacticalSeed,
 } from '../../src/siege/rules/constants';
-import { createSiegeState } from '../../src/siege/rules/state';
+import { createSiegeState, weatherFromRoll } from '../../src/siege/rules/state';
 import type { SiegePosition } from '../../src/siege/rules/types';
 
 const positionKey = (p: SiegePosition) => `${cellKey(p)},${p.level}`;
@@ -231,7 +231,7 @@ describe('siege rosters and deterministic initial state', () => {
       troopType: 'infantry',
     });
     expect(SHU_ROSTER.find((u) => u.officer.id === 'jiangwei')?.troopType).toBe('infantry');
-    for (const unit of SHU_ROSTER) {
+    for (const unit of SHU_ROSTER.slice(0, 6)) {
       const officer = OFFICER_CATALOG_BY_ID.get(unit.officer.id)!;
       expect(unit.force).toBe(officer.adultForce);
       expect(unit.intellect).toBe(officer.adultIntellect);
@@ -241,6 +241,48 @@ describe('siege rosters and deterministic initial state', () => {
     for (const id of ['weiyan', 'jiangwei', 'wangping', 'wuyi', 'liaohua']) {
       expect(SHU_ROSTER.some((u) => u.officer.id === id)).toBe(true);
     }
+  });
+
+  it('replaces absent officers with two infantry and two archer captains', () => {
+    const captains = SHU_ROSTER.slice(6);
+    expect(captains.map((u) => u.troopType)).toEqual(['infantry', 'infantry', 'archer', 'archer']);
+    captains.forEach((unit, index) => {
+      expect(unit.id).toBe(`shu-captain-${index + 1}`);
+      expect(unit.officer.chinese).toBe(`蜀军校尉${index + 1}`);
+      expect(unit.officer.portraitId).toBeNull();
+      expect(unit.force).toBeGreaterThanOrEqual(55);
+      expect(unit.force).toBeLessThanOrEqual(62);
+      expect(unit.intellect).toBeGreaterThanOrEqual(40);
+      expect(unit.intellect).toBeLessThanOrEqual(50);
+    });
+    expect(
+      SHU_ROSTER.some((u) => ['zhaoyun', 'yanyan', 'jiangwan', 'feiyi'].includes(u.officer.id)),
+    ).toBe(false);
+  });
+
+  it('uses fixed opening positions and the weighted weather schedule without deployment RNG', () => {
+    const state = createSiegeState(42);
+    expect(state.units.find((u) => u.officer.id === 'haozhao')).toMatchObject({
+      x: 23,
+      y: 16,
+      level: 'wall',
+    });
+    expect(state.units[0]).toMatchObject({ x: 23, y: 25, level: 'ground' });
+    expect(state.units.slice(1, 10).every((u) => u.y >= 21 && u.y <= 23)).toBe(true);
+    let rng = tacticalSeed('chencang', 42);
+    for (let day = 1; day <= 20; day++) {
+      rng = advanceRandomState(rng);
+      expect(state.weatherByDay[day]).toBe(weatherFromRoll(rng / 0x100000000));
+    }
+    expect(state.rngState).toBe(rng);
+    expect([0, 0.59999, 0.6, 0.89999, 0.9, 0.99999].map(weatherFromRoll)).toEqual([
+      'clear',
+      'clear',
+      'snow',
+      'snow',
+      'wind',
+      'wind',
+    ]);
   });
 
   it('uses 1,300 Wei in six units, including the new officers and four portraitless captains', () => {
@@ -279,12 +321,12 @@ describe('siege rosters and deterministic initial state', () => {
     },
   );
 
-  it('is reproducible JSON and changes only seed, RNG, weather and placements across seeds', () => {
+  it('is reproducible JSON and keeps fixed deployments and varies only seed, RNG and weather across seeds', () => {
     const a = createSiegeState(100);
     const b = createSiegeState(101);
     expect(a).toEqual(createSiegeState(100));
     expect(JSON.parse(JSON.stringify(a))).toEqual(a);
-    expect(a.units.map(positionKey)).not.toEqual(b.units.map(positionKey));
+    expect(a.units.map(positionKey)).toEqual(b.units.map(positionKey));
     const fixed = (state: typeof a) => {
       const {
         seed: _seed,
@@ -327,7 +369,12 @@ describe('siege rosters and deterministic initial state', () => {
     expect(Object.values(state.trenchFill)).toEqual(Array(44).fill(0));
     expect(state.innerWall).toEqual({ 0: 0, 1: 0, 2: 0, 3: 0 });
     for (const gate of Object.values(GATES)) {
-      expect(state.gates[gate.id]).toEqual({ durability: gate.max, max: gate.max, broken: false });
+      expect(state.gates[gate.id]).toEqual({
+        durability: gate.max,
+        max: gate.max,
+        broken: false,
+        damaged: false,
+      });
     }
     expect(
       state.units.every(

@@ -132,7 +132,14 @@ function search(
 
 function unitSearch(state: SiegeState, unitId: string): Map<string, SearchNode> {
   const unit = state.units.find((entry) => entry.id === unitId);
-  if (!unit || unit.troops <= 0 || unit.routed || unit.moved || !isMapCell(unit.x, unit.y))
+  if (
+    !unit ||
+    unit.troops <= 0 ||
+    unit.routed ||
+    unit.moved ||
+    unit.acted ||
+    !isMapCell(unit.x, unit.y)
+  )
     return new Map();
   if (unit.level === 'wall' ? !isWalkway(state, unit) : !groundPassable(state, unit.side, unit))
     return new Map();
@@ -189,14 +196,25 @@ export function pathTo(
 
 export function engineReachable(state: SiegeState, engineId: string): ReachableCell[] {
   const engine = state.engines.find((entry) => entry.id === engineId);
-  if (!engine || engine.wrecked || engine.durability <= 0 || !isMapCell(engine.x, engine.y))
+  if (
+    !engine ||
+    engine.wrecked ||
+    engine.durability <= 0 ||
+    engine.moved ||
+    engine.acted ||
+    engine.raisedAt ||
+    !isMapCell(engine.x, engine.y)
+  )
     return [];
   const passable = ({ x, y }: Cell): boolean => {
     if (!isMapCell(x, y)) return false;
     if (engine.kind !== 'ram') return cellTerrain(state, x, y) === 'plain';
     const symbol = layoutSymbol(x, y);
     const gate = gateAt(x, y);
-    return symbol === '+' || symbol === '=' || (gate !== undefined && state.gates[gate].broken);
+    return (
+      (cellTerrain(state, x, y) === 'plain' && symbol !== '-') ||
+      (gate !== undefined && state.gates[gate].broken)
+    );
   };
   const occupied = new Set([
     ...state.units.filter((unit) => unit.troops > 0).map(positionKey),

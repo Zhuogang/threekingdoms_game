@@ -332,13 +332,27 @@ describe('engine movement', () => {
     return state;
   };
 
-  it('keeps rams on road or bridge cells and gives them two movement points', () => {
+  it('allows rams on plain ground and bridges with two movement points', () => {
     const state = engineState('ram', 23, 19);
     const cells = engineReachable(state, 'engine');
     expect(cells).toContainEqual({ x: 23, y: 17, level: 'ground', cost: 2 });
-    expect(cells.some((p) => p.x === 22)).toBe(false);
+    expect(cells).toContainEqual({ x: 22, y: 19, level: 'ground', cost: 1 });
     expect(cells.every((p) => p.level === 'ground' && p.cost <= 2)).toBe(true);
     expect(cells.some((p) => p.x === 23 && p.y === 16)).toBe(false);
+  });
+
+  it('lets newly built rams leave workshop exits but never use a filled trench', () => {
+    const state = engineState('ram', 16, 25);
+    expect(engineReachable(state, 'engine')).toContainEqual({
+      x: 17,
+      y: 25,
+      level: 'ground',
+      cost: 1,
+    });
+    Object.assign(state.engines[0]!, { x: 20, y: 19 });
+    state.trenchFill['20,18'] = 3;
+    state.trenchFill['20,17'] = 3;
+    expect(engineReachable(state, 'engine').some((p) => p.y < 19)).toBe(false);
   });
 
   it('admits rams into a broken gate but cannot enter an intact gate or its wall level', () => {

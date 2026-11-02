@@ -172,6 +172,11 @@ export const DEPLOY_SHU: readonly SiegePosition[] = allCells
   )
   .map((cell) => ({ ...cell, level: 'ground' }));
 
+/** Open ground enclosed by the camp's palisade, in stable row-major order. */
+export const CAMP_CELLS: readonly Cell[] = allCells.filter(
+  (cell) => isOpen(cell) && cell.x > campWest && cell.x < campEast && cell.y > campNorth,
+);
+
 export const DEPLOY_WEI: readonly SiegePosition[] = allCells.flatMap((cell): SiegePosition[] => {
   const symbol = layoutSymbol(cell.x, cell.y)!;
   if ('WOG'.includes(symbol)) return [{ ...cell, level: 'wall' }];
@@ -210,10 +215,26 @@ export const SHU_ROSTER: readonly SiegeRosterEntry[] = [
   shuOfficer('wangping', 2500, 'infantry'),
   shuOfficer('wuyi', 2000, 'infantry'),
   shuOfficer('liaohua', 2000, 'infantry'),
-  shuOfficer('zhaoyun', 2000, 'infantry'),
-  shuOfficer('yanyan', 2000, 'archer'),
-  shuOfficer('jiangwan', 1500, 'archer'),
-  shuOfficer('feiyi', 1500, 'archer'),
+  ...(
+    [
+      [2000, 'infantry', 62, 50],
+      [2000, 'infantry', 60, 47],
+      [1500, 'archer', 58, 44],
+      [1500, 'archer', 55, 40],
+    ] as const
+  ).map(([troops, troopType, force, intellect], index) => ({
+    id: `shu-captain-${index + 1}`,
+    officer: {
+      id: `shu-captain-${index + 1}`,
+      name: `Shu Captain ${index + 1}`,
+      chinese: `蜀军校尉${index + 1}`,
+      portraitId: null,
+    },
+    troops,
+    troopType,
+    force,
+    intellect,
+  })),
 ];
 
 export const WEI_ROSTER: readonly SiegeRosterEntry[] = [

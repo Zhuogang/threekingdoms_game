@@ -1,7 +1,4 @@
 import {
-  CITY_BOUNDS,
-  DEPLOY_SHU,
-  DEPLOY_WEI,
   GATES,
   INNER_WALL_SEGMENTS,
   SHU_ROSTER,
@@ -9,7 +6,6 @@ import {
   WEI_ROSTER,
   WORKSHOPS,
   cellKey,
-  layoutSymbol,
 } from '../content/chencang';
 import {
   INITIAL_MORALE,
@@ -32,27 +28,13 @@ import type {
 export function createSiegeState(seed: number): SiegeState {
   const normalizedSeed = seed >>> 0;
   let rngState = tacticalSeed('chencang', normalizedSeed);
-  const randomIndex = (length: number): number => {
-    rngState = advanceRandomState(rngState);
-    return rngState % length;
-  };
-  const weatherOptions: readonly SiegeWeather[] = ['clear', 'snow', 'wind'];
   const weatherByDay: SiegeState['weatherByDay'] = {};
   for (let day = 1; day <= SIEGE_DAYS; day++) {
-    weatherByDay[day] = weatherOptions[randomIndex(weatherOptions.length)]!;
+    rngState = advanceRandomState(rngState);
+    weatherByDay[day] = weatherFromRoll(rngState / 0x100000000);
   }
 
-  const occupied = new Set<string>();
-  const positionKey = (p: SiegePosition) => `${cellKey(p)},${p.level}`;
-  function place(
-    roster: SiegeRosterEntry,
-    side: SiegeSide,
-    zone: readonly SiegePosition[],
-  ): SiegeUnit {
-    const available = zone.filter((p) => !occupied.has(positionKey(p)));
-    if (!available.length) throw new Error(`No deployment cell for ${roster.id}`);
-    const position = available[randomIndex(available.length)]!;
-    occupied.add(positionKey(position));
+  function place(roster: SiegeRosterEntry, side: SiegeSide, position: SiegePosition): SiegeUnit {
     return {
       ...roster,
       officer: { ...roster.officer },
@@ -66,20 +48,20 @@ export function createSiegeState(seed: number): SiegeState {
     };
   }
 
-  const southWall = DEPLOY_WEI.filter(
-    (p) => p.level === 'wall' && p.y === CITY_BOUNDS.south && layoutSymbol(p.x, p.y) === 'W',
-  );
-  // Reserve the south wall for archers before placing the other Wei formations.
-  const weiArchers = WEI_ROSTER.filter((entry) => entry.troopType === 'archer').map((entry) =>
-    place(entry, 'wei', southWall),
-  );
-  const weiOthers = WEI_ROSTER.filter((entry) => entry.troopType !== 'archer').map((entry) =>
-    place(entry, 'wei', DEPLOY_WEI),
-  );
-  const weiUnits = [...weiArchers, ...weiOthers];
+  const weiColumns = [23, 22, 17, 25, 26, 30];
   const units = [
-    ...SHU_ROSTER.map((entry) => place(entry, 'shu', DEPLOY_SHU)),
-    ...WEI_ROSTER.map((entry) => weiUnits.find((unit) => unit.id === entry.id)!),
+    ...SHU_ROSTER.map((entry, index) =>
+      place(
+        entry,
+        'shu',
+        index === 0
+          ? { x: 23, y: 25, level: 'ground' }
+          : { x: 19 + index, y: 21 + Math.floor((index - 1) / 3), level: 'ground' },
+      ),
+    ),
+    ...WEI_ROSTER.map((entry, index) =>
+      place(entry, 'wei', { x: weiColumns[index]!, y: 16, level: 'wall' }),
+    ),
   ];
 
   return {
@@ -97,7 +79,7 @@ export function createSiegeState(seed: number): SiegeState {
     gates: Object.fromEntries(
       (Object.keys(GATES) as GateId[]).map((id) => [
         id,
-        { durability: GATES[id].max, max: GATES[id].max, broken: false },
+        { durability: GATES[id].max, max: GATES[id].max, broken: false, damaged: false },
       ]),
     ) as SiegeState['gates'],
     trenchFill: Object.fromEntries(SOUTH_TRENCH.map((cell) => [cellKey(cell), 0])),
@@ -107,4 +89,9 @@ export function createSiegeState(seed: number): SiegeState {
     log: [],
     outcome: null,
   };
+}
+
+/** Roll in [0, 1): clear 60%, snow 30%, wind 10%. */
+export function weatherFromRoll(roll: number): SiegeWeather {
+  return roll < 0.6 ? 'clear' : roll < 0.9 ? 'snow' : 'wind';
 }
