@@ -1,0 +1,67 @@
+{
+  "canvas": [3072, 1536],
+  "blockout": "blockout.png",
+  "base": { "source": "../s1-01-city-vignette/attempts/v2-a.webp", "at": [768, 48] },
+  "steps": [
+    {
+      "id": "city",
+      "name": "马道补画",
+      "at": [768, 48],
+      "size": [1536, 1024],
+      "paint": "steps/city-paint.png",
+      "blend": "steps/city-blend.png",
+      "input": "inputs/city.png",
+      "chosen": null
+    },
+    {
+      "id": "nw",
+      "name": "西北块",
+      "at": [0, 0],
+      "size": [1536, 1024],
+      "paint": "steps/nw-paint.png",
+      "blend": "steps/nw-blend.png",
+      "input": "inputs/nw.png",
+      "chosen": null
+    },
+    {
+      "id": "ne",
+      "name": "东北块",
+      "at": [1536, 0],
+      "size": [1536, 1024],
+      "paint": "steps/ne-paint.png",
+      "blend": "steps/ne-blend.png",
+      "input": "inputs/ne.png",
+      "chosen": null
+    },
+    {
+      "id": "s",
+      "name": "南块",
+      "at": [768, 512],
+      "size": [1536, 1024],
+      "paint": "steps/s-paint.png",
+      "blend": "steps/s-blend.png",
+      "input": "inputs/s.png",
+      "chosen": null
+    },
+    {
+      "id": "sw",
+      "name": "西南块",
+      "at": [0, 512],
+      "size": [1536, 1024],
+      "paint": "steps/sw-paint.png",
+      "blend": "steps/sw-blend.png",
+      "input": "inputs/sw.png",
+      "chosen": null
+    },
+    {
+      "id": "se",
+      "name": "东南块",
+      "at": [1536, 512],
+      "size": [1536, 1024],
+      "paint": "steps/se-paint.png",
+      "blend": "steps/se-blend.png",
+      "input": "inputs/se.png",
+      "chosen": null
+    }
+  ]
+}

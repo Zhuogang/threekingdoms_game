@@ -1,0 +1,193 @@
+{
+  "id": "s1-06",
+  "folder": "s1-06-wei-archer-sheet",
+  "name": "魏弓兵姿态表",
+  "directory": "docs/siege/chencang/art/s1-06-wei-archer-sheet",
+  "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+  "referenceRoles": ["pose layout guide", "style reference"],
+  "targetSize": [1536, 1024],
+  "status": "complete",
+  "images": [
+    {
+      "id": "v1",
+      "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-25d172fa-9537-4998-87d0-a73f3e2182df.png",
+      "sourcePath": "../../../../../attempts/s1-06/sources/v1.png",
+      "sourceSha256": "0b79e49fe312a1d28176191d13bb09cc9b652a00e778d3c19bf176f87c21a58f",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1373368,
+      "sha256": "c9d95be95b5569cf4be4ae6eb7293c1d440fe189a035c4d805327e8fb56122a3",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "prompt": "Critical body registration: each helmet-to-boot body is 300 pixels tall, never 380 or 400. All top-row feet end at y456 and helmet crowns at y156; bottom-row feet end at y968 and crowns at y668. Keep every bow tip and every arrow at least 12px inside its own cell. Use a high orthographic camera looking 50 degrees down; visibly show helmet crowns and shoulder tops and foreshorten the figures. All three TOP-ROW bodies face SOUTH toward the viewer, including drawing and release; keep the torso facing forward rather than rotating the body into an east-facing profile. Only bottom-row columns 2 and 3 face EAST in true right-facing profile. Bottom-row column 1 shows the BACK. Keep the same compact body size in every cell, blank featureless faces, same indigo armour and quiver. The third top cell releases a small flaming arrow with a visible orange-red arrowhead.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-b9addb38-0127-40dc-9d53-1a1c6fc2c7b7.png",
+      "sourcePath": "../../../../../attempts/s1-06/sources/v2.png",
+      "sourceSha256": "f4c832780e96c49a81e63c3a3ab2155c4b3f7836c3bfbb5625f576adc9a71658",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1337540,
+      "sha256": "248e5e68d8cba6ab75e5b208748f8d6ec4b59d2262dcced191419143ff615095",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "prompt": "Small sprite scale priority: these are compact game sprites, deliberately small inside large empty layout cells. Each helmet-to-sole body occupies ONLY 300 of the 512 vertical pixels in its cell (58.6%). Leave a large 156-pixel blank magenta space above the helmet and 56 pixels below the boots in each cell; bows alone may extend into the upper blank area. Do not enlarge the soldier to fill the cell. Keep all six poses and identical indigo armour, blank faces and the high orthographic camera.\n\nCritical body registration: each helmet-to-boot body is 300 pixels tall, never 380 or 400. All top-row feet end at y456 and helmet crowns at y156; bottom-row feet end at y968 and crowns at y668. Keep every bow tip and every arrow at least 12px inside its own cell. Use a high orthographic camera looking 50 degrees down; visibly show helmet crowns and shoulder tops and foreshorten the figures. All three TOP-ROW bodies face SOUTH toward the viewer, including drawing and release; keep the torso facing forward rather than rotating the body into an east-facing profile. Only bottom-row columns 2 and 3 face EAST in true right-facing profile. Bottom-row column 1 shows the BACK. Keep the same compact body size in every cell, blank featureless faces, same indigo armour and quiver. The third top cell releases a small flaming arrow with a visible orange-red arrowhead.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-70d9f1b3-0c07-480e-a2c6-500142f4330e.png",
+      "sourcePath": "../../../../../attempts/s1-06/sources/v3.png",
+      "sourceSha256": "99597d880abccd8cebf72ae0f6a3e8f3ff26c4d5d1a99e3ef6374372e1861445",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1312590,
+      "sha256": "6181f6b3be2778308a15bb8af0932c7c6bd7f59ce7a62287b9f2e5a5927d5d58",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v4",
+      "prompt": "Use case: background-extraction.\nThe attached image is the EDIT TARGET. Remove ONLY its magenta background and make it genuinely fully transparent. Preserve all six Wei archers, their entire thin bowstrings, bows, arrows, quivers and the orange-red flaming arrowhead exactly unchanged: identical silhouettes, placement, size, proportions, brushwork, colours, internal shading and all fine edges. Preserve the 1536x1024 canvas and the exact arrangement of every cell. Do not repaint, resize, move, rotate or crop any object. No magenta halo, colour spill, paper background, cast shadow, floor, labels or extra objects. Keep the foreground opaque and all background empty pixels fully transparent. Preserve the original artwork rather than redrawing it.",
+      "operation": "background-extraction",
+      "transparentRequested": true,
+      "sourceFile": "exec-514fa56f-2d6b-48ec-a16d-ae8a9af424b5.png",
+      "sourcePath": "../../../../../attempts/s1-06/sources/v4.png",
+      "sourceSha256": "4b6fde074512a436dd7037287a51f23ef951ca11f4d30b78111d6baf93a83fb5",
+      "nativeSize": [1536, 1024],
+      "transparentBackgroundPixels": 1104353,
+      "preparation": "Uniform per-pose scaling and foot-anchor registration, no repainting.",
+      "transparentPath": "selected-transparent.png",
+      "path": "attempts/v4.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 455624,
+      "sha256": "6ae73640f0bc78abb119e42a358308212df983d9f5267b9e59a88ae5f01da3a1",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v4",
+    "path": "attempts/v4.webp",
+    "selectedBy": "agent",
+    "reason": "Best reviewed result for the requested S1 completion; reversible version selection.",
+    "transparentPath": "selected-transparent.png"
+  },
+  "registration": [
+    {
+      "name": "south-idle",
+      "cell": [0, 0, 512, 512],
+      "sourceHelmet": [211, 68],
+      "sourceFoot": [232.5, 469],
+      "sourceBodyHeight": 401,
+      "uniformScale": 0.74813,
+      "bodyHeight": 300,
+      "anchor": [256, 456],
+      "sheetAnchor": [256, 456],
+      "path": "poses/south-idle.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 1
+    },
+    {
+      "name": "south-draw",
+      "cell": [512, 0, 512, 512],
+      "sourceHelmet": [729, 70],
+      "sourceFoot": [738.5, 479],
+      "sourceBodyHeight": 409,
+      "uniformScale": 0.7335,
+      "bodyHeight": 300,
+      "anchor": [256, 456],
+      "sheetAnchor": [768, 456],
+      "path": "poses/south-draw.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 0
+    },
+    {
+      "name": "south-fire",
+      "cell": [1024, 0, 512, 512],
+      "sourceHelmet": [1193, 73],
+      "sourceFoot": [1215.5, 479],
+      "sourceBodyHeight": 406,
+      "uniformScale": 0.73892,
+      "bodyHeight": 300,
+      "anchor": [256, 456],
+      "sheetAnchor": [1280, 456],
+      "path": "poses/south-fire.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 4
+    },
+    {
+      "name": "north-idle",
+      "cell": [0, 512, 512, 512],
+      "sourceHelmet": [243, 588],
+      "sourceFoot": [249.5, 961],
+      "sourceBodyHeight": 373,
+      "uniformScale": 0.80429,
+      "bodyHeight": 300,
+      "anchor": [256, 456],
+      "sheetAnchor": [256, 968],
+      "path": "poses/north-idle.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 0
+    },
+    {
+      "name": "east-idle",
+      "cell": [512, 512, 512, 512],
+      "sourceHelmet": [728, 569],
+      "sourceFoot": [743, 985],
+      "sourceBodyHeight": 416,
+      "uniformScale": 0.72115,
+      "bodyHeight": 300,
+      "anchor": [256, 456],
+      "sheetAnchor": [768, 968],
+      "path": "poses/east-idle.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 1
+    },
+    {
+      "name": "east-draw",
+      "cell": [1024, 512, 512, 512],
+      "sourceHelmet": [1220, 586],
+      "sourceFoot": [1162, 992],
+      "sourceBodyHeight": 406,
+      "uniformScale": 0.73892,
+      "bodyHeight": 300,
+      "anchor": [251, 456],
+      "sheetAnchor": [1275, 968],
+      "path": "poses/east-draw.png",
+      "fitsCell": true,
+      "removedSmallAlphaIslands": 0
+    }
+  ],
+  "comparison": "../../../../../attempts/s1-06/comparison.png",
+  "exportedPieces": 6,
+  "referenceImages": [
+    {
+      "role": "pose layout guide",
+      "path": "guide.png",
+      "sha256": "655e2e9be2290d038b65145d45f333b7ccfc551648ddf6b826449ab31973901b"
+    },
+    {
+      "role": "style reference",
+      "path": "../../../../v0.3/assets/generated/units-count-ink-04/archer.png",
+      "sha256": "5a783be0300bedf789c997e0e1f62791cd01f377c322527e7308b04ad9bc186d"
+    }
+  ],
+  "review": {
+    "status": "reviewed",
+    "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+    "findings": [
+      "Six poses: south idle/draw/fire, north idle and east idle/draw.",
+      "Selected v4 extracts v2, which has a stronger high-camera treatment than v1.",
+      "Prepared with uniform per-pose scaling, a common foot baseline per row, and per-pose horizontal anchor metadata. No repainting during packing.",
+      "The flame at the released arrowhead survives preparation and the small-scale check. Front draw/release aim across the body while the torso remains frontal."
+    ],
+    "dimensionsVerified": true,
+    "encodingVerified": "Lossless WebP pixels equal the prepared PNGs.",
+    "smallScaleVisualReview": "Passed visual review of 36px colour and grayscale previews; silhouettes, poses, factions and flame remain readable."
+  }
+}

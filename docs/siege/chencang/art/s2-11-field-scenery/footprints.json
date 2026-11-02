@@ -1,0 +1,111 @@
+{
+  "asset": "s2-11-field-scenery",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "雪松 A",
+      "cell": [0, 0, 512, 512],
+      "origin": [-4928, -304],
+      "objects": [
+        {
+          "id": "pine-a",
+          "kind": "tree",
+          "layer": "L3",
+          "cells": [40, 6, 40, 6],
+          "height": 2.2,
+          "anchor": [192, 368],
+          "bbox": [204, 214, 308, 336]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "雪松 B",
+      "cell": [512, 0, 512, 512],
+      "origin": [-4544, -319],
+      "objects": [
+        {
+          "id": "pine-pair",
+          "kind": "tree",
+          "layer": "L3",
+          "cells": [41, 6, 41, 6],
+          "height": 1.7,
+          "anchor": [704, 353],
+          "bbox": [708, 207, 828, 330]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "雪松 C",
+      "cell": [1024, 0, 512, 512],
+      "origin": [-4160, -298],
+      "objects": [
+        {
+          "id": "pine-broad",
+          "kind": "tree",
+          "layer": "L3",
+          "cells": [42, 6, 42, 6],
+          "height": 2.4,
+          "anchor": [1216, 374],
+          "bbox": [1208, 210, 1352, 347]
+        }
+      ]
+    },
+    {
+      "piece": 4,
+      "name": "枯树",
+      "cell": [0, 512, 512, 512],
+      "origin": [-5312, 219],
+      "objects": [
+        {
+          "id": "dead-tree",
+          "kind": "tree",
+          "layer": "L3",
+          "cells": [43, 6, 43, 6],
+          "height": 2.6,
+          "anchor": [192, 891],
+          "bbox": [207, 718, 305, 851]
+        }
+      ]
+    },
+    {
+      "piece": 5,
+      "name": "乱石",
+      "cell": [512, 512, 512, 512],
+      "origin": [-4925, 147],
+      "objects": [
+        {
+          "id": "rocks",
+          "kind": "rock",
+          "layer": "L3",
+          "cells": [44, 6, 44, 6],
+          "height": 0.45,
+          "anchor": [707, 819],
+          "bbox": [719, 729, 818, 806]
+        }
+      ]
+    },
+    {
+      "piece": 6,
+      "name": "鹿角",
+      "cell": [1024, 512, 512, 512],
+      "origin": [-4608, 158],
+      "objects": [
+        {
+          "id": "abatis",
+          "kind": "abatis",
+          "layer": "L3",
+          "cells": [45, 6, 46, 6],
+          "height": 0.8,
+          "anchor": [1152, 830],
+          "bbox": [1156, 748, 1404, 812]
+        }
+      ]
+    }
+  ]
+}

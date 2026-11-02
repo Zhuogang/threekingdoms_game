@@ -3,7 +3,8 @@
 `s1-04-ground-plate` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [01-chencang-art-plan.md](../../../01-chencang-art-plan.md) §10。
 
 - 取景同 S1-01。灰盒里的城墙和建筑都压平成暗灰色地基（`#5a5650`），只留地面。
-- β 法的 L1 地表层：上面再摆 S1-02、S1-03 的分件。
+- β 法的 L1 地表层：上面再摆 S1-02、S1-03 的分件。画法定 α 后不进游戏，只在预览页作 β 对照。
+- 2026-11-01 完成三版，采用 `attempts/v2.webp`；北桥及地基已按灰盒复核，完整提示词及检查见 `generation-manifest.json`。
 
 ## 参考图
 
@@ -16,12 +17,14 @@
 尺寸 1536×1024。上传：
 
 1. `blockout.png`
-2. 选定的 S1-01 图（第二张，风格参考）
+2. `docs/siege/chencang/art/s1-01-city-vignette/attempts/v2-a.webp`（第二张，风格参考）
 
 ```text
 Match the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.
 
-The attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.
+Style priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.
+
+The first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
 

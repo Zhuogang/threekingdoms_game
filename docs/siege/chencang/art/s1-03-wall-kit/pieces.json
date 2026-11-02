@@ -1,0 +1,245 @@
+{
+  "asset": "s1-03",
+  "pieces": [
+    {
+      "name": "south-wall",
+      "path": "pieces/south-wall.png",
+      "cell": [0, 0, 512, 512],
+      "footprint": {
+        "piece": 1,
+        "name": "南墙直段",
+        "cell": [0, 0, 512, 512],
+        "origin": [-1856, -1256],
+        "objects": [
+          {
+            "id": "p1-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 16, 17, 16],
+            "height": 3,
+            "anchor": [64, 376],
+            "bbox": [63, 135, 449, 377]
+          },
+          {
+            "id": "p1-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 16, 17, 16],
+            "height": 3.5,
+            "anchor": [64, 376],
+            "bbox": [63, 186, 449, 233]
+          }
+        ]
+      }
+    },
+    {
+      "name": "southwest-corner",
+      "path": "pieces/southwest-corner.png",
+      "cell": [512, 0, 512, 512],
+      "footprint": {
+        "piece": 2,
+        "name": "西南角楼",
+        "cell": [512, 0, 512, 512],
+        "origin": [-1149, -1196],
+        "objects": [
+          {
+            "id": "p2-wall-west",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [14, 15, 14, 15],
+            "height": 3,
+            "anchor": [643, 340],
+            "bbox": [671, 99, 772, 134]
+          },
+          {
+            "id": "p2-wall-west-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [14, 15, 14, 15],
+            "height": 3.5,
+            "anchor": [643, 340],
+            "bbox": [642, 75, 672, 134]
+          },
+          {
+            "id": "p2-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 16, 15, 16],
+            "height": 3,
+            "anchor": [771, 436],
+            "bbox": [771, 195, 900, 437]
+          },
+          {
+            "id": "p2-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 16, 15, 16],
+            "height": 3.5,
+            "anchor": [771, 436],
+            "bbox": [771, 246, 900, 293]
+          },
+          {
+            "id": "p2-corner-sw",
+            "kind": "corner-tower",
+            "layer": "L3",
+            "cells": [14, 16, 14, 16],
+            "height": 5,
+            "anchor": [643, 436],
+            "bbox": [637, 133, 777, 437]
+          }
+        ]
+      }
+    },
+    {
+      "name": "southeast-corner",
+      "path": "pieces/southeast-corner.png",
+      "cell": [1024, 0, 512, 512],
+      "footprint": {
+        "piece": 3,
+        "name": "东南角楼",
+        "cell": [1024, 0, 512, 512],
+        "origin": [-2947, -1196],
+        "objects": [
+          {
+            "id": "p3-wall-east",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [33, 15, 33, 15],
+            "height": 3,
+            "anchor": [1277, 340],
+            "bbox": [1276, 99, 1377, 134]
+          },
+          {
+            "id": "p3-wall-east-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [33, 15, 33, 15],
+            "height": 3.5,
+            "anchor": [1277, 340],
+            "bbox": [1376, 75, 1406, 134]
+          },
+          {
+            "id": "p3-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [32, 16, 32, 16],
+            "height": 3,
+            "anchor": [1149, 436],
+            "bbox": [1148, 195, 1277, 437]
+          },
+          {
+            "id": "p3-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [32, 16, 32, 16],
+            "height": 3.5,
+            "anchor": [1149, 436],
+            "bbox": [1148, 246, 1277, 293]
+          },
+          {
+            "id": "p3-corner-se",
+            "kind": "corner-tower",
+            "layer": "L3",
+            "cells": [33, 16, 33, 16],
+            "height": 5,
+            "anchor": [1277, 436],
+            "bbox": [1271, 133, 1411, 437]
+          }
+        ]
+      }
+    },
+    {
+      "name": "west-wall",
+      "path": "pieces/west-wall.png",
+      "cell": [0, 512, 512, 512],
+      "footprint": {
+        "piece": 4,
+        "name": "西墙段",
+        "cell": [0, 512, 512, 512],
+        "origin": [-1600, -396],
+        "objects": [
+          {
+            "id": "p4-wall-west",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [14, 12, 14, 13],
+            "height": 3,
+            "anchor": [192, 948],
+            "bbox": [191, 611, 321, 949]
+          },
+          {
+            "id": "p4-wall-west-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [14, 12, 14, 13],
+            "height": 3.5,
+            "anchor": [192, 948],
+            "bbox": [191, 587, 221, 805]
+          }
+        ]
+      }
+    },
+    {
+      "name": "east-wall",
+      "path": "pieces/east-wall.png",
+      "cell": [512, 512, 512, 512],
+      "footprint": {
+        "piece": 5,
+        "name": "东墙段",
+        "cell": [512, 512, 512, 512],
+        "origin": [-3520, -396],
+        "objects": [
+          {
+            "id": "p5-wall-east",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [33, 12, 33, 13],
+            "height": 3,
+            "anchor": [704, 948],
+            "bbox": [703, 611, 833, 949]
+          },
+          {
+            "id": "p5-wall-east-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [33, 12, 33, 13],
+            "height": 3.5,
+            "anchor": [704, 948],
+            "bbox": [803, 587, 833, 805]
+          }
+        ]
+      }
+    },
+    {
+      "name": "north-wall",
+      "path": "pieces/north-wall.png",
+      "cell": [1024, 512, 512, 512],
+      "footprint": {
+        "piece": 6,
+        "name": "北墙直段",
+        "cell": [1024, 512, 512, 512],
+        "origin": [-832, 420],
+        "objects": [
+          {
+            "id": "p6-wall-north",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 4, 17, 4],
+            "height": 3,
+            "anchor": [1088, 900],
+            "bbox": [1087, 681, 1473, 901]
+          },
+          {
+            "id": "p6-wall-north-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 4, 17, 4],
+            "height": 3.5,
+            "anchor": [1088, 900],
+            "bbox": [1087, 635, 1473, 682]
+          }
+        ]
+      }
+    }
+  ]
+}

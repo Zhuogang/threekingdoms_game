@@ -4,10 +4,11 @@ import { join } from 'node:path';
 import * as prettier from 'prettier';
 
 // Builds the Chencang siege art kit in docs/siege/chencang/art/ (plan:
-// docs/siege/01-chencang-art-plan.md §8). Each S1 asset gets a folder with an
+// docs/siege/01-chencang-art-plan.md §8). Each asset gets a folder with an
 // oblique block-out rendered from the layout and height table, a transparent
 // alignment grid, per-object masks and footprints for cutting layers, and the
-// full ImageGen prompt.
+// full ImageGen prompt. S2-01 also gets the step masks that
+// tools/compose-siege-map.mjs uses to grow the full-map painting.
 const OUT = 'docs/siege/chencang/art';
 const PLAN = '01-chencang-art-plan.md';
 
@@ -33,24 +34,25 @@ const PRETTIER = await prettier.resolveConfig('README.md');
 const pretty = (text, parser) => prettier.format(text, { ...PRETTIER, parser });
 
 // Plan §7. x 0–47 runs west to east, y 0–31 north to south. Shu comes up the
-// road from the south, Wei relief from the east.
+// road from the south, Wei relief from the east. `M` (horse ramps) came with
+// the MVP plan (§4.4) after S1, so the S1 assets are drawn without them.
 const LAYOUT = [
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '................................................',
   '..............++++++++++++++++++++++++++++++++++',
   '^^^.........-----------==-----------............',
   '^^^^........--OWWWWWWWWGGWWWWWWWWO--............',
-  '^^^^^.......--W........++........W--............',
-  '^^TTT^......--W..BBBBB.++KKKK....W--....TT......',
-  '^TTTTT......--W..BBBBB.++KKKK....W--...TTTT.....',
-  '^^TTT^......--W..BBBBB.++KKKK....W--....TT......',
+  '^^^^^.......--W.....MMM++MMM.....W--............',
+  '^^TTT^......--WM.BBBBB.++KKKK...MW--....TT......',
+  '^TTTTT......--WM.BBBBB.++KKKK...MW--...TTTT.....',
+  '^^TTT^......--WM.BBBBB.++KKKK...MW--....TT......',
   '^^^^^.......--W........++........W--............',
   '^^^^...+++++==G++++++++++++++++++G==++++++++++++',
-  '^^^^...+....--W........++........W--............',
-  '^^^....+....--W..BBBBB.++.BBBBB..W--............',
-  '^^^....+....--W..BBBBB.++.BBBBB..W--.........^^.',
+  '^^^^...+....--WM.......++.......MW--............',
+  '^^^....+....--WM.BBBBB.++.BBBBB.MW--............',
+  '^^^....+....--WM.BBBBB.++.BBBBB.MW--.........^^.',
   '^^.....+....--WR.RRRRRR++RRRRRR.RW--........^^^.',
-  '^^.....+....--W........++........W--.........^^^',
+  '^^.....+....--W.....MMM++MMM.....W--.........^^^',
   '^......+....--OWWWWWWWWGGWWWWWWWWO--.........^^^',
   '^......+....-----------==-----------.........^^^',
   '.......+....-----------==-----------..........^^',
@@ -99,6 +101,10 @@ const C = {
   hq: '#b23a2a',
   shed: '#7a5a3a',
   shedBody: '#5a4028',
+  ramp: '#b4a48c',
+  camp: '#d6ccb6',
+  deadwood: '#7a6a5a',
+  rock: '#8a8a86',
   sky: '#cfd4d6',
   magenta: '#ff00ff',
 };
@@ -127,6 +133,7 @@ const KEYS = [
   'bridge',
   'hill',
   'wall',
+  'ramp',
   'gate',
   'tower',
   'residence',
@@ -139,6 +146,7 @@ const KEYS = [
   'tent',
   'hq',
   'shed',
+  'camp',
 ];
 
 // ---------------------------------------------------------------------------
@@ -154,6 +162,18 @@ function terrainAt(x, y) {
   // The residence's front courtyard is the attacker's objective (§7.1).
   if (s === 'K' && y > 6) return { h: 0, top: C.residence, key: 'residence' };
   return { h: 0, top: C.snow, key: 'snow' };
+}
+
+// The full-map painting (S2-01) carries the ground only under the camp and the
+// woods: tents, fences, trees and engines are separate pieces (plan §9.2). The
+// tunnel mouth waits for v0.2, so it is plain snow for now.
+const PIECE_KINDS = new Set(['workshop', 'tent', 'palisade', 'tree', 'camp-gate']);
+function mapTerrain(x, y) {
+  const s = LAYOUT[y][x];
+  const inCamp = y >= 27 && x > 10 && x < 37;
+  if ('tCS'.includes(s) || (s === '.' && inCamp)) return { h: 0, top: C.camp, key: 'camp' };
+  if (s === 'X') return { h: 0, top: C.snow, key: 'snow' };
+  return terrainAt(x, y);
 }
 
 const box = (x0, x1, y0, y1, b, t, top, front = shade(top, 0.35), extra = {}) => ({
@@ -194,6 +214,27 @@ const panel = (x0, x1, y, b, t, color, extra = {}) => ({
   color,
   ...extra,
 });
+// A ramp rising from the ground to level t at its `rise` end (n, s, e or w).
+const ramp = (x0, x1, y0, y1, t, rise) => ({
+  type: 'ramp',
+  x0,
+  x1,
+  y0,
+  y1,
+  b: 0,
+  t,
+  rise,
+  top: C.ramp,
+  front: shade(C.ramp, 0.35),
+});
+const rampHeight = ({ x0, x1, y0, y1, t, rise }, x, y) =>
+  t *
+  {
+    n: (y1 - y) / (y1 - y0),
+    s: (y - y0) / (y1 - y0),
+    w: (x1 - x) / (x1 - x0),
+    e: (x - x0) / (x1 - x0),
+  }[rise];
 
 const PARAPET = 0.22;
 const wallParts = (id, x0, x1, y0, y1, outer) => {
@@ -220,6 +261,7 @@ const wallEW = (id, x0, x1, y, outer) => ({
 const wallNS = (id, x, y0, y1, outer) => ({
   id,
   kind: 'wall',
+  run: 'ns',
   key: 'wall',
   row: y1,
   cells: [x, y0, x, y1],
@@ -303,8 +345,148 @@ const hall = (id, kind, key, x0, x1, y0, y1, row, body, eaves, ridge, symbols) =
     roof(x0 - 0.02, x1 + 0.02, y0 - 0.02, y1, body, ridge, 'ew', eaves),
   ],
 });
+// Horse ramps (MVP plan §4.4): two against the inner face of each wall, one
+// each side of its gate, low beside the gate road and rising away from it to
+// the walkway. [id, x0, x1, y0, y1, high end]
+const RAMPS = [
+  ['ramp-north-w', 20, 22, 5, 5, 'w'],
+  ['ramp-north-e', 25, 27, 5, 5, 'e'],
+  ['ramp-west-n', 15, 15, 6, 8, 'n'],
+  ['ramp-east-n', 32, 32, 6, 8, 'n'],
+  ['ramp-west-s', 15, 15, 11, 13, 's'],
+  ['ramp-east-s', 32, 32, 11, 13, 's'],
+  ['ramp-south-w', 20, 22, 15, 15, 'w'],
+  ['ramp-south-e', 25, 27, 15, 15, 'e'],
+];
+const rampObject = ([id, x0, x1, y0, y1, rise]) => ({
+  id,
+  kind: 'ramp',
+  key: 'ramp',
+  row: y1,
+  cells: [x0, y0, x1, y1],
+  symbols: 'M',
+  parts: [ramp(x0, x1 + 1, y0, y1 + 1, 3, rise)],
+});
 
-function cityObjects() {
+// Camp and field pieces (S2-08 to S2-11), also used by the full layout.
+const workshop = (n, x) => ({
+  id: `workshop-${n}`,
+  kind: 'workshop',
+  key: 'shed',
+  row: 24,
+  cells: [x, 23, x + 3, 24],
+  symbols: 'S',
+  parts: [
+    box(x + 0.1, x + 3.9, 23.15, 24.88, 0, 1.1, C.shedBody, C.shedBody),
+    roof(x - 0.02, x + 4.02, 23.02, 25, 1.1, 2, 'ew', 0.4, C.shed),
+  ],
+});
+const hqTent = () => ({
+  id: 'hq-tent',
+  kind: 'tent',
+  key: 'hq',
+  row: 29,
+  cells: [26, 28, 29, 29],
+  symbols: 'C',
+  parts: [
+    box(26.1, 29.9, 28.15, 29.88, 0, 0.6, C.hq, C.hq),
+    roof(26, 30, 28.05, 30, 0.6, 1.5, 'ew', 0.5, C.hq),
+  ],
+});
+const tent = (x, y) => ({
+  id: `tent-${x}-${y}`,
+  kind: 'tent',
+  key: 'tent',
+  row: y,
+  cells: [x, y, x, y],
+  symbols: 't',
+  parts: [
+    box(x + 0.12, x + 0.88, y + 0.18, y + 0.9, 0, 0.25, C.tent, shade(C.tent, 0.2)),
+    roof(x + 0.08, x + 0.92, y + 0.14, y + 0.94, 0.25, 1, 'ns', 0, C.tent),
+  ],
+});
+// One stake line per palisade cell, reaching toward each palisade neighbour.
+const isP = (x, y) => LAYOUT[y]?.[x] === 'P';
+function palisadeAt(x, y) {
+  const [a, b] = [0.41, 0.59];
+  const parts = [];
+  if (isP(x, y - 1)) parts.push([x + a, x + b, y, y + b]);
+  if (isP(x - 1, y)) parts.push([x, x + b, y + a, y + b]);
+  if (isP(x + 1, y)) parts.push([x + a, x + 1, y + a, y + b]);
+  if (isP(x, y + 1)) parts.push([x + a, x + b, y + a, y + 1]);
+  return {
+    id: `palisade-${x}-${y}`,
+    kind: 'palisade',
+    key: 'palisade',
+    row: y,
+    cells: [x, y, x, y],
+    symbols: 'P',
+    parts: parts.map((r) => box(...r, 0, 1, C.palisade)),
+  };
+}
+// The camp gate (辕门) stands over the road where it crosses the palisade.
+const campGate = () => ({
+  id: 'camp-gate',
+  kind: 'camp-gate',
+  key: 'palisade',
+  row: 26,
+  cells: [23, 26, 24, 26],
+  symbols: '+',
+  parts: [
+    box(22.62, 22.9, 26.36, 26.64, 0, 2.2, C.timber, C.timber),
+    box(25.1, 25.38, 26.36, 26.64, 0, 2.2, C.timber, C.timber),
+    box(22.52, 25.48, 26.42, 26.58, 1.9, 2.25, C.timber, C.timber),
+  ],
+});
+const pine = (x, y, id = `pine-${x}-${y}`) => ({
+  id,
+  kind: 'tree',
+  key: 'pine',
+  foundation: false,
+  row: y,
+  cells: [x, y, x, y],
+  symbols: 'T',
+  parts: [
+    box(x + 0.45, x + 0.55, y + 0.5, y + 0.6, 0, 0.6, C.timber, C.timber),
+    roof(x + 0.1, x + 0.9, y + 0.12, y + 0.88, 0.45, 2.2, 'ew', 0.38, C.pine),
+  ],
+});
+// Field scenery for S2-11, one cell each except the abatis.
+const scenery = (id, kind, key, x, y, w, parts) => ({
+  id,
+  kind,
+  key,
+  row: y,
+  cells: [x, y, x + w - 1, y],
+  symbols: '.',
+  parts,
+});
+const pinePair = (x, y) =>
+  scenery('pine-pair', 'tree', 'pine', x, y, 1, [
+    roof(x + 0.04, x + 0.56, y + 0.08, y + 0.6, 0.3, 1.7, 'ew', 0.25, C.pine),
+    roof(x + 0.44, x + 0.96, y + 0.36, y + 0.88, 0.25, 1.45, 'ew', 0.25, C.pine),
+  ]);
+const broadPine = (x, y) =>
+  scenery('pine-broad', 'tree', 'pine', x, y, 1, [
+    box(x + 0.44, x + 0.56, y + 0.48, y + 0.6, 0, 0.6, C.timber, C.timber),
+    roof(x - 0.06, x + 1.06, y + 0.04, y + 0.96, 0.5, 2.4, 'ew', 0.46, C.pine),
+  ]);
+const deadTree = (x, y) =>
+  scenery('dead-tree', 'tree', 'pine', x, y, 1, [
+    box(x + 0.44, x + 0.56, y + 0.46, y + 0.58, 0, 1.8, C.timber, C.timber),
+    roof(x + 0.12, x + 0.88, y + 0.16, y + 0.86, 1.1, 2.6, 'ew', 0.36, C.deadwood),
+  ]);
+const rocks = (x, y) =>
+  scenery('rocks', 'rock', 'hill', x, y, 1, [
+    box(x + 0.1, x + 0.56, y + 0.3, y + 0.8, 0, 0.45, C.rock),
+    box(x + 0.5, x + 0.86, y + 0.46, y + 0.86, 0, 0.3, C.rock),
+  ]);
+const abatis = (x, y) =>
+  scenery('abatis', 'abatis', 'palisade', x, y, 2, [
+    roof(x + 0.04, x + 1.96, y + 0.3, y + 0.8, 0, 0.8, 'ew', 0, C.timber),
+  ]);
+
+function cityObjects({ ramps = true } = {}) {
   const objects = [
     cornerTower('corner-nw', 14, 4),
     wallEW('wall-north-w', 15, 21, 4, 'north'),
@@ -353,82 +535,21 @@ function cityObjects() {
     cornerTower('corner-se', 33, 16),
     gateSouth(),
   ];
-  // Siege-engine workshops and the chancellor's tent in the Shu camp.
-  for (const [n, x] of [
-    [1, 15],
-    [2, 29],
-  ])
-    objects.push({
-      id: `workshop-${n}`,
-      kind: 'workshop',
-      key: 'shed',
-      row: 24,
-      cells: [x, 23, x + 3, 24],
-      symbols: 'S',
-      parts: [
-        box(x + 0.1, x + 3.9, 23.15, 24.88, 0, 1.1, C.shedBody, C.shedBody),
-        roof(x - 0.02, x + 4.02, 23.02, 25, 1.1, 2, 'ew', 0.4, C.shed),
-      ],
-    });
-  objects.push({
-    id: 'hq-tent',
-    kind: 'tent',
-    key: 'hq',
-    row: 29,
-    cells: [26, 28, 29, 29],
-    symbols: 'C',
-    parts: [
-      box(26.1, 29.9, 28.15, 29.88, 0, 0.6, C.hq, C.hq),
-      roof(26, 30, 28.05, 30, 0.6, 1.5, 'ew', 0.5, C.hq),
-    ],
-  });
+  if (ramps) objects.push(...RAMPS.map(rampObject));
+  // Siege-engine workshops, the chancellor's tent and the camp gate.
+  objects.push(workshop(1, 15), workshop(2, 29), hqTent(), campGate());
   // One piece per cell for tents, palisade stakes and pines.
-  const isP = (x, y) => LAYOUT[y]?.[x] === 'P';
   for (let y = 0; y < H; y++)
     for (let x = 0; x < W; x++) {
       const s = LAYOUT[y][x];
-      const at = { row: y, cells: [x, y, x, y], symbols: s };
-      if (s === 't')
-        objects.push({
-          id: `tent-${x}-${y}`,
-          kind: 'tent',
-          key: 'tent',
-          ...at,
-          parts: [
-            box(x + 0.12, x + 0.88, y + 0.18, y + 0.9, 0, 0.25, C.tent, shade(C.tent, 0.2)),
-            roof(x + 0.08, x + 0.92, y + 0.14, y + 0.94, 0.25, 1, 'ns', 0, C.tent),
-          ],
-        });
-      if (s === 'P') {
-        const [a, b] = [0.41, 0.59];
-        const parts = [];
-        if (isP(x, y - 1)) parts.push([x + a, x + b, y, y + b]);
-        if (isP(x - 1, y)) parts.push([x, x + b, y + a, y + b]);
-        if (isP(x + 1, y)) parts.push([x + a, x + 1, y + a, y + b]);
-        if (isP(x, y + 1)) parts.push([x + a, x + b, y + a, y + 1]);
-        objects.push({
-          id: `palisade-${x}-${y}`,
-          kind: 'palisade',
-          key: 'palisade',
-          ...at,
-          parts: parts.map((r) => box(...r, 0, 1, C.palisade)),
-        });
-      }
-      if (s === 'T')
-        objects.push({
-          id: `pine-${x}-${y}`,
-          kind: 'tree',
-          key: 'pine',
-          foundation: false,
-          ...at,
-          parts: [
-            box(x + 0.45, x + 0.55, y + 0.5, y + 0.6, 0, 0.6, C.timber, C.timber),
-            roof(x + 0.1, x + 0.9, y + 0.12, y + 0.88, 0.45, 2.2, 'ew', 0.38, C.pine),
-          ],
-        });
+      if (s === 't') objects.push(tent(x, y));
+      if (s === 'P') objects.push(palisadeAt(x, y));
+      if (s === 'T') objects.push(pine(x, y));
     }
   return objects;
 }
+// What S2-01 paints: the city with its ramps, without the camp and field pieces.
+const mapObjects = () => cityObjects().filter((o) => !PIECE_KINDS.has(o.kind));
 
 // Bridge decks (one deck per block of `=`) and the dashed line of the inner
 // wall, drawn on the ground.
@@ -483,7 +604,7 @@ function validate(objects) {
   }
   LAYOUT.forEach((row, y) =>
     [...row].forEach((s, x) => {
-      const needsObject = 'WOGBSCtPT'.includes(s) || (s === 'K' && y === 6);
+      const needsObject = 'WOGBSCtPTM'.includes(s) || (s === 'K' && y === 6);
       if (needsObject && !covered.has(`${x},${y}`))
         errors.push(`"${s}" at (${x}, ${y}) has no object`);
     }),
@@ -614,6 +735,24 @@ function drawPart(canvas, f, part, base) {
       { color: part.color, obj, key },
       outline,
     );
+  } else if (part.type === 'ramp') {
+    // A sloped top (no grid height) and, unless the south edge is at ground
+    // level, the south face under it.
+    const { x0, x1, y0, y1 } = part;
+    const at = (x, y) => P(x, y, rampHeight(part, x, y));
+    face(
+      canvas,
+      [at(x0, y0), at(x1, y0), at(x1, y1), at(x0, y1)],
+      { color: part.top, obj, key },
+      outline,
+    );
+    if (rampHeight(part, x0, y1) > 0 || rampHeight(part, x1, y1) > 0)
+      face(
+        canvas,
+        [at(x0, y1), at(x1, y1), P(x1, y1, 0), P(x0, y1, 0)],
+        { color: part.front, obj, key },
+        outline,
+      );
   } else {
     // Roof faces from back to front: north, the two sides, then south. Slopes
     // toward the south-west sun are a little lighter so the form reads.
@@ -683,10 +822,10 @@ function drawTerrain(canvas, f, x, y, override) {
 
 // Painter's order (§9.1): rows north to south; in each row the ground, then
 // ground decals, then objects in authored order (low before high).
-function renderScene(canvas, f, objects, { flat = false } = {}) {
+function renderScene(canvas, f, objects, { flat = false, terrain = terrainAt } = {}) {
   const decals = groundDecals();
   for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) drawTerrain(canvas, f, x, y);
+    for (let x = 0; x < W; x++) drawTerrain(canvas, f, x, y, terrain(x, y));
     for (const d of decals.filter((d) => d.row === y))
       drawPart(canvas, f, d.part, { obj: 0, key: d.key });
     for (const o of objects.filter((o) => o.row === y)) {
@@ -730,6 +869,16 @@ function renderPiece(canvas, scale, objects, [bx0, by0, bx1, by1]) {
   return f;
 }
 
+// Piece sheets: [English name, Chinese name, slot [x, y, w, h], objects], one
+// piece centred in each slot. Object ids must be unique across the sheet so
+// each piece gets its own bbox.
+const renderSheet = (canvas, scale, slots) =>
+  slots.map(([name, zh, cell, objects], i) => {
+    const [x, y, w, h] = cell;
+    const frame = renderPiece(canvas, scale, objects, [x, y, x + w, y + h]);
+    return { piece: i + 1, name, zh, cell, frame, objects };
+  });
+
 // Final-resolution outputs: averaged colour, soft masks, sampled buffers.
 function resolve(canvas) {
   const { w, h, W: cw } = canvas;
@@ -739,6 +888,7 @@ function resolve(canvas) {
   const face = new Int32Array(w * h);
   const obj = new Uint16Array(w * h);
   const top = new Float32Array(w * h);
+  const key = new Uint8Array(w * h);
   const keys = new Set();
   for (let py = 0; py < h; py++)
     for (let px = 0; px < w; px++) {
@@ -761,8 +911,45 @@ function resolve(canvas) {
       face[p] = canvas.face[s];
       obj[p] = canvas.obj[s];
       top[p] = canvas.top[s];
+      key[p] = canvas.key[s];
     }
-  return { rgb, masks, face, obj, top, keys };
+  return { rgb, masks, face, obj, top, key, keys };
+}
+
+// Distance in pixels from each pixel to the nearest set pixel of `mask`
+// (two-pass chamfer, diagonal step √2).
+function distanceFrom(mask, w, h) {
+  const d = new Float32Array(w * h);
+  for (let i = 0; i < d.length; i++) d[i] = mask[i] ? 0 : 1e9;
+  const pass = (ys, xs, dy, dx) => {
+    for (const y of ys)
+      for (const x of xs) {
+        const i = y * w + x;
+        let v = d[i];
+        const py = y - dy;
+        const px = x - dx;
+        if (px >= 0 && px < w) v = Math.min(v, d[i - dx] + 1);
+        if (py >= 0 && py < h) {
+          v = Math.min(v, d[i - dy * w] + 1);
+          if (x > 0) v = Math.min(v, d[i - dy * w - 1] + Math.SQRT2);
+          if (x < w - 1) v = Math.min(v, d[i - dy * w + 1] + Math.SQRT2);
+        }
+        d[i] = v;
+      }
+  };
+  const range = (n) => Array.from({ length: n }, (_, i) => i);
+  pass(range(h), range(w), 1, 1);
+  pass(range(h).reverse(), range(w).reverse(), -1, -1);
+  return d;
+}
+
+// 255 within `inside` pixels of the mask, fading to 0 over the next `width`.
+function feather(mask, w, h, inside, width) {
+  const d = distanceFrom(mask, w, h);
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < out.length; i++)
+    out[i] = Math.max(0, Math.min(255, Math.round(255 * (1 - (d[i] - inside) / width))));
+  return out;
 }
 
 // Transparent alignment overlay: dark lines are ground cells, red lines are
@@ -888,22 +1075,43 @@ const LIGHT_GROUND =
   'Light: low winter sun from the lower left (south-west); the trench banks facing the viewer catch a pale warm light. Paint no cast shadows anywhere: the walls and buildings are added later with their own shadows.';
 const LIGHT_SPRITE =
   'Light: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.';
+// `scene` and `piece` go first in the prompt. S1-01 round 1 without them added
+// trees and rocks and made A/B/C look alike; round 2 (v2-*) prepended `scene`.
+// `piece` is the same paragraph reworded for isolated objects on magenta.
 const STYLES = {
   a: {
     zh: 'A 界画淡彩',
+    scene:
+      "Style priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.",
+    piece:
+      'Style priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.',
     text: 'Style: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.',
   },
   b: {
     zh: 'B 写意淡彩',
+    scene:
+      "Style priority — B 写意淡彩: The entire image is a TWO-DIMENSIONAL EXPRESSIVE CHINESE XIEYI INK-AND-WATERCOLOUR PAINTING on warm rice paper. Confident loose calligraphic brush strokes, broken dry-brush charcoal marks, broad wet-on-wet diluted ink blooms and translucent ochre washes, with abundant untouched paper-white snow. Suggest the roof tiles, bricks and timber with only a few expressive strokes rather than delineating every small part. Architectural silhouette edges and alignments stay straight and exactly follow the reference, but the interior mark-making is visibly spontaneous, soft and painterly. Make this unmistakably an expressive hand-painted ink wash, with quiet empty ground. No photographic material textures, realistic digital-game rendering, carved miniature surfaces, uniformly detailed brickwork or dense tiny marks. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.",
+    piece:
+      'Style priority — B 写意淡彩: Paint the object as a TWO-DIMENSIONAL EXPRESSIVE CHINESE XIEYI INK-AND-WATERCOLOUR PAINTING. Confident loose calligraphic brush strokes, broken dry-brush charcoal marks, wet-on-wet diluted ink blooms and translucent ochre washes. Suggest the roof tiles, bricks and timber with only a few expressive strokes rather than delineating every small part. Silhouette edges and alignments stay straight and exactly follow the reference, but the interior mark-making is visibly spontaneous, soft and painterly. No photographic material textures, realistic digital-game rendering, carved miniature surfaces, uniformly detailed brickwork or dense tiny marks.',
     text: 'Style: expressive Chinese ink-wash painting with light colour (写意淡彩): confident loose brush strokes and wet-on-wet washes, architecture suggested with fewer lines but still straight and readable, generous paper-white snow, subtle rice-paper grain. Restrained winter palette: ochre earth, grey brick, dark timber, slate roofs, muted pine green.',
   },
   c: {
     zh: 'C 沙盘微缩',
+    scene:
+      "Style priority — C 沙盘微缩: The entire image is a HAND-BUILT MILITARY SAND-TABLE MINIATURE with tangible carved wood architecture, matte moulded clay ground, sculpted plaster snow and hand-painted grey brick markings, in restrained Chinese ink-wash colours. Clearly visible small handcrafted bevels, slightly softened carved edges, simplified miniature roof grooves, tactile chalky matte surfaces and gentle ambient occlusion at joins. It should read immediately as a physical scale model photographed through an orthographic camera, with everything equally sharp, no depth-of-field or tilt-shift blur. Keep snowy playable surfaces broad, simple and calm. No rice-paper grain, watercolour blooms, loose brushwork, photoreal life-size weathering, glossy CGI or toy-like saturated plastic. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.",
+    piece:
+      'Style priority — C 沙盘微缩: The object is a HAND-BUILT MILITARY SAND-TABLE MINIATURE: tangible carved wood architecture, sculpted plaster snow and hand-painted grey brick markings, in restrained Chinese ink-wash colours. Clearly visible small handcrafted bevels, slightly softened carved edges, simplified miniature roof grooves, tactile chalky matte surfaces and gentle ambient occlusion at joins, everything equally sharp. No rice-paper grain, watercolour blooms, loose brushwork, photoreal life-size weathering, glossy CGI or toy-like saturated plastic.',
     text: 'Style: a hand-made military sand-table diorama (沙盘) finished in Chinese ink-wash colours: matte clay ground, carved wooden buildings with slightly softened edges, gentle ambient occlusion where surfaces meet, faint ink outlines. Everything stays in sharp focus; no tilt-shift blur. Restrained winter palette: paper-white snow, ochre earth, grey brick, dark timber, slate roofs.',
   },
 };
-// DS6 picked A; S1-01 still tries all three. Switch this once you choose.
+// DS6 picked A; S1-01 tried all three. Switch both once you choose: the
+// letter, and the S1-01 attempt that later pieces upload as style reference.
 const CHOSEN_STYLE = 'a';
+const CHOSEN_VIGNETTE = 'v2-a.webp';
+const VIGNETTE_UPLOAD = `\`docs/siege/chencang/art/s1-01-city-vignette/attempts/${CHOSEN_VIGNETTE}\`（第二张，风格参考）`;
+// The S1-02 standard piece every later piece uploads as its style reference.
+const CHOSEN_GATE = 'v4.webp';
+const GATE_UPLOAD = `\`docs/siege/chencang/art/s1-02-south-gate/attempts/${CHOSEN_GATE}\`（第二张，标准件）`;
 const SURFACES =
   'Game readability: surfaces soldiers stand on (open ground, roads, wall walkways, gate passages) are calm, flat and light, with low texture contrast. Vertical faces are clearly darker than top faces, so every height step reads at a glance. Walls are exactly as thick as marked; the walkway on top of each wall is a clean light strip with a crenellated parapet along its outer edge. Keep detail density even across the image, with no vignette and no darkened corners.';
 const SURFACES_GROUND =
@@ -914,8 +1122,105 @@ const EXCLUDE_SCENE =
   'Do not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.';
 const EXCLUDE_SPRITE =
   'Do not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.';
+// Pose sheets need the requested soldiers; exclude only extra figures.
+const EXCLUDE_UNIT_SHEET = EXCLUDE_SPRITE.replace(
+  'people, soldiers, horses,',
+  'additional figures, horses,',
+);
 const MATCH_STANDARD =
   'Match the brushwork, line weight, colours and lighting of the second attached image exactly.';
+// Piece prompts open with the output canvas and pixel landmarks measured from
+// the block-out. S1-02 round 1 without them drew the roof too high and left a
+// magenta notch under the doors; round 2 with hand-written ones fixed both.
+const spriteOutput = ([w, h], what = 'the architecture', inside = 'the building silhouettes') =>
+  `Output requirements: create an image exactly ${w} by ${h} pixels. Treat the first attached block-out as the exact ${w}×${h} registration canvas. Paint only ${what}; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside ${inside}, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.`;
+const LANDMARK_RULE =
+  'Match every roof height and position to these boxes rather than making towers taller or walls longer.';
+
+function partBox(f, p) {
+  const P = project(f);
+  if (p.type === 'panel') return [...P(p.x0, p.y, p.t), ...P(p.x1, p.y, p.b)];
+  if (p.type === 'box') return [...P(p.x0, p.y0, p.t), ...P(p.x1, p.y1, p.b)];
+  if (p.type === 'ramp') {
+    const ys = [p.y0, p.y1].flatMap((y) =>
+      [p.x0, p.x1].map((x) => P(x, y, rampHeight(p, x, y))[1]),
+    );
+    return [P(p.x0, 0, 0)[0], Math.min(...ys), P(p.x1, 0, 0)[0], P(0, p.y1, 0)[1]];
+  }
+  const ridge = p.ridge === 'ew' ? (p.y0 + p.y1) / 2 : p.y0 + p.inset;
+  const top = Math.min(P(0, p.y0, p.e)[1], P(0, ridge, p.r)[1]);
+  return [P(p.x0, 0, 0)[0], top, P(p.x1, 0, 0)[0], P(0, p.y1, p.e)[1]];
+}
+
+// One line per part a painter registers against (wall body, parapet, gate
+// doors, roofs); touching boxes of the same kind merge into one.
+function landmarkLines(f, objects) {
+  const entries = [];
+  for (const o of objects) {
+    const roofs = o.parts.filter((p) => p.type === 'roof').sort((a, b) => a.e - b.e);
+    const tower = { 'corner-tower': 'corner tower ', 'gate-tower': 'gate tower ' }[o.kind] ?? '';
+    const ns = o.run === 'ns';
+    for (const p of o.parts) {
+      const name =
+        p.layer === 'L4'
+          ? ns
+            ? 'crenellated parapet along the outer side of the north-south wall'
+            : 'crenellated parapet'
+          : p.type === 'panel'
+            ? 'closed gate doors, reaching all the way down to the wall base'
+            : p.type === 'roof'
+              ? `${tower}${roofs.length > 1 ? (p === roofs[0] ? 'lower ' : 'upper ') : ''}roof`
+              : p.type === 'box' && p.b === 0
+                ? ns
+                  ? 'north-south wall, from the north end of its walkway down to the base of its south end'
+                  : 'wall, from the back edge of its walkway down to its base'
+                : null;
+      if (name) entries.push({ name, box: partBox(f, p).map(Math.round) });
+    }
+  }
+  // Merge left to right, then list in the order the parts were first named.
+  const merged = [];
+  const sorted = entries.map((e, order) => ({ ...e, order })).sort((a, b) => a.box[0] - b.box[0]);
+  for (const e of sorted) {
+    const m = merged.find(
+      (o) =>
+        o.name === e.name && o.box[1] === e.box[1] && o.box[3] === e.box[3] && e.box[0] <= o.box[2],
+    );
+    if (m) m.box[2] = Math.max(m.box[2], e.box[2]);
+    else merged.push({ ...e, box: [...e.box] });
+  }
+  return merged
+    .sort((a, b) => a.order - b.order)
+    .map(({ name, box: [x0, y0, x1, y1] }) => `${name}: x=${x0}..${x1}, y=${y0}..${y1}`);
+}
+
+// Landmarks for non-architectural pieces (S2 sheets): the whole outline and
+// the ground footprint the piece stands on.
+function pieceLandmarks(f, objects) {
+  const P = project(f);
+  const boxes = objects.flatMap((o) => o.parts.map((p) => partBox(f, p)));
+  const whole = [0, 1, 2, 3].map((k) =>
+    Math.round((k < 2 ? Math.min : Math.max)(...boxes.map((b) => b[k]))),
+  );
+  const cells = objects.map((o) => o.cells);
+  const [gx0, gy0] = P(Math.min(...cells.map((c) => c[0])), Math.min(...cells.map((c) => c[1])), 0);
+  const [gx1, gy1] = P(
+    Math.max(...cells.map((c) => c[2])) + 1,
+    Math.max(...cells.map((c) => c[3])) + 1,
+    0,
+  );
+  return [
+    `whole piece: x=${whole[0]}..${whole[2]}, y=${whole[1]}..${whole[3]}`,
+    `ground footprint, where it stands: x=${Math.round(gx0)}..${Math.round(gx1)}, y=${Math.round(gy0)}..${Math.round(gy1)}`,
+  ];
+}
+
+// With a style reference attached as the second image, name the block-out as the first.
+const FIDELITY_FIRST = FIDELITY.replace('The attached image', 'The first attached image');
+const MATCH_VIGNETTE = MATCH_STANDARD.replace(
+  'second attached image',
+  'second attached image (the chosen city view)',
+);
 
 const SCENE_LEGEND = {
   snow: `pale grey-white (${C.snow}): open ground under fresh snow`,
@@ -925,6 +1230,7 @@ const SCENE_LEGEND = {
   bridge: `dark brown (${C.bridge}): plank bridges over the trench in front of the gates`,
   hill: `olive (${C.hill}): low snowy hills`,
   wall: `blue-grey top with a darker front (${C.wallTop} / ${C.wallFront}): the city wall, rammed earth faced with grey brick, three levels high; the light top is the walkway and the darker strip along its outer edge (${C.parapetTop}) is a crenellated parapet`,
+  ramp: `sandy grey sloping blocks (${C.ramp}): horse ramps (马道) of brick-faced rammed earth built against the inner face of the city wall, rising from the ground to the walkway`,
   gate: `red (${C.gate}): gate passages through the wall; paint them as dark open gateways with heavy closed timber doors, never red`,
   tower: `cream walls under slate roofs (${C.tower} / ${C.roof}): timber gate towers and corner towers with snow-covered grey tile hip-and-gable roofs; the south gate tower has two storeys and is the tallest building, the others have one. The west and east gates open sideways, so their passages are hidden from this view and the road simply runs into the gate tower`,
   residence: `red-brown (${C.residence}): the commandant's residence: a main hall with a tiled roof along the north side, and a paved front courtyard inside a low wall`,
@@ -936,6 +1242,7 @@ const SCENE_LEGEND = {
   tent: `canvas beige (${C.tent}): army tents`,
   hq: `dark red (${C.hq}): the chancellor's large command tent`,
   shed: `brown sheds (${C.shed}): open timber workshops where siege engines are built`,
+  camp: `pale tan (${C.camp}): the lightly trampled snow of an army camp, flat and empty, with a few faint footpaths; the tents, fences and sheds are added later as separate pieces`,
 };
 const GROUND_LEGEND = {
   ...SCENE_LEGEND,
@@ -954,6 +1261,243 @@ const SCALE_1X = { cw: 64, cd: 48, lh: 24 };
 const SCALE_2X = { cw: 128, cd: 96, lh: 48 };
 // S1-01 and S1-04 frame x 12–35, y 1–21 at 100%: 24×21 cells, 16px spare below.
 const VIGNETTE = { ...SCALE_1X, ox: -12 * 64, oy: -1 * 48 };
+// S1-03 pieces in sheet order, as named in its landmark list.
+const WALL_KIT_NAMES = [
+  'a straight south wall section',
+  'the south-west corner',
+  'the south-east corner',
+  'a west wall section',
+  'an east wall section',
+  'a north wall section seen from inside',
+];
+
+// S2-01 (plan §9.2): the whole 48×32 map at 100%, origin at the north-west
+// corner. The 24px above the river is more ice; the renderer fades every map
+// edge into paper (留白), so nothing is painted beyond the map.
+const MAP_SIZE = [3072, 1536];
+const FULL = { ...SCALE_1X, ox: 0, oy: 0 };
+// The city body is S1-01 v2-a, whose frame sits here on the full map.
+const CITY_AT = [-VIGNETTE.ox, -VIGNETTE.oy];
+const TILE = [1536, 1024];
+// Chosen attempt per S2-01 step (a file in s2-01-full-map/attempts/), or null
+// while the step is open. tools/compose-siege-map.mjs reads them via steps.json.
+const MAP_PICKS = { city: null, nw: null, ne: null, s: null, sw: null, se: null };
+// Outpainting tiles, in order. `paint` is the new area in tile pixels; the rest
+// of each tile is already painted by the time its turn comes (checked below).
+const MAP_TILES = [
+  {
+    id: 'nw',
+    zh: '西北块',
+    at: [0, 0],
+    paint: [
+      [0, 0, 768, 1024],
+      [768, 0, 1536, 48],
+    ],
+    where: 'the left half of the image and the thin strip along its top edge',
+    scene:
+      'the country west of the fortress: the frozen Wei River along the top edge, open snowy ground, the low snowy foothills of the Qinling along the west edge with a small snowy hollow among them where a wood will stand (its trees are added later), and a road that comes up from the south-west and turns east to the bridge at the west gate. Along the right edge of the block-out area runs the outer earth bank of the city trench, whose water is already painted on the other side',
+  },
+  {
+    id: 'ne',
+    zh: '东北块',
+    at: [1536, 0],
+    paint: [
+      [768, 0, 1536, 1024],
+      [0, 0, 768, 48],
+    ],
+    where: 'the right half of the image and the thin strip along its top edge',
+    scene:
+      "the country east of the fortress: the frozen Wei River along the top edge, the river-bank road and the road from the east gate running off east toward Chang'an, open snowy ground, and low snowy hills at the bottom right. Along the left edge of the block-out area runs the outer earth bank of the city trench, whose water is already painted on the other side",
+  },
+  {
+    id: 's',
+    zh: '南块',
+    at: [768, 512],
+    paint: [[0, 560, 1536, 1024]],
+    where: 'the bottom part of the image, below y=560',
+    scene:
+      'the ground south of the fortress where the Shu-Han army is encamped: the main road from the south running straight up to the south gate, a cross road, the trampled yards of two siege workshops, and the trampled ground of the camp; the camp is still empty because its tents, fences and sheds are added later',
+  },
+  {
+    id: 'sw',
+    zh: '西南块',
+    at: [0, 512],
+    paint: [[0, 512, 768, 1024]],
+    where: 'the bottom-left quarter of the image',
+    scene:
+      'the south-west of the battlefield: open snowy ground, the road from the south-west, low snowy hills in the bottom-left corner, and the western edge of the empty camp ground',
+  },
+  {
+    id: 'se',
+    zh: '东南块',
+    at: [1536, 512],
+    paint: [[768, 512, 1536, 1024]],
+    where: 'the bottom-right quarter of the image',
+    scene:
+      'the south-east of the battlefield: open snowy ground, the eastern edge of the empty camp ground, and plain snow where a small wood will stand (its trees are added later)',
+  },
+];
+// Blend widths: a tile fades into the painted side over 48px; the ramp patch
+// reaches 12px past each ramp, then fades over 10px.
+const TILE_FEATHER = 48;
+const RAMP_MARGIN = [12, 10];
+
+const EDIT_KEEP =
+  'Keep the finished area exactly as it is: do not move, redraw, recolour, sharpen or blur it, and keep the output aligned pixel for pixel with the input, at exactly the same size.';
+const FIDELITY_AREA = FIDELITY.replace(
+  'The attached image is a colour-coded 3D block-out',
+  'The block-out area is a colour-coded 3D block-out',
+);
+const SURFACES_MAP =
+  'Game readability: open ground, roads and camp ground are calm, flat and light, with low texture contrast, so soldiers, tents and trees placed on top later stay readable. The fronts of hills and trench banks are clearly darker than the ground. Keep the density of detail of the finished area, with no vignette and no darkened corners.';
+const EXCLUDE_MAP = EXCLUDE_SCENE.replace(
+  'flags, banners or pennants;',
+  'flags, banners or pennants; tents, fences, sheds, siege engines, trees or rocks, which are added later as separate pieces;',
+);
+const SETTING_MAP =
+  'Setting: the siege of Chencang, a small Wei frontier fortress in the Wei River valley, winter of 228 AD. A clear, cold winter day.';
+const rects = (list) =>
+  list.map(([x0, y0, x1, y1]) => `x=${x0}..${x1}, y=${y0}..${y1}`).join(' and ');
+
+const tilePrompt = (t, keys) =>
+  [
+    'Edit task: extend a finished painting over the rest of the frame (outpainting). The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.',
+    `Part of it is already finished: a traditional Chinese jiehua ink-and-light-colour painting of a battlefield map. The rest, ${t.where} (${rects(t.paint)}), is still a flat colour-coded block-out. Repaint only the block-out area, as a seamless continuation of the finished painting, as if the whole image had been painted at once by the same hand: the same brushwork, line weight, paper grain, colours, light and density of detail. Roads, banks, hills and snow that cross into the block-out area continue without a seam or a change of tone. ${EDIT_KEEP}`,
+    STYLES[CHOSEN_STYLE].scene,
+    FIDELITY_AREA,
+    PROJECTION,
+    `Subject of the block-out area: ${t.scene}. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.`,
+    `Block-out legend (each colour means exactly this):\n${legendText(SCENE_LEGEND, keys)}`,
+    SETTING_MAP,
+    LIGHT,
+    STYLES[CHOSEN_STYLE].text,
+    SURFACES_MAP,
+    EXCLUDE_MAP,
+  ].join('\n\n');
+
+const DIRECTION = { n: 'north', s: 'south', e: 'east', w: 'west' };
+const OPPOSITE = { n: 'south', s: 'north', e: 'west', w: 'east' };
+function rampLine([id, , , , , rise], [x0, y0, x1, y1]) {
+  const [, wall, side] = id.split('-');
+  const ns = rise === 'n' || rise === 's';
+  return `against the ${wall} wall, ${DIRECTION[side]} of its gate${ns ? ', running north-south' : ''}: low at its ${OPPOSITE[rise]} end beside the gate road, reaching the walkway at its ${DIRECTION[rise]} end${rise === 's' ? ', where its south end face shows' : ''}: x=${x0}..${x1}, y=${y0}..${y1}`;
+}
+const rampPrompt = () =>
+  [
+    'Edit task: add eight horse ramps to a finished painting. The attached image is the edit target, exactly 1536×1024, and the output must be exactly 1536×1024 too.',
+    `It is the finished painting of the walled city of Chencang, a traditional Chinese jiehua ink-and-light-colour painting. Eight flat sandy-grey shapes (${C.ramp}, some with a darker front) have been pasted onto it inside the walls; each marks a horse ramp (马道) to paint in. A horse ramp is a sloping ramp of rammed earth faced with grey brick, built against the inner face of the city wall, rising from the ground inside the city to the walkway on top of the wall, with a smooth paved slope (no steps) and a low plain kerb along its open side. Where a ramp reaches the walkway, open the walkway's inner kerb so the two join.`,
+    [
+      'Ramp positions on this canvas (pixel boxes measured from the block-out):',
+      ...RAMPS.map(
+        (r) => `- ${rampLine(r, partBox(VIGNETTE, rampObject(r).parts[0]).map(Math.round))}`,
+      ),
+      'Paint each ramp inside its box and no larger.',
+    ].join('\n'),
+    `Repaint only the eight marked shapes and the few pixels around them needed to blend them in. ${EDIT_KEEP.replace('the finished area', 'everything else')}`,
+    'Paint the ramps with exactly the brushwork, line weight, colours and light of the walls around them.',
+    PROJECTION,
+    LIGHT,
+    STYLES[CHOSEN_STYLE].text,
+    EXCLUDE_SCENE,
+  ].join('\n\n');
+
+// The S2-01 steps: the ramp patch on the city body, then the tiles. Each step
+// has a hard `paint` mask (what ImageGen repaints: the input shows block-out
+// there) and a soft `blend` mask (how much of its result goes into the map).
+function mapSteps(canvas, r) {
+  const [W, Hm] = MAP_SIZE;
+  const [w, h] = TILE;
+  const city = new Uint8Array(w * h);
+  for (const [id] of RAMPS) {
+    const mask = r.masks.get(canvas.objects.indexOf(id));
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        if (mask[(y + CITY_AT[1]) * W + x + CITY_AT[0]]) city[y * w + x] = 255;
+  }
+  const steps = [
+    {
+      id: 'city',
+      zh: '马道补画',
+      at: CITY_AT,
+      paint: city,
+      blend: feather(city, w, h, ...RAMP_MARGIN),
+    },
+  ];
+  // Every tile must paint only new pixels and find the rest already painted.
+  const done = new Uint8Array(W * Hm);
+  const mark = ([x0, y0, x1, y1], value) => {
+    for (let y = y0; y < y1; y++) done.fill(value, y * W + x0, y * W + x1);
+  };
+  mark([CITY_AT[0], CITY_AT[1], CITY_AT[0] + w, CITY_AT[1] + h], 1);
+  for (const t of MAP_TILES) {
+    const paint = new Uint8Array(w * h);
+    for (const [x0, y0, x1, y1] of t.paint)
+      for (let y = y0; y < y1; y++) paint.fill(255, y * w + x0, y * w + x1);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const painted = done[(y + t.at[1]) * W + x + t.at[0]];
+        if (painted === (paint[y * w + x] ? 1 : 0))
+          throw new Error(
+            `S2-01 tile ${t.id}: pixel (${x}, ${y}) is ${painted ? 'painted twice' : 'never painted'}`,
+          );
+      }
+    for (const [x0, y0, x1, y1] of t.paint)
+      mark([x0 + t.at[0], y0 + t.at[1], x1 + t.at[0], y1 + t.at[1]], 1);
+    steps.push({ ...t, paint, blend: feather(paint, w, h, 0, TILE_FEATHER) });
+  }
+  if (done.includes(0)) throw new Error('S2-01: the tiles leave part of the map unpainted');
+  return steps;
+}
+
+// Piece sheets of the camp and the field (S2-08 to S2-11).
+const EXCLUDE_PIECES = EXCLUDE_SPRITE.replace(
+  'ground, scenery or cast shadows;',
+  'ground, snowfield, cast shadows or anything besides the requested pieces;',
+);
+const sheetAsset = ({ id, zh, about, slots, subject, checks }) => ({
+  id,
+  stage: 'S2',
+  zh,
+  size: [1536, 1024],
+  about,
+  render() {
+    const canvas = createCanvas(1536, 1024, C.magenta);
+    const pieces = renderSheet(canvas, SCALE_2X, slots());
+    return { canvas, frame: pieces[0].frame, pieces };
+  },
+  prompts: (keys, { pieces }) => [
+    {
+      text: [
+        spriteOutput([1536, 1024], 'the requested pieces', 'their silhouettes'),
+        [
+          'Registration landmarks on this canvas (pixel boxes measured from the block-out):',
+          ...pieces.flatMap((p) => [
+            `Piece ${p.piece}, ${p.name}:`,
+            ...pieceLandmarks(p.frame, p.objects).map((line) => `- ${line}`),
+          ]),
+          'Keep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.',
+        ].join('\n'),
+        MATCH_STANDARD,
+        STYLES[CHOSEN_STYLE].piece,
+        FIDELITY_FIRST,
+        PROJECTION,
+        `${subject}\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.`,
+        SPRITE,
+        LIGHT_SPRITE,
+        STYLES[CHOSEN_STYLE].text,
+        EXCLUDE_PIECES,
+      ].join('\n\n'),
+    },
+  ],
+  uploads: ['`blockout.png`', GATE_UPLOAD],
+  checks: [
+    '和 S1-02 标准件、S1-01 v2-a 是不是同一套笔法、颜色和光照。',
+    '每件都在自己的框里，底边落在灰盒的地面框上；背景纯品红，没有地面、雪地和落地影子。',
+    ...checks,
+    '把图缩到一半（游戏 100% 的大小）看：放在 S1-01 的雪地上不突兀。',
+  ],
+  naming: '依次命名 `v1.webp`、`v2.webp`……',
+});
 
 const sceneChecks = [
   '100% 缩放下，城墙顶走道、城门、堑和桥是否一眼能认出。',
@@ -967,20 +1511,26 @@ const ASSETS = [
     id: 's1-01-city-vignette',
     zh: 'S1-01 陈仓全城小景',
     size: [1536, 1024],
+    final: CHOSEN_VIGNETTE,
     about: [
       '取景 x 12–35、y 1–21（24×21 格），每格 64×48、每层 24px，正好是游戏 100% 缩放的分辨率，不用放大；底部多出 16px。',
       '出三张，提示词只差风格段：A 界画淡彩、B 写意淡彩、C 沙盘微缩。你选定风格后，选中的那张也是 α 法（整画切层）的测试图，`masks/` 就是切层用的蒙版。',
+      '已出两轮（2026-11-01，记录在 `generation-manifest.json`，三张对比在 `comparison-v2.png`）。第一轮（v1）没有最前面的"Style priority"段，结果加了树和石头，三种风格也太像；第二轮（v2）加了这一段，就是下面的提示词。',
+      '叠 `grid.png` 量过：v2-a、v2-c 的墙、门楼、营房都在 1/4 格以内；v2-b 的南门桥向南多出约 20px；v2-c 的南门楼屋脊高出约 18px。v2-a 的墙顶内沿也画了垛口（灰盒只在外沿有），对 α 法切层影响不大。',
+      '**2026-11-01 定稿：A 界画淡彩，`attempts/v2-a.webp`**。S1-02 以后都上传它作风格参考；它也是 α 法的测试图。',
     ],
     render() {
       const canvas = createCanvas(1536, 1024, C.snow);
-      renderScene(canvas, VIGNETTE, cityObjects());
-      return { canvas, frame: VIGNETTE, masks: true };
+      const objects = cityObjects({ ramps: false });
+      renderScene(canvas, VIGNETTE, objects);
+      return { canvas, frame: VIGNETTE, masks: true, objects };
     },
     prompts(keys) {
       return Object.entries(STYLES).map(([k, s]) => ({
         title: s.zh,
-        file: `v1-${k}.webp`,
+        file: `v2-${k}.webp`,
         text: [
+          s.scene,
           FIDELITY,
           PROJECTION,
           'Subject: the walled fortress of Chencang seen from the south, a battlefield map for a Three Kingdoms strategy game. Output 1536×1024, landscape, filled edge to edge. In the block-out, one grid cell is 64 pixels wide and 48 pixels deep, and one height level is 24 pixels.',
@@ -995,16 +1545,18 @@ const ASSETS = [
     },
     uploads: ['`blockout.png`'],
     checks: ['整体好不好看，三种风格哪种最好。', ...sceneChecks],
-    naming: '依次命名 `v1-a.webp`、`v1-b.webp`、`v1-c.webp`，第二轮 `v2-a.webp`……',
+    naming: '第一轮是 `v1-a.webp`、`v1-b.webp`、`v1-c.webp`，第二轮 `v2-*`；再出就用 `v3-*`。',
   },
   {
     id: 's1-02-south-gate',
     zh: 'S1-02 南门门楼（标准件）',
     size: [1024, 1024],
+    final: CHOSEN_GATE,
     about: [
       '取景 x 21–26：6 格城墙，城门洞 x 23–24，门楼 x 22–25（两层，屋脊在 7 层）。每格 128×96、每层 48px，是 100% 的 2 倍。',
       '只画物件本身：底边是地面线，不含地面和堑。',
       '这一件定了就是**标准件**：从 S1-03 起，每件都上传它当风格参考。',
+      '**2026-11-01 定稿：`attempts/v4.webp`**。它是 v3 抠掉背景后的版本：四角纯品红。透明版是 `selected-transparent.png`（复制自仓库根目录出图工作区的 `attempts/s1-02/v4-transparent.png`），预览页的 β 对照用它拼城。每一轮实际用的提示词记在 `generation-manifest.json`。v1 没有对位坐标段，屋顶偏高、门下漏出缺口；v2 起加了坐标段才对齐，下面的提示词已由脚本自动生成这一段。',
     ],
     render() {
       const canvas = createCanvas(1024, 1024, C.magenta);
@@ -1016,12 +1568,20 @@ const ASSETS = [
       const frame = renderPiece(canvas, SCALE_2X, objects, [0, 0, 1024, 1024]);
       return { canvas, frame, objects };
     },
-    prompts: () => [
+    prompts: (keys, { frame, objects }) => [
       {
         text: [
-          FIDELITY,
+          spriteOutput([1024, 1024]),
+          [
+            'Registration landmarks on this canvas (pixel boxes measured from the block-out):',
+            ...landmarkLines(frame, objects).map((line) => `- ${line}`),
+            LANDMARK_RULE,
+          ].join('\n'),
+          MATCH_VIGNETTE,
+          STYLES[CHOSEN_STYLE].piece,
+          FIDELITY_FIRST,
           PROJECTION,
-          'Subject: one building piece for a strategy game: the south gate of Chencang. A six-cell section of the city wall (rammed earth faced with grey brick, three levels high, a light walkway on top and a crenellated parapet along the front edge) with a two-cell gate passage in the middle. Heavy iron-studded timber gate doors stand closed inside the passage. On the wall above the passage stands a two-storey timber gate tower: red-lacquered columns, white plastered walls with lattice windows, a wooden gallery around the upper storey, and a snow-covered grey tile hip-and-gable roof with gently upturned eaves. In the block-out the red panel marks the gate passage: paint it as a dark gateway with the closed doors inside, never red. Output 1024×1024. In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.',
+          'Subject: one building piece for a strategy game: the south gate of Chencang. A six-cell section of the city wall (rammed earth faced with grey brick, three levels high, a light walkway on top, a crenellated parapet along the front edge and only a low plain kerb along the back edge) with a two-cell gate passage in the middle. Heavy iron-studded timber gate doors stand closed inside the passage. On the wall above the passage stands a two-storey timber gate tower: red-lacquered columns, white plastered walls with lattice windows, a wooden gallery around the upper storey, and a snow-covered grey tile hip-and-gable roof with gently upturned eaves. In the block-out the red panel marks the gate passage: paint it as a dark gateway with the closed doors inside, never red. Output 1024×1024. In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.',
           SPRITE,
           LIGHT_SPRITE,
           STYLES[CHOSEN_STYLE].text,
@@ -1029,11 +1589,9 @@ const ASSETS = [
         ].join('\n\n'),
       },
     ],
-    uploads: [
-      '`blockout.png`',
-      '可选：选定的 S1-01 图，作第二张参考图；这时在提示词最前面加一句 `Match the brushwork, line weight, colours and lighting of the second attached image exactly.`',
-    ],
+    uploads: ['`blockout.png`', VIGNETTE_UPLOAD],
     checks: [
+      '和选定的 S1-01 是不是同一套笔法、颜色和光照；细节比 S1-01 多，但不能变成另一种画法。',
       '比例、线条、歇山顶、积雪、立面明暗、门扇。',
       '门楼两层，屋脊是灰盒里的最高点；城墙三层高，墙顶走道和外沿女墙清楚。',
       '背景是纯品红，没有地面、堑和落地影子。',
@@ -1044,11 +1602,14 @@ const ASSETS = [
   {
     id: 's1-03-wall-kit',
     zh: 'S1-03 城墙模块表',
+    final: 'v4.webp',
     size: [1536, 1024],
     about: [
       '3×2 宫格，每格 512×512 放一件；每格 128×96、每层 48px，同 S1-02。',
       '六件：上排是南墙直段（3 格）、西南角楼、东南角楼；下排是西墙段（南北向 2 格）、东墙段（2 格）、北墙直段（3 格，从城内看）。',
       '和计划初稿相比：南墙直段从 4 格改成 3 格、西墙段从 3 格改成 2 格，否则放不进 512 格还留 32px 边；西门（一层门楼）高 3 格、放不下，挪到 S2 和东门一起做，这里换成北墙直段，补上"从城内看女墙"这种情况。',
+      '2026-11-01 完成四版，采用 `attempts/v4.webp`。透明表见 `selected-transparent.png`，六个独立件在 `pieces/`，锚点和占地见 `pieces.json`，完整提示词及检查见 `generation-manifest.json`。',
+      '同日画法定 α（计划 §9.2）：城墙都画在整画里，这套模块不进游戏，只在预览页作 β 对照。',
     ],
     render() {
       const canvas = createCanvas(1536, 1024, C.magenta);
@@ -1075,21 +1636,36 @@ const ASSETS = [
         ['东墙段', [wallNS('p5-wall-east', 33, 12, 13, 'east')]],
         ['北墙直段', [wallEW('p6-wall-north', 15, 17, 4, 'north')]],
       ];
-      const frames = pieces.map(([zh, objects], i) => {
-        const cell = [(i % 3) * 512, Math.floor(i / 3) * 512];
-        const f = renderPiece(canvas, SCALE_2X, objects, [...cell, cell[0] + 512, cell[1] + 512]);
-        return { piece: i + 1, zh, cell, frame: f, objects };
-      });
+      const frames = renderSheet(
+        canvas,
+        SCALE_2X,
+        pieces.map(([zh, objects], i) => [
+          WALL_KIT_NAMES[i],
+          zh,
+          [(i % 3) * 512, Math.floor(i / 3) * 512, 512, 512],
+          objects,
+        ]),
+      );
       return { canvas, frame: frames[0].frame, pieces: frames };
     },
-    prompts: () => [
+    prompts: (keys, { pieces }) => [
       {
         text: [
+          spriteOutput([1536, 1024]),
+          [
+            'Registration landmarks on this canvas (pixel boxes measured from the block-out):',
+            ...pieces.flatMap((p, i) => [
+              `Piece ${p.piece} (${i < 3 ? 'top' : 'bottom'} row, ${['left', 'middle', 'right'][i % 3]}), ${p.name}:`,
+              ...landmarkLines(p.frame, p.objects).map((line) => `- ${line}`),
+            ]),
+            LANDMARK_RULE,
+          ].join('\n'),
           MATCH_STANDARD,
-          FIDELITY,
+          STYLES[CHOSEN_STYLE].piece,
+          FIDELITY_FIRST,
           PROJECTION,
           [
-            'Subject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge, snow on every top surface.',
+            'Subject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.',
             'Top row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.',
             'Bottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.',
             'In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.',
@@ -1101,7 +1677,7 @@ const ASSETS = [
         ].join('\n\n'),
       },
     ],
-    uploads: ['`blockout.png`', '定稿的 S1-02（第二张，风格参考）'],
+    uploads: ['`blockout.png`', GATE_UPLOAD],
     checks: [
       '六件和 S1-02 是不是同一套笔法、颜色和光照。',
       '南北向墙段只见墙顶和南端截面，没有画出东西侧面。',
@@ -1113,24 +1689,24 @@ const ASSETS = [
   {
     id: 's1-04-ground-plate',
     zh: 'S1-04 地表底板',
+    final: 'v2.webp',
     size: [1536, 1024],
     about: [
       '取景同 S1-01。灰盒里的城墙和建筑都压平成暗灰色地基（`#5a5650`），只留地面。',
-      'β 法的 L1 地表层：上面再摆 S1-02、S1-03 的分件。',
+      'β 法的 L1 地表层：上面再摆 S1-02、S1-03 的分件。画法定 α 后不进游戏，只在预览页作 β 对照。',
+      '2026-11-01 完成三版，采用 `attempts/v2.webp`；北桥及地基已按灰盒复核，完整提示词及检查见 `generation-manifest.json`。',
     ],
     render() {
       const canvas = createCanvas(1536, 1024, C.snow);
-      renderScene(canvas, VIGNETTE, cityObjects(), { flat: true });
+      renderScene(canvas, VIGNETTE, cityObjects({ ramps: false }), { flat: true });
       return { canvas, frame: VIGNETTE };
     },
     prompts: (keys) => [
       {
         text: [
-          MATCH_STANDARD.replace(
-            'second attached image',
-            'second attached image (the chosen city view)',
-          ),
-          FIDELITY,
+          MATCH_VIGNETTE,
+          STYLES[CHOSEN_STYLE].scene,
+          FIDELITY_FIRST,
           PROJECTION,
           'Subject: the ground layer only of a battlefield map for a strategy game: the site of the walled fortress of Chencang in the snow, with every wall and building removed. Output 1536×1024, landscape, filled edge to edge. One grid cell is 64 pixels wide and 48 pixels deep.',
           `Block-out legend:\n${legendText(GROUND_LEGEND, keys)}`,
@@ -1142,7 +1718,7 @@ const ASSETS = [
         ].join('\n\n'),
       },
     ],
-    uploads: ['`blockout.png`', '选定的 S1-01 图（第二张，风格参考）'],
+    uploads: ['`blockout.png`', VIGNETTE_UPLOAD],
     checks: [
       '和选定的 S1-01 是不是同一套笔法和颜色。',
       '地基是平的暗灰色地块，没有画出墙、房子或瓦砾。',
@@ -1153,11 +1729,13 @@ const ASSETS = [
   {
     id: 's1-05-shu-halberd-sheet',
     zh: 'S1-05 蜀戟兵姿态表',
+    final: 'v5.webp',
     size: [1536, 1024],
     guide: { cols: 3, rows: 3, figure: 240, foot: 24 },
     about: [
       '3×3 宫格，每格约 512×341：行是背面（朝北）、侧面（朝东）、正面（朝南），列是待机、行进、攻击。',
       '人物从脚底到头盔顶约 240px（计划初稿写 280px，但格子只有 341px 高，戟会顶出格子），戟可以高出头顶线。',
+      '2026-11-01 完成五版，采用 `attempts/v5.webp`，已缩短正面突刺的戟尖。透明表见 `selected-transparent.png`；九个独立姿态在 `poses/`，逐格缩放及脚底锚点见 `poses.json`，提示词及检查见 `generation-manifest.json`。',
     ],
     prompts: () => [
       {
@@ -1172,7 +1750,7 @@ const ASSETS = [
             'Light: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.',
           ].join('\n'),
           SPRITE,
-          EXCLUDE_SPRITE,
+          EXCLUDE_UNIT_SHEET,
         ].join('\n\n'),
       },
     ],
@@ -1190,11 +1768,13 @@ const ASSETS = [
   {
     id: 's1-06-wei-archer-sheet',
     zh: 'S1-06 魏弓兵姿态表',
+    final: 'v4.webp',
     size: [1536, 1024],
     guide: { cols: 3, rows: 2, figure: 300, foot: 56 },
     about: [
       '3×2 宫格，每格 512×512。第一行正面（朝南）的待机、拉弓、放火箭；第二行背面待机、侧面（朝东）待机、侧面拉弓。',
       '人物从脚底到头盔顶约 300px。',
+      '2026-11-01 完成四版，采用 `attempts/v4.webp`。透明表见 `selected-transparent.png`；六个独立姿态在 `poses/`，逐格缩放及脚底锚点见 `poses.json`，提示词及检查见 `generation-manifest.json`。',
     ],
     prompts: () => [
       {
@@ -1209,7 +1789,7 @@ const ASSETS = [
             'Light: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.',
           ].join('\n'),
           SPRITE,
-          EXCLUDE_SPRITE,
+          EXCLUDE_UNIT_SHEET,
         ].join('\n\n'),
       },
     ],
@@ -1224,6 +1804,214 @@ const ASSETS = [
     ],
     naming: '依次命名 `v1.webp`、`v2.webp`……',
   },
+  {
+    id: 's2-01-full-map',
+    stage: 'S2',
+    zh: 'S2-01 全图整画',
+    size: MAP_SIZE,
+    about: [
+      '全图 3072×1536：48×32 格，每格 64×48、每层 24px，正好是游戏 100% 缩放的分辨率，原点在西北角。冰河以北多出的 24px 画成冰面。地图四边由程序淡出成纸色（留白），所以不画远山，B02 远景留到 S7。',
+      '**城池本体直接用 S1-01 v2-a**，放在全图的 (768, 48)，不重画：它和灰盒对得准，蒙版已经能切。第 1 步在它上面补画八条马道，第 2–6 步以它为中心分五块向外扩画。',
+      '整画里只画地面：营帐、木栅、辕门、工棚、树都是分件（S2-08～S2-11），这里只画营地踩实的雪地和林下的雪地。地道口留到 v0.2，这里画成雪地。',
+      '每一步都是 ImageGen 的**编辑**：只上传一张 `inputs/<步>.png`，它是已画好的部分加上这一步要画的灰盒。`inputs/` 由 `node tools/compose-siege-map.mjs` 生成：脚本把已选定的各步拼起来，写出下一步的输入，以及拼图进度 `composite.webp`（100%）和 `preview.webp`（50%）。',
+      '拼接：每块只取它新画的部分，在已画好的一侧留 48px 渐变；马道补画只取马道外扩 12px、再渐变 10px 的一圈。编辑会把已画的部分也轻微重画，所以脚本拼之前先找出整块的错位（±8px），对齐后再拼，并报出偏移和差值。',
+      '选定一张后，把文件名填进 `tools/build-siege-blockout.mjs` 的 `MAP_PICKS`，重跑这个脚本，再跑 compose 脚本，就得到下一步的输入。',
+      '`steps/` 里每步两张：`<步>-paint.png`（白色是这一步要画的地方；工具支持蒙版编辑时可以一起上传）和 `<步>-blend.png`（拼接权重）。`masks/`、`footprints.json` 用全图坐标，游戏按它们切层；`steps.json` 给 compose 脚本读。',
+    ],
+    render() {
+      const canvas = createCanvas(...MAP_SIZE, C.ice);
+      const objects = mapObjects();
+      renderScene(canvas, FULL, objects, { terrain: mapTerrain });
+      return { canvas, frame: FULL, masks: true, objects };
+    },
+    async write(dir, { canvas }, r) {
+      const steps = mapSteps(canvas, r);
+      await mkdir(join(dir, 'steps'), { recursive: true });
+      for (const s of steps) {
+        await writeFile(join(dir, 'steps', `${s.id}-paint.png`), png(...TILE, 1, s.paint));
+        await writeFile(join(dir, 'steps', `${s.id}-blend.png`), png(...TILE, 1, s.blend));
+      }
+      const manifest = {
+        canvas: MAP_SIZE,
+        blockout: 'blockout.png',
+        base: {
+          source: `../s1-01-city-vignette/attempts/${CHOSEN_VIGNETTE}`,
+          at: CITY_AT,
+        },
+        steps: steps.map((s) => ({
+          id: s.id,
+          name: s.zh,
+          at: s.at,
+          size: TILE,
+          paint: `steps/${s.id}-paint.png`,
+          blend: `steps/${s.id}-blend.png`,
+          input: `inputs/${s.id}.png`,
+          chosen: MAP_PICKS[s.id] ? `attempts/${MAP_PICKS[s.id]}` : null,
+        })),
+      };
+      await writeFile(join(dir, 'steps.json'), await pretty(JSON.stringify(manifest), 'json'));
+    },
+    prompts(keys, rendered, r) {
+      const [W] = MAP_SIZE;
+      const tileKeys = (t) => {
+        const found = new Set();
+        for (const [x0, y0, x1, y1] of t.paint)
+          for (let y = y0; y < y1; y++)
+            for (let x = x0; x < x1; x++) {
+              const k = r.key[(y + t.at[1]) * W + x + t.at[0]];
+              if (k !== 255) found.add(KEYS[k]);
+            }
+        return found;
+      };
+      return [
+        {
+          title: '第 1 步 · 马道补画（city）',
+          note: '上传 `inputs/city.png`：v2-a 上贴了八块马道灰盒。出图存为 `attempts/city-v1.webp`、`city-v2.webp`……',
+          text: rampPrompt(),
+        },
+        ...MAP_TILES.map((t, i) => ({
+          title: `第 ${i + 2} 步 · ${t.zh}（${t.id}）`,
+          note: `上传 \`inputs/${t.id}.png\`：要画的是 ${rects(t.paint).replaceAll(' and ', '、')}，其余已经画好。出图存为 \`attempts/${t.id}-v1.webp\`……`,
+          text: tilePrompt(t, tileKeys(t)),
+        })),
+      ];
+    },
+    uploads: [
+      '每一步只上传一张：`inputs/<步>.png`（编辑对象，先跑 `node tools/compose-siege-map.mjs` 生成）。工具支持蒙版编辑时，可以同时给 `steps/<步>-paint.png`。',
+    ],
+    checks: [
+      '第 1 步：八条马道都在标出的范围里，坡面看得出高低，顶端接上墙顶走道；别处没变（compose 报的偏移应是 0,0，差值很小）。',
+      '第 2–6 步：`preview.webp` 里看不出接缝；路、堑岸、丘陵、冰河和灰盒对得上（把 `grid.png` 叠在 `composite.webp` 上看）；新画的部分没有帐篷、木栅、树和石头。',
+      '每块的笔法、纸纹和颜色深浅和城池那块一致，不发灰、不发黄。',
+      'compose 报的偏移超过 ±4px，或者差值明显比别的块大，就重出这一块。',
+    ],
+    naming: '每步分开编号：`city-v1.webp`、`nw-v1.webp`……，保持 1536×1024 原尺寸，不缩放、不裁切。',
+  },
+  sheetAsset({
+    id: 's2-08-camp-tents',
+    zh: 'S2-08 中军帐和营帐',
+    about: [
+      '2×2 宫格，每格 768×512 放一件；每格 128×96、每层 48px，同 S1-02。',
+      '左上是丞相中军帐（4×2 格，高 1.5 层）；其余三格是三种一格的营帐（高 1 层），游戏里随机排成行，所以大小、形状要一样，只是细节不同。',
+      '帐上的旗由程序画，这里不画。',
+    ],
+    slots: () => [
+      ["the chancellor's command tent", '中军帐', [0, 0, 768, 512], [hqTent()]],
+      ["soldiers' tent, variant A", '营帐 A', [768, 0, 768, 512], [tent(12, 27)]],
+      ["soldiers' tent, variant B", '营帐 B', [0, 512, 768, 512], [tent(13, 27)]],
+      ["soldiers' tent, variant C", '营帐 C', [768, 512, 768, 512], [tent(14, 27)]],
+    ],
+    subject: [
+      'Subject: tents for the Shu-Han army camp in a strategy game, four separate pieces arranged in a 2 by 2 grid exactly as in the block-out, one piece centred in each 768×512 cell, with clear empty space between pieces.',
+      "Top left: the chancellor's command tent (中军帐): a large rectangular ridge tent, four cells wide and two deep, of heavy dark red-lacquered canvas on a timber frame, the front curtain tied open, low wooden steps at the entrance, snow along the ridge. The grandest tent in the camp, but still a field tent rather than a building.",
+      "Top right, bottom left and bottom right: three variants of a one-cell soldiers' tent: a small ridge tent of undyed hemp canvas with snow on its slopes and guy ropes pegged close. Variant A is closed; variant B has its front flap tied back, showing a dark interior; variant C is older and patched, with a short stack of firewood against its side. All three the same size and shape, so they can stand in rows.",
+    ].join('\n'),
+    checks: [
+      '中军帐比营帐明显气派，但仍是帐篷，不像房子。',
+      '三种营帐大小、轮廓一样，排成一行时不乱。',
+    ],
+  }),
+  sheetAsset({
+    id: 's2-09-palisade-kit',
+    zh: 'S2-09 木栅模块',
+    about: [
+      '五件：上排是东西向直段（3 格）、营地西北角、东北角；下排是南北向直段（3 格）和辕门（门两侧各带两格木栅）。每格 128×96、每层 48px。',
+      '游戏按每格的邻居拼：直段从中间裁一格出来重复用，所以左右（上下）两端要能接上。',
+    ],
+    slots: () => [
+      [
+        'an east-west run, three cells',
+        '东西直段',
+        [0, 0, 512, 512],
+        [14, 15, 16].map((x) => palisadeAt(x, 26)),
+      ],
+      [
+        'the north-west corner of the camp',
+        '西北角',
+        [512, 0, 512, 512],
+        [
+          [10, 26],
+          [11, 26],
+          [10, 27],
+        ].map(([x, y]) => palisadeAt(x, y)),
+      ],
+      [
+        'the north-east corner of the camp',
+        '东北角',
+        [1024, 0, 512, 512],
+        [
+          [36, 26],
+          [37, 26],
+          [37, 27],
+        ].map(([x, y]) => palisadeAt(x, y)),
+      ],
+      [
+        'a north-south run, three cells',
+        '南北直段',
+        [0, 512, 512, 512],
+        [28, 29, 30].map((y) => palisadeAt(10, y)),
+      ],
+      [
+        'the camp gate with the palisade ending at each post',
+        '辕门',
+        [512, 512, 1024, 512],
+        [
+          palisadeAt(21, 26),
+          palisadeAt(22, 26),
+          campGate(),
+          palisadeAt(25, 26),
+          palisadeAt(26, 26),
+        ],
+      ],
+    ],
+    subject: [
+      'Subject: a modular kit of the Shu-Han camp palisade for a strategy game, five separate pieces arranged exactly as in the block-out, with clear empty space between pieces. The palisade is a single line of sharpened log stakes about one level high, lashed to two horizontal rails, with snow on the stake tops and rails.',
+      'Top row, left to right: a straight three-cell run going east-west, whose left and right ends must join seamlessly when copies are placed side by side; the north-west corner of the camp, where the east-west run turns south; the north-east corner, the same mirrored.',
+      'Bottom row: on the left, a three-cell run going north-south, seen from above so only the stake tops, the rails and the south end show, never its east or west side; on the right, the camp gate (辕门): two tall timber posts and a cross-beam spanning the road, with the palisade ending against each post.',
+    ].join('\n'),
+    checks: [
+      '直段的两端能接上：东西段左右相接、南北段上下相接都看不出缝。',
+      '南北段只看得到桩顶、横木和南端，没有画出东西侧面。',
+      '辕门的门洞空着，路从中间穿过。',
+    ],
+  }),
+  sheetAsset({
+    id: 's2-10-workshop',
+    zh: 'S2-10 器械工棚',
+    about: [
+      '同一座工棚画两态：左边空着，右边正在造器械。4×2 格，屋脊高 2 层；每格 128×96、每层 48px。',
+      '打造进度由界面显示，这里只要两态；造好的器械是 S4 的分件。',
+    ],
+    slots: () => [
+      ['the workshop, empty', '空工棚', [0, 0, 768, 1024], [workshop(1, 15)]],
+      ['the workshop, building a siege engine', '造器械中', [768, 0, 768, 1024], [workshop(2, 29)]],
+    ],
+    subject:
+      'Subject: a siege-engine workshop of the Shu-Han camp for a strategy game, drawn twice side by side, one piece centred in each half of the image. It is an open-sided timber shed four cells wide and two deep: stout posts, a plank roof with snow on it, timber and tools under the roof. Left: empty, with only stacked logs and planks inside. Right: the same shed with a half-built siege ladder cart inside: its wheeled base and the first rungs of its frame, with fresh-cut timber and a sawhorse. Both sheds are identical apart from what is inside.',
+    checks: ['两座工棚完全一样，只有里面的东西不同。', '造器械中那件看得出是造到一半的云梯车。'],
+  }),
+  sheetAsset({
+    id: 's2-11-field-scenery',
+    zh: 'S2-11 野外点缀',
+    about: [
+      '3×2 宫格，每格 512×512：上排三种雪松，下排枯树、乱石、鹿角（2 格）。每格 128×96、每层 48px。',
+      '布局里的林子（`T`）每格放一到两棵雪松，三种随机；乱石、枯树、鹿角由我在布局里另摆。',
+    ],
+    slots: () => [
+      ['a tall snow-laden pine', '雪松 A', [0, 0, 512, 512], [pine(40, 6, 'pine-a')]],
+      ['a pair of younger pines', '雪松 B', [512, 0, 512, 512], [pinePair(41, 6)]],
+      ['a broad old pine', '雪松 C', [1024, 0, 512, 512], [broadPine(42, 6)]],
+      ['a dead tree', '枯树', [0, 512, 512, 512], [deadTree(43, 6)]],
+      ['a cluster of boulders', '乱石', [512, 512, 512, 512], [rocks(44, 6)]],
+      ['an abatis, two cells long', '鹿角', [1024, 512, 512, 512], [abatis(45, 6)]],
+    ],
+    subject:
+      'Subject: scenery pieces for the snowy battlefield of a strategy game, six separate pieces in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell. Top row, left to right: a tall snow-laden pine; a pair of younger pines growing together; a broad old pine with spreading snowy boughs. Bottom row, left to right: a leafless dead tree with bare twisted branches; a cluster of grey boulders with snow on top; an abatis (鹿角), a low barrier of sharpened branches lashed together, two cells long, running east-west.',
+    checks: [
+      '三种雪松一眼能看出是同一片林子里的树，又各不相同。',
+      '鹿角是一道低矮的尖枝障碍，东西走向。',
+    ],
+  }),
 ];
 
 // ---------------------------------------------------------------------------
@@ -1281,13 +2069,14 @@ function assetReadme(asset, prompts) {
   const promptBlocks = prompts
     .map(
       (p) =>
-        `${p.title ? `### ${p.title}\n\n` : ''}${p.file ? `出图存为 \`attempts/${p.file}\`。\n\n` : ''}\`\`\`text\n${p.text}\n\`\`\``,
+        `${p.title ? `### ${p.title}\n\n` : ''}${p.file ? `出图存为 \`attempts/${p.file}\`。\n\n` : ''}${p.note ? `${p.note}\n\n` : ''}\`\`\`text\n${p.text}\n\`\`\``,
     )
     .join('\n\n');
   const image = asset.guide ? 'guide.png' : 'blockout.png';
+  const section = asset.stage === 'S2' ? '§9.2、§13' : '§10';
   return `# ${asset.zh}
 
-\`${asset.id}\` · 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${PLAN}](../../../${PLAN}) §10。
+\`${asset.id}\` · 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${PLAN}](../../../${PLAN}) ${section}。
 
 ${asset.about.map((line) => `- ${line}`).join('\n')}
 
@@ -1314,6 +2103,12 @@ ${asset.checks.map((c) => `- ${c}`).join('\n')}
 }
 
 function indexReadme(rows) {
+  const table = (stage) => `| ID | 资产 | 尺寸 | 出图 |
+| --- | --- | --- | --- |
+${rows
+  .filter((r) => r.stage === stage)
+  .map((r) => r.line)
+  .join('\n')}`;
   return `# 陈仓攻城战：美术资产
 
 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${PLAN}](../../${PLAN})。
@@ -1324,21 +2119,27 @@ function indexReadme(rows) {
 
 ![全图灰盒](blockout-full.png)
 
-## S1 风格锁定
+## S1 风格锁定（2026-11-02 通过）
 
-| ID | 资产 | 尺寸 | 出图 |
-| --- | --- | --- | --- |
-${rows.join('\n')}
+${table('S1')}
 
 顺序：S1-01（三种风格）→ 你选风格 → S1-02 → 你确认标准件 → S1-03、S1-04 → S1-05、S1-06 → 预览页测试场景（计划 §11）。每个提示词出 3–4 张，选一张。
 
-选定风格后，把脚本里的 \`CHOSEN_STYLE\` 改成对应的字母并重新生成，S1-02 以后的提示词就换成新风格。
+**画法：α 整画切层**（2026-11-01 在预览页对比后定，计划 §9.2）。城池是一整张画，按 \`masks/\` 切层，会变的部分在整画上局部重画；营地、器械、部队等不在城池画里的东西才出分件。S1-03、S1-04 只在预览页作 β 对照。
+
+## S2 全图与完好态
+
+${table('S2')}
+
+顺序：S2-01 分六步，一步一步来：先在 S1-01 v2-a 上补画马道，再按西北、东北、南、西南、东南五块向外扩画；每步选定后跑 \`node tools/compose-siege-map.mjs\` 拿到下一步的输入（见 S2-01 的说明）。S2-08 到 S2-11 是分件表，和 S2-01、和彼此都不相干，随时可以出。
+
+S1-02 以后的提示词按脚本里的 \`CHOSEN_STYLE\`（风格字母）和 \`CHOSEN_VIGNETTE\`（作风格参考上传的那张 S1-01）生成，现在是 A 和 \`v2-a.webp\`；S1-03 起上传的标准件是 \`CHOSEN_GATE\`，现在是 S1-02 的 \`v4.webp\`。改选别的，就改这几项再重新生成。分件的提示词开头有一段由灰盒算出的像素坐标（对位坐标段），帮 ImageGen 把屋顶、门、女墙放准。
 
 ## 每个文件夹里有什么
 
 - \`blockout.png\`（姿态表是 \`guide.png\`）：上传 ImageGen 的参考图。
 - \`grid.png\`：透明底的格子和轮廓，叠在出图上检查对位。
-- \`masks/\`：每个立体件在画面上的轮廓蒙版，α 法切层用；女墙前沿单独一张（\`*-parapet.png\`，L4 层）。只有 S1-01 有。
+- \`masks/\`：每个立体件在画面上的轮廓蒙版，α 法切层用；女墙前沿单独一张（\`*-parapet.png\`，L4 层）。只有 S1-01 和 S2-01 有。
 - \`footprints.json\`：每个物件的占地格、高度、锚点（占地西南角的地面点）和像素框。
 - \`README.md\`：说明、上传清单、完整提示词和检查项。
 - \`attempts/\`：出的图。
@@ -1371,6 +2172,8 @@ for (const asset of ASSETS) {
   const dir = join(OUT, asset.id);
   await mkdir(join(dir, 'attempts'), { recursive: true });
   let keys = new Set();
+  let rendered = null;
+  let resolved = null;
   if (asset.guide) {
     const { cols, rows: n, figure, foot } = asset.guide;
     await writeFile(
@@ -1378,7 +2181,8 @@ for (const asset of ASSETS) {
       png(...asset.size, 3, guideImage(...asset.size, cols, n, figure, foot)),
     );
   } else {
-    const { canvas, frame, masks, pieces, objects: drawn = objects } = asset.render();
+    rendered = asset.render();
+    const { canvas, frame, masks, pieces, objects: drawn = objects } = rendered;
     const r = resolve(canvas);
     keys = r.keys;
     await writeFile(join(dir, 'blockout.png'), png(canvas.w, canvas.h, 3, r.rgb));
@@ -1394,7 +2198,7 @@ for (const asset of ASSETS) {
       footprints.pieces = pieces.map((p) => ({
         piece: p.piece,
         name: p.zh,
-        cell: [...p.cell, 512, 512],
+        cell: p.cell,
         origin: [p.frame.ox, p.frame.oy],
         objects: footprintEntries(p.objects, p.frame, r, canvas, false),
       }));
@@ -1419,15 +2223,18 @@ for (const asset of ASSETS) {
       for (const stale of await readdir(maskDir))
         if (!names.has(stale)) await rm(join(maskDir, stale));
     }
+    await asset.write?.(dir, rendered, r);
+    resolved = r;
   }
   await writeFile(
     join(dir, 'README.md'),
-    await pretty(assetReadme(asset, asset.prompts(keys)), 'markdown'),
+    await pretty(assetReadme(asset, asset.prompts(keys, rendered, resolved)), 'markdown'),
   );
   const n = await attemptCount(dir);
-  rows.push(
-    `| ${asset.zh.split(' ')[0]} | [${asset.zh.split(' ').slice(1).join(' ')}](${asset.id}/README.md) | ${asset.size.join('×')} | ${n ? `${n} 张` : '待出图'} |`,
-  );
+  rows.push({
+    stage: asset.stage ?? 'S1',
+    line: `| ${asset.zh.split(' ')[0]} | [${asset.zh.split(' ').slice(1).join(' ')}](${asset.id}/README.md) | ${asset.size.join('×')} | ${n ? `${n} 张` : '待出图'}${asset.final ? `，定稿 \`${asset.final}\`` : ''} |`,
+  });
   console.log(`${asset.id}: ${n} attempt(s)`);
 }
 await writeFile(join(OUT, 'README.md'), await pretty(indexReadme(rows), 'markdown'));

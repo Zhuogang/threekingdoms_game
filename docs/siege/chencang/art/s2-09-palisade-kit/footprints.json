@@ -1,0 +1,202 @@
+{
+  "asset": "s2-09-palisade-kit",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "东西直段",
+      "cell": [0, 0, 512, 512],
+      "origin": [-1728, -2264],
+      "objects": [
+        {
+          "id": "palisade-14-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [14, 26, 14, 26],
+          "height": 1,
+          "anchor": [64, 328],
+          "bbox": [63, 223, 192, 289]
+        },
+        {
+          "id": "palisade-15-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [15, 26, 15, 26],
+          "height": 1,
+          "anchor": [192, 328],
+          "bbox": [191, 223, 320, 289]
+        },
+        {
+          "id": "palisade-16-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [16, 26, 16, 26],
+          "height": 1,
+          "anchor": [320, 328],
+          "bbox": [319, 223, 449, 289]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "西北角",
+      "cell": [512, 0, 512, 512],
+      "origin": [-666, -2332],
+      "objects": [
+        {
+          "id": "palisade-10-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [10, 26, 10, 26],
+          "height": 1,
+          "anchor": [614, 260],
+          "bbox": [666, 155, 742, 221]
+        },
+        {
+          "id": "palisade-11-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [11, 26, 11, 26],
+          "height": 1,
+          "anchor": [742, 260],
+          "bbox": [741, 155, 871, 221]
+        },
+        {
+          "id": "palisade-10-27",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [10, 27, 10, 27],
+          "height": 1,
+          "anchor": [614, 356],
+          "bbox": [666, 211, 690, 357]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "东北角",
+      "cell": [1024, 0, 512, 512],
+      "origin": [-3430, -2332],
+      "objects": [
+        {
+          "id": "palisade-36-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [36, 26, 36, 26],
+          "height": 1,
+          "anchor": [1178, 260],
+          "bbox": [1177, 155, 1306, 221]
+        },
+        {
+          "id": "palisade-37-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [37, 26, 37, 26],
+          "height": 1,
+          "anchor": [1306, 260],
+          "bbox": [1305, 155, 1382, 221]
+        },
+        {
+          "id": "palisade-37-27",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [37, 27, 37, 27],
+          "height": 1,
+          "anchor": [1306, 356],
+          "bbox": [1358, 211, 1382, 357]
+        }
+      ]
+    },
+    {
+      "piece": 4,
+      "name": "南北直段",
+      "cell": [0, 512, 512, 512],
+      "origin": [-1088, -2040],
+      "objects": [
+        {
+          "id": "palisade-10-28",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [10, 28, 10, 28],
+          "height": 1,
+          "anchor": [192, 744],
+          "bbox": [244, 599, 268, 696]
+        },
+        {
+          "id": "palisade-10-29",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [10, 29, 10, 29],
+          "height": 1,
+          "anchor": [192, 840],
+          "bbox": [244, 695, 268, 792]
+        },
+        {
+          "id": "palisade-10-30",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [10, 30, 10, 30],
+          "height": 1,
+          "anchor": [192, 936],
+          "bbox": [244, 791, 268, 937]
+        }
+      ]
+    },
+    {
+      "piece": 5,
+      "name": "辕门",
+      "cell": [512, 512, 1024, 512],
+      "origin": [-2048, -1723],
+      "objects": [
+        {
+          "id": "palisade-21-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [21, 26, 21, 26],
+          "height": 1,
+          "anchor": [640, 869],
+          "bbox": [639, 764, 768, 830]
+        },
+        {
+          "id": "palisade-22-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [22, 26, 22, 26],
+          "height": 1,
+          "anchor": [768, 869],
+          "bbox": [767, 764, 844, 830]
+        },
+        {
+          "id": "camp-gate",
+          "kind": "camp-gate",
+          "layer": "L3",
+          "cells": [23, 26, 24, 26],
+          "height": 2.25,
+          "anchor": [896, 869],
+          "bbox": [834, 701, 1214, 835]
+        },
+        {
+          "id": "palisade-25-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [25, 26, 25, 26],
+          "height": 1,
+          "anchor": [1152, 869],
+          "bbox": [1204, 764, 1280, 830]
+        },
+        {
+          "id": "palisade-26-26",
+          "kind": "palisade",
+          "layer": "L3",
+          "cells": [26, 26, 26, 26],
+          "height": 1,
+          "anchor": [1280, 869],
+          "bbox": [1279, 764, 1409, 830]
+        }
+      ]
+    }
+  ]
+}

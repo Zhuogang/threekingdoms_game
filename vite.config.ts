@@ -13,6 +13,6 @@ export default defineConfig({
       ],
     },
   },
-  test: { include: ['tests/v03/**/*.test.ts'], environment: 'node' },
+  test: { include: ['tests/v03/**/*.test.ts', 'tests/siege/**/*.test.ts'], environment: 'node' },
   build: { chunkSizeWarningLimit: 700 },
 });

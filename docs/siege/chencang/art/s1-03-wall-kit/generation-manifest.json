@@ -1,0 +1,348 @@
+{
+  "id": "s1-03",
+  "folder": "s1-03-wall-kit",
+  "name": "城墙模块表",
+  "directory": "docs/siege/chencang/art/s1-03-wall-kit",
+  "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+  "referenceRoles": ["geometry blockout", "style reference"],
+  "targetSize": [1536, 1024],
+  "status": "complete",
+  "images": [
+    {
+      "id": "v1",
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-6d58d65f-5967-4a4b-93d4-05408321096a.png",
+      "sourcePath": "../../../../../attempts/s1-03/sources/v1.png",
+      "sourceSha256": "a76b1a6e5c1e55868c9e6a8751475e6e6599ef949b9e4b201980fab19b6a20ef",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1180518,
+      "sha256": "5a9064977d438409f7451ece2b25bf0d2302869e45d6c17882b1fae02f5bbbfb",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v2",
+      "prompt": "Registration priority: keep all six pieces in exactly their marked pixel boxes. In particular, the two narrow north-south wall strips are only 128 pixels wide and must show the top walkway and south end face, without any east/west side face. Keep the join edges perfectly horizontal or vertical with no projection yaw. Match the grey brick, thin ink line weight and paper-white snow of the S1-02 v4 reference.\n\nOutput requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-acdd8f8a-9ae4-47e8-880d-25798292cbc6.png",
+      "sourcePath": "../../../../../attempts/s1-03/sources/v2.png",
+      "sourceSha256": "63c7eb136fd1031eb088f932bc72176e07e32a25d900467d2c816e5533776d1d",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1178976,
+      "sha256": "006e48794570c533f56a4cc76084c2852ca0ea73a80ef4c3433cf56eb88330da",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v3",
+      "prompt": "Registration priority: keep all six pieces in exactly their marked pixel boxes. In particular, the two narrow north-south wall strips are only 128 pixels wide and must show the top walkway and south end face, without any east/west side face. Keep the join edges perfectly horizontal or vertical with no projection yaw. Match the grey brick, thin ink line weight and paper-white snow of the S1-02 v4 reference.\n\nOutput requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "sourceFile": "exec-b58970a6-b9fa-4f60-be12-e76784f631d3.png",
+      "sourcePath": "../../../../../attempts/s1-03/sources/v3.png",
+      "sourceSha256": "2ad5f84cf392b22a8606ed3d86ed4c7e1ed4f36c42dcaaceffaee86f9d6e5642",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1204850,
+      "sha256": "8f291055fdeafb02a2c86f55dd0889006aaba6ee8dc6d89a82e29cce949d87ab",
+      "losslessEncodingVerified": true
+    },
+    {
+      "id": "v4",
+      "prompt": "Use case: background-extraction.\nThe attached image is the EDIT TARGET. Remove ONLY its magenta background and make it genuinely fully transparent. Preserve all six architectural wall modules exactly unchanged: identical silhouettes, placement, size, proportions, brushwork, colours, internal shading and all fine edges. Preserve the 1536x1024 canvas and the exact arrangement of every cell. Do not repaint, resize, move, rotate or crop any object. No magenta halo, colour spill, paper background, cast shadow, floor, labels or extra objects. Keep the foreground opaque and all background empty pixels fully transparent. Preserve the original artwork rather than redrawing it.",
+      "operation": "background-extraction",
+      "transparentRequested": true,
+      "sourceFile": "exec-da3f148c-cd38-4dd9-9dfa-18a70dc100ec.png",
+      "sourcePath": "../../../../../attempts/s1-03/sources/v4.png",
+      "sourceSha256": "ecad8568f730805fe6b8102754d21934c3493f69efef2568c0944b22b2f1b4a5",
+      "nativeSize": [1536, 1024],
+      "transparentBackgroundPixels": 1080793,
+      "transparentPath": "selected-transparent.png",
+      "path": "attempts/v4.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 609456,
+      "sha256": "fcb066bc3ce9f171fea30f4240fdfbdc25efa11ecdc5e60d5f2b36c278678ae0",
+      "losslessEncodingVerified": true
+    }
+  ],
+  "selected": {
+    "id": "v4",
+    "path": "attempts/v4.webp",
+    "selectedBy": "agent",
+    "reason": "Best reviewed result for the requested S1 completion; reversible version selection.",
+    "transparentPath": "selected-transparent.png"
+  },
+  "pieces": [
+    {
+      "name": "south-wall",
+      "path": "pieces/south-wall.png",
+      "cell": [0, 0, 512, 512],
+      "footprint": {
+        "piece": 1,
+        "name": "南墙直段",
+        "cell": [0, 0, 512, 512],
+        "origin": [-1856, -1256],
+        "objects": [
+          {
+            "id": "p1-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 16, 17, 16],
+            "height": 3,
+            "anchor": [64, 376],
+            "bbox": [63, 135, 449, 377]
+          },
+          {
+            "id": "p1-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 16, 17, 16],
+            "height": 3.5,
+            "anchor": [64, 376],
+            "bbox": [63, 186, 449, 233]
+          }
+        ]
+      }
+    },
+    {
+      "name": "southwest-corner",
+      "path": "pieces/southwest-corner.png",
+      "cell": [512, 0, 512, 512],
+      "footprint": {
+        "piece": 2,
+        "name": "西南角楼",
+        "cell": [512, 0, 512, 512],
+        "origin": [-1149, -1196],
+        "objects": [
+          {
+            "id": "p2-wall-west",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [14, 15, 14, 15],
+            "height": 3,
+            "anchor": [643, 340],
+            "bbox": [671, 99, 772, 134]
+          },
+          {
+            "id": "p2-wall-west-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [14, 15, 14, 15],
+            "height": 3.5,
+            "anchor": [643, 340],
+            "bbox": [642, 75, 672, 134]
+          },
+          {
+            "id": "p2-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 16, 15, 16],
+            "height": 3,
+            "anchor": [771, 436],
+            "bbox": [771, 195, 900, 437]
+          },
+          {
+            "id": "p2-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 16, 15, 16],
+            "height": 3.5,
+            "anchor": [771, 436],
+            "bbox": [771, 246, 900, 293]
+          },
+          {
+            "id": "p2-corner-sw",
+            "kind": "corner-tower",
+            "layer": "L3",
+            "cells": [14, 16, 14, 16],
+            "height": 5,
+            "anchor": [643, 436],
+            "bbox": [637, 133, 777, 437]
+          }
+        ]
+      }
+    },
+    {
+      "name": "southeast-corner",
+      "path": "pieces/southeast-corner.png",
+      "cell": [1024, 0, 512, 512],
+      "footprint": {
+        "piece": 3,
+        "name": "东南角楼",
+        "cell": [1024, 0, 512, 512],
+        "origin": [-2947, -1196],
+        "objects": [
+          {
+            "id": "p3-wall-east",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [33, 15, 33, 15],
+            "height": 3,
+            "anchor": [1277, 340],
+            "bbox": [1276, 99, 1377, 134]
+          },
+          {
+            "id": "p3-wall-east-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [33, 15, 33, 15],
+            "height": 3.5,
+            "anchor": [1277, 340],
+            "bbox": [1376, 75, 1406, 134]
+          },
+          {
+            "id": "p3-wall-south",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [32, 16, 32, 16],
+            "height": 3,
+            "anchor": [1149, 436],
+            "bbox": [1148, 195, 1277, 437]
+          },
+          {
+            "id": "p3-wall-south-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [32, 16, 32, 16],
+            "height": 3.5,
+            "anchor": [1149, 436],
+            "bbox": [1148, 246, 1277, 293]
+          },
+          {
+            "id": "p3-corner-se",
+            "kind": "corner-tower",
+            "layer": "L3",
+            "cells": [33, 16, 33, 16],
+            "height": 5,
+            "anchor": [1277, 436],
+            "bbox": [1271, 133, 1411, 437]
+          }
+        ]
+      }
+    },
+    {
+      "name": "west-wall",
+      "path": "pieces/west-wall.png",
+      "cell": [0, 512, 512, 512],
+      "footprint": {
+        "piece": 4,
+        "name": "西墙段",
+        "cell": [0, 512, 512, 512],
+        "origin": [-1600, -396],
+        "objects": [
+          {
+            "id": "p4-wall-west",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [14, 12, 14, 13],
+            "height": 3,
+            "anchor": [192, 948],
+            "bbox": [191, 611, 321, 949]
+          },
+          {
+            "id": "p4-wall-west-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [14, 12, 14, 13],
+            "height": 3.5,
+            "anchor": [192, 948],
+            "bbox": [191, 587, 221, 805]
+          }
+        ]
+      }
+    },
+    {
+      "name": "east-wall",
+      "path": "pieces/east-wall.png",
+      "cell": [512, 512, 512, 512],
+      "footprint": {
+        "piece": 5,
+        "name": "东墙段",
+        "cell": [512, 512, 512, 512],
+        "origin": [-3520, -396],
+        "objects": [
+          {
+            "id": "p5-wall-east",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [33, 12, 33, 13],
+            "height": 3,
+            "anchor": [704, 948],
+            "bbox": [703, 611, 833, 949]
+          },
+          {
+            "id": "p5-wall-east-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [33, 12, 33, 13],
+            "height": 3.5,
+            "anchor": [704, 948],
+            "bbox": [803, 587, 833, 805]
+          }
+        ]
+      }
+    },
+    {
+      "name": "north-wall",
+      "path": "pieces/north-wall.png",
+      "cell": [1024, 512, 512, 512],
+      "footprint": {
+        "piece": 6,
+        "name": "北墙直段",
+        "cell": [1024, 512, 512, 512],
+        "origin": [-832, 420],
+        "objects": [
+          {
+            "id": "p6-wall-north",
+            "kind": "wall",
+            "layer": "L3",
+            "cells": [15, 4, 17, 4],
+            "height": 3,
+            "anchor": [1088, 900],
+            "bbox": [1087, 681, 1473, 901]
+          },
+          {
+            "id": "p6-wall-north-parapet",
+            "kind": "parapet",
+            "layer": "L4",
+            "cells": [15, 4, 17, 4],
+            "height": 3.5,
+            "anchor": [1088, 900],
+            "bbox": [1087, 635, 1473, 682]
+          }
+        ]
+      }
+    }
+  ],
+  "comparison": "../../../../../attempts/s1-03/comparison.png",
+  "exportedPieces": 6,
+  "referenceImages": [
+    {
+      "role": "geometry blockout",
+      "path": "blockout.png",
+      "sha256": "2264493a68cef41c41e115d4353d478e5907fd43f4bee1e65155795e9c054af5"
+    },
+    {
+      "role": "style reference",
+      "path": "../s1-02-south-gate/attempts/v4.webp",
+      "sha256": "8939edfa6f4d5821f2e15fdd49aebae8355a9e4d4b132a1eeec6906d9768ddf7"
+    }
+  ],
+  "review": {
+    "status": "reviewed",
+    "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+    "findings": [
+      "Six modules: south wall, southwest corner, southeast corner, west wall, east wall and north wall.",
+      "Selected v4 is transparent extraction of v2; v3 moved some north-south top surfaces upward.",
+      "Visual native-size grid review: primary wall, walkway, parapet and tower bounds follow the guide within the quarter-cell architectural tolerance (32x24 px).",
+      "North-south sections retain parallel projection without east/west side faces. Exported 512x512 pieces retain the supplied footprint metadata.",
+      "The join preview checks structural alignment. Brick texture and ink seam blending remain an integration concern, rather than a guarantee of pixel-periodic texture."
+    ],
+    "dimensionsVerified": true,
+    "encodingVerified": "Lossless WebP pixels equal the prepared PNGs."
+  }
+}

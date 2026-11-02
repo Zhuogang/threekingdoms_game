@@ -1,0 +1,163 @@
+{
+  "asset": "S1-02",
+  "name": "南门门楼（标准件）",
+  "generatedOn": "2026-11-01",
+  "mode": "built-in image_gen",
+  "style": "A 界画淡彩",
+  "styleReference": {
+    "asset": "S1-01",
+    "id": "v2-a",
+    "style": "A",
+    "path": "../s1-01-city-vignette/attempts/v2-a.webp",
+    "sha256": "614a6a5b693cba93cb2f8373c346ee0f89220ee890a59329582a4220167099b4"
+  },
+  "status": "standard-selected",
+  "images": [
+    {
+      "id": "v1",
+      "sourceFile": "exec-bb58c32d-a9cd-4c47-a9c5-9dc0db004a3d.png",
+      "prompt": "Match the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: one building piece for a strategy game: the south gate of Chencang. A six-cell section of the city wall (rammed earth faced with grey brick, three levels high, a light walkway on top, a crenellated parapet along the front edge and only a low plain kerb along the back edge) with a two-cell gate passage in the middle. Heavy iron-studded timber gate doors stand closed inside the passage. On the wall above the passage stands a two-storey timber gate tower: red-lacquered columns, white plastered walls with lattice windows, a wooden gallery around the upper storey, and a snow-covered grey tile hip-and-gable roof with gently upturned eaves. In the block-out the red panel marks the gate passage: paint it as a dark gateway with the closed doors inside, never red. Output 1024×1024. In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "transparentRequested": false,
+      "referenceImages": ["S1-02 blockout", "S1-01 v2-a"],
+      "path": "attempts/v1.webp",
+      "sourcePath": "../../../../../attempts/s1-02/sources/v1.png",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "8cc98926ca85f4b88bb6c931ba0af691c0e9ed91b68fff011f5c0a5c19b61e6c",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 841550,
+      "sha256": "b81e5506f59a09f9132ff47cef21bcf72abc2359242e22b43409b345cc145ebe",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [243, 10, 243],
+        [248, 13, 243],
+        [239, 26, 238],
+        [244, 23, 240]
+      ],
+      "background": "Generated magenta with visible variation; retained as a comparison candidate."
+    },
+    {
+      "id": "v2",
+      "sourceFile": "exec-d6d558b4-360a-40c4-b891-951b13b0a236.png",
+      "prompt": "Output requirements: create a square image exactly 1024 by 1024 pixels. Treat the first attached blockout as the exact 1024x1024 registration canvas. Paint only the architectural object; every empty background pixel must be perfectly uniform pure chroma magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only INSIDE the building silhouette, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this 1024x1024 canvas: wall outer left x=128, outer right x=896, wall base y=754, walkway back y=512, front parapet y=564 through 610. Upper roof occupies approximately x=275..749, y=304..414; lower roof x=255..769, y=371..498. Match these roof heights and positions to the first image rather than making the tower taller. The closed gate doors occupy the marked opening x=384..640, y=652..754 and must extend fully down to the wall's base, without a magenta notch below the doors. Keep the exact parallel projection and the two-storey structure. Only the FRONT parapet has crenellations; the back edge has a plain low kerb.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: one building piece for a strategy game: the south gate of Chencang. A six-cell section of the city wall (rammed earth faced with grey brick, three levels high, a light walkway on top, a crenellated parapet along the front edge and only a low plain kerb along the back edge) with a two-cell gate passage in the middle. Heavy iron-studded timber gate doors stand closed inside the passage. On the wall above the passage stands a two-storey timber gate tower: red-lacquered columns, white plastered walls with lattice windows, a wooden gallery around the upper storey, and a snow-covered grey tile hip-and-gable roof with gently upturned eaves. In the block-out the red panel marks the gate passage: paint it as a dark gateway with the closed doors inside, never red. Output 1024×1024. In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "transparentRequested": false,
+      "referenceImages": ["S1-02 blockout", "S1-01 v2-a"],
+      "path": "attempts/v2.webp",
+      "sourcePath": "../../../../../attempts/s1-02/sources/v2.png",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "a783999df58037052c431bd9f506620f3d35b8c52a58e1fd65d77e9cf99b194e",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 837724,
+      "sha256": "2792c846bfa96e643c81a2ebcf26daa0c1a973fb9e74537d656056e4bda645d8",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [244, 10, 245],
+        [248, 14, 243],
+        [238, 27, 237],
+        [244, 22, 242]
+      ],
+      "background": "Generated magenta with visible variation; retained as a comparison candidate."
+    },
+    {
+      "id": "v3",
+      "sourceFile": "exec-89f6a42e-d513-47ae-862a-58af9ca65525.png",
+      "prompt": "Output requirements: create a square image exactly 1024 by 1024 pixels. Treat the first attached blockout as the exact 1024x1024 registration canvas. Paint only the architectural object; every empty background pixel must be perfectly uniform pure chroma magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only INSIDE the building silhouette, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this 1024x1024 canvas: wall outer left x=128, outer right x=896, wall base y=754, walkway back y=512, front parapet y=564 through 610. Upper roof occupies approximately x=275..749, y=304..414; lower roof x=255..769, y=371..498. Match these roof heights and positions to the first image rather than making the tower taller. The closed gate doors occupy the marked opening x=384..640, y=652..754 and must extend fully down to the wall's base, without a magenta notch below the doors. Keep the exact parallel projection and the two-storey structure. Only the FRONT parapet has crenellations; the back edge has a plain low kerb.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: one building piece for a strategy game: the south gate of Chencang. A six-cell section of the city wall (rammed earth faced with grey brick, three levels high, a light walkway on top, a crenellated parapet along the front edge and only a low plain kerb along the back edge) with a two-cell gate passage in the middle. Heavy iron-studded timber gate doors stand closed inside the passage. On the wall above the passage stands a two-storey timber gate tower: red-lacquered columns, white plastered walls with lattice windows, a wooden gallery around the upper storey, and a snow-covered grey tile hip-and-gable roof with gently upturned eaves. In the block-out the red panel marks the gate passage: paint it as a dark gateway with the closed doors inside, never red. Output 1024×1024. In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "transparentRequested": false,
+      "referenceImages": ["S1-02 blockout", "S1-01 v2-a"],
+      "path": "attempts/v3.webp",
+      "sourcePath": "../../../../../attempts/s1-02/sources/v3.png",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "00e361ff5a781cb60c766f0ba50a512ca904eab5fabfd05f3879b1725cbd9f9e",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 838978,
+      "sha256": "aa3ae1d7df47aee654eb4319116b40f62f48faf24e5402f593e8192ad3d7341c",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [244, 11, 244],
+        [248, 14, 243],
+        [241, 26, 238],
+        [243, 23, 240]
+      ],
+      "background": "Generated magenta with visible variation; retained as a comparison candidate."
+    },
+    {
+      "id": "v4",
+      "sourceFile": "exec-560c4674-9f32-4c41-abea-cbfba0d186f8.png",
+      "prompt": "Use case: background-extraction.\nAsset type: S1-02 Chencang south gate, isolated strategy game architectural asset.\nThe attached image is the EDIT TARGET. Remove ONLY the magenta background and replace it with genuine fully transparent alpha. Keep the entire building exactly unchanged: identical silhouette, size, placement, roof heights, two storeys, snow, fine ink contours, pale watercolour colours, timber lattice windows, closed studded double doors reaching the wall base, brickwork, walkway, front crenellated parapet and plain rear kerb. Keep the same canvas size and framing; do not crop, enlarge, rotate, recompose or add anything. Preserve all fine eave tips and thin ink edges. No magenta colour fringe, no colour spill, no halo, no ground, no cast shadow. All pixels outside the architectural silhouette must be fully transparent; keep the building opaque. Preserve the artwork rather than repainting it.",
+      "type": "background-extraction",
+      "transparentRequested": true,
+      "referenceImages": ["v3"],
+      "transparentPath": "../../../../../attempts/s1-02/v4-transparent.png",
+      "path": "attempts/v4.webp",
+      "sourcePath": "../../../../../attempts/s1-02/sources/v4.png",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "sourceSha256": "5d006ec2f9b7f8d5fabbc724b688e56cce460f316e50326f08789d9a35bd0d83",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 414130,
+      "sha256": "8939edfa6f4d5821f2e15fdd49aebae8355a9e4d4b132a1eeec6906d9768ddf7",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [255, 0, 255],
+        [255, 0, 255],
+        [255, 0, 255],
+        [255, 0, 255]
+      ],
+      "background": "Opaque pure-magenta flatten of the tool-generated cutout; true-alpha PNG also retained."
+    }
+  ],
+  "geometryReference": {
+    "path": "blockout.png",
+    "sha256": "aab9110d3f8c5ac344d84459b444e6e30d27a922afaa65dff947f092a1139c8f"
+  },
+  "preparation": "Native generated PNGs are 1254x1254. Uniformly downsampled to the specified 1024x1024 canvas using Lanczos3, with no crop, repositioning or geometry warp. Encoded as lossless WebP. v4 was generated by the built-in tool with transparent alpha; its opaque WebP copy is flattened over #FF00FF, and its transparency is preserved in v4-transparent.png.",
+  "comparison": "../../../../../attempts/s1-02/comparison.png",
+  "selected": {
+    "id": "v4",
+    "path": "attempts/v4.webp",
+    "selectedOn": "2026-11-01",
+    "selectedBy": "agent-default under user continuation instruction",
+    "instruction": "follow S1-03 all the way to S1-06"
+  },
+  "review": {
+    "recommended": "v4",
+    "selection": "v4 used as the architectural standard following the user instruction to complete S1-03 through S1-06.",
+    "method": "Native-size 1024x1024 grid overlay and visual review of the alpha cutout on a neutral background.",
+    "geometryTolerance": {
+      "horizontalPixels": 32,
+      "verticalPixels": 24
+    },
+    "registration": "Main wall, roof, walkway, gate and baseline landmarks visually lie within one quarter of a cell. This is visual registration QA, not an automated pixel-by-pixel shape test.",
+    "visualFindings": [
+      "All four use the chosen S1-01 A (v2-a) brushwork, colours and winter light as the style reference.",
+      "v1: tower roof is high, and a magenta notch remains below the gate doors.",
+      "v2: roof positions and full-height doors improve; generated magenta remains textured.",
+      "v3: complete two-storey tower, full-height closed doors, clear walkway and front parapet with a plain rear kerb.",
+      "v4: built-in background extraction of v3 preserves its structure and gives true alpha. A pure-magenta opaque copy and transparent PNG are both supplied.",
+      "v4 has exact #FF00FF at all four corners. Outside a padded architecture box, 155 pixels differ by one RGB code level after alpha resampling; the remaining checked background pixels are exact magenta. Fine antialiased edges remain around the artwork."
+    ],
+    "technicalChecks": {
+      "candidateCount": 4,
+      "width": 1024,
+      "height": 1024,
+      "webpEncoding": "lossless; decoded pixels equal the prepared PNGs",
+      "originalGeneratedPixels": "1254x1254 source PNGs retained in sources/",
+      "transparency": "Generated with the built-in tool and preserved in v4-transparent.png",
+      "outerBackground": {
+        "referenceRgb": [255, 0, 255],
+        "nonExactPixels": 155,
+        "maxChannelDeviation": 1,
+        "comment": "Imperceptible residual alpha quantization; raw tool alpha and native sources are preserved."
+      }
+    }
+  }
+}

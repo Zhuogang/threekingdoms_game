@@ -1,0 +1,43 @@
+{
+  "asset": "s2-10-workshop",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "空工棚",
+      "cell": [0, 0, 768, 1024],
+      "origin": [-1792, -1739],
+      "objects": [
+        {
+          "id": "workshop-1",
+          "kind": "workshop",
+          "layer": "L3",
+          "cells": [15, 23, 18, 24],
+          "height": 2,
+          "anchor": [128, 661],
+          "bbox": [125, 417, 643, 650]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "造器械中",
+      "cell": [768, 0, 768, 1024],
+      "origin": [-2816, -1739],
+      "objects": [
+        {
+          "id": "workshop-2",
+          "kind": "workshop",
+          "layer": "L3",
+          "cells": [29, 23, 32, 24],
+          "height": 2,
+          "anchor": [896, 661],
+          "bbox": [893, 417, 1411, 650]
+        }
+      ]
+    }
+  ]
+}

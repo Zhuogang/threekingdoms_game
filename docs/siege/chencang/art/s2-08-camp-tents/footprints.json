@@ -1,0 +1,77 @@
+{
+  "asset": "s2-08-camp-tents",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "中军帐",
+      "cell": [0, 0, 768, 512],
+      "origin": [-3200, -2489],
+      "objects": [
+        {
+          "id": "hq-tent",
+          "kind": "tent",
+          "layer": "L3",
+          "cells": [26, 28, 29, 29],
+          "height": 1.5,
+          "anchor": [128, 391],
+          "bbox": [127, 174, 641, 380]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "营帐 A",
+      "cell": [768, 0, 768, 512],
+      "origin": [-448, -2362],
+      "objects": [
+        {
+          "id": "tent-12-27",
+          "kind": "tent",
+          "layer": "L3",
+          "cells": [12, 27, 12, 27],
+          "height": 1,
+          "anchor": [1088, 326],
+          "bbox": [1097, 195, 1207, 317]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "营帐 B",
+      "cell": [0, 512, 768, 512],
+      "origin": [-1344, -1850],
+      "objects": [
+        {
+          "id": "tent-13-27",
+          "kind": "tent",
+          "layer": "L3",
+          "cells": [13, 27, 13, 27],
+          "height": 1,
+          "anchor": [320, 838],
+          "bbox": [329, 707, 439, 829]
+        }
+      ]
+    },
+    {
+      "piece": 4,
+      "name": "营帐 C",
+      "cell": [768, 512, 768, 512],
+      "origin": [-704, -1850],
+      "objects": [
+        {
+          "id": "tent-14-27",
+          "kind": "tent",
+          "layer": "L3",
+          "cells": [14, 27, 14, 27],
+          "height": 1,
+          "anchor": [1088, 838],
+          "bbox": [1097, 707, 1207, 829]
+        }
+      ]
+    }
+  ]
+}

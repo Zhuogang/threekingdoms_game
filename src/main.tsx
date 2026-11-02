@@ -2,17 +2,21 @@ import { createRoot } from 'react-dom/client';
 import { StrictMode, lazy, Suspense } from 'react';
 import V03App from './v03/App';
 
-// Dev-only battlefield preview (`?battlefield-preview`); compiled out of production builds.
-const BattlefieldPreview =
-  import.meta.env.DEV && new URLSearchParams(location.search).has('battlefield-preview')
-    ? lazy(() => import('./v03/dev/BattlefieldPreview'))
-    : null;
+// Dev-only previews (`?battlefield-preview`, `?siege-preview`); compiled out of production builds.
+const params = new URLSearchParams(location.search);
+const DevPreview = !import.meta.env.DEV
+  ? null
+  : params.has('siege-preview')
+    ? lazy(() => import('./siege/dev/SiegePreview'))
+    : params.has('battlefield-preview')
+      ? lazy(() => import('./v03/dev/BattlefieldPreview'))
+      : null;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {BattlefieldPreview ? (
+    {DevPreview ? (
       <Suspense fallback={null}>
-        <BattlefieldPreview />
+        <DevPreview />
       </Suspense>
     ) : (
       <V03App />

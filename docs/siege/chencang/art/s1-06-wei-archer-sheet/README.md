@@ -4,6 +4,7 @@
 
 - 3×2 宫格，每格 512×512。第一行正面（朝南）的待机、拉弓、放火箭；第二行背面待机、侧面（朝东）待机、侧面拉弓。
 - 人物从脚底到头盔顶约 300px。
+- 2026-11-01 完成四版，采用 `attempts/v4.webp`。透明表见 `selected-transparent.png`；六个独立姿态在 `poses/`，逐格缩放及脚底锚点见 `poses.json`，提示词及检查见 `generation-manifest.json`。
 
 ## 参考图
 
@@ -27,7 +28,7 @@ Light: low winter sun from the lower left (south-west); shade the figure only, w
 
 Isolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.
 
-Do not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.
+Do not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.
 ```
 
 ## 看什么

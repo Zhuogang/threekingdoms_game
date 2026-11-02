@@ -4,6 +4,9 @@
 
 - 取景 x 12–35、y 1–21（24×21 格），每格 64×48、每层 24px，正好是游戏 100% 缩放的分辨率，不用放大；底部多出 16px。
 - 出三张，提示词只差风格段：A 界画淡彩、B 写意淡彩、C 沙盘微缩。你选定风格后，选中的那张也是 α 法（整画切层）的测试图，`masks/` 就是切层用的蒙版。
+- 已出两轮（2026-11-01，记录在 `generation-manifest.json`，三张对比在 `comparison-v2.png`）。第一轮（v1）没有最前面的"Style priority"段，结果加了树和石头，三种风格也太像；第二轮（v2）加了这一段，就是下面的提示词。
+- 叠 `grid.png` 量过：v2-a、v2-c 的墙、门楼、营房都在 1/4 格以内；v2-b 的南门桥向南多出约 20px；v2-c 的南门楼屋脊高出约 18px。v2-a 的墙顶内沿也画了垛口（灰盒只在外沿有），对 α 法切层影响不大。
+- **2026-11-01 定稿：A 界画淡彩，`attempts/v2-a.webp`**。S1-02 以后都上传它作风格参考；它也是 α 法的测试图。
 
 ## 参考图
 
@@ -19,9 +22,11 @@
 
 ### A 界画淡彩
 
-出图存为 `attempts/v1-a.webp`。
+出图存为 `attempts/v2-a.webp`。
 
 ```text
+Style priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.
+
 The attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
@@ -53,9 +58,11 @@ Do not include: any text, letters, calligraphy, seals or signatures; grid lines;
 
 ### B 写意淡彩
 
-出图存为 `attempts/v1-b.webp`。
+出图存为 `attempts/v2-b.webp`。
 
 ```text
+Style priority — B 写意淡彩: The entire image is a TWO-DIMENSIONAL EXPRESSIVE CHINESE XIEYI INK-AND-WATERCOLOUR PAINTING on warm rice paper. Confident loose calligraphic brush strokes, broken dry-brush charcoal marks, broad wet-on-wet diluted ink blooms and translucent ochre washes, with abundant untouched paper-white snow. Suggest the roof tiles, bricks and timber with only a few expressive strokes rather than delineating every small part. Architectural silhouette edges and alignments stay straight and exactly follow the reference, but the interior mark-making is visibly spontaneous, soft and painterly. Make this unmistakably an expressive hand-painted ink wash, with quiet empty ground. No photographic material textures, realistic digital-game rendering, carved miniature surfaces, uniformly detailed brickwork or dense tiny marks. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.
+
 The attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
@@ -87,9 +94,11 @@ Do not include: any text, letters, calligraphy, seals or signatures; grid lines;
 
 ### C 沙盘微缩
 
-出图存为 `attempts/v1-c.webp`。
+出图存为 `attempts/v2-c.webp`。
 
 ```text
+Style priority — C 沙盘微缩: The entire image is a HAND-BUILT MILITARY SAND-TABLE MINIATURE with tangible carved wood architecture, matte moulded clay ground, sculpted plaster snow and hand-painted grey brick markings, in restrained Chinese ink-wash colours. Clearly visible small handcrafted bevels, slightly softened carved edges, simplified miniature roof grooves, tactile chalky matte surfaces and gentle ambient occlusion at joins. It should read immediately as a physical scale model photographed through an orthographic camera, with everything equally sharp, no depth-of-field or tilt-shift blur. Keep snowy playable surfaces broad, simple and calm. No rice-paper grain, watercolour blooms, loose brushwork, photoreal life-size weathering, glossy CGI or toy-like saturated plastic. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.
+
 The attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.
 
 Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
@@ -129,4 +138,4 @@ Do not include: any text, letters, calligraphy, seals or signatures; grid lines;
 
 ## 出图记录
 
-出的图放进 `attempts/`，依次命名 `v1-a.webp`、`v1-b.webp`、`v1-c.webp`，第二轮 `v2-a.webp`……
+出的图放进 `attempts/`，第一轮是 `v1-a.webp`、`v1-b.webp`、`v1-c.webp`，第二轮 `v2-*`；再出就用 `v3-*`。
