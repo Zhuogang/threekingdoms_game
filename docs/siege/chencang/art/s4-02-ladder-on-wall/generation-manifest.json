@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-d7ec3ecc-5d4a-4915-adcb-67d6c50efa5e.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-02/sources/v1.png",
       "sourceSha256": "627586f38614453f34b0b999e0d155d433b11c90e4168aa8a244024def3ae4f9",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "2891da439e580586d8b9218f11fa651775982bb32dc0825310fb58da925b4b55",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          254,
-          1,
-          253
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [251, 2, 253],
+        [253, 5, 252],
+        [254, 1, 253],
+        [252, 3, 253]
       ],
       "registration": "23px longer at both ends"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-d9420445-5ea3-4c1d-9728-cba15db125eb.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-02/sources/v2.png",
       "sourceSha256": "2f79b1c7248df3d7347057a38f01ad3f7f256ed6c53089b623986487ebd92b0c",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "409a086bde8c01989a605df1d4b1a9181a1a48ba31b06f353f2dac5dbcda1a05",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          254,
-          5,
-          253
-        ],
-        [
-          253,
-          0,
-          251
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 2, 253],
+        [254, 5, 253],
+        [253, 0, 251],
+        [252, 3, 253]
       ],
       "registration": "about 20px longer at both ends"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-e1f03ab1-69e7-47c4-9c9c-9d9d5d138dbb.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-02/sources/v3.png",
       "sourceSha256": "94871330a60add1b622c38fc6bb332b8a895a1cd27b0852288f1572962a6d7f1",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "b0ec6107a194f061cd71d4a74c071e8e6c75f492f2f2eb37e1593926bbeb7f80",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          252
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 3, 252],
+        [253, 5, 252],
+        [253, 0, 252],
+        [252, 3, 253]
       ],
       "registration": "top 21px long, base exactly on the block-out footprint"
     }

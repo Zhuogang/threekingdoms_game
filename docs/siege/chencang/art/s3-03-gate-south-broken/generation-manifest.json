@@ -3,10 +3,7 @@
   "folder": "s3-03-gate-south-broken",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
-  "crop": [
-    768,
-    512
-  ],
+  "crop": [768, 512],
   "status": "picked by agent; awaiting your review",
   "states": [
     {
@@ -77,18 +74,9 @@
       "patch": {
         "path": "patches/gate-south-broken.png",
         "sha256": "a95ecff1fa82123ea2e4ab86bf5e714bb21f4254efddbedbf7de512f3472d793",
-        "at": [
-          1390,
-          574
-        ],
-        "size": [
-          292,
-          260
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [1390, 574],
+        "size": [292, 260],
+        "offset": [0, 0],
         "difference": 5.76,
         "changeInside": 23.2
       },

@@ -3,10 +3,7 @@
   "folder": "s3-01-trench-fill",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
-  "crop": [
-    768,
-    512
-  ],
+  "crop": [768, 512],
   "status": "picked by agent; awaiting your review",
   "states": [
     {
@@ -77,18 +74,9 @@
       "patch": {
         "path": "patches/trench-half.png",
         "sha256": "27d3dfde29e12b8630cea5eeeaa09d6b517fd938ec31e508940fe95588bc313e",
-        "at": [
-          768,
-          801
-        ],
-        "size": [
-          1536,
-          150
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [768, 801],
+        "size": [1536, 150],
+        "offset": [0, 0],
         "difference": 5.66,
         "changeInside": 33.7
       },
@@ -163,18 +151,9 @@
       "patch": {
         "path": "patches/trench-filled.png",
         "sha256": "c66da22fed24206fb571465ab06662a2853c3340cc8c953bec615398c332ac6e",
-        "at": [
-          768,
-          801
-        ],
-        "size": [
-          1536,
-          150
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [768, 801],
+        "size": [1536, 150],
+        "offset": [0, 0],
         "difference": 9.51,
         "changeInside": 24.2
       },

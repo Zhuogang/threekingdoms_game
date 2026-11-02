@@ -7,193 +7,79 @@
   "poses": [
     {
       "name": "north-climb-a",
-      "cell": [
-        0,
-        0,
-        512,
-        512
-      ],
-      "box": [
-        169,
-        87,
-        168,
-        372
-      ],
-      "anchor": [
-        71.6,
-        372
-      ],
+      "cell": [0, 0, 512, 512],
+      "box": [169, 87, 168, 372],
+      "anchor": [71.6, 372],
       "path": "poses/north-climb-a.png",
       "game": {
         "path": "poses-game/north-climb-a.png",
-        "size": [
-          20,
-          45
-        ],
-        "anchor": [
-          8.6,
-          44.6
-        ]
+        "size": [20, 45],
+        "anchor": [8.6, 44.6]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-climb-b",
-      "cell": [
-        512,
-        0,
-        512,
-        512
-      ],
-      "box": [
-        662,
-        82,
-        170,
-        376
-      ],
-      "anchor": [
-        76.1,
-        376
-      ],
+      "cell": [512, 0, 512, 512],
+      "box": [662, 82, 170, 376],
+      "anchor": [76.1, 376],
       "path": "poses/north-climb-b.png",
       "game": {
         "path": "poses-game/north-climb-b.png",
-        "size": [
-          20,
-          45
-        ],
-        "anchor": [
-          9.1,
-          45.1
-        ]
+        "size": [20, 45],
+        "anchor": [9.1, 45.1]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-climb-top",
-      "cell": [
-        1024,
-        0,
-        512,
-        512
-      ],
-      "box": [
-        1155,
-        67,
-        219,
-        391
-      ],
-      "anchor": [
-        93.4,
-        391
-      ],
+      "cell": [1024, 0, 512, 512],
+      "box": [1155, 67, 219, 391],
+      "anchor": [93.4, 391],
       "path": "poses/north-climb-top.png",
       "game": {
         "path": "poses-game/north-climb-top.png",
-        "size": [
-          26,
-          47
-        ],
-        "anchor": [
-          11.2,
-          46.9
-        ]
+        "size": [26, 47],
+        "anchor": [11.2, 46.9]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-carry",
-      "cell": [
-        0,
-        512,
-        512,
-        512
-      ],
-      "box": [
-        158,
-        590,
-        217,
-        355
-      ],
-      "anchor": [
-        101.3,
-        355
-      ],
+      "cell": [0, 512, 512, 512],
+      "box": [158, 590, 217, 355],
+      "anchor": [101.3, 355],
       "path": "poses/north-carry.png",
       "game": {
         "path": "poses-game/north-carry.png",
-        "size": [
-          26,
-          43
-        ],
-        "anchor": [
-          12.2,
-          42.6
-        ]
+        "size": [26, 43],
+        "anchor": [12.2, 42.6]
       },
       "droppedIslands": 0
     },
     {
       "name": "east-carry",
-      "cell": [
-        512,
-        512,
-        512,
-        512
-      ],
-      "box": [
-        646,
-        590,
-        226,
-        356
-      ],
-      "anchor": [
-        40.4,
-        356
-      ],
+      "cell": [512, 512, 512, 512],
+      "box": [646, 590, 226, 356],
+      "anchor": [40.4, 356],
       "path": "poses/east-carry.png",
       "game": {
         "path": "poses-game/east-carry.png",
-        "size": [
-          27,
-          43
-        ],
-        "anchor": [
-          4.8,
-          42.7
-        ]
+        "size": [27, 43],
+        "anchor": [4.8, 42.7]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-dump",
-      "cell": [
-        1024,
-        512,
-        512,
-        512
-      ],
-      "box": [
-        1099,
-        577,
-        344,
-        366
-      ],
-      "anchor": [
-        93.4,
-        366
-      ],
+      "cell": [1024, 512, 512, 512],
+      "box": [1099, 577, 344, 366],
+      "anchor": [93.4, 366],
       "path": "poses/north-dump.png",
       "game": {
         "path": "poses-game/north-dump.png",
-        "size": [
-          41,
-          44
-        ],
-        "anchor": [
-          11.2,
-          43.9
-        ]
+        "size": [41, 44],
+        "anchor": [11.2, 43.9]
       },
       "droppedIslands": 2
     }

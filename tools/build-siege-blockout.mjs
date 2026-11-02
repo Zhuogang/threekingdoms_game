@@ -1704,6 +1704,9 @@ function stateAsset({ id, zh, crop, about, states, checks }) {
               rgba.set([r.rgb[i * 3], r.rgb[i * 3 + 1], r.rgb[i * 3 + 2], 255], i * 4);
           overlay = `steps/${s.id}-overlay.png`;
           await writeFile(join(dir, overlay), png(w, h, 4, rgba));
+          // New geometry also gets its exact outline, so the game can cut it
+          // out as a layer that hides units behind it (map coordinates below).
+          await writeFile(join(dir, 'steps', `${s.id}-mask.png`), png(w, h, 1, area));
         }
         job.states.push({
           id: s.id,
@@ -1715,6 +1718,28 @@ function stateAsset({ id, zh, crop, about, states, checks }) {
           chosen: STATE_PICKS[s.id] ? `attempts/${STATE_PICKS[s.id]}` : null,
           patch: `patches/${s.id}.png`,
           ...(s.cells ? { cells: s.cells } : {}),
+          ...(s.objects
+            ? {
+                mask: `steps/${s.id}-mask.png`,
+                object: {
+                  id: s.id,
+                  kind: 'inner-wall',
+                  cells: [
+                    Math.min(...s.objects.map((o) => o.cells[0])),
+                    Math.min(...s.objects.map((o) => o.cells[1])),
+                    Math.max(...s.objects.map((o) => o.cells[2])),
+                    Math.max(...s.objects.map((o) => o.cells[3])),
+                  ],
+                  height: Math.max(...s.objects.flatMap((o) => o.parts.map((part) => part.t))),
+                  bbox: (([x0, y0, x1, y1]) => [
+                    x0 + crop[0],
+                    y0 + crop[1],
+                    x1 + crop[0],
+                    y1 + crop[1],
+                  ])(maskBox(area)),
+                },
+              }
+            : {}),
         });
       }
       await writeFile(join(dir, 'job.json'), await pretty(JSON.stringify(job), 'json'));

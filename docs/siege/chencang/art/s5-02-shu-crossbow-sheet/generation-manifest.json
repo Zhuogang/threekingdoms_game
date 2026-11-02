@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "guide",
-      "references": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ]
+      "references": ["guide.png", "S1-05 v5 (Shu halberdier)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-56e2169c-8cd0-4a54-8450-4274add299f7.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-02/sources/v1.png",
       "sourceSha256": "f80bd39a706bc58741d35c2282996f6ef87696e1471b0d6fce358070e8d95499",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "681127a96ae0c620adadb086c0f7487199076e30c7a5374d7d6caedf19ad4df2",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          254,
-          1,
-          253
-        ],
-        [
-          251,
-          4,
-          253
-        ]
+        [252, 2, 253],
+        [253, 4, 252],
+        [254, 1, 253],
+        [251, 4, 253]
       ],
       "registration": "nine poses, crossbow and quiver clear"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-d1a3f1b9-9340-4787-bf89-7329240c22f2.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-02/sources/v2.png",
       "sourceSha256": "24e298e3794a1924c6d486f0eab38a0d365bca33b01f0dc0775429ea8ae0cdc8",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "c87f5555b129f2fd688e864e27bf54b7d0ef56cee64736ea0c33fbf89df1e45c",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          4,
-          253
-        ],
-        [
-          253,
-          8,
-          252
-        ],
-        [
-          253,
-          2,
-          253
-        ],
-        [
-          252,
-          6,
-          253
-        ]
+        [251, 4, 253],
+        [253, 8, 252],
+        [253, 2, 253],
+        [252, 6, 253]
       ],
       "registration": "march row holds the crossbow upright"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-2e194e7b-b837-4aa1-a8e7-3e3deae1aae2.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-02/sources/v3.png",
       "sourceSha256": "568107af3ba7cd541a433cd4e355f31f451cb5f4bb6a52bf6752955c4c7dd359",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "16aa1ff00174273df2c3b9590603a208386e8d647d617a97c965b464ddb8eaa8",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [251, 2, 253],
+        [253, 6, 252],
+        [253, 1, 252],
+        [252, 4, 253]
       ],
       "registration": "similar to v1"
     }

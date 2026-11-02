@@ -24,10 +24,7 @@
           "sourceFile": "exec-fe244912-f763-420a-b681-f4577c44b43e.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/city-v1.png",
           "sourceSha256": "8c98f0e54bc8e0287b1eb3a24a94e178200ed95ca39cd9a7df51e2990d8e48fb",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/city-v1.webp",
           "bytes": 1819430,
           "sha256": "1021a972d4aae60782dacfd78ec03126848f30337facccdd6300cfb9ef87bcad",
@@ -47,10 +44,7 @@
           "sourceFile": "exec-b3f49f8d-a4bd-40af-89e5-f7e53e38ab0e.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/city-v2.png",
           "sourceSha256": "54ef937614acd6ad7751ced57859a88431180b9be7deec5dc4ea7edd5ac07fc8",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/city-v2.webp",
           "bytes": 1844926,
           "sha256": "bfb047c6677b65b21ee46125c92f71c5a571ca774524cf26880de758158ed85e",
@@ -70,10 +64,7 @@
           "sourceFile": "exec-f012d8fb-00f8-47d3-8c7e-33d0982b0326.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/city-v3.png",
           "sourceSha256": "a995028b1ca20ceb068c7072c6975a403c92f160dfdd504f9dbea7ce907863fb",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/city-v3.webp",
           "bytes": 1891678,
           "sha256": "605a0e82bfbafcd65d4d712e32db1006eb6e8c03e3c5b81029f2f0b1e7e2f493",
@@ -86,16 +77,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 7.2,
-        "drift": [
-          1.3,
-          0.6,
-          0.3
-        ]
+        "drift": [1.3, 0.6, 0.3]
       },
       "review": "All three ramp patches register; v3 shows the correct triangular south face on the east-west ramps. Low ends of the north-south ramps keep a small brick face in all three (minor). Outside the ramps each edit repaints by mean |diff| ~7 with no shift; compose only keeps the ramp areas."
     },
@@ -116,10 +100,7 @@
           "sourceFile": "exec-fe74a747-eae8-480f-b93f-730e5f2fcefe.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/nw-v1.png",
           "sourceSha256": "d0e459cf12b7ec441a69823d46126aed543d010a0a295f1ff67b7ef99ca20aea",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/nw-v1.webp",
           "bytes": 1910060,
           "sha256": "c03ab23fd9270db53c98fc0aaf8337fa266da4fc858f3e6fc79cea1a28dd5e30",
@@ -139,10 +120,7 @@
           "sourceFile": "exec-7e992d47-07be-4d69-a6ee-5f1d3945cc35.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/nw-v2.png",
           "sourceSha256": "7eb4fed18232bb09d55227d51af342f8115b918bcaa33a3172927382428fd6ad",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/nw-v2.webp",
           "bytes": 1887966,
           "sha256": "beab89c3b21139e5ca9adece57e5f75d21daccb3368585276b137b825c03d34d",
@@ -162,10 +140,7 @@
           "sourceFile": "exec-b5b714ce-96e9-415b-a38c-73f9373aca67.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/nw-v3.png",
           "sourceSha256": "58c4e19a603f7f9d678ec31a45881b658d1001dae21416f9b8945476f6e72745",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/nw-v3.webp",
           "bytes": 1913452,
           "sha256": "6342d011fd273a3181b499cc86e08fb8d10508f0ca158cf5262e1ab0d77b4fac",
@@ -178,16 +153,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 8.95,
-        "drift": [
-          2.5,
-          1.7,
-          1.2
-        ]
+        "drift": [2.5, 1.7, 1.2]
       },
       "review": "v2 copies the stair-step block-out hills literally; v1 and v3 paint natural foothills with the hollow for the wood. v1 picked: most natural within half a cell."
     },
@@ -208,10 +176,7 @@
           "sourceFile": "exec-868f33f5-cd92-4b14-a1f1-f466bf034dc6.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/ne-v1.png",
           "sourceSha256": "a075c646f46ce253add41bc44e67b22d6e365cbcc419c1b7ab06682b517fd8c9",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/ne-v1.webp",
           "bytes": 1827676,
           "sha256": "bed6beb042bb24e49de621f019a7ddeb22d87d357b2a5a4296710a72bc53e6d7",
@@ -231,10 +196,7 @@
           "sourceFile": "exec-bdbf38aa-ab48-4f85-bb9f-58170af98952.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/ne-v2.png",
           "sourceSha256": "5f28faca64359790afc74775548c14bf3c81e7c861572da6b71b1efeb26d8430",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/ne-v2.webp",
           "bytes": 1835994,
           "sha256": "9466d1be53532f50499e1ec8fdf1318b4c5a95eeb37a159f0b1bb6376146376b",
@@ -254,10 +216,7 @@
           "sourceFile": "exec-a1cc168b-43d4-4a66-b6af-2d7b879e12a1.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/ne-v3.png",
           "sourceSha256": "7e44e9ba02a5a4ac7f2ec72a460e291ac488afbf1def083b66cc692d23652968",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/ne-v3.webp",
           "bytes": 1800742,
           "sha256": "4dd3f4d0c693d133d299b40b669c5e730ecf7d01345e9f04aaad2ca5310b737c",
@@ -270,16 +229,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 8.82,
-        "drift": [
-          2.2,
-          1.4,
-          1.4
-        ]
+        "drift": [2.2, 1.4, 1.4]
       },
       "review": "All continue the river-bank road, east road and the trench outer bank; v2 hill matches the block-out shape best."
     },
@@ -300,10 +252,7 @@
           "sourceFile": "exec-0f32c49a-cd7e-49e3-a706-e0f19f62cb5f.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v1.png",
           "sourceSha256": "413bbecb98d6d8b0e904feb53501be0a5a6f809a71dbebc93bccc8eca697567f",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v1.webp",
           "bytes": 1832314,
           "sha256": "e226d2c41444b93402a80861aa799df88b855c89dce119a89c8607c1362ae2b0",
@@ -323,10 +272,7 @@
           "sourceFile": "exec-d6cc995a-8723-4acf-b8d8-1e7cf35f7c83.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v2.png",
           "sourceSha256": "0535b5aaf2aff36fd3ef158c0e9e5e0ecef611766afdda87ac41d2cb1a7f1855",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v2.webp",
           "bytes": 1852634,
           "sha256": "e796d9de7587f5aa02640c4f5efe859515cdf0a096930e1c9b51c75824639aee",
@@ -346,10 +292,7 @@
           "sourceFile": "exec-481dbd4b-e615-4fd4-9f63-86469cebaeab.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v3.png",
           "sourceSha256": "2d73c7f96464f81128e213a9a4ee9569ae784f44baaef967b973aa932fcc1339",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v3.webp",
           "bytes": 1808494,
           "sha256": "5b9656cfc568bdcdd60b80307b11d2679e91b6d35abe0f32d3910b9a9937db30",
@@ -369,10 +312,7 @@
           "sourceFile": "exec-cf4d2e96-e7d8-495f-96ce-f95468f027ea.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v4.png",
           "sourceSha256": "931027319d2ff05f66422303324dd21ccc019788a9d342bcd3da97bcae6aa906",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v4.webp",
           "bytes": 1842870,
           "sha256": "5116e2daca932bf447fa0a7aa31cff5c351ea01a0e00cf01d209f84a381a554f",
@@ -392,10 +332,7 @@
           "sourceFile": "exec-1b3bbf32-e96b-42b5-bf3f-39dfea904878.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v5.png",
           "sourceSha256": "af3e896c80ae0cc4518ff2668be4f8634a75aacb54faebf7295bac7e19d41362",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v5.webp",
           "bytes": 1834990,
           "sha256": "80868cd65b765c7244e8584b6f1f15831a44059061ff40fb820a96ed75621ea9",
@@ -415,10 +352,7 @@
           "sourceFile": "exec-f313fa06-c28a-4653-b9d8-4258b10dc670.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/s-v6.png",
           "sourceSha256": "ecbbf87542cc5361b3a4b81315444887f273d410933f7bcf34b4f82d3d0e8f47",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/s-v6.webp",
           "bytes": 1855606,
           "sha256": "bf4636673aa34be3b1d6f5fb5a472425718180bdfa0c50724f7f768395e262b3",
@@ -431,16 +365,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 8.93,
-        "drift": [
-          -1.1,
-          -2.5,
-          -2.6
-        ]
+        "drift": [-1.1, -2.5, -2.6]
       },
       "review": "Round 1 (v1-v3) moved the cross road to the camp edge on both sides of the main road. The scene text now names positions (tools/build-siege-blockout.mjs MAP_TILES s); round 2 (v4-v6) all correct; v6 cleanest junction and camp edge."
     },
@@ -461,10 +388,7 @@
           "sourceFile": "exec-c0032673-9dd0-43ce-9708-3fd20dfac788.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/sw-v1.png",
           "sourceSha256": "34f9c1fbbfbbfb6dbda4f8462dc7ca9c77fbeb5fc4c1c6989e3854e88d11fc26",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/sw-v1.webp",
           "bytes": 1738232,
           "sha256": "03a4401d8f226f981eb77ef970c551f109684a516cfe170d0fb8615dd4f27a40",
@@ -484,10 +408,7 @@
           "sourceFile": "exec-ec39d9d8-3fea-45f8-9430-ba8c1088812a.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/sw-v2.png",
           "sourceSha256": "da1428618072e7fddce9861d30c98b303afdb40cbf46011c94e9e4b6c8dc51c0",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/sw-v2.webp",
           "bytes": 1689520,
           "sha256": "fbbd8fd6f74180cb65b6c18c4beea6c728cd2c21a7331a957500244ceeb8af91",
@@ -507,10 +428,7 @@
           "sourceFile": "exec-b9229389-9b57-46b9-aa34-eb9b25435c15.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/sw-v3.png",
           "sourceSha256": "bf298822f430d66a502e29b85e93575a5f88d96ee86154e361907da9cfa8a1b1",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/sw-v3.webp",
           "bytes": 1700310,
           "sha256": "2e902da295ec46622ba1a1dec9503244a86db33ddf75ae927b74e710182ec1c8",
@@ -523,16 +441,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 5.66,
-        "drift": [
-          1.2,
-          0.2,
-          -0.1
-        ]
+        "drift": [1.2, 0.2, -0.1]
       },
       "review": "Prompt given positions before generating (road corner turns east at y=544..592, no road south-west). v1 hills overrun by ~110px; v3 picked over the near-identical v2."
     },
@@ -553,10 +464,7 @@
           "sourceFile": "exec-8948a0e2-22f0-41be-b3f1-965f1626ca99.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/se-v1.png",
           "sourceSha256": "b1e825db12b6cbdf361d246e5af4c4c37ab982abd52334b298ea20ccafcda96f",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/se-v1.webp",
           "bytes": 1613512,
           "sha256": "9fc3ca6d4cbb6fb4e4247da1d5d0c017b8799a1b012f9ef13f365b5dc01e3d47",
@@ -576,10 +484,7 @@
           "sourceFile": "exec-b384870e-ef51-4b54-82a9-9bb88cd13ee9.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/se-v2.png",
           "sourceSha256": "d1b3e10b2db41bdb4995326a0597bf400482a30d129cad6ea2a792437122afb6",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/se-v2.webp",
           "bytes": 1567024,
           "sha256": "f4d7116e4e7551104b52ee0341d3d8b0e510ef50192d070ed4bb0ce6fe0591a1",
@@ -599,10 +504,7 @@
           "sourceFile": "exec-d65a84b1-8640-4378-b934-a6aa4d7ea38c.png",
           "sourcePath": "../../../../../attempts/s2-01/sources/se-v3.png",
           "sourceSha256": "eb8c93378a469917b317b5afc941b104b290de48aaa4bd29f6ffe9906dc4b508",
-          "nativeSize": [
-            1536,
-            1024
-          ],
+          "nativeSize": [1536, 1024],
           "path": "attempts/se-v3.webp",
           "bytes": 1589872,
           "sha256": "73604db980050666eab094a93e9d82aac5ab129d3afc15fb00da65e105aeb203",
@@ -615,16 +517,9 @@
         "selectedBy": "agent"
       },
       "compose": {
-        "offset": [
-          0,
-          0
-        ],
+        "offset": [0, 0],
         "difference": 5.34,
-        "drift": [
-          -0.6,
-          -1.3,
-          -0.9
-        ]
+        "drift": [-0.6, -1.3, -0.9]
       },
       "review": "Plain snow and the camp edge; all three place the edge at x=814..830 (block-out 832); v3 closest."
     }

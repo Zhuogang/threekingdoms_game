@@ -1,18 +1,9 @@
 {
   "state": "gate-north-broken",
   "chosen": "attempts/gate-north-broken-v2.webp",
-  "at": [
-    1390,
-    52
-  ],
-  "size": [
-    292,
-    205
-  ],
-  "offset": [
-    0,
-    0
-  ],
+  "at": [1390, 52],
+  "size": [292, 205],
+  "offset": [0, 0],
   "difference": 7.71,
   "differenceUnshifted": 7.71,
   "changeInside": 20.2

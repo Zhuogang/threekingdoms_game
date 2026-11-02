@@ -7,289 +7,118 @@
   "poses": [
     {
       "name": "north-idle",
-      "cell": [
-        0,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        148,
-        43,
-        211,
-        283
-      ],
-      "anchor": [
-        107.8,
-        283
-      ],
+      "cell": [0, 0, 512, 341],
+      "box": [148, 43, 211, 283],
+      "anchor": [107.8, 283],
       "path": "poses/north-idle.png",
       "game": {
         "path": "poses-game/north-idle.png",
-        "size": [
-          32,
-          42
-        ],
-        "anchor": [
-          16.2,
-          42.4
-        ]
+        "size": [32, 42],
+        "anchor": [16.2, 42.4]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-block",
-      "cell": [
-        512,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        621,
-        18,
-        251,
-        308
-      ],
-      "anchor": [
-        145.6,
-        308
-      ],
+      "cell": [512, 0, 512, 341],
+      "box": [621, 18, 251, 308],
+      "anchor": [145.6, 308],
       "path": "poses/north-block.png",
       "game": {
         "path": "poses-game/north-block.png",
-        "size": [
-          38,
-          46
-        ],
-        "anchor": [
-          21.8,
-          46.2
-        ]
+        "size": [38, 46],
+        "anchor": [21.8, 46.2]
       },
       "droppedIslands": 0
     },
     {
       "name": "north-attack",
-      "cell": [
-        1024,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        1128,
-        48,
-        353,
-        278
-      ],
-      "anchor": [
-        129.1,
-        278
-      ],
+      "cell": [1024, 0, 512, 341],
+      "box": [1128, 48, 353, 278],
+      "anchor": [129.1, 278],
       "path": "poses/north-attack.png",
       "game": {
         "path": "poses-game/north-attack.png",
-        "size": [
-          53,
-          42
-        ],
-        "anchor": [
-          19.4,
-          41.7
-        ]
+        "size": [53, 42],
+        "anchor": [19.4, 41.7]
       },
       "droppedIslands": 0
     },
     {
       "name": "east-idle",
-      "cell": [
-        0,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        174,
-        367,
-        158,
-        301
-      ],
-      "anchor": [
-        37.0,
-        301
-      ],
+      "cell": [0, 341, 512, 342],
+      "box": [174, 367, 158, 301],
+      "anchor": [37.0, 301],
       "path": "poses/east-idle.png",
       "game": {
         "path": "poses-game/east-idle.png",
-        "size": [
-          24,
-          45
-        ],
-        "anchor": [
-          5.6,
-          45.1
-        ]
+        "size": [24, 45],
+        "anchor": [5.6, 45.1]
       },
       "droppedIslands": 0
     },
     {
       "name": "east-block",
-      "cell": [
-        512,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        670,
-        344,
-        198,
-        323
-      ],
-      "anchor": [
-        32.9,
-        323
-      ],
+      "cell": [512, 341, 512, 342],
+      "box": [670, 344, 198, 323],
+      "anchor": [32.9, 323],
       "path": "poses/east-block.png",
       "game": {
         "path": "poses-game/east-block.png",
-        "size": [
-          30,
-          48
-        ],
-        "anchor": [
-          4.9,
-          48.4
-        ]
+        "size": [30, 48],
+        "anchor": [4.9, 48.4]
       },
       "droppedIslands": 1
     },
     {
       "name": "east-attack",
-      "cell": [
-        1024,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        1153,
-        369,
-        327,
-        298
-      ],
-      "anchor": [
-        31.7,
-        298
-      ],
+      "cell": [1024, 341, 512, 342],
+      "box": [1153, 369, 327, 298],
+      "anchor": [31.7, 298],
       "path": "poses/east-attack.png",
       "game": {
         "path": "poses-game/east-attack.png",
-        "size": [
-          49,
-          45
-        ],
-        "anchor": [
-          4.8,
-          44.7
-        ]
+        "size": [49, 45],
+        "anchor": [4.8, 44.7]
       },
       "droppedIslands": 0
     },
     {
       "name": "south-idle",
-      "cell": [
-        0,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        145,
-        700,
-        214,
-        305
-      ],
-      "anchor": [
-        123.7,
-        305
-      ],
+      "cell": [0, 683, 512, 341],
+      "box": [145, 700, 214, 305],
+      "anchor": [123.7, 305],
       "path": "poses/south-idle.png",
       "game": {
         "path": "poses-game/south-idle.png",
-        "size": [
-          32,
-          46
-        ],
-        "anchor": [
-          18.6,
-          45.8
-        ]
+        "size": [32, 46],
+        "anchor": [18.6, 45.8]
       },
       "droppedIslands": 0
     },
     {
       "name": "south-block",
-      "cell": [
-        512,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        642,
-        683,
-        218,
-        321
-      ],
-      "anchor": [
-        195.6,
-        321
-      ],
+      "cell": [512, 683, 512, 341],
+      "box": [642, 683, 218, 321],
+      "anchor": [195.6, 321],
       "path": "poses/south-block.png",
       "game": {
         "path": "poses-game/south-block.png",
-        "size": [
-          33,
-          48
-        ],
-        "anchor": [
-          29.3,
-          48.1
-        ]
+        "size": [33, 48],
+        "anchor": [29.3, 48.1]
       },
       "droppedIslands": 0
     },
     {
       "name": "south-attack",
-      "cell": [
-        1024,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        1137,
-        700,
-        331,
-        305
-      ],
-      "anchor": [
-        192.2,
-        305
-      ],
+      "cell": [1024, 683, 512, 341],
+      "box": [1137, 700, 331, 305],
+      "anchor": [192.2, 305],
       "path": "poses/south-attack.png",
       "game": {
         "path": "poses-game/south-attack.png",
-        "size": [
-          50,
-          46
-        ],
-        "anchor": [
-          28.8,
-          45.8
-        ]
+        "size": [50, 46],
+        "anchor": [28.8, 45.8]
       },
       "droppedIslands": 0
     }

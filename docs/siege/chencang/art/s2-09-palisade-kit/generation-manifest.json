@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-8b96fb61-ee72-4130-91dc-cc1bc46c2a44.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-09/sources/v1.png",
       "sourceSha256": "23184f241c98e6e003ade1d15a4d08165a44ab505b6eaa344a10a29a945e9103",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "a77808ce426058304f173721f9b15757e0de9c50a1328a74920995b8291bc049",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          4,
-          253
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 4, 253],
+        [253, 6, 252],
+        [253, 1, 252],
+        [252, 3, 253]
       ],
       "registration": "all five pieces within 7px"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-9e75bd9e-1cf7-47ef-bcb8-8b9609a99abd.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-09/sources/v2.png",
       "sourceSha256": "6377d0f31a7c8e4cdd11f70166b9ddcf3db5885d99e03ac95e0f7f6fe8807379",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "15e62d97cee19051349c382626e50a985dec89e371b73b089b215c1fd2bc8485",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          0,
-          251
-        ],
-        [
-          252,
-          3,
-          252
-        ]
+        [252, 3, 253],
+        [253, 4, 252],
+        [253, 0, 251],
+        [252, 3, 252]
       ],
       "registration": "all five pieces within 7px; straight run within 1px"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-9b5e7c29-867e-408b-adce-a7efda9057ec.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-09/sources/v3.png",
       "sourceSha256": "8f1efa48540ef12bc69d85a06acfb99a6ed95145116b2e61e8c986702b6b388e",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "5f3550a0bc9d76096137e02871a424caa779f772d4e956c6328f11049724ad5e",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          252
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          252,
-          1,
-          252
-        ],
-        [
-          253,
-          4,
-          253
-        ]
+        [251, 2, 252],
+        [253, 4, 252],
+        [252, 1, 252],
+        [253, 4, 253]
       ],
       "registration": "all five pieces within 6px"
     }

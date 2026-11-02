@@ -1,18 +1,9 @@
 {
   "state": "gate-south-broken",
   "chosen": "attempts/gate-south-broken-v2.webp",
-  "at": [
-    1390,
-    574
-  ],
-  "size": [
-    292,
-    260
-  ],
-  "offset": [
-    0,
-    0
-  ],
+  "at": [1390, 574],
+  "size": [292, 260],
+  "offset": [0, 0],
   "difference": 5.76,
   "differenceUnshifted": 5.76,
   "changeInside": 23.2

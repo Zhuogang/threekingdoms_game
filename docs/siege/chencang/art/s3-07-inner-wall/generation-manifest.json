@@ -3,10 +3,7 @@
   "folder": "s3-07-inner-wall",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
-  "crop": [
-    768,
-    512
-  ],
+  "crop": [768, 512],
   "status": "picked by agent; awaiting your review",
   "states": [
     {
@@ -77,18 +74,9 @@
       "patch": {
         "path": "patches/inner-wall-works.png",
         "sha256": "5c9ff4651c5d8255c1ecd7bfb1c4b5fbcdc42b3aa3ddc24f7ff23db283a6544a",
-        "at": [
-          941,
-          638
-        ],
-        "size": [
-          1190,
-          77
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [941, 638],
+        "size": [1190, 77],
+        "offset": [0, 0],
         "difference": 7.01,
         "changeInside": 49.3
       },
@@ -163,18 +151,9 @@
       "patch": {
         "path": "patches/inner-wall-built.png",
         "sha256": "edad07fa3f72ee4e93cb7714ba49457d1ae94da7c20605072e3a22a956fa6cda",
-        "at": [
-          941,
-          614
-        ],
-        "size": [
-          1190,
-          101
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [941, 614],
+        "size": [1190, 101],
+        "offset": [0, 0],
         "difference": 5.59,
         "changeInside": 44.4
       },

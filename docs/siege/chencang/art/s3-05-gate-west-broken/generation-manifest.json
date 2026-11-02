@@ -3,10 +3,7 @@
   "folder": "s3-05-gate-west-broken",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
-  "crop": [
-    768,
-    0
-  ],
+  "crop": [768, 0],
   "status": "picked by agent; awaiting your review",
   "states": [
     {
@@ -77,18 +74,9 @@
       "patch": {
         "path": "patches/gate-west-broken.png",
         "sha256": "5621bb9c4b8774f56af307d1f494fda839d22fba469e22163c4df193f620ea5c",
-        "at": [
-          875,
-          311
-        ],
-        "size": [
-          106,
-          210
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [875, 311],
+        "size": [106, 210],
+        "offset": [0, 0],
         "difference": 7.86,
         "changeInside": 31.5
       },

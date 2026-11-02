@@ -3,10 +3,7 @@
   "folder": "s3-04-gate-north-broken",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen edits of a 1536x1024 crop of the approved S2-01 map (codex exec, gpt-6.1-sol, xhigh)",
-  "crop": [
-    768,
-    0
-  ],
+  "crop": [768, 0],
   "status": "picked by agent; awaiting your review",
   "states": [
     {
@@ -77,18 +74,9 @@
       "patch": {
         "path": "patches/gate-north-broken.png",
         "sha256": "c04a669644724d01e9647a2c65bf2ab3523f651b5a2224a6b766842d3f28855a",
-        "at": [
-          1390,
-          52
-        ],
-        "size": [
-          292,
-          205
-        ],
-        "offset": [
-          0,
-          0
-        ],
+        "at": [1390, 52],
+        "size": [292, 205],
+        "offset": [0, 0],
         "difference": 7.71,
         "changeInside": 20.2
       },

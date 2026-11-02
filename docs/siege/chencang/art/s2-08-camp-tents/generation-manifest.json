@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-92761433-fb45-49a7-95f7-868bf1fd6e20.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-08/sources/v1.png",
       "sourceSha256": "eab8207b3e5d35a5cf4e3c2b0ff57e5c4723bf5dae36ea03f6333b95829fe9c0",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "5c1633384696e9323e264647b4de879358dbc13e5d9e5bf02a8ad0bf2aa0499c",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          252
-        ],
-        [
-          253,
-          6,
-          253
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 2, 252],
+        [253, 6, 253],
+        [253, 1, 252],
+        [252, 3, 253]
       ],
       "registration": "HQ tent within 25px; soldiers' tents' guy ropes reach 35px past the footprint"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-2.log"
       },
       "sourceFile": "exec-1d28842b-8c27-4da0-baa4-0ae472099b12.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-08/sources/v2.png",
       "sourceSha256": "f51602dc920b877902f42fe3cd4b06241f14eec3db874d37d9ce76ebaa5d00b6",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "64167691b8c36a394a78bd433c35d446f6cf8767a627bdb2b8e75b310983e528",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          252
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [252, 3, 252],
+        [253, 6, 252],
+        [253, 1, 252],
+        [252, 4, 252]
       ],
       "registration": "HQ tent within 16px (snow on the ridge); tents within 22px including guy ropes"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-2.log"
       },
       "sourceFile": "exec-571740cc-b7bb-419c-af60-9f6e7dfa68ea.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-08/sources/v3.png",
       "sourceSha256": "3db20a198073385baf29939d67f125e4ae96d2d46f2602f0e6cfbd2fe3a3c511",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "107384f2a80c81af2172e16d8e4255aeb63b26a80da71fdeda47cc0829b68de0",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          9,
-          252
-        ],
-        [
-          253,
-          15,
-          253
-        ],
-        [
-          253,
-          5,
-          253
-        ],
-        [
-          252,
-          10,
-          252
-        ]
+        [251, 9, 252],
+        [253, 15, 253],
+        [253, 5, 253],
+        [252, 10, 252]
       ],
       "registration": "HQ tent 28px wide each side; tent C firewood 37px past the footprint"
     }

@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-02084ce8-616f-4e5a-bc2b-480e51e087aa.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-07/sources/v1.png",
       "sourceSha256": "67fda9f066ed92b241a450f711774627c772028993f3f7cf750452e8d17b8084",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "03878c06f0d09787875e93da1babda5250209b9cfdb7eb1a53c5f0bf15e37891",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          252
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          1,
-          253
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [251, 3, 252],
+        [253, 4, 252],
+        [253, 1, 253],
+        [252, 4, 252]
       ],
       "registration": "within 31px"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-3.log"
       },
       "sourceFile": "exec-b949a72c-96cf-4bb4-bbbe-cad284912424.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-07/sources/v3.png",
       "sourceSha256": "eb473bdf5215b6b28ffb1cee05f0e88d6bcc02433dd3db78e1e4642920baa93e",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "b54afde0228034128a8e403f16a3213d6dcf811638352635e02dbd1e8e1c4226",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          250,
-          3,
-          251
-        ],
-        [
-          253,
-          7,
-          253
-        ],
-        [
-          252,
-          2,
-          251
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [250, 3, 251],
+        [253, 7, 253],
+        [252, 2, 251],
+        [252, 4, 252]
       ],
       "registration": "crane within 27px; millstone within 26px"
     }

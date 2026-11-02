@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-628cb566-6d95-4fab-8da4-c0a0de30cc93.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-11/sources/v1.png",
       "sourceSha256": "9a2d6c5650b644894cf07dc5e0cec7188e2c33b9ce47b1bfc6f8fbdf7739196f",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "5c6ef10965e2391be24e74cdb21491e24d6032c58b8e15e7078c15a9b0decac5",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          4,
-          252
-        ],
-        [
-          254,
-          8,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          5,
-          253
-        ]
+        [251, 4, 252],
+        [254, 8, 252],
+        [253, 1, 252],
+        [252, 5, 253]
       ],
       "registration": "pine A 35px taller; pine C 45px wider each side"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-bae5fee9-9705-4d2c-8c65-41a85f21ec2d.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-11/sources/v2.png",
       "sourceSha256": "f2405daeb3ce4cb186b694d5393972847f826dfd3306131fcf3a42f988bab235",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "3c5353d76ac39e274007da40a7e44fcf4e54fee19564d0e8ab6ab29479f12d39",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          252
-        ],
-        [
-          253,
-          5,
-          253
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [252, 3, 252],
+        [253, 5, 253],
+        [253, 1, 252],
+        [252, 4, 253]
       ],
       "registration": "pine A 49px taller; pine C 51px wider"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-79f90b4c-619b-4ecf-84e8-3dfdb3a4ec80.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-11/sources/v3.png",
       "sourceSha256": "7ab1b3958509867d3d5f392aae1e945330ffd69e7e943713e44827fc907bde9e",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "eaa05b89bad4486882d5dd40d3fe991f5e5ad55605ad3996b1f847b9b681dce6",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          4,
-          252
-        ],
-        [
-          253,
-          8,
-          253
-        ],
-        [
-          254,
-          0,
-          252
-        ],
-        [
-          252,
-          5,
-          252
-        ]
+        [252, 4, 252],
+        [253, 8, 253],
+        [254, 0, 252],
+        [252, 5, 252]
       ],
       "registration": "all within 26px except pine C, 41px wider each side"
     }

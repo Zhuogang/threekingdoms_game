@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "guide",
-      "references": [
-        "guide.png",
-        "S1-05 v5 (style only)"
-      ]
+      "references": ["guide.png", "S1-05 v5 (style only)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-9b2c96ad-9ead-4b55-a739-5c22f589591e.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (style only)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (style only)"],
       "sourcePath": "../../../../../attempts/s5-04/sources/v1.png",
       "sourceSha256": "1b80f7d1698be042782787a7889cfef96e113c46590c411462d5cb92b07418e5",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "6f12c94581387153e440288ee60b817172d63257466e22ee68b7fa9ce2704fb3",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          251,
-          1,
-          250
-        ],
-        [
-          252,
-          2,
-          253
-        ]
+        [251, 2, 253],
+        [253, 4, 252],
+        [251, 1, 250],
+        [252, 2, 253]
       ],
       "registration": "faces blank"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-fb0103f4-069c-4d51-8db9-5b501aed9917.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (style only)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (style only)"],
       "sourcePath": "../../../../../attempts/s5-04/sources/v2.png",
       "sourceSha256": "ff863181345dae57e9d7f4071208edc645e0d45d687d1f5ce0c2383c577eae04",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "0a0dfbffc68d67f4900e4c2d29d47797e11ace920f83f40442556330a8623e98",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          250,
-          2,
-          252
-        ],
-        [
-          253,
-          4,
-          253
-        ],
-        [
-          250,
-          1,
-          250
-        ],
-        [
-          251,
-          1,
-          253
-        ]
+        [250, 2, 252],
+        [253, 4, 253],
+        [250, 1, 250],
+        [251, 1, 253]
       ],
       "registration": "faces blank; poles straight; dovetailed red banner"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-b5efb6c0-c713-47b0-8448-ed9340657f25.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (style only)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (style only)"],
       "sourcePath": "../../../../../attempts/s5-04/sources/v3.png",
       "sourceSha256": "8ff9cff9cfe885388549f5cb18128a3b841247e4f93379046088ee026a456d33",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "5ce9c97342b75038ec0f8d2834e1332f564a70a0ae9cbb12ae7a66cfbbde420d",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          1,
-          253
-        ],
-        [
-          252,
-          6,
-          253
-        ],
-        [
-          250,
-          1,
-          250
-        ],
-        [
-          251,
-          2,
-          253
-        ]
+        [252, 1, 253],
+        [252, 6, 253],
+        [250, 1, 250],
+        [251, 2, 253]
       ],
       "registration": "faces blank, slightly shorter poles"
     }

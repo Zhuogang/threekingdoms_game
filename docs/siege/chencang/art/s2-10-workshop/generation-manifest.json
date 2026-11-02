@@ -15,29 +15,15 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "eaves 1.1 levels, ridge 2",
-      "references": [
-        "blockout.png (round 1)",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png (round 1)", "S1-02 v4 (standard piece)"]
     },
     {
       "round": 2,
-      "ids": [
-        4,
-        5,
-        6
-      ],
+      "ids": [4, 5, 6],
       "blockout": "eaves 2 levels, ridge 3 (tools/build-siege-blockout.mjs workshop())",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -53,16 +39,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-efa4b795-1949-4a49-be68-7cf771253366.png",
-      "referenceImages": [
-        "blockout.png (round 1)",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png (round 1)", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v1.png",
       "sourceSha256": "dfaf23f227bb24e161081f67cf123fee9b2153528807e26bb0cb8550ffa5e1e6",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -70,26 +50,10 @@
       "sha256": "d50ae0e844563afc251777abd6ba3a7aa97abef4f1af25f124c0f0a1ea59d366",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          252
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          2,
-          252
-        ]
+        [251, 2, 252],
+        [253, 5, 252],
+        [253, 0, 252],
+        [252, 2, 252]
       ],
       "registration": "base 102px below the round-1 block-out"
     },
@@ -105,16 +69,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-5ddd94b8-0ffd-497a-9bb8-d1b6cc049a71.png",
-      "referenceImages": [
-        "blockout.png (round 1)",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png (round 1)", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v2.png",
       "sourceSha256": "280a01ee1c444fc70cb01f2e6281f1e1b7805d90de42947f2abb6dce1105542f",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -122,26 +80,10 @@
       "sha256": "833b91110cbe88ff07efdabca30009056fd11d52916b55598756f62f731a89c0",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          1,
-          253
-        ],
-        [
-          254,
-          6,
-          252
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 1, 253],
+        [254, 6, 252],
+        [253, 0, 252],
+        [252, 3, 253]
       ],
       "registration": "base 103px below"
     },
@@ -157,16 +99,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-15dba713-606e-4332-8ed8-f2f39314e66c.png",
-      "referenceImages": [
-        "blockout.png (round 1)",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png (round 1)", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v3.png",
       "sourceSha256": "7f09642c87575271305f424a582f79f7075350ae2e3b247ab8e8feee8b416a72",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -174,26 +110,10 @@
       "sha256": "2c0a9b5f8f77d731513a15cc9e5b764179cbae9336bb9fd87e70fc847231dc24",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          252
-        ],
-        [
-          253,
-          10,
-          253
-        ],
-        [
-          252,
-          2,
-          252
-        ],
-        [
-          251,
-          6,
-          252
-        ]
+        [251, 3, 252],
+        [253, 10, 253],
+        [252, 2, 252],
+        [251, 6, 252]
       ],
       "registration": "base 142px below"
     },
@@ -209,16 +129,10 @@
         "codexRun": "codex-4.log"
       },
       "sourceFile": "exec-729f1247-90ab-4eea-92bb-8e4ef4345b40.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v4.png",
       "sourceSha256": "3d6e8fff954bab8d52791cdfba912ffabcd075e5b22986782b9c022e055dccc0",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v4.webp",
       "width": 1536,
       "height": 1024,
@@ -226,26 +140,10 @@
       "sha256": "e98e68dc89ac50a2ac1b95c70f85d4bf0f53c06b73c159b97cbbe1d360722616",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          253,
-          4,
-          253
-        ],
-        [
-          253,
-          0,
-          253
-        ],
-        [
-          252,
-          3,
-          252
-        ]
+        [252, 2, 253],
+        [253, 4, 253],
+        [253, 0, 253],
+        [252, 3, 252]
       ],
       "registration": "base 71px below the round-2 block-out (32px more posts than drawn)"
     },
@@ -261,16 +159,10 @@
         "codexRun": "codex-5.log"
       },
       "sourceFile": "exec-62a1ff1b-ee9b-4fd8-b153-3721e9ad32c2.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v5.png",
       "sourceSha256": "81cb2b1f92148aa6c1b0488c6e0654064ae68accd199828e82c188b4ed5e0a3f",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v5.webp",
       "width": 1536,
       "height": 1024,
@@ -278,26 +170,10 @@
       "sha256": "ded0d26c70f222c78f8ddeb66fa1e9e4922e2c8df67f2ff1ffd3202d7a646dca",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          252
-        ],
-        [
-          253,
-          5,
-          253
-        ],
-        [
-          252,
-          1,
-          251
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [252, 3, 252],
+        [253, 5, 253],
+        [252, 1, 251],
+        [252, 4, 253]
       ],
       "registration": "base 71px below"
     },
@@ -313,16 +189,10 @@
         "codexRun": "codex-6.log"
       },
       "sourceFile": "exec-087ff7e6-5e5b-439e-9a1f-66b85028bc1a.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s2-10/sources/v6.png",
       "sourceSha256": "4b90db8662490ee72476d7ad31d34244e638e3f3b28d620df7811e4db6967586",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v6.webp",
       "width": 1536,
       "height": 1024,
@@ -330,26 +200,10 @@
       "sha256": "99fd438a7b03d7bd4496fd2df62ed8e2e897026afd1db658ad673cc618a8950e",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          1,
-          253
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [252, 3, 253],
+        [253, 4, 252],
+        [253, 1, 253],
+        [252, 4, 253]
       ],
       "registration": "base 43px below the block-out bottom; 32px below the footprint's front edge"
     }

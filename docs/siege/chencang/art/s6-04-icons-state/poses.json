@@ -7,385 +7,157 @@
   "poses": [
     {
       "name": "height",
-      "cell": [
-        0,
-        0,
-        384,
-        341
-      ],
-      "box": [
-        41,
-        102,
-        309,
-        207
-      ],
-      "anchor": [
-        136.9,
-        207
-      ],
+      "cell": [0, 0, 384, 341],
+      "box": [41, 102, 309, 207],
+      "anchor": [136.9, 207],
       "path": "poses/height.png",
       "game": {
         "path": "poses-game/height.png",
-        "size": [
-          62,
-          41
-        ],
-        "anchor": [
-          27.4,
-          41.4
-        ]
+        "size": [62, 41],
+        "anchor": [27.4, 41.4]
       },
       "droppedIslands": 62
     },
     {
       "name": "climb",
-      "cell": [
-        384,
-        0,
-        384,
-        341
-      ],
-      "box": [
-        426,
-        45,
-        307,
-        275
-      ],
-      "anchor": [
-        104.5,
-        275
-      ],
+      "cell": [384, 0, 384, 341],
+      "box": [426, 45, 307, 275],
+      "anchor": [104.5, 275],
       "path": "poses/climb.png",
       "game": {
         "path": "poses-game/climb.png",
-        "size": [
-          61,
-          55
-        ],
-        "anchor": [
-          20.9,
-          55.0
-        ]
+        "size": [61, 55],
+        "anchor": [20.9, 55.0]
       },
       "droppedIslands": 212
     },
     {
       "name": "fill-trench",
-      "cell": [
-        768,
-        0,
-        384,
-        341
-      ],
-      "box": [
-        794,
-        32,
-        308,
-        288
-      ],
-      "anchor": [
-        137.5,
-        288
-      ],
+      "cell": [768, 0, 384, 341],
+      "box": [794, 32, 308, 288],
+      "anchor": [137.5, 288],
       "path": "poses/fill-trench.png",
       "game": {
         "path": "poses-game/fill-trench.png",
-        "size": [
-          62,
-          58
-        ],
-        "anchor": [
-          27.5,
-          57.6
-        ]
+        "size": [62, 58],
+        "anchor": [27.5, 57.6]
       },
       "droppedIslands": 187
     },
     {
       "name": "gate",
-      "cell": [
-        1152,
-        0,
-        384,
-        341
-      ],
-      "box": [
-        1178,
-        39,
-        331,
-        280
-      ],
-      "anchor": [
-        165.9,
-        280
-      ],
+      "cell": [1152, 0, 384, 341],
+      "box": [1178, 39, 331, 280],
+      "anchor": [165.9, 280],
       "path": "poses/gate.png",
       "game": {
         "path": "poses-game/gate.png",
-        "size": [
-          66,
-          56
-        ],
-        "anchor": [
-          33.2,
-          56.0
-        ]
+        "size": [66, 56],
+        "anchor": [33.2, 56.0]
       },
       "droppedIslands": 224
     },
     {
       "name": "wall",
-      "cell": [
-        0,
-        341,
-        384,
-        342
-      ],
-      "box": [
-        32,
-        435,
-        319,
-        187
-      ],
-      "anchor": [
-        147.4,
-        187
-      ],
+      "cell": [0, 341, 384, 342],
+      "box": [32, 435, 319, 187],
+      "anchor": [147.4, 187],
       "path": "poses/wall.png",
       "game": {
         "path": "poses-game/wall.png",
-        "size": [
-          64,
-          37
-        ],
-        "anchor": [
-          29.5,
-          37.4
-        ]
+        "size": [64, 37],
+        "anchor": [29.5, 37.4]
       },
       "droppedIslands": 145
     },
     {
       "name": "grain",
-      "cell": [
-        384,
-        341,
-        384,
-        342
-      ],
-      "box": [
-        419,
-        382,
-        307,
-        280
-      ],
-      "anchor": [
-        240.7,
-        280
-      ],
+      "cell": [384, 341, 384, 342],
+      "box": [419, 382, 307, 280],
+      "anchor": [240.7, 280],
       "path": "poses/grain.png",
       "game": {
         "path": "poses-game/grain.png",
-        "size": [
-          61,
-          56
-        ],
-        "anchor": [
-          48.1,
-          56.0
-        ]
+        "size": [61, 56],
+        "anchor": [48.1, 56.0]
       },
       "droppedIslands": 229
     },
     {
       "name": "reinforcements",
-      "cell": [
-        768,
-        341,
-        384,
-        342
-      ],
-      "box": [
-        789,
-        397,
-        341,
-        251
-      ],
-      "anchor": [
-        77.8,
-        251
-      ],
+      "cell": [768, 341, 384, 342],
+      "box": [789, 397, 341, 251],
+      "anchor": [77.8, 251],
       "path": "poses/reinforcements.png",
       "game": {
         "path": "poses-game/reinforcements.png",
-        "size": [
-          68,
-          50
-        ],
-        "anchor": [
-          15.6,
-          50.2
-        ]
+        "size": [68, 50],
+        "anchor": [15.6, 50.2]
       },
       "droppedIslands": 244
     },
     {
       "name": "morale",
-      "cell": [
-        1152,
-        341,
-        384,
-        342
-      ],
-      "box": [
-        1194,
-        384,
-        321,
-        260
-      ],
-      "anchor": [
-        10.0,
-        260
-      ],
+      "cell": [1152, 341, 384, 342],
+      "box": [1194, 384, 321, 260],
+      "anchor": [10.0, 260],
       "path": "poses/morale.png",
       "game": {
         "path": "poses-game/morale.png",
-        "size": [
-          64,
-          52
-        ],
-        "anchor": [
-          2.0,
-          52.0
-        ]
+        "size": [64, 52],
+        "anchor": [2.0, 52.0]
       },
       "droppedIslands": 240
     },
     {
       "name": "troops",
-      "cell": [
-        0,
-        683,
-        384,
-        341
-      ],
-      "box": [
-        92,
-        709,
-        205,
-        285
-      ],
-      "anchor": [
-        98.3,
-        285
-      ],
+      "cell": [0, 683, 384, 341],
+      "box": [92, 709, 205, 285],
+      "anchor": [98.3, 285],
       "path": "poses/troops.png",
       "game": {
         "path": "poses-game/troops.png",
-        "size": [
-          41,
-          57
-        ],
-        "anchor": [
-          19.7,
-          57.0
-        ]
+        "size": [41, 57],
+        "anchor": [19.7, 57.0]
       },
       "droppedIslands": 111
     },
     {
       "name": "wounded",
-      "cell": [
-        384,
-        683,
-        384,
-        341
-      ],
-      "box": [
-        458,
-        711,
-        233,
-        285
-      ],
-      "anchor": [
-        20.9,
-        285
-      ],
+      "cell": [384, 683, 384, 341],
+      "box": [458, 711, 233, 285],
+      "anchor": [20.9, 285],
       "path": "poses/wounded.png",
       "game": {
         "path": "poses-game/wounded.png",
-        "size": [
-          47,
-          57
-        ],
-        "anchor": [
-          4.2,
-          57.0
-        ]
+        "size": [47, 57],
+        "anchor": [4.2, 57.0]
       },
       "droppedIslands": 93
     },
     {
       "name": "day",
-      "cell": [
-        768,
-        683,
-        384,
-        341
-      ],
-      "box": [
-        816,
-        718,
-        287,
-        272
-      ],
-      "anchor": [
-        143.0,
-        272
-      ],
+      "cell": [768, 683, 384, 341],
+      "box": [816, 718, 287, 272],
+      "anchor": [143.0, 272],
       "path": "poses/day.png",
       "game": {
         "path": "poses-game/day.png",
-        "size": [
-          57,
-          54
-        ],
-        "anchor": [
-          28.6,
-          54.4
-        ]
+        "size": [57, 54],
+        "anchor": [28.6, 54.4]
       },
       "droppedIslands": 154
     },
     {
       "name": "night-repair",
-      "cell": [
-        1152,
-        683,
-        384,
-        341
-      ],
-      "box": [
-        1211,
-        713,
-        264,
-        282
-      ],
-      "anchor": [
-        57.0,
-        282
-      ],
+      "cell": [1152, 683, 384, 341],
+      "box": [1211, 713, 264, 282],
+      "anchor": [57.0, 282],
       "path": "poses/night-repair.png",
       "game": {
         "path": "poses-game/night-repair.png",
-        "size": [
-          53,
-          56
-        ],
-        "anchor": [
-          11.4,
-          56.4
-        ]
+        "size": [53, 56],
+        "anchor": [11.4, 56.4]
       },
       "droppedIslands": 168
     }

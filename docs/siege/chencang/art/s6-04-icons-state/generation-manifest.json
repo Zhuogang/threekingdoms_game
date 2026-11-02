@@ -21,10 +21,7 @@
       "sourceFile": "exec-2c3ff87e-0dd6-4c0d-8037-f08f1bfc7c67.png",
       "sourcePath": "../../../../../attempts/s6-04/sources/v1.png",
       "sourceSha256": "39c220a13e7c91fd847dc38ea6f87b2f1b94873ada261588fc6fac569c2e0eb1",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "sha256": "87c592479ed3308247be2862362863a4a6e6905fbd29c4a4d5b47d57b0bcdc5e",
       "losslessEncodingVerified": false
@@ -41,10 +38,7 @@
       "sourceFile": "exec-e7fb9b97-735d-4b57-9d0a-5ca56d6adbb5.png",
       "sourcePath": "../../../../../attempts/s6-04/sources/v2.png",
       "sourceSha256": "366e2dd5e40b32778930f848a71b4b3c1e8b142865712557d4479c46ed1248be",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "sha256": "08c3dcb1b1f7c9c26b9ca874ede9b8a5bd666c15dc00ffac1b3b558dc06ca44f",
       "losslessEncodingVerified": false
@@ -61,10 +55,7 @@
       "sourceFile": "exec-61f6ce6d-2b92-4e8d-af78-d9656d248e09.png",
       "sourcePath": "../../../../../attempts/s6-04/sources/v3.png",
       "sourceSha256": "24bddcf3f32c61b219fc0e09e6d42623d244560ffbf084b04155e948edeea2e9",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "sha256": "0e4b0daf5288e2b4fe126c2096e8c6cc751dd857eaa2281944a32c21f8af25c2",
       "losslessEncodingVerified": false

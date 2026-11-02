@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "guide",
-      "references": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ]
+      "references": ["guide.png", "S1-05 v5 (Shu halberdier)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-d5889902-07f5-4759-bb64-470df8f3a12f.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-01/sources/v1.png",
       "sourceSha256": "74a183e494e61c2973e1393444b13325b6a433248bbd339137cfeb8f58db829f",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "78c81a3a0131c628d6f7d17ed1f3177e90f74a654973d0875cfc20ace84ce2d5",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          253,
-          6,
-          253
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 2, 253],
+        [253, 6, 253],
+        [253, 1, 252],
+        [252, 3, 253]
       ],
       "registration": "all six poses read; tipping pours sideways"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-5d687076-d171-4d15-8f17-96e3cba8ac1b.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-01/sources/v2.png",
       "sourceSha256": "b6c6927c461335e67b3cb33387e32726f737fc9f32b88c86a7a86de235b3a654",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "4405c5019b6955ab409e2862597aecb10c4e988c1d1bc946e3b0084d529cfaa9",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          254
-        ],
-        [
-          253,
-          5,
-          251
-        ],
-        [
-          253,
-          1,
-          251
-        ],
-        [
-          251,
-          3,
-          253
-        ]
+        [252, 2, 254],
+        [253, 5, 251],
+        [253, 1, 251],
+        [251, 3, 253]
       ],
       "registration": "clearest climbing sequence (hands and feet alternate, leg over at the top)"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-67532d7e-58d2-4c21-a2d4-b14a207c34a5.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-05 v5 (Shu halberdier)"
-      ],
+      "referenceImages": ["guide.png", "S1-05 v5 (Shu halberdier)"],
       "sourcePath": "../../../../../attempts/s5-01/sources/v3.png",
       "sourceSha256": "42b401d7c1c8ea420931ff76b22a039f004ce19ea6a9d3205928d5ac979e9eba",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "7015761eb84d536a767c2baffd647b5a154aefca0673b373ab63508abf0ef609",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          1,
-          253
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [251, 1, 253],
+        [253, 5, 252],
+        [253, 1, 252],
+        [252, 4, 253]
       ],
       "registration": "climbing poses similar to v1"
     }

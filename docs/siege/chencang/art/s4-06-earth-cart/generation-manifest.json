@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-01845427-0fc9-4b2c-9c79-d1bac2f8e716.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-06/sources/v1.png",
       "sourceSha256": "ff0766ff50e19b9d20c2530c5bbe69e763f34c788a733029d9c29d6b1f2654e4",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "51f11f78517ffc4a419616cadbd5ea0913eb37693fada3443afaf9e406bffd34",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          5,
-          252
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [251, 5, 252],
+        [253, 6, 252],
+        [253, 1, 252],
+        [252, 4, 252]
       ],
       "registration": "handles reach 70px west in the side view (not in the block-out); tipped 35px low"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-48bcf2fe-c985-46cf-91b5-3dab495926b2.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-06/sources/v2.png",
       "sourceSha256": "8794b99bdb8fffbb04a8ff7162b4deedc05f752db2680e216801d857904331b1",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "2768b1e1e316580be316b07c11913d550d523fd55614b7223da7c329d13721fc",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          252
-        ],
-        [
-          253,
-          6,
-          253
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [251, 3, 252],
+        [253, 6, 253],
+        [253, 1, 252],
+        [252, 4, 252]
       ],
       "registration": "drawn about 1.5x too large"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-6eb41002-0492-42dd-8705-854cc1f92bf9.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-06/sources/v3.png",
       "sourceSha256": "9c9b6c3f1a9400c6b558ce102771e2607a9d03e34b015a736cf19ae509fae82f",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "fff1f7b633b484cd15f17e9fa38fbe30602a7e4a7bd6afa3a2b9e8dc398abe5a",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          6,
-          253
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          252
-        ]
+        [252, 3, 253],
+        [253, 6, 253],
+        [253, 1, 252],
+        [252, 3, 252]
       ],
       "registration": "handles reach 71px west in the side view; others within 33px"
     }

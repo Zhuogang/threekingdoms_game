@@ -64,18 +64,12 @@
     "runtime": [
       {
         "path": "runtime/illustration.webp",
-        "size": [
-          1536,
-          1024
-        ],
+        "size": [1536, 1024],
         "quality": 88
       },
       {
         "path": "runtime/illustration-small.webp",
-        "size": [
-          768,
-          512
-        ],
+        "size": [768, 512],
         "quality": 85
       }
     ]

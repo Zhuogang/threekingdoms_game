@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-c942d1d2-615e-43d8-bafc-49e065ebd4b9.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-04/sources/v1.png",
       "sourceSha256": "875e2d8010afd57616ed7bcff2446869171b95b470ad32b304dd3122c2ce1530",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "af3c8722b5a635c02a7b7a4fc792feec0644dea7397f06b4e17653a86e4747f0",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          252
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          3,
-          252
-        ]
+        [251, 3, 252],
+        [253, 4, 252],
+        [253, 0, 252],
+        [252, 3, 252]
       ],
       "registration": "within 12px"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-5c0fda56-b3bc-4222-bdf4-374109c4704b.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-04/sources/v2.png",
       "sourceSha256": "33171e8c2f183637386c7d9a23bb9d530014bbb7fa7db571ca1ef58d54355418",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "b4556c6eae7d7b533f28559938c61e6ffbfbd4faf61233ff3a0118943ab84604",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          253,
-          7,
-          253
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 2, 253],
+        [253, 7, 253],
+        [253, 0, 252],
+        [252, 3, 253]
       ],
       "registration": "99px too tall at the base"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-05966340-af13-4d0e-84e2-7a3c4f541208.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-04/sources/v3.png",
       "sourceSha256": "c1f455e094b9c6fd4ad51a93abe63a01fd6b61e9e0e4672673e30e4472fbcc64",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "c259f806857ff4236ba40f2ba7db4a8713c6c1e589817954b8f8d5b600142b35",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          253,
-          5,
-          253
-        ],
-        [
-          254,
-          1,
-          253
-        ],
-        [
-          252,
-          4,
-          252
-        ]
+        [251, 2, 253],
+        [253, 5, 253],
+        [254, 1, 253],
+        [252, 4, 252]
       ],
       "registration": "within 18px"
     }
@@ -200,8 +127,6 @@
   "comparison": "comparison.png",
   "review": {
     "status": "agent-reviewed, awaiting your confirmation",
-    "findings": [
-      "v2 is about one level too tall."
-    ]
+    "findings": ["v2 is about one level too tall."]
   }
 }

@@ -1,18 +1,9 @@
 {
   "state": "gate-east-broken",
   "chosen": "attempts/gate-east-broken-v2.webp",
-  "at": [
-    2091,
-    311
-  ],
-  "size": [
-    106,
-    210
-  ],
-  "offset": [
-    0,
-    0
-  ],
+  "at": [2091, 311],
+  "size": [106, 210],
+  "offset": [0, 0],
   "difference": 8.44,
   "differenceUnshifted": 8.44,
   "changeInside": 32.5

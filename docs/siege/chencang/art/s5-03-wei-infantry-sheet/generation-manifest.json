@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "guide",
-      "references": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ]
+      "references": ["guide.png", "S1-06 v4 (Wei archer)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-89df5d62-254e-4097-9a1f-94ff1099d1b2.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-03/sources/v1.png",
       "sourceSha256": "6e0301e3c1ded923899b1c37afbe7ed5a82528df7a4eaac5cd4d192049c85f5a",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "f7d87b56a0e602b426c7c5cf71e8b6de6244206357e6a51863f9ed86f025bab5",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          2,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [252, 3, 253],
+        [253, 6, 252],
+        [253, 2, 252],
+        [252, 4, 253]
       ],
       "registration": "back row reads as back views; shield raised high in the block column"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-a968f978-91df-47d2-8f95-b3602e07921b.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-03/sources/v2.png",
       "sourceSha256": "a93b8ec3caa1f98fe166bdb8f20e367b209d92efe1e98b43423055ab7d2a6841",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "9fc45262432ebdde1e5adbb713a0e97115153d2d2f1bab90d09d81a33b5af080",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          253
-        ],
-        [
-          253,
-          8,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [251, 3, 253],
+        [253, 8, 252],
+        [253, 1, 252],
+        [252, 3, 253]
       ],
       "registration": "similar"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-2758968b-30d2-48aa-b161-658bd1aea274.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-03/sources/v3.png",
       "sourceSha256": "b63e46f4fb59c5b6050c1df1b7515c156a2b644500cf4062db482049fc27b966",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "fc04833a9fe29c0e30b5906756fc7da5b20832d2347be84f58bfd876b21ac226",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          252,
-          7,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [251, 2, 253],
+        [252, 7, 252],
+        [253, 1, 252],
+        [252, 3, 253]
       ],
       "registration": "front attack slashes across the body"
     }

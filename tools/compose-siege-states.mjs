@@ -1,6 +1,7 @@
 import { chromium } from '@playwright/test';
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import * as prettier from 'prettier';
 
 // Builds the S3 state variants (docs/siege/01-chencang-art-plan.md §9.2) on
 // top of the approved S2-01 map:
@@ -224,9 +225,12 @@ for (const [k, job] of jobs.entries())
     // A chosen state keeps no input, so an old one cannot be uploaded by mistake.
     await rm(join(job.dir, `inputs/${r.id}.png`), { force: true });
     await write(join(job.dir, r.patchPath), Buffer.from(r.patch, 'base64'));
+    // Through the repo's prettier settings, so `npm run format:check` stays clean.
+    const json = join(job.dir, r.patchPath.replace(/\.png$/, '.json'));
+    const options = await prettier.resolveConfig(json);
     await write(
-      join(job.dir, r.patchPath.replace(/\.png$/, '.json')),
-      `${JSON.stringify(r.info, null, 2)}\n`,
+      json,
+      await prettier.format(JSON.stringify(r.info), { ...options, parser: 'json' }),
     );
     await write(join(job.dir, `previews/${r.id}.webp`), Buffer.from(r.preview, 'base64'));
     const { offset, difference, changeInside, at, size } = r.info;

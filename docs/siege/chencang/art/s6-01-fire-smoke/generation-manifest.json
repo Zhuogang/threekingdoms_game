@@ -4,9 +4,7 @@
   "name": "fire and smoke",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen with a genuinely transparent background (codex exec, gpt-6.1-sol, xhigh)",
-  "references": [
-    "style-reference.png (crop of the approved S2-01 map)"
-  ],
+  "references": ["style-reference.png (crop of the approved S2-01 map)"],
   "alpha": "ImageGen alpha is noisy (solid areas 252-254, background hazed at 1); attempts are normalised linearly so alpha<=2 is 0 and >=250 is 255, soft edges in between kept. Sources are untouched.",
   "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of separate painted effect elements of fire and smoke for a strategy game, nine elements.\n\nArrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nTop row, flames standing on an invisible ground line near the bottom of each cell: a small flame (a hand-sized tongue of fire); a medium fire; a large roaring fire, about three times as tall as the small one.\nMiddle row: a low spreading fire, wide and short, as fire running along timber; a loose cluster of sparks and glowing embers drifting upward; a scorch mark decal: a blackened, charred patch of ground with ash and a few cinders, seen from above at the map camera angle, flat on the ground.\nBottom row: a single soft puff of pale grey smoke; a rising column of grey smoke, tall and narrow, leaning slightly to the upper right; a heavy billow of thick black smoke.\n\nStyle: traditional Chinese ink-wash painting with light colour, matching the attached painting (the battlefield map these effects are laid over) in brushwork, ink weight and palette: loose expressive ink strokes and soft transparent washes, warm restrained colour; flames in vermilion, orange and pale yellow washes with dark ink tips, smoke in layered grey ink washes. Seen from the same high three-quarter camera as the map. Painted, not photographic, no glossy CG fire.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.",
   "status": "picked by agent; awaiting your review",
@@ -23,10 +21,7 @@
       "sourceFile": "exec-f90aa371-a523-45ba-8583-8516d2a147d3.png",
       "sourcePath": "../../../../../attempts/s6-01/sources/v1.png",
       "sourceSha256": "a2e8064bf22a08ff151f8d3c415920be5d557f7814827559f6d41e48307ccde0",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "sha256": "5e2e5927c509fdc0da845dac50376658eb4d8540d3c35935ed37211ef17ced0f",
       "losslessEncodingVerified": false
@@ -43,10 +38,7 @@
       "sourceFile": "exec-8c8b0ab0-53e6-4326-af6e-72413b010b6c.png",
       "sourcePath": "../../../../../attempts/s6-01/sources/v2.png",
       "sourceSha256": "e97fc44d36eb5f8384971e03b827c823eb565020a14cf165b565b16ddbe09181",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "sha256": "105356a84e91dd92d9ebc94fdc78fcf2121502033469a106aa0497ed05609c9c",
       "losslessEncodingVerified": false
@@ -63,10 +55,7 @@
       "sourceFile": "exec-94866f35-766e-4bbf-919c-d77ff3c51afe.png",
       "sourcePath": "../../../../../attempts/s6-01/sources/v3.png",
       "sourceSha256": "d66bca5c1ce2eb5f8da05f4845cf4deb83766cc795d06d813a148029f9300968",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "sha256": "a4157f810dddfb90b25238e527adab323d090db0e758aa6201befd6e2a2f4a64",
       "losslessEncodingVerified": false

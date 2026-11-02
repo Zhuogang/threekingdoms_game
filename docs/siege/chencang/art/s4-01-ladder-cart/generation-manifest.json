@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-cc54e6a5-b0fb-44e9-afa0-bd3636185217.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-01/sources/v1.png",
       "sourceSha256": "31bfcd5f3421aed3ec8427654b6ab15945b5a3d48f76e86fde98ba17bbbf8932",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "19eadebf28f3a1cb28ce04f5672166808ae3fd9e90769a153509591dfee97de4",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          252
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          253,
-          0,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [251, 3, 252],
+        [253, 5, 252],
+        [253, 0, 252],
+        [252, 4, 253]
       ],
       "registration": "within 13px; side and wreck about 28px low (wheels)"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-adb0cfd3-5e69-4719-a3a9-b84f739af391.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-01/sources/v2.png",
       "sourceSha256": "b9b67c2737d4bf8ca6620b24d8e3a9d4c2f2f796392984303ad3a358ef9e9ac3",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "bc86ea677b99166e7b91520a5009111a842ffafab3b2ec2016f32bc38bb611ca",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          252
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          1,
-          253
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 2, 252],
+        [253, 4, 252],
+        [253, 1, 253],
+        [252, 3, 253]
       ],
       "registration": "within 9px except the wreck (36px low)"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-dc789beb-a58f-43f1-8294-e09da30b06d4.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-01/sources/v3.png",
       "sourceSha256": "910f218fa4b84ed6cbd7b2bfe2e592fb4cdaf902d855e292935c5aad81539816",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "da88302bd68683b27c22fbd8b20e1cd56f5ec7cdbe75f1c453664e2cd3f908f0",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          252
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          253,
-          0,
-          251
-        ],
-        [
-          252,
-          3,
-          252
-        ]
+        [252, 3, 252],
+        [253, 5, 252],
+        [253, 0, 251],
+        [252, 3, 252]
       ],
       "registration": "north view 14px short"
     }

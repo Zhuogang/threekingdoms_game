@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "original",
-      "references": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ]
+      "references": ["blockout.png", "S1-02 v4 (standard piece)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-7a5c659c-6e71-4397-8116-95ef98a6077e.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-05/sources/v1.png",
       "sourceSha256": "3fecb563c089e777ecbd5ba29685a91f50dfce17ee815937e002b6f79ac9231a",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "d91674093d15ffb40aca8a1befeb7001faf34cd5f48e62c73fee6aba81191909",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          6,
-          253
-        ],
-        [
-          253,
-          0,
-          253
-        ],
-        [
-          252,
-          3,
-          254
-        ]
+        [252, 3, 253],
+        [253, 6, 253],
+        [253, 0, 253],
+        [252, 3, 254]
       ],
       "registration": "burning within 30px; toppled 35-39px off"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-c1dbc98a-d53d-466d-89a7-6a568afd7f8f.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-05/sources/v2.png",
       "sourceSha256": "f11d04d994e2e5c76e45e3f6845ff0b4e2e746f0557d8306a6d018f093bb2223",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "c68d05690f23c250e5714db84468af5a1a03b4be28165bb55ee85e2ac40ae453",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          3,
-          253
-        ],
-        [
-          253,
-          4,
-          252
-        ],
-        [
-          253,
-          0,
-          253
-        ],
-        [
-          252,
-          3,
-          253
-        ]
+        [252, 3, 253],
+        [253, 4, 252],
+        [253, 0, 253],
+        [252, 3, 253]
       ],
       "registration": "burning within 19px; toppled 34px wider"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-6b79cddd-3271-4948-b464-e84feda794df.png",
-      "referenceImages": [
-        "blockout.png",
-        "S1-02 v4 (standard piece)"
-      ],
+      "referenceImages": ["blockout.png", "S1-02 v4 (standard piece)"],
       "sourcePath": "../../../../../attempts/s4-05/sources/v3.png",
       "sourceSha256": "0d3fcdc0dd0501e9f5a825b8faa29be16bc14e6487445fd8f17d22fe90a4a703",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "9af9d39d5f8325d81051528e3709f40d900278e5ee801a905de21b8609a74bb7",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          252,
-          2,
-          253
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          252,
-          0,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [252, 2, 253],
+        [253, 5, 252],
+        [252, 0, 252],
+        [252, 4, 253]
       ],
       "registration": "burning within 6px; toppled within 18px"
     }

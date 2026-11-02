@@ -15,16 +15,9 @@
   "rounds": [
     {
       "round": 1,
-      "ids": [
-        1,
-        2,
-        3
-      ],
+      "ids": [1, 2, 3],
       "blockout": "guide",
-      "references": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ]
+      "references": ["guide.png", "S1-06 v4 (Wei archer)"]
     }
   ],
   "images": [
@@ -40,16 +33,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-de8e58be-a4fe-48f2-99bf-ff1b31458293.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-06/sources/v1.png",
       "sourceSha256": "d55060e66bb7e017e8e70d2a5b51b54cf572da705c9c666aecb3b5764b6ef3a3",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v1.webp",
       "width": 1536,
       "height": 1024,
@@ -57,26 +44,10 @@
       "sha256": "6d6c23890c2d310b26adeb16731b11ce1bc9fd822db7349686ea0195bae55195",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          3,
-          253
-        ],
-        [
-          253,
-          6,
-          252
-        ],
-        [
-          253,
-          1,
-          252
-        ],
-        [
-          252,
-          5,
-          253
-        ]
+        [251, 3, 253],
+        [253, 6, 252],
+        [253, 1, 252],
+        [252, 5, 253]
       ],
       "registration": "sword held low in the command pose"
     },
@@ -92,16 +63,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-3da5be0c-549d-4e3f-bd0d-05962f057fe0.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-06/sources/v2.png",
       "sourceSha256": "478c556aa3f6f798e89d333a9755a60e2a2c63eaa718723a8cbea78bc050d671",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v2.webp",
       "width": 1536,
       "height": 1024,
@@ -109,26 +74,10 @@
       "sha256": "80da239d2049339224953fb993ce167d42de9f6acf13c708d7e4a2889f3f3ae5",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          252
-        ],
-        [
-          252,
-          1,
-          252
-        ],
-        [
-          252,
-          2,
-          253
-        ]
+        [251, 1, 252],
+        [252, 4, 252],
+        [252, 1, 252],
+        [252, 2, 253]
       ],
       "registration": "similar"
     },
@@ -144,16 +93,10 @@
         "codexRun": "codex-1.log"
       },
       "sourceFile": "exec-ec185f11-4f99-4a98-8298-5246e6c2352f.png",
-      "referenceImages": [
-        "guide.png",
-        "S1-06 v4 (Wei archer)"
-      ],
+      "referenceImages": ["guide.png", "S1-06 v4 (Wei archer)"],
       "sourcePath": "../../../../../attempts/s5-06/sources/v3.png",
       "sourceSha256": "661b2903f648fa2327cd934edc1d2d8f0b89d15aa41bd0916e110dc9b8e8a5be",
-      "nativeSize": [
-        1536,
-        1024
-      ],
+      "nativeSize": [1536, 1024],
       "path": "attempts/v3.webp",
       "width": 1536,
       "height": 1024,
@@ -161,26 +104,10 @@
       "sha256": "4b0ae9b62cc8097be5bb2e1f7695770d4acbdd06dfc30a9a3f80bcb178ce81c2",
       "losslessEncodingVerified": true,
       "cornerPixels": [
-        [
-          251,
-          2,
-          253
-        ],
-        [
-          253,
-          5,
-          252
-        ],
-        [
-          252,
-          1,
-          252
-        ],
-        [
-          252,
-          4,
-          253
-        ]
+        [251, 2, 253],
+        [253, 5, 252],
+        [252, 1, 252],
+        [252, 4, 253]
       ],
       "registration": "sword down and free hand pointing; strongest cloak in the back view"
     }

@@ -3,9 +3,7 @@
   "folder": "s7-07-ending-rout",
   "generatedOn": "2026-11-02",
   "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
-  "references": [
-    "s7-01-key-visual/style-reference.png (S2-01 map crop)"
-  ],
+  "references": ["s7-01-key-visual/style-reference.png (S2-01 map crop)"],
   "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene, the defeat of the attackers: before the south wall of Chencang on a grey winter afternoon. Siege engines lie burnt and broken in the snow before the trench, still smoking; Shu-Han soldiers in jade green fall back across the snowy plain in disorder, some helping wounded comrades, banners trailing. On the intact wall the Wei defenders in deep indigo raise their weapons and banners, the deep-indigo commander’s banner flying from the gate tower. On the hills far to the east, a dark line of Wei cavalry with many banners appears over the ridge: the relief army arriving. Bleak and cold, without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with fire in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
   "status": "picked and checked by agent (no seals, text or gore; corners inspected at full size)",
   "images": [
@@ -63,18 +61,12 @@
     "runtime": [
       {
         "path": "runtime/illustration.webp",
-        "size": [
-          1536,
-          1024
-        ],
+        "size": [1536, 1024],
         "quality": 88
       },
       {
         "path": "runtime/illustration-small.webp",
-        "size": [
-          768,
-          512
-        ],
+        "size": [768, 512],
         "quality": 85
       }
     ]

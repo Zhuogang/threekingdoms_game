@@ -7,289 +7,118 @@
   "poses": [
     {
       "name": "dust-small",
-      "cell": [
-        0,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        159,
-        211,
-        209,
-        129
-      ],
-      "anchor": [
-        115.5,
-        129
-      ],
+      "cell": [0, 0, 512, 341],
+      "box": [159, 211, 209, 129],
+      "anchor": [115.5, 129],
       "path": "poses/dust-small.png",
       "game": {
         "path": "poses-game/dust-small.png",
-        "size": [
-          104,
-          64
-        ],
-        "anchor": [
-          57.8,
-          64.5
-        ]
+        "size": [104, 64],
+        "anchor": [57.8, 64.5]
       },
       "droppedIslands": 0
     },
     {
       "name": "dust-medium",
-      "cell": [
-        512,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        578,
-        114,
-        446,
-        224
-      ],
-      "anchor": [
-        183.7,
-        224
-      ],
+      "cell": [512, 0, 512, 341],
+      "box": [578, 114, 446, 224],
+      "anchor": [183.7, 224],
       "path": "poses/dust-medium.png",
       "game": {
         "path": "poses-game/dust-medium.png",
-        "size": [
-          223,
-          112
-        ],
-        "anchor": [
-          91.8,
-          112.0
-        ]
+        "size": [223, 112],
+        "anchor": [91.8, 112.0]
       },
       "droppedIslands": 0
     },
     {
       "name": "dust-large",
-      "cell": [
-        1024,
-        0,
-        512,
-        341
-      ],
-      "box": [
-        1024,
-        18,
-        495,
-        323
-      ],
-      "anchor": [
-        220.0,
-        323
-      ],
+      "cell": [1024, 0, 512, 341],
+      "box": [1024, 18, 495, 323],
+      "anchor": [220.0, 323],
       "path": "poses/dust-large.png",
       "game": {
         "path": "poses-game/dust-large.png",
-        "size": [
-          248,
-          162
-        ],
-        "anchor": [
-          110.0,
-          161.5
-        ]
+        "size": [248, 162],
+        "anchor": [110.0, 161.5]
       },
       "droppedIslands": 0
     },
     {
       "name": "splinters",
-      "cell": [
-        0,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        49,
-        406,
-        400,
-        233
-      ],
-      "anchor": [
-        193.6,
-        233
-      ],
+      "cell": [0, 341, 512, 342],
+      "box": [49, 406, 400, 233],
+      "anchor": [193.6, 233],
       "path": "poses/splinters.png",
       "game": {
         "path": "poses-game/splinters.png",
-        "size": [
-          200,
-          116
-        ],
-        "anchor": [
-          96.8,
-          116.5
-        ]
+        "size": [200, 116],
+        "anchor": [96.8, 116.5]
       },
       "droppedIslands": 0
     },
     {
       "name": "stone-fragments",
-      "cell": [
-        512,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        546,
-        410,
-        412,
-        228
-      ],
-      "anchor": [
-        250.4,
-        228
-      ],
+      "cell": [512, 341, 512, 342],
+      "box": [546, 410, 412, 228],
+      "anchor": [250.4, 228],
       "path": "poses/stone-fragments.png",
       "game": {
         "path": "poses-game/stone-fragments.png",
-        "size": [
-          206,
-          114
-        ],
-        "anchor": [
-          125.2,
-          114.0
-        ]
+        "size": [206, 114],
+        "anchor": [125.2, 114.0]
       },
       "droppedIslands": 0
     },
     {
       "name": "boulders",
-      "cell": [
-        1024,
-        341,
-        512,
-        342
-      ],
-      "box": [
-        1070,
-        341,
-        415,
-        280
-      ],
-      "anchor": [
-        293.3,
-        280
-      ],
+      "cell": [1024, 341, 512, 342],
+      "box": [1070, 341, 415, 280],
+      "anchor": [293.3, 280],
       "path": "poses/boulders.png",
       "game": {
         "path": "poses-game/boulders.png",
-        "size": [
-          208,
-          140
-        ],
-        "anchor": [
-          146.6,
-          140.0
-        ]
+        "size": [208, 140],
+        "anchor": [146.6, 140.0]
       },
       "droppedIslands": 0
     },
     {
       "name": "arrows-snow",
-      "cell": [
-        0,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        27,
-        739,
-        434,
-        237
-      ],
-      "anchor": [
-        279.1,
-        237
-      ],
+      "cell": [0, 683, 512, 341],
+      "box": [27, 739, 434, 237],
+      "anchor": [279.1, 237],
       "path": "poses/arrows-snow.png",
       "game": {
         "path": "poses-game/arrows-snow.png",
-        "size": [
-          217,
-          118
-        ],
-        "anchor": [
-          139.6,
-          118.5
-        ]
+        "size": [217, 118],
+        "anchor": [139.6, 118.5]
       },
       "droppedIslands": 0
     },
     {
       "name": "arrows-wall",
-      "cell": [
-        512,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        580,
-        705,
-        353,
-        247
-      ],
-      "anchor": [
-        241.8,
-        247
-      ],
+      "cell": [512, 683, 512, 341],
+      "box": [580, 705, 353, 247],
+      "anchor": [241.8, 247],
       "path": "poses/arrows-wall.png",
       "game": {
         "path": "poses-game/arrows-wall.png",
-        "size": [
-          176,
-          124
-        ],
-        "anchor": [
-          120.9,
-          123.5
-        ]
+        "size": [176, 124],
+        "anchor": [120.9, 123.5]
       },
       "droppedIslands": 0
     },
     {
       "name": "rubble",
-      "cell": [
-        1024,
-        683,
-        512,
-        341
-      ],
-      "box": [
-        1042,
-        770,
-        467,
-        174
-      ],
-      "anchor": [
-        220.5,
-        174
-      ],
+      "cell": [1024, 683, 512, 341],
+      "box": [1042, 770, 467, 174],
+      "anchor": [220.5, 174],
       "path": "poses/rubble.png",
       "game": {
         "path": "poses-game/rubble.png",
-        "size": [
-          234,
-          87
-        ],
-        "anchor": [
-          110.2,
-          87.0
-        ]
+        "size": [234, 87],
+        "anchor": [110.2, 87.0]
       },
       "droppedIslands": 0
     }
