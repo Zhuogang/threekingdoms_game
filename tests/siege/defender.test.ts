@@ -1,0 +1,237 @@
+import { describe, expect, it } from 'vitest';
+import { planDefenderTurn, runDefenderTurn } from '../../src/siege/ai/defender';
+import { COURTYARD, INNER_WALL_SEGMENTS } from '../../src/siege/content/chencang';
+import { applySiegeAction } from '../../src/siege/rules/actions';
+import { endDay } from '../../src/siege/rules/day';
+import { createSiegeState } from '../../src/siege/rules/state';
+import type { SiegeState } from '../../src/siege/rules/types';
+import { engine } from './rulesFixtures';
+
+function keepWei(state: SiegeState, ids: string[]) {
+  state.units = state.units.filter((u) => u.side === 'shu' || ids.includes(u.id));
+}
+
+describe('Wei defender AI', () => {
+  it('drops a millstone on a ram at the south approach and obeys its cooldown', () => {
+    const state = createSiegeState(1);
+    keepWei(state, ['wei-haozhao']);
+    state.engines = [engine('ram', 23, 17)];
+    const before = structuredClone(state);
+    expect(planDefenderTurn(state)).toContainEqual({
+      type: 'dropMillstone',
+      unitId: 'wei-haozhao',
+      engineId: 'engine',
+    });
+    expect(runDefenderTurn(state).engines[0]!.durability).toBe(100);
+    expect(state).toEqual(before);
+    state.units.find((u) => u.id === 'wei-haozhao')!.lastMillstoneDay = state.day - 1;
+    expect(planDefenderTurn(state).some((a) => a.type === 'dropMillstone')).toBe(false);
+  });
+
+  it('fires at a raised ladder before a cart, even when the cart appears first', () => {
+    const state = createSiegeState(2);
+    keepWei(state, ['wei-haozhao', 'wei-captain-1']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-captain-1')!,
+      { x: 21, y: 16 },
+    );
+    state.engines = [
+      engine('earthCart', 20, 18, { id: 'cart' }),
+      engine('ladder', 21, 19, { id: 'ladder', raisedAt: { x: 21, y: 16 } }),
+    ];
+    expect(planDefenderTurn(state).filter((a) => a.type === 'fireArrows')[0]).toEqual({
+      type: 'fireArrows',
+      unitId: 'wei-captain-1',
+      engineId: 'ladder',
+    });
+  });
+
+  it('sends the nearest free defender above a raised ladder and plans legal actions', () => {
+    const state = createSiegeState(3);
+    keepWei(state, ['wei-haozhao', 'wei-wangsheng']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-wangsheng')!,
+      { x: 18, y: 16 },
+    );
+    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    const plan = planDefenderTurn(state);
+    expect(plan).toContainEqual({
+      type: 'move',
+      unitId: 'wei-wangsheng',
+      x: 20,
+      y: 16,
+      level: 'wall',
+    });
+    let draft = state;
+    for (const action of plan) {
+      const result = applySiegeAction(draft, action);
+      expect(result.ok, JSON.stringify(action)).toBe(true);
+      if (result.ok) draft = result.state;
+    }
+    expect(runDefenderTurn(state)).toEqual(draft);
+  });
+
+  it('uses nightRepair on an intact gate below half, ahead of holdFast', () => {
+    const state = createSiegeState(4);
+    state.gates.south.durability = 300;
+    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    expect(planDefenderTurn(state)[0]).toEqual({
+      type: 'order',
+      side: 'wei',
+      kind: 'nightRepair',
+      target: 'south',
+    });
+    expect(runDefenderTurn(state).gates.south.durability).toBe(400);
+  });
+
+  it('holds the most pressed wall run, otherwise rallies the lowest morale', () => {
+    const state = createSiegeState(5);
+    state.engines = [
+      engine('ladder', 20, 19, { id: 'west', raisedAt: { x: 20, y: 16 } }),
+      engine('ladder', 27, 19, { id: 'east', raisedAt: { x: 27, y: 16 } }),
+    ];
+    state.trenchFill['28,17'] = 3;
+    expect(planDefenderTurn(state)[0]).toMatchObject({
+      kind: 'holdFast',
+      target: { x: 27, y: 16 },
+    });
+    state.engines = [];
+    state.trenchFill['28,17'] = 0;
+    state.units.find((u) => u.id === 'wei-wangsheng')!.morale = 25;
+    expect(planDefenderTurn(state)[0]).toMatchObject({ kind: 'rally', target: 'wei-wangsheng' });
+  });
+
+  it('counterattacks Shu on the wall and drops boulders on climbers', () => {
+    const state = createSiegeState(6);
+    keepWei(state, ['wei-haozhao', 'wei-wangsheng']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-wangsheng')!,
+      { x: 20, y: 16 },
+    );
+    Object.assign(state.units[1]!, { x: 22, y: 16, level: 'wall' });
+    Object.assign(state.units[2]!, { x: 20, y: 19, climbing: true });
+    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    const plan = planDefenderTurn(state);
+    expect(plan).toContainEqual({
+      type: 'attack',
+      unitId: 'wei-haozhao',
+      targetId: state.units[1]!.id,
+    });
+    expect(plan).toContainEqual({
+      type: 'dropBoulders',
+      unitId: 'wei-wangsheng',
+      targetId: state.units[2]!.id,
+    });
+  });
+
+  it('withdraws wounded defenders from a pressed section and brings fresh troops in', () => {
+    const state = createSiegeState(7);
+    keepWei(state, ['wei-haozhao', 'wei-wangsheng']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-haozhao')!,
+      { x: 20, y: 16, troops: 100, wounded: 100 },
+    );
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-wangsheng')!,
+      { x: 22, y: 16 },
+    );
+    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    Object.assign(state.units[1]!, { x: 20, y: 19, climbing: true });
+    const plan = planDefenderTurn(state);
+    const retreat = plan.find((a) => a.type === 'move' && a.unitId === 'wei-haozhao');
+    expect(retreat).toBeDefined();
+    expect(retreat).not.toMatchObject({ x: 20, y: 16, level: 'wall' });
+    expect(plan.some((a) => a.type === 'move' && a.unitId === 'wei-wangsheng')).toBe(true);
+  });
+
+  it('builds in act 2, choosing the segment facing the most gaps first', () => {
+    const state = createSiegeState(8);
+    keepWei(state, ['wei-haozhao', 'wei-wangsheng']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-wangsheng')!,
+      { x: 28, y: 16 },
+    );
+    state.act = 2;
+    state.day = 6;
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-haozhao')!,
+      { x: 23, y: 14, level: 'ground' },
+    );
+    state.trenchFill['28,17'] = 3;
+    const first = runDefenderTurn(state);
+    expect(first.units.find((u) => u.id === 'wei-haozhao')).toMatchObject({
+      x: 25,
+      y: 14,
+      level: 'ground',
+    });
+    expect(first.innerWall[2]).toBe(1);
+    const next = endDay(first, runDefenderTurn);
+    expect(next.innerWall[2]).toBe(1); // The builder cannot act twice in one day.
+    expect(runDefenderTurn(next).innerWall[2]).toBe(2);
+    expect(INNER_WALL_SEGMENTS[2]!.cells.some((c) => c.x === 25)).toBe(true);
+  });
+
+  it.each(['gate', 'innerWall'] as const)(
+    'falls back to the courtyard when the %s is lost',
+    (breach) => {
+      const state = createSiegeState(9);
+      keepWei(state, ['wei-haozhao']);
+      const commander = state.units.find((u) => u.id === 'wei-haozhao')!;
+      Object.assign(commander, { x: 23, y: 9, level: 'ground' });
+      if (breach === 'gate') state.gates.south.broken = true;
+      else {
+        state.innerWall[2] = 4;
+        Object.assign(state.units[1]!, { x: 25, y: 14, level: 'wall' });
+      }
+      const result = runDefenderTurn(state);
+      const unit = result.units.find((u) => u.id === commander.id)!;
+      expect(COURTYARD.some((c) => c.x === unit.x && c.y === unit.y)).toBe(true);
+    },
+  );
+
+  it('only sorties against an unescorted ram or cart at the bridge head', () => {
+    const state = createSiegeState(10);
+    keepWei(state, ['wei-haozhao', 'wei-captain-1']);
+    Object.assign(
+      state.units.find((u) => u.id === 'wei-captain-1')!,
+      { x: 26, y: 16 },
+    );
+    state.engines = [engine('earthCart', 24, 19)];
+    expect(
+      planDefenderTurn(state).some((a) => a.type === 'move' && a.level === 'ground' && a.y > 16),
+    ).toBe(false);
+    for (const unit of state.units.filter((u) => u.side === 'shu'))
+      Object.assign(unit, { x: unit.x, y: 25 });
+    // The legal sortie may take several days to descend a ramp.
+    expect(
+      planDefenderTurn(state).some((a) => a.type === 'move' && a.unitId === 'wei-captain-1'),
+    ).toBe(true);
+  });
+
+  it('plans a crowded mid-siege turn in under one second without mutating its input', () => {
+    const state = createSiegeState(11);
+    state.act = 2;
+    state.day = 10;
+    state.engines = [18, 20, 27, 29].map((x) =>
+      engine('ladder', x, 19, { id: `ladder-${x}`, raisedAt: { x, y: 16 } }),
+    );
+    state.engines.push(
+      engine('ram', 23, 17, { id: 'ram' }),
+      engine('tower', 25, 19, { id: 'tower' }),
+    );
+    for (const x of [18, 20, 27, 29]) {
+      state.trenchFill[`${x},18`] = 3;
+      state.trenchFill[`${x},17`] = 3;
+    }
+    state.units[1]!.x = 19;
+    state.units[1]!.y = 16;
+    state.units[1]!.level = 'wall';
+    const before = structuredClone(state);
+    const started = performance.now();
+    const plan = planDefenderTurn(state);
+    expect(performance.now() - started).toBeLessThan(1000);
+    expect(plan.length).toBeGreaterThan(0);
+    expect(state).toEqual(before);
+    expect(planDefenderTurn(state)).toEqual(plan);
+  });
+});
