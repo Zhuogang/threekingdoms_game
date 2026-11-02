@@ -1,0 +1,935 @@
+{
+  "generatedOn": "2026-11-01",
+  "mode": "built-in image_gen",
+  "requestedDestination": "attempts/",
+  "architecturalStandard": "S1-02 v4",
+  "cityStyle": "S1-01 A v2-a",
+  "tasks": [
+    {
+      "id": "s1-03",
+      "folder": "s1-03-wall-kit",
+      "name": "城墙模块表",
+      "directory": "docs/siege/chencang/art/s1-03-wall-kit",
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "referenceRoles": ["geometry blockout", "style reference"],
+      "targetSize": [1536, 1024],
+      "status": "complete",
+      "images": [
+        {
+          "id": "v1",
+          "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-6d58d65f-5967-4a4b-93d4-05408321096a.png",
+          "sourcePath": "attempts/s1-03/sources/v1.png",
+          "sourceSha256": "a76b1a6e5c1e55868c9e6a8751475e6e6599ef949b9e4b201980fab19b6a20ef",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-03/v1.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1180518,
+          "sha256": "5a9064977d438409f7451ece2b25bf0d2302869e45d6c17882b1fae02f5bbbfb",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v2",
+          "prompt": "Registration priority: keep all six pieces in exactly their marked pixel boxes. In particular, the two narrow north-south wall strips are only 128 pixels wide and must show the top walkway and south end face, without any east/west side face. Keep the join edges perfectly horizontal or vertical with no projection yaw. Match the grey brick, thin ink line weight and paper-white snow of the S1-02 v4 reference.\n\nOutput requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-acdd8f8a-9ae4-47e8-880d-25798292cbc6.png",
+          "sourcePath": "attempts/s1-03/sources/v2.png",
+          "sourceSha256": "63c7eb136fd1031eb088f932bc72176e07e32a25d900467d2c816e5533776d1d",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-03/v2.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1178976,
+          "sha256": "006e48794570c533f56a4cc76084c2852ca0ea73a80ef4c3433cf56eb88330da",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v3",
+          "prompt": "Registration priority: keep all six pieces in exactly their marked pixel boxes. In particular, the two narrow north-south wall strips are only 128 pixels wide and must show the top walkway and south end face, without any east/west side face. Keep the join edges perfectly horizontal or vertical with no projection yaw. Match the grey brick, thin ink line weight and paper-white snow of the S1-02 v4 reference.\n\nOutput requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the architecture; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside the building silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1 (top row, left), a straight south wall section:\n- wall, from the back edge of its walkway down to its base: x=64..448, y=136..376\n- crenellated parapet: x=64..448, y=187..232\nPiece 2 (top row, middle), the south-west corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=643..771, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=643..671, y=76..196\n- crenellated parapet: x=771..899, y=247..292\n- wall, from the back edge of its walkway down to its base: x=643..899, y=196..436\n- corner tower roof: x=638..776, y=134..236\nPiece 3 (top row, right), the south-east corner:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=1277..1405, y=100..340\n- crenellated parapet along the outer side of the north-south wall: x=1377..1405, y=76..196\n- wall, from the back edge of its walkway down to its base: x=1149..1405, y=196..436\n- crenellated parapet: x=1149..1277, y=247..292\n- corner tower roof: x=1272..1410, y=134..236\nPiece 4 (bottom row, left), a west wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=192..320, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=192..220, y=588..804\nPiece 5 (bottom row, middle), an east wall section:\n- north-south wall, from the north end of its walkway down to the base of its south end: x=704..832, y=612..948\n- crenellated parapet along the outer side of the north-south wall: x=804..832, y=588..804\nPiece 6 (bottom row, right), a north wall section seen from inside:\n- wall, from the back edge of its walkway down to its base: x=1088..1472, y=660..900\n- crenellated parapet: x=1088..1472, y=636..681\nMatch every roof height and position to these boxes rather than making towers taller or walls longer.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a modular kit of city-wall pieces for a strategy game, six separate pieces arranged in a 3 by 2 grid exactly as in the block-out, one piece centred in each 512×512 cell, with clear empty space between pieces. All pieces share the same wall: rammed earth faced with grey brick, three levels high, a light walkway on top with a crenellated parapet along the outer edge and only a low plain kerb along the inner edge, snow on every top surface.\nTop row, left to right: a straight three-cell section of the south wall, parapet along its front (south) edge; the south-west corner, where the south wall meets the west wall, with a small one-storey corner tower; the south-east corner, the same mirrored.\nBottom row, left to right: a two-cell section of the west wall running north-south, so only its top walkway and its southern end face are visible, parapet along the west edge; the same for the east wall, parapet along the east edge; a straight three-cell section of the north wall seen from inside the city, parapet along its back (north) edge, so the inner face of the parapet shows above the walkway.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; people, soldiers, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-b58970a6-b9fa-4f60-be12-e76784f631d3.png",
+          "sourcePath": "attempts/s1-03/sources/v3.png",
+          "sourceSha256": "2ad5f84cf392b22a8606ed3d86ed4c7e1ed4f36c42dcaaceffaee86f9d6e5642",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-03/v3.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1204850,
+          "sha256": "8f291055fdeafb02a2c86f55dd0889006aaba6ee8dc6d89a82e29cce949d87ab",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v4",
+          "prompt": "Use case: background-extraction.\nThe attached image is the EDIT TARGET. Remove ONLY its magenta background and make it genuinely fully transparent. Preserve all six architectural wall modules exactly unchanged: identical silhouettes, placement, size, proportions, brushwork, colours, internal shading and all fine edges. Preserve the 1536x1024 canvas and the exact arrangement of every cell. Do not repaint, resize, move, rotate or crop any object. No magenta halo, colour spill, paper background, cast shadow, floor, labels or extra objects. Keep the foreground opaque and all background empty pixels fully transparent. Preserve the original artwork rather than redrawing it.",
+          "operation": "background-extraction",
+          "transparentRequested": true,
+          "sourceFile": "exec-da3f148c-cd38-4dd9-9dfa-18a70dc100ec.png",
+          "sourcePath": "attempts/s1-03/sources/v4.png",
+          "sourceSha256": "ecad8568f730805fe6b8102754d21934c3493f69efef2568c0944b22b2f1b4a5",
+          "nativeSize": [1536, 1024],
+          "transparentBackgroundPixels": 1080793,
+          "transparentPath": "attempts/s1-03/v4-transparent.png",
+          "path": "attempts/s1-03/v4.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 609456,
+          "sha256": "fcb066bc3ce9f171fea30f4240fdfbdc25efa11ecdc5e60d5f2b36c278678ae0",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "v4",
+        "path": "attempts/s1-03/v4.webp",
+        "selectedBy": "agent",
+        "reason": "Best reviewed result for the requested S1 completion; reversible version selection.",
+        "transparentPath": "attempts/s1-03/v4-transparent.png"
+      },
+      "pieces": [
+        {
+          "name": "south-wall",
+          "path": "pieces/south-wall.png",
+          "cell": [0, 0, 512, 512],
+          "footprint": {
+            "piece": 1,
+            "name": "南墙直段",
+            "cell": [0, 0, 512, 512],
+            "origin": [-1856, -1256],
+            "objects": [
+              {
+                "id": "p1-wall-south",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [15, 16, 17, 16],
+                "height": 3,
+                "anchor": [64, 376],
+                "bbox": [63, 135, 449, 377]
+              },
+              {
+                "id": "p1-wall-south-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [15, 16, 17, 16],
+                "height": 3.5,
+                "anchor": [64, 376],
+                "bbox": [63, 186, 449, 233]
+              }
+            ]
+          }
+        },
+        {
+          "name": "southwest-corner",
+          "path": "pieces/southwest-corner.png",
+          "cell": [512, 0, 512, 512],
+          "footprint": {
+            "piece": 2,
+            "name": "西南角楼",
+            "cell": [512, 0, 512, 512],
+            "origin": [-1149, -1196],
+            "objects": [
+              {
+                "id": "p2-wall-west",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [14, 15, 14, 15],
+                "height": 3,
+                "anchor": [643, 340],
+                "bbox": [671, 99, 772, 134]
+              },
+              {
+                "id": "p2-wall-west-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [14, 15, 14, 15],
+                "height": 3.5,
+                "anchor": [643, 340],
+                "bbox": [642, 75, 672, 134]
+              },
+              {
+                "id": "p2-wall-south",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [15, 16, 15, 16],
+                "height": 3,
+                "anchor": [771, 436],
+                "bbox": [771, 195, 900, 437]
+              },
+              {
+                "id": "p2-wall-south-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [15, 16, 15, 16],
+                "height": 3.5,
+                "anchor": [771, 436],
+                "bbox": [771, 246, 900, 293]
+              },
+              {
+                "id": "p2-corner-sw",
+                "kind": "corner-tower",
+                "layer": "L3",
+                "cells": [14, 16, 14, 16],
+                "height": 5,
+                "anchor": [643, 436],
+                "bbox": [637, 133, 777, 437]
+              }
+            ]
+          }
+        },
+        {
+          "name": "southeast-corner",
+          "path": "pieces/southeast-corner.png",
+          "cell": [1024, 0, 512, 512],
+          "footprint": {
+            "piece": 3,
+            "name": "东南角楼",
+            "cell": [1024, 0, 512, 512],
+            "origin": [-2947, -1196],
+            "objects": [
+              {
+                "id": "p3-wall-east",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [33, 15, 33, 15],
+                "height": 3,
+                "anchor": [1277, 340],
+                "bbox": [1276, 99, 1377, 134]
+              },
+              {
+                "id": "p3-wall-east-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [33, 15, 33, 15],
+                "height": 3.5,
+                "anchor": [1277, 340],
+                "bbox": [1376, 75, 1406, 134]
+              },
+              {
+                "id": "p3-wall-south",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [32, 16, 32, 16],
+                "height": 3,
+                "anchor": [1149, 436],
+                "bbox": [1148, 195, 1277, 437]
+              },
+              {
+                "id": "p3-wall-south-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [32, 16, 32, 16],
+                "height": 3.5,
+                "anchor": [1149, 436],
+                "bbox": [1148, 246, 1277, 293]
+              },
+              {
+                "id": "p3-corner-se",
+                "kind": "corner-tower",
+                "layer": "L3",
+                "cells": [33, 16, 33, 16],
+                "height": 5,
+                "anchor": [1277, 436],
+                "bbox": [1271, 133, 1411, 437]
+              }
+            ]
+          }
+        },
+        {
+          "name": "west-wall",
+          "path": "pieces/west-wall.png",
+          "cell": [0, 512, 512, 512],
+          "footprint": {
+            "piece": 4,
+            "name": "西墙段",
+            "cell": [0, 512, 512, 512],
+            "origin": [-1600, -396],
+            "objects": [
+              {
+                "id": "p4-wall-west",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [14, 12, 14, 13],
+                "height": 3,
+                "anchor": [192, 948],
+                "bbox": [191, 611, 321, 949]
+              },
+              {
+                "id": "p4-wall-west-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [14, 12, 14, 13],
+                "height": 3.5,
+                "anchor": [192, 948],
+                "bbox": [191, 587, 221, 805]
+              }
+            ]
+          }
+        },
+        {
+          "name": "east-wall",
+          "path": "pieces/east-wall.png",
+          "cell": [512, 512, 512, 512],
+          "footprint": {
+            "piece": 5,
+            "name": "东墙段",
+            "cell": [512, 512, 512, 512],
+            "origin": [-3520, -396],
+            "objects": [
+              {
+                "id": "p5-wall-east",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [33, 12, 33, 13],
+                "height": 3,
+                "anchor": [704, 948],
+                "bbox": [703, 611, 833, 949]
+              },
+              {
+                "id": "p5-wall-east-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [33, 12, 33, 13],
+                "height": 3.5,
+                "anchor": [704, 948],
+                "bbox": [803, 587, 833, 805]
+              }
+            ]
+          }
+        },
+        {
+          "name": "north-wall",
+          "path": "pieces/north-wall.png",
+          "cell": [1024, 512, 512, 512],
+          "footprint": {
+            "piece": 6,
+            "name": "北墙直段",
+            "cell": [1024, 512, 512, 512],
+            "origin": [-832, 420],
+            "objects": [
+              {
+                "id": "p6-wall-north",
+                "kind": "wall",
+                "layer": "L3",
+                "cells": [15, 4, 17, 4],
+                "height": 3,
+                "anchor": [1088, 900],
+                "bbox": [1087, 681, 1473, 901]
+              },
+              {
+                "id": "p6-wall-north-parapet",
+                "kind": "parapet",
+                "layer": "L4",
+                "cells": [15, 4, 17, 4],
+                "height": 3.5,
+                "anchor": [1088, 900],
+                "bbox": [1087, 635, 1473, 682]
+              }
+            ]
+          }
+        }
+      ],
+      "comparison": "attempts/s1-03/comparison.png",
+      "nativeReferencePaths": [
+        "docs/siege/chencang/art/s1-03-wall-kit/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "exportedPieces": 6,
+      "referenceImages": [
+        {
+          "role": "geometry blockout",
+          "path": "docs/siege/chencang/art/s1-03-wall-kit/blockout.png",
+          "sha256": "2264493a68cef41c41e115d4353d478e5907fd43f4bee1e65155795e9c054af5"
+        },
+        {
+          "role": "style reference",
+          "path": "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp",
+          "sha256": "8939edfa6f4d5821f2e15fdd49aebae8355a9e4d4b132a1eeec6906d9768ddf7"
+        }
+      ],
+      "review": {
+        "status": "reviewed",
+        "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+        "findings": [
+          "Six modules: south wall, southwest corner, southeast corner, west wall, east wall and north wall.",
+          "Selected v4 is transparent extraction of v2; v3 moved some north-south top surfaces upward.",
+          "Visual native-size grid review: primary wall, walkway, parapet and tower bounds follow the guide within the quarter-cell architectural tolerance (32x24 px).",
+          "North-south sections retain parallel projection without east/west side faces. Exported 512x512 pieces retain the supplied footprint metadata.",
+          "The join preview checks structural alignment. Brick texture and ink seam blending remain an integration concern, rather than a guarantee of pixel-periodic texture."
+        ],
+        "dimensionsVerified": true,
+        "encodingVerified": "Lossless WebP pixels equal the prepared PNGs."
+      }
+    },
+    {
+      "id": "s1-04",
+      "folder": "s1-04-ground-plate",
+      "name": "地表底板",
+      "directory": "docs/siege/chencang/art/s1-04-ground-plate",
+      "prompt": "Match the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the ground layer only of a battlefield map for a strategy game: the site of the walled fortress of Chencang in the snow, with every wall and building removed. Output 1536×1024, landscape, filled edge to edge. One grid cell is 64 pixels wide and 48 pixels deep.\n\nBlock-out legend:\n- pale grey-white (#e6e4dc): open ground under fresh snow\n- brown (#967046): trampled mud-and-snow roads: the two streets that cross the city between its four gates, the approach roads, and the road along the river bank\n- steel blue, one level below the ground (#7fa6b8), with ochre-brown earth banks (#8c7356): the defensive trench around the walls, half-frozen dark water between steep earth banks\n- dark brown (#684220): plank bridges over the trench in front of the gates\n- red-brown (#b05842): a paved courtyard\n- short dashes on the ground (#9a8f74): where an inner wall will later be built; paint only trampled ground with a few stacks of timber and baskets of earth\n- dark grey (#5a5650): flat stone and rammed-earth foundations where walls and buildings will later be placed as separate pieces; paint them as bare, level foundations with no walls, no buildings and no rubble\n\nSetting: Chencang, Wei River valley, winter of 228 AD. A clear, cold winter day.\n\nLight: low winter sun from the lower left (south-west); the trench banks facing the viewer catch a pale warm light. Paint no cast shadows anywhere: the walls and buildings are added later with their own shadows.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nGame readability: open ground, roads, bridges and foundations are calm, flat and light, with low texture contrast, so soldiers and wall pieces placed on top stay readable. Keep detail density even across the image, with no vignette and no darkened corners.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+      "referenceRoles": ["geometry blockout", "style reference"],
+      "targetSize": [1536, 1024],
+      "status": "complete",
+      "images": [
+        {
+          "id": "v1",
+          "prompt": "Match the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the ground layer only of a battlefield map for a strategy game: the site of the walled fortress of Chencang in the snow, with every wall and building removed. Output 1536×1024, landscape, filled edge to edge. One grid cell is 64 pixels wide and 48 pixels deep.\n\nBlock-out legend:\n- pale grey-white (#e6e4dc): open ground under fresh snow\n- brown (#967046): trampled mud-and-snow roads: the two streets that cross the city between its four gates, the approach roads, and the road along the river bank\n- steel blue, one level below the ground (#7fa6b8), with ochre-brown earth banks (#8c7356): the defensive trench around the walls, half-frozen dark water between steep earth banks\n- dark brown (#684220): plank bridges over the trench in front of the gates\n- red-brown (#b05842): a paved courtyard\n- short dashes on the ground (#9a8f74): where an inner wall will later be built; paint only trampled ground with a few stacks of timber and baskets of earth\n- dark grey (#5a5650): flat stone and rammed-earth foundations where walls and buildings will later be placed as separate pieces; paint them as bare, level foundations with no walls, no buildings and no rubble\n\nSetting: Chencang, Wei River valley, winter of 228 AD. A clear, cold winter day.\n\nLight: low winter sun from the lower left (south-west); the trench banks facing the viewer catch a pale warm light. Paint no cast shadows anywhere: the walls and buildings are added later with their own shadows.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nGame readability: open ground, roads, bridges and foundations are calm, flat and light, with low texture contrast, so soldiers and wall pieces placed on top stay readable. Keep detail density even across the image, with no vignette and no darkened corners.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+          "sourceFile": "exec-338e80a5-667e-44e3-97ec-1573f1e5a401.png",
+          "sourcePath": "attempts/s1-04/sources/v1.png",
+          "sourceSha256": "938fe618b4bbbbc8af7ace0785c6a1d182e98ccba8de50177db5e848174a3a06",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-04/v1.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2075314,
+          "sha256": "7a44431bbaef1eabf29c27d275c0b18ec93e9f8dbe4d4df5ac7eaced0743b6d7",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v2",
+          "prompt": "Registration priority: the FIRST image alone defines the ground positions; image 2 supplies ONLY brushwork, palette and snow/water texture, never wall or building geometry. All foundations are absolutely FLAT painted level ground with no raised masonry, outline bevel, wall fragment, rubble, step, drop shadow or cast shadow. Preserve these exact pixel rectangles: north perimeter foundation x128..1408 y144..192; south perimeter foundation x128..1408 y720..768; west foundation x128..192 y144..768; east foundation x1344..1408 y144..768. North bridge x704..832 y96..144; south bridge x704..832 y768..864; west bridge x0..128 y432..480; east bridge x1408..1536 y432..480. Do not move the north bridge up or broaden its water gap. Upper-left barracks foundations x328..632 y246..295 and x328..632 y325..377; lower-left foundation x328..632 y534..617; lower-right foundation x904..1208 y534..617; command hall foundation x841..1079 y245..282, paved courtyard x841..1079 y287..377. Paths remain at their marked widths. The road across the top stays a level brown road through y48..120, exactly as in the first image.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the ground layer only of a battlefield map for a strategy game: the site of the walled fortress of Chencang in the snow, with every wall and building removed. Output 1536×1024, landscape, filled edge to edge. One grid cell is 64 pixels wide and 48 pixels deep.\n\nBlock-out legend:\n- pale grey-white (#e6e4dc): open ground under fresh snow\n- brown (#967046): trampled mud-and-snow roads: the two streets that cross the city between its four gates, the approach roads, and the road along the river bank\n- steel blue, one level below the ground (#7fa6b8), with ochre-brown earth banks (#8c7356): the defensive trench around the walls, half-frozen dark water between steep earth banks\n- dark brown (#684220): plank bridges over the trench in front of the gates\n- red-brown (#b05842): a paved courtyard\n- short dashes on the ground (#9a8f74): where an inner wall will later be built; paint only trampled ground with a few stacks of timber and baskets of earth\n- dark grey (#5a5650): flat stone and rammed-earth foundations where walls and buildings will later be placed as separate pieces; paint them as bare, level foundations with no walls, no buildings and no rubble\n\nSetting: Chencang, Wei River valley, winter of 228 AD. A clear, cold winter day.\n\nLight: low winter sun from the lower left (south-west); the trench banks facing the viewer catch a pale warm light. Paint no cast shadows anywhere: the walls and buildings are added later with their own shadows.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nGame readability: open ground, roads, bridges and foundations are calm, flat and light, with low texture contrast, so soldiers and wall pieces placed on top stay readable. Keep detail density even across the image, with no vignette and no darkened corners.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+          "sourceFile": "exec-f32aa0ec-b906-4e41-9e54-cd8b41a4345f.png",
+          "sourcePath": "attempts/s1-04/sources/v2.png",
+          "sourceSha256": "532dd604d85c79b79700c42987debe2bdcc7e03a6ef9c8c5003ba8f869c4b1cf",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-04/v2.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2211790,
+          "sha256": "3b3af62f8a58d0171cabc792298654f7dcbb546b83b7ed4625dea246e69a0ad3",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v3",
+          "prompt": "Registration priority: the FIRST image alone defines the ground positions; image 2 supplies ONLY brushwork, palette and snow/water texture, never wall or building geometry. All foundations are absolutely FLAT painted level ground with no raised masonry, outline bevel, wall fragment, rubble, step, drop shadow or cast shadow. Preserve these exact pixel rectangles: north perimeter foundation x128..1408 y144..192; south perimeter foundation x128..1408 y720..768; west foundation x128..192 y144..768; east foundation x1344..1408 y144..768. North bridge x704..832 y96..144; south bridge x704..832 y768..864; west bridge x0..128 y432..480; east bridge x1408..1536 y432..480. Do not move the north bridge up or broaden its water gap. Upper-left barracks foundations x328..632 y246..295 and x328..632 y325..377; lower-left foundation x328..632 y534..617; lower-right foundation x904..1208 y534..617; command hall foundation x841..1079 y245..282, paved courtyard x841..1079 y287..377. Paths remain at their marked widths. The road across the top stays a level brown road through y48..120, exactly as in the first image.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image (the chosen city view) exactly.\n\nStyle priority — A 界画淡彩: The entire image is a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING on warm rice paper. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes; broad untouched paper-white snow. Show soft ink diffusion and visible subtle paper fibres throughout the image. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital environment. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines. Preserve every block's location and silhouette from the reference, and keep open snow and roads free of added trees, rocks or extra buildings.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the ground layer only of a battlefield map for a strategy game: the site of the walled fortress of Chencang in the snow, with every wall and building removed. Output 1536×1024, landscape, filled edge to edge. One grid cell is 64 pixels wide and 48 pixels deep.\n\nBlock-out legend:\n- pale grey-white (#e6e4dc): open ground under fresh snow\n- brown (#967046): trampled mud-and-snow roads: the two streets that cross the city between its four gates, the approach roads, and the road along the river bank\n- steel blue, one level below the ground (#7fa6b8), with ochre-brown earth banks (#8c7356): the defensive trench around the walls, half-frozen dark water between steep earth banks\n- dark brown (#684220): plank bridges over the trench in front of the gates\n- red-brown (#b05842): a paved courtyard\n- short dashes on the ground (#9a8f74): where an inner wall will later be built; paint only trampled ground with a few stacks of timber and baskets of earth\n- dark grey (#5a5650): flat stone and rammed-earth foundations where walls and buildings will later be placed as separate pieces; paint them as bare, level foundations with no walls, no buildings and no rubble\n\nSetting: Chencang, Wei River valley, winter of 228 AD. A clear, cold winter day.\n\nLight: low winter sun from the lower left (south-west); the trench banks facing the viewer catch a pale warm light. Paint no cast shadows anywhere: the walls and buildings are added later with their own shadows.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nGame readability: open ground, roads, bridges and foundations are calm, flat and light, with low texture contrast, so soldiers and wall pieces placed on top stay readable. Keep detail density even across the image, with no vignette and no darkened corners.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines; borders, frames or paper margins; legend or compass; people, soldiers, horses, flags, banners or pennants; perspective views, horizon or sky; vignette; modern objects.",
+          "sourceFile": "exec-c0ae5074-c3e2-4dd1-9a0a-7af34b28c4b9.png",
+          "sourcePath": "attempts/s1-04/sources/v3.png",
+          "sourceSha256": "ef39994924a9214d0523796ea78ddeed9f3785caa7d4d662338cd7a9c8032723",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-04/v3.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 2099176,
+          "sha256": "15daf1232c67dd6309bcd2650416f0d29c4ba22f764ed91fe60d013871cc42ca",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "v2",
+        "path": "attempts/s1-04/v2.webp",
+        "selectedBy": "agent",
+        "reason": "Best reviewed result for the requested S1 completion; reversible version selection."
+      },
+      "comparison": "attempts/s1-04/comparison.png",
+      "nativeReferencePaths": [
+        "docs/siege/chencang/art/s1-04-ground-plate/blockout.png",
+        "docs/siege/chencang/art/s1-01-city-vignette/attempts/v2-a.webp"
+      ],
+      "referenceImages": [
+        {
+          "role": "geometry blockout",
+          "path": "docs/siege/chencang/art/s1-04-ground-plate/blockout.png",
+          "sha256": "a50d8bba268452f9e7c634f2f7f9204ff5eb4e772f69235c94abd9574076174a"
+        },
+        {
+          "role": "style reference",
+          "path": "docs/siege/chencang/art/s1-01-city-vignette/attempts/v2-a.webp",
+          "sha256": "614a6a5b693cba93cb2f8373c346ee0f89220ee890a59329582a4220167099b4"
+        }
+      ],
+      "review": {
+        "status": "reviewed",
+        "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+        "findings": [
+          "Selected v2 keeps the north bridge and northern perimeter foundations closer to the blockout than v1 or v3.",
+          "Flat ground foundations, four bridges, roads, paved courtyard, trench and unfinished inner-wall work line; no standing buildings or cast shadows.",
+          "Native-size grid overlay reviewed. Main foundations track the guide; natural snow, mud and water edges retain organic variation."
+        ],
+        "dimensionsVerified": true,
+        "encodingVerified": "Lossless WebP pixels equal the prepared PNGs."
+      }
+    },
+    {
+      "id": "s1-05",
+      "folder": "s1-05-shu-halberd-sheet",
+      "name": "蜀戟兵姿态表",
+      "directory": "docs/siege/chencang/art/s1-05-shu-halberd-sheet",
+      "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep nine full bodies and all weapons inside their own cells. Cell centres x=256,768,1280. Foot baselines y=317,659,1000; helmet-top lines approximately y=77,419,760. Body height about 240px, excluding the halberd. Ensure row 1 shows backs, row 2 right-facing profiles, row 3 fronts; columns are idle, marching and thrusting. Use bold simplified ink-04 silhouettes, blank featureless faces, and the specified bright jade-green coat with red trim in all nine cells.\n\nSubject: a character pose sheet of one Shu-Han halberd infantryman for a strategy game, the same soldier drawn nine times. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line; the halberd may reach higher), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready; marching mid-stride; attacking, thrusting the halberd forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a late Eastern Han infantryman in a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, a rounded iron helmet with a neck guard, wrapped leggings and boots, a ji (戟) halberd and a small round wooden shield. No facial features, like the reference figure. Identical armour, colours, weapon and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "referenceRoles": ["pose layout guide", "style reference"],
+      "targetSize": [1536, 1024],
+      "status": "complete",
+      "images": [
+        {
+          "id": "v1",
+          "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep nine full bodies and all weapons inside their own cells. Cell centres x=256,768,1280. Foot baselines y=317,659,1000; helmet-top lines approximately y=77,419,760. Body height about 240px, excluding the halberd. Ensure row 1 shows backs, row 2 right-facing profiles, row 3 fronts; columns are idle, marching and thrusting. Use bold simplified ink-04 silhouettes, blank featureless faces, and the specified bright jade-green coat with red trim in all nine cells.\n\nSubject: a character pose sheet of one Shu-Han halberd infantryman for a strategy game, the same soldier drawn nine times. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line; the halberd may reach higher), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready; marching mid-stride; attacking, thrusting the halberd forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a late Eastern Han infantryman in a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, a rounded iron helmet with a neck guard, wrapped leggings and boots, a ji (戟) halberd and a small round wooden shield. No facial features, like the reference figure. Identical armour, colours, weapon and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-532ae20c-f2c0-4813-b30f-58797858d59f.png",
+          "sourcePath": "attempts/s1-05/sources/v1.png",
+          "sourceSha256": "9221babbe0a207acb95f991dd596463cb212b8b110e08e50205542bfc413c075",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-05/v1.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1263964,
+          "sha256": "b0f5ae2691536e5633f3d300786fa967399de6efe7bab7fd8f9a2a68a2c298c5",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v2",
+          "prompt": "Critical body registration and direction: make each helmet-to-boot body only 240 pixels tall, not 280 or 300. Feet y317,659,1000 and helmet crowns y77,419,760. Keep every weapon tip at least 8px inside its own cell. Row 1 is a TRUE REAR view in all three columns: attack foreshortens the halberd pointing up the page toward north. Row 2 is a TRUE RIGHT-FACING PROFILE in all columns, rather than a front three-quarter view; attack points to the right. Row 3 is a TRUE FRONT view in all columns; attack foreshortens the halberd pointing down the page toward the viewer, rather than turning to the right. Keep shield and halberd attached to the same hands in all poses. Use the high orthographic battlefield camera tilted 50 degrees down, showing broad helmet crowns and shoulder tops and foreshortened bodies. Small-scale readability takes priority over tiny armour detail. Faces are completely featureless flat skin-colour shapes.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep nine full bodies and all weapons inside their own cells. Cell centres x=256,768,1280. Foot baselines y=317,659,1000; helmet-top lines approximately y=77,419,760. Body height about 240px, excluding the halberd. Ensure row 1 shows backs, row 2 right-facing profiles, row 3 fronts; columns are idle, marching and thrusting. Use bold simplified ink-04 silhouettes, blank featureless faces, and the specified bright jade-green coat with red trim in all nine cells.\n\nSubject: a character pose sheet of one Shu-Han halberd infantryman for a strategy game, the same soldier drawn nine times. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line; the halberd may reach higher), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready; marching mid-stride; attacking, thrusting the halberd forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a late Eastern Han infantryman in a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, a rounded iron helmet with a neck guard, wrapped leggings and boots, a ji (戟) halberd and a small round wooden shield. No facial features, like the reference figure. Identical armour, colours, weapon and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-fd1502aa-103e-4cb2-a9da-195c06517d7e.png",
+          "sourcePath": "attempts/s1-05/sources/v2.png",
+          "sourceSha256": "59845914a8b167dbfd444bb7fce914303607d6dad1d6c0409f30030b17c0bd85",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-05/v2.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1229042,
+          "sha256": "2223635cb5f77a4ad6294757e99d986b566dba4092c9ca24e08ce47614869e13",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v3",
+          "prompt": "Small sprite scale priority: these are compact game sprites, deliberately much smaller inside their layout cells than a conventional character turnaround. Each helmet-to-sole body occupies ONLY 240 of the 341 vertical pixels in its cell (about 70%). Leave generous empty magenta around every sprite. Keep the requested body size and baselines even when a halberd extends higher. Do not fill the cell by enlarging the soldier. The same nine poses, same jade-green and red uniform, blank faces, same high orthographic camera.\n\nCritical body registration and direction: make each helmet-to-boot body only 240 pixels tall, not 280 or 300. Feet y317,659,1000 and helmet crowns y77,419,760. Keep every weapon tip at least 8px inside its own cell. Row 1 is a TRUE REAR view in all three columns: attack foreshortens the halberd pointing up the page toward north. Row 2 is a TRUE RIGHT-FACING PROFILE in all columns, rather than a front three-quarter view; attack points to the right. Row 3 is a TRUE FRONT view in all columns; attack foreshortens the halberd pointing down the page toward the viewer, rather than turning to the right. Keep shield and halberd attached to the same hands in all poses. Use the high orthographic battlefield camera tilted 50 degrees down, showing broad helmet crowns and shoulder tops and foreshortened bodies. Small-scale readability takes priority over tiny armour detail. Faces are completely featureless flat skin-colour shapes.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep nine full bodies and all weapons inside their own cells. Cell centres x=256,768,1280. Foot baselines y=317,659,1000; helmet-top lines approximately y=77,419,760. Body height about 240px, excluding the halberd. Ensure row 1 shows backs, row 2 right-facing profiles, row 3 fronts; columns are idle, marching and thrusting. Use bold simplified ink-04 silhouettes, blank featureless faces, and the specified bright jade-green coat with red trim in all nine cells.\n\nSubject: a character pose sheet of one Shu-Han halberd infantryman for a strategy game, the same soldier drawn nine times. Arrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 240 pixels from the soles to the top of the helmet, up to the dashed line; the halberd may reach higher), feet on the solid baseline.\nRows, top to bottom: seen from behind, facing away (north); seen from the side, facing right (east); seen from the front, facing the viewer (south).\nColumns, left to right: standing ready; marching mid-stride; attacking, thrusting the halberd forward.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a late Eastern Han infantryman in a bright jade-green (#5f9a5a) padded war coat with red (#a8432f) trim over dark iron lamellar armour, a fur-lined collar against the winter cold, a rounded iron helmet with a neck guard, wrapped leggings and boots, a ji (戟) halberd and a small round wooden shield. No facial features, like the reference figure. Identical armour, colours, weapon and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-bb12e67f-59b7-4742-a7ab-f05f63fefc0e.png",
+          "sourcePath": "attempts/s1-05/sources/v3.png",
+          "sourceSha256": "ec8cce2ce3424284d17a391f630c282818123ce350d5764e1abe8bdd55b5e062",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-05/v3.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1151148,
+          "sha256": "51d72be7680ec399a619f9893def801b6aa418c03e46de0bf459c08e2025e506",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v4",
+          "prompt": "Use case: background-extraction.\nThe attached image is the EDIT TARGET. Remove ONLY its magenta background and make it genuinely fully transparent. Preserve all nine Shu halberd infantrymen, their entire shields, thin halberd shafts and halberd blades exactly unchanged: identical silhouettes, placement, size, proportions, brushwork, colours, internal shading and all fine edges. Preserve the 1536x1024 canvas and the exact arrangement of every cell. Do not repaint, resize, move, rotate or crop any object. No magenta halo, colour spill, paper background, cast shadow, floor, labels or extra objects. Keep the foreground opaque and all background empty pixels fully transparent. Preserve the original artwork rather than redrawing it.",
+          "operation": "background-extraction",
+          "transparentRequested": true,
+          "sourceFile": "exec-4cf86951-5bb0-402a-9d1e-e12995a5246b.png",
+          "sourcePath": "attempts/s1-05/sources/v4.png",
+          "sourceSha256": "7f6e0317d503c25b112d9c14a669df77ad1f88d3244d573a87dc1fb131208120",
+          "nativeSize": [1536, 1024],
+          "transparentBackgroundPixels": 1248700,
+          "transparentPath": "attempts/s1-05/v4-transparent.png",
+          "path": "attempts/s1-05/v4.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 532726,
+          "sha256": "b6b3bfac617fbae29d1b8e27d62986e926639111d276118f646d966c0f4ff768",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v5",
+          "prompt": "Use case: precise-object-edit.\nThe attached image is the EDIT TARGET, a 1536x1024 transparent nine-pose Shu halberd infantry sheet. Change ONLY the halberd in the BOTTOM-RIGHT CELL (row 3, column 3). Keep that soldier in the exact same frontal attacking pose and keep the hand and body unchanged, but strongly foreshorten and shorten the forward-pointing shaft and blade so the blade TIP ends ABOVE the bottom of the boots, around image y=945..955, never near y=1016. The spear is thrust toward the viewer and must not hang down past the soldier's feet. The entire weapon must remain recognizable as the same ji halberd. Do not rotate the soldier to a side view. Keep the other eight poses exactly unchanged, and keep every body, shield, helmet, colour, line weight, position and scale unchanged. Preserve the 1536x1024 canvas, true transparent alpha background, opaque foreground and all fine ink edges. No new background, no cast shadow, no text or guide lines.",
+          "operation": "precise-object-edit",
+          "transparentRequested": true,
+          "sourceFile": "exec-ef07fe87-48d0-4358-8443-bf71ef77c2b4.png",
+          "sourcePath": "attempts/s1-05/sources/v5.png",
+          "sourceSha256": "1a61998569e72f54a42abbe7ab35c10d48d13f95bdb85dd430f6a5f7aee9232b",
+          "nativeSize": [1536, 1024],
+          "transparentBackgroundPixels": 1252738,
+          "preparation": "Uniform per-pose scaling and foot-anchor registration, no repainting.",
+          "transparentPath": "attempts/s1-05/v5-transparent.png",
+          "path": "attempts/s1-05/v5.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 472088,
+          "sha256": "6a64ebd134fbb9026b1769713f1d7937b21e27856853bb44df1a4785ff352fac",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "v5",
+        "path": "attempts/s1-05/v5.webp",
+        "selectedBy": "agent",
+        "reason": "Best reviewed result for the requested S1 completion; reversible version selection.",
+        "transparentPath": "attempts/s1-05/v5-transparent.png"
+      },
+      "registration": [
+        {
+          "name": "north-idle",
+          "cell": [0, 0, 512, 341],
+          "sourceHelmet": [245, 62],
+          "sourceFoot": [238, 325],
+          "sourceBodyHeight": 263,
+          "uniformScale": 0.91255,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [256, 317],
+          "path": "poses/north-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "north-march",
+          "cell": [512, 0, 512, 341],
+          "sourceHelmet": [761, 67],
+          "sourceFoot": [756.5, 331],
+          "sourceBodyHeight": 264,
+          "uniformScale": 0.90909,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [768, 317],
+          "path": "poses/north-march.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 3
+        },
+        {
+          "name": "north-attack",
+          "cell": [1024, 0, 512, 341],
+          "sourceHelmet": [1263, 83],
+          "sourceFoot": [1245.5, 325],
+          "sourceBodyHeight": 242,
+          "uniformScale": 0.99174,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [1280, 317],
+          "path": "poses/north-attack.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "east-idle",
+          "cell": [0, 341, 512, 342],
+          "sourceHelmet": [245, 396],
+          "sourceFoot": [254, 668],
+          "sourceBodyHeight": 272,
+          "uniformScale": 0.88235,
+          "bodyHeight": 240,
+          "anchor": [256, 318],
+          "sheetAnchor": [256, 659],
+          "path": "poses/east-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 1
+        },
+        {
+          "name": "east-march",
+          "cell": [512, 341, 512, 342],
+          "sourceHelmet": [751, 397],
+          "sourceFoot": [747.5, 659],
+          "sourceBodyHeight": 262,
+          "uniformScale": 0.91603,
+          "bodyHeight": 240,
+          "anchor": [256, 318],
+          "sheetAnchor": [768, 659],
+          "path": "poses/east-march.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 1
+        },
+        {
+          "name": "east-attack",
+          "cell": [1024, 341, 512, 342],
+          "sourceHelmet": [1213, 410],
+          "sourceFoot": [1176, 653],
+          "sourceBodyHeight": 243,
+          "uniformScale": 0.98765,
+          "bodyHeight": 240,
+          "anchor": [178, 318],
+          "sheetAnchor": [1202, 659],
+          "path": "poses/east-attack.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "south-idle",
+          "cell": [0, 683, 512, 341],
+          "sourceHelmet": [255, 721],
+          "sourceFoot": [255.5, 981],
+          "sourceBodyHeight": 260,
+          "uniformScale": 0.92308,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [256, 1000],
+          "path": "poses/south-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 1
+        },
+        {
+          "name": "south-march",
+          "cell": [512, 683, 512, 341],
+          "sourceHelmet": [754, 723],
+          "sourceFoot": [750.5, 1000],
+          "sourceBodyHeight": 277,
+          "uniformScale": 0.86643,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [768, 1000],
+          "path": "poses/south-march.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "south-attack",
+          "cell": [1024, 683, 512, 341],
+          "sourceHelmet": [1263, 719],
+          "sourceFoot": [1254.5, 965],
+          "sourceBodyHeight": 246,
+          "uniformScale": 0.97561,
+          "bodyHeight": 240,
+          "anchor": [256, 317],
+          "sheetAnchor": [1280, 1000],
+          "path": "poses/south-attack.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        }
+      ],
+      "comparison": "attempts/s1-05/comparison.png",
+      "nativeReferencePaths": [
+        "docs/siege/chencang/art/s1-05-shu-halberd-sheet/guide.png",
+        "docs/v0.3/assets/generated/units-count-ink-04/infantry.png"
+      ],
+      "exportedPieces": 9,
+      "referenceImages": [
+        {
+          "role": "pose layout guide",
+          "path": "docs/siege/chencang/art/s1-05-shu-halberd-sheet/guide.png",
+          "sha256": "a54594e92cd61192ced3cd60755b866d334222a13b464313dc561de5122dc2c7"
+        },
+        {
+          "role": "style reference",
+          "path": "docs/v0.3/assets/generated/units-count-ink-04/infantry.png",
+          "sha256": "2a7f25482f7bf0c1286a59f3216300aee00889c3fc2e992be1c4eb2972e5cc91"
+        }
+      ],
+      "review": {
+        "status": "reviewed",
+        "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+        "findings": [
+          "Nine poses in rear, east-facing and front rows, with idle, march and attack columns.",
+          "v5 shortens the front attack weapon after v4 extraction so its tip fits the final cell.",
+          "Prepared with uniform per-pose scaling, a common foot baseline per row, and per-pose horizontal anchor metadata. No repainting during packing.",
+          "Disconnected alpha specks smaller than 64 pixels were removed during atlas preparation; native generated alpha sources are retained.",
+          "Front attack is foreshortened toward the viewer; rear attack remains slightly diagonal while showing the back."
+        ],
+        "dimensionsVerified": true,
+        "encodingVerified": "Lossless WebP pixels equal the prepared PNGs.",
+        "smallScaleVisualReview": "Passed 36px colour and grayscale review."
+      }
+    },
+    {
+      "id": "s1-06",
+      "folder": "s1-06-wei-archer-sheet",
+      "name": "魏弓兵姿态表",
+      "directory": "docs/siege/chencang/art/s1-06-wei-archer-sheet",
+      "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "referenceRoles": ["pose layout guide", "style reference"],
+      "targetSize": [1536, 1024],
+      "status": "complete",
+      "images": [
+        {
+          "id": "v1",
+          "prompt": "Output requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-25d172fa-9537-4998-87d0-a73f3e2182df.png",
+          "sourcePath": "attempts/s1-06/sources/v1.png",
+          "sourceSha256": "0b79e49fe312a1d28176191d13bb09cc9b652a00e778d3c19bf176f87c21a58f",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-06/v1.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1373368,
+          "sha256": "c9d95be95b5569cf4be4ae6eb7293c1d440fe189a035c4d805327e8fb56122a3",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v2",
+          "prompt": "Critical body registration: each helmet-to-boot body is 300 pixels tall, never 380 or 400. All top-row feet end at y456 and helmet crowns at y156; bottom-row feet end at y968 and crowns at y668. Keep every bow tip and every arrow at least 12px inside its own cell. Use a high orthographic camera looking 50 degrees down; visibly show helmet crowns and shoulder tops and foreshorten the figures. All three TOP-ROW bodies face SOUTH toward the viewer, including drawing and release; keep the torso facing forward rather than rotating the body into an east-facing profile. Only bottom-row columns 2 and 3 face EAST in true right-facing profile. Bottom-row column 1 shows the BACK. Keep the same compact body size in every cell, blank featureless faces, same indigo armour and quiver. The third top cell releases a small flaming arrow with a visible orange-red arrowhead.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-b9addb38-0127-40dc-9d53-1a1c6fc2c7b7.png",
+          "sourcePath": "attempts/s1-06/sources/v2.png",
+          "sourceSha256": "f4c832780e96c49a81e63c3a3ab2155c4b3f7836c3bfbb5625f576adc9a71658",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-06/v2.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1337540,
+          "sha256": "248e5e68d8cba6ab75e5b208748f8d6ec4b59d2262dcced191419143ff615095",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v3",
+          "prompt": "Small sprite scale priority: these are compact game sprites, deliberately small inside large empty layout cells. Each helmet-to-sole body occupies ONLY 300 of the 512 vertical pixels in its cell (58.6%). Leave a large 156-pixel blank magenta space above the helmet and 56 pixels below the boots in each cell; bows alone may extend into the upper blank area. Do not enlarge the soldier to fill the cell. Keep all six poses and identical indigo armour, blank faces and the high orthographic camera.\n\nCritical body registration: each helmet-to-boot body is 300 pixels tall, never 380 or 400. All top-row feet end at y456 and helmet crowns at y156; bottom-row feet end at y968 and crowns at y668. Keep every bow tip and every arrow at least 12px inside its own cell. Use a high orthographic camera looking 50 degrees down; visibly show helmet crowns and shoulder tops and foreshorten the figures. All three TOP-ROW bodies face SOUTH toward the viewer, including drawing and release; keep the torso facing forward rather than rotating the body into an east-facing profile. Only bottom-row columns 2 and 3 face EAST in true right-facing profile. Bottom-row column 1 shows the BACK. Keep the same compact body size in every cell, blank featureless faces, same indigo armour and quiver. The third top cell releases a small flaming arrow with a visible orange-red arrowhead.\n\nOutput requirements: exactly 1536x1024 pixels, landscape. The first image is only a placement guide; do not render its grid, dashed lines or baselines. Keep six full bodies and all bows and arrows inside their own cells. Cell centres x=256,768,1280. Foot baselines y=456,968; helmet-top lines approximately y=156,668. Body height about 300px. Top row front-facing idle, draw, release flaming arrow; bottom row back-facing idle, right-facing idle, right-facing draw. Use bold simplified ink-04 silhouettes, blank featureless faces and the same deep indigo uniform in every cell. The fire arrow must have a small clearly visible orange-red flame at its arrowhead.\n\nSubject: a character pose sheet of one Wei archer for a strategy game, the same soldier drawn six times. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one full-body figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row, all seen from the front facing the viewer (south): standing ready; drawing the bow; loosing a fire arrow with a burning arrowhead.\nBottom row: standing ready, seen from behind (north); standing ready, seen from the side facing right (east); drawing the bow, seen from the side facing right.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a Wei archer in a deep indigo (#2f4a6e) padded war coat over black lacquered lamellar armour, a fur-lined collar against the winter cold, a round iron helmet with a neck guard, a long recurve bow and a quiver at the hip. No facial features, like the reference figure. Identical armour, colours, bow and proportions in every cell.\nStyle: match the second attached reference figure exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style only, not its camera angle.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+          "sourceFile": "exec-70d9f1b3-0c07-480e-a2c6-500142f4330e.png",
+          "sourcePath": "attempts/s1-06/sources/v3.png",
+          "sourceSha256": "99597d880abccd8cebf72ae0f6a3e8f3ff26c4d5d1a99e3ef6374372e1861445",
+          "nativeSize": [1536, 1024],
+          "path": "attempts/s1-06/v3.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 1312590,
+          "sha256": "6181f6b3be2778308a15bb8af0932c7c6bd7f59ce7a62287b9f2e5a5927d5d58",
+          "losslessEncodingVerified": true
+        },
+        {
+          "id": "v4",
+          "prompt": "Use case: background-extraction.\nThe attached image is the EDIT TARGET. Remove ONLY its magenta background and make it genuinely fully transparent. Preserve all six Wei archers, their entire thin bowstrings, bows, arrows, quivers and the orange-red flaming arrowhead exactly unchanged: identical silhouettes, placement, size, proportions, brushwork, colours, internal shading and all fine edges. Preserve the 1536x1024 canvas and the exact arrangement of every cell. Do not repaint, resize, move, rotate or crop any object. No magenta halo, colour spill, paper background, cast shadow, floor, labels or extra objects. Keep the foreground opaque and all background empty pixels fully transparent. Preserve the original artwork rather than redrawing it.",
+          "operation": "background-extraction",
+          "transparentRequested": true,
+          "sourceFile": "exec-514fa56f-2d6b-48ec-a16d-ae8a9af424b5.png",
+          "sourcePath": "attempts/s1-06/sources/v4.png",
+          "sourceSha256": "4b6fde074512a436dd7037287a51f23ef951ca11f4d30b78111d6baf93a83fb5",
+          "nativeSize": [1536, 1024],
+          "transparentBackgroundPixels": 1104353,
+          "preparation": "Uniform per-pose scaling and foot-anchor registration, no repainting.",
+          "transparentPath": "attempts/s1-06/v4-transparent.png",
+          "path": "attempts/s1-06/v4.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 455624,
+          "sha256": "6ae73640f0bc78abb119e42a358308212df983d9f5267b9e59a88ae5f01da3a1",
+          "losslessEncodingVerified": true
+        }
+      ],
+      "selected": {
+        "id": "v4",
+        "path": "attempts/s1-06/v4.webp",
+        "selectedBy": "agent",
+        "reason": "Best reviewed result for the requested S1 completion; reversible version selection.",
+        "transparentPath": "attempts/s1-06/v4-transparent.png"
+      },
+      "registration": [
+        {
+          "name": "south-idle",
+          "cell": [0, 0, 512, 512],
+          "sourceHelmet": [211, 68],
+          "sourceFoot": [232.5, 469],
+          "sourceBodyHeight": 401,
+          "uniformScale": 0.74813,
+          "bodyHeight": 300,
+          "anchor": [256, 456],
+          "sheetAnchor": [256, 456],
+          "path": "poses/south-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 1
+        },
+        {
+          "name": "south-draw",
+          "cell": [512, 0, 512, 512],
+          "sourceHelmet": [729, 70],
+          "sourceFoot": [738.5, 479],
+          "sourceBodyHeight": 409,
+          "uniformScale": 0.7335,
+          "bodyHeight": 300,
+          "anchor": [256, 456],
+          "sheetAnchor": [768, 456],
+          "path": "poses/south-draw.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "south-fire",
+          "cell": [1024, 0, 512, 512],
+          "sourceHelmet": [1193, 73],
+          "sourceFoot": [1215.5, 479],
+          "sourceBodyHeight": 406,
+          "uniformScale": 0.73892,
+          "bodyHeight": 300,
+          "anchor": [256, 456],
+          "sheetAnchor": [1280, 456],
+          "path": "poses/south-fire.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 4
+        },
+        {
+          "name": "north-idle",
+          "cell": [0, 512, 512, 512],
+          "sourceHelmet": [243, 588],
+          "sourceFoot": [249.5, 961],
+          "sourceBodyHeight": 373,
+          "uniformScale": 0.80429,
+          "bodyHeight": 300,
+          "anchor": [256, 456],
+          "sheetAnchor": [256, 968],
+          "path": "poses/north-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        },
+        {
+          "name": "east-idle",
+          "cell": [512, 512, 512, 512],
+          "sourceHelmet": [728, 569],
+          "sourceFoot": [743, 985],
+          "sourceBodyHeight": 416,
+          "uniformScale": 0.72115,
+          "bodyHeight": 300,
+          "anchor": [256, 456],
+          "sheetAnchor": [768, 968],
+          "path": "poses/east-idle.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 1
+        },
+        {
+          "name": "east-draw",
+          "cell": [1024, 512, 512, 512],
+          "sourceHelmet": [1220, 586],
+          "sourceFoot": [1162, 992],
+          "sourceBodyHeight": 406,
+          "uniformScale": 0.73892,
+          "bodyHeight": 300,
+          "anchor": [251, 456],
+          "sheetAnchor": [1275, 968],
+          "path": "poses/east-draw.png",
+          "fitsCell": true,
+          "removedSmallAlphaIslands": 0
+        }
+      ],
+      "comparison": "attempts/s1-06/comparison.png",
+      "nativeReferencePaths": [
+        "docs/siege/chencang/art/s1-06-wei-archer-sheet/guide.png",
+        "docs/v0.3/assets/generated/units-count-ink-04/archer.png"
+      ],
+      "exportedPieces": 6,
+      "referenceImages": [
+        {
+          "role": "pose layout guide",
+          "path": "docs/siege/chencang/art/s1-06-wei-archer-sheet/guide.png",
+          "sha256": "655e2e9be2290d038b65145d45f333b7ccfc551648ddf6b826449ab31973901b"
+        },
+        {
+          "role": "style reference",
+          "path": "docs/v0.3/assets/generated/units-count-ink-04/archer.png",
+          "sha256": "5a783be0300bedf789c997e0e1f62791cd01f377c322527e7308b04ad9bc186d"
+        }
+      ],
+      "review": {
+        "status": "reviewed",
+        "method": "Native-size guide overlays, per-cell atlas validation, neutral-background alpha previews and 36px colour/grayscale previews.",
+        "findings": [
+          "Six poses: south idle/draw/fire, north idle and east idle/draw.",
+          "Selected v4 extracts v2, which has a stronger high-camera treatment than v1.",
+          "Prepared with uniform per-pose scaling, a common foot baseline per row, and per-pose horizontal anchor metadata. No repainting during packing.",
+          "The flame at the released arrowhead survives preparation and the small-scale check. Front draw/release aim across the body while the torso remains frontal."
+        ],
+        "dimensionsVerified": true,
+        "encodingVerified": "Lossless WebP pixels equal the prepared PNGs.",
+        "smallScaleVisualReview": "Passed 36px colour and grayscale review."
+      }
+    }
+  ],
+  "status": "complete",
+  "exportedPieceCount": 21,
+  "overview": "attempts/s1-03-to-s1-06-overview.png",
+  "smallScalePreview": "attempts/s1-units-36px.png",
+  "smallScaleChecks": {
+    "bodyPixels": 36,
+    "coatLuminance": {
+      "s1-05": {
+        "sampleCount": 29318,
+        "median": 111.05
+      },
+      "s1-06": {
+        "sampleCount": 44691,
+        "median": 58.78
+      }
+    },
+    "medianLuminanceDifference": 52.27,
+    "fireArrowWarmPixels": 1252,
+    "visualReview": "Passed visual review: pose silhouettes, idle/march/attack distinctions, faction colour and luminance differences, and the flaming arrow remain readable at approximately 36px body height."
+  },
+  "validation": {
+    "status": "passed",
+    "dimensions": "1536x1024 for all sixteen sheet variants",
+    "imageHashesVerified": true,
+    "referenceHashesVerified": true,
+    "canonicalMirrorsVerified": true,
+    "exportedPieceCount": 21,
+    "transparentSheetsVerified": true,
+    "footBaselinesVerified": true,
+    "smallScaleColourAndGrayscaleReviewed": true
+  }
+}
