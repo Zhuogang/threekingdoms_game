@@ -1,0 +1,83 @@
+{
+  "id": "s6-05",
+  "folder": "s6-05-paper",
+  "name": "scroll banner and panel paper",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen with a genuinely transparent background (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [],
+  "alpha": "ImageGen alpha is noisy (solid areas 252-254, background hazed at 1); attempts are normalised linearly so alpha<=2 is 0 and >=250 is 255, soft edges in between kept. Sources are untouched.",
+  "prompt": "Output: an image exactly 1536 by 1024 pixels. Four separate blank paper and silk pieces for the interface of a Three Kingdoms strategy game, laid out without overlapping:\n\n- Top, across almost the whole width (x=64..1472, y=96..352): a horizontal hanging scroll, unrolled: a long strip of warm cream rice paper mounted on pale blue-grey silk borders, with a dark lacquered wooden roller at each end capped with small bronze ends. The paper is completely blank and evenly textured along its length, so its middle can be repeated.\n- Bottom left (x=64..640, y=448..1024): a square of plain warm rice paper with subtle fibres and faint watercolour mottling, completely blank, even in tone from edge to edge.\n- Bottom right, upper (x=768..1472, y=448..640): a narrow horizontal name plaque: a thin dark wooden frame around blank cream paper.\n- Bottom right, lower (x=768..1472, y=704..992): a dialogue panel: blank cream paper mounted in a narrow border of muted indigo brocade with a fine cloud pattern.\n\nSeen straight on, flat, evenly lit, no perspective and no cast shadows. Traditional Chinese mounting craft, restrained and elegant, matching a game painted in ink and light colour.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures on any piece; ornaments on the blank paper; grid lines or guide marks; backgrounds; modern objects.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-0f88ac76-4f3f-4671-87dd-b40681f89d0d.png",
+      "sourcePath": "../../../../../attempts/s6-05/sources/v1.png",
+      "sourceSha256": "e9244e89af8f147b8dced41d8966fcc38c2a80fba0aa0645dac8eed662ab1bf4",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "sha256": "2fbd2835f0a179efe958ed4839efc8d66417ddd3ffd5eda77b797910ed642cd5",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-105b198a-c08a-4470-825a-88e8f1bdca32.png",
+      "sourcePath": "../../../../../attempts/s6-05/sources/v2.png",
+      "sourceSha256": "354433d41225792662895853764fb252d5428b4de2fbbb4147128f12825c5d57",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "sha256": "4e76589e3d57bb21f7d6af75e7e9dd21de384e38df673bc8fe89318ef870dbf9",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-29e0eda9-a335-447d-970e-f66182774b3f.png",
+      "sourcePath": "../../../../../attempts/s6-05/sources/v3.png",
+      "sourceSha256": "3fdf359ccdb03df14a9aba69cf356e0b79631d9d6e50bb973dcedef8cda757f4",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "sha256": "a6f6b72d2d382757722487c1324c47868304fdd71012bca869199efbbf9a4866",
+      "losslessEncodingVerified": false
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "png": "selected.png",
+    "sha256": "1293486506d6a7bf747dd805cd6dba1d30b062fa867c40ceb49fb37556164602",
+    "selectedBy": "agent",
+    "reason": "Cleanest rollers and brocade; all paper blank.",
+    "derived": "pieces/pieces.json"
+  },
+  "comparison": "comparison.png"
+}

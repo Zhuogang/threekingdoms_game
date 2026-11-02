@@ -1,0 +1,22 @@
+{
+  "icons": [
+    "ladder",
+    "ram",
+    "earth-cart",
+    "siege-tower",
+    "fire-arrow",
+    "millstone",
+    "boulders",
+    "inner-wall",
+    "rally",
+    "supervise",
+    "rotate",
+    "hold-fast"
+  ],
+  "sizes": [
+    128,
+    64,
+    32
+  ],
+  "preparation": "Each icon cropped from the selected sheet, centred on a transparent square with 6% margin, resized with Lanczos. No repainting."
+}

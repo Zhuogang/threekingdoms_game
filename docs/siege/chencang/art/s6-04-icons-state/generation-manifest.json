@@ -1,0 +1,83 @@
+{
+  "id": "s6-04",
+  "folder": "s6-04-icons-state",
+  "name": "icons: siege state and resources",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen with a genuinely transparent background (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [],
+  "alpha": "ImageGen alpha is noisy (solid areas 252-254, background hazed at 1); attempts are normalised linearly so alpha<=2 is 0 and >=250 is 255, soft edges in between kept. Sources are untouched.",
+  "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game, a companion set to an existing sheet of engine and order icons.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. height (高度): three stacked steps rising to the right\n2. climb the wall (登城): a ladder leaning on a crenellated wall top, with an upward arrow stroke\n3. fill the trench (填堑): a basket tipping earth into a narrow ditch\n4. city gate (城门): a gate tower over a pair of closed studded doors\n5. city wall (城墙): a short crenellated wall section\n6. grain supply (余粮): a tied grain sack with a few spilled grains\n7. reinforcements (援军): a galloping horse head with a pennant streaming behind\n8. morale (士气): a battle flag streaming in the wind on a short pole\n9. troop strength (兵力): three spears standing upright side by side\n10. wounded (伤兵): a broken spear with a bandage wrapped around it\n11. day (日): a sun disc with a few short brush rays (the disc is the vermilion accent)\n12. night repair (夜修): a crescent moon above a mallet\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-2c3ff87e-0dd6-4c0d-8037-f08f1bfc7c67.png",
+      "sourcePath": "../../../../../attempts/s6-04/sources/v1.png",
+      "sourceSha256": "39c220a13e7c91fd847dc38ea6f87b2f1b94873ada261588fc6fac569c2e0eb1",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "sha256": "87c592479ed3308247be2862362863a4a6e6905fbd29c4a4d5b47d57b0bcdc5e",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-e7fb9b97-735d-4b57-9d0a-5ca56d6adbb5.png",
+      "sourcePath": "../../../../../attempts/s6-04/sources/v2.png",
+      "sourceSha256": "366e2dd5e40b32778930f848a71b4b3c1e8b142865712557d4479c46ed1248be",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "sha256": "08c3dcb1b1f7c9c26b9ca874ede9b8a5bd666c15dc00ffac1b3b558dc06ca44f",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-61f6ce6d-2b92-4e8d-af78-d9656d248e09.png",
+      "sourcePath": "../../../../../attempts/s6-04/sources/v3.png",
+      "sourceSha256": "24bddcf3f32c61b219fc0e09e6d42623d244560ffbf084b04155e948edeea2e9",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "sha256": "0e4b0daf5288e2b4fe126c2096e8c6cc751dd857eaa2281944a32c21f8af25c2",
+      "losslessEncodingVerified": false
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "png": "selected.png",
+    "sha256": "ad2e9cd29d4a28d2b7d10bd2f98d0746d0170f4e00243d45f7cd70623358f62f",
+    "selectedBy": "agent",
+    "reason": "Matches S6-03 v3; distinct at 32px.",
+    "derived": "icons/icons.json"
+  },
+  "comparison": "comparison.png"
+}

@@ -1,0 +1,83 @@
+{
+  "id": "s6-03",
+  "folder": "s6-03-icons-siege",
+  "name": "icons: engines, countermeasures, orders",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen with a genuinely transparent background (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [],
+  "alpha": "ImageGen alpha is noisy (solid areas 252-254, background hazed at 1); attempts are normalised linearly so alpha<=2 is 0 and >=250 is 255, soft edges in between kept. Sources are untouched.",
+  "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. siege ladder cart (云梯): a wheeled cart with a tall leaning ladder\n2. battering ram (冲车): a roofed wheeled shed with a ram beam sticking out\n3. earth cart (土车): a small two-wheeled barrow heaped with earth\n4. siege tower (井阑): a tall timber tower on wheels with a platform on top\n5. fire arrow (火箭): an arrow whose head is wrapped in flame (the flame is the vermilion accent)\n6. millstone drop (石磨): a heavy round millstone hanging from a rope, about to fall\n7. dropped boulders (礌石): two boulders falling with short speed strokes\n8. build the inner wall (筑重墙): a short rammed-earth wall between wooden shuttering boards with a rammer\n9. rally (鼓舞): a war drum with crossed drumsticks\n10. speed up construction (督造): a carpenter’s square crossed with a mallet\n11. rotate troops (轮换): two curved arrows chasing each other around a small tent\n12. hold fast (死守): a tall shield planted firmly, with a single upright spear behind it\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-b07802dc-622f-4f9c-9cd4-10e1503dd9ee.png",
+      "sourcePath": "../../../../../attempts/s6-03/sources/v1.png",
+      "sourceSha256": "bba0787bba24ce8f9415e01900ae24a8265b3b05859772689c90516b8c8b4cbd",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "sha256": "c82d87c9ad687a885c40b6cd0986a6dc4963c517814340d283cd7b28bbfe3bc8",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-84b476c9-87c4-414c-8a69-2b113bce4d72.png",
+      "sourcePath": "../../../../../attempts/s6-03/sources/v2.png",
+      "sourceSha256": "ae3179a172a035241d57a6d98d62b0f5549a20b04a76c679bddcd51aa81b3dc2",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "sha256": "4342edfe786b85031322c674c778d6180c73e1509f25c45ed5798b9a30160f0a",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-290e8422-4696-47ae-9396-761b8b3a73e8.png",
+      "sourcePath": "../../../../../attempts/s6-03/sources/v3.png",
+      "sourceSha256": "92d2f80fd573e5d770e6ef1f95a6bc097b3a046cfeb73e3aabb8909616ebe7cb",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "sha256": "179074c2c4f44e79f5a94df9572b97cce16e312d553069c16cbad9cfe3e1a477",
+      "losslessEncodingVerified": false
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "png": "selected.png",
+    "sha256": "0a075e7045e0d0ef898bdb686daad91f4f105646d081979a67be7bde881bdf93",
+    "selectedBy": "agent",
+    "reason": "Most consistent stroke weight; every icon stays distinct at 32px. v2 drew a European heater shield for hold-fast.",
+    "derived": "icons/icons.json"
+  },
+  "comparison": "comparison.png"
+}

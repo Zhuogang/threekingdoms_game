@@ -1,0 +1,35 @@
+You are producing game art with your built-in image generation tool. This is an image job, not a coding job.
+
+Generate 3 separate candidate images for job S6-03. For each candidate, call the image generation tool once, passing ALL the attached images as references/inputs in the same order they are attached, and use the IMAGE PROMPT below verbatim as the prompt (do not shorten, paraphrase or add to it). If the prompt describes an edit of the first attached image, perform an image edit of that image.
+Attached images, in order:
+
+After each generation, copy the tool's output file, byte for byte and unaltered (no resizing, re-encoding, cropping or background removal), to:
+  /home/ubuntu/GAMES/threekingdoms_game/attempts/s6-03/sources/v<k>.png   (k = 1..3)
+If the output is not PNG, keep its real extension instead. Do not write any other files. Finally reply with one line per candidate: file path, pixel size, and the original tool output path.
+
+IMAGE PROMPT:
+<<<
+Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.
+
+Arrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.
+
+Rows left to right, top to bottom:
+1. siege ladder cart (云梯): a wheeled cart with a tall leaning ladder
+2. battering ram (冲车): a roofed wheeled shed with a ram beam sticking out
+3. earth cart (土车): a small two-wheeled barrow heaped with earth
+4. siege tower (井阑): a tall timber tower on wheels with a platform on top
+5. fire arrow (火箭): an arrow whose head is wrapped in flame (the flame is the vermilion accent)
+6. millstone drop (石磨): a heavy round millstone hanging from a rope, about to fall
+7. dropped boulders (礌石): two boulders falling with short speed strokes
+8. build the inner wall (筑重墙): a short rammed-earth wall between wooden shuttering boards with a rammer
+9. rally (鼓舞): a war drum with crossed drumsticks
+10. speed up construction (督造): a carpenter’s square crossed with a mallet
+11. rotate troops (轮换): two curved arrows chasing each other around a small tent
+12. hold fast (死守): a tall shield planted firmly, with a single upright spear behind it
+
+Style: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.
+
+Output a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.
+
+Do not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.
+>>>

@@ -1,0 +1,107 @@
+[
+  {
+    "id": "v1",
+    "source": "v1.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "bba0787bba24ce8f9415e01900ae24a8265b3b05859772689c90516b8c8b4cbd",
+    "path": "attempts/v1.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 585818,
+    "sha256": "c82d87c9ad687a885c40b6cd0986a6dc4963c517814340d283cd7b28bbfe3bc8",
+    "losslessEncodingVerified": false,
+    "cornerPixels": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        48,
+        24,
+        17
+      ],
+      [
+        27,
+        23,
+        20
+      ],
+      [
+        10,
+        8,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "v2",
+    "source": "v2.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "ae3179a172a035241d57a6d98d62b0f5549a20b04a76c679bddcd51aa81b3dc2",
+    "path": "attempts/v2.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 459102,
+    "sha256": "4342edfe786b85031322c674c778d6180c73e1509f25c45ed5798b9a30160f0a",
+    "losslessEncodingVerified": false,
+    "cornerPixels": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        65,
+        23,
+        13
+      ],
+      [
+        21,
+        18,
+        14
+      ],
+      [
+        2,
+        0,
+        0
+      ]
+    ]
+  },
+  {
+    "id": "v3",
+    "source": "v3.png",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "sourceSha256": "92d2f80fd573e5d770e6ef1f95a6bc097b3a046cfeb73e3aabb8909616ebe7cb",
+    "path": "attempts/v3.webp",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 447944,
+    "sha256": "179074c2c4f44e79f5a94df9572b97cce16e312d553069c16cbad9cfe3e1a477",
+    "losslessEncodingVerified": false,
+    "cornerPixels": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        38,
+        17,
+        9
+      ],
+      [
+        20,
+        16,
+        13
+      ],
+      [
+        1,
+        1,
+        0
+      ]
+    ]
+  }
+]

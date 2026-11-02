@@ -1,0 +1,22 @@
+{
+  "icons": [
+    "height",
+    "climb",
+    "fill-trench",
+    "gate",
+    "wall",
+    "grain",
+    "reinforcements",
+    "morale",
+    "troops",
+    "wounded",
+    "day",
+    "night-repair"
+  ],
+  "sizes": [
+    128,
+    64,
+    32
+  ],
+  "preparation": "Each icon cropped from the selected sheet, centred on a transparent square with 6% margin, resized with Lanczos. No repainting."
+}

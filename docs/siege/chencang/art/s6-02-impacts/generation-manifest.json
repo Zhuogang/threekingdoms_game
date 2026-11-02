@@ -1,0 +1,85 @@
+{
+  "id": "s6-02",
+  "folder": "s6-02-impacts",
+  "name": "impacts",
+  "generatedOn": "2026-11-02",
+  "mode": "Codex built-in image_gen with a genuinely transparent background (codex exec, gpt-6.1-sol, xhigh)",
+  "references": [
+    "style-reference.png (crop of the approved S2-01 map)"
+  ],
+  "alpha": "ImageGen alpha is noisy (solid areas 252-254, background hazed at 1); attempts are normalised linearly so alpha<=2 is 0 and >=250 is 255, soft edges in between kept. Sources are untouched.",
+  "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of separate painted impact and debris elements for a siege battle in a strategy game, nine elements.\n\nArrange the sheet as a 3 by 3 grid of equal cells (512×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nTop row, bursts of snow-dust and earth thrown up by an impact, sitting on an invisible ground line near the bottom of each cell: small, medium, large.\nMiddle row: a scatter of broken wooden splinters and planks flying apart; a scatter of broken stone and brick fragments; two heavy rough-hewn stone boulders (礌石) of the kind defenders drop from walls, side by side.\nBottom row: four arrows stuck at angles into a patch of snow, seen from the map camera; four arrows stuck into a vertical brick wall face, seen from the front, with only the arrows and a few chips of brick (no wall); a low pile of broken roof tiles and bricks (rubble).\n\nStyle: traditional Chinese ink-wash painting with light colour, matching the attached painting (the battlefield map these effects are laid over) in brushwork, ink weight and palette: loose expressive ink strokes and soft transparent washes, warm restrained colour; flames in vermilion, orange and pale yellow washes with dark ink tips, smoke in layered grey ink washes. Seen from the same high three-quarter camera as the map. Painted, not photographic, no glossy CG fire.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.",
+  "status": "picked by agent; awaiting your review",
+  "images": [
+    {
+      "id": "v1",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-9169ba8c-2ffb-4d7e-9f24-788fd1cffd39.png",
+      "sourcePath": "../../../../../attempts/s6-02/sources/v1.png",
+      "sourceSha256": "4413886a0c4fa0b044366ef2f8b350a7fbd6e959859ba53068d1ae91a0b621a0",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v1.webp",
+      "sha256": "9e402e6083a17d88d3256865b988a4d936320646809094a3b72fbd577f250cb3",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v2",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-b4487d1c-79ac-4d52-84d3-a1706d9c0a8e.png",
+      "sourcePath": "../../../../../attempts/s6-02/sources/v2.png",
+      "sourceSha256": "16e358dd10027133906e80e0e430c603a5568c83ff2723c99b053e9232b54086",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v2.webp",
+      "sha256": "f9f13669ac09ef5cd3b64b7148a089c96fdd7a6b5715cb830d8211e7bf709d6c",
+      "losslessEncodingVerified": false
+    },
+    {
+      "id": "v3",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "codex-1.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-d0d3b92c-4a62-4b53-8454-4cbb40d5f01d.png",
+      "sourcePath": "../../../../../attempts/s6-02/sources/v3.png",
+      "sourceSha256": "622527dc687abf0fe4421e317d197d0b2021bf7e6eb1572524f554c0cd6ddf74",
+      "nativeSize": [
+        1536,
+        1024
+      ],
+      "path": "attempts/v3.webp",
+      "sha256": "85981951ee204090b04f4e8d5a3bcf957aa4d2437c99490065ee75f92b43b440",
+      "losslessEncodingVerified": false
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "png": "selected.png",
+    "sha256": "9619fdd26070a022ba04676df8518fa96f648aad6d88d64bb9883b157a7ba8fd",
+    "selectedBy": "agent",
+    "reason": "Dust bursts read best (soft edges, thrown earth); arrows in the wall are drawn without the wall, as asked.",
+    "derived": "poses.json"
+  },
+  "comparison": "comparison.png"
+}

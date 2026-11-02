@@ -2600,6 +2600,248 @@ const ROSTER_ASSETS = [
   }),
 ];
 
+// ---------------------------------------------------------------------------
+// S6 effect elements and interface (MVP plan §8.2, §8.3). Still images only:
+// the game moves, scales, fades and tints them (no frame animation). These
+// sheets ask ImageGen for a genuinely transparent background, because smoke,
+// dust and glow need soft partial alpha that a magenta key cannot recover.
+// The effects take a crop of the approved S2-01 map as their style reference
+// (s6-01-fire-smoke/style-reference.png), not a building piece.
+const MAP_STYLE_REF =
+  '`docs/siege/chencang/art/s6-01-fire-smoke/style-reference.png`（S2-01 定稿全图的一块，风格参考）';
+const TRANSPARENT_OUT =
+  'Output a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.';
+const EXCLUDE_ELEMENTS =
+  'Do not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners; modern objects.';
+const cellLayout = (cols, rows, w, h) =>
+  `Arrange the sheet as a ${cols} by ${rows} grid of equal cells (${w}×${h} pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.`;
+const elementSheet = ({
+  id,
+  zh,
+  about,
+  cols,
+  rows,
+  subject,
+  items,
+  uploads,
+  styleLine,
+  checks,
+}) => {
+  const [w, h] = [1536 / cols, 1024 / rows].map(Math.round);
+  return {
+    id,
+    stage: 'S6',
+    zh,
+    size: [1536, 1024],
+    noImage: true,
+    about,
+    prompts: () => [
+      {
+        text: [
+          `Output: an image exactly 1536 by 1024 pixels. ${subject}`,
+          cellLayout(cols, rows, w, h),
+          items.join('\n'),
+          styleLine,
+          TRANSPARENT_OUT,
+          EXCLUDE_ELEMENTS,
+        ].join('\n\n'),
+      },
+    ],
+    uploads,
+    checks: [
+      '背景真的是透明的（PNG 带 alpha）：烟、尘、光晕边缘是半透明，不是一块底色。',
+      '每格一件，不出格；缩到游戏大小（一半）还看得懂。',
+      ...checks,
+    ],
+    naming: '依次命名 `v1.webp`、`v2.webp`……（无损 webp，保留透明通道）。',
+  };
+};
+const EFFECT_STYLE =
+  'Style: traditional Chinese ink-wash painting with light colour, matching the attached painting (the battlefield map these effects are laid over) in brushwork, ink weight and palette: loose expressive ink strokes and soft transparent washes, warm restrained colour; flames in vermilion, orange and pale yellow washes with dark ink tips, smoke in layered grey ink washes. Seen from the same high three-quarter camera as the map. Painted, not photographic, no glossy CG fire.';
+const ICON_STYLE =
+  'Style: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.';
+const iconItems = (names) => [
+  'Rows left to right, top to bottom:',
+  ...names.map((n, i) => `${i + 1}. ${n}`),
+];
+
+// Chosen attempt per S6 sheet, with why and what was cut from it.
+const EFFECT_PICKS = {
+  's6-01-fire-smoke': [
+    'v1.webp',
+    '三种火焰大小分得开，焦痕带余烬，烟是半透明的灰墨',
+    '逐格切出的元素在 `poses/`（游戏尺寸 50% 在 `poses-game/`，锚点见 `poses.json`）',
+  ],
+  's6-02-impacts': [
+    'v1.webp',
+    '尘爆最好（边缘散开、带土块），墙上的箭簇没画墙',
+    '逐格切出的元素在 `poses/`、`poses-game/`',
+  ],
+  's6-03-icons-siege': [
+    'v3.webp',
+    '笔画最一致，32px 下十二个都认得出；v2 的死守画成了西式盾',
+    '方形图标 128、64、32px 在 `icons/`',
+  ],
+  's6-04-icons-state': [
+    'v3.webp',
+    '和 S6-03 v3 是一套，32px 下都认得出',
+    '方形图标 128、64、32px 在 `icons/`',
+  ],
+  's6-05-paper': [
+    'v2.webp',
+    '卷轴木轴和锦缎镶边最干净，纸面全空',
+    '四件和横幅两端、可重复的中段、可平铺的纸纹在 `pieces/`（`pieces.json`）',
+  ],
+};
+const withEffectPick = (asset) => {
+  const [final, why, files] = EFFECT_PICKS[asset.id] ?? [];
+  if (!final) return asset;
+  return {
+    ...asset,
+    final,
+    about: [
+      ...asset.about,
+      `**2026-11-02 选定 \`attempts/${final}\`**（待你确认）：${why}。ImageGen 出的透明通道有噪点（实心处 252–254、底上有一层 1），存 \`attempts/\` 时线性拉到 0 和 255，软边保留；原图不动。选定的透明 PNG 是 \`selected.png\`；${files}，由 \`attempts/cut_poses.py\`、\`attempts/prepare_ui.py\` 切出，不重画。每张的提示词、源文件和选择理由记在 \`generation-manifest.json\`。`,
+    ],
+  };
+};
+const EFFECT_ASSETS = [
+  elementSheet({
+    id: 's6-01-fire-smoke',
+    zh: 'S6-01 火与烟',
+    cols: 3,
+    rows: 3,
+    about: [
+      '3×3 宫格，每格 512×341，透明底。第一行火焰小、中、大；第二行蔓延的火（宽而低）、火星余烬、焦痕贴花（俯视地面）；第三行淡烟团、上升的烟柱、黑烟。',
+      '程序把四种火焰轮换显示，加缩放、闪烁、明暗；烟团向东北飘升、变大、淡出；焦痕贴在器械和地面上（MVP 计划 §8.3）。',
+      '风格参考是 S2-01 定稿全图的一块（`style-reference.png`），火和烟要像同一幅画里画出来的。',
+    ],
+    subject:
+      'A sheet of separate painted effect elements of fire and smoke for a strategy game, nine elements.',
+    items: [
+      'Top row, flames standing on an invisible ground line near the bottom of each cell: a small flame (a hand-sized tongue of fire); a medium fire; a large roaring fire, about three times as tall as the small one.',
+      'Middle row: a low spreading fire, wide and short, as fire running along timber; a loose cluster of sparks and glowing embers drifting upward; a scorch mark decal: a blackened, charred patch of ground with ash and a few cinders, seen from above at the map camera angle, flat on the ground.',
+      'Bottom row: a single soft puff of pale grey smoke; a rising column of grey smoke, tall and narrow, leaning slightly to the upper right; a heavy billow of thick black smoke.',
+    ],
+    uploads: [MAP_STYLE_REF],
+    styleLine: EFFECT_STYLE,
+    checks: [
+      '火焰三种大小明显不同；烟是半透明的灰墨，不是一块实心的灰。',
+      '焦痕是平贴地面的，从斜俯视看是扁的。',
+    ],
+  }),
+  elementSheet({
+    id: 's6-02-impacts',
+    zh: 'S6-02 冲击',
+    cols: 3,
+    rows: 3,
+    about: [
+      '3×3 宫格，每格 512×341，透明底。第一行尘爆小、中、大；第二行碎木、碎石、礌石两块；第三行插在雪里的箭簇、插在墙面上的箭簇、瓦砾堆。',
+      '冲车撞门、礌石落地、石磨砸冲车时出尘爆和碎片，碎片由程序四散；箭由程序画成墨线，落地后换成插着的箭簇（MVP 计划 §8.3）。',
+    ],
+    subject:
+      'A sheet of separate painted impact and debris elements for a siege battle in a strategy game, nine elements.',
+    items: [
+      'Top row, bursts of snow-dust and earth thrown up by an impact, sitting on an invisible ground line near the bottom of each cell: small, medium, large.',
+      'Middle row: a scatter of broken wooden splinters and planks flying apart; a scatter of broken stone and brick fragments; two heavy rough-hewn stone boulders (礌石) of the kind defenders drop from walls, side by side.',
+      'Bottom row: four arrows stuck at angles into a patch of snow, seen from the map camera; four arrows stuck into a vertical brick wall face, seen from the front, with only the arrows and a few chips of brick (no wall); a low pile of broken roof tiles and bricks (rubble).',
+    ],
+    uploads: [MAP_STYLE_REF],
+    styleLine: EFFECT_STYLE,
+    checks: ['尘爆是半透明的，边缘散开。', '墙上的箭簇只画箭和几点碎砖，不画墙。'],
+  }),
+  elementSheet({
+    id: 's6-03-icons-siege',
+    zh: 'S6-03 图标表一：器械、反制、军令',
+    cols: 4,
+    rows: 3,
+    about: [
+      '4×3 宫格，每格 384×341，十二个图标：云梯、冲车、土车、井阑；火箭、石磨、礌石、筑重墙；鼓舞、督造、轮换、死守（MVP 计划 §4.7–§4.9）。',
+      '墨色剪影加一点朱红，不带外框；底框、选中态、灰显由界面代码画，所以图标本身要简单（32px 还认得出）。',
+    ],
+    subject: 'A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.',
+    items: iconItems([
+      'siege ladder cart (云梯): a wheeled cart with a tall leaning ladder',
+      'battering ram (冲车): a roofed wheeled shed with a ram beam sticking out',
+      'earth cart (土车): a small two-wheeled barrow heaped with earth',
+      'siege tower (井阑): a tall timber tower on wheels with a platform on top',
+      'fire arrow (火箭): an arrow whose head is wrapped in flame (the flame is the vermilion accent)',
+      'millstone drop (石磨): a heavy round millstone hanging from a rope, about to fall',
+      'dropped boulders (礌石): two boulders falling with short speed strokes',
+      'build the inner wall (筑重墙): a short rammed-earth wall between wooden shuttering boards with a rammer',
+      'rally (鼓舞): a war drum with crossed drumsticks',
+      'speed up construction (督造): a carpenter’s square crossed with a mallet',
+      'rotate troops (轮换): two curved arrows chasing each other around a small tent',
+      'hold fast (死守): a tall shield planted firmly, with a single upright spear behind it',
+    ]),
+    uploads: ['不上传参考图。'],
+    styleLine: ICON_STYLE,
+    checks: [
+      '十二个图标笔画粗细和大小一致，每个只有一处朱红。',
+      '缩到 32px 每个都还认得出、彼此不混。',
+    ],
+  }),
+  elementSheet({
+    id: 's6-04-icons-state',
+    zh: 'S6-04 图标表二：高度、登城、填堑、余粮、援军等',
+    cols: 4,
+    rows: 3,
+    about: [
+      '4×3 宫格，每格 384×341，十二个图标：高度、登城、填堑、城门；城墙、余粮、援军、士气；兵力、伤兵、日、夜修（MVP 计划 §4、§7）。',
+      '画风同 S6-03，两张表放在一起要像一套。',
+    ],
+    subject:
+      'A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game, a companion set to an existing sheet of engine and order icons.',
+    items: iconItems([
+      'height (高度): three stacked steps rising to the right',
+      'climb the wall (登城): a ladder leaning on a crenellated wall top, with an upward arrow stroke',
+      'fill the trench (填堑): a basket tipping earth into a narrow ditch',
+      'city gate (城门): a gate tower over a pair of closed studded doors',
+      'city wall (城墙): a short crenellated wall section',
+      'grain supply (余粮): a tied grain sack with a few spilled grains',
+      'reinforcements (援军): a galloping horse head with a pennant streaming behind',
+      'morale (士气): a battle flag streaming in the wind on a short pole',
+      'troop strength (兵力): three spears standing upright side by side',
+      'wounded (伤兵): a broken spear with a bandage wrapped around it',
+      'day (日): a sun disc with a few short brush rays (the disc is the vermilion accent)',
+      'night repair (夜修): a crescent moon above a mallet',
+    ]),
+    uploads: ['不上传参考图；出图后和 S6-03 放在一起看。'],
+    styleLine: ICON_STYLE,
+    checks: ['和 S6-03 放在一起像同一套。', '缩到 32px 每个都还认得出。'],
+  }),
+  {
+    id: 's6-05-paper',
+    stage: 'S6',
+    zh: 'S6-05 卷轴横幅和面板纸纹',
+    size: [1536, 1024],
+    noImage: true,
+    about: [
+      '四件，都留白（字由程序写）：上方一条完整的横幅卷轴（两端木轴，中间纸面）；下方左一块面板纸纹（方形，程序做无缝平铺）；下方右上一块名牌（窄长的木框纸牌）；右下一块对话框底（锦缎镶边的纸面）。',
+      '横幅由程序从中间切开卷起、展开（MVP 计划 §8.3）：两端木轴各切一段，中间纸面横向重复。面板纸纹出图后由脚本做成可平铺。',
+    ],
+    prompts: () => [
+      {
+        text: [
+          'Output: an image exactly 1536 by 1024 pixels. Four separate blank paper and silk pieces for the interface of a Three Kingdoms strategy game, laid out without overlapping:',
+          [
+            '- Top, across almost the whole width (x=64..1472, y=96..352): a horizontal hanging scroll, unrolled: a long strip of warm cream rice paper mounted on pale blue-grey silk borders, with a dark lacquered wooden roller at each end capped with small bronze ends. The paper is completely blank and evenly textured along its length, so its middle can be repeated.',
+            '- Bottom left (x=64..640, y=448..1024): a square of plain warm rice paper with subtle fibres and faint watercolour mottling, completely blank, even in tone from edge to edge.',
+            '- Bottom right, upper (x=768..1472, y=448..640): a narrow horizontal name plaque: a thin dark wooden frame around blank cream paper.',
+            '- Bottom right, lower (x=768..1472, y=704..992): a dialogue panel: blank cream paper mounted in a narrow border of muted indigo brocade with a fine cloud pattern.',
+          ].join('\n'),
+          'Seen straight on, flat, evenly lit, no perspective and no cast shadows. Traditional Chinese mounting craft, restrained and elegant, matching a game painted in ink and light colour.',
+          TRANSPARENT_OUT,
+          'Do not include: any text, letters, calligraphy, seals or signatures on any piece; ornaments on the blank paper; grid lines or guide marks; backgrounds; modern objects.',
+        ].join('\n\n'),
+      },
+    ],
+    uploads: ['不上传参考图。'],
+    checks: ['四件纸面都完全空白。', '横幅中间纸面纹理均匀，可以横向重复；面板纸纹整块色调均匀。'],
+    naming: '依次命名 `v1.webp`、`v2.webp`……（无损 webp，保留透明通道）。',
+  },
+];
+
 const ASSETS = [
   {
     id: 's1-01-city-vignette',
@@ -3127,6 +3369,7 @@ const ASSETS = [
   ...STATE_ASSETS,
   ...ENGINE_ASSETS,
   ...ROSTER_ASSETS.map(withRosterPick),
+  ...EFFECT_ASSETS.map(withEffectPick),
 ];
 
 // ---------------------------------------------------------------------------
@@ -3196,7 +3439,7 @@ function assetReadme(asset, prompts) {
 ${asset.about.map((line) => `- ${line}`).join('\n')}
 
 ${
-  asset.portrait
+  asset.portrait || asset.noImage
     ? ''
     : `## 参考图
 
@@ -3271,6 +3514,12 @@ ${table('S4')}
 ${table('S5')}
 
 姿态表的做法同 S1-05、S1-06：上传版式图 \`guide.png\` 和对应阵营的 S1 定稿表（蜀用 S1-05 v5，魏用 S1-06 v4），保证是同一支军队。旗面留白，字和颜色由程序加。立绘照 v0.3 立绘的提示词结构（\`docs/assets/v0.3-portraits/\`），不上传参考图。
+
+## S6 特效元素与界面
+
+${table('S6')}
+
+都是静态元素，动起来全靠程序（移动、缩放、淡入淡出、换图，MVP 计划 §8.3）。这一阶段要 ImageGen 直接出透明底（烟、尘、光晕要半透明，品红抠不出来）；特效以 S2-01 定稿全图的一块作风格参考，图标和纸纹不上传参考。
 
 ## 每个文件夹里有什么
 

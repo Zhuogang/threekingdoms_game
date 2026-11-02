@@ -1,0 +1,297 @@
+{
+  "sheet": "selected.png",
+  "cols": 3,
+  "rows": 3,
+  "gameScale": 0.5,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 0 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "flame-small",
+      "cell": [
+        0,
+        0,
+        512,
+        341
+      ],
+      "box": [
+        191,
+        167,
+        105,
+        153
+      ],
+      "anchor": [
+        60.4,
+        153
+      ],
+      "path": "poses/flame-small.png",
+      "game": {
+        "path": "poses-game/flame-small.png",
+        "size": [
+          52,
+          76
+        ],
+        "anchor": [
+          30.2,
+          76.5
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "flame-medium",
+      "cell": [
+        512,
+        0,
+        512,
+        341
+      ],
+      "box": [
+        664,
+        110,
+        192,
+        210
+      ],
+      "anchor": [
+        94.8,
+        210
+      ],
+      "path": "poses/flame-medium.png",
+      "game": {
+        "path": "poses-game/flame-medium.png",
+        "size": [
+          96,
+          105
+        ],
+        "anchor": [
+          47.4,
+          105.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "flame-large",
+      "cell": [
+        1024,
+        0,
+        512,
+        341
+      ],
+      "box": [
+        1091,
+        8,
+        375,
+        322
+      ],
+      "anchor": [
+        167.3,
+        322
+      ],
+      "path": "poses/flame-large.png",
+      "game": {
+        "path": "poses-game/flame-large.png",
+        "size": [
+          188,
+          161
+        ],
+        "anchor": [
+          83.6,
+          161.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "fire-spreading",
+      "cell": [
+        0,
+        341,
+        512,
+        342
+      ],
+      "box": [
+        36,
+        458,
+        432,
+        148
+      ],
+      "anchor": [
+        210.6,
+        148
+      ],
+      "path": "poses/fire-spreading.png",
+      "game": {
+        "path": "poses-game/fire-spreading.png",
+        "size": [
+          216,
+          74
+        ],
+        "anchor": [
+          105.3,
+          74.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "embers",
+      "cell": [
+        512,
+        341,
+        512,
+        342
+      ],
+      "box": [
+        623,
+        365,
+        289,
+        318
+      ],
+      "anchor": [
+        230.5,
+        318
+      ],
+      "path": "poses/embers.png",
+      "game": {
+        "path": "poses-game/embers.png",
+        "size": [
+          144,
+          159
+        ],
+        "anchor": [
+          115.2,
+          159.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "scorch",
+      "cell": [
+        1024,
+        341,
+        512,
+        342
+      ],
+      "box": [
+        1058,
+        425,
+        454,
+        258
+      ],
+      "anchor": [
+        268.0,
+        258
+      ],
+      "path": "poses/scorch.png",
+      "game": {
+        "path": "poses-game/scorch.png",
+        "size": [
+          227,
+          129
+        ],
+        "anchor": [
+          134.0,
+          129.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "smoke-puff",
+      "cell": [
+        0,
+        683,
+        512,
+        341
+      ],
+      "box": [
+        94,
+        738,
+        304,
+        234
+      ],
+      "anchor": [
+        112.6,
+        234
+      ],
+      "path": "poses/smoke-puff.png",
+      "game": {
+        "path": "poses-game/smoke-puff.png",
+        "size": [
+          152,
+          117
+        ],
+        "anchor": [
+          56.3,
+          117.0
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "smoke-column",
+      "cell": [
+        512,
+        683,
+        512,
+        341
+      ],
+      "box": [
+        635,
+        683,
+        275,
+        325
+      ],
+      "anchor": [
+        5.3,
+        325
+      ],
+      "path": "poses/smoke-column.png",
+      "game": {
+        "path": "poses-game/smoke-column.png",
+        "size": [
+          138,
+          162
+        ],
+        "anchor": [
+          2.6,
+          162.5
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "smoke-black",
+      "cell": [
+        1024,
+        683,
+        512,
+        341
+      ],
+      "box": [
+        1073,
+        683,
+        430,
+        331
+      ],
+      "anchor": [
+        65.4,
+        331
+      ],
+      "path": "poses/smoke-black.png",
+      "game": {
+        "path": "poses-game/smoke-black.png",
+        "size": [
+          215,
+          166
+        ],
+        "anchor": [
+          32.7,
+          165.5
+        ]
+      },
+      "droppedIslands": 0
+    }
+  ]
+}

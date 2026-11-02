@@ -1,0 +1,35 @@
+{
+  "pieces": {
+    "scroll": [
+      54,
+      62,
+      1481,
+      410
+    ],
+    "panel": [
+      57,
+      468,
+      641,
+      992
+    ],
+    "plaque": [
+      747,
+      469,
+      1481,
+      608
+    ],
+    "dialog": [
+      747,
+      658,
+      1483,
+      993
+    ]
+  },
+  "derived": [
+    "scroll-left.png",
+    "scroll-right.png",
+    "scroll-middle.png (256px wide, cross-faded to tile)",
+    "paper-tile.png (512px, seamless by half-offset blend)"
+  ],
+  "preparation": "Pieces cut from the selected sheet by alpha components; scroll ends 6% of its width; no repainting except the tiling blends noted."
+}

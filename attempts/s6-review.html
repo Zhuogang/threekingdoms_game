@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S6 出图审阅</title>
+<style>
+  :root { --bg:#f4f1e8; --ink:#2b2a27; --muted:#7a7468; --card:#fffdf7; --line:#ddd6c6; --accent:#9b3b2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  header b { font-size:16px; }
+  header a { color:var(--accent); text-decoration:none; }
+  main { max-width:1600px; margin:0 auto; padding:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:20px; }
+  h2 { margin:0 0 6px; font-size:18px; }
+  h3 { margin:16px 0 6px; font-size:15px; }
+  .note { color:var(--muted); margin:0 0 12px; }
+  .pick { color:var(--accent); font-weight:600; }
+  .viewport { overflow:auto; border:1px solid var(--line); }
+  figure { margin:0; }
+  figure img { max-width:100%; height:auto; display:block; border:1px solid var(--line); }
+  figcaption { color:var(--muted); font-size:13px; margin-top:4px; }
+  .strip { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; background:#efeadf; border:1px solid var(--line); padding:10px; }
+  .strip.dark { background:#2b2a27; }
+  .strip figure { text-align:center; }
+  .strip img { border:0; display:block; margin:0 auto; }
+  .strip figcaption { font-size:11px; }
+  .strip.dark figcaption { color:#bbb; }
+  /* UI mock built from the S6-05 pieces; all lettering is HTML text. */
+  .ui { background:#3a3631; padding:24px; border-radius:8px; display:grid; gap:24px; }
+  .scroll { display:flex; height:120px; max-width:900px; }
+  .scroll .l, .scroll .r { height:100%; }
+  .scroll .m { flex:1; background:url('../docs/siege/chencang/art/s6-05-paper/pieces/scroll-middle.png') repeat-x center / auto 100%; display:flex; align-items:center; justify-content:center;
+    font:600 34px/1 "Noto Serif SC","Songti SC","SimSun",serif; letter-spacing:.3em; color:#2a2622; }
+  .row2 { display:grid; grid-template-columns: 320px 1fr; gap:24px; align-items:start; }
+  @media (max-width:900px) { .row2 { grid-template-columns:1fr; } }
+  .panel { background:url('../docs/siege/chencang/art/s6-05-paper/pieces/paper-tile.png') repeat; background-size:256px; padding:14px 16px; border-radius:4px; box-shadow:0 2px 0 rgba(0,0,0,.25); color:#2a2622; }
+  .panel h4 { margin:0 0 8px; font:600 17px "Noto Serif SC","Songti SC",serif; }
+  .stat { display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; }
+  .bar { flex:1; height:8px; background:rgba(42,38,34,.15); border-radius:4px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#b5402e; }
+  .plaque { position:relative; width:260px; }
+  .plaque img { width:100%; display:block; }
+  .plaque span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:600 22px "Noto Serif SC","Songti SC",serif; letter-spacing:.4em; color:#2a2622; }
+  .dialog { position:relative; max-width:640px; }
+  .dialog img.frame { width:100%; display:block; }
+  .dialog .body { position:absolute; inset:9% 5%; display:flex; gap:16px; align-items:flex-start; }
+  .dialog .body img { width:96px; height:96px; border:2px solid #5b4a3a; }
+  .dialog .text { font:16px/1.7 "Noto Serif SC","Songti SC",serif; color:#2a2622; }
+  .dialog .text b { display:block; margin-bottom:4px; }
+</style>
+</head>
+<body>
+<header>
+  <b>陈仓 S6 特效与界面审阅</b>
+  <a href="#scene">特效摆在图上</a>
+  <a href="#ui">界面拼装</a>
+  <a href="#s6-01">火与烟</a>
+  <a href="#s6-02">冲击</a>
+  <a href="#icons">图标</a>
+  <a href="#s6-05">纸纹</a>
+  <span class="note" style="margin:0">选择都是暂定，待你确认</span>
+</header>
+<main>
+<section id="scene">
+  <h2>特效摆在图上（游戏 100% 大小）</h2>
+  <p class="note">在 S5 的场景上叠特效元素：右边燃烧的云梯冒火、上升烟柱，燃烧的井阑大火、蔓延火、黑烟、余烬和地上焦痕；冲车撞门处尘爆和碎木；墙脚礌石落地扬尘；雪里插箭；远处瓦砾。游戏里火焰会轮换、闪烁，烟会飘散，这里是静帧。</p>
+  <div class="viewport"><img src="s6-scene.webp" width="1536" height="768" alt="effects on the map"></div>
+</section>
+
+<section id="ui">
+  <h2>界面拼装（S6-05 纸纹 + S6-03/04 图标 + S5 立绘，字全是网页文字）</h2>
+  <p class="note">横幅由左右木轴和可重复的中段拼成，可以任意长；面板底是可平铺的纸纹；名牌、对话框底和立绘按游戏的方式叠字。用来看纸纹和图标放在一起是否协调。</p>
+  <div class="ui">
+    <div class="scroll"><img class="l" src="../docs/siege/chencang/art/s6-05-paper/pieces/scroll-left.png" alt=""><div class="m">第二幕　井阑重墙</div><img class="r" src="../docs/siege/chencang/art/s6-05-paper/pieces/scroll-right.png" alt=""></div>
+    <div class="row2">
+      <div class="panel">
+        <h4>城防</h4>
+        <div class="stat"><img src="../docs/siege/chencang/art/s6-04-icons-state/icons/gate-32.png" alt="">南门<div class="bar"><i style="width:62%"></i></div>496/800</div>
+        <div class="stat"><img src="../docs/siege/chencang/art/s6-04-icons-state/icons/wall-32.png" alt="">重墙<div class="bar"><i style="width:50%"></i></div>2/4 段</div>
+        <div class="stat"><img src="../docs/siege/chencang/art/s6-04-icons-state/icons/grain-32.png" alt="">余粮<div class="bar"><i style="width:55%"></i></div>11 日</div>
+        <div class="stat"><img src="../docs/siege/chencang/art/s6-04-icons-state/icons/reinforcements-32.png" alt="">张郃<div class="bar"><i style="width:59%"></i></div>13 日</div>
+        <h4 style="margin-top:12px">军令</h4>
+        <div class="stat">
+          <img src="../docs/siege/chencang/art/s6-03-icons-siege/icons/rally-32.png" alt="" title="鼓舞">
+          <img src="../docs/siege/chencang/art/s6-03-icons-siege/icons/supervise-32.png" alt="" title="督造">
+          <img src="../docs/siege/chencang/art/s6-03-icons-siege/icons/rotate-32.png" alt="" title="轮换">
+          <span style="margin-left:8px">鼓舞 · 督造 · 轮换</span>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px">
+        <div class="plaque"><img src="../docs/siege/chencang/art/s6-05-paper/pieces/plaque.png" alt=""><span>靳详</span></div>
+        <div class="dialog"><img class="frame" src="../docs/siege/chencang/art/s6-05-paper/pieces/dialog.png" alt="">
+          <div class="body"><img src="../docs/siege/chencang/art/s5-09-portrait-jin-xiang/runtime/jinxiang.webp" alt="">
+            <div class="text"><b>靳详</b>伯道，你我同郡故旧。丞相大军数万，城中不过千余人，何苦以一城之卒，当举国之师？</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div id="sheets"></div>
+</main>
+<script>
+const ART = '../docs/siege/chencang/art/';
+const EL = [
+  ['s6-01-fire-smoke', 's6-01', 'S6-01 火与烟', 'v1', '三种火焰大小分得开，焦痕带余烬；烟是半透明的灰墨（真透明底，软边保留）。', ['flame-small','flame-medium','flame-large','fire-spreading','embers','scorch','smoke-puff','smoke-column','smoke-black']],
+  ['s6-02-impacts', 's6-02', 'S6-02 冲击', 'v1', '尘爆边缘散开、带土块；墙上的箭簇没画墙，按要求。', ['dust-small','dust-medium','dust-large','splinters','stone-fragments','boulders','arrows-snow','arrows-wall','rubble']],
+];
+const host = document.getElementById('sheets');
+for (const [folder, short, title, pick, note, names] of EL) {
+  const s = document.createElement('section'); s.id = short;
+  s.innerHTML = `<h2>${title}（定 <span class="pick">${pick}</span>）</h2><p class="note">${note}</p>
+    <h3>浅底</h3><div class="strip">${names.map(n => `<figure><img src="${ART}${folder}/poses-game/${n}.png"><figcaption>${n}</figcaption></figure>`).join('')}</div>
+    <h3>深底（看半透明边）</h3><div class="strip dark">${names.map(n => `<figure><img src="${ART}${folder}/poses-game/${n}.png"><figcaption>${n}</figcaption></figure>`).join('')}</div>
+    <figure style="margin-top:12px"><img loading="lazy" src="${short}/comparison.png"><figcaption>全部候选（铺在纸色上看）</figcaption></figure>`;
+  host.appendChild(s);
+}
+const ICONS = [
+  ['s6-03-icons-siege', 's6-03', 'S6-03 器械、反制、军令', 'v3', ['ladder','ram','earth-cart','siege-tower','fire-arrow','millstone','boulders','inner-wall','rally','supervise','rotate','hold-fast']],
+  ['s6-04-icons-state', 's6-04', 'S6-04 高度、登城、填堑、余粮、援军等', 'v3', ['height','climb','fill-trench','gate','wall','grain','reinforcements','morale','troops','wounded','day','night-repair']],
+];
+const ic = document.createElement('section'); ic.id = 'icons';
+ic.innerHTML = `<h2>S6-03、S6-04 图标（都定 <span class="pick">v3</span>）</h2><p class="note">v3 笔画最一致，32px 下二十四个都认得出；S6-03 的 v2 把"死守"画成了西式盾。</p>` +
+  ICONS.map(([folder, short, title, pick, names]) => `<h3>${title}：64px 和 32px</h3>
+    <div class="strip">${names.map(n => `<figure><img src="${ART}${folder}/icons/${n}-64.png" width="64"><figcaption>${n}</figcaption></figure>`).join('')}</div>
+    <div class="strip" style="margin-top:6px">${names.map(n => `<figure><img src="${ART}${folder}/icons/${n}-32.png" width="32"></figure>`).join('')}</div>
+    <figure style="margin-top:12px"><img loading="lazy" src="${short}/comparison.png"><figcaption>全部候选</figcaption></figure>`).join('');
+host.appendChild(ic);
+const pp = document.createElement('section'); pp.id = 's6-05';
+pp.innerHTML = `<h2>S6-05 卷轴横幅和面板纸纹（定 <span class="pick">v2</span>）</h2><p class="note">木轴和锦缎镶边最干净，纸面全空。切出的件：横幅（左右木轴 + 可重复中段）、可平铺纸纹、名牌、对话框底。</p>
+  <div class="strip">${['scroll-left','scroll-middle','scroll-right','paper-tile','plaque','dialog'].map(n => `<figure><img src="${ART}s6-05-paper/pieces/${n}.png" style="max-height:160px"><figcaption>${n}</figcaption></figure>`).join('')}</div>
+  <figure style="margin-top:12px"><img loading="lazy" src="s6-05/comparison.png"><figcaption>全部候选</figcaption></figure>`;
+host.appendChild(pp);
+</script>
+</body>
+</html>
