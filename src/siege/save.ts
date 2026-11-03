@@ -3,10 +3,28 @@ import type { SiegeState } from './rules/types';
 
 export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang';
 export type Facing = 'north' | 'east' | 'west' | 'south';
+export const HINT_KINDS = ['wall', 'trench', 'ladder', 'frontage', 'innerWall'] as const;
+export type HintKind = (typeof HINT_KINDS)[number];
+export interface SiegePresentation {
+  openingStep: number;
+  bannersSeen: Array<1 | 2>;
+  dismissedHints: HintKind[];
+}
 export interface SiegeSave {
   state: SiegeState;
-  phase: 'deploy' | 'battle';
+  phase: 'opening' | 'deploy' | 'battle';
   facings: Record<string, Facing>;
+  presentation?: SiegePresentation;
+}
+/** Task F saves continue directly, without interrupting a battle with an old act banner. */
+export function presentationFor(save: SiegeSave): SiegePresentation {
+  return (
+    save.presentation ?? {
+      openingStep: 6,
+      bannersSeen: save.phase === 'battle' ? [save.state.act] : [],
+      dismissedHints: [],
+    }
+  );
 }
 const integer = z.number().int();
 const cell = { x: integer, y: integer };
@@ -109,8 +127,15 @@ const stateSchema = z.object({
 });
 const saveSchema = z.object({
   state: stateSchema,
-  phase: z.enum(['deploy', 'battle']),
+  phase: z.enum(['opening', 'deploy', 'battle']),
   facings: z.record(z.string(), z.enum(['north', 'east', 'west', 'south'])),
+  presentation: z
+    .object({
+      openingStep: integer.min(0).max(6),
+      bannersSeen: z.array(z.union([z.literal(1), z.literal(2)])),
+      dismissedHints: z.array(z.enum(HINT_KINDS)),
+    })
+    .optional(),
 });
 
 export function serializeSiegeSave(save: SiegeSave): string {

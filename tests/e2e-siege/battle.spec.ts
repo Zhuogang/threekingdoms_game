@@ -42,7 +42,8 @@ test('Chencang: deploy, move, forecast, build, resolve AI, save and load, switch
   await card.scrollIntoViewIfNeeded();
   await expect(card).toContainText('陈仓之战');
   await shot(page, 'start');
-  await card.getByRole('button', { name: '开始部署' }).click();
+  await card.getByRole('button', { name: '开始', exact: true }).click();
+  await page.getByRole('button', { name: '跳过开场', exact: true }).click();
   await expect(page.locator('[data-phase="deploy"]')).toBeVisible();
   await expect(page.getByTestId('siege-map')).toBeVisible();
   await page.getByTestId('select-shu-captain-3').click();
@@ -54,6 +55,7 @@ test('Chencang: deploy, move, forecast, build, resolve AI, save and load, switch
   await shot(page, 'deploy');
   await page.getByRole('button', { name: '开始攻城', exact: true }).click();
   await expect(page.locator('[data-phase="battle"]')).toBeVisible();
+  await page.getByRole('button', { name: '进入战场', exact: true }).click();
   await page.getByRole('button', { name: '100%', exact: true }).click();
   await page.getByRole('button', { name: '南门', exact: true }).click();
   await expect(page.getByTestId('siege-map')).toHaveAttribute('data-zoom', '1.00');
@@ -101,7 +103,7 @@ test('Chencang: deploy, move, forecast, build, resolve AI, save and load, switch
   expect(errors).toEqual([]);
 });
 
-test('keyboard, corrupted save, six-engine cap, playback skip and ending placeholder', async ({
+test('keyboard, corrupted save, six-engine cap, playback skip and withdrawal ending', async ({
   page,
 }) => {
   const state = createSiegeState(228);
@@ -138,7 +140,7 @@ test('keyboard, corrupted save, six-engine cap, playback skip and ending placeho
   await expect(page.getByTestId('siege-day')).toHaveText('Day 2');
   await page.getByRole('button', { name: 'Withdraw', exact: true }).click();
   await expect(page.locator('[data-phase="ending"]')).toContainText('Withdrawal from Chencang');
-  await expect(page.locator('[data-phase="ending"]')).toContainText('placeholder');
+  await expect(page.getByTestId('ending-rating')).toContainText('Lower rating');
 });
 
 test('day twenty reaches the grain ending and keeps the independent slot', async ({ page }) => {

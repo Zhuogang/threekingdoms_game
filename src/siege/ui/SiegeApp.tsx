@@ -25,7 +25,14 @@ import { isWallFoot } from '../rules/map';
 import { engineReachable, reachableCells } from '../rules/movement';
 import { createSiegeState } from '../rules/state';
 import type { EngineKind, GateId, SiegeAction, SiegePosition, SiegeState } from '../rules/types';
-import { hasSiegeSave, loadSiege, saveSiege, type SiegeSave } from '../save';
+import {
+  hasSiegeSave,
+  loadSiege,
+  saveSiege,
+  presentationFor,
+  type HintKind,
+  type SiegeSave,
+} from '../save';
 import { rejectionText, siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
 import { SiegeMapView, type SiegeMapHandle } from '../render/SiegeMapView';
 import {
@@ -37,6 +44,10 @@ import {
   type CommandKind,
 } from './commands';
 import { resolveSiegeDay } from './playback';
+import { OPENING, encounteredHints, engineKey } from './story';
+import { SiegeActBanner, SiegeEnding, SiegeHint, SiegeOpening, paperStyle } from './SiegeStory';
+import { SiegeIcon } from './storyAssets';
+import type { SiegeDev } from './devPlaythrough';
 import './siege.css';
 
 type Tab = 'commands' | 'defence' | 'workshop' | 'log';
@@ -48,7 +59,23 @@ const portraitFiles = import.meta.glob(
 ) as Record<string, string>;
 const portrait = (id: string) =>
   Object.entries(portraitFiles).find(([path]) => path.endsWith(`/${id}-small.webp`))?.[1];
-const engineKey = (kind: EngineKind): SiegeTextKey => (kind === 'ram' ? 'ramEngine' : kind);
+function initialGame(): SiegeSave {
+  const querySeed =
+    import.meta.env.DEV && typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('siegeSeed')
+      : null;
+  const seed = querySeed !== null && /^\d+$/.test(querySeed) ? Number(querySeed) : 228;
+  return {
+    state: createSiegeState(seed),
+    phase: 'opening',
+    facings: {},
+    presentation: {
+      openingStep: 0,
+      bannersSeen: [],
+      dismissedHints: [],
+    },
+  };
+}
 
 export default function SiegeApp({
   locale,
@@ -61,12 +88,12 @@ export default function SiegeApp({
   onExit: () => void;
   initialLoad?: boolean;
 }) {
-  const [game, setGame] = useState<SiegeSave>(() => ({
-    state: createSiegeState(228),
-    phase: 'deploy',
-    facings: {},
-  }));
+  const [game, setGame] = useState<SiegeSave>(initialGame);
   const state = game.state;
+  const presentation = presentationFor(game);
+  const opening = game.phase === 'opening';
+  const [hint, setHint] = useState<HintKind | null>(null);
+  const [summary, setSummary] = useState(false);
   const [selected, setSelected] = useState<string | null>('shu-weiyan');
   const [tab, setTab] = useState<Tab>('commands');
   const [mode, setMode] = useState<Mode>(null);
@@ -116,6 +143,40 @@ export default function SiegeApp({
   const forecast = selected && target ? predictSiegeAttack(state, selected, target) : null;
   const deploy = game.phase === 'deploy';
   const ended = Boolean(state.outcome) && !playing;
+  const banner =
+    !opening && !deploy && !ended && !playing && !presentation.bannersSeen.includes(state.act);
+  const advanceOpening = (skip = false) => {
+    setGame((g) => {
+      const progress = presentationFor(g);
+      const openingStep = skip
+        ? OPENING.length
+        : Math.min(OPENING.length, progress.openingStep + 1);
+      return {
+        ...g,
+        phase: openingStep === OPENING.length ? 'deploy' : 'opening',
+        presentation: { ...progress, openingStep },
+      };
+    });
+  };
+  const dismissBanner = () =>
+    setGame((g) => ({
+      ...g,
+      presentation: {
+        ...presentationFor(g),
+        bannersSeen: [...presentationFor(g).bannersSeen, g.state.act],
+      },
+    }));
+  const dismissHint = () => {
+    if (hint)
+      setGame((g) => ({
+        ...g,
+        presentation: {
+          ...presentationFor(g),
+          dismissedHints: [...presentationFor(g).dismissedHints, hint],
+        },
+      }));
+    setHint(null);
+  };
   const name = (id: string) => {
     const u = state.units.find((u) => u.id === id);
     if (u) return locale === 'zh' ? u.officer.chinese : u.officer.name;
@@ -153,6 +214,8 @@ export default function SiegeApp({
       setActivity(null);
       setEffectAction(null);
       setGame(saved);
+      setHint(null);
+      setSummary(false);
       setSelected(saved.state.units.find((u) => u.side === 'shu' && activeUnit(u))?.id ?? null);
       setMode(null);
       setTarget(null);
@@ -176,7 +239,7 @@ export default function SiegeApp({
     }
   };
   const act = (action: SiegeAction) => {
-    if (playing) return;
+    if (playing || opening || banner) return;
     const result = applySiegeAction(state, action);
     if (!result.ok) {
       setFeedback({ reason: result.reason });
@@ -202,7 +265,7 @@ export default function SiegeApp({
     }
   };
   const end = () => {
-    if (playing || deploy || state.outcome) return;
+    if (playing || opening || banner || deploy || state.outcome) return;
     const resolution = resolveSiegeDay(state);
     pending.current = resolution.final;
     setPlaying(true);
@@ -250,7 +313,7 @@ export default function SiegeApp({
     setFeedback({});
   };
   const mapSelect = (id: string) => {
-    if (playing) return;
+    if (playing || opening || banner) return;
     const clicked = state.units.find((u) => u.id === id);
     if (deploy && clicked?.side === 'shu' && selected && id !== selected) {
       setGame((g) => ({ ...g, state: deployUnit(g.state, selected, clicked) }));
@@ -265,7 +328,7 @@ export default function SiegeApp({
     select(id);
   };
   const cell = (to: SiegePosition) => {
-    if (!selected || playing) return;
+    if (!selected || playing || opening || banner) return;
     if (deploy) {
       if (!DEPLOY_SHU.some((c) => sameCell(c, to) && to.level === 'ground')) {
         setFeedback({ key: 'deploymentOnly' });
@@ -296,7 +359,7 @@ export default function SiegeApp({
     );
   };
   const command = (kind: CommandKind) => {
-    if (!selected || playing || deploy) return;
+    if (!selected || playing || opening || banner || deploy) return;
     const entry = commands.find((c) => c.kind === kind);
     if (entry?.reason) {
       setFeedback({ reason: entry.reason });
@@ -331,6 +394,7 @@ export default function SiegeApp({
         event.metaKey
       )
         return;
+      if (opening || banner) return;
       if (event.key === 'Escape') {
         finishPlayback();
         return;
@@ -362,6 +426,35 @@ export default function SiegeApp({
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   });
+  useEffect(() => {
+    if (opening || deploy || ended || playing || banner || hint) return;
+    const next = encounteredHints(state, selected, forecast, mode === 'fillTrench').find(
+      (kind) => !presentation.dismissedHints.includes(kind),
+    );
+    if (next) setHint(next);
+  });
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const hook: SiegeDev = {
+      snapshot: () => structuredClone(game),
+      playScript: async (strategy, days = 21) => {
+        if (game.phase !== 'battle' || playing)
+          throw new Error('Start battle and finish playback first.');
+        const { playScriptDays } = await import('./devPlaythrough');
+        const next = playScriptDays(state, strategy, days);
+        setGame((g) => ({ ...g, state: next }));
+        setMode(null);
+        setTarget(null);
+        setHint(null);
+        setSummary(false);
+        return next.outcome;
+      },
+    };
+    window.__siegeDev = hook;
+    return () => {
+      if (window.__siegeDev === hook) delete window.__siegeDev;
+    };
+  }, [game, playing]);
   const executeAttack = () => {
     if (!selected || !target) return;
     if (unit)
@@ -392,13 +485,22 @@ export default function SiegeApp({
           ).map((c) => ({ ...c, level: 'ground' as const }))
         : reachable;
   return (
-    <main className="siege-app" data-phase={ended ? 'ending' : deploy ? 'deploy' : 'battle'}>
+    <main className="siege-app" style={paperStyle} data-phase={ended ? 'ending' : game.phase}>
       <header className="siege-topbar">
         <div>
           <strong>{text('campaign')}</strong>
-          <span data-testid="siege-day">{text('day', { n: state.day })}</span>
-          <span>{text('grain', { n: state.grain })}</span>
-          <span>{text('distance', { n: state.zhangheDistance })}</span>
+          <span data-testid="siege-day">
+            <SiegeIcon name="day" />
+            {text('day', { n: state.day })}
+          </span>
+          <span>
+            <SiegeIcon name="grain" />
+            {text('grain', { n: state.grain })}
+          </span>
+          <span>
+            <SiegeIcon name="distance" />
+            {text('distance', { n: state.zhangheDistance })}
+          </span>
           <span>{text(state.weather)}</span>
           <span>{text('act', { n: state.act })}</span>
         </div>
@@ -417,6 +519,7 @@ export default function SiegeApp({
             {text('back')}
           </Button>
           {!ended &&
+            !opening &&
             (deploy ? (
               <Button
                 variant="primary"
@@ -428,41 +531,51 @@ export default function SiegeApp({
                 {text('begin')}
               </Button>
             ) : (
-              <Button variant="primary" onClick={end} disabled={playing}>
+              <Button variant="primary" onClick={end} disabled={playing || banner}>
                 {text('endDay')}
               </Button>
             ))}
         </nav>
       </header>
-      <div className="siege-status" role="status">
-        {playing ? (
-          <>
-            <strong>{text('playback')}</strong>
-            <Button size="sm" onClick={finishPlayback}>
-              {text('skip')}
-            </Button>
-          </>
-        ) : feedback.key ? (
-          text(feedback.key)
-        ) : feedback.reason ? (
-          rejectionText(locale, feedback.reason)
-        ) : deploy ? (
-          text('deployHelp')
-        ) : mode === 'attack' ? (
-          text('chooseTarget')
-        ) : mode === 'fillTrench' ? (
-          text('chooseTrench')
-        ) : (
-          text('keys')
-        )}
-      </div>
-      {ended ? (
-        <section className="siege-ending">
-          <h1>{text('ending')}</h1>
-          <h2>{text(state.outcome!)}</h2>
-          <p>{text('endingDetail')}</p>
-          <Button onClick={onExit}>{text('back')}</Button>
-        </section>
+      {(feedback.key || feedback.reason || (!opening && !ended)) && (
+        <div className="siege-status" role="status">
+          {playing ? (
+            <>
+              <strong>{text('playback')}</strong>
+              <Button size="sm" onClick={finishPlayback}>
+                {text('skip')}
+              </Button>
+            </>
+          ) : feedback.key ? (
+            text(feedback.key)
+          ) : feedback.reason ? (
+            rejectionText(locale, feedback.reason)
+          ) : deploy ? (
+            text('deployHelp')
+          ) : mode === 'attack' ? (
+            text('chooseTarget')
+          ) : mode === 'fillTrench' ? (
+            text('chooseTrench')
+          ) : (
+            text('keys')
+          )}
+        </div>
+      )}
+      {opening ? (
+        <SiegeOpening
+          step={presentation.openingStep}
+          locale={locale}
+          next={() => advanceOpening()}
+          skip={() => advanceOpening(true)}
+        />
+      ) : ended ? (
+        <SiegeEnding
+          state={state}
+          locale={locale}
+          summary={summary}
+          onSummary={setSummary}
+          onExit={onExit}
+        />
       ) : (
         <>
           <div className="siege-camera">
@@ -637,6 +750,7 @@ export default function SiegeApp({
                                   onClick={() => command(c.kind)}
                                   aria-pressed={mode === c.kind}
                                 >
+                                  <SiegeIcon name={c.kind} />
                                   {text(c.kind)}
                                 </Button>
                                 {c.reason && <small>{rejectionText(locale, c.reason)}</small>}
@@ -651,6 +765,7 @@ export default function SiegeApp({
                               <summary>{text('order')}</summary>
                               {(['rally', 'supervise', 'rotate'] as const).map((kind) => (
                                 <label className="siege-order" key={kind}>
+                                  <SiegeIcon name={kind} large />
                                   {text(kind)}
                                   <Select
                                     aria-label={text(kind)}
@@ -752,6 +867,7 @@ export default function SiegeApp({
                               title={reason ? rejectionText(locale, reason) : undefined}
                               onClick={() => act(action)}
                             >
+                              <SiegeIcon name={engineKey(kind)} />
                               {text('queue', { kind: text(engineKey(kind)) })}
                             </Button>
                             <small>
@@ -811,6 +927,10 @@ export default function SiegeApp({
             </aside>
           </div>
         </>
+      )}
+      {banner && <SiegeActBanner act={state.act} locale={locale} close={dismissBanner} />}
+      {hint && !opening && !deploy && !ended && !playing && !banner && (
+        <SiegeHint kind={hint} locale={locale} dismiss={dismissHint} />
       )}
     </main>
   );
@@ -927,7 +1047,10 @@ function Defence({
       .reduce((n, u) => n + u.troops, 0);
   return (
     <Panel title={t('defence')}>
-      <h4>{t('gates')}</h4>
+      <h4>
+        <SiegeIcon name="gates" />
+        {t('gates')}
+      </h4>
       {(Object.keys(GATES) as GateId[]).map((id) => (
         <div className="siege-gate" key={id}>
           <Button size="sm" onClick={() => focus({ ...GATES[id].cells[0]!, level: 'wall' })}>
@@ -939,7 +1062,10 @@ function Defence({
           </span>
         </div>
       ))}
-      <h4>{t('wallRuns')}</h4>
+      <h4>
+        <SiegeIcon name="wallRuns" />
+        {t('wallRuns')}
+      </h4>
       {runs.map((run) => (
         <Button size="sm" key={cellKey(run[0]!)} onClick={() => focus(run[0]!)}>
           {t('run', { ...run[0]!, n: troops(run) })}
@@ -948,14 +1074,20 @@ function Defence({
       {(Object.keys(GATES) as GateId[]).map((id) => (
         <p key={id}>{t('gateTop', { gate: t(id), n: troops(GATES[id].cells) })}</p>
       ))}
-      <h4>{t('innerWall')}</h4>
+      <h4>
+        <SiegeIcon name="innerWall" />
+        {t('innerWall')}
+      </h4>
       {INNER_WALL_SEGMENTS.map((s) => (
         <div key={s.index}>
           {t('segment', { n: s.index + 1 })} ({s.cells[0]!.x}–{s.cells.at(-1)!.x}) ·{' '}
           {t('progress', { n: state.innerWall[s.index] ?? 0 })}
         </div>
       ))}
-      <h4>{t('raised')}</h4>
+      <h4>
+        <SiegeIcon name="raised" />
+        {t('raised')}
+      </h4>
       {state.engines
         .filter((e) => e.raisedAt && usableEngine(e))
         .map((e) => (
@@ -964,7 +1096,10 @@ function Defence({
           </Button>
         ))}
       {!state.engines.some((e) => e.raisedAt && usableEngine(e)) && <p>{t('none')}</p>}
-      <h4>{t('filled')}</h4>
+      <h4>
+        <SiegeIcon name="filled" />
+        {t('filled')}
+      </h4>
       {SOUTH_TRENCH.filter((c) => isWallFoot(state, c.x, c.y)).map((c) => (
         <Button size="sm" key={cellKey(c)} onClick={() => focus({ ...c, level: 'ground' })}>
           ({c.x},{c.y})

@@ -1,8 +1,30 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SIEGE_COPY, SIEGE_REASONS, rejectionText, siegeText } from '../../src/siege/i18n';
 
 describe('siege bilingual text', () => {
+  it('covers every CJK character in all siege TypeScript sources with the bundled font subset', () => {
+    const manifest = JSON.parse(readFileSync('public/fonts/manifest.json', 'utf8')) as {
+      cjkCharacters: string;
+    };
+    const covered = new Set(manifest.cjkCharacters);
+    const used = new Set<string>();
+    const visit = (directory: string) => {
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const path = join(directory, entry.name);
+        if (entry.isDirectory()) visit(path);
+        else if (/\.tsx?$/.test(entry.name)) {
+          // Match tools/subset-fonts.py's CJK corpus, including fullwidth punctuation.
+          for (const char of readFileSync(path, 'utf8'))
+            if (char.codePointAt(0)! >= 0x3000) used.add(char);
+        }
+      }
+    };
+    visit('src/siege');
+    const missing = [...used].filter((char) => !covered.has(char)).sort();
+    expect(missing, `Font subset missing CJK characters: ${missing.join(' ')}`).toEqual([]);
+  });
   it('requires the exact same nonempty keys and interpolation parameters in both languages', () => {
     expect(Object.keys(SIEGE_COPY.en).sort()).toEqual(Object.keys(SIEGE_COPY.zh).sort());
     for (const key of Object.keys(SIEGE_COPY.en) as Array<keyof typeof SIEGE_COPY.en>) {

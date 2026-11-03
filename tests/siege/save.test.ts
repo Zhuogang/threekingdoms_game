@@ -6,6 +6,7 @@ import {
   serializeSiegeSave,
   SIEGE_SAVE_KEY,
   type SiegeSave,
+  presentationFor,
 } from '../../src/siege/save';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { endDay } from '../../src/siege/rules/day';
@@ -13,6 +14,30 @@ import { runDefenderTurn } from '../../src/siege/ai/defender';
 import { act, duel, engine } from './rulesFixtures';
 
 describe('independent Chencang saves', () => {
+  it('remembers opening progress, act banners and dismissed hints, while accepting task F saves', () => {
+    const save: SiegeSave = {
+      state: createSiegeState(228),
+      phase: 'opening',
+      facings: {},
+      presentation: { openingStep: 4, bannersSeen: [1], dismissedHints: ['wall', 'frontage'] },
+    };
+    expect(deserializeSiegeSave(serializeSiegeSave(save))).toEqual(save);
+    const old: SiegeSave = { state: save.state, phase: 'battle', facings: {} };
+    const loaded = deserializeSiegeSave(serializeSiegeSave(old));
+    expect(presentationFor(loaded)).toEqual({
+      openingStep: 6,
+      bannersSeen: [1],
+      dismissedHints: [],
+    });
+    expect(() =>
+      deserializeSiegeSave(
+        JSON.stringify({
+          ...save,
+          presentation: { ...save.presentation, dismissedHints: ['unknown'] },
+        }),
+      ),
+    ).toThrow();
+  });
   it('preserves every state field and replays the same actions and AI to the identical outcome', () => {
     const { state, shu } = duel({ x: 20, y: 19 });
     state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];

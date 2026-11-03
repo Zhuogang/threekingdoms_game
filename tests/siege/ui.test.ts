@@ -11,16 +11,16 @@ import { resolveSiegeDay } from '../../src/siege/ui/playback';
 import { act, engine } from './rulesFixtures';
 
 describe('siege screen integration without browser APIs', () => {
-  it('renders deployment and the start card in both languages through the supplied v03 locale', () => {
+  it('renders the opening and the start card in both languages through the supplied v03 locale', () => {
     for (const locale of ['en', 'zh'] as const) {
       const app = renderToStaticMarkup(
         createElement(SiegeApp, { locale, setLocale: () => {}, onExit: () => {} }),
       );
-      expect(app.includes('data-phase="deploy"')).toBe(true);
-      expect(app.includes(locale === 'en' ? 'Begin siege' : '开始攻城')).toBe(true);
-      expect(app.includes('data-testid="siege-map"')).toBe(true);
+      expect(app.includes('data-phase="opening"')).toBe(true);
+      expect(app.includes(locale === 'en' ? 'Skip opening' : '跳过开场')).toBe(true);
+      expect(app.includes('data-testid="opening-1"')).toBe(true);
       const card = renderToStaticMarkup(createElement(SiegeCampaignCard, { locale }));
-      expect(card.includes(locale === 'en' ? 'Siege of Chencang' : '陈仓之战')).toBe(true);
+      expect(card.includes(locale === 'en' ? 'The Siege of Chencang' : '陈仓之战')).toBe(true);
     }
   });
   it('resolves all map art with ten Shu, six Wei and six engines, including mixed fortifications', () => {
