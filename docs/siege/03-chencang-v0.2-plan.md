@@ -1,0 +1,666 @@
+# 陈仓之战 v0.2 计划（siege_v0.2）：招与拆
+
+> 状态：**计划稿**（2026-11-03）。分支 `siege_v0.2`，从 `siege_v0.1`（`f51dccc`）分出。本文是 v0.2 的唯一依据：规则、AI、界面、渲染、美术清单和任务书都在这里；v0.1 的 [02 MVP 计划](02-chencang-mvp-plan.md) 只保留作历史，和本文冲突处以本文为准。美术的投影、风格、固定段仍按 [01 美术计划](01-chencang-art-plan.md)。实现交给 Opus，按 §11 的任务书一包一包做；出图仍由你用 Codex 内置 image_gen 跑，提示词在 §9。
+
+## 0. 摘要
+
+- **v0.1 的问题**：等半天没事发生；画面让人觉得登城不可能；器械被烧了就没招了。模拟证实：默认种子 228 下「合格」脚本二十天没有一支部队登上城墙。
+- **v0.2 的核心**：把陈仓做成**招与拆**的对局。每一招有拆，每一拆有再拆，再拆要付代价。守方的招提前一天看得见；攻方多了两条烧不掉的路：**土山**（慢而稳）和**蚁附强攻**（快而流血）。
+- **结构**：12 日，第 1 日器械已在城下，第 2 日就有第一次登城。一局 30 分钟以内。
+- **两边都能玩**：开场选汉军（诸葛亮）或魏军（郝昭），另一边由 AI 指挥。不做双人。
+- **立足**：登城不再是「打空守军」，而是每攻一次立足加一格，三格上墙，画面上看得见进度。
+- **评分**：攻不下很正常，史实结局有自己的分数；不惜代价能攻下，但伤亡会写进评价。
+- **新图 10 件**（S8）：蒙皮云梯、轒輼车、土山三态、城头备物、夜袭小队、强攻群像、魏军守住结局、雪夜举火幕间、图标表三、魏军主视觉。
+
+## 1. 试玩反馈与诊断
+
+你的反馈（2026-11-03）：等半天没事发生；美术让你觉得攻上城头不可能；器械被烧了也不知道怎么玩；一局要少于半小时；好玩是指见招拆招；攻不下很正常，但不惜代价应该能攻下；魏军有吸引力；一定要新的图；什么都可以动；这是 MVP，之后要合进整个三国游戏，以后的战争都会有攻城战。
+
+模拟（`node tools/siege-sim.mjs 100`，v0.1 规则）：
+
+| 指标                  | 数值        | 解读                                             |
+| --------------------- | ----------- | ------------------------------------------------ |
+| 合格脚本胜率          | 60%         | 赢的局平均第 16 日才赢                           |
+| 蛮攻胜率              | 0%          | 不造器械什么都做不了                             |
+| 蜀军溃败率            | 0%          | 魏军从不出城，本阵最近距离始终 9 格              |
+| 第一幕被毁器械的局    | 76%         | 云梯存活 61%，土车 46%                           |
+| 200 个种子的不同对局  | 57 种       | 战斗无随机数，只有天气在变                       |
+| 种子 228 合格脚本逐日 | 20 日零登城 | 冲车第 17 日才到桥头，史实结局，蜀军剩 19,622 人 |
+
+五条原因：节奏太慢（器械每日 2 格、工棚离城堑 6 格、造完就被烧）；两万人没有用（正面 150，一次登城打掉 30 人，250 人的守军要打八天）；对手不活（只会火箭、石磨、礌石、筑墙，从不出城，没有人格）；没有取舍（器械不要资源，军令三选一，十支部队一样）；结局扁平（三个标签，史实结局是默认到达的那个）。v0.1 还有一个 bug：魏军的「死守」在魏军阶段下达、日终清除，而蜀军的攻击都在它之前，所以从未生效。
+
+## 2. 决定
+
+| ID   | 决定       | 定案                                                                            | 理由                                                                              |
+| ---- | ---------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| DV1  | 玩家阵营   | **开场选汉军或魏军**，另一边 AI；不做双人                                       | 你的要求。魏军的动作规则层已全部支持，缺的是界面和攻城 AI；攻城 AI 从模拟脚本演化 |
+| DV2  | 核心循环   | **招与拆**：守方的招提前一天在图上看得见，攻方当日能拆                          | 见招拆招是你要的乐趣；不靠随机数                                                  |
+| DV3  | 时限       | **12 日**，余粮 12，张郃距离 14 只显示                                          | 一局 30 分钟以内                                                                  |
+| DV4  | 开局       | 第 1 日两架云梯、一辆冲车、一辆土车已在城堑外                                   | 合史实（诸葛亮带着器械来）；第 2 日就有登城                                       |
+| DV5  | 登城       | **立足条** 0–3，每攻一次 +1，满三格上墙                                         | 把「不可能」变成看得见的进度                                                      |
+| DV6  | 不惜代价   | **土山**和**蚁附强攻**两条路，火烧不掉                                          | 器械烧光也有路；代价写进评分                                                      |
+| DV7  | 随机数     | 不加；天气仍是唯一种子随机                                                      | 你说不着急；对局多样性靠 AI 的种子计划和双方的夜令                                |
+| DV8  | 新图       | **S8 共 10 件**，按 S4–S7 的流水线出                                            | 你要求一定要新图；每件都对应一个新机制                                            |
+| DV9  | 存档       | 版本 `siege_v0.2`，新键；v0.1 存档不转换                                        | 状态结构变了，MVP 不值得写迁移                                                    |
+| DV10 | 通用化     | 招拆表、立足、土山、强攻、两段式守城 AI、评分都不绑陈仓；布局、剧情、插画绑陈仓 | 以后合进大地图时只需把城墙、城门、城堑、马道改成每座城的描述文件；本轮不做        |
+| DV11 | 地道、张郃 | 推到 v0.3                                                                       | 最花图、最花规则；先把招拆做扎实                                                  |
+| DV12 | 名称       | 选边界面写「汉军 · 诸葛亮」「魏军 · 郝昭」；其余文本和代码仍用「蜀」/`shu`      | 你的用词；全局改名留到合并大地图时一起做                                          |
+| DV13 | 数值       | 所有数值进 `src/siege/rules/tuning.ts` 一张表；玩法面板和模拟都读它             | 调数值不改规则代码；§5.10 的草案由模拟定                                          |
+| DV14 | 实现       | Opus 按 §11 的任务书做，每包验收后提交；推送等你说                              | 沿用 v0.1 的工作约定                                                              |
+
+## 3. 范围
+
+### 做
+
+| 类别 | 内容                                                                                                    |
+| ---- | ------------------------------------------------------------------------------------------------------- |
+| 流程 | 选边 → 开场（两边各自的视角）→ 部署 → 12 日攻城（两幕）→ 结局与评分                                     |
+| 规则 | 12 日；开局器械；立足；压制；蒙皮；土山；强攻；守方三种准备（备火、吊石磨、堆礌石）；夜令四种；死守修正 |
+| AI   | 守城 AI 两段式（执行昨日准备 → 行动 → 明日准备 → 夜令）；攻城 AI（会拆招，给扮演魏军用，也给模拟用）    |
+| 界面 | 选边；晨报；拆法卡；新动作与预测；夜令；魏军指令面板与守备页；两边的玩法面板和引导；评分画面            |
+| 渲染 | 立足条与梯上攀爬；强攻群像；土山；蒙皮器械；城头备物；夜色、火把、夜袭；按人数画方阵                    |
+| 美术 | S8 十件（§9）                                                                                           |
+| 工具 | 模拟支持三种攻法和两边指标；灰盒工具加 S8 件                                                            |
+
+### 不做（v0.3 以后）
+
+地道与横截；张郃骑兵入场；王双追击战；同机双人；随机伤害；东西北门的城堑与填堑；武将特技；资源经济；天气光照整画；合并进大地图的通用城池描述。
+
+## 4. 一局怎么玩
+
+### 4.1 汉军（诸葛亮）
+
+1. **选边**：开始画面的陈仓卡上两个按钮，「汉军 · 诸葛亮」「魏军 · 郝昭」；有存档时多一个「继续（汉军）」。
+2. **开场**（可跳过）：同 v0.1 的两轮劝降，最后一句诸葛亮下令攻城。
+3. **部署**：10 支部队在 y 21–25；两架云梯已停在 (18,19) 和 (29,19)，冲车在 (24,21)，土车在 (21,20)。工棚空着。
+4. **第 1 日**：架梯；推冲车到桥头 (24,18)；土车填堑；弓弩兵压制梯前的墙段。结束本日：魏军吊起石磨、点起火盆、堆起礌石，你都在图上看见。
+5. **第 2 日晨报**：「门楼吊起石磨」「南墙 (17–20,16) 燃起火盆」「(18,16) 堆起礌石」，每条后面一句拆法。你给云梯蒙皮、压制火盆边的弓手、从梯上攻一次（立足 1/3）。
+6. **第 2–5 日**：云梯被烧、换路、土山起土、冲车撞门、夜攻与举火的对撞。第 4 日第二幕：井阑可造，魏军筑重墙。
+7. **第 6–12 日**：土山成坡、井阑压制城头、重墙缺口争夺、决定要不要强攻。日终占帅府前庭即胜。
+8. **结局与评分**：速克 / 攻克 / 惨胜 / 全军而退 / 粮尽退兵 / 溃败，附分数和对照史实。
+
+### 4.2 魏军（郝昭）
+
+1. **选边**后，开场同样两轮对话，最后一句改为郝昭：「诸军上城。备火箭、石磨、礌石。」
+2. **部署**：6 支部队可放在城墙走道、门楼顶和城内空地（`DEPLOY_WEI`）。蜀军按固定开局。
+3. **每日**：先播放蜀军阶段（可跳过），然后是你的阶段。你要提前一天准备：今天备火，明天才能放火箭；今天吊石磨，明天才能砸；今天堆礌石，明天才能投。夜里可以夜修、举火、夜袭、死守（次日生效）。
+4. **第二幕**起筑重墙。蜀军会蒙皮、压制、堆土山、强攻、夜攻，你要看出它在做什么。
+5. **结局**：守到第 12 日粮尽即胜；蜀军全军溃散是大胜；城破是败。评价：全歼 / 完守 / 固守 / 险守 / 城破。
+
+### 4.3 一日的顺序（两边一样）
+
+```
+晨报（界面）
+→ 蜀军阶段（玩家或攻城 AI）
+→ 魏军阶段（玩家或守城 AI）：执行昨日准备 → 行动 → 做明日准备 → 定夜令
+→ 夜间结算（规则 endDay）：
+     死守标记 → 夜攻/举火/夜袭对撞 → 夜修 → 器械燃烧 → 工棚进度
+     → 立足清理 → 压制解除 → 士气回复 → 轮换恢复 → 余粮与张郃 → 胜负
+     → 换日、天气、雪夜灭火盆
+```
+
+玩家是魏军时，换日之后先跑攻城 AI 的蜀军阶段并回放，再轮到玩家。两边的夜令在各自阶段里下，对方要到晨报才知道。
+
+## 5. 规则
+
+所有数值是草案，最终由模拟定（§6.3）。数值全部放在 `src/siege/rules/tuning.ts`。
+
+### 5.1 时限、幕与天气
+
+- `SIEGE_DAYS = 12`，余粮 12，日终 −1，到 0 为史实结局。张郃距离 14，日终 −1，只显示。
+- 第二幕从第 4 日开始；第一幕被毁两件器械则次日提前开始（同 v0.1）。
+- 天气同 v0.1（晴 60%、雪 30%、风 10%，种子决定）。新增：**雪夜灭火盆**——换日时若新一日天气为雪，所有火盆熄灭（晨报写明）；风天火箭 ×1.25 不变，雪天 ×0.6 不变。
+
+### 5.2 开局
+
+| 项目     | 汉军                                                                     | 魏军                                        |
+| -------- | ------------------------------------------------------------------------ | ------------------------------------------- |
+| 部队     | 同 v0.1 的 10 支，部署区同                                               | 同 v0.1 的 6 支；玩家可在 `DEPLOY_WEI` 换位 |
+| 开局器械 | 云梯 (18,19)、云梯 (29,19)、冲车 (24,21)、土车 (21,20)，全部完好、未蒙皮 | 无                                          |
+| 开局准备 | 无                                                                       | 无（第 1 日自己备）                         |
+| 工棚     | 两座，空闲                                                               | —                                           |
+
+AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏军同 `weiColumns`）。
+
+### 5.3 器械与工棚
+
+| 器械 | 工期 | 耐久 | 每日移动 | 说明                                       |
+| ---- | ---- | ---- | -------- | ------------------------------------------ |
+| 云梯 | 1    | 200  | 3        | 架在 y 19；蒙皮后火箭 ×0.4、不持续燃烧     |
+| 冲车 | 2    | 300  | 3        | 撞门一次 −200；蒙皮后石磨 200 → 100        |
+| 土车 | 1    | 80   | 3        | 3 载；填堑每载 1.5；堆土山每载 +2          |
+| 井阑 | 3    | 250  | 2        | 第二幕；射程 4，正面 300，无视女墙；可压制 |
+
+- 场上可用器械上限 6 → **8**。督造 −1 日不变。完工器械仍出现在工棚门口。
+- 城门：南门耐久 **600**，其余 400（本轮用不到）。夜修 +100。
+- 器械燃烧每夜 −20 不变；蒙皮器械不会进入燃烧态。
+
+### 5.4 立足
+
+`state.footholds: Record<"x,y", 0 | 1 | 2 | 3>`，键是**墙格**。
+
+- **攀城位置**：梯底（架好的云梯所在格）、填平的墙脚、建成的土山。从攀城位置攻击正上方（或梯顶）的墙格守军，结算伤亡后，若攻方仍可行动：立足 +1；土山 +2；强攻再 +1（见 §5.6）。上限 3。
+- **满 3**：当即登城。墙格无守军则攻方上墙；有守军则守军被挤开：沿墙向最近马道方向退 1 格（空格才退），无处可退则按 v0.1 的 `settleUnitRout` 离开城墙；被挤开的守军士气 −10。攻方上墙后 `moved` 和 `acted` 都置为 true，该墙格立足清零。
+- **礌石**：命中攀城部队时立足 −2（最低 0）。
+- **夜间清理**：墙格的攀城位置上没有可行动的蜀军，或云梯已毁，立足归零。
+- **无守军**的墙格仍可直接移动登上（v0.1 规则），不经立足。
+- 预测里写「立足 +1 → 2/3」；墙格正面画三格墨点；梯上按立足数画攀爬的兵（§8）。
+
+### 5.5 招拆表
+
+| 蜀军的招       | 魏军的拆                | 蜀军的再拆                                            | 代价                                       | 规则     |
+| -------------- | ----------------------- | ----------------------------------------------------- | ------------------------------------------ | -------- |
+| 云梯登城       | 备火 → 火箭             | 蒙皮；压制火盆边的弓手；夜攻；换一段没火盆的墙        | 蒙皮占一支步兵一日；压制占弓兵；夜攻掉士气 | §5.6–5.8 |
+| 冲车撞门       | 吊石磨 → 投石磨         | 先压制门楼守军；轒輼车（蒙皮冲车）；井阑射门楼        | 压制占弓兵或井阑；蒙皮占步兵一日           | §5.6–5.7 |
+| 填堑攀城       | 堆礌石 → 投礌石；筑重墙 | 土山（宽坡，礌石减半）；多点同时上                    | 土山四五日，占两支部队                     | §5.6     |
+| 井阑           | 重墙；火箭              | 趁重墙未成从缺口冲；井阑压制筑墙的人                  | 抢时间                                     | v0.1     |
+| 蚁附强攻（新） | 礌石加倍                | 不用再拆，用人命换                                    | 反击 ×2.5，士气 −10，邻队 −5               | §5.6     |
+| 夜攻（新夜令） | 举火（新夜令）          | 看到昨夜举火，改白天压制、蒙皮                        | 举火那夜魏军不回复士气                     | §5.8     |
+| 护车（新）     | 夜袭烧车（新夜令）      | 器械旁驻一支部队；器械退到距城门 5 格外；土山不怕夜袭 | 占一支部队                                 | §5.8     |
+| 雪夜           | —                       | 雪夜火盆灭，次日白天推进                              | —                                          | §5.1     |
+
+### 5.6 蜀军新动作
+
+**压制** `{ type: 'suppress', unitId | engineId, targetId }`
+
+- 发起：地面的蜀军弓弩兵，目标是射程 2 以内墙上的魏军；或井阑，射程 4。
+- 效果：伤亡为普通齐射的 ×0.5（女墙 ×0.3 照算），目标 `suppressedDay = 当日`。当日魏军阶段里，被压制的部队**不能**放火箭、投石磨、投礌石、备火、吊石磨、堆礌石、夜袭（作为夜袭部队），反击伤害 ×0.7；可以移动、可以普通攻击、可以筑墙。夜间清除。
+- 预测写明「压制：对方今日不能放火箭、投石磨、投礌石」。
+
+**蒙皮** `{ type: 'coverEngine', unitId, engineId }`
+
+- 发起：地面的蜀军步兵，与一件可用、未蒙皮的云梯或冲车相邻（距离 ≤ 1）。占该部队当日的行动，可先移动。
+- 效果：`engine.covered = true`，永久。火箭 ×0.4 且不点燃；石磨 200 → 100；夜袭 150 → 75。
+- 蒙皮云梯、轒輼车用 S8-01、S8-02 的图。井阑不能蒙皮。
+
+**堆土山** `{ type: 'pileEarth', unitId | engineId, x, y }`
+
+- 目标：内侧城堑格（y 17）且本格和外侧格 (x,18) 都已填平（3）。发起者在相邻地面格。
+- 进度 `state.mounds["x,17"]: 0–6`。步兵每次 +1，土车每载 +2（消耗一载）。6 为**建成**。
+- 建成的土山格：蜀军可站；从它攻击正上方墙格正面 **300**、立足 **+2**、反击攀爬修正 1.5 → 1.2、礌石伤亡 ×0.5；不能被火箭、夜袭破坏；重墙照常能挡在后面。
+- 施工中三态用 S8-03 的图；建成后它就是一条通向墙头的坡。
+
+**强攻** 攻击动作加 `assault: true`，只在攀城位置可用。
+
+| 位置 | 普通正面 / 立足 | 强攻正面 / 立足 | 反击攀爬修正（普通 → 强攻） |
+| ---- | --------------- | --------------- | --------------------------- |
+| 梯底 | 150 / +1        | 400 / +2        | 1.5 → 2.5                   |
+| 墙脚 | 100 / +1        | 300 / +2        | 1.5 → 2.5                   |
+| 土山 | 300 / +2        | 600 / +3        | 1.2 → 2.0                   |
+
+- 强攻后该部队士气 −10（不论结果）；当日未满三格上墙时，2 格内其他蜀军 −5。
+- 当日被投礌石的强攻部队伤亡 ×2（`assaultedDay = 当日`）。
+- 预测里强攻是一个勾选框，勾上就看到两套数字。
+
+### 5.7 魏军的准备（提前一天看得见）
+
+三种准备都是当日行动（`acted`），可先移动；被压制的部队不能做。做了就在图上画出来（S8-04，石磨用 S4-07），并进次日晨报。
+
+| 准备   | 谁、在哪                                 | 第二天起能做                                                                    | 失效                 |
+| ------ | ---------------------------------------- | ------------------------------------------------------------------------------- | -------------------- |
+| 备火   | 弓兵，墙格                               | 距火盆 ≤ 1 的墙上弓兵可放火箭（射程 3）；火盆属于墙格，谁站旁边都能用           | 雪夜；蜀军占了该墙格 |
+| 吊石磨 | 任一部队，门楼顶或冲车接近格正上方的墙格 | 该格部队投石磨 −200（蒙皮 −100），投完 `hoisted = false`，要再吊                | 蜀军占了该格         |
+| 堆礌石 | 步兵，墙格                               | 该格部队投礌石：伤亡 = 兵力 × 0.25（当日攀爬 ×1.5，强攻 ×2），立足 −2；投完即无 | 蜀军占了该格         |
+
+- **火箭**改为只能从墙上、靠火盆放；去掉 v0.1 地面弓兵烧器械的情况。伤害 = 兵力 × 0.4 × 天气，蒙皮 ×0.4 且不点燃。
+- **石磨**去掉 v0.1 的两日冷却，改由「吊起」节奏控制。
+- `state.preparations = { braziers: Record<cell, { litDay }>, millstones: Record<cell, { hoisted: boolean; day }>, boulders: Record<cell, boolean> }`。
+
+### 5.8 军令与夜间
+
+每方每日一道军令（同 v0.1 的次数），在各自阶段下。即时的当场生效，夜令在夜间结算。
+
+| 方  | 军令 | 时机 | 效果                                                                                                                                                                                    |
+| --- | ---- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 蜀  | 鼓舞 | 即时 | 一支部队士气 +15（v0.1）                                                                                                                                                                |
+| 蜀  | 督造 | 即时 | 一座工棚 −1 日（v0.1）                                                                                                                                                                  |
+| 蜀  | 轮换 | 即时 | 同 v0.1                                                                                                                                                                                 |
+| 蜀  | 夜攻 | 夜间 | 城堑以南 y 19–22 的可用器械沿空路向北免费推 2 格（到 y 19 止）；y 19 的未架云梯自动架起；城堑 3 格内蜀军 −3 士气。遇举火则失败，见下                                                    |
+| 魏  | 鼓舞 | 即时 | 同 v0.1                                                                                                                                                                                 |
+| 魏  | 死守 | 次日 | **修正 v0.1 的 bug**：`holdFast.day = 当日 + 1`，在次日蜀军阶段生效（该墙段守军受伤 ×0.7），次日夜间清除                                                                                |
+| 魏  | 夜修 | 夜间 | 一座未破城门 +100（v0.1）                                                                                                                                                               |
+| 魏  | 举火 | 夜间 | 若蜀军夜攻：夜攻失败，火盆旁的每支弓兵对射程内最近的器械免费放一次火箭，城堑 2 格内蜀军 −5 士气。若蜀军没夜攻：魏军全军当夜不回复士气                                                   |
+| 魏  | 夜袭 | 夜间 | 指定南门接近格 4 格内一件可用器械（土山除外）。若目标 1 格内有可行动蜀军：被击退，门楼上兵力最多的部队损失 10%；否则器械 −150（蒙皮 −75）并点燃（蒙皮不点燃）。遇蜀军夜攻则夜袭自动失败 |
+
+夜间结算顺序见 §4.3。夜令在晨报里揭晓；双方 AI 的夜令也在各自阶段里定，玩家看不到，只能从图上的迹象推测（火盆、石磨、器械的位置）。
+
+### 5.9 胜负与评分
+
+胜负条件同 v0.1：日终蜀军占帅府前庭或魏军全灭即蜀胜；第 12 日日终粮尽或蜀军撤军为史实结局；蜀军全军溃散或本阵被击溃为蜀败。新增记录 `state.mainBodyThreatened`：任一时刻魏军与本阵距离 ≤ 3 则为 true（夜间结算检查）。
+
+`src/siege/rules/score.ts` 输出 `{ side, tier, score, parts }`，两边都算，结局画面按玩家阵营显示。
+
+**汉军**
+
+| 等级     | 条件                                        |
+| -------- | ------------------------------------------- |
+| 速克     | 胜，第 6 日以前                             |
+| 攻克     | 胜，第 7 日以后，总损失 ≤ 5000              |
+| 惨胜     | 胜，总损失 > 5000                           |
+| 全军而退 | 史实结局（粮尽），总损失 ≤ 4000，未主动撤军 |
+| 粮尽退兵 | 史实结局，总损失 > 4000，或主动撤军         |
+| 溃败     | 败                                          |
+
+分数 = 结局基数（胜 60，粮尽 25，撤军 15，败 0）+ 速度（胜：3 × (12 − 日数)，上限 24）+ 伤亡（15 × max(0, 1 − 总损失 / 6000)）+ 器械（被毁 ≤ 2 件 +5）+ 本阵（从未受威胁 +3）。
+
+**魏军**
+
+| 等级 | 条件                                         |
+| ---- | -------------------------------------------- |
+| 全歼 | 蜀军溃败                                     |
+| 完守 | 守住，城门从未被破，日终从未有蜀军站在城墙上 |
+| 固守 | 守住，只发生过其中一样                       |
+| 险守 | 守住，两样都发生过                           |
+| 城破 | 蜀胜                                         |
+
+分数 = 结局基数（全歼 60，守住 50，城破 0）+ 城防（城门未破 +10，日终从未有蜀军在墙上 +10）+ 伤亡（15 × max(0, 1 − 魏军损失 / 800)）+ 战绩（击毁器械 ≥ 3 件 +5）+ 速胜（蜀军第 8 日以前撤军 +5）。
+
+### 5.10 数值一览（`tuning.ts` 草案）
+
+| 名称                       | 值               | 名称                   | 值              |
+| -------------------------- | ---------------- | ---------------------- | --------------- |
+| 日数 / 余粮                | 12               | 张郃距离               | 14              |
+| 第二幕                     | 第 4 日          | 器械上限               | 8               |
+| 云梯 工期/耐久/移动        | 1 / 200 / 3      | 冲车                   | 2 / 300 / 3     |
+| 土车                       | 1 / 80 / 3       | 井阑                   | 3 / 250 / 2     |
+| 南门耐久 / 撞门            | 600 / 200        | 夜修                   | +100            |
+| 石磨 / 蒙皮                | 200 / 100        | 火箭系数 / 蒙皮        | 0.4 / ×0.4      |
+| 礌石系数 / 攀爬 / 强攻     | 0.25 / ×1.5 / ×2 | 礌石立足               | −2              |
+| 填堑每格 / 土车每载 / 步兵 | 3 / 1.5 / 0.5    | 土山建成 / 土车 / 步兵 | 6 / +2 / +1     |
+| 梯底正面 / 立足            | 150 / +1         | 墙脚正面 / 立足        | 100 / +1        |
+| 土山正面 / 立足            | 300 / +2         | 强攻正面（梯/脚/山）   | 400 / 300 / 600 |
+| 强攻立足                   | +2 / +2 / +3     | 强攻反击（梯脚 / 山）  | ×2.5 / ×2.0     |
+| 强攻士气 / 邻队            | −10 / −5         | 压制伤亡 / 反击        | ×0.5 / ×0.7     |
+| 夜攻推进 / 士气            | 2 格 / −3        | 举火对撞士气           | −5              |
+| 夜袭伤害 / 蒙皮 / 击退损失 | 150 / 75 / 10%   | 夜袭射程               | 南门接近格 4 格 |
+| 燃烧每夜                   | −20              | 井阑射程 / 正面        | 4 / 300         |
+| 齐射正面 / 女墙            | 600 / ×0.3       | 门洞正面               | 300             |
+| 本阵受威胁距离             | ≤ 3              | 士气回复               | +5 到 80        |
+
+## 6. AI
+
+### 6.1 守城 AI 两段式（`src/siege/ai/defender.ts`）
+
+沿用打分选最高的框架，一回合分四步，都在 `planDefenderTurn` 里：
+
+1. **执行昨日准备**（最高优先）：吊起的石磨下有冲车 → 投石磨（10000）；堆了礌石的格下有攀城部队（立足 ≥ 1 或当日强攻）→ 投礌石（7800 + 立足 × 100）；火盆旁的弓兵射程内有器械 → 火箭（8500 + 优先级：架起的云梯 4、井阑 3、土车 2、其余 1；蒙皮的 −150）。被压制的部队跳过。
+2. **行动**：同 v0.1——攻击城内蜀军、增援受威胁墙格、受伤部队退下、第二幕筑重墙、门破后退守前庭。
+3. **做明日准备**（部队移动后）：冲车在南门接近格 4 格内且该格没吊起石磨 → 吊石磨（9000）；本墙段 4 格内有器械且 1 格内没火盆 → 备火（8800，弓兵）；本格或邻格正下方有架好的云梯、填平的墙脚或土山且没堆礌石 → 堆礌石（8600，步兵）。
+4. **夜令**：南门接近格 4 格内有未蒙皮、1 格内没蜀军的器械 → 夜袭它；否则 y ≤ 21 有 ≥ 2 件蜀军器械且第 2 日以后 → 举火；否则某门 < 50% → 夜修；否则有受威胁墙段 → 死守；否则鼓舞最低士气。
+
+不变量（测试）：AI 从不在没火盆时放火箭、没吊石磨时投石磨、没堆礌石时投礌石；一回合 ≤ 1 秒。
+
+### 6.2 攻城 AI（`src/siege/ai/attacker.ts`，新）
+
+从 `scripts.ts` 的「合格」脚本演化，给扮演魏军时用，也给模拟用。保留按种子的计划（几路、先车先梯、冲车日、轮换阈值），新增：
+
+- **攻法** `careful | anyPrice | brute`：careful 从不强攻；anyPrice 从第 5 + choice(4) 日起、或第 9 日仍无部队在墙上时强攻；brute 不造开局以外的器械，每次攻击都强攻。
+- **拆招**：云梯所在列 2 格内出现火盆 → 未架的换到没火盆的列，已架的派最近步兵蒙皮、派弓兵压制火盆边最近的弓手；门楼吊起石磨 → 撞门前先压制门楼部队，压不了就当日不撞、给冲车蒙皮；梯上方堆了礌石 → 允许强攻则照攻，否则换另一架梯或土山；昨夜被夜袭 → 每件 4 格内器械旁留一支步兵；昨夜魏军举火 → 今夜不夜攻，白天压制。
+- **土山**：计划里的一列两格填平后，两支步兵加土车专堆，建成后主攻改走土山。
+- **夜令**：y 19–21 有 ≥ 2 件器械且昨夜魏军没举火 → 夜攻；否则按 v0.1 轮换 / 督造 / 鼓舞。
+- **本阵**：同 v0.1 保持距离。
+
+`scripts.ts` 只留 `brute`，`competent` 改为调用 attacker 的 `careful`；`tools/siege-sim.mjs` 的策略改为 `careful`、`anyPrice`、`brute`。
+
+### 6.3 模拟目标（200 局，`node tools/siege-sim.mjs 200`）
+
+| 指标                                           | 目标      |
+| ---------------------------------------------- | --------- |
+| careful 胜率                                   | 25–40%    |
+| anyPrice 胜率                                  | ≥ 85%     |
+| brute 胜率                                     | ≤ 15%     |
+| 第 2 日结束前立足 ≥ 1 的局                     | ≥ 90%     |
+| 第 5 日结束前有蜀军站上城墙的局                | ≥ 70%     |
+| careful 获胜平均日数                           | 8–11      |
+| anyPrice 获胜时蜀军总损失中位数                | 5000–9000 |
+| 没有任何交战、立足、器械损毁的日子（每局平均） | ≤ 1.5     |
+| 200 个种子的不同对局（结局、日数、损失三元组） | ≥ 150     |
+| 守城 AI 一回合 / 攻城 AI 一回合                | ≤ 1 秒    |
+| 守城 AI 对 careful 的「完守」率                | 20–40%    |
+
+模拟输出新增：每局首次立足日、首次上墙日、强攻次数、夜令对撞结果、两边的评分。
+
+## 7. 界面
+
+### 7.1 开始与选边
+
+- `SiegeCampaignCard`：两个主按钮「汉军 · 诸葛亮」「魏军 · 郝昭」（`data-testid="start-shu"`、`start-wei"`），有存档时「继续（汉军 / 魏军）」。魏军按钮用 S8-10 做底图，汉军仍用 S7-01。
+- 路由：`#chencang/shu`、`#chencang/wei`、`#chencang/load`；`src/v03/App.tsx` 只改路由解析这一处。
+- `SiegeSave.playerSide: 'shu' | 'wei'`。
+
+### 7.2 晨报与拆法卡
+
+- `SiegeMorningReport`：每日开始（幕横幅之后）弹出的纸面面板，列出昨夜和对方阶段里发生的事，每条一个图标、一句话、一句拆法；「知道了」关闭；顶栏多一个「晨报」按钮随时重开。`ui/report.ts` 从 `state.log`（上一日夜间到当前）和 `state.preparations` 生成条目。
+- 汉军看到的条目：备火（哪段墙）、吊石磨（哪座门楼）、堆礌石（哪格）、昨夜举火（夜攻成败）、昨夜夜袭（目标、成败）、夜修、死守（今日哪段）、雪夜火盆熄灭、器械被烧 / 被砸、礌石命中与立足损失、重墙某段建成。
+- 魏军看到的条目：云梯架起、城堑填平、土山进度与建成、蒙皮、压制（谁被压制）、强攻、昨夜夜攻（成败）、器械推进到城堑 4 格内、冲车到桥头。
+- **拆法卡**：v0.1 的就地提示扩展为每种「招」第一次命中时弹一张卡（可关），列出拆法；晨报里的拆法一句话每天都在。`HINT_KINDS` 增加：`fire`、`millstone`、`boulders`、`sortie`、`torches`、`snow`（汉军）；`suppress`、`cover`、`mound`、`assault`、`nightAssault`（魏军）。
+
+### 7.3 汉军界面改动
+
+- 部队卡新动作：**压制**（弓弩兵、井阑）、**蒙皮**（步兵，相邻器械）、**堆土山**（步兵、土车）；攻击预测加**强攻**勾选框，显示两套正面 / 立足 / 反击。
+- 军令加**夜攻**。
+- 城防面板每段墙一行：守军人数、压力条（该段墙前的攀城部队兵力 ÷ 守军兵力）、备物图标（火盆 / 礌石 / 石磨）、各格立足。
+- 工棚页不变；器械卡显示「已蒙皮」。
+- 回放：夜间结算也回放（夜攻推进、举火、夜袭），可跳过；速度比 v0.1 快一倍。
+
+### 7.4 魏军界面
+
+- 部署阶段：选魏军，点 `DEPLOY_WEI` 高亮格换位。
+- 每日开始：先回放攻城 AI 的蜀军阶段（可跳过），再弹晨报，再轮到玩家。
+- 部队卡动作：移动、攻击、**备火**、**火箭**、**吊石磨**、**投石磨**、**堆礌石**、**投礌石**、筑墙（第二幕）、军令（鼓舞 / 死守 / 夜修 / 举火 / 夜袭，夜袭要选目标器械）、待命。不能做的项写明原因（同 v0.1 的 `siegeCommands`，去掉「守方由 AI 指挥」的拦截，改为按 `playerSide`）。
+- 侧栏页：「部队与行动」「城防」「守备」（代替工棚：三种准备的清单、重墙进度、城门、今晚的夜令）「晨报」「战斗日志」。
+- 结局：守住 → S8-07；蜀军溃败 → S7-07 配魏方文案；城破 → S7-05 配魏方文案。
+- 开场第 6 句改为郝昭的台词；第二幕横幅魏方文案：「蜀军造起井阑。城内筑重墙，夜里加紧。」
+
+### 7.5 结局与评分
+
+结局画面在 v0.1 的插画、叙述、评价之下加：等级名、分数、分项（基数、速度、伤亡、器械、本阵 / 城防、战绩）、一句对照史实（「史实中蜀军围城二十余日，粮尽而退；你用了 N 日」）。战后总结表不变，加强攻次数、夜令对撞次数、土山数。
+
+### 7.6 玩法面板与引导
+
+- 玩法面板两边各一套，内容从 `tuning.ts` 读。汉军加「招与拆」一节：§5.5 的表压缩成六行。魏军一套：目标、一日、三种准备、夜令、重墙、看蜀军在做什么。
+- 汉军第 1 日引导改为 6 步：选云梯 → 架梯 → 选弓弩兵 → 压制梯前墙段 → 结束本日 → 第 2 日：读晨报，给云梯蒙皮。
+- 魏军第 1 日引导 6 步：选郝昭 → 吊石磨 → 选弓兵 → 备火 → 结束本日 → 第 2 日：火箭烧云梯。
+- 「重看引导」按阵营重放。
+
+## 8. 渲染与动画（`src/siege/render/`）
+
+| 内容       | 做法                                                                                                                          | 图           |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 立足条     | 墙格正面画三个墨点，亮几个是几；预测悬停时闪                                                                                  | 程序         |
+| 梯上攀爬   | 架好的云梯按立足数摆 S5-01 的攀梯姿态：1 → 梯下段一人（climb-a），2 → 两人（a、b），3 → 梯顶一人翻上（top）                   | 已有 S5-01   |
+| 强攻群像   | 当日强攻的攀城位置，在墙面前贴 S8-06「攀附」，取代单个攀爬小兵；强攻未上墙则当晚回放时换「溃退」态淡出                        | S8-06        |
+| 土山       | 进度 1–2 起土、3–5 半高、6 成坡，按两格占地放在城堑内外两行上                                                                 | S8-03        |
+| 蒙皮器械   | `covered` 的云梯车、架上墙的云梯、冲车换 S8-01、S8-02 的图；燃烧态沿用原件                                                    | S8-01、02    |
+| 城头备物   | 火盆（未燃 / 燃着，火苗用 S6-01 程序加）、柴薪捆、礌石堆放在墙格走道上；石磨吊起时把 S4-07 的石磨画到吊臂下，未吊起画在走道上 | S8-04、S4-07 |
+| 夜色       | 夜间回放时整图加 `#1b2233` 45% 的平铺色（不做暗角），火盆、火把处用径向渐变提亮                                               | 程序         |
+| 火把与夜袭 | 举火：火盆处 S6-01 火苗闪烁；夜袭：S8-05 的小队从南门沿路走到目标器械，火把一亮，器械起火或小队折返                           | S8-05、S6-01 |
+| 夜攻       | 器械沿路向北滑行 2 格，云梯竖起（S4-01 → S4-02 淡入淡出）                                                                     | 已有         |
+| 方阵       | 按兵力画 1 / 3 / 5 个小兵：≤ 800 一个，≤ 2000 三个，> 2000 五个；按 ink-04 的 1 人 / 3 人排法扩到 5 人；伤兵减少时人数跟着减  | 程序         |
+| 被挤开     | 守军沿墙滑到邻格，士气数字飘出                                                                                                | 程序         |
+| 性能       | 精灵上限 300，粒子上限不变；平移缩放在 10 蜀军、6 魏军、8 器械、5 人方阵时不卡                                                | —            |
+
+## 9. 美术：S8 出图清单与提示词
+
+### 9.1 怎么出
+
+- 流程同 S4–S7：先在 `tools/build-siege-blockout.mjs` 里加每件的定义（几何、`about`、`subject`、`checks`），跑 `node tools/build-siege-blockout.mjs` 生成 `docs/siege/chencang/art/s8-xx-*/`（README、灰盒、`grid.png`、`footprints.json`、对位坐标段），README 里的提示词是**权威版本**；本节的提示词是写进脚本的 `subject`（和整段提示词的其余固定段），由脚本拼成 README。
+- 出图用 Codex 内置 image_gen（`gpt-6.1-sol`，`xhigh`），每件 3–4 张放 `attempts/`，选定后：品红底的件用 `attempts/key.py` 抠图，姿态表用 `attempts/cut_poses.py` 切格，图标用 `attempts/prepare_ui.py`，插画存 `runtime/`；选定文件名填回脚本的 `*_PICKS`。
+- 固定段的拼接顺序（品红底分件表）：`Output requirements…`（含对位坐标段，脚本生成）→ `Match the brushwork… of the second attached image`（标准件）→ `Style priority — A 界画淡彩`（脚本里的 `STYLES.a`）→ FIDELITY_FIRST → PROJECTION → **Subject**（本节）→ 比例尺句 `In the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.` → SPRITE → LIGHT_SPRITE → STYLE_A → EXCLUDE_PIECES。姿态表、图标、插画的固定段分别照 S5-01、S6-03、S7-04 的 README。
+- 规格：分件表 1536×1024，每格 128×96、每层 48px，品红底；姿态表 3×2 宫格每格 512×512；图标 4×3 宫格每格 384×341，透明底；插画 1536×1024。
+- 上传的参考：标准件 `s1-02-south-gate/attempts/v4.webp`；蜀兵 `s1-05-shu-halberd-sheet/attempts/v5.webp`；魏兵 `s5-03-wei-infantry-sheet/attempts/v1.webp`；插画风格 `s7-01-key-visual/style-reference.png`；郝昭立绘 `s5-07-portrait-hao-zhao/attempts/v1.webp`。
+
+### 9.2 清单
+
+| 编号  | 内容                                         | 类型         | 规格             | 用在哪                                    | 优先 |
+| ----- | -------------------------------------------- | ------------ | ---------------- | ----------------------------------------- | ---- |
+| S8-01 | 蒙皮云梯车（朝北、朝东）、蒙皮云梯架上墙     | 分件表，灰盒 | 1536×1024 品红   | `covered` 云梯                            | P0   |
+| S8-02 | 轒輼车：朝北、朝东、被砸受损                 | 分件表，灰盒 | 1536×1024 品红   | `covered` 冲车                            | P0   |
+| S8-03 | 土山三态：起土、半高、成坡                   | 分件表，灰盒 | 1536×1024 品红   | `mounds` 1–2 / 3–5 / 6                    | P0   |
+| S8-04 | 城头备物：火盆（未燃、燃着）、柴薪捆、礌石堆 | 分件表，灰盒 | 1536×1024 品红   | 三种准备的标记                            | P0   |
+| S8-05 | 魏军夜袭小队姿态表                           | 姿态表       | 3×2 宫格 512     | 夜袭回放                                  | P0   |
+| S8-06 | 蚁附强攻群像：攀附、溃退                     | 分件表，灰盒 | 1536×1024 品红   | 强攻                                      | P0   |
+| S8-07 | 结局插画：魏军守住                           | 插画         | 1536×1024        | 魏方胜利结局                              | P0   |
+| S8-08 | 幕间插画：雪夜举火与夜袭                     | 插画         | 1536×1024        | 第一次夜袭 / 举火的事件卡；魏方第二幕横幅 | P1   |
+| S8-09 | 图标表三：十二个新图标                       | 图标表       | 4×3 宫格，透明底 | 新动作、夜令、晨报                        | P0   |
+| S8-10 | 魏军视角主视觉                               | 插画         | 1536×1024        | 开始画面魏军按钮底图                      | P1   |
+
+程序画、不出图的：立足墨点、夜色、火把光晕、方阵排布、石磨吊起（用 S4-07 的件位移）、被挤开的滑动、晨报面板（用 S6-05 纸纹）。
+
+### 9.3 每件的几何与提示词
+
+#### S8-01 蒙皮云梯车与蒙皮云梯（`s8-01-covered-ladder`）
+
+- 几何：三格。左：蒙皮云梯车朝北，1×2 格，同 `ladderCart` 的车体和 2.5 层梯架，梯架两侧挂到地面的生牛皮帘（灰盒加两块 `HIDE` 色的薄板，从梯架顶沿两侧垂到车厢上沿）。中：朝东，2×1 格，同上。右：蒙皮云梯架上墙，几何同 `ladderOnWall`（车在墙前第 3 行，梯跨两行城堑到 3 层墙头），梯身两侧挂皮帘到梯的下半段。
+- 上传：`blockout.png`；S1-02 v4（标准件，第二张）；`s4-01-ladder-cart/attempts/v2.webp`（第三张，同一辆车）。
+- 看什么：和 S4-01、S4-02 是同一辆车，只多了皮帘；皮帘是绷紧的生牛皮，毛面朝外，缝线和木钉看得见；梯级在皮帘之间仍露出来，游戏要把人摆上去。
+
+```text
+Subject: the same Shu-Han siege ladder cart (云梯车) as on the third attached sheet, now protected against fire arrows with raw ox-hides (蒙生牛皮), three separate pieces side by side, one centred in each third of the image. Fresh, stiff, wet-looking ox-hides, hair side out, in mottled dun and dark brown, are lashed with cord to both sides of the ladder truss and hang down to the top of the chassis like curtains; a few hides are also pegged over the crew shelter at the rear. The rungs of the ladder remain visible between the hide curtains. Left: the covered cart heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same covered cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the covered ladder raised against a city wall (the wall itself is NOT drawn): the cart stands at the bottom, the ladder leans north across the trench rows up to the height of a three-level wall top, and the hide curtains hang along the lower two thirds of the ladder; snow has settled on the top edges of the hides. Same cart, same size, same timber and hides in all three; no fire, no scorch marks.
+```
+
+#### S8-02 轒輼车，蒙皮冲车（`s8-02-covered-ram`）
+
+- 几何：三格。左：朝北，1×2 格，同 `ram` 的几何（车棚高 0.9 层、脊 1.5 层），棚顶加一层 `HIDE` 色的厚皮并铺湿泥（顶面略隆起 0.15 层）。中：朝东，2×1 格。右：被石磨砸中但未毁：同朝北的几何，棚顶正中凹下一块（高度降到 0.6 层），皮和椽子破开，但车体和撞木完好。
+- 上传：`blockout.png`；S1-02 v4；`s4-03-ram/attempts/v1.webp`（第三张，同一辆车）。
+- 看什么：三件是 S4-03 那辆冲车加了厚皮顶；受损那件看得出被砸过，但还能用（撞木没断，轮子没掉）。
+
+```text
+Subject: the same Shu-Han battering ram (冲车) as on the third attached sheet, rebuilt as a fenwen cart (轒輼车) with a reinforced roof, three separate pieces side by side, one centred in each third of the image. The roofed shed on wheels now carries a double layer of raw ox-hides lashed over the roof and sides, with a thick coat of wet grey mud smeared over the hides against fire and falling stones; the iron-capped ram beam still projects from the front. Left: heading north, away from the viewer. Middle: the same cart heading east, seen from its side. Right: the same cart heading north after a millstone has been dropped on it from the wall: the middle of the roof is crushed into a shallow dent, hides torn and a few rafters splintered and poking up, mud flaked off around the dent, but the chassis, wheels and ram beam are intact and the cart is still usable. Same cart, same size, timber and hides in all three; no fire.
+```
+
+#### S8-03 土山三态（`s8-03-earth-mound`）
+
+- 几何：三格，每件占 1×2 格（城堑的外侧行 y 18 和内侧行 y 17，已填平），北端贴着城墙正面。左「起土」：一堆土 0.8 层高，南半格是空筐和铲；中「半高」：土堆 1.8 层，北面用原木井字架（`WOOD`）围住，南面是斜坡，顶上插两根木桩；右「成坡」：从南端地面升到北端 3 层的夯土斜坡（`EARTH`），两侧原木护坡，坡面有踏出的梯级，北端和墙头前沿齐平（墙不画）。灰盒用 `slope(..., 'n', rise)` 做坡，rise 分别 0.8、1.8、3。
+- 上传：`blockout.png`；S1-02 v4。
+- 看什么：三态是同一个位置越堆越高；成坡那件的北端正好到 3 层，看得出人能从南面走上去；雪落在土堆顶上，坡面因为踩踏是土色。
+
+```text
+Subject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a ramp up to its top, in three stages, three separate pieces side by side, one centred in each third of the image; the wall itself is NOT drawn. Each piece occupies one cell wide by two cells deep, its north end touching where the wall face would be. Left, just begun: a low heap of freshly dug ochre earth about a fifth of the wall's height, a few dropped wicker baskets and a wooden shovel at its south side, snow already dusting the top. Middle, half built: the heap now almost two levels high, its north face held by a crib of stacked logs notched at the corners, its south face a rough slope, two wooden stakes driven into the top, baskets of earth part-emptied on the slope. Right, finished: a solid rammed-earth ramp rising from ground level at the south end to the full three-level height of the wall top at the north end, log revetments along both sides, a trodden path of steps up the middle of the slope, the top edge flush with where the wall's parapet would be. Same earth colour and the same logs in all three; no soldiers.
+```
+
+#### S8-04 城头备物（`s8-04-wall-top-preparations`）
+
+- 几何：四件，都是放在墙顶走道上的小件（游戏抬高 3 层，同 S4-07）：火盆未燃（0.6 层，三足铁盆，盆里是柴）；火盆燃着（同样的盆，柴烧红、盆口发亮，**不画火苗和烟**，程序加）；柴薪捆（0.5 层，两捆扎好的柴和一捆浸油的布箭）；礌石堆（0.7 层，六七块石头和两根滚木堆在女墙内侧）。每件 1 格，四件各居一个四分之一宽。
+- 上传：`blockout.png`；S1-02 v4。
+- 看什么：都是能放在一格宽的走道上的小物件，缩到游戏尺寸还认得出是火盆、柴、石头；燃着的火盆只有红光，没有火苗。
+
+```text
+Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
+```
+
+#### S8-05 魏军夜袭小队姿态表（`s8-05-wei-sortie-sheet`）
+
+- 版式同 S5-03：3×2 宫格，每格 512×512，同一个 S5-03 的魏步兵，手持火把。第一行：正面（朝南，出城向观者走来）持火把行进；背面（朝北，折返）持火把行进；侧面（朝东）持火把行进。第二行：正面把火把捅向身前（点火）；正面举盾后退（被击退）；侧面蹲下点燃脚下的柴（点火）。
+- 上传：`guide.png`（脚本生成的版式）；`s5-03-wei-infantry-sheet/attempts/v1.webp`（第二张，魏步兵定稿）。
+- 看什么：和 S5-03 是同一个兵；火把是暖橙色的一点，不画大火；六格都踩在基线上；缩到 36px 看得出拿着火把。
+
+```text
+Subject: a character pose sheet of the same Wei infantryman as on the second attached sheet, for a strategy game, drawn six times on a night sortie carrying a burning torch. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.
+Top row: seen from the front (facing south, toward the viewer), striding forward with a torch held up in the right hand and a short sword in the left; seen from behind (facing north, away from the viewer), striding with the torch held up; seen from the side facing right (east), striding with the torch held ahead of him.
+Bottom row: seen from the front, lunging to thrust the torch into something low in front of him; seen from the front, backing away behind his raised shield with the torch lowered (driven off); seen from the side facing right (east), crouching to touch the torch to a bundle of kindling at his feet.
+The torch: a short wooden stave with a wrapped head burning with a small, simple orange-and-yellow flame and a few sparks; the flame is small and does not light the figure dramatically.
+Camera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.
+The soldier: a deep indigo (#2f4a6e) padded war coat under black-lacquered lamellar armour, a rounded iron helmet with a neck guard, wrapped leggings and boots, a round shield slung or held; no facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.
+Style: match the second attached sheet (the Wei infantry pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.
+Light: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow; the torch adds only a faint warm tint to the hand holding it.
+```
+
+#### S8-06 蚁附强攻群像（`s8-06-storming-cluster`）
+
+- 几何：两件，每件 1 格宽、3 层高，贴在城墙正面（墙不画），占地格是墙前那一格（梯底或墙脚）。左「攀附」：十到十四个 S1-05 的蜀兵密密麻麻攀在墙面上，用绳索、挠钩和两架短梯，最高的已到女墙下，最低的在格底堆成一团往上挤。右「溃退」：同一位置，绳索空荡，三四个兵正从半高处滑下，格底一堆兵举盾退开，两个倒在地上（墨色晕开，不画血）。灰盒用一块 1×3 层的立面（`box` 高 3，薄 0.1 格）标出贴墙的面。
+- 上传：`blockout.png`；S1-02 v4（标准件）；`s1-05-shu-halberd-sheet/attempts/v5.webp`（第三张，蜀兵定稿）。
+- 看什么：和 S1-05 是同一支军队；看得出是「一群人往上爬」而不是一个人；缩到游戏尺寸（约 64×144px）仍能看出人形的密集感；溃退那件没有血。
+
+```text
+Subject: two pieces showing a mass of Shu-Han infantry storming a city wall by swarming up its face (蚁附攻城), for a strategy game, two separate pieces side by side, one centred in each half of the image; the wall itself is NOT drawn, only the men on it, so paint them as if clinging to an invisible vertical face one cell wide and three levels tall, with their feet at the bottom of the piece. Left, the assault: twelve to fourteen soldiers in jade-green coats, the same soldiers as on the third attached sheet, packed shoulder to shoulder and climbing with knotted ropes, iron grapnels and two short wooden ladders; the highest man reaches up just below where the parapet would be, the lowest men crowd at the base pushing upward, shields raised over their heads, halberds slung. Right, the repulse: the same place a moment later, the ropes hanging loose, three or four men sliding and tumbling down the face, a knot of men at the base backing away under raised shields, and two figures lying crumpled at the foot drawn only as soft dissolving ink blots, with no blood and no wounds shown. Both pieces are the same width and height; the figures are drawn at the same scale as the soldiers on the third attached sheet, so each man is about the height of one wall level.
+```
+
+#### S8-07 结局插画：魏军守住（`s8-07-ending-held`）
+
+- 插画，1536×1024，用于魏方「守住」的三种等级。黎明，雪后初晴。郝昭立在南门门楼上远眺；城下蜀军大营正在拔营，车队沿散关道向南远去，烧毁的云梯残骸还在城堑边；东方地平线上尘土扬起，隐约有骑兵的旗。
+- 上传：`s7-01-key-visual/style-reference.png`（第一张，风格和建筑参考）；`s5-07-portrait-hao-zhao/attempts/v1.webp`（第二张，郝昭的人物参考）。
+- 看什么：和 S7-05、S7-06 是同一套画风；郝昭的样子对得上立绘；没有文字、印章；蜀军是在退，不是在攻。
+
+```text
+Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.
+
+Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.
+
+Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.
+
+Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.
+```
+
+#### S8-08 幕间插画：雪夜举火与夜袭（`s8-08-night-torches`）
+
+- 插画，1536×1024。雪夜。南墙女墙上一溜火盆和火把把墙面照成暖色，魏军弓手在火光里引弓；城下，一小队举火把的魏兵从门洞冲出，正把火把捅向停在城堑边的土车，车下已起小火；蜀军几名持戟的卫兵从暗处跑来。
+- 上传：`s7-01-key-visual/style-reference.png`（第一张）。
+- 看什么：夜景但不是全黑，火光是主光源；看得出是魏军出城放火、蜀军赶来护车；没有血。
+
+```text
+Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.
+
+Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.
+
+Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.
+
+Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.
+```
+
+#### S8-09 图标表三（`s8-09-icons-counters`）
+
+- 版式同 S6-03：4×3 宫格每格 384×341，透明底，墨色剪影加一处朱红。十二个：压制、蒙皮、土山、强攻；夜攻、举火、夜袭、备火；吊石磨、堆礌石、晨报、立足。
+- 上传：不上传参考图。
+- 看什么：和 S6-03、S6-04 放一起笔画一致；32px 下十二个都认得出、彼此不混。
+
+```text
+Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.
+
+Arrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.
+
+Rows left to right, top to bottom:
+1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top
+2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails
+3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end
+4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures
+5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward
+6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)
+7. night sortie (夜袭): an open gate with a running figure holding a torch
+8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark
+9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope
+10. stack boulders (堆礌石): three boulders stacked on a wall edge
+11. morning report (晨报): a partly unrolled scroll with a rising sun above it
+12. foothold (立足): a wall top with three small notches, one filled in vermilion
+
+Style: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.
+
+Output a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.
+
+Do not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.
+```
+
+#### S8-10 魏军视角主视觉（`s8-10-key-visual-wei`）
+
+- 插画，1536×1024，开始画面魏军按钮的底图（和 S7-01 并排，同一个雪夜）。视角从城头向外：郝昭在门楼上挥手下令，身边弓手放火箭，火箭划向城下着火的云梯；门楼边吊着石磨；城下雪地里蜀军的人潮和诸葛亮的四轮车在远处。
+- 上传：`s7-01-key-visual/style-reference.png`（第一张）；`s5-07-portrait-hao-zhao/attempts/v1.webp`（第二张，郝昭）。
+- 看什么：和 S7-01 是同一晚的另一边；郝昭对得上立绘；没有文字。
+
+```text
+Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.
+
+Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.
+
+Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.
+
+Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.
+```
+
+## 10. 代码与存档
+
+### 10.1 改动点
+
+| 位置                               | 改动                                                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/siege/rules/constants.ts`     | `SIEGE_VERSION = 'siege_v0.2'`、`SIEGE_DAYS = 12`、`INITIAL_ZHANGHE_DISTANCE = 14`                                                                                                                                                                                                                                                                              |
+| `src/siege/rules/tuning.ts`（新）  | §5.10 全表，导出常量对象；`ENGINE_RULES` 搬进来                                                                                                                                                                                                                                                                                                                 |
+| `src/siege/rules/types.ts`         | `SiegeState` 加 `footholds`、`mounds`、`preparations`、`nightOrders`、`mainBodyThreatened`、`holdFast.day` 语义；`SiegeUnit` 加 `suppressedDay?`、`assaultedDay?`；`SiegeEngine` 加 `covered?`；`SiegeAction` 加 `suppress`、`coverEngine`、`pileEarth`、`lightBrazier`、`hoistMillstone`、`stackBoulders`、攻击的 `assault?`、军令新种类、`sortie` 的 `target` |
+| `src/siege/rules/state.ts`         | 开局器械；新字段初值                                                                                                                                                                                                                                                                                                                                            |
+| `src/siege/rules/actions.ts`       | 新动作与校验；火箭、石磨、礌石改为依赖准备；立足结算；强攻；死守 `day + 1`                                                                                                                                                                                                                                                                                      |
+| `src/siege/rules/combat.ts`        | 正面表改读 `tuning`；土山与强攻的正面、立足、反击修正；被挤开                                                                                                                                                                                                                                                                                                   |
+| `src/siege/rules/day.ts`           | `endDay` 只做夜间结算（§4.3 顺序）；蜀军阶段和魏军阶段由调用方驱动（`runAttackerTurn` / `runDefenderTurn`）                                                                                                                                                                                                                                                     |
+| `src/siege/rules/score.ts`（新）   | §5.9                                                                                                                                                                                                                                                                                                                                                            |
+| `src/siege/ai/defender.ts`         | §6.1                                                                                                                                                                                                                                                                                                                                                            |
+| `src/siege/ai/attacker.ts`（新）   | §6.2；`scripts.ts` 只留 brute                                                                                                                                                                                                                                                                                                                                   |
+| `src/siege/save.ts`                | 新键 `threekingdoms-siege-chencang-v2`，`playerSide`，schema 跟上；旧键不动                                                                                                                                                                                                                                                                                     |
+| `src/siege/ui/`                    | 选边、晨报、拆法卡、新动作、夜令、魏军指令与守备页、两套玩法与引导、评分画面、回放                                                                                                                                                                                                                                                                              |
+| `src/siege/render/`                | §8                                                                                                                                                                                                                                                                                                                                                              |
+| `src/siege/i18n/`                  | 新键；缺键测试；字体子集（`python3 tools/subset-fonts.py`）                                                                                                                                                                                                                                                                                                     |
+| `src/v03/App.tsx`                  | 只改 `#chencang/:side` 的路由解析                                                                                                                                                                                                                                                                                                                               |
+| `tools/siege-sim.mjs`              | 三种攻法、两边评分、§6.3 的新指标；`--trace` 接攻法（careful、anyPrice、brute）和种子                                                                                                                                                                                                                                                                           |
+| `tools/build-siege-blockout.mjs`   | S8 十件的定义与 `S8_PICKS`                                                                                                                                                                                                                                                                                                                                      |
+| `tests/siege/`、`tests/e2e-siege/` | 见 §11 各包                                                                                                                                                                                                                                                                                                                                                     |
+
+### 10.2 约束
+
+- 不动 `src/v03`（路由那一处除外）、不动野战；`attempts/` 不删；`docs/siege/chencang/art/` 下的生成文件只由脚本改。
+- 规则仍是纯 JSON、确定性；同一存档同一操作结果相同；AI 不用进程级缓存。
+- 所有数值从 `tuning.ts` 读；玩法面板的文案从规则观测或常量取值，不手写数字。
+- 中英文本齐全；每次加中文后跑字体子集脚本，字体覆盖测试要过。
+
+## 11. 任务书（I–O）
+
+每包一份任务书放 `docs/siege/codex-tasks/`（沿用文件夹，格式同 `H-how-to-play.md`：Why / Constraints / Deliverables / Checks），由 Opus 实现。每包都要跑：`npx vitest run tests/siege`、`npx tsc --noEmit -p .`、`npx prettier --check src/siege tests/siege tests/e2e-siege tools docs/siege`、`npx vite build`；涉及文本的包跑字体子集。每包验收后提交一次，提交说明写包号。
+
+| 包  | 名称          | 交付                                                                                                                                                                                                                                                           | 验收                                                                                                                                                                              |
+| --- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I   | 规则 v0.2     | `tuning.ts`；版本与 12 日；开局器械；立足；压制；蒙皮；土山；强攻；三种准备与火箭 / 石磨 / 礌石的新前提；夜令四种与夜间结算顺序；死守修正；`mainBodyThreatened`；`score.ts`；存档新键与 `playerSide`；`endDay` 拆成夜间结算；`scripts.ts` 最小适配让模拟仍能跑 | 单元测试覆盖每条新规则（含：没火盆不能放火箭；立足满三挤开守军；礌石减立足；土山不可夜袭；强攻的两套数字；夜攻与举火对撞；死守次日生效；评分六级与五级）；`siege-sim.mjs 50` 跑通 |
+| J   | 两边的 AI     | 守城 AI 两段式；`attacker.ts` 三种攻法与拆招；模拟三策略、新指标、两边评分；`--trace`                                                                                                                                                                          | §6.1 的不变量测试；§6.3 全部指标达标；两边 AI 一回合 ≤ 1 秒                                                                                                                       |
+| K   | 美术 S8       | `build-siege-blockout.mjs` 加 S8-01 到 S8-10 的定义，生成各文件夹；你出图、选定；切图脚本跑出 `selected-transparent.png`、`poses-game/`、`icons/`、`runtime/`；`footprints.json`、`poses.json` 就位；灰盒工具的 README 总表加 S8                               | 预览页 `?siege-map` 能摆出全部 S8 件并切换状态；`mapPieces.test.ts` 覆盖新件的对位                                                                                                |
+| L   | 渲染 v0.2     | §8 全部：立足墨点、梯上攀爬、强攻群像、土山、蒙皮器械、城头备物与石磨吊起、夜色与火把、夜袭与夜攻回放、方阵、被挤开                                                                                                                                            | 截图：第 2 日立足 1/3 与攀爬、强攻群像、土山三态、蒙皮、备物、雪夜举火、夜袭；三档缩放点选仍准；性能预算                                                                          |
+| M   | 汉军界面 v0.2 | 晨报与 `report.ts`；拆法卡；新动作与强攻预测；夜攻军令；城防面板压力条与备物；回放加速；玩法面板「招与拆」；第 1 日引导 6 步；评分画面                                                                                                                         | e2e：从选汉军到第 3 日：架梯、压制、晨报三条、蒙皮、强攻预测两套数字、夜攻；读档一致；截图 `report.png`、`counter-card.png`、`assault-forecast.png`、`score.png`                  |
+| N   | 魏军可玩      | 选边与路由；魏军开场台词、部署、指令、守备页、晨报、夜令选目标、第 1 日引导、玩法面板；攻城 AI 回放；魏方结局与评分；S8-07、S8-10 接入                                                                                                                         | e2e：选魏军 → 部署 → 吊石磨、备火 → 结束本日 → 第 2 日火箭烧云梯、投石磨 → 守到结局；读档一致；截图 `wei-deploy.png`、`wei-day2.png`、`wei-ending.png`                            |
+| O   | 打磨与验收    | 两边各一局完整端到端；S8-08 幕间接入；字体子集；性能；`00-progress.md` 更新到 v0.2；玩家指南段落；试玩问题修复                                                                                                                                                 | §12 的验收清单全部打勾                                                                                                                                                            |
+
+顺序：**I → J →（K 与 J、L 并行）→ L → M → N → O**。K 的出图由你做，Opus 做脚本和接入；L 在 K 的图入库前先用灰盒占位（`mapPieces` 对灰盒和定稿用同一套 `footprints.json`）。
+
+## 12. 里程碑与验收
+
+| 里程碑       | 内容 | 关口                                                      |
+| ------------ | ---- | --------------------------------------------------------- |
+| V1 规则与 AI | I、J | §6.3 指标达标；模拟逐日追踪里第 2 日有立足、第 5 日有上墙 |
+| V2 美术      | K    | 十件入库，预览页通过                                      |
+| V3 汉军可玩  | L、M | **你试玩一局汉军**：30 分钟内，每天至少一次招拆           |
+| V4 魏军可玩  | N    | **你试玩一局魏军**                                        |
+| V5 打磨      | O    | 下面的清单                                                |
+
+验收清单：
+
+- [ ] 两边都能从选边走到结局和评分；画面里没有灰盒残留。
+- [ ] 不看文档也能明白：晨报说了什么、怎么拆、立足到几格、为什么打不动。
+- [ ] 一局汉军 30 分钟以内（你的实际试玩计时）。
+- [ ] §6.3 的模拟指标全部达标。
+- [ ] 器械被烧的那一刻，玩家至少看到三条拆法。
+- [ ] 任意时刻存读档结果一致；两边的存档互不干扰。
+- [ ] 中英文本完整；字体覆盖测试通过。
+- [ ] v0.4 的现有测试照样通过（v0.3 的 4 个性能测试除外，同 v0.1 的说明）。
+- [ ] 你试玩汉军、魏军各至少一局，认可。
+
+## 13. 风险与对策
+
+| 风险                                   | 对策                                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 强攻太强，玩家只会强攻                 | 反击 ×2.5 与礌石 ×2 由模拟定；评分重罚伤亡；anyPrice 胜率目标 ≥ 85% 但损失中位数 5000–9000 |
+| 守方准备提前一天，魏军显得慢           | 普通攻击、移动、筑墙仍是即时的；只有大招要准备；玩魏军时准备本身就是节奏                   |
+| 攻城 AI 拆招太死板，扮魏军没意思       | 按种子的计划 + 规则化的拆招；试玩后加分支；模拟里「完守」率 20–40% 作为对手强度的门槛      |
+| 一日里动作变多，30 分钟做不到          | 12 日；回放加速；「全军待命」快捷键；试玩计时，超了就缩到 10 日                            |
+| 新图对位不准（土山要贴墙、群像要贴面） | 灰盒工具出对位坐标段；预览页逐件检查；贴墙件按墙前沿对齐，`footprints.json` 记锚点         |
+| 夜令对撞玩家看不懂                     | 晨报每条写明因果（「昨夜你夜攻，魏军举火，云梯被烧」）；拆法卡；玩法面板一张三行的对撞表   |
+| 状态字段变多，存档和 AI 出错           | 规则测试逐条；存档 schema 严格；AI 只通过 `applySiegeAction` 改状态                        |
+
+## 14. 推后的事（v0.3 候选）
+
+- 第三幕地道与横截（需地下视图、C05、D05、G07、H08）。
+- 张郃骑兵第 12 日入场的撤退战；王双追击。
+- 同机双人。
+- 随机伤害与火攻浮动。
+- 东、西、北门的城堑、桥和接近格。
+- 武将特技（魏延、姜维、王平、郝昭）。
+- 合并进大地图：城池描述文件、通用部署、野战与攻城的衔接。
+
+## 15. 怎么开工
+
+```bash
+git fetch origin siege_v0.2
+git checkout siege_v0.2
+npm install
+npm run dev                                   # /#chencang/shu、/#chencang/wei
+npx vitest run tests/siege
+node tools/siege-sim.mjs 200                  # careful / anyPrice / brute
+node tools/siege-sim.mjs --trace careful 228
+npx playwright test --config playwright.siege.config.ts
+node tools/build-siege-blockout.mjs           # 生成 S8 的出图材料
+python3 tools/subset-fonts.py                 # 新中文后
+```
+
+从任务书 I 开始；每包验收后提交；推送等你说。
