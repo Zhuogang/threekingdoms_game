@@ -192,10 +192,9 @@ function performAction(
       return 'Choose an adjacent, unfilled south trench cell.';
     if (action.y === 17 && state.trenchFill[`${action.x},18`] !== 3)
       return 'Fill the outer trench cell first.';
-    state.trenchFill[key] = Math.min(
-      3,
-      (state.trenchFill[key] ?? 0) + (engine ? 1 : 0.5),
-    ) as TrenchProgress;
+    // Plan §4.6: infantry fills at half efficiency (0.5); carts carry three 1.5-point loads.
+    const fill = unit ? 0.5 : 1.5;
+    state.trenchFill[key] = Math.min(3, (state.trenchFill[key] ?? 0) + fill) as TrenchProgress;
     if (unit) unit.acted = true;
     if (engine) {
       engine.acted = true;

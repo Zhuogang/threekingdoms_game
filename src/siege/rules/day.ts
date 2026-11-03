@@ -9,9 +9,9 @@ import type { Cell, EngineKind, SiegeDefenderTurn, SiegeEngine, SiegeState } fro
 export const ENGINE_RULES: Readonly<
   Record<EngineKind, { days: number; durability: number; move: number }>
 > = {
-  ladder: { days: 2, durability: 120, move: 2 },
+  ladder: { days: 2, durability: 200, move: 2 },
   ram: { days: 3, durability: 300, move: 2 },
-  earthCart: { days: 1, durability: 80, move: 2 },
+  earthCart: { days: 1, durability: 50, move: 2 },
   tower: { days: 4, durability: 250, move: 1 },
 };
 

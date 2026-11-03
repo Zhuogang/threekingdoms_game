@@ -18,6 +18,7 @@ import {
   climbingFrontage,
   distance,
   predictSiegeAttack,
+  siegeAttackInRange,
   usableEngine,
   wallRun,
 } from '../rules/combat';
@@ -176,14 +177,30 @@ function wallThreats(state: SiegeState): Threat[] {
     const key = cellKey(cell);
     threats.set(key, { ...cell, pressure: (threats.get(key)?.pressure ?? 0) + pressure });
   };
-  for (const engine of state.engines)
-    if (usableEngine(engine) && engine.raisedAt) add(engine.raisedAt, 3);
+  for (const engine of state.engines) {
+    if (!usableEngine(engine)) continue;
+    if (engine.raisedAt) add(engine.raisedAt, 3);
+    else if (engine.kind === 'ladder' && engine.y <= 21 && engine.y >= 19)
+      add({ x: Math.max(15, Math.min(32, engine.x)), y: 16 }, 3);
+  }
   for (const foot of SOUTH_TRENCH)
     if (isWallFoot(state, foot.x, foot.y)) add({ x: foot.x, y: foot.y - 1 }, 2);
+    else if (foot.y === 17 && state.trenchFill[`${foot.x},18`] === 3) add({ x: foot.x, y: 16 }, 1);
   for (const unit of state.units)
     if (unit.side === 'shu' && activeUnit(unit) && unit.level === 'wall') add(unit, 6);
   return [...threats.values()];
 }
+
+const inside = (unit: SiegeUnit): boolean =>
+  unit.level === 'wall' ||
+  (unit.x > CITY_BOUNDS.west &&
+    unit.x < CITY_BOUNDS.east &&
+    unit.y > CITY_BOUNDS.north &&
+    unit.y < CITY_BOUNDS.south);
+const intruders = (state: SiegeState): SiegeUnit[] =>
+  state.units.filter((u) => u.side === 'shu' && activeUnit(u) && inside(u));
+const inCourtyard = (unit: SiegeUnit): boolean =>
+  unit.level === 'ground' && COURTYARD.some((c) => sameCell(c, unit));
 
 const hurt = (u: SiegeUnit): boolean =>
   u.morale < WAVERING_MORALE ||
@@ -263,7 +280,7 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
     if (forecast?.inRange)
       candidates.push({
         action: { type: 'attack', unitId: unit.id, targetId: target.id },
-        score: (target.level === 'wall' ? 8000 : 6500) + forecast.casualties / 100,
+        score: (inside(target) ? 9950 : 6500) + forecast.casualties / 100,
       });
   }
   return candidates;
@@ -274,22 +291,46 @@ function movementCandidate(
   unit: SiegeUnit,
   threats: Threat[],
   fallback: boolean,
+  breach: SiegeUnit[],
 ): Candidate | null {
   const pressed = (p: Cell) => threats.some((t) => distance(t, p) <= 1);
   let goals: SiegePosition[] = [];
   let score = 0;
   if (fallback) {
-    if (unit.level === 'ground' && COURTYARD.some((c) => sameCell(c, unit))) return null;
+    if (inCourtyard(unit)) return null;
     goals = COURTYARD.map(ground);
-    score = 6200;
+    score = 9800;
+  } else if (breach.length) {
+    // Route to a legal attack position, including a ramp descent for a ground intruder.
+    for (const target of breach) {
+      const range = unit.troopType === 'archer' ? 3 : 1;
+      for (let y = target.y - range; y <= target.y + range; y++) {
+        for (let x = target.x - range; x <= target.x + range; x++) {
+          if (!isMapCell(x, y)) continue;
+          const terrain = cellTerrain(state, x, y);
+          for (const level of ['wall', 'ground'] as const) {
+            if (
+              level === 'wall'
+                ? !['wall', 'gate'].includes(terrain)
+                : ['water', 'trench', 'building', 'wall'].includes(terrain)
+            )
+              continue;
+            const position = { x, y, level };
+            if (siegeAttackInRange(state, { ...unit, ...position }, target)) goals.push(position);
+          }
+        }
+      }
+    }
+    score = 9600;
   } else if (hurt(unit) && unit.level === 'wall' && pressed(unit)) {
     goals = RAMPS.map((r) => ground(r.ground));
-    score = 8200;
-  } else if (!hurt(unit) && !threats.some((t) => sameCell(t, unit)) && threats.length) {
+    score = 9200;
+  } else if (!hurt(unit) && threats.length) {
     const occupied = (c: Cell) =>
       state.units.some((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, c));
     // Cover the climbing cell itself before adding support beside a Shu foothold.
-    goals = threats.filter((t) => !occupied(t)).map(wall);
+    const held = unit.level === 'wall' ? threats.find((t) => sameCell(t, unit)) : undefined;
+    goals = threats.filter((t) => !occupied(t) && (!held || t.pressure > held.pressure)).map(wall);
     if (!goals.length)
       goals = threats
         .filter((t) =>
@@ -300,9 +341,58 @@ function movementCandidate(
         .flatMap(adjacent)
         .filter((c) => ['wall', 'gate'].includes(cellTerrain(state, c.x, c.y)) && !occupied(c))
         .map(wall);
-    score = 7000;
+    score = 9000;
   }
-  if (!goals.length && !fallback && state.act === 2 && !pressed(unit)) {
+  // Wall archers follow work columns instead of waiting at their opening posts.
+  // Keep archers covering a climb; free archers can reach a firing position before acting.
+  if (
+    !fallback &&
+    !breach.length &&
+    unit.troopType === 'archer' &&
+    !threats.some((t) => unit.level === 'wall' && sameCell(t, unit))
+  ) {
+    const targets = [
+      ...state.engines
+        .filter((e) => usableEngine(e) && e.y >= 18 && e.y <= 19)
+        .map((e) => ({ ...e, priority: e.raisedAt ? 4 : e.kind === 'earthCart' ? 3 : 2 })),
+      ...state.units
+        .filter(
+          (u) =>
+            u.side === 'shu' &&
+            activeUnit(u) &&
+            u.troopType === 'infantry' &&
+            u.level === 'ground' &&
+            u.y >= 18 &&
+            u.y <= 19,
+        )
+        .map((u) => ({ ...u, priority: 1 })),
+    ].sort((a, b) => b.priority - a.priority || distance(unit, a) - distance(unit, b));
+    for (const target of targets) {
+      const positions = [-1, 0, 1]
+        .map((dx) => wall({ x: target.x + dx, y: 16 }))
+        .filter(
+          (p) =>
+            ['wall', 'gate'].includes(cellTerrain(state, p.x, p.y)) && distance(p, target) <= 3,
+        );
+      if (positions.some((p) => unit.level === 'wall' && sameCell(p, unit)) && !goals.length)
+        return null;
+      const route = routeSiegeActor(state, unit, positions);
+      if (
+        route &&
+        (!goals.length ||
+          (target.priority > 1 &&
+            route.action.type === 'move' &&
+            positions.some(
+              (p) =>
+                route.action.type === 'move' &&
+                p.level === route.action.level &&
+                sameCell(p, route.action),
+            )))
+      )
+        return { action: route.action, score: 9100 + target.priority * 10 - route.distance };
+    }
+  }
+  if (!goals.length && !fallback && !breach.length && state.act === 2 && !pressed(unit)) {
     const segments = INNER_WALL_SEGMENTS.filter((s) => state.innerWall[s.index] !== 4)
       .map((s) => ({
         ...s,
@@ -362,26 +452,41 @@ export function planDefenderTurn(state: SiegeState): SiegeAction[] {
   if (state.outcome) return actions;
   const order = dailyOrder(draft, wallThreats(draft));
   if (order) accept(order);
+  const defenders = draft.units.filter((u) => u.side === 'wei' && activeUnit(u));
+  const breached =
+    intruders(draft).length > 0 ||
+    Object.values(draft.gates).some((g) => g.broken) ||
+    defenders.some(inCourtyard) ||
+    draft.log.some((entry) => entry.code === 'defenderBreach');
+  const garrison = new Set(
+    breached
+      ? defenders
+          .map((unit) => ({
+            unit,
+            distance: inCourtyard(unit)
+              ? -1
+              : (routeSiegeActor(
+                  draft,
+                  { ...unit, moved: false, acted: false },
+                  COURTYARD.map(ground),
+                )?.distance ?? Infinity),
+          }))
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 2)
+          .map(({ unit }) => unit.id)
+      : [],
+  );
   const rejected = new Set<string>();
   // Each unit can move once and act once. Re-score after each accepted action.
   const limit = state.units.filter((u) => u.side === 'wei').length * 2;
   for (let step = 0; step < limit && !draft.outcome; step++) {
     const threats = wallThreats(draft);
-    const fallback =
-      Object.values(draft.gates).some((g) => g.broken) ||
-      draft.units.some(
-        (u) =>
-          u.side === 'shu' &&
-          activeUnit(u) &&
-          INNER_WALL_SEGMENTS.some(
-            (s) => draft.innerWall[s.index] === 4 && s.cells.some((c) => sameCell(c, u)),
-          ),
-      );
+    const breach = intruders(draft);
     const candidates = draft.units
       .filter((u) => u.side === 'wei' && activeUnit(u) && !u.acted)
       .flatMap((unit) => {
         const immediate = immediateActions(draft, unit);
-        const movement = movementCandidate(draft, unit, threats, fallback);
+        const movement = movementCandidate(draft, unit, threats, garrison.has(unit.id), breach);
         return movement ? [...immediate, movement] : immediate;
       })
       .filter((c) => !rejected.has(JSON.stringify(c.action)))
@@ -399,7 +504,15 @@ export function planDefenderTurn(state: SiegeState): SiegeAction[] {
 /** Suitable as endDay's defenderTurn callback. Rejected actions are harmlessly skipped. */
 export function runDefenderTurn(state: SiegeState): SiegeState {
   let next = state;
-  for (const action of planDefenderTurn(state)) {
+  if (
+    !state.outcome &&
+    intruders(state).length &&
+    !state.log.some((entry) => entry.code === 'defenderBreach')
+  ) {
+    next = structuredClone(state);
+    next.log.push({ day: state.day, code: 'defenderBreach', params: {} });
+  }
+  for (const action of planDefenderTurn(next)) {
     const result = applySiegeAction(next, action);
     if (result.ok) next = result.state;
   }

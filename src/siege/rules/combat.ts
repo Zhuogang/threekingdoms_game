@@ -263,8 +263,9 @@ export function predictSiegeAttack(
     );
     const clash = engagement(state, source, target);
     clash.kind = 'gate';
-    clash.frontage = null;
-    clash.countedTroops = source.troops;
+    // Plan §4.5: only rams damage gates effectively; hand attacks share a 100-troop frontage.
+    clash.frontage = 100;
+    clash.countedTroops = Math.min(source.troops, clash.frontage);
     clash.modifiers.gate = 0.1;
     return {
       ...clash,
@@ -278,7 +279,7 @@ export function predictSiegeAttack(
             Math.max(
               1,
               Math.floor(
-                siegeBaseDamage(state, source, target) *
+                siegeBaseDamage(state, source, target, clash.countedTroops) *
                   troopDamageMultiplier(source.troopExperience ?? 0, target.troopExperience ?? 0) *
                   0.1,
               ),

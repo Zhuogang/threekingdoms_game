@@ -120,11 +120,27 @@ describe('siege combat frontage and modifiers', () => {
     const { state, wei } = duel({}, { morale: 20 });
     state.engines = [engine('ladder', 20, 19)];
     const before = structuredClone(state);
-    expect(damageEngine(state, state.engines[0]!, 120).engines[0]!.wrecked).toBe(true);
+    expect(
+      damageEngine(state, state.engines[0]!, state.engines[0]!.durability).engines[0]!.wrecked,
+    ).toBe(true);
     expect(damageGate(state, 'south', 800).gates.south.broken).toBe(true);
     expect(inflictCasualties(state, wei, 10).routed).toBe(true);
     expect(settleUnitRout(state, { ...wei, routed: true }).level).toBe('ground');
     expect(state).toEqual(before);
+  });
+
+  it('gives 3,000 and 300 troops identical hand damage against a gate', () => {
+    const { state, shu } = duel({ x: 23, y: 17, troops: 3000 }, { x: 23 });
+    const large = predictSiegeAttack(state, shu.id, 'south')!;
+    const largeHit = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
+    shu.troops = 300;
+    const small = predictSiegeAttack(state, shu.id, 'south')!;
+    const smallHit = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
+    expect(large.countedTroops).toBe(100);
+    expect(small.countedTroops).toBe(100);
+    expect(large.gateDamage).toBeGreaterThan(0);
+    expect(large.gateDamage).toBe(small.gateDamage);
+    expect(largeHit.gates.south).toEqual(smallHit.gates.south);
   });
 
   it('forecasts gate damage with the same experience multiplier used by the action', () => {
@@ -132,14 +148,15 @@ describe('siege combat frontage and modifiers', () => {
     const forecast = predictSiegeAttack(state, shu.id, 'south')!;
     expect(forecast).toMatchObject({
       inRange: true,
-      frontage: null,
+      frontage: 100,
+      countedTroops: 100,
       casualties: 0,
       modifiers: { gate: 0.1 },
       counterattack: { possible: false },
     });
     expect(forecast.gateDamage).toBe(
       Math.floor(
-        siegeBaseDamage(state, shu, { ...wei, level: 'ground' }) *
+        siegeBaseDamage(state, shu, { ...wei, level: 'ground' }, 100) *
           troopDamageMultiplier(1000, 0) *
           0.1,
       ),
