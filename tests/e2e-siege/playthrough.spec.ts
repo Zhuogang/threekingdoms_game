@@ -31,6 +31,7 @@ async function start(page: Page, seed: number, screenshots = false) {
   if (screenshots) await shot(page, 'banner-act1');
   await banner.getByRole('button', { name: '进入战场' }).click();
   await expect(page.getByTestId('siege-map')).toBeVisible();
+  await page.getByRole('button', { name: '跳过引导', exact: true }).click();
 }
 async function script(page: Page, days?: number) {
   const before = await page.evaluate(() => window.__siegeDev!.snapshot().state.day);

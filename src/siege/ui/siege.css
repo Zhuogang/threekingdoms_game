@@ -89,13 +89,23 @@
   cursor: pointer;
 }
 .siege-sidebar {
-  overflow: auto;
+  overflow: hidden;
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   border-left: 1px solid #b8a889;
   background: #ede5d4;
+}
+/* Keep the walkthrough visible while the workshop and unit controls scroll. */
+.siege-sidebar-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 3px;
 }
 .siege-sidebar .v03-tabs {
   display: flex;
@@ -565,5 +575,91 @@
 @media (prefers-reduced-motion: reduce) {
   .siege-scroll {
     animation: none;
+  }
+}
+
+.siege-howto-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #1e252974;
+}
+.siege-howto,
+.siege-walkthrough {
+  background: #f8f2e7 var(--siege-paper) repeat;
+  background-size: 512px;
+  border: 1px solid #92784c;
+  box-shadow: 0 6px 24px #332a2540;
+}
+.siege-howto {
+  width: min(780px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: 22px 28px;
+}
+.siege-howto header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.siege-howto h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.siege-howto h2 {
+  font-size: 17px;
+  margin: 14px 0 5px;
+}
+.siege-howto p {
+  margin: 4px 0;
+}
+.siege-howto > button {
+  margin-top: 16px;
+}
+.siege-walkthrough {
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+.siege-walkthrough p {
+  margin: 6px 0 8px;
+}
+.siege-supervise {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.siege-pulse,
+.siege-walk-tabs[data-walk-tab='workshop'] [role='tab']:nth-child(3),
+.siege-walk-tabs[data-walk-tab='commands'] [role='tab']:first-child {
+  outline: 3px solid #bc841d;
+  outline-offset: 2px;
+  animation: siege-guide-pulse 1.4s ease-in-out infinite;
+}
+.siege-walk-cell {
+  stroke: #bc841d;
+  stroke-width: 3;
+  animation: siege-cell-pulse 1.4s ease-in-out infinite;
+}
+@keyframes siege-guide-pulse {
+  50% {
+    outline-color: #f1ce77;
+  }
+}
+@keyframes siege-cell-pulse {
+  50% {
+    stroke: #f1ce77;
+    stroke-width: 5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .siege-pulse,
+  .siege-walk-tabs [role='tab'],
+  .siege-walk-cell {
+    animation: none !important;
   }
 }

@@ -1,4 +1,48 @@
 export const en = {
+  howToPlay: 'How to play [H]',
+  howTitle: 'How to play',
+  closeGuide: 'Close guide',
+  replayWalkthrough: 'Replay walkthrough',
+  skipWalkthrough: 'Skip walkthrough',
+  walkthrough: 'First siege',
+  walkProgress: 'Step {n} / 8',
+  walk1: 'Open the Workshop tab.',
+  walk2: 'Choose Build Earth cart at one workshop. Each workshop builds one engine at a time.',
+  walk3: 'Choose Build Ladder at the other workshop.',
+  walk4:
+    'Choose Supervise beside a building queue. This is Zhuge Liang’s daily order; Rally, Supervise and Rotate share it. If already spent, end the day first.',
+  walk5: 'Choose End day [E] to let Wei act and finish construction.',
+  walk6: 'Open Units & actions and select the first earth cart.',
+  walkWait: 'The earth cart is still being built. End the day to finish it.',
+  walk7:
+    'Select the earth cart, choose Move, then move toward highlighted row {row}, just south of the trench. It moves {move} cells per day; end the day and continue if needed.',
+  walk8:
+    'With the earth cart selected, choose Fill trench, then click an adjacent trench cell. Fill the outer row first.',
+  workshopAfterDeploy: 'Construction starts after you choose “{begin}”.',
+  howGoal: 'Goal',
+  howGoalBody:
+    'Hold an active Shu unit in the headquarters courtyard (rows {first}–{last}, north of the inner wall) at the end of a day before the {days} days of grain run out. Losing Zhuge Liang’s main body loses the battle. Withdraw ends it historically with a lower rating.',
+  howDay: 'A day',
+  howDayBody:
+    'Each unit moves once and acts once per day. End day [E] lets Wei act, progresses construction and starts the next day.',
+  howBuild: 'Build engines',
+  howBuildBody:
+    'Workshop → Build…; each workshop builds one engine at a time. At most {cap} usable engines can be on the map.',
+  howBuildDays: '{kind}: {days} days.',
+  howTowerDays: '{kind}: {days} days, available from Act II.',
+  howBuildDoor:
+    'A finished engine appears at its workshop door at day’s end (in the nearest free cell if blocked). At the engine limit, it waits in the workshop.',
+  howSuperviseBody:
+    'Zhuge Liang’s order makes one building queue finish {days} day sooner. Use Supervise in the Workshop tab or under Orders on a unit card. One order per day: Rally / Supervise / Rotate.',
+  howUse: 'Use engines',
+  howCart:
+    'Earth cart → move to row {row}, just south of the trench, then Fill trench: outer row {outer} first, then row {inner} under the wall. A cart fills {cart} per load; infantry fill {infantry}, 1/{ratio} of a cart load.',
+  howLadder:
+    'Ladder → move to the same row {row}, Raise ladder, then move a unit onto the ladder and choose Climb wall.',
+  howRam: 'Ram → follow the road to the bridge before the south gate, then Ram gate once per day.',
+  howTower: 'Siege tower → select an enemy and Attack; it shoots over the parapet.',
+  howDefenceBody:
+    'Fire arrows burn engines near the wall; millstones break rams. Frontage limits how many troops fight: check the attack forecast. Keep wounded units rotating.',
   campaign: 'The Siege of Chencang',
   year: 'Winter 228',
   special: 'Special campaign',
@@ -218,7 +262,7 @@ export const en = {
   spent: 'Already acted today.',
   chooseFriendly: 'Choose an active Shu unit or engine.',
   deploymentOnly: 'Deploy within the green zone.',
-  keys: 'Tab next · A attack · W stand by · E end day · Esc skip',
+  keys: 'Tab next · A attack · W stand by · E end day · H help · Esc skip',
 } as const;
 export const enReasons = {
   'The siege has ended.': 'The siege has ended.',

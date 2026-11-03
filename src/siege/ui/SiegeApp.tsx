@@ -47,6 +47,8 @@ import { resolveSiegeDay } from './playback';
 import { OPENING, encounteredHints, engineKey } from './story';
 import { SiegeActBanner, SiegeEnding, SiegeHint, SiegeOpening, paperStyle } from './SiegeStory';
 import { SiegeIcon } from './storyAssets';
+import { SiegeHowToPlay, SiegeWalkthroughBox } from './SiegeHowToPlay';
+import { advanceWalkthrough, startWalkthrough, WALKTHROUGH_CELLS } from './walkthrough';
 import type { SiegeDev } from './devPlaythrough';
 import './siege.css';
 
@@ -65,14 +67,16 @@ function initialGame(): SiegeSave {
       ? new URLSearchParams(window.location.search).get('siegeSeed')
       : null;
   const seed = querySeed !== null && /^\d+$/.test(querySeed) ? Number(querySeed) : 228;
+  const state = createSiegeState(seed);
   return {
-    state: createSiegeState(seed),
+    state,
     phase: 'opening',
     facings: {},
     presentation: {
       openingStep: 0,
       bannersSeen: [],
       dismissedHints: [],
+      walkthrough: startWalkthrough(state),
     },
   };
 }
@@ -94,6 +98,7 @@ export default function SiegeApp({
   const opening = game.phase === 'opening';
   const [hint, setHint] = useState<HintKind | null>(null);
   const [summary, setSummary] = useState(false);
+  const [howTo, setHowTo] = useState(false);
   const [selected, setSelected] = useState<string | null>('shu-weiyan');
   const [tab, setTab] = useState<Tab>('commands');
   const [mode, setMode] = useState<Mode>(null);
@@ -145,6 +150,22 @@ export default function SiegeApp({
   const ended = Boolean(state.outcome) && !playing;
   const banner =
     !opening && !deploy && !ended && !playing && !presentation.bannersSeen.includes(state.act);
+  const walkthrough =
+    opening || deploy || ended || playing || banner || howTo
+      ? presentation.walkthrough
+      : advanceWalkthrough(presentation.walkthrough, state, { tab, selected });
+  const walking = walkthrough?.status === 'active';
+  const walkStep =
+    walking && !opening && !deploy && !ended && !playing && !banner && !howTo
+      ? walkthrough.step
+      : undefined;
+  const tutorialCart = state.engines.find((e) => e.id === walkthrough?.cartId && usableEngine(e));
+  const waitingForCart = !state.engines.some((e) => e.kind === 'earthCart' && usableEngine(e));
+  const pulse = (when: boolean) => (when ? 'siege-pulse' : undefined);
+  useEffect(() => {
+    if (walkthrough === presentation.walkthrough) return;
+    setGame((g) => ({ ...g, presentation: { ...presentationFor(g), walkthrough } }));
+  }, [walkthrough, presentation.walkthrough]);
   const advanceOpening = (skip = false) => {
     setGame((g) => {
       const progress = presentationFor(g);
@@ -216,6 +237,7 @@ export default function SiegeApp({
       setGame(saved);
       setHint(null);
       setSummary(false);
+      setHowTo(false);
       setSelected(saved.state.units.find((u) => u.side === 'shu' && activeUnit(u))?.id ?? null);
       setMode(null);
       setTarget(null);
@@ -229,7 +251,11 @@ export default function SiegeApp({
     return clearTimer;
   }, []);
   const save = () => {
-    const snapshot = { ...game, state: pending.current ?? state };
+    const snapshot = {
+      ...game,
+      state: pending.current ?? state,
+      presentation: { ...presentation, walkthrough },
+    };
     if (pending.current) finishPlayback();
     try {
       saveSiege(snapshot);
@@ -394,6 +420,18 @@ export default function SiegeApp({
         event.metaKey
       )
         return;
+      if (event.key.toLowerCase() === 'h') {
+        event.preventDefault();
+        setHowTo((show) => !show);
+        return;
+      }
+      if (howTo) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setHowTo(false);
+        }
+        return;
+      }
       if (opening || banner) return;
       if (event.key === 'Escape') {
         finishPlayback();
@@ -427,7 +465,7 @@ export default function SiegeApp({
     return () => window.removeEventListener('keydown', handler);
   });
   useEffect(() => {
-    if (opening || deploy || ended || playing || banner || hint) return;
+    if (opening || deploy || ended || playing || banner || hint || walking || howTo) return;
     const next = encounteredHints(state, selected, forecast, mode === 'fillTrench').find(
       (kind) => !presentation.dismissedHints.includes(kind),
     );
@@ -485,7 +523,12 @@ export default function SiegeApp({
           ).map((c) => ({ ...c, level: 'ground' as const }))
         : reachable;
   return (
-    <main className="siege-app" style={paperStyle} data-phase={ended ? 'ending' : game.phase}>
+    <main
+      className="siege-app"
+      style={paperStyle}
+      data-phase={ended ? 'ending' : game.phase}
+      data-walk-step={walkStep}
+    >
       <header className="siege-topbar">
         <div>
           <strong>{text('campaign')}</strong>
@@ -505,6 +548,9 @@ export default function SiegeApp({
           <span>{text('act', { n: state.act })}</span>
         </div>
         <nav>
+          <Button onClick={() => setHowTo(true)} aria-haspopup="dialog" aria-expanded={howTo}>
+            {text('howToPlay')}
+          </Button>
           <Button onClick={save}>{text('save')}</Button>
           <Button onClick={load}>{text('load')}</Button>
           <Button onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}>
@@ -531,7 +577,16 @@ export default function SiegeApp({
                 {text('begin')}
               </Button>
             ) : (
-              <Button variant="primary" onClick={end} disabled={playing || banner}>
+              <Button
+                variant="primary"
+                onClick={end}
+                disabled={playing || banner}
+                className={pulse(
+                  walkStep === 5 ||
+                    (walkStep === 6 && waitingForCart) ||
+                    (walkStep === 7 && Boolean(tutorialCart?.moved)),
+                )}
+              >
                 {text('endDay')}
               </Button>
             ))}
@@ -625,6 +680,10 @@ export default function SiegeApp({
               deploy={deploy}
               reachable={!deploy ? rangedReachable : []}
               targets={mode === 'attack' ? targets : []}
+              tutorialCells={walkStep === 7 ? WALKTHROUGH_CELLS : []}
+              tutorialFill={
+                walkStep === 8 && selected === tutorialCart?.id && mode === 'fillTrench'
+              }
               facings={game.facings}
               activity={activity}
               effectAction={effectAction}
@@ -635,301 +694,402 @@ export default function SiegeApp({
               onZoom={setZoom}
             />
             <aside className="siege-sidebar" aria-label={text('commands')}>
-              <Tabs
-                value={tab}
-                onChange={setTab}
-                label={text('battle')}
-                tabs={(['commands', 'defence', 'workshop', 'log'] as Tab[]).map((value) => ({
-                  value,
-                  label: text(value),
-                }))}
-              />
-              {tab === 'commands' && (
-                <>
-                  <div className="siege-roster">
-                    {state.units
-                      .filter((u) => u.troops > 0)
-                      .map((u) => (
+              {walkStep && walkthrough && (
+                <SiegeWalkthroughBox
+                  progress={walkthrough}
+                  locale={locale}
+                  waiting={walkStep === 6 && waitingForCart}
+                  skip={() =>
+                    setGame((g) => ({
+                      ...g,
+                      presentation: {
+                        ...presentationFor(g),
+                        walkthrough: { ...walkthrough, status: 'skipped' },
+                      },
+                    }))
+                  }
+                />
+              )}
+              <div className="siege-sidebar-content">
+                <div
+                  className="siege-walk-tabs"
+                  data-walk-tab={
+                    walkStep && walkStep <= 4 && tab !== 'workshop'
+                      ? 'workshop'
+                      : walkStep && walkStep >= 6 && !waitingForCart && tab !== 'commands'
+                        ? 'commands'
+                        : undefined
+                  }
+                >
+                  <Tabs
+                    value={tab}
+                    onChange={setTab}
+                    label={text('battle')}
+                    tabs={(['commands', 'defence', 'workshop', 'log'] as Tab[]).map((value) => ({
+                      value,
+                      label: text(value),
+                    }))}
+                  />
+                </div>
+                {tab === 'commands' && (
+                  <>
+                    <div className="siege-roster">
+                      {state.units
+                        .filter((u) => u.troops > 0)
+                        .map((u) => (
+                          <Button
+                            size="sm"
+                            key={u.id}
+                            data-testid={`select-${u.id}`}
+                            aria-pressed={selected === u.id}
+                            onClick={() => {
+                              if (u.side === 'wei' && actor && (!unit || unit.side === 'shu')) {
+                                setTarget(u.id);
+                                setMode('attack');
+                              } else select(u.id);
+                            }}
+                          >
+                            <span className={`siege-dot ${u.side}`} />
+                            {name(u.id)}
+                            {u.acted ? ' ✓' : ''}
+                          </Button>
+                        ))}
+                      {state.engines.map((e) => (
                         <Button
                           size="sm"
-                          key={u.id}
-                          data-testid={`select-${u.id}`}
-                          aria-pressed={selected === u.id}
-                          onClick={() => {
-                            if (u.side === 'wei' && actor && (!unit || unit.side === 'shu')) {
-                              setTarget(u.id);
-                              setMode('attack');
-                            } else select(u.id);
-                          }}
+                          key={e.id}
+                          data-testid={`select-${e.id}`}
+                          className={pulse(
+                            e.kind === 'earthCart' &&
+                              usableEngine(e) &&
+                              (walkStep === 6 ||
+                                ((walkStep === 7 || walkStep === 8) &&
+                                  selected !== tutorialCart?.id &&
+                                  tutorialCart?.id === e.id)),
+                          )}
+                          onClick={() => select(e.id)}
+                          aria-pressed={selected === e.id}
                         >
-                          <span className={`siege-dot ${u.side}`} />
-                          {name(u.id)}
-                          {u.acted ? ' ✓' : ''}
+                          {name(e.id)} ({e.x},{e.y})
                         </Button>
                       ))}
-                    {state.engines.map((e) => (
-                      <Button
-                        size="sm"
-                        key={e.id}
-                        onClick={() => select(e.id)}
-                        aria-pressed={selected === e.id}
-                      >
-                        {name(e.id)} ({e.x},{e.y})
-                      </Button>
-                    ))}
-                  </div>
-                  {actor ? (
-                    <Panel title={name(actor.id)}>
-                      {unit && (
-                        <div className="siege-unit-card">
-                          {portrait(unit.officer.id) ? (
-                            <img src={portrait(unit.officer.id)} alt="" />
-                          ) : (
-                            <OfficerPortrait
-                              id={unit.officer.portraitId ?? unit.officer.id}
-                              locale={locale}
-                              size={128}
-                            />
-                          )}
-                          <div>
-                            <strong>
-                              {text(unit.side)} · {text(unit.troopType)}
-                            </strong>
-                            <div>{text('troops', { n: unit.troops })}</div>
-                            <div>{text('wounded', { n: unit.wounded })}</div>
-                            <div>{text('morale', { n: unit.morale })}</div>
-                            <small>
-                              {text('position', { x: unit.x, y: unit.y, level: text(unit.level) })}
-                            </small>
+                    </div>
+                    {actor ? (
+                      <Panel title={name(actor.id)}>
+                        {unit && (
+                          <div className="siege-unit-card">
+                            {portrait(unit.officer.id) ? (
+                              <img src={portrait(unit.officer.id)} alt="" />
+                            ) : (
+                              <OfficerPortrait
+                                id={unit.officer.portraitId ?? unit.officer.id}
+                                locale={locale}
+                                size={128}
+                              />
+                            )}
+                            <div>
+                              <strong>
+                                {text(unit.side)} · {text(unit.troopType)}
+                              </strong>
+                              <div>{text('troops', { n: unit.troops })}</div>
+                              <div>{text('wounded', { n: unit.wounded })}</div>
+                              <div>{text('morale', { n: unit.morale })}</div>
+                              <small>
+                                {text('position', {
+                                  x: unit.x,
+                                  y: unit.y,
+                                  level: text(unit.level),
+                                })}
+                              </small>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      {engine && (
-                        <p>
-                          {text('durability', { n: engine.durability, max: engine.max })}
-                          {engine.uses !== undefined && (
-                            <>
-                              <br />
-                              {text('loads', { n: engine.uses })}
-                            </>
-                          )}
-                          {engine.burning && (
-                            <>
-                              <br />
-                              {text('burning')}
-                            </>
-                          )}
-                          {engine.wrecked && (
-                            <>
-                              <br />
-                              {text('wreck')}
-                            </>
-                          )}
-                        </p>
-                      )}
-                      {forecast && (
-                        <Forecast
-                          forecast={forecast}
-                          locale={locale}
-                          target={name(target!)}
-                          reason={forecastReason}
-                          confirm={executeAttack}
-                          disabled={playing || deploy}
-                          cancel={() => setTarget(null)}
-                        />
-                      )}
-                      {!deploy && (
-                        <>
-                          <div className="siege-actions">
-                            {commands.map((c) => (
-                              <div key={c.kind}>
-                                <Button
-                                  size="sm"
-                                  disabled={Boolean(c.reason) || playing}
-                                  title={c.reason ? rejectionText(locale, c.reason) : undefined}
-                                  onClick={() => command(c.kind)}
-                                  aria-pressed={mode === c.kind}
-                                >
-                                  <SiegeIcon name={c.kind} />
-                                  {text(c.kind)}
-                                </Button>
-                                {c.reason && <small>{rejectionText(locale, c.reason)}</small>}
-                              </div>
-                            ))}
-                          </div>
-                          {(!unit || unit.side === 'shu') && (
-                            <details
-                              open={showOrders}
-                              onToggle={(event) => setShowOrders(event.currentTarget.open)}
-                            >
-                              <summary>{text('order')}</summary>
-                              {(['rally', 'supervise', 'rotate'] as const).map((kind) => (
-                                <label className="siege-order" key={kind}>
-                                  <SiegeIcon name={kind} large />
-                                  {text(kind)}
-                                  <Select
-                                    aria-label={text(kind)}
-                                    value=""
-                                    onChange={(e) => {
-                                      if (e.target.value)
-                                        act({
+                        )}
+                        {engine && (
+                          <p>
+                            {text('durability', { n: engine.durability, max: engine.max })}
+                            {engine.uses !== undefined && (
+                              <>
+                                <br />
+                                {text('loads', { n: engine.uses })}
+                              </>
+                            )}
+                            {engine.burning && (
+                              <>
+                                <br />
+                                {text('burning')}
+                              </>
+                            )}
+                            {engine.wrecked && (
+                              <>
+                                <br />
+                                {text('wreck')}
+                              </>
+                            )}
+                          </p>
+                        )}
+                        {forecast && (
+                          <Forecast
+                            forecast={forecast}
+                            locale={locale}
+                            target={name(target!)}
+                            reason={forecastReason}
+                            confirm={executeAttack}
+                            disabled={playing || deploy}
+                            cancel={() => setTarget(null)}
+                          />
+                        )}
+                        {!deploy && (
+                          <>
+                            <div className="siege-actions">
+                              {commands.map((c) => (
+                                <div key={c.kind}>
+                                  <Button
+                                    size="sm"
+                                    className={pulse(
+                                      selected === tutorialCart?.id &&
+                                        ((walkStep === 7 && c.kind === 'move') ||
+                                          (walkStep === 8 && c.kind === 'fillTrench')),
+                                    )}
+                                    disabled={Boolean(c.reason) || playing}
+                                    title={c.reason ? rejectionText(locale, c.reason) : undefined}
+                                    onClick={() => command(c.kind)}
+                                    aria-pressed={mode === c.kind}
+                                  >
+                                    <SiegeIcon name={c.kind} />
+                                    {text(c.kind)}
+                                  </Button>
+                                  {c.reason && <small>{rejectionText(locale, c.reason)}</small>}
+                                </div>
+                              ))}
+                            </div>
+                            {(!unit || unit.side === 'shu') && (
+                              <details
+                                open={showOrders}
+                                onToggle={(event) => setShowOrders(event.currentTarget.open)}
+                              >
+                                <summary>{text('order')}</summary>
+                                {(['rally', 'supervise', 'rotate'] as const).map((kind) => (
+                                  <label className="siege-order" key={kind}>
+                                    <SiegeIcon name={kind} large />
+                                    {text(kind)}
+                                    <Select
+                                      aria-label={text(kind)}
+                                      value=""
+                                      onChange={(e) => {
+                                        if (e.target.value)
+                                          act({
+                                            type: 'order',
+                                            side: 'shu',
+                                            kind,
+                                            target: e.target.value,
+                                          });
+                                      }}
+                                      disabled={playing || Boolean(state.ordersUsed.shu[state.day])}
+                                    >
+                                      <option value="">{text('select')}</option>
+                                      {(kind === 'supervise'
+                                        ? state.workshops.map((w) => ({
+                                            id: w.id,
+                                            label: text('workshopName', {
+                                              n: state.workshops.indexOf(w) + 1,
+                                            }),
+                                          }))
+                                        : state.units
+                                            .filter((u) => u.side === 'shu' && u.troops > 0)
+                                            .map((u) => ({ id: u.id, label: name(u.id) }))
+                                      ).map((option) => {
+                                        const reason = actionReason(state, {
                                           type: 'order',
                                           side: 'shu',
                                           kind,
-                                          target: e.target.value,
+                                          target: option.id,
                                         });
-                                    }}
-                                    disabled={playing || Boolean(state.ordersUsed.shu[state.day])}
-                                  >
-                                    <option value="">{text('select')}</option>
-                                    {(kind === 'supervise'
-                                      ? state.workshops.map((w) => ({
-                                          id: w.id,
-                                          label: text('workshopName', {
-                                            n: state.workshops.indexOf(w) + 1,
-                                          }),
-                                        }))
-                                      : state.units
-                                          .filter((u) => u.side === 'shu' && u.troops > 0)
-                                          .map((u) => ({ id: u.id, label: name(u.id) }))
-                                    ).map((option) => {
-                                      const reason = actionReason(state, {
-                                        type: 'order',
-                                        side: 'shu',
-                                        kind,
-                                        target: option.id,
-                                      });
-                                      return (
-                                        <option
-                                          key={option.id}
-                                          value={option.id}
-                                          disabled={Boolean(reason)}
-                                        >
-                                          {option.label}
-                                          {reason ? ` · ${rejectionText(locale, reason)}` : ''}
-                                        </option>
-                                      );
-                                    })}
-                                  </Select>
-                                </label>
+                                        return (
+                                          <option
+                                            key={option.id}
+                                            value={option.id}
+                                            disabled={Boolean(reason)}
+                                          >
+                                            {option.label}
+                                            {reason ? ` · ${rejectionText(locale, reason)}` : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </Select>
+                                  </label>
+                                ))}
+                              </details>
+                            )}
+                            <details>
+                              <summary>{text('chooseTarget')}</summary>
+                              {(Object.keys(GATES) as GateId[]).map((id) => (
+                                <Button
+                                  key={id}
+                                  size="sm"
+                                  onClick={() => {
+                                    setTarget(id);
+                                    setMode('attack');
+                                  }}
+                                >
+                                  {text(id)}
+                                </Button>
                               ))}
                             </details>
-                          )}
-                          <details>
-                            <summary>{text('chooseTarget')}</summary>
-                            {(Object.keys(GATES) as GateId[]).map((id) => (
+                          </>
+                        )}
+                      </Panel>
+                    ) : (
+                      <p>{text('select')}</p>
+                    )}
+                  </>
+                )}
+                {tab === 'defence' && (
+                  <Defence state={state} locale={locale} focus={(p) => map.current?.focus(p)} />
+                )}
+                {tab === 'workshop' && (
+                  <Panel title={text('workshop')}>
+                    <strong>
+                      {text('engineCap', { n: state.engines.filter(usableEngine).length })}
+                    </strong>
+                    <p>{text('engineRule')}</p>
+                    {deploy && (
+                      <p role="note">{text('workshopAfterDeploy', { begin: text('begin') })}</p>
+                    )}
+                    {state.workshops.map((w, i) => (
+                      <section key={w.id} className="siege-workshop">
+                        <h4>{text('workshopName', { n: i + 1 })}</h4>
+                        <p data-testid={`queue-${w.id}`}>
+                          {w.queue
+                            ? `${text(engineKey(w.queue))} · ${text('daysLeft', { n: w.daysRemaining })}`
+                            : text('empty')}
+                        </p>
+                        {(() => {
+                          const action: SiegeAction = {
+                            type: 'order',
+                            side: 'shu',
+                            kind: 'supervise',
+                            target: w.id,
+                          };
+                          const reason = actionReason(state, action);
+                          return (
+                            <div className="siege-supervise">
                               <Button
-                                key={id}
                                 size="sm"
-                                onClick={() => {
-                                  setTarget(id);
-                                  setMode('attack');
-                                }}
+                                data-testid={`supervise-${w.id}`}
+                                className={pulse(walkStep === 4 && !reason)}
+                                disabled={Boolean(reason) || playing || deploy}
+                                title={reason ? rejectionText(locale, reason) : undefined}
+                                onClick={() => act(action)}
                               >
-                                {text(id)}
+                                <SiegeIcon name="supervise" />
+                                {text('supervise')}
                               </Button>
-                            ))}
-                          </details>
-                        </>
-                      )}
-                    </Panel>
-                  ) : (
-                    <p>{text('select')}</p>
-                  )}
-                </>
-              )}
-              {tab === 'defence' && (
-                <Defence state={state} locale={locale} focus={(p) => map.current?.focus(p)} />
-              )}
-              {tab === 'workshop' && (
-                <Panel title={text('workshop')}>
-                  <strong>
-                    {text('engineCap', { n: state.engines.filter(usableEngine).length })}
-                  </strong>
-                  <p>{text('engineRule')}</p>
-                  {state.workshops.map((w, i) => (
-                    <section key={w.id} className="siege-workshop">
-                      <h4>{text('workshopName', { n: i + 1 })}</h4>
-                      <p data-testid={`queue-${w.id}`}>
-                        {w.queue
-                          ? `${text(engineKey(w.queue))} · ${text('daysLeft', { n: w.daysRemaining })}`
-                          : text('empty')}
-                      </p>
-                      {KINDS.map((kind) => {
-                        const action: SiegeAction = { type: 'queueEngine', workshopId: w.id, kind };
-                        const reason = actionReason(state, action);
-                        return (
-                          <div key={kind} className="siege-build">
-                            <Button
-                              size="sm"
-                              data-testid={`build-${w.id}-${kind}`}
-                              disabled={Boolean(reason) || playing || deploy}
-                              title={reason ? rejectionText(locale, reason) : undefined}
-                              onClick={() => act(action)}
-                            >
-                              <SiegeIcon name={engineKey(kind)} />
-                              {text('queue', { kind: text(engineKey(kind)) })}
-                            </Button>
-                            <small>
-                              {text('buildCost', { n: ENGINE_RULES[kind].days })}
-                              {reason && (
-                                <>
-                                  <br />
-                                  {rejectionText(locale, reason)}
-                                </>
-                              )}
-                            </small>
-                          </div>
-                        );
-                      })}
-                    </section>
-                  ))}
-                </Panel>
-              )}
-              {tab === 'log' && (
-                <Panel title={text('log')}>
-                  <ol className="siege-log">
-                    {state.log.length === 0 && <li>{text('noLog')}</li>}
-                    {state.log
-                      .slice(-120)
-                      .reverse()
-                      .map((entry, i) => (
-                        <li key={`${state.log.length - i}`}>
-                          {text('logEntry', {
-                            n: entry.day,
-                            event:
-                              entry.code === 'combat'
-                                ? text('logCombat', {
-                                    source: name(String(entry.params.sourceId)),
-                                    target: name(String(entry.params.targetId)),
-                                    loss: Number(entry.params.casualties),
-                                    counter: Number(entry.params.counterCasualties),
-                                  })
-                                : text(logKey(entry.code)),
-                          })}
-                          {entry.params.unitId || entry.params.engineId
-                            ? ` · ${name(String(entry.params.unitId ?? entry.params.engineId))}`
-                            : ''}
-                        </li>
-                      ))}
-                  </ol>
-                </Panel>
-              )}
-              {!deploy && (
-                <Button
-                  variant="danger"
-                  onClick={() => act({ type: 'withdraw' })}
-                  disabled={playing}
-                >
-                  {text('withdraw')}
-                </Button>
-              )}
+                              {reason && <small>{rejectionText(locale, reason)}</small>}
+                            </div>
+                          );
+                        })()}
+                        {KINDS.map((kind) => {
+                          const action: SiegeAction = {
+                            type: 'queueEngine',
+                            workshopId: w.id,
+                            kind,
+                          };
+                          const reason = actionReason(state, action);
+                          return (
+                            <div key={kind} className="siege-build">
+                              <Button
+                                size="sm"
+                                data-testid={`build-${w.id}-${kind}`}
+                                className={pulse(
+                                  !reason &&
+                                    ((walkStep === 2 && kind === 'earthCart') ||
+                                      (walkStep === 3 &&
+                                        kind === 'ladder' &&
+                                        w.id !== walkthrough?.cartWorkshopId)),
+                                )}
+                                disabled={Boolean(reason) || playing || deploy}
+                                title={reason ? rejectionText(locale, reason) : undefined}
+                                onClick={() => act(action)}
+                              >
+                                <SiegeIcon name={engineKey(kind)} />
+                                {text('queue', { kind: text(engineKey(kind)) })}
+                              </Button>
+                              <small>
+                                {text('buildCost', { n: ENGINE_RULES[kind].days })}
+                                {reason && (
+                                  <>
+                                    <br />
+                                    {rejectionText(locale, reason)}
+                                  </>
+                                )}
+                              </small>
+                            </div>
+                          );
+                        })}
+                      </section>
+                    ))}
+                  </Panel>
+                )}
+                {tab === 'log' && (
+                  <Panel title={text('log')}>
+                    <ol className="siege-log">
+                      {state.log.length === 0 && <li>{text('noLog')}</li>}
+                      {state.log
+                        .slice(-120)
+                        .reverse()
+                        .map((entry, i) => (
+                          <li key={`${state.log.length - i}`}>
+                            {text('logEntry', {
+                              n: entry.day,
+                              event:
+                                entry.code === 'combat'
+                                  ? text('logCombat', {
+                                      source: name(String(entry.params.sourceId)),
+                                      target: name(String(entry.params.targetId)),
+                                      loss: Number(entry.params.casualties),
+                                      counter: Number(entry.params.counterCasualties),
+                                    })
+                                  : text(logKey(entry.code)),
+                            })}
+                            {entry.params.unitId || entry.params.engineId
+                              ? ` · ${name(String(entry.params.unitId ?? entry.params.engineId))}`
+                              : ''}
+                          </li>
+                        ))}
+                    </ol>
+                  </Panel>
+                )}
+                {!deploy && (
+                  <Button
+                    variant="danger"
+                    onClick={() => act({ type: 'withdraw' })}
+                    disabled={playing}
+                  >
+                    {text('withdraw')}
+                  </Button>
+                )}
+              </div>
             </aside>
           </div>
         </>
       )}
+      {howTo && (
+        <SiegeHowToPlay
+          locale={locale}
+          close={() => setHowTo(false)}
+          replay={() => {
+            setGame((g) => ({
+              ...g,
+              presentation: { ...presentationFor(g), walkthrough: startWalkthrough(g.state) },
+            }));
+            setHint(null);
+            setHowTo(false);
+            setTab('commands');
+          }}
+        />
+      )}
       {banner && <SiegeActBanner act={state.act} locale={locale} close={dismissBanner} />}
-      {hint && !opening && !deploy && !ended && !playing && !banner && (
+      {hint && !opening && !deploy && !ended && !playing && !banner && !walking && !howTo && (
         <SiegeHint kind={hint} locale={locale} dismiss={dismissHint} />
       )}
     </main>

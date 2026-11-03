@@ -5,10 +5,19 @@ export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang';
 export type Facing = 'north' | 'east' | 'west' | 'south';
 export const HINT_KINDS = ['wall', 'trench', 'ladder', 'frontage', 'innerWall'] as const;
 export type HintKind = (typeof HINT_KINDS)[number];
+export interface SiegeWalkthrough {
+  status: 'active' | 'done' | 'skipped';
+  step: number;
+  startDay: number;
+  logStart: number;
+  cartWorkshopId?: string;
+  cartId?: string;
+}
 export interface SiegePresentation {
   openingStep: number;
   bannersSeen: Array<1 | 2>;
   dismissedHints: HintKind[];
+  walkthrough?: SiegeWalkthrough;
 }
 export interface SiegeSave {
   state: SiegeState;
@@ -134,6 +143,16 @@ const saveSchema = z.object({
       openingStep: integer.min(0).max(6),
       bannersSeen: z.array(z.union([z.literal(1), z.literal(2)])),
       dismissedHints: z.array(z.enum(HINT_KINDS)),
+      walkthrough: z
+        .object({
+          status: z.enum(['active', 'done', 'skipped']),
+          step: integer.min(1).max(8),
+          startDay: integer.min(1).max(20),
+          logStart: integer.nonnegative(),
+          cartWorkshopId: z.string().optional(),
+          cartId: z.string().optional(),
+        })
+        .optional(),
     })
     .optional(),
 });

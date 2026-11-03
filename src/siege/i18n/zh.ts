@@ -1,5 +1,45 @@
 import type { en, enReasons } from './en';
 export const zh = {
+  howToPlay: '玩法 [H]',
+  howTitle: '玩法',
+  closeGuide: '关闭玩法',
+  replayWalkthrough: '重看引导',
+  skipWalkthrough: '跳过引导',
+  walkthrough: '初次攻城',
+  walkProgress: '第 {n} 步 / 8',
+  walk1: '打开工棚页。',
+  walk2: '在一座工棚点「营造 土车」。每座工棚同时只能营造一件器械。',
+  walk3: '在另一座工棚点「营造 云梯」。',
+  walk4:
+    '在正在营造的工棚点「督造」。这是诸葛亮的每日军令，与振奋、轮换共用；若今日已下令，先结束本日。',
+  walk5: '点「结束本日 [E]」，让魏军行动，并结算营造。',
+  walk6: '打开「部队与行动」，选择第一辆土车。',
+  walkWait: '土车还在营造中，结束本日即可推进完工。',
+  walk7:
+    '选择土车，点「移动」，向城堑以南的高亮第 {row} 行移动。每日可移 {move} 格；若尚未抵达，结束本日后继续前进。',
+  walk8: '选中土车，点「填堑」，再点相邻城堑格。先填外侧。',
+  workshopAfterDeploy: '点击「{begin}」后，工棚才能开始营造。',
+  howGoal: '目标',
+  howGoalBody:
+    '在 {days} 日余粮耗尽前，让可行动的蜀军在一日结束时守住帅府前庭（重墙以北，第 {first}–{last} 行）。诸葛亮本队溃败即战败；撤军则以较低评价结束于史实退兵。',
+  howDay: '一日',
+  howDayBody: '每队每日可移动一次、行动一次。「结束本日 [E]」让魏军行动，结算营造，再开始新一日。',
+  howBuild: '造器械',
+  howBuildBody: '工棚页 → 营造…；每座工棚同时营造一件，场上最多 {cap} 件可用器械。',
+  howBuildDays: '{kind}：{days} 日。',
+  howTowerDays: '{kind}：{days} 日，第二幕起可造。',
+  howBuildDoor:
+    '完工器械在本日结束时出现在工棚门口；门口受阻则放在最近空格。可用器械满额时，完工器械留在工棚等待。',
+  howSuperviseBody:
+    '诸葛亮的军令，让一座正在营造的工棚提前 {days} 日完工。可在工棚页点「督造」，或打开部队卡的「军令」。每日只能下令一次：振奋 / 督造 / 轮换。',
+  howUse: '用器械',
+  howCart:
+    '土车 → 移到城堑以南第 {row} 行，再「填堑」：先填外侧第 {outer} 行，再填城墙下第 {inner} 行。土车每载填 {cart}，步兵每次填 {infantry}，为土车一载的 1/{ratio}。',
+  howLadder: '云梯 → 同样移到第 {row} 行，点「架梯」，再让部队移到梯底，点「登城」。',
+  howRam: '冲车 → 沿道路移到南门前的桥上，每日可「撞门」一次。',
+  howTower: '井阑 → 选择敌军后「攻击」，可越过女墙射击。',
+  howDefenceBody:
+    '火箭会烧毁近墙器械，石磨能击破冲车。交战人数受正面限制，攻击预测会显示上限；有伤兵时应轮换部队。',
   campaign: '陈仓之战',
   year: '建兴六年冬',
   special: '特别战役',
@@ -202,7 +242,7 @@ export const zh = {
   spent: '本日已行动。',
   chooseFriendly: '请选择可行动的蜀军或器械。',
   deploymentOnly: '只能部署到绿色区域内。',
-  keys: 'Tab 下一队 · A 攻击 · W 待命 · E 结束本日 · Esc 跳过',
+  keys: 'Tab 下一队 · A 攻击 · W 待命 · E 结束本日 · H 玩法 · Esc 跳过',
 } satisfies Record<keyof typeof en, string>;
 export const zhReasons = {
   'The siege has ended.': '攻城已经结束。',

@@ -74,6 +74,8 @@ interface Props {
   selected?: string | null;
   reachable?: SiegePosition[];
   targets?: SiegePosition[];
+  tutorialCells?: SiegePosition[];
+  tutorialFill?: boolean;
   deploy?: boolean;
   xray?: boolean;
   showRange?: boolean;
@@ -92,6 +94,8 @@ export const SiegeMapView = memo(
       selected,
       reachable = [],
       targets = [],
+      tutorialCells = [],
+      tutorialFill = false,
       deploy = false,
       xray = false,
       showRange = true,
@@ -377,7 +381,12 @@ export const SiegeMapView = memo(
           key={`${kind}-${cellKey(cell)}-${cell.level}`}
           data-cell={`${cell.x},${cell.y},${cell.level}`}
           data-overlay={kind}
-          pointerEvents={kind === 'hover' || kind === 'climb' ? 'none' : undefined}
+          className={
+            kind === 'tutorial' || (kind === 'reachable' && tutorialFill)
+              ? 'siege-walk-cell'
+              : undefined
+          }
+          pointerEvents={['hover', 'climb', 'tutorial'].includes(kind) ? 'none' : undefined}
           x={x + 1}
           y={y + 1}
           width={FRAME.cw - 2}
@@ -555,6 +564,7 @@ export const SiegeMapView = memo(
           <g>
             {deploy && DEPLOY_SHU.map((c) => cellOutline(c, '#51835c', 'deploy', 0.12))}
             {climbableCells(state).map((c) => cellOutline(c, '#dfb347', 'climb'))}
+            {tutorialCells.map((c) => cellOutline(c, '#bc841d', 'tutorial', 0.08))}
             {reachable.map((c) => cellOutline(c, '#609d80', 'reachable'))}
             {targets.map((c) => cellOutline(c, '#b74e3c', 'target', 0.22))}
           </g>
@@ -587,6 +597,8 @@ export const SiegeMapView = memo(
         effectAction,
         reachable,
         targets,
+        tutorialCells,
+        tutorialFill,
         deploy,
         painting,
         engines,
