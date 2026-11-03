@@ -3,6 +3,7 @@ import { message } from '../../i18n';
 import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { createV03Game } from '../../initial-state';
 import { lazy, Suspense } from 'react';
+import { SiegeCampaignCard } from '../../../siege/ui/SiegeCampaignCard';
 const PlaytestMenu = import.meta.env.DEV ? lazy(() => import('../panels/PlaytestMenu')) : null;
 
 import { scenarioById } from '../../content/scenario';
@@ -142,6 +143,7 @@ export function StartScreen({ context }: { context: ReturnType<typeof useCampaig
             </Button>
           ))}
         </div>
+        <SiegeCampaignCard locale={locale} />
         <div className="v03-start-actions">
           {PlaytestMenu ? (
             <Suspense>

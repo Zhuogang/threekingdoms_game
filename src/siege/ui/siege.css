@@ -1,0 +1,299 @@
+.siege-app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #ece4d2;
+  color: #302d27;
+  font:
+    14px/1.45 system-ui,
+    sans-serif;
+  overflow: hidden;
+}
+.siege-app button,
+.siege-app select {
+  font: inherit;
+}
+.siege-topbar {
+  padding: 10px 14px;
+  border-bottom: 1px solid #b8a889;
+  background: #f4edde;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.siege-topbar > div,
+.siege-topbar nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.siege-topbar strong {
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.siege-status {
+  padding: 5px 14px;
+  min-height: 32px;
+  background: #ded3bb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.siege-camera {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px 12px;
+  border-bottom: 1px solid #b8a889;
+}
+.siege-camera label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+.siege-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  flex: 1;
+  min-height: 0;
+}
+.siege-map-frame {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #e6ddc9;
+  touch-action: none;
+  user-select: none;
+}
+.siege-map-frame > svg:first-child {
+  display: block;
+  cursor: crosshair;
+}
+.siege-minimap {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 190px;
+  height: 95px;
+  border: 1px solid #918166;
+  background: #ece4d2;
+  box-shadow: 0 2px 8px #3b302b38;
+  cursor: pointer;
+}
+.siege-sidebar {
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-left: 1px solid #b8a889;
+  background: #ede5d4;
+}
+.siege-sidebar .v03-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.siege-sidebar .v03-panel {
+  padding: 10px;
+  border: 1px solid #c6b799;
+  background: #f8f2e7;
+  box-shadow: none;
+}
+.siege-sidebar h3,
+.siege-sidebar h4 {
+  margin: 8px 0;
+}
+.siege-roster {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  max-height: 162px;
+  overflow: auto;
+  flex-shrink: 0;
+  padding: 3px;
+}
+.siege-roster button {
+  font-size: 12px;
+}
+.siege-app button[aria-pressed='true'] {
+  outline: 2px solid #b18a3f;
+  background: #e5d5b2;
+}
+.siege-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.siege-dot.shu {
+  background: #5f895c;
+}
+.siege-dot.wei {
+  background: #3f5e84;
+}
+.siege-unit-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.siege-unit-card > img,
+.siege-unit-card .v03-officer-portrait {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.siege-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.siege-actions > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.siege-actions small,
+.siege-build small {
+  color: #73634f;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.siege-forecast {
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #aa8f5a;
+  background: #eee0c6;
+}
+.siege-forecast p {
+  margin: 5px 0;
+}
+.siege-forecast strong {
+  font-size: 13px;
+}
+.siege-modifiers {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 5px 0;
+}
+.siege-modifiers span {
+  border: 1px solid #c4b18c;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 12px;
+  background: #f7efdc;
+}
+.siege-order {
+  display: block;
+  margin: 8px 0;
+}
+.siege-order select {
+  width: 100%;
+}
+.siege-workshop {
+  border-top: 1px solid #cabda5;
+  margin-top: 12px;
+  padding-top: 5px;
+}
+.siege-build {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+  align-items: center;
+}
+.siege-gate {
+  display: grid;
+  grid-template-columns: 90px 1fr 70px;
+  gap: 5px;
+  align-items: center;
+  margin: 6px 0;
+}
+.siege-gate progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #7f8b61;
+}
+.siege-log {
+  padding-left: 20px;
+}
+.siege-log li {
+  padding: 5px 0;
+  border-bottom: 1px solid #ded1b8;
+}
+.siege-ending {
+  margin: auto;
+  text-align: center;
+  padding: 40px;
+  background: #f5eddd;
+  border: 1px solid #b8a889;
+  max-width: 600px;
+}
+.siege-campaign-card {
+  position: relative;
+  margin: 22px 0;
+  padding: 24px;
+  border: 1px solid #8c7651;
+  border-radius: 8px;
+  color: #fff3db;
+  background: #28373b;
+  overflow: hidden;
+  min-height: 250px;
+}
+.siege-campaign-card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.65;
+}
+.siege-campaign-card > div {
+  position: relative;
+  max-width: 470px;
+  text-shadow: 0 1px 5px #000;
+  background: linear-gradient(90deg, #182629c9, transparent);
+  padding: 8px;
+}
+.siege-campaign-card h2 {
+  font-size: 28px;
+  margin: 4px 0;
+}
+.siege-campaign-card p {
+  color: #f5e6cb;
+}
+.siege-campaign-card .v03-button {
+  text-shadow: none;
+  margin-right: 8px;
+}
+@media (max-width: 850px) {
+  .siege-body {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .siege-topbar {
+    font-size: 12px;
+  }
+  .siege-camera {
+    font-size: 12px;
+  }
+  .siege-minimap {
+    width: 128px;
+    height: 64px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .siege-unit-motion {
+    transition: none !important;
+  }
+}

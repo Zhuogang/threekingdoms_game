@@ -8,7 +8,7 @@ source_root=Path('.artifacts/font-sources');source_root.mkdir(parents=True,exist
 for name,url in [('source-sans.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/SourceSans3%5Bwght%5D.ttf'),('noto-serif-sc.ttf','https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/NotoSerifSC%5Bwght%5D.ttf'),('SourceSans3-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/sourcesans3/OFL.txt'),('NotoSerifSC-OFL.txt','https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifsc/OFL.txt')]:
  if not (source_root/name).exists():urllib.request.urlretrieve(url,source_root/name)
 root=Path('public/fonts');root.mkdir(exist_ok=True)
-corpus=''.join(p.read_text(encoding='utf-8') for p in Path('src/v03').rglob('*') if p.suffix in ['.ts','.tsx'])
+corpus=''.join(p.read_text(encoding='utf-8') for root in ['src/v03','src/siege'] for p in sorted(Path(root).rglob('*')) if p.suffix in ['.ts','.tsx'])
 characters=set(corpus)
 portrait_manifest=json.loads(Path('public/assets/v03/portraits/manifest.json').read_text(encoding='utf-8'))
 name_characters={ord(c) for entry in portrait_manifest['entries'] for c in entry['chinese']}
@@ -26,5 +26,5 @@ for source,name,allowed in [('source-sans.ttf','source-sans-3.woff2',lambda c:or
 for name in ['SourceSans3-OFL.txt','NotoSerifSC-OFL.txt']:
  text=(Path('.artifacts/font-sources')/name).read_text(encoding='utf-8')
  (root/name).write_text('\n'.join(line.rstrip() for line in text.splitlines())+'\n',encoding='utf-8')
-(root/'manifest.json').write_text(json.dumps({'source':'https://github.com/google/fonts','corpus':'src/v03/**/*.ts and tsx','characterCount':len(characters),'officerNameCharacterCount':len(name_characters),'officerNamesCovered':True,'files':metadata},indent=2)+'\n')
+(root/'manifest.json').write_text(json.dumps({'source':'https://github.com/google/fonts','corpus':'src/v03/**/*.ts and tsx, src/siege/**/*.ts and tsx','characterCount':len(characters),'cjkCharacters':''.join(sorted(c for c in characters if ord(c)>=0x3000)),'officerNameCharacterCount':len(name_characters),'officerNamesCovered':True,'files':metadata},indent=2)+'\n')
 print(json.dumps(metadata))
