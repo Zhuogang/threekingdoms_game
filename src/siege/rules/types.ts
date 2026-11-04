@@ -1,3 +1,5 @@
+import type { SiegeScore } from './score';
+
 export type SiegeSide = 'shu' | 'wei';
 export type SiegeLevel = 'ground' | 'wall';
 export type SiegeTroopType = 'infantry' | 'archer';
@@ -139,6 +141,10 @@ export interface SiegeState {
     enginesLost: number;
     assaults: number;
     nightClashes: number;
+    nightResults: Array<{ day: number; kind: string; result: string }>;
+    idleDays: number;
+    lastActiveDay: number | null;
+    score: { shu: SiegeScore; wei: SiegeScore } | null;
     moundsBuilt: number;
     gateEverBroken: boolean;
     wallEverHeldAtNight: boolean;

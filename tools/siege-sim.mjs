@@ -1,227 +1,220 @@
-import { createServer } from 'vite';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
-import { performance } from 'node:perf_hooks';
+import { dirname, resolve } from 'node:path';
+import { createServer } from 'vite';
 
-const tracing = process.argv[2] === '--trace';
-const traceStrategy = process.argv[3];
-const traceSeed = Number(process.argv[4]);
+const methods = ['careful', 'anyPrice', 'brute'];
+const args = process.argv.slice(2);
+const tracing = args[0] === '--trace';
+const traceMethod = args[1];
+const traceSeed = Number(args[2]);
+const games = tracing ? 1 : Number(args.find((a) => /^\d+$/.test(a)) ?? 200);
+const strict = args.includes('--strict');
+const outputIndex = args.indexOf('--output');
+const output = resolve(outputIndex >= 0 ? args[outputIndex + 1] : '.artifacts/siege/sim-j.json');
 if (
-  tracing &&
-  (!['competent', 'brute'].includes(traceStrategy) ||
-    !Number.isSafeInteger(traceSeed) ||
-    traceSeed < 0 ||
-    traceSeed > 0xffffffff)
-)
-  throw new Error('usage: --trace <competent|brute> <uint32 seed>');
-const games = tracing ? 1 : Number(process.argv[2] ?? 200);
-if (!Number.isSafeInteger(games) || games < 1) throw new Error('games must be a positive integer.');
-const output = process.argv[3] ?? '.artifacts/siege/sim.json';
-const kinds = ['ladder', 'ram', 'earthCart', 'tower'];
-const failures = [];
-const results = [];
-const timings = { competent: [], brute: [] };
-const percentile = (sorted, fraction) =>
-  sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)] ?? null;
-const turnTimes = (samples) => {
-  const sorted = [...samples].sort((a, b) => a - b);
-  return {
-    turns: sorted.length,
-    p50: percentile(sorted, 0.5),
-    p95: percentile(sorted, 0.95),
-    max: sorted.at(-1) ?? null,
-  };
-};
+  !Number.isInteger(games) ||
+  games < 1 ||
+  (tracing &&
+    (!methods.includes(traceMethod) ||
+      !Number.isSafeInteger(traceSeed) ||
+      traceSeed < 0 ||
+      traceSeed > 0xffffffff))
+) {
+  throw new Error(
+    'Use siege-sim.mjs [games=200] [--strict] [--output file] or --trace <careful|anyPrice|brute> <seed>.',
+  );
+}
 const server = await createServer({
   configFile: false,
   optimizeDeps: { noDiscovery: true, include: [] },
   server: { middlewareMode: true, hmr: false, ws: false },
+  appType: 'custom',
+  logLevel: 'error',
 });
+const results = [];
+const failures = [];
+const times = { attacker: [], defender: [] };
+const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+const median = (xs) => {
+  if (!xs.length) return null;
+  const sorted = [...xs].sort((a, b) => a - b);
+  return (sorted[Math.floor((xs.length - 1) / 2)] + sorted[Math.floor(xs.length / 2)]) / 2;
+};
 try {
-  const { CITY_BOUNDS } = await server.ssrLoadModule('/src/siege/content/chencang.ts');
   const { createSiegeState } = await server.ssrLoadModule('/src/siege/rules/state.ts');
+  const { runAttackerTurn } = await server.ssrLoadModule('/src/siege/ai/attacker.ts');
   const { runDefenderTurn } = await server.ssrLoadModule('/src/siege/ai/defender.ts');
-  const { runShuScript } = await server.ssrLoadModule('/src/siege/ai/scripts.ts');
-  for (const strategy of tracing ? [traceStrategy] : ['competent', 'brute']) {
+  const { endDay } = await server.ssrLoadModule('/src/siege/rules/day.ts');
+  for (const method of tracing ? [traceMethod] : methods) {
     for (const seed of tracing ? [traceSeed] : Array.from({ length: games }, (_, i) => i + 1)) {
       try {
         let state = createSiegeState(seed);
-        let mainBodyMinimumDistance = Infinity;
-        const inspectMainBody = (draft) => {
-          const main = draft.units.find((u) => u.id === 'shu-zhugeliang');
-          for (const unit of draft.units.filter((u) => u.side === 'wei' && u.troops > 0))
-            mainBodyMinimumDistance = Math.min(
-              mainBodyMinimumDistance,
-              Math.abs(main.x - unit.x) + Math.abs(main.y - unit.y),
-            );
-          return main;
-        };
-        const timedDefender = (draft) => {
-          inspectMainBody(draft);
-          const started = performance.now();
-          try {
-            const defended = runDefenderTurn(draft);
-            inspectMainBody(defended);
-            return defended;
-          } finally {
-            timings[strategy].push(performance.now() - started);
-          }
-        };
-        for (let days = 0; days < 21 && !state.outcome && state.day <= 21; days++) {
+        const days = [];
+        while (!state.outcome && days.length < 12) {
           const day = state.day;
-          state = runShuScript(state, strategy, timedDefender);
-          inspectMainBody(state);
-          if (tracing) {
-            const shu = state.units.filter((u) => u.side === 'shu' && u.troops > 0);
-            const wei = state.units.filter((u) => u.side === 'wei');
-            const position = (u) => ({ id: u.id, x: u.x, y: u.y, level: u.level });
-            console.log(
-              JSON.stringify({
-                day,
-                outcome: state.outcome,
-                southGate: state.gates.south.durability,
-                mainBody: {
-                  ...position(inspectMainBody(state)),
-                  troops: inspectMainBody(state).troops,
-                  morale: inspectMainBody(state).morale,
-                  routed: inspectMainBody(state).routed,
-                  minimumWeiDistance: mainBodyMinimumDistance,
-                },
-                shuTroops: shu.reduce((sum, u) => sum + u.troops, 0),
-                weiTroops: wei.reduce((sum, u) => sum + u.troops, 0),
-                shuOnWall: shu.filter((u) => u.level === 'wall').map(position),
-                shuInside: shu
-                  .filter(
-                    (u) =>
-                      u.level === 'ground' &&
-                      u.x > CITY_BOUNDS.west &&
-                      u.x < CITY_BOUNDS.east &&
-                      u.y > CITY_BOUNDS.north &&
-                      u.y < CITY_BOUNDS.south,
-                  )
-                  .map(position),
-                liveEngines: state.engines
-                  .filter((e) => !e.wrecked && e.durability > 0)
-                  .map((e) => ({
-                    id: e.id,
-                    kind: e.kind,
-                    x: e.x,
-                    y: e.y,
-                    durability: e.durability,
-                    target: [...state.log]
-                      .reverse()
-                      .find(
-                        (entry) =>
-                          entry.code === 'shuEngineChoice' && entry.params.engineId === e.id,
-                      )?.params,
-                    firstArrivalDay:
-                      state.log.find(
-                        (entry) =>
-                          entry.code === 'shuEngineArrived' && entry.params.engineId === e.id,
-                      )?.day ?? null,
-                  })),
-                fullTrench: Object.entries(state.trenchFill)
-                  .filter(([, fill]) => fill === 3)
-                  .map(([cell]) => cell),
-                wei: wei.map((u) => ({ ...position(u), troops: u.troops, morale: u.morale })),
-              }),
-            );
-          }
+          const weather = state.weather;
+          const from = state.log.length;
+          const preparations = structuredClone(state.preparations);
+          let start = performance.now();
+          state = runAttackerTurn(state, method);
+          times.attacker.push(performance.now() - start);
+          const shuOrder = structuredClone(
+            state.nightOrders.shu ??
+              state.log.slice(from).find((e) => e.code === 'order' && e.params.side === 'shu')
+                ?.params ??
+              null,
+          );
+          start = performance.now();
+          state = runDefenderTurn(state);
+          times.defender.push(performance.now() - start);
+          const weiOrder = structuredClone(
+            state.nightOrders.wei ??
+              state.log.slice(from).find((e) => e.code === 'order' && e.params.side === 'wei')
+                ?.params ??
+              null,
+          );
+          state = endDay(state);
+          const events = state.log.slice(from).filter((e) => e.day === day);
+          const row = {
+            day,
+            weather,
+            outcome: state.outcome,
+            gate: state.gates.south.durability,
+            preparations,
+            counters: events.filter((e) =>
+              ['covered', 'suppressed', 'earthPiled', 'moundFinished', 'assault'].includes(e.code),
+            ),
+            prepared: events.filter((e) =>
+              ['brazierPrepared', 'millstonePrepared', 'bouldersPrepared'].includes(e.code),
+            ),
+            orders: { shu: shuOrder, wei: weiOrder },
+            footholds: state.footholds,
+            firstFootholdDay: state.stats.firstFootholdDay,
+            firstWallDay: state.stats.firstWallDay,
+            wall: state.units
+              .filter((u) => u.side === 'shu' && u.troops > 0 && u.level === 'wall')
+              .map((u) => ({ id: u.id, x: u.x, y: u.y })),
+            shuLost: state.stats.shuLost,
+            weiLost: state.stats.weiLost,
+            assaults: state.stats.assaults,
+            mounds: state.mounds,
+            engines: state.engines.map((e) => ({
+              id: e.id,
+              kind: e.kind,
+              x: e.x,
+              y: e.y,
+              hp: e.durability,
+              covered: !!e.covered,
+            })),
+            nightResults: state.stats.nightResults.filter((e) => e.day === day),
+          };
+          days.push(row);
+          if (tracing) console.log(JSON.stringify(row));
         }
-        if (!state.outcome) throw new Error('No outcome within the 21-day cap.');
-        const engines = Object.fromEntries(
-          kinds.map((kind) => {
-            const built =
-              createSiegeState(seed).engines.filter((e) => e.kind === kind).length +
-              state.log.filter((e) => e.code === 'engineCompleted' && e.params.kind === kind)
-                .length;
-            const destroyed = state.engines.filter(
-              (e) => e.kind === kind && (e.wrecked || e.durability <= 0),
-            ).length;
-            const surviving = state.engines.filter(
-              (e) => e.kind === kind && !e.wrecked && e.durability > 0,
-            ).length;
-            return [kind, { built, destroyed, surviving, consumed: built - destroyed - surviving }];
-          }),
-        );
+        if (!state.outcome) throw new Error('No outcome within 12 days.');
         results.push({
-          strategy,
+          method,
           seed,
           outcome: state.outcome,
           day: state.day,
-          lostEngineAct1: (state.enginesLostAct1 ?? 0) > 0,
-          mainBodyDefeat:
-            state.outcome === 'defeat' &&
-            (state.units.find((u) => u.id === 'shu-zhugeliang').routed ||
-              state.units.find((u) => u.id === 'shu-zhugeliang').troops <= 0),
-          mainBodyMinimumDistance,
-          engines,
+          ...state.stats,
+          days,
         });
+        if (!tracing && seed % 50 === 0)
+          console.error(`${method}: ${seed}/${games} games completed`);
       } catch (error) {
-        failures.push({
-          strategy,
-          seed,
-          error: error instanceof Error ? (error.stack ?? error.message) : String(error),
-        });
+        failures.push({ method, seed, error: error.stack ?? String(error) });
       }
     }
   }
   const strategies = Object.fromEntries(
-    ['competent', 'brute'].map((strategy) => {
-      const rows = results.filter((r) => r.strategy === strategy);
+    methods.map((method) => {
+      const rows = results.filter((r) => r.method === method);
       const wins = rows.filter((r) => r.outcome === 'victory');
-      const winningDays = {};
-      for (const win of wins) winningDays[win.day] = (winningDays[win.day] ?? 0) + 1;
       return [
-        strategy,
+        method,
         {
-          games,
           completed: rows.length,
+          wins: wins.length,
           winRate: wins.length / games,
-          mainBodyDefeats: rows.filter((r) => r.mainBodyDefeat).length,
-          mainBodyMinimumDistance: Math.min(...rows.map((r) => r.mainBodyMinimumDistance)),
-          historicalRate: rows.filter((r) => r.outcome === 'historical').length / games,
-          defeatRate: rows.filter((r) => r.outcome === 'defeat').length / games,
-          meanWinningDay: wins.length
-            ? wins.reduce((sum, r) => sum + r.day, 0) / wins.length
-            : null,
-          winningDays,
-          engines: Object.fromEntries(
-            kinds.map((kind) => {
-              const totals = rows.reduce(
-                (sum, r) =>
-                  Object.fromEntries(
-                    Object.keys(sum).map((key) => [key, sum[key] + r.engines[kind][key]]),
-                  ),
-                { built: 0, destroyed: 0, surviving: 0, consumed: 0 },
-              );
-              return [
-                kind,
-                { ...totals, survivalRate: totals.built ? totals.surviving / totals.built : null },
-              ];
-            }),
-          ),
-          lostEngineByEndOfAct1Share: rows.filter((r) => r.lostEngineAct1).length / games,
-          weiTurnMs: turnTimes(timings[strategy]),
+          meanWinningDay: mean(wins.map((r) => r.day)),
+          medianWinningLoss: median(wins.map((r) => r.shuLost)),
+          footholdBy2:
+            rows.filter((r) => r.firstFootholdDay !== null && r.firstFootholdDay <= 2).length /
+            games,
+          wallBy5:
+            rows.filter((r) => r.firstWallDay !== null && r.firstWallDay <= 5).length / games,
+          meanIdleDays: mean(rows.map((r) => r.idleDays)),
+          distinctGames: new Set(rows.map((r) => `${r.outcome}/${r.day}/${r.shuLost}`)).size,
+          perfectDefenseRate:
+            rows.filter((r) => r.score.wei.tier === 'perfectDefense').length / games,
+          meanLoss: mean(rows.map((r) => r.shuLost)),
         },
       ];
     }),
   );
-  const report = {
-    gamesPerStrategy: games,
-    strategies,
-    weiTurnMs: turnTimes(Object.values(timings).flat()),
-    failures,
-  };
+  const c = strategies.careful,
+    a = strategies.anyPrice,
+    b = strategies.brute;
+  const table = [];
+  const add = (metric, actual, target, passes) =>
+    table.push({ metric, actual, target, pass: actual !== null && passes });
+  add('careful win rate', c.winRate, '25–40%', c.winRate >= 0.25 && c.winRate <= 0.4);
+  add('anyPrice win rate', a.winRate, '≥85%', a.winRate >= 0.85);
+  add('brute win rate', b.winRate, '≤15%', b.winRate <= 0.15);
+  add('careful foothold by day 2', c.footholdBy2, '≥90%', c.footholdBy2 >= 0.9);
+  add('careful wall by day 5', c.wallBy5, '≥70%', c.wallBy5 >= 0.7);
+  add(
+    'careful mean winning day',
+    c.meanWinningDay,
+    '8–11',
+    c.meanWinningDay >= 8 && c.meanWinningDay <= 11,
+  );
+  add(
+    'anyPrice median winning Shu loss',
+    a.medianWinningLoss,
+    '5000–9000',
+    a.medianWinningLoss >= 5000 && a.medianWinningLoss <= 9000,
+  );
+  add('careful mean idle days', c.meanIdleDays, '≤1.5', c.meanIdleDays <= 1.5);
+  add('careful distinct games', c.distinctGames, '≥150 / 200', c.distinctGames >= 150);
+  add(
+    'max defender / attacker turn ms',
+    Math.max(0, ...times.defender, ...times.attacker),
+    '≤1000 ms',
+    Math.max(0, ...times.defender, ...times.attacker) <= 1000,
+  );
+  add(
+    'Wei perfect defense vs careful',
+    c.perfectDefenseRate,
+    '20–40%',
+    c.perfectDefenseRate >= 0.2 && c.perfectDefenseRate <= 0.4,
+  );
+  const timing = Object.fromEntries(
+    Object.entries(times).map(([side, values]) => [
+      side,
+      { turns: values.length, meanMs: mean(values), maxMs: Math.max(0, ...values) },
+    ]),
+  );
+  const report = { gamesPerStrategy: games, strategies, timing, table, failures };
   if (!tracing) {
     await mkdir(dirname(output), { recursive: true });
     await writeFile(output, JSON.stringify({ ...report, results }, null, 2) + '\n');
     console.log(JSON.stringify({ output, ...report }, null, 2));
-  }
-  if (failures.length) {
-    if (tracing) console.error(JSON.stringify(failures, null, 2));
-    process.exitCode = 1;
-  }
+    console.log('\n| Metric | Actual | Target | Result |\n| --- | ---: | --- | --- |');
+    for (const row of table) {
+      const percent = row.target.includes('%');
+      const actual =
+        row.actual === null
+          ? 'n/a'
+          : percent
+            ? `${(row.actual * 100).toFixed(2)}%`
+            : row.actual.toFixed(3);
+      console.log(`| ${row.metric} | ${actual} | ${row.target} | ${row.pass ? 'PASS' : 'FAIL'} |`);
+    }
+  } else
+    console.log(JSON.stringify({ summary: results.map(({ days, ...r }) => r), timing, failures }));
+  if (failures.length || (strict && table.some((r) => !r.pass))) process.exitCode = 1;
 } finally {
   await server.close();
 }

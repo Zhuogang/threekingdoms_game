@@ -36,7 +36,7 @@ async function start(page: Page, seed: number, screenshots = false) {
 async function script(page: Page, days?: number) {
   const before = await page.evaluate(() => window.__siegeDev!.snapshot().state.day);
   const result = await page.evaluate(
-    (days) => window.__siegeDev!.playScript('competent', days),
+    (days) => window.__siegeDev!.playScript('careful', days),
     days,
   );
   if (result) await expect(page.locator('[data-phase="ending"]')).toBeVisible();

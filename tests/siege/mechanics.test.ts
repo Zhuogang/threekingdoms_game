@@ -208,14 +208,14 @@ describe('Wei countermeasures', () => {
     },
   );
 
-  it('preserves the exact fire-arrow formula for fractional durability damage', () => {
+  it('floors the fire-arrow formula before changing durability', () => {
     const { state, wei } = duel({}, { troopType: 'archer', troops: 251 });
     readyCounters(state);
     state.weather = 'snow';
     state.engines = [engine('tower', 20, 19)];
     expect(
       act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }).engines[0]!.durability,
-    ).toBeCloseTo(250 - 251 * 0.4 * 0.6);
+    ).toBe(250 - Math.floor(251 * 0.4 * 0.6));
   });
 
   it('recognizes boulder exposure from an attack earlier in the day, including wall-foot attacks', () => {

@@ -3,7 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { predictSiegeAttack } from '../../src/siege/rules/combat';
-import { runShuScript } from '../../src/siege/ai/scripts';
+import { runAttackerTurn } from '../../src/siege/ai/attacker';
+import { runDefenderTurn } from '../../src/siege/ai/defender';
+import { endDay } from '../../src/siege/rules/day';
 import { siegeText } from '../../src/siege/i18n';
 import { encounteredHints, OPENING, siegeSummary } from '../../src/siege/ui/story';
 import { playScriptDays } from '../../src/siege/ui/devPlaythrough';
@@ -137,19 +139,19 @@ describe('Chencang story and summary', () => {
     },
   );
   it.each([
-    [2, 'victory'],
-    [11, 'historical'],
+    [4, 'victory', 11],
+    [11, 'historical', 12],
   ] as const)(
     'plays seed %i to %s using the real simulation strategy',
-    (seed, outcome) => {
+    (seed, outcome, day) => {
       const initial = createSiegeState(seed);
-      const firstDay = playScriptDays(initial, 'competent', 1);
-      expect(firstDay).toEqual(runShuScript(initial, 'competent'));
-      const final = playScriptDays(firstDay, 'competent');
+      const firstDay = playScriptDays(initial, 'careful', 1);
+      expect(firstDay).toEqual(endDay(runDefenderTurn(runAttackerTurn(initial, 'careful'))));
+      const final = playScriptDays(firstDay, 'careful');
       expect(final.outcome).toBe(outcome);
-      expect(final.day).toBe(seed === 2 ? 10 : 12);
+      expect(final.day).toBe(day);
       expect(initial.day).toBe(1);
-      expect(() => playScriptDays(initial, 'competent', 0)).toThrow();
+      expect(() => playScriptDays(initial, 'careful', 0)).toThrow();
     },
     30000,
   );

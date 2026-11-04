@@ -34,25 +34,28 @@ describe('Wei defender AI', () => {
     expect(planDefenderTurn(state).some((a) => a.type === 'dropMillstone')).toBe(false);
   });
 
-  it('fires at a raised ladder before a cart, even when the cart appears first', () => {
-    const state = createSiegeState(2);
-    keepWei(state, ['wei-haozhao', 'wei-captain-1']);
-    Object.assign(
-      state.units.find((u) => u.id === 'wei-captain-1')!,
-      { x: 21, y: 16 },
-    );
-    state.day = 2;
-    state.preparations.braziers['21,16'] = { litDay: 1 };
-    state.engines = [
-      engine('earthCart', 20, 18, { id: 'cart' }),
-      engine('ladder', 21, 19, { id: 'ladder', raisedAt: { x: 21, y: 16 } }),
-    ];
-    expect(planDefenderTurn(state).filter((a) => a.type === 'fireArrows')[0]).toEqual({
-      type: 'fireArrows',
-      unitId: 'wei-captain-1',
-      engineId: 'ladder',
-    });
-  });
+  it.each([false, true])(
+    'ranks fire targets by priority and the covered penalty (covered=%s)',
+    (covered) => {
+      const state = createSiegeState(2);
+      keepWei(state, ['wei-haozhao', 'wei-captain-1']);
+      Object.assign(
+        state.units.find((u) => u.id === 'wei-captain-1')!,
+        { x: 21, y: 16 },
+      );
+      state.day = 2;
+      state.preparations.braziers['21,16'] = { litDay: 1 };
+      state.engines = [
+        engine('earthCart', 20, 18, { id: 'cart' }),
+        engine('ladder', 21, 19, { id: 'ladder', raisedAt: { x: 21, y: 16 }, covered }),
+      ];
+      expect(planDefenderTurn(state).filter((a) => a.type === 'fireArrows')[0]).toEqual({
+        type: 'fireArrows',
+        unitId: 'wei-captain-1',
+        engineId: covered ? 'cart' : 'ladder',
+      });
+    },
+  );
 
   it('sends the nearest free defender above a raised ladder and plans legal actions', () => {
     const state = createSiegeState(3);
@@ -83,7 +86,7 @@ describe('Wei defender AI', () => {
     const state = createSiegeState(4);
     state.gates.south.durability = 250;
     state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-    expect(planDefenderTurn(state)[0]).toEqual({
+    expect(planDefenderTurn(state).at(-1)).toEqual({
       type: 'order',
       side: 'wei',
       kind: 'nightRepair',
@@ -101,14 +104,17 @@ describe('Wei defender AI', () => {
       engine('ladder', 27, 19, { id: 'east', raisedAt: { x: 27, y: 16 } }),
     ];
     state.trenchFill['28,17'] = 3;
-    expect(planDefenderTurn(state)[0]).toMatchObject({
+    expect(planDefenderTurn(state).at(-1)).toMatchObject({
       kind: 'holdFast',
       target: { x: 27, y: 16 },
     });
     state.engines = [];
     state.trenchFill['28,17'] = 0;
     state.units.find((u) => u.id === 'wei-wangsheng')!.morale = 25;
-    expect(planDefenderTurn(state)[0]).toMatchObject({ kind: 'rally', target: 'wei-wangsheng' });
+    expect(planDefenderTurn(state).at(-1)).toMatchObject({
+      kind: 'rally',
+      target: 'wei-wangsheng',
+    });
   });
 
   it('prioritizes wall intruders over climbers, then uses boulders when the wall is clear', () => {
@@ -136,6 +142,7 @@ describe('Wei defender AI', () => {
     Object.assign(state.units[1]!, { x: 22, y: 21, level: 'ground' });
     state.day = 2;
     state.preparations.boulders['20,16'] = { day: 1 };
+    state.footholds['20,16'] = 1;
     expect(planDefenderTurn(state)).toContainEqual({
       type: 'dropBoulders',
       unitId: 'wei-wangsheng',
@@ -299,6 +306,7 @@ describe('Wei defender AI', () => {
     for (const [i, unit] of state.units.filter((u) => u.side === 'wei').entries())
       Object.assign(unit, { x: 23 + i, y: 14, level: 'ground' });
     Object.assign(state.units[1]!, { x: 20, y: 16, level: 'wall' });
+    state.stats.firstWallDay = 1;
     let next = runDefenderTurn(state);
     Object.assign(next.units[1]!, { x: 20, y: 21, level: 'ground' });
     for (let day = 0; day < 4; day++) next = runDefenderTurn(endDay(next));
@@ -337,4 +345,46 @@ describe('Wei defender AI', () => {
     expect(state).toEqual(before);
     expect(planDefenderTurn(state)).toEqual(plan);
   });
+});
+
+it('chooses sortie, torches, repair, hold fast, then rally in cascade order', () => {
+  const state = createSiegeState(228);
+  state.units
+    .filter((u) => u.side === 'wei' && u.id !== 'wei-haozhao')
+    .forEach((u) => {
+      u.acted = true;
+    });
+  state.engines = [
+    engine('ram', 24, 19, { id: 'sortie-target' }),
+    engine('ladder', 18, 19, { id: 'other' }),
+  ];
+  state.gates.south.durability = 100;
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'sortie', target: 'sortie-target' });
+  state.day = 3;
+  state.engines.forEach((e) => {
+    e.covered = true;
+  });
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'torches' });
+  state.engines = state.engines.slice(0, 1);
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'nightRepair' });
+  state.gates.south.durability = 600;
+  state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 }, covered: true })];
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'holdFast' });
+  state.engines = [];
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'rally' });
+});
+
+it('skips a routed climber when selecting a boulder target', () => {
+  const state = createSiegeState(228);
+  state.day = 2;
+  state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+  Object.assign(state.units[1]!, { x: 20, y: 19, routed: true, morale: 5 });
+  Object.assign(
+    state.units.find((u) => u.id === 'wei-haozhao')!,
+    { x: 20, y: 16 },
+  );
+  state.preparations.boulders['20,16'] = { day: 1 };
+  state.footholds['20,16'] = 1;
+  const actions = planDefenderTurn(state);
+  expect(actions.some((a) => a.type === 'dropBoulders')).toBe(false);
 });

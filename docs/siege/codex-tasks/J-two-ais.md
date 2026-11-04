@@ -58,6 +58,8 @@ simulation is the only balance evidence we have, so its numbers must be meaningf
      no night assault.
    - Both AIs under 1 second per turn on the worst state you can construct.
    - A full game completes for each method and for at least 20 seeds, without a rejected action.
+5. **Small rules fix.** Fire damage in `fireAtEngine` (`src/siege/rules/preparations.ts`) can make
+   engine durability fractional. Floor it so durability stays an integer, with a test.
 
 ## The targets (plan §6.3, 200 games each)
 

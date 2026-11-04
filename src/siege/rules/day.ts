@@ -4,6 +4,7 @@ import {
   cancelOccupiedPreparations,
   logEvent,
   updatePersonnelStats,
+  updateScores,
   updateMainBodyThreat,
 } from './events';
 import { fireArrowsReason, fireAtEngine } from './preparations';
@@ -349,8 +350,12 @@ export function endDay(state: SiegeState): SiegeState {
   if (next.units.some((unit) => unit.side === 'shu' && unit.troops > 0 && unit.level === 'wall'))
     next.stats.wallEverHeldAtNight = true;
   updatePersonnelStats(next);
+  if (next.stats.lastActiveDay !== next.day) next.stats.idleDays++;
   next.outcome = beforeRecoveryOutcome ?? siegeOutcome(next, true);
-  if (next.outcome) return next;
+  if (next.outcome) {
+    updateScores(next);
+    return next;
+  }
   next.day++;
   if (
     next.act === 1 &&

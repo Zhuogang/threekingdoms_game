@@ -40,6 +40,24 @@ export function presentationFor(save: SiegeSave): SiegePresentation {
 }
 const integer = z.number().int();
 const cell = { x: integer, y: integer };
+const scoreSchema = z.strictObject({
+  side: z.enum(['shu', 'wei']),
+  tier: z.enum([
+    'swiftVictory',
+    'victory',
+    'costlyVictory',
+    'orderlyWithdrawal',
+    'grainWithdrawal',
+    'defeat',
+    'annihilation',
+    'perfectDefense',
+    'firmDefense',
+    'narrowDefense',
+    'cityFallen',
+  ]),
+  score: z.number(),
+  parts: z.record(z.string(), z.number()),
+});
 const stateSchema = z.strictObject({
   version: z.literal('siege_v0.2'),
   seed: integer.nonnegative(),
@@ -169,6 +187,12 @@ const stateSchema = z.strictObject({
     enginesLost: integer.nonnegative(),
     assaults: integer.nonnegative(),
     nightClashes: integer.nonnegative(),
+    nightResults: z.array(
+      z.strictObject({ day: integer.min(1).max(T.days), kind: z.string(), result: z.string() }),
+    ),
+    idleDays: integer.nonnegative(),
+    lastActiveDay: integer.min(1).max(T.days).nullable(),
+    score: z.strictObject({ shu: scoreSchema, wei: scoreSchema }).nullable(),
     moundsBuilt: integer.nonnegative(),
     gateEverBroken: z.boolean(),
     wallEverHeldAtNight: z.boolean(),

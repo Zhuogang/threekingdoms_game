@@ -662,3 +662,39 @@ describe('v0.2 boundary cases and accounting', () => {
     expect(endDay(state).mainBodyThreatened).toBe(true);
   });
 });
+
+it.each([false, true])(
+  'floors fractional fire damage and leaves integer durability (covered=%s)',
+  (covered) => {
+    const { state, wei } = climb();
+    state.day = 2;
+    state.weather = 'snow';
+    Object.assign(wei, { troopType: 'archer', troops: 201 });
+    state.preparations.braziers['20,16'] = { litDay: 1 };
+    state.engines[0]!.covered = covered;
+    const before = state.engines[0]!.durability;
+    const next = act(state, { type: 'fireArrows', unitId: wei.id, engineId: state.engines[0]!.id });
+    const damage = Math.floor(
+      201 * T.fireArrowCoefficient * T.snowFireMultiplier * (covered ? T.coveredFireMultiplier : 1),
+    );
+    expect(next.engines[0]!.durability).toBe(before - damage);
+    expect(Number.isInteger(next.engines[0]!.durability)).toBe(true);
+    expect(next.log.find((e) => e.code === 'fireArrowHit')!.params.damage).toBe(damage);
+  },
+);
+
+it('counts a guarded night sortie as combat when computing idle days', () => {
+  const state = createSiegeState(228);
+  state.engines = [engine('ram', 24, 18)];
+  Object.assign(state.units[1]!, { x: 24, y: 19 });
+  const ordered = act(state, { type: 'order', side: 'wei', kind: 'sortie', target: 'engine' });
+  const next = endDay(ordered);
+  expect(next.stats.weiLost).toBe(30);
+  expect(next.stats.idleDays).toBe(0);
+  expect(next.stats.lastActiveDay).toBe(1);
+  expect(next.stats.nightResults).toContainEqual({
+    day: 1,
+    kind: 'sortieRepelled',
+    result: 'guard',
+  });
+});

@@ -42,8 +42,9 @@ export function fireAtEngine(state: SiegeState, unit: SiegeUnit, engine: SiegeEn
       : state.weather === 'snow'
         ? T.snowFireMultiplier
         : 1;
-  const damage =
-    unit.troops * T.fireArrowCoefficient * weather * (engine.covered ? T.coveredFireMultiplier : 1);
+  const damage = Math.floor(
+    unit.troops * T.fireArrowCoefficient * weather * (engine.covered ? T.coveredFireMultiplier : 1),
+  );
   const before = engine.durability;
   Object.assign(state, damageEngine(state, engine, damage));
   const after = state.engines.find((entry) => entry.id === engine.id)!;

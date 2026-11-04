@@ -1,3 +1,4 @@
+import { SIEGE_TUNING } from '../rules/tuning';
 import { fireArrowsReason, millstonePosition } from '../rules/preparations';
 import {
   CITY_BOUNDS,
@@ -209,6 +210,24 @@ const hurt = (u: SiegeUnit): boolean =>
 
 function dailyOrder(state: SiegeState, threats: Threat[]): SiegeAction | null {
   if (state.ordersUsed.wei[state.day]) return null;
+  const engines = state.engines.filter(usableEngine);
+  const sortie = engines.find(
+    (e) =>
+      !e.covered &&
+      GATES.south.approaches.some((c) => distance(c, e) <= 4) &&
+      !state.units.some((u) => u.side === 'shu' && activeUnit(u) && distance(u, e) <= 1),
+  );
+  const raider = state.units.some(
+    (u) =>
+      u.side === 'wei' &&
+      activeUnit(u) &&
+      u.suppressedDay !== state.day &&
+      u.level === 'wall' &&
+      GATES.south.cells.some((c) => sameCell(c, u)),
+  );
+  if (sortie && raider) return { type: 'order', side: 'wei', kind: 'sortie', target: sortie.id };
+  if (state.day > 2 && engines.filter((e) => e.y <= 21).length >= 2)
+    return { type: 'order', side: 'wei', kind: 'torches' };
   const damaged = (Object.keys(GATES) as GateId[])
     .filter((id) => !state.gates[id].broken && state.gates[id].durability < state.gates[id].max / 2)
     .sort(
@@ -264,22 +283,24 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
             : 1;
       candidates.push({
         action: { type: 'fireArrows', unitId: unit.id, engineId: engine.id },
-        score: 8500 + priority * 100,
+        score: 8500 + priority - (engine.covered ? 150 : 0),
       });
     }
   }
   for (const target of state.units.filter((u) => u.side === 'shu' && u.troops > 0)) {
     if (
       unit.troopType === 'infantry' &&
+      activeUnit(target) &&
       unit.level === 'wall' &&
       unit.suppressedDay !== state.day &&
       state.preparations.boulders[cellKey(unit)] !== undefined &&
       state.preparations.boulders[cellKey(unit)]!.day < state.day &&
-      climbingFrontage(state, target, unit) !== null
+      climbingFrontage(state, target, unit) !== null &&
+      ((state.footholds[cellKey(unit)] ?? 0) >= 1 || target.assaultedDay === state.day)
     ) {
       candidates.push({
         action: { type: 'dropBoulders', unitId: unit.id, targetId: target.id },
-        score: 7800,
+        score: 7800 + (state.footholds[cellKey(unit)] ?? 0) * 100,
       });
     }
     const forecast = predictSiegeAttack(state, unit, target);
@@ -295,22 +316,28 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
       millstonePosition(unit) &&
       !state.preparations.millstones[key]?.hoisted &&
       state.engines.some(
-        (engine) => usableEngine(engine) && engine.kind === 'ram' && distance(unit, engine) <= 5,
+        (engine) =>
+          usableEngine(engine) &&
+          engine.kind === 'ram' &&
+          GATES.south.approaches.some((c) => distance(c, engine) <= 4),
       )
     )
-      candidates.push({ action: { type: 'hoistMillstone', unitId: unit.id }, score: 6800 });
+      candidates.push({ action: { type: 'hoistMillstone', unitId: unit.id }, score: 9000 });
     if (
       unit.troopType === 'archer' &&
-      !state.preparations.braziers[key] &&
+      !Object.keys(state.preparations.braziers).some((key) => {
+        const [x, y] = key.split(',').map(Number);
+        return distance(unit, { x: x!, y: y! }) <= 1;
+      }) &&
       state.engines.some((engine) => usableEngine(engine) && distance(unit, engine) <= 4)
     )
-      candidates.push({ action: { type: 'lightBrazier', unitId: unit.id }, score: 6700 });
+      candidates.push({ action: { type: 'lightBrazier', unitId: unit.id }, score: 8800 });
     if (
       unit.troopType === 'infantry' &&
       !state.preparations.boulders[key] &&
-      wallThreats(state).some((cell) => sameCell(cell, unit))
+      wallThreats(state).some((cell) => distance(cell, unit) <= 1)
     )
-      candidates.push({ action: { type: 'stackBoulders', unitId: unit.id }, score: 6600 });
+      candidates.push({ action: { type: 'stackBoulders', unitId: unit.id }, score: 8600 });
   }
   return candidates;
 }
@@ -370,7 +397,7 @@ function movementCandidate(
         .flatMap(adjacent)
         .filter((c) => ['wall', 'gate'].includes(cellTerrain(state, c.x, c.y)) && !occupied(c))
         .map(wall);
-    score = 9000;
+    score = unit.troopType === 'infantry' ? 9400 : 9000;
   }
   // Wall archers follow work columns instead of waiting at their opening posts.
   // Keep archers covering a climb; free archers can reach a firing position before acting.
@@ -401,7 +428,8 @@ function movementCandidate(
         .map((dx) => wall({ x: target.x + dx, y: 16 }))
         .filter(
           (p) =>
-            ['wall', 'gate'].includes(cellTerrain(state, p.x, p.y)) && distance(p, target) <= 3,
+            ['wall', 'gate'].includes(cellTerrain(state, p.x, p.y)) &&
+            distance(p, target) <= SIEGE_TUNING.wallArcherRange,
         );
       if (positions.some((p) => unit.level === 'wall' && sameCell(p, unit)) && !goals.length)
         return null;
@@ -468,7 +496,7 @@ function movementCandidate(
 }
 
 /** Plans against an isolated evolving state, reserving destinations and spent actions. */
-export function planDefenderTurn(state: SiegeState): SiegeAction[] {
+function defenderTurn(state: SiegeState): { actions: SiegeAction[]; state: SiegeState } {
   let draft = state;
   const actions: SiegeAction[] = [];
   const accept = (action: SiegeAction): boolean => {
@@ -478,15 +506,13 @@ export function planDefenderTurn(state: SiegeState): SiegeAction[] {
     actions.push(action);
     return true;
   };
-  if (state.outcome) return actions;
-  const order = dailyOrder(draft, wallThreats(draft));
-  if (order) accept(order);
+  if (state.outcome) return { actions, state: draft };
   const defenders = draft.units.filter((u) => u.side === 'wei' && activeUnit(u));
   const breached =
     intruders(draft).length > 0 ||
     Object.values(draft.gates).some((g) => g.broken) ||
     defenders.some(inCourtyard) ||
-    draft.log.some((entry) => entry.code === 'defenderBreach');
+    draft.stats.firstWallDay !== null;
   const garrison = new Set(
     breached
       ? defenders
@@ -505,45 +531,44 @@ export function planDefenderTurn(state: SiegeState): SiegeAction[] {
           .map(({ unit }) => unit.id)
       : [],
   );
-  const rejected = new Set<string>();
-  // Each unit can move once and act once. Re-score after each accepted action.
-  const limit = state.units.filter((u) => u.side === 'wei').length * 2;
-  for (let step = 0; step < limit && !draft.outcome; step++) {
-    const threats = wallThreats(draft);
-    const breach = intruders(draft);
-    const candidates = draft.units
-      .filter((u) => u.side === 'wei' && activeUnit(u) && !u.acted)
-      .flatMap((unit) => {
-        const immediate = immediateActions(draft, unit);
-        const movement = movementCandidate(draft, unit, threats, garrison.has(unit.id), breach);
-        return movement ? [...immediate, movement] : immediate;
-      })
-      .filter((c) => !rejected.has(JSON.stringify(c.action)))
-      .sort((a, b) => b.score - a.score);
-    const best = candidates[0];
-    if (!best) break;
-    if (!accept(best.action)) {
-      rejected.add(JSON.stringify(best.action));
-      step--;
+  const preparationTypes = new Set(['lightBrazier', 'hoistMillstone', 'stackBoulders']);
+  const strikeTypes = new Set(['fireArrows', 'dropMillstone', 'dropBoulders']);
+  // Resolve yesterday's weapons before relocating any of their holders.
+  for (const phase of ['strike', 'move', 'prepare'] as const) {
+    const limit = state.units.filter((u) => u.side === 'wei').length * 2;
+    for (let step = 0; step < limit && !draft.outcome; step++) {
+      const threats = wallThreats(draft);
+      const breach = intruders(draft);
+      const candidates = draft.units
+        .filter((u) => u.side === 'wei' && activeUnit(u) && !u.acted)
+        .flatMap((unit) => {
+          const immediate = immediateActions(draft, unit);
+          if (phase === 'strike') return immediate.filter((c) => strikeTypes.has(c.action.type));
+          if (phase === 'prepare') return immediate.filter((c) => !strikeTypes.has(c.action.type));
+          const movement = movementCandidate(draft, unit, threats, garrison.has(unit.id), breach);
+          const attacks = immediate.filter((c) => c.action.type === 'attack' && c.score >= 9950);
+          return movement ? [...attacks, movement] : attacks;
+        })
+        .filter((c) => phase !== 'move' || !preparationTypes.has(c.action.type))
+        .sort((a, b) => b.score - a.score);
+      const best = candidates[0];
+      if (!best) break;
+      if (!accept(best.action))
+        throw new Error(`Illegal defender plan: ${JSON.stringify(best.action)}`);
     }
   }
-  return actions;
+  const order = dailyOrder(draft, wallThreats(draft));
+  const commander = draft.units.find((u) => u.officer.id === 'haozhao' && activeUnit(u));
+  if (order && commander && !draft.outcome && !accept(order))
+    throw new Error(`Illegal defender order: ${JSON.stringify(order)}`);
+  return { actions, state: draft };
+}
+
+export function planDefenderTurn(state: SiegeState): SiegeAction[] {
+  return defenderTurn(state).actions;
 }
 
 /** Drives the Wei phase independently; endDay resolves only the following night. */
 export function runDefenderTurn(state: SiegeState): SiegeState {
-  let next = state;
-  if (
-    !state.outcome &&
-    intruders(state).length &&
-    !state.log.some((entry) => entry.code === 'defenderBreach')
-  ) {
-    next = structuredClone(state);
-    next.log.push({ day: state.day, code: 'defenderBreach', params: {} });
-  }
-  for (const action of planDefenderTurn(next)) {
-    const result = applySiegeAction(next, action);
-    if (result.ok) next = result.state;
-  }
-  return next;
+  return defenderTurn(state).state;
 }

@@ -3,6 +3,7 @@ import {
   cancelOccupiedPreparations,
   logEvent,
   updatePersonnelStats,
+  updateScores,
   updateMainBodyThreat,
 } from './events';
 import { fireArrowsReason, fireAtEngine, millstonePosition } from './preparations';
@@ -605,11 +606,18 @@ export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeA
   } else {
     const reason = performAction(next, action);
     if (reason) return { ok: false, reason };
+    if (
+      ['attack', 'ram', 'suppress', 'fireArrows', 'dropMillstone', 'dropBoulders'].includes(
+        action.type,
+      )
+    )
+      next.stats.lastActiveDay = next.day;
     cancelOccupiedPreparations(next);
     next.outcome = siegeOutcome(next);
   }
   updatePersonnelStats(next);
   updateMainBodyThreat(next);
+  updateScores(next);
   next.log.push({
     day: next.day,
     code: action.type,

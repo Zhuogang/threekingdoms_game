@@ -1,9 +1,29 @@
+import { scoreSiege } from './score';
 import { SIEGE_TUNING as T } from './tuning';
 import { SHU_ROSTER, WEI_ROSTER } from '../content/chencang';
 import type { SiegeLogEntry, SiegeState } from './types';
 
 export function logEvent(state: SiegeState, code: string, params: SiegeLogEntry['params']): void {
   state.log.push({ day: state.day, code, params });
+  if (
+    [
+      'fireArrowHit',
+      'millstoneHit',
+      'bouldersHit',
+      'suppressed',
+      'footholdChanged',
+      'engineLost',
+      'sortieHit',
+    ].includes(code) ||
+    (code === 'sortieRepelled' && params.reason === 'guard')
+  )
+    state.stats.lastActiveDay = state.day;
+  if (['nightClash', 'nightAssault', 'torches', 'sortieHit', 'sortieRepelled'].includes(code))
+    state.stats.nightResults.push({
+      day: state.day,
+      kind: code,
+      result: String(params.result ?? params.reason ?? 'hit'),
+    });
 }
 
 /** Wounded count as lost until returned to the fighting ranks. Never parse the event log. */
@@ -50,4 +70,10 @@ export function updateMainBodyThreat(state: SiegeState): void {
     )
   )
     state.mainBodyThreatened = true;
+}
+
+/** Completed-game scores are retained alongside the evidence from which they are calculated. */
+export function updateScores(state: SiegeState): void {
+  if (state.outcome)
+    state.stats.score = { shu: scoreSiege(state, 'shu'), wei: scoreSiege(state, 'wei') };
 }
