@@ -492,9 +492,15 @@ describe('night orders and clashes', () => {
 
 describe('scores and v0.2 persistence', () => {
   it.each([
-    ['victory', 6, 9000, false, 'swiftVictory'],
-    ['victory', 7, T.score.costlyVictoryLosses, false, 'victory'],
-    ['victory', 7, T.score.costlyVictoryLosses + 1, false, 'costlyVictory'],
+    ['victory', T.score.fastVictoryDay, 9000, false, 'swiftVictory'],
+    ['victory', T.score.fastVictoryDay + 1, T.score.costlyVictoryLosses, false, 'victory'],
+    [
+      'victory',
+      T.score.fastVictoryDay + 1,
+      T.score.costlyVictoryLosses + 1,
+      false,
+      'costlyVictory',
+    ],
     ['historical', 12, T.score.orderlyWithdrawalLosses, false, 'orderlyWithdrawal'],
     ['historical', 12, T.score.orderlyWithdrawalLosses + 1, false, 'grainWithdrawal'],
     ['historical', 5, 0, true, 'grainWithdrawal'],
