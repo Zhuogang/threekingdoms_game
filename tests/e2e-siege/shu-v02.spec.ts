@@ -13,6 +13,8 @@ import {
   shot,
   snapshot,
   start,
+  selectActor,
+  expectNoPanelScroll,
 } from './helpers';
 
 test.use({ viewport: { width: 1280, height: 720 } });
@@ -22,28 +24,33 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await start(page);
-  await page.getByTestId('select-shu-weiyan').click();
+  await selectActor(page, 'shu-weiyan');
   await clickCell(page, 'deploy', '18,21,ground');
-  await page.getByTestId('select-shu-captain-3').click();
+  await selectActor(page, 'shu-captain-3');
   await clickCell(page, 'deploy', '17,21,ground');
   await begin(page);
   await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '1');
+  await expect(page.locator('[data-overlay="tutorial"]')).toHaveCount(2);
+  await expectNoPanelScroll(page, 'action-panel');
   await shot(page, 'walk-1');
   let game = await snapshot(page);
   const ladders = game.state.engines.filter((e) => e.kind === 'ladder');
-  await page.getByTestId(`select-${ladders[0]!.id}`).click();
+  await selectActor(page, ladders[0]!.id);
   await page.getByTestId('command-raiseLadder').click();
-  await page.getByTestId(`select-${ladders[1]!.id}`).click();
+  await selectActor(page, ladders[1]!.id);
   await page.getByTestId('command-raiseLadder').click();
-  await page.getByTestId('select-shu-weiyan').click();
+  await selectActor(page, 'shu-weiyan');
   await page.getByTestId('command-move').click();
   await clickCell(page, 'reachable', '18,19,ground');
   await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '4');
+  await expect(page.locator('[data-overlay="tutorial"][data-cell="18,16,wall"]')).toHaveCount(1);
+  await expectNoPanelScroll(page, 'action-panel');
   await shot(page, 'walk-4');
   await page.getByTestId('command-climb').click();
+  await expectNoPanelScroll(page, 'climb-forecast');
   await page.getByTestId('climb-confirm').click();
   expect((await snapshot(page)).state.footholds['18,16']).toBe(T.climbFoothold);
-  await page.getByTestId('select-shu-captain-3').click();
+  await selectActor(page, 'shu-captain-3');
   await page.getByTestId('command-move').click();
   await clickCell(page, 'reachable', '17,19,ground');
   const defender = (await snapshot(page)).state.units.find(
@@ -51,6 +58,7 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   )!;
   await page.getByTestId('command-suppress').click();
   await expect(page.getByTestId('action-targets')).toContainText('cannot fire arrows');
+  await expectNoPanelScroll(page, 'action-targets');
   await page.getByTestId(`target-suppress-${defender.id}`).click();
   await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '7');
   await endDay(page);
@@ -58,45 +66,53 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   const report = page.getByTestId('morning-report');
   await expect(report).toBeVisible();
   expect(await report.getByTestId('report-item').count()).toBeGreaterThanOrEqual(3);
-  await shot(page, 'report');
+  await expect(page.getByTestId('counter-card')).toHaveCount(0);
+  await expect(report).not.toContainText(/\d+,\d+/);
+  await report.getByTestId('report-focus').first().click();
+  await expect(report).toBeVisible();
+  await expect(page.locator('[data-overlay="tutorial"]')).toHaveCount(1);
   await closeReport(page);
   await expect(page.getByTestId('counter-card')).toBeVisible();
-  await shot(page, 'counter-card');
+  await expect(page.locator('.siege-map-notice .siege-hint')).toHaveCount(1);
   await dismissCounters(page);
   await page.getByTestId('report-open').click();
   await expect(report.getByTestId('report-item').first()).toContainText(/Wei/);
   await closeReport(page);
   await page.getByRole('tab', { name: 'Defence', exact: true }).click();
   await expect(page.getByTestId('defense-panel')).toContainText('Climbing pressure');
-  await shot(page, 'defense-panel');
   await page.getByRole('tab', { name: 'Units & actions', exact: true }).click();
-  await page.getByTestId('select-shu-weiyan').click();
+  await selectActor(page, 'shu-weiyan');
   game = await snapshot(page);
   const top = game.state.units.find(
     (u) => u.side === 'wei' && u.troops > 0 && u.level === 'wall' && u.x === 18 && u.y === 16,
   );
   if (top) {
-    await page.getByTestId(`select-${top.id}`).click();
+    await selectActor(page, top.id);
     const normal = predictSiegeAttack(game.state, 'shu-weiyan', top.id)!,
       forced = predictSiegeAttack(game.state, 'shu-weiyan', top.id, { assault: true })!;
-    await expect(page.getByTestId('forecast-normal')).toContainText(`frontage ${normal.frontage}`);
-    await expect(page.getByTestId('forecast-assault')).toContainText(
-      `Own casualties ${forced.counterattack.casualties}`,
+    await expect(page.getByTestId('forecast-normal-ownCasualties')).toHaveText(
+      String(normal.counterattack.casualties),
+    );
+    await expect(page.getByTestId('forecast-assault-ownCasualties')).toHaveText(
+      String(forced.counterattack.casualties),
     );
   } else {
     await page.getByTestId('command-climb').click();
     const normal = predictSiegeClimb(game.state, 'shu-weiyan')!,
       forced = predictSiegeClimb(game.state, 'shu-weiyan', { assault: true })!;
-    await expect(page.getByTestId('forecast-normal')).toContainText(
-      `Own casualties ${normal.casualties}`,
+    await expect(page.getByTestId('forecast-normal-ownCasualties')).toHaveText(
+      String(normal.casualties),
     );
-    await expect(page.getByTestId('forecast-assault')).toContainText(
-      `Own casualties ${forced.casualties}`,
+    await expect(page.getByTestId('forecast-assault-ownCasualties')).toHaveText(
+      String(forced.casualties),
     );
   }
   await page.getByTestId('assault-toggle').check();
   await expect(page.getByTestId('assault-toggle')).toBeChecked();
-  await shot(page, 'assault-forecast');
+  await expect(page.getByTestId('forecast-assault-ownCasualties')).toHaveAttribute(
+    'data-chosen',
+    'true',
+  );
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await page.getByTestId('command-coverEngine').click();
   await page.getByTestId(`target-coverEngine-${ladders[0]!.id}`).click();
@@ -104,7 +120,7 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
     true,
   );
   await expect(page.getByTestId('walkthrough')).toHaveCount(0);
-  await page.getByTestId(`select-${ladders[0]!.id}`).click();
+  await selectActor(page, ladders[0]!.id);
   await expect(page.locator('.siege-sidebar')).toContainText('Covered');
   await page
     .locator('.siege-sidebar details')
@@ -132,7 +148,8 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   await expect(page.getByTestId('morning-report')).toHaveCount(0);
   await page.getByRole('button', { name: 'Withdraw', exact: true }).click();
   await expect(page.getByTestId('score-panel')).toContainText('Grain withdrawal');
-  await shot(page, 'score');
+  const parts = await page.getByTestId('score-panel').locator('dd').allTextContents();
+  expect(parts.every((part) => /^\d+$/.test(part))).toBe(true);
   expect(errors).toEqual([]);
 });
 
@@ -150,30 +167,59 @@ test('occupied-wall assault forecast and foothold blink use the same rule predic
     playerSide: 'shu',
     phase: 'battle',
     facings: {},
-    presentation: { openingStep: 6, bannersSeen: [1], dismissedHints: [], reportReadDay: 1 },
+    presentation: {
+      openingStep: 6,
+      bannersSeen: [1],
+      dismissedHints: ['wall', 'trench', 'ladder', 'frontage', 'innerWall'],
+      reportReadDay: 1,
+    },
   });
-  await page.getByTestId('select-shu-weiyan').click();
-  await page.getByTestId(`select-${state.units[12]!.id}`).click();
+  await selectActor(page, 'shu-weiyan');
+  const defenderId = state.units[12]!.id;
+  await expect(page.locator(`[data-silhouette] [data-unit="${defenderId}"]`)).toHaveCount(1);
+  for (const zoom of [0.5, 0.75, 1, 1.5]) {
+    await page.getByRole('button', { name: 'South gate', exact: true }).click();
+    await page.getByRole('button', { name: `${zoom * 100}%`, exact: true }).click();
+    // The viewport helper caps zoom relative to full-map fit: at 1280x720, 150% lands on 134%.
+    const reached = Number(await page.getByTestId('siege-map').getAttribute('data-zoom'));
+    expect(reached).toBeGreaterThan(zoom * 0.85);
+    expect(reached).toBeLessThanOrEqual(zoom + 0.01);
+    // Bring the west wall into view even at 150%; centering the infantry would
+    // put the defender's higher wall position above the short map viewport.
+    const box = (await page.getByTestId('siege-map').boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.7);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.7, { steps: 5 });
+    await page.mouse.up();
+    await selectActor(page, defenderId);
+    await expect(page.getByTestId('attack-forecast').locator('h4')).toHaveText(
+      state.units[12]!.officer.name,
+    );
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  }
+  await selectActor(page, defenderId);
   const normal = predictSiegeAttack(state, 'shu-weiyan', state.units[12]!.id)!,
     forced = predictSiegeAttack(state, 'shu-weiyan', state.units[12]!.id, { assault: true })!;
   for (const [testid, f] of [
     ['forecast-normal', normal],
     ['forecast-assault', forced],
   ] as const) {
-    await expect(page.getByTestId(testid)).toContainText(`frontage ${f.frontage}`);
-    await expect(page.getByTestId(testid)).toContainText(`Enemy casualties ${f.casualties}`);
-    await expect(page.getByTestId(testid)).toContainText(
-      `Own casualties ${f.counterattack.casualties}`,
+    await expect(page.getByTestId(`${testid}-enemyCasualties`)).toHaveText(String(f.casualties));
+    await expect(page.getByTestId(`${testid}-ownCasualties`)).toHaveText(
+      String(f.counterattack.casualties),
     );
-    await expect(page.getByTestId(testid)).toContainText(
-      `Foothold +${f.footholdGain} → ${f.footholdAfter}/${T.footholdComplete}`,
+    await expect(page.getByTestId(`${testid}-footholdBeforeAfter`)).toContainText(
+      `1 → ${f.footholdAfter}/${T.footholdComplete}`,
     );
   }
-  await expect(page.getByTestId('attack-forecast')).toContainText(
+  await expectNoPanelScroll(page, 'attack-forecast');
+  await expect(page.getByTestId('forecast-details')).not.toHaveAttribute('open', '');
+  await page.getByTestId('forecast-details').locator('summary').click();
+  await expect(page.getByTestId('forecast-details')).toContainText(
     `uphill attack ×${T.climbingAttackMultiplier}`,
   );
+  await page.getByTestId('forecast-details').locator('summary').click();
   await page.getByTestId('assault-toggle').check();
   await page.getByTestId('attack-forecast').hover();
   await expect(page.locator('[data-foothold="18,16"] animate')).toHaveCount(T.footholdComplete);
-  await shot(page, 'assault-forecast');
 });

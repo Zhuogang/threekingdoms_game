@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { describe, expect, it } from 'vitest';
 import { SIEGE_COPY, SIEGE_REASONS, rejectionText, siegeText } from '../../src/siege/i18n';
 
@@ -48,6 +49,10 @@ describe('siege bilingual text', () => {
     for (const reason of reasons) {
       expect(SIEGE_REASONS.en).toHaveProperty(reason);
       if (reason.includes('six usable engines')) expect(rejectionText('en', reason)).toContain('8');
+      else if (reason === 'The engine limit has been reached.')
+        expect(rejectionText('en', reason)).toBe(
+          `There are already ${T.engineCap} usable engines on the map.`,
+        );
       else expect(rejectionText('en', reason)).toBe(reason);
       expect(rejectionText('zh', reason)).not.toBe(reason);
     }

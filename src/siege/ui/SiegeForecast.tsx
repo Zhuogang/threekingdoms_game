@@ -2,6 +2,7 @@ import { Button } from '../../v03/ui/kit';
 import { siegeText, rejectionText, type SiegeLocale, type SiegeTextKey } from '../i18n';
 import type { SiegeAttackForecast, SiegeClimbForecast, SiegeEngagement } from '../rules/combat';
 import { SIEGE_TUNING as T } from '../rules/tuning';
+import { forecastTableData } from './forecastData';
 
 interface Controls {
   locale: SiegeLocale;
@@ -11,50 +12,24 @@ interface Controls {
   disabled: boolean;
   checked: boolean;
   toggle: (checked: boolean) => void;
+  footholdBefore?: number;
 }
-function Foothold({
-  forecast,
-  locale,
-}: {
-  forecast: Pick<SiegeAttackForecast, 'footholdGain' | 'footholdAfter' | 'wouldMount'>;
-  locale: SiegeLocale;
-}) {
-  return (
-    <p>
-      {siegeText(locale, 'footholdLine', {
-        gain: forecast.footholdGain,
-        after: forecast.footholdAfter,
-        max: T.footholdComplete,
-        mount: forecast.wouldMount ? siegeText(locale, 'mountNow') : '',
-      })}
-    </p>
-  );
-}
-function AssaultBox({ locale, checked, toggle }: Pick<Controls, 'locale' | 'checked' | 'toggle'>) {
-  return (
-    <label className="siege-assault">
-      <input
-        data-testid="assault-toggle"
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => toggle(e.target.checked)}
-      />
-      {siegeText(locale, 'assault')}
-    </label>
-  );
-}
-export function Forecast({
-  forecast,
-  assaultForecast,
+function Comparison({
+  normal,
+  assault,
   target,
+  testId,
   ...c
 }: Controls & {
-  forecast: SiegeAttackForecast;
-  assaultForecast: SiegeAttackForecast | null;
+  normal: SiegeAttackForecast | SiegeClimbForecast;
+  assault: SiegeAttackForecast | SiegeClimbForecast | null;
   target: string;
+  testId: string;
 }) {
-  const t = (key: SiegeTextKey, p: Record<string, string | number> = {}) =>
-    siegeText(c.locale, key, p);
+  const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
+    siegeText(c.locale, key, params);
+  const columns = forecastTableData(normal, assault, c.footholdBefore ?? 0);
+  const selected = c.checked && assault ? 'assault' : 'normal';
   const modifiers = (engagement: SiegeEngagement) => (
     <div className="siege-modifiers">
       <span>{t('frontage', { n: engagement.frontage ?? t('unlimited') })}</span>
@@ -70,51 +45,149 @@ export function Forecast({
     </div>
   );
   return (
-    <section className="siege-forecast" data-testid="attack-forecast">
-      <h4>
-        {t('forecast')} · {target}
-      </h4>
-      {assaultForecast && <AssaultBox {...c} />}
-      {[forecast, ...(assaultForecast ? [assaultForecast] : [])].map((f, i) => (
-        <div key={i} data-testid={i ? 'forecast-assault' : 'forecast-normal'}>
-          {assaultForecast && <strong>{t(i ? 'assault' : 'normalAttack')}</strong>}
-          <p>
-            {t('enemyLoss', { n: f.casualties })} ·{' '}
-            {t('ownLoss', { n: f.counterattack.casualties })}
-          </p>
-          {f.gateDamage !== undefined && <p>{t('gateDamage', { n: f.gateDamage })}</p>}
-          <small>{t('strike')}</small>
-          {modifiers(f)}
-          <small>{t('counter')}</small>
-          {modifiers(f.counterattack)}
-          {assaultForecast && (
-            <>
-              <Foothold forecast={f} locale={c.locale} />
-              <small>
-                {t('forecastMorale', {
-                  n: f.sourceMoraleAfter,
-                  loss: i && !f.wouldMount ? T.assaultNeighbourLoss : 0,
-                })}
-              </small>
-            </>
+    <section className="siege-forecast" data-testid={testId}>
+      <h4>{target}</h4>
+      {assault && (
+        <label className="siege-assault">
+          <input
+            data-testid="assault-toggle"
+            type="checkbox"
+            checked={c.checked}
+            onChange={(e) => c.toggle(e.target.checked)}
+          />
+          {t('assault')}
+        </label>
+      )}
+      <table data-testid="forecast-table">
+        <thead>
+          <tr>
+            <th scope="col">{t('forecast')}</th>
+            {columns.map((col) => (
+              <th
+                key={col.kind}
+                scope="col"
+                data-testid={`forecast-${col.kind}`}
+                data-chosen={selected === col.kind}
+              >
+                {t(col.kind === 'normal' ? 'normalAttack' : 'assault')}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(
+            ['ownCasualties', 'enemyCasualties', 'footholdBeforeAfter', 'moraleAfter'] as const
+          ).map((row) => (
+            <tr key={row} className={row === 'ownCasualties' ? 'siege-own-losses' : undefined}>
+              <th scope="row">{t(row)}</th>
+              {columns.map((col) => (
+                <td
+                  key={col.kind}
+                  data-testid={`forecast-${col.kind}-${row}`}
+                  data-chosen={selected === col.kind}
+                >
+                  {row === 'footholdBeforeAfter' ? (
+                    <>
+                      {t('footholdComparison', {
+                        before: col.footholdBefore,
+                        after: col.footholdAfter,
+                        max: T.footholdComplete,
+                        mount: col.wouldMount ? t('mountNow') : '',
+                      })}
+                    </>
+                  ) : (
+                    col[row]
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+          {columns.some((col) => col.gateDamage !== undefined) && (
+            <tr>
+              <th scope="row">{t('gateDamage', { n: '' })}</th>
+              {columns.map((col) => (
+                <td key={col.kind} data-chosen={selected === col.kind}>
+                  {col.gateDamage ?? 0}
+                </td>
+              ))}
+            </tr>
           )}
-        </div>
-      ))}
-      {!forecast.inRange && <p>{t('outOfRange')}</p>}
+        </tbody>
+      </table>
+      <details data-testid="forecast-details">
+        <summary>{t('detailedModifiers')}</summary>
+        {[normal, ...(assault ? [assault] : [])].map((f, i) => (
+          <div key={i}>
+            <strong>{t(i ? 'assault' : 'normalAttack')}</strong>
+            <p>
+              {t('footholdLine', {
+                gain: f.footholdGain,
+                after: f.footholdAfter,
+                max: T.footholdComplete,
+                mount: f.wouldMount ? t('mountNow') : '',
+              })}
+            </p>
+            {'counterattack' in f ? (
+              <>
+                <small>{t('strike')}</small>
+                {modifiers(f)}
+                <small>{t('counter')}</small>
+                {modifiers(f.counterattack)}
+              </>
+            ) : (
+              <p>{t('frontage', { n: f.frontage })}</p>
+            )}
+            <small>
+              {t('forecastMorale', {
+                n: f.sourceMoraleAfter,
+                loss:
+                  'neighbourMoraleLoss' in f
+                    ? f.neighbourMoraleLoss
+                    : i && !f.wouldMount
+                      ? T.assaultNeighbourLoss
+                      : 0,
+              })}
+            </small>
+          </div>
+        ))}
+      </details>
+      {'inRange' in normal && !normal.inRange && <p>{t('outOfRange')}</p>}
       {c.reason && <p>{rejectionText(c.locale, c.reason)}</p>}
-      <Button
-        size="sm"
-        data-testid="attack-confirm"
-        variant="primary"
-        disabled={c.disabled || Boolean(c.reason)}
-        onClick={c.confirm}
-      >
-        {t('confirm')}
-      </Button>
-      <Button size="sm" onClick={c.cancel}>
-        {t('cancel')}
-      </Button>
+      <div className="siege-forecast-controls">
+        <Button
+          size="sm"
+          data-testid={testId === 'climb-forecast' ? 'climb-confirm' : 'attack-confirm'}
+          variant="primary"
+          disabled={c.disabled || Boolean(c.reason)}
+          onClick={c.confirm}
+        >
+          {t(testId === 'climb-forecast' ? 'confirmClimb' : 'confirm')}
+        </Button>
+        <Button size="sm" onClick={c.cancel}>
+          {t('cancel')}
+        </Button>
+      </div>
     </section>
+  );
+}
+export function Forecast({
+  forecast,
+  assaultForecast,
+  target,
+  ...c
+}: Controls & {
+  forecast: SiegeAttackForecast;
+  assaultForecast: SiegeAttackForecast | null;
+  target: string;
+}) {
+  return (
+    <Comparison
+      normal={forecast}
+      assault={assaultForecast}
+      target={target}
+      testId="attack-forecast"
+      {...c}
+    />
   );
 }
 export function ClimbForecast({
@@ -122,37 +195,13 @@ export function ClimbForecast({
   assault,
   ...c
 }: Controls & { normal: SiegeClimbForecast; assault: SiegeClimbForecast }) {
-  const t = (key: SiegeTextKey, p: Record<string, string | number> = {}) =>
-    siegeText(c.locale, key, p);
   return (
-    <section className="siege-forecast" data-testid="climb-forecast">
-      <h4>{t('climb')}</h4>
-      <AssaultBox {...c} />
-      {[normal, assault].map((f, i) => (
-        <div key={i} data-testid={i ? 'forecast-assault' : 'forecast-normal'}>
-          <strong>{t(i ? 'assault' : 'normalAttack')}</strong>
-          <p>
-            {t('frontage', { n: f.frontage })} · {t('ownLoss', { n: f.casualties })}
-          </p>
-          <Foothold forecast={f} locale={c.locale} />
-          <small>
-            {t('forecastMorale', { n: f.sourceMoraleAfter, loss: f.neighbourMoraleLoss })}
-          </small>
-        </div>
-      ))}
-      {c.reason && <p>{rejectionText(c.locale, c.reason)}</p>}
-      <Button
-        size="sm"
-        data-testid="climb-confirm"
-        variant="primary"
-        disabled={c.disabled || Boolean(c.reason)}
-        onClick={c.confirm}
-      >
-        {t('confirmClimb')}
-      </Button>
-      <Button size="sm" onClick={c.cancel}>
-        {t('cancel')}
-      </Button>
-    </section>
+    <Comparison
+      normal={normal}
+      assault={assault}
+      target={siegeText(c.locale, 'climb')}
+      testId="climb-forecast"
+      {...c}
+    />
   );
 }

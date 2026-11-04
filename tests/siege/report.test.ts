@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { morningReport, REPORT_CODES, reportObservations } from '../../src/siege/ui/report';
+import { placeName } from '../../src/siege/ui/places';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { siegeText, type SiegeTextKey } from '../../src/siege/i18n';
 import { selectCounterCard, engineLossAnswers, COUNTER_KINDS } from '../../src/siege/ui/counters';
@@ -52,11 +53,18 @@ describe('pure morning report', () => {
           from: '18,16',
           to: '18,19',
         };
+        if (code === 'brazierPrepared') state.preparations.braziers[params.cell] = { litDay: 1 };
+        if (code === 'millstonePrepared')
+          state.preparations.millstones[params.cell] = { day: 1, hoisted: true };
+        if (code === 'bouldersPrepared') state.preparations.boulders[params.cell] = { day: 1 };
         const log = [entry(code, params)];
         const before = structuredClone(log);
         const items = morningReport(log, state.preparations, 2, locale);
         const expected = siegeText(locale, keys[code][0], {
           ...params,
+          cell: placeName(params.cell, locale),
+          from: placeName(params.from, locale),
+          to: placeName(params.to, locale),
           engine: siegeText(locale, 'ladder'),
           unit: locale === 'zh' ? '魏延' : 'Wei Yan',
           gate: siegeText(locale, 'south'),
@@ -81,13 +89,14 @@ describe('pure morning report', () => {
       entry('bouldersHit', { cell: '18,16', casualties: 10, targetId: 'shu-weiyan' }),
     ];
     const items = morningReport(log, p, 2, 'en');
-    expect(items[0]!.text).toMatch(/^Wei fire arrows/);
-    expect(items[1]!.text).toContain('stopped');
-    expect(items[2]!.text).toContain('failed');
-    expect(items[3]!.text).toContain('met Wei torches');
-    expect(items[4]!.text).toContain('Guards repelled');
-    expect(items[5]!.text).toContain('Your night assault defeated');
-    expect(items[6]!.text).toContain('1 foothold lost');
+    expect(items.find((i) => i.code === 'fireArrowHit')!.text).toMatch(/^Wei fire arrows/);
+    expect(items.find((i) => i.code === 'nightAssault')!.text).toContain('stopped');
+    expect(items.find((i) => i.code === 'torches')!.text).toContain('failed');
+    expect(items.filter((i) => i.code === 'fireArrowHit')[1]!.text).toContain('met Wei torches');
+    expect(items.some((i) => i.text.includes('Guards repelled'))).toBe(true);
+    expect(items.some((i) => i.text.includes('Your night assault defeated'))).toBe(true);
+    expect(items.find((i) => i.code === 'bouldersHit')!.text).toContain('1 foothold lost');
+    expect(items.map((i) => i.priority)).toEqual([...items.map((i) => i.priority)].sort());
   });
   it('lists surviving preparations once, ignores consumed/new preparations, stale events and hidden orders', () => {
     const state = createSiegeState(1);

@@ -1,13 +1,17 @@
 import { GATES, INNER_WALL_SEGMENTS, SHU_ROSTER, WEI_ROSTER, cellKey } from '../content/chencang';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
-import type { EngineKind, GateId, SiegeLogEntry, SiegeState } from '../rules/types';
+import type { EngineKind, GateId, SiegeLogEntry, SiegePosition, SiegeState } from '../rules/types';
 import { engineKey } from './story';
+import { activeUnit, distance } from '../rules/combat';
+import { placeName, reportCell } from './places';
 
 export interface ReportItem {
   code: string;
   icon: SiegeTextKey;
   text: string;
   counter: string;
+  place: SiegePosition | null;
+  priority: number;
 }
 export const REPORT_CODES = [
   'brazierPrepared',
@@ -70,6 +74,7 @@ export function morningReport(
   day: number,
   locale: SiegeLocale,
   observations: SiegeLogEntry[] = [],
+  state?: SiegeState,
 ): ReportItem[] {
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
@@ -89,69 +94,150 @@ export function morningReport(
         entries.push({ day: day - 1, code, params: { cell } });
     }
   }
-  return entries.flatMap((entry, index): ReportItem[] => {
-    const mapping = copy[entry.code];
-    if (!mapping) return [];
-    const [icon, base, counter] = mapping;
-    const p = entry.params;
-    let key = base;
-    if (entry.code === 'holdFastOrdered' && p.effectiveDay !== day) return [];
-    if (entry.code === 'torches' && p.assault === true) key = 'reportTorchesCaught';
-    if (entry.code === 'nightAssault' && p.result === 'stopped') key = 'reportNightStopped';
-    if (entry.code === 'sortieRepelled')
-      key =
-        p.reason === 'guard'
-          ? 'reportSortieGuard'
-          : p.reason === 'nightAssault'
-            ? 'reportSortieAssault'
-            : 'reportSortieUnavailable';
-    if (
-      entry.code === 'fireArrowHit' &&
-      recent.slice(0, index).some((e) => e.code === 'torches' && e.params.assault === true)
-    )
-      key = 'reportNightFire';
-    const engineId = String(p.engineId ?? '');
-    const kind =
-      p.kind ??
-      (engineId.includes('ladder')
-        ? 'ladder'
-        : engineId.includes('ram')
-          ? 'ram'
-          : engineId.includes('tower')
-            ? 'tower'
-            : engineId.includes('earthCart')
-              ? 'earthCart'
-              : null);
-    const roster = [...SHU_ROSTER, ...WEI_ROSTER].find((u) => u.id === (p.targetId ?? p.unitId));
-    const loss = [...recent.slice(0, index)]
-      .reverse()
-      .find(
-        (e) =>
-          e.code === 'footholdChanged' &&
-          e.params.reason === 'boulders' &&
-          e.params.cell === p.cell,
+  const doused = new Set(
+    recent.filter((e) => e.code === 'brazierDoused').map((e) => e.params.cell),
+  );
+  const seen = new Set<string>();
+  return entries
+    .flatMap((entry, index): ReportItem[] => {
+      const mapping = copy[entry.code];
+      if (!mapping) return [];
+      const [icon, base, baseCounter] = mapping;
+      const p = entry.params;
+      let key = base;
+      let counter = baseCounter;
+      const merged = entry.code === 'brazierPrepared' && doused.has(p.cell);
+      if (
+        entry.code === 'brazierDoused' &&
+        recent.some((e) => e.code === 'brazierPrepared' && e.params.cell === p.cell)
+      )
+        return [];
+      const preparation =
+        entry.code === 'brazierPrepared'
+          ? preparations.braziers[String(p.cell)]
+          : entry.code === 'millstonePrepared'
+            ? preparations.millstones[String(p.cell)]
+            : entry.code === 'bouldersPrepared'
+              ? preparations.boulders[String(p.cell)]
+              : undefined;
+      const preparedReady =
+        preparation &&
+        ('litDay' in preparation
+          ? preparation.litDay < day
+          : preparation.day < day && (!('hoisted' in preparation) || preparation.hoisted));
+      const cellPosition = reportCell(p.cell);
+      const hasOperator =
+        !state ||
+        Boolean(
+          cellPosition &&
+          state.units.some(
+            (u) =>
+              u.side === 'wei' &&
+              activeUnit(u) &&
+              !u.acted &&
+              u.suppressedDay !== day &&
+              u.level === 'wall' &&
+              (entry.code === 'brazierPrepared'
+                ? u.troopType === 'archer' && distance(u, cellPosition) <= 1
+                : u.x === cellPosition.x &&
+                  u.y === cellPosition.y &&
+                  (entry.code !== 'bouldersPrepared' || u.troopType === 'infantry')),
+          ),
+        );
+      const ready = preparedReady && hasOperator;
+      if (merged) {
+        key = 'reportBrazierDoused';
+        counter = 'counterSnow';
+      } else if (entry.code.endsWith('Prepared') && !ready) {
+        key = preparedReady ? 'reportBlocked' : 'reportSpent';
+        counter = 'counterSpent';
+      }
+      const identity = `${entry.code}-${JSON.stringify(p)}`;
+      if (seen.has(identity)) return [];
+      seen.add(identity);
+      if (entry.code === 'holdFastOrdered' && p.effectiveDay !== day) return [];
+      if (entry.code === 'torches' && p.assault === true) key = 'reportTorchesCaught';
+      if (entry.code === 'nightAssault' && p.result === 'stopped') key = 'reportNightStopped';
+      if (entry.code === 'sortieRepelled')
+        key =
+          p.reason === 'guard'
+            ? 'reportSortieGuard'
+            : p.reason === 'nightAssault'
+              ? 'reportSortieAssault'
+              : 'reportSortieUnavailable';
+      if (
+        entry.code === 'fireArrowHit' &&
+        recent.slice(0, index).some((e) => e.code === 'torches' && e.params.assault === true)
+      )
+        key = 'reportNightFire';
+      const engineId = String(p.engineId ?? '');
+      const kind =
+        p.kind ??
+        state?.engines.find((e) => e.id === engineId)?.kind ??
+        (engineId.includes('ladder')
+          ? 'ladder'
+          : engineId.includes('ram')
+            ? 'ram'
+            : engineId.includes('tower')
+              ? 'tower'
+              : engineId.includes('earthCart')
+                ? 'earthCart'
+                : { ...GATES.south.cells[0]!, level: 'wall' as const });
+      const roster = [...SHU_ROSTER, ...WEI_ROSTER].find((u) => u.id === (p.targetId ?? p.unitId));
+      const loss = [...recent.slice(0, index)]
+        .reverse()
+        .find(
+          (e) =>
+            e.code === 'footholdChanged' &&
+            e.params.reason === 'boulders' &&
+            e.params.cell === p.cell,
+        );
+      const gate = (Object.keys(GATES) as GateId[]).find((id) =>
+        GATES[id].cells.some((c) => cellKey(c) === p.cell),
       );
-    const gate = (Object.keys(GATES) as GateId[]).find((id) =>
-      GATES[id].cells.some((c) => cellKey(c) === p.cell),
-    );
-    const cell = String(p.cell ?? '');
-    const params: Record<string, string | number> = {
-      ...Object.fromEntries(
-        Object.entries(p).map(([k, v]) => [k, typeof v === 'number' ? v : String(v ?? '')]),
-      ),
-      engine:
-        kind && ['ladder', 'ram', 'earthCart', 'tower'].includes(String(kind))
-          ? t(engineKey(kind as EngineKind))
-          : engineId,
-      unit: roster
-        ? locale === 'zh'
-          ? roster.officer.chinese
-          : roster.officer.name
-        : String(p.targetId ?? p.unitId ?? ''),
-      gate: t((p.gateId ?? gate ?? 'south') as GateId),
-      cell: gate ? `${t(gate)} (${cell})` : cell,
-      loss: loss ? Number(loss.params.before) - Number(loss.params.after) : 0,
-    };
-    return [{ code: entry.code, icon, text: t(key, params), counter: t(counter) }];
-  });
+      const actor =
+        state?.engines.find((e) => e.id === engineId) ??
+        state?.units.find((u) => u.id === (p.targetId ?? p.unitId));
+      const segment = INNER_WALL_SEGMENTS[Number(p.segment) - 1];
+      const place =
+        reportCell(p.cell ?? p.start ?? p.from) ??
+        (p.gateId && GATES[p.gateId as GateId]
+          ? { ...GATES[p.gateId as GateId].cells[0]!, level: 'wall' as const }
+          : segment
+            ? { ...segment.cells[0]!, level: 'ground' as const }
+            : actor
+              ? { ...actor, level: 'level' in actor ? actor.level : ('ground' as const) }
+              : { ...GATES.south.cells[0]!, level: 'wall' as const });
+      const cell = placeName(place, locale);
+      const params: Record<string, string | number> = {
+        ...Object.fromEntries(
+          Object.entries(p).map(([k, v]) => [k, typeof v === 'number' ? v : String(v ?? '')]),
+        ),
+        engine:
+          kind && ['ladder', 'ram', 'earthCart', 'tower'].includes(String(kind))
+            ? t(engineKey(kind as EngineKind))
+            : engineId,
+        unit: roster
+          ? locale === 'zh'
+            ? roster.officer.chinese
+            : roster.officer.name
+          : String(p.targetId ?? p.unitId ?? ''),
+        gate: t((p.gateId ?? gate ?? 'south') as GateId),
+        cell,
+        from: placeName(reportCell(p.from), locale),
+        to: placeName(reportCell(p.to, 'ground'), locale),
+        preparation: t(icon),
+        loss: loss ? Number(loss.params.before) - Number(loss.params.after) : 0,
+      };
+      const good =
+        merged ||
+        ['brazierDoused', 'sortieRepelled'].includes(entry.code) ||
+        (entry.code === 'nightAssault' && p.result !== 'stopped') ||
+        (entry.code === 'torches' && p.assault !== true);
+      const priority = good ? 2 : ready || entry.code === 'holdFastOrdered' ? 0 : 1;
+      return [
+        { code: entry.code, icon, text: t(key, params), counter: t(counter), place, priority },
+      ];
+    })
+    .sort((a, b) => a.priority - b.priority);
 }

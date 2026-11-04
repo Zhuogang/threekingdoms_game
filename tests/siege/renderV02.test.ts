@@ -304,6 +304,30 @@ describe('v0.2 pure sprite mapping and registration', () => {
         expect(markup).toContain(`flood-color="${tint}"`);
     }
   });
+  it('keeps every living unit hit target above occluding artwork, including the wall silhouette regression at every zoom', () => {
+    const state = createSiegeState(228);
+    const unit = state.units.find((u) => u.id === 'wei-captain-1')!;
+    Object.assign(unit, { x: 18, y: 16, level: 'wall' });
+    state.engines[0]!.raisedAt = { x: 18, y: 16 };
+    for (const initialZoom of [0.5, 0.75, 1, 1.5]) {
+      const markup = renderToStaticMarkup(
+        createElement(SiegeMapView, { state, locale: 'en', initialZoom }),
+      );
+      expect(markup).toContain(`cover-${unit.id})" opacity="0.35" pointer-events="none"`);
+      const targetLayer = markup.indexOf('data-testid="unit-hit-targets"');
+      expect(targetLayer).toBeGreaterThan(markup.lastIndexOf('data-object='));
+      expect(targetLayer).toBeGreaterThan(markup.lastIndexOf('data-silhouette='));
+      expect(targetLayer).toBeGreaterThan(markup.lastIndexOf('data-overlay='));
+      const hits = [...markup.matchAll(/<rect[^>]+data-testid="map-unit-([^"]+)"[^>]*>/g)];
+      expect(hits.map((hit) => hit[1]).sort()).toEqual(state.units.map((u) => u.id).sort());
+      const hit = hits.find((hit) => hit[1] === unit.id)![0];
+      const visual = unitVisual(state, unit);
+      expect(hit).toContain(`x="${visual.rect[0]}" y="${visual.rect[1]}"`);
+      expect(hit).toContain(`width="${visual.rect[2] - visual.rect[0]}"`);
+      expect(hit).toContain(`height="${visual.rect[3] - visual.rect[1]}"`);
+      expect(hit).toContain('pointer-events="all"');
+    }
+  });
   it('fits preparations uniformly to their game widths, with measured feet on the walkway centre and bundles beside bowls', () => {
     const state = createRenderScene('preparations').state;
     const sprites = preparationSprites(state);

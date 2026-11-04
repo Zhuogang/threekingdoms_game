@@ -29,6 +29,7 @@ test('walkthrough skips persist across reload and replay resets to ladder select
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const before = await snapshot(page);
   await page.goto('/?lang=en#chencang/load');
+  await expect(page.locator('[data-phase="battle"]')).toBeVisible();
   await expect(page.getByTestId('walkthrough')).toHaveCount(0);
   expect(await snapshot(page)).toEqual(before);
   await page.keyboard.press('h');

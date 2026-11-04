@@ -76,7 +76,9 @@ describe('Shu v0.2 controls and scoring', () => {
     );
     expect(html).toContain('Foothold +1 → 1/3');
     expect(html).toContain('Foothold +2 → 2/3');
-    expect(html).toContain(`Own casualties ${assault.casualties}`);
+    expect(html.match(/data-testid="forecast-assault-ownCasualties"[^>]*>([^<]*)/)?.[1]).toBe(
+      String(assault.casualties),
+    );
     expect(html).toContain('Morale after');
     Object.assign(state.units[12]!, { x: 18, y: 16 });
     const forecast = predictSiegeAttack(state, 'shu-weiyan', state.units[12]!.id)!,
@@ -97,7 +99,9 @@ describe('Shu v0.2 controls and scoring', () => {
     );
     expect(attack).toContain(`uphill attack ×${T.climbingAttackMultiplier}`);
     expect(attack).toContain(`frontage ${forced.frontage}`);
-    expect(attack).toContain(`Own casualties ${forced.counterattack.casualties}`);
+    expect(attack.match(/data-testid="forecast-assault-ownCasualties"[^>]*>([^<]*)/)?.[1]).toBe(
+      String(forced.counterattack.casualties),
+    );
   });
   it('projects completed scores, exact parts, history and the extended summary for either player side', () => {
     const state = createSiegeState(228);

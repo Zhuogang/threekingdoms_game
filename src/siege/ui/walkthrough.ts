@@ -1,6 +1,6 @@
 import { SOUTH_TRENCH, sameCell } from '../content/chencang';
 import { wallRun, usableEngine } from '../rules/combat';
-import type { SiegePosition, SiegeState } from '../rules/types';
+import type { SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 import type { SiegeWalkthrough } from '../save';
 
 export const WALKTHROUGH_STEPS = 9;
@@ -10,6 +10,54 @@ export const WALKTHROUGH_CELLS: SiegePosition[] = SOUTH_TRENCH.filter(
 ).map((c) => ({ x: c.x, y: TRENCH_SOUTH_ROW, level: 'ground' }));
 export function startWalkthrough(state: SiegeState): SiegeWalkthrough {
   return { status: 'active', step: 1, startDay: state.day, logStart: state.log.length };
+}
+export function walkthroughTargets(
+  progress: SiegeWalkthrough | undefined,
+  state: SiegeState,
+  playerSide: SiegeSide,
+): SiegePosition[] {
+  if (progress?.status !== 'active') return [];
+  const ladders = state.engines.filter(
+    (e) =>
+      e.kind === 'ladder' && usableEngine(e) && (!progress.ladderId || e.id === progress.ladderId),
+  );
+  const bases = ladders.map((e) => ({ x: e.x, y: e.y, level: 'ground' as const }));
+  const tops = ladders.flatMap((e) =>
+    e.raisedAt ? [{ ...e.raisedAt, level: 'wall' as const }] : [],
+  );
+  switch (progress.step) {
+    case 1:
+      return state.engines
+        .filter((e) => e.kind === 'ladder' && usableEngine(e))
+        .map((e) => ({ x: e.x, y: e.y, level: 'ground' }));
+    case 2:
+    case 3:
+    case 9:
+      return bases;
+    case 4:
+      return tops;
+    case 5:
+      return state.units
+        .filter((u) => u.side === playerSide && u.troopType === 'archer' && u.troops > 0)
+        .map((u) => ({ x: u.x, y: u.y, level: u.level }));
+    case 6:
+      return tops.flatMap((top) =>
+        state.units
+          .filter(
+            (u) =>
+              u.side !== playerSide &&
+              u.level === 'wall' &&
+              wallRun(state, top).some((c) => sameCell(u, c)),
+          )
+          .map((u) => ({ x: u.x, y: u.y, level: u.level })),
+      );
+    case 7:
+      return bases;
+    case 8:
+      return tops;
+    default:
+      return [];
+  }
 }
 /** Real action logs, not clicks, advance action steps. Replaying records fresh actions.
  * Selection steps observe UI state; reading the report is persisted presentation state. */

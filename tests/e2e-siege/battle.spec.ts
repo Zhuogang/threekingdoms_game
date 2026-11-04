@@ -19,6 +19,8 @@ test('v0.2 workshop, defense, report, replay skip, bilingual save and load', asy
   await page.getByRole('button', { name: '保存', exact: true }).click();
   const before = await snapshot(page);
   await page.goto('/?lang=zh#chencang/load');
+  await expect(page.locator('[data-phase="battle"]')).toBeVisible();
+  await expect(page.getByTestId('siege-day')).toHaveText('第 2 日');
   expect(await snapshot(page)).toEqual(before);
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.getByTestId('siege-day')).toHaveText('Day 2');

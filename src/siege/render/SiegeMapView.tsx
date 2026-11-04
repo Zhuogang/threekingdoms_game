@@ -17,12 +17,14 @@ import {
   zoomBattlefieldViewport,
   type BattlefieldViewBox,
 } from '../../v03/rendering/battlefield-viewport';
-import { DEPLOY_SHU, MAP_HEIGHT, MAP_WIDTH, cellKey } from '../content/chencang';
+import { DEPLOY_SHU, cellKey } from '../content/chencang';
 import { cellHeight, cellTerrain, isMapCell } from '../rules/map';
-import { activeUnit, distance } from '../rules/combat';
+import { activeUnit } from '../rules/combat';
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
 import { siegeText, type SiegeLocale } from '../i18n';
+import { fireRangeCells } from '../ui/fireRange';
+import { noticeCorner } from '../ui/cardQueue';
 import {
   ART,
   CAMP,
@@ -106,6 +108,7 @@ interface Props {
   onSelect?: (id: string) => void;
   onCell?: (cell: SiegePosition) => void;
   onZoom?: (scale: number) => void;
+  notice?: ReactNode;
 }
 export const SiegeMapView = memo(
   forwardRef<SiegeMapHandle, Props>(function SiegeMapView(
@@ -131,6 +134,7 @@ export const SiegeMapView = memo(
       onSelect,
       onCell,
       onZoom,
+      notice,
     },
     ref,
   ) {
@@ -539,21 +543,10 @@ export const SiegeMapView = memo(
         />
       );
     };
-    const extendedRange = useMemo(() => {
-      if (!showRange) return [];
-      const archers = state.units.filter(
-        (u) => u.side === 'wei' && u.troopType === 'archer' && u.level === 'wall' && activeUnit(u),
-      );
-      return Array.from({ length: MAP_WIDTH * MAP_HEIGHT }, (_, i) => ({
-        x: i % MAP_WIDTH,
-        y: Math.floor(i / MAP_WIDTH),
-        level: 'ground' as const,
-      })).filter(
-        (c) =>
-          archers.some((a) => distance(a, c) <= 3) &&
-          !['wall', 'gate', 'building', 'water'].includes(cellTerrain(state, c.x, c.y)),
-      );
-    }, [state, showRange]);
+    const extendedRange = useMemo(
+      () => (showRange ? fireRangeCells(state) : []),
+      [state, showRange],
+    );
     // Keep hundreds of cut-out masks and sprites out of camera/pointer updates.
     const drawing = useMemo(
       () => (
@@ -751,6 +744,7 @@ export const SiegeMapView = memo(
                 data-silhouette={unit.side}
                 mask={`url(#${prefix}-cover-${unit.id})`}
                 opacity={SILHOUETTE_OPACITY}
+                pointerEvents="none"
               >
                 {drawUnit(unit, visual, true)}
               </g>
@@ -907,15 +901,19 @@ export const SiegeMapView = memo(
             const d = drag.current;
             drag.current = null;
             if (d?.moved) return;
-            const marker = document
-              .elementFromPoint(event.clientX, event.clientY)
-              ?.closest('[data-cell]');
+            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const marker = element?.closest('[data-cell]');
             if (
               marker &&
               ['deploy', 'reachable'].includes(marker.getAttribute('data-overlay') ?? '')
             ) {
               const [x, y, level] = marker.getAttribute('data-cell')!.split(',');
               onCell?.({ x: Number(x), y: Number(y), level: level === 'wall' ? 'wall' : 'ground' });
+              return;
+            }
+            const selection = element?.closest('[data-select]')?.getAttribute('data-select');
+            if (selection) {
+              onSelect?.(selection);
               return;
             }
             // Pointer capture retargets events: hit-test the scene coordinates as well
@@ -971,7 +969,44 @@ export const SiegeMapView = memo(
               (c) => c.x === hover.x && c.y === hover.y && c.level === hover.level,
             ) &&
             cellOutline(hover, '#e0ad3d', 'hover', 0.04, 1)}
+          {/* Hit targets stay above every wall/tower slice and silhouette. Keep
+              their scene bounds independent of camera zoom and artwork masks. */}
+          <g data-testid="unit-hit-targets">
+            {[...units]
+              .sort((a, b) => compareDepth(a.visual.depth, b.visual.depth))
+              .map(({ unit, visual }) => (
+                <rect
+                  key={unit.id}
+                  data-testid={`map-unit-${unit.id}`}
+                  data-select={unit.id}
+                  data-x={unit.x}
+                  data-y={unit.y}
+                  x={visual.rect[0]}
+                  y={visual.rect[1]}
+                  width={visual.rect[2] - visual.rect[0]}
+                  height={visual.rect[3] - visual.rect[1]}
+                  fill="transparent"
+                  pointerEvents="all"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
+                </rect>
+              ))}
+          </g>
         </svg>
+        {notice && (
+          <MapNotice
+            selection={
+              decorations.find((sprite) => sprite.id === `storm-${selected}`)?.rect ??
+              units.find((u) => u.unit.id === selected)?.visual.rect ??
+              engines.find((e) => e.id === selected)?.rect ??
+              null
+            }
+            view={view}
+          >
+            {notice}
+          </MapNotice>
+        )}
         <svg
           className="siege-minimap"
           viewBox={`0 0 ${W} ${H}`}
@@ -1012,6 +1047,60 @@ export const SiegeMapView = memo(
     );
   }),
 );
+
+function MapNotice({
+  selection,
+  view,
+  children,
+}: {
+  selection: ScreenRect | null;
+  view: BattlefieldViewBox;
+  children: ReactNode;
+}) {
+  const element = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0, cardWidth: 0, cardHeight: 0 });
+  useEffect(() => {
+    const node = element.current!;
+    const observer = new ResizeObserver(() => {
+      // A last callback can arrive after the ending screen has unmounted the map.
+      const parent = node.parentElement;
+      if (!parent) return;
+      setSize({
+        width: parent.clientWidth,
+        height: parent.clientHeight,
+        cardWidth: node.offsetWidth,
+        cardHeight: node.offsetHeight,
+      });
+    });
+    observer.observe(node);
+    observer.observe(node.parentElement!);
+    return () => observer.disconnect();
+  }, []);
+  const selectedRect = selection
+    ? [
+        ((selection[0] - view.left) * size.width) / view.width,
+        ((selection[1] - view.top) * size.height) / view.height,
+        ((selection[2] - view.left) * size.width) / view.width,
+        ((selection[3] - view.top) * size.height) / view.height,
+      ]
+    : null;
+  return (
+    <div
+      ref={element}
+      className="siege-map-notice"
+      data-testid="map-notice"
+      style={{
+        ...noticeCorner(size.width, size.height, size.cardWidth, size.cardHeight, selectedRect),
+        visibility: size.width && size.cardWidth ? 'visible' : 'hidden',
+        maxWidth: selectedRect
+          ? Math.max(0, Math.max(selectedRect[0]!, size.width - selectedRect[2]!) - 24)
+          : undefined,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function SpriteImage({ sprite, flip = false }: { sprite: Sprite; flip?: boolean }) {
   const [x0, y0, x1, y1] = sprite.rect,

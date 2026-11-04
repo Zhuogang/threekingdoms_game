@@ -8,10 +8,12 @@ export function SiegeMorningReport({
   items,
   locale,
   close,
+  focus,
 }: {
   items: ReportItem[];
   locale: SiegeLocale;
   close: () => void;
+  focus?: (place: NonNullable<ReportItem['place']>) => void;
 }) {
   const panel = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -20,7 +22,7 @@ export function SiegeMorningReport({
     return () => previous?.focus();
   }, []);
   return (
-    <div className="siege-howto-backdrop">
+    <div className="siege-howto-backdrop siege-report-backdrop">
       <section
         ref={panel}
         className="siege-howto siege-report"
@@ -31,8 +33,18 @@ export function SiegeMorningReport({
         onKeyDown={(e) => {
           if (e.key === 'Escape') close();
           if (e.key === 'Tab') {
-            e.preventDefault();
-            panel.current?.querySelector('button')?.focus();
+            e.stopPropagation();
+            const buttons = panel.current?.querySelectorAll<HTMLButtonElement>('button');
+            if (!buttons?.length) return;
+            const first = buttons[0]!,
+              last = buttons[buttons.length - 1]!;
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
           }
         }}
       >
@@ -46,9 +58,16 @@ export function SiegeMorningReport({
           <ul>
             {items.map((item, i) => (
               <li key={`${item.code}-${i}`} data-testid="report-item" data-code={item.code}>
-                <SiegeIcon name={item.icon} />
-                <strong>{item.text}</strong>
-                <p>{item.counter}</p>
+                <button
+                  type="button"
+                  data-testid="report-focus"
+                  disabled={!item.place}
+                  onClick={() => item.place && focus?.(item.place)}
+                >
+                  <SiegeIcon name={item.icon} />
+                  <strong>{item.text}</strong>
+                  <p>{item.counter}</p>
+                </button>
               </li>
             ))}
           </ul>

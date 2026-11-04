@@ -56,7 +56,6 @@ test('unattacked troops reach the historical ending with score and bilingual sum
     },
   });
   await expect(page.getByTestId('ending-historical')).toBeVisible();
-  await shot(page, 'score');
   await page.getByRole('button', { name: 'View summary', exact: true }).click();
   await expect(page.getByTestId('siege-summary')).toContainText('In history');
   await page.getByRole('button', { name: '中文', exact: true }).click();

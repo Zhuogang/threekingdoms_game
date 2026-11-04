@@ -31,8 +31,9 @@ describe('playable siege adapters', () => {
       id = state.units[1]!.id;
     const commands = siegeCommands(state, id);
     expect(commands.find((c) => c.kind === 'move')?.reason).toBeNull();
-    expect(commands.find((c) => c.kind === 'raiseLadder')?.reason).toMatch(/unraised ladder/);
-    expect(commands.find((c) => c.kind === 'buildWall')?.reason).toMatch(/Wei unit/);
+    expect(commands.some((c) => c.kind === 'raiseLadder')).toBe(false);
+    expect(commands.some((c) => c.kind === 'buildWall')).toBe(false);
+    expect(commands.find((c) => c.kind === 'climb')?.reason).toMatch(/Climb/);
     const next = standBy(state, id);
     expect(next.units[1]).toMatchObject({ acted: true, moved: true });
     expect(siegeCommands(next, id).find((c) => c.kind === 'move')?.reason).toMatch(

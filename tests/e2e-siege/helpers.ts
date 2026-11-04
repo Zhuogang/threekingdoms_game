@@ -2,7 +2,41 @@ import { mkdir } from 'node:fs/promises';
 import { expect, type Page } from '@playwright/test';
 import { SIEGE_SAVE_KEY, type SiegeSave } from '../../src/siege/save';
 
-export const snapshot = (page: Page) => page.evaluate(() => window.__siegeDev!.snapshot());
+export async function snapshot(page: Page) {
+  await page.waitForFunction(() => typeof window.__siegeDev?.snapshot === 'function');
+  return page.evaluate(() => window.__siegeDev!.snapshot());
+}
+export async function selectActor(page: Page, id: string) {
+  if (id.startsWith('wei-')) {
+    await page.getByTestId(`map-unit-${id}`).click();
+    return;
+  }
+  const picker = page.getByTestId('unit-list');
+  if (!(await picker.evaluate((el) => (el as HTMLDetailsElement).open)))
+    await picker.locator('summary').click();
+  await page.getByTestId(`select-${id}`).click();
+  await picker.locator('summary').click();
+}
+export async function expectNoPanelScroll(page: Page, testId: string) {
+  await expect(page.getByTestId(testId)).toBeVisible();
+  for (const id of [testId, 'sidebar-content']) {
+    const dimensions = await page.getByTestId(id).evaluate((el) => {
+      const top = el.getBoundingClientRect().top - el.scrollTop;
+      // Name what sets the scroll height, so that a failure says where to look.
+      const edge = [...el.querySelectorAll('*')]
+        .filter((child) => {
+          const reach = child.getBoundingClientRect().bottom - top;
+          return Math.abs(reach - el.scrollHeight) < 4;
+        })
+        .slice(0, 3)
+        .map((child) => `${child.tagName}.${child.getAttribute('data-testid') ?? child.className}`);
+      return { scroll: el.scrollHeight, height: el.clientHeight, edge };
+    });
+    expect(dimensions.scroll, `${id}: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(
+      dimensions.height,
+    );
+  }
+}
 export async function shot(page: Page, name: string) {
   await mkdir('.artifacts/siege/screens', { recursive: true });
   await page.waitForLoadState('networkidle');
@@ -51,8 +85,11 @@ export async function begin(page: Page, locale: 'en' | 'zh' = 'en') {
 }
 export async function endDay(page: Page) {
   await page.getByTestId('end-day').click();
-  await expect(page.getByTestId('replay-skip')).toBeVisible();
-  await page.getByTestId('replay-skip').click();
+  const skip = page.getByTestId('replay-skip');
+  // Presence and click happen in one browser task: a short replay can finish
+  // between locator actionability checks. An already finished replay is fine.
+  await skip.evaluateAll((buttons) => (buttons[0] as HTMLButtonElement | undefined)?.click());
+  await expect(skip).toHaveCount(0);
 }
 export async function loadFixture(page: Page, game: SiegeSave, locale: 'en' | 'zh' = 'en') {
   await page.addInitScript(

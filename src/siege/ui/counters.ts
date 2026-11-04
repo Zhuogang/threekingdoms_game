@@ -1,6 +1,7 @@
 import { activeUnit, usableEngine } from '../rules/combat';
 import { SIEGE_TUNING as T } from '../rules/tuning';
 import type { SiegeSide, SiegeState } from '../rules/types';
+import { placeName, reportCell } from './places';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
 
 export const COUNTER_KINDS = [
@@ -53,33 +54,56 @@ export function engineLossAnswers(state: SiegeState): SiegeTextKey[] {
     lines.push('wayBuildLadder', 'wayBuildRam');
   return lines;
 }
+export function counterCards(
+  state: SiegeState,
+  dismissed: readonly string[],
+  locale: SiegeLocale,
+  playerSide: SiegeSide = 'shu',
+) {
+  if (playerSide !== 'shu' || state.outcome) return [];
+  // A loss takes priority over the preparation that caused it.
+  const kinds = (
+    ['engineLoss', ...COUNTER_KINDS.filter((k) => k !== 'engineLoss')] as CounterKind[]
+  ).filter(
+    (k) =>
+      !dismissed.includes(k) &&
+      state.log.some(
+        (e) =>
+          (moves[k].codes.includes(e.code) &&
+            !(
+              k === 'fire' &&
+              e.code === 'brazierPrepared' &&
+              e.params.cell &&
+              !state.preparations.braziers[String(e.params.cell)] &&
+              state.log.some(
+                (d) =>
+                  d.code === 'brazierDoused' && d.params.cell === e.params.cell && d.day >= e.day,
+              )
+            )) ||
+          (k === 'engineLoss' && e.code === 'fireArrowHit' && e.params.burning === true),
+      ),
+  );
+  return kinds.map((kind) => {
+    const move = moves[kind];
+    const event = [...state.log].reverse().find((e) => move.codes.includes(e.code));
+    const engine = state.engines.find((e) => e.id === event?.params.engineId);
+    const unit = state.units.find((u) => u.id === (event?.params.targetId ?? event?.params.unitId));
+    const location = reportCell(event?.params.cell) ?? engine ?? unit;
+    return {
+      kind,
+      icon: move.title,
+      title: siegeText(locale, move.title) + (location ? ` · ${placeName(location, locale)}` : ''),
+      lines: (kind === 'engineLoss' ? engineLossAnswers(state) : [move.answer]).map((key) =>
+        siegeText(locale, key),
+      ),
+    };
+  });
+}
 export function selectCounterCard(
   state: SiegeState,
   dismissed: readonly string[],
   locale: SiegeLocale,
   playerSide: SiegeSide = 'shu',
 ) {
-  if (playerSide !== 'shu' || state.outcome) return null;
-  // A loss takes priority over the preparation that caused it.
-  const kind = (
-    ['engineLoss', ...COUNTER_KINDS.filter((k) => k !== 'engineLoss')] as CounterKind[]
-  ).find(
-    (k) =>
-      !dismissed.includes(k) &&
-      state.log.some(
-        (e) =>
-          moves[k].codes.includes(e.code) ||
-          (k === 'engineLoss' && e.code === 'fireArrowHit' && e.params.burning === true),
-      ),
-  );
-  if (!kind) return null;
-  const move = moves[kind];
-  return {
-    kind,
-    icon: move.title,
-    title: siegeText(locale, move.title),
-    lines: (kind === 'engineLoss' ? engineLossAnswers(state) : [move.answer]).map((key) =>
-      siegeText(locale, key),
-    ),
-  };
+  return counterCards(state, dismissed, locale, playerSide)[0] ?? null;
 }

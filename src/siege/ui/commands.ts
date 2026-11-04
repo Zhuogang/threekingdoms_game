@@ -1,6 +1,8 @@
 import { DEPLOY_SHU, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
 import { applySiegeAction } from '../rules/actions';
-import { activeUnit, usableEngine } from '../rules/combat';
+import { activeUnit, usableEngine, predictSiegeClimb, climbingPosition } from '../rules/combat';
+import { siegeText, type SiegeLocale } from '../i18n';
+import { placeName } from './places';
 import { engineReachable, reachableCells } from '../rules/movement';
 import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 
@@ -21,6 +23,63 @@ export interface SiegeCommand {
   kind: CommandKind;
   action?: SiegeAction;
   reason: string | null;
+}
+export function actorCommandKinds(
+  state: SiegeState,
+  id: string,
+  playerSide: SiegeSide,
+): CommandKind[] {
+  const unit = state.units.find((u) => u.id === id);
+  if (unit) {
+    if (unit.side !== playerSide) return [];
+    if (unit.side === 'wei') return ['move', 'attack', 'buildWall', 'order', 'standby'];
+    return unit.troopType === 'archer'
+      ? ['move', 'attack', 'suppress', 'order', 'standby']
+      : ['move', 'attack', 'coverEngine', 'pileEarth', 'climb', 'fillTrench', 'order', 'standby'];
+  }
+  if (playerSide !== 'shu') return [];
+  const engine = state.engines.find((e) => e.id === id);
+  if (!engine) return [];
+  const own: Record<typeof engine.kind, CommandKind[]> = {
+    ladder: ['raiseLadder'],
+    ram: ['ram'],
+    earthCart: ['fillTrench', 'pileEarth'],
+    tower: ['attack', 'suppress'],
+  };
+  return ['move', ...own[engine.kind], 'standby'];
+}
+
+export function actionContext(state: SiegeState, id: string, locale: SiegeLocale) {
+  const unit = state.units.find((u) => u.id === id);
+  const actor = unit ?? state.engines.find((e) => e.id === id);
+  if (!actor) return '';
+  if (unit && unit.troopType !== 'archer') {
+    if (
+      state.units.some(
+        (u) => u.side !== unit.side && activeUnit(u) && climbingPosition(state, unit, u),
+      )
+    )
+      return siegeText(locale, 'contextDefender');
+    const climb = predictSiegeClimb(state, unit);
+    if (climb)
+      return siegeText(
+        locale,
+        climb.position === 'ladder'
+          ? 'contextLadder'
+          : climb.position === 'mound'
+            ? 'contextMound'
+            : 'contextWallFoot',
+        { gain: climb.footholdGain },
+      );
+  }
+  if (
+    siegeCommands(state, id, unit?.side ?? 'shu').some((c) => c.kind === 'fillTrench' && !c.reason)
+  )
+    return siegeText(locale, 'contextFill');
+  return siegeText(locale, 'contextGeneral', {
+    place: placeName(actor, locale),
+    level: siegeText(locale, unit?.level ?? 'ground'),
+  });
 }
 export function actionReason(state: SiegeState, action: SiegeAction): string | null {
   const result = applySiegeAction(state, action);
@@ -61,10 +120,10 @@ export function siegeCommands(
       })),
     );
   const commanderTarget =
-    unit?.side === 'shu'
+    unit?.side === playerSide
       ? unit.id
-      : (state.units.find((u) => u.side === 'shu' && u.troops > 0)?.id ?? '');
-  const commands = [
+      : (state.units.find((u) => u.side === playerSide && u.troops > 0)?.id ?? '');
+  const commands: SiegeCommand[] = [
     choose(
       'suppress',
       state.units
@@ -124,7 +183,7 @@ export function siegeCommands(
         gateId,
       })),
     ),
-    choose('order', [{ type: 'order', side: 'shu', kind: 'rally', target: commanderTarget }]),
+    choose('order', [{ type: 'order', side: playerSide, kind: 'rally', target: commanderTarget }]),
     {
       kind: 'standby' as const,
       reason: unit
@@ -136,10 +195,10 @@ export function siegeCommands(
           : 'This attacker cannot act today.',
     },
   ];
-  // The defender is visible and inspectable, but receives its actions from the AI.
-  if (unit && unit.side !== playerSide)
-    return commands.map((c) => ({ ...c, reason: 'Choose a living friendly unit.' }));
-  return commands;
+  const kinds = actorCommandKinds(state, id, playerSide);
+  return commands
+    .filter((c) => kinds.includes(c.kind))
+    .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)));
 }
 export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = 'shu'): SiegeState {
   const unit = state.units.find((u) => u.id === id),

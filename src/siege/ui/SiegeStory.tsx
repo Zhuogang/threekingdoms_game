@@ -124,16 +124,19 @@ export function SiegeHint({
   kind,
   locale,
   dismiss,
+  place,
 }: {
   kind: HintKind;
   locale: SiegeLocale;
   dismiss: () => void;
+  place?: string;
 }) {
   const t = copy(locale),
     [title, body] = HINT_COPY[kind];
   return (
     <aside className="siege-hint" role="region" aria-label={t(title)} data-testid={`hint-${kind}`}>
       <h3>{t(title)}</h3>
+      {place && <small>{place}</small>}
       <p>{t(body, { trench: T.trenchCapacity, wall: INNER_WALL_SEGMENTS[0]!.buildPoints })}</p>
       <Button size="sm" onClick={dismiss}>
         {t('dismissHint')}
@@ -357,7 +360,7 @@ function Score({
         {result.parts.map((part) => (
           <div key={part.key} data-testid={`score-part-${part.key}`}>
             <dt>{part.label}</dt>
-            <dd>{Number(part.value.toFixed(2))}</dd>
+            <dd>{Math.round(part.value)}</dd>
           </div>
         ))}
       </dl>

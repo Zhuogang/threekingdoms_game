@@ -104,8 +104,8 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 3px;
+  gap: 8px;
+  padding: 3px 3px 0;
 }
 .siege-sidebar .v03-tabs {
   display: flex;
@@ -113,14 +113,14 @@
   gap: 3px;
 }
 .siege-sidebar .v03-panel {
-  padding: 10px;
+  padding: 8px 10px;
   border: 1px solid #c6b799;
   background: #f8f2e7;
   box-shadow: none;
 }
 .siege-sidebar h3,
 .siege-sidebar h4 {
-  margin: 8px 0;
+  margin: 6px 0;
 }
 .siege-roster {
   display: flex;
@@ -692,11 +692,6 @@
   gap: 6px;
   font-weight: bold;
 }
-.siege-forecast [data-testid^='forecast-'] {
-  border-bottom: 1px solid #c4b18c;
-  padding-bottom: 6px;
-  margin-bottom: 6px;
-}
 .siege-defense-run {
   border-bottom: 1px solid #c8bda6;
   padding: 8px 0;
@@ -763,4 +758,256 @@
     margin: 8px 0;
     font-size: 14px;
   }
+}
+
+/* Keep the working card above the optional army picker at the target viewport. */
+.siege-body {
+  grid-template-columns: minmax(0, 1fr) 400px;
+}
+.siege-sidebar {
+  padding: 8px;
+  gap: 6px;
+}
+.siege-sidebar-content {
+  gap: 4px;
+}
+.siege-sidebar-content > * {
+  flex-shrink: 0;
+}
+.siege-sidebar .v03-tabs {
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
+}
+.siege-walk-tabs {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.siege-sidebar .v03-tabs button {
+  padding: 6px;
+  font-size: 12px;
+}
+.siege-sidebar .v03-panel {
+  padding: 8px;
+}
+.siege-sidebar h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.siege-unit-card {
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.siege-unit-card > img {
+  width: 52px;
+  height: 64px;
+}
+.siege-unit-card > .siege-idle-portrait {
+  object-fit: contain;
+  image-rendering: auto;
+}
+.siege-unit-card > div {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 12px;
+}
+.siege-unit-card strong,
+.siege-unit-card small {
+  grid-column: 1 / -1;
+}
+.siege-actions {
+  gap: 4px 6px;
+  margin-top: 4px;
+}
+.siege-actions button {
+  width: 100%;
+  padding: 6px 4px;
+}
+.siege-actions button[data-unavailable='true'] {
+  font-size: 12px;
+  padding: 3px;
+  color: #73634f;
+  background: #e6ddcd;
+}
+.siege-actions button[data-unavailable='true'] .siege-icon {
+  width: 18px;
+  height: 18px;
+}
+.siege-action-context {
+  margin: 4px 0;
+  font-weight: 600;
+}
+.siege-action-reason {
+  font-size: 12px;
+  min-height: 35px;
+  margin: 4px 0;
+  color: #735527;
+}
+.siege-roster-picker > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.siege-roster {
+  max-height: 80px;
+}
+.siege-roster button {
+  padding: 3px 6px;
+}
+.siege-walkthrough {
+  position: relative;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.siege-walkthrough > strong {
+  display: inline-block;
+  padding-right: 110px;
+}
+.siege-walkthrough > button {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  padding: 3px 6px;
+  font-size: 11px;
+}
+.siege-walkthrough p {
+  margin: 4px 0 0;
+}
+.siege-forecast {
+  margin: 4px 0;
+  padding: 6px;
+}
+.siege-forecast h4 {
+  margin: 0 0 4px;
+}
+.siege-forecast table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+.siege-forecast th,
+.siege-forecast td {
+  padding: 5px 3px;
+  text-align: center;
+  border-bottom: 1px solid #c4b18c;
+}
+.siege-forecast th:first-child {
+  text-align: left;
+}
+.siege-forecast [data-chosen='true'] {
+  background: #dec58d;
+  box-shadow: inset 2px 0 #8b641d;
+}
+.siege-own-losses td {
+  font-size: 22px;
+  font-weight: 700;
+  color: #8f3629;
+}
+.siege-forecast details {
+  margin: 5px 0;
+}
+.siege-forecast details[open] {
+  max-height: 150px;
+  overflow: auto;
+}
+.siege-forecast-controls {
+  display: flex;
+  gap: 6px;
+}
+.siege-report-backdrop {
+  justify-items: end;
+  background: #1e252938;
+}
+.siege-report {
+  width: min(600px, 100%);
+}
+.siege-report ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.siege-report li {
+  padding: 0;
+}
+.siege-report li > button {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  padding: 10px 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.siege-map-notice {
+  position: absolute;
+  z-index: 5;
+  width: min(380px, 44%);
+  max-height: 44%;
+  overflow: auto;
+}
+.siege-map-notice .siege-hint {
+  position: static;
+  width: auto;
+  max-height: none;
+  margin: 0;
+  padding: 12px;
+  font-size: 13px;
+}
+.siege-map-notice h3 {
+  font-size: 15px;
+}
+.siege-defense-run {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #c8bda6;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  gap: 3px;
+  padding: 6px 0;
+}
+.siege-prep-icons .siege-icon {
+  width: 18px;
+  height: 18px;
+}
+.siege-foothold-cells {
+  gap: 6px;
+}
+.siege-foothold-cells > span {
+  display: inline-flex;
+  gap: 2px;
+}
+.siege-foothold-cells i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid #92784c;
+}
+.siege-foothold-cells i.filled {
+  background: #b78022;
+}
+@media (max-width: 850px) {
+  .siege-body {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .siege-sidebar .v03-tabs {
+    flex-wrap: wrap;
+  }
+}
+.siege-walk-tabs > .button-danger {
+  padding: 6px;
+  font-size: 12px;
+}
+.siege-extra-targets > div {
+  display: inline-block;
+  margin: 3px;
+}
+.siege-extra-targets button[aria-disabled='true'] {
+  font-size: 12px;
+  color: #73634f;
+  background: #e6ddcd;
 }
