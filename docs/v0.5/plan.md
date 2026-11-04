@@ -23,7 +23,8 @@ What the player should notice after v0.5:
 ### In scope
 
 - Field battle v2: orders, facing, charge and brace, baggage train, army morale, commander cards with signs, duels, deployment arrangements, pursuit, battle tiers, playback, officer lines, highlights.
-- Officer stats: leadership (统率) and politics (政治) for all 98 officers, used in battle and governance.
+- Officer stats: leadership (统率) and politics (政治) for all 98 officers, used in battle and governance; leadership is a soft troop cap.
+- Historical units of measure for money, grain, people, distance and dates.
 - Unit table for the three arms, with sharper roles.
 - `balance/` module holding every tuned number; probes that read it and plot curves.
 - Land: per-city development caps and natural population growth; politics in governor work.
@@ -155,16 +156,44 @@ Add `leadership` (统率) and `politics` (政治), 1–100, to the catalog and t
 
 Effects, all read from `balance/`:
 
-| Stat       | In battle                                                                                                                                                                                                                | In the city                                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Leadership | Formation capacity = leadership × 100 (today a flat 10,000); starting morale 60 + L ÷ 5; ordinary-hit quality term uses 0.6·L + 0.4·F in place of F (`battle/engine.ts:391-426`); commander selection; army morale start | Governor plan quality (which step of `planGovernorMonthlyWork` is reached first)                            |
-| Force      | Duels, counterattacks, charge                                                                                                                                                                                            | Training yield                                                                                              |
-| Intellect  | Tactics and cards, signs, as today                                                                                                                                                                                       | Search, security as today                                                                                   |
-| Politics   | —                                                                                                                                                                                                                        | Development yield × (0.7 + P ÷ 200); security + P ÷ 20 replaces intellect ÷ 20; relief and trade efficiency |
+| Stat       | In battle                                                                                                                                                                                                   | In the city                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Leadership | Soft capacity = leadership × 100 (section 3.1); starting morale 60 + L ÷ 5; ordinary-hit quality term uses 0.6·L + 0.4·F in place of F (`battle/engine.ts:391-426`); commander selection; army morale start | Governor plan quality (which step of `planGovernorMonthlyWork` is reached first)                            |
+| Force      | Duels, counterattacks, charge                                                                                                                                                                               | Training yield                                                                                              |
+| Intellect  | Tactics and cards, signs, as today                                                                                                                                                                          | Search, security as today                                                                                   |
+| Politics   | —                                                                                                                                                                                                           | Development yield × (0.7 + P ÷ 200); security + P ÷ 20 replaces intellect ÷ 20; relief and trade efficiency |
+
+### 3.1 Capacity is a soft cap
+
+Any officer can still be assigned up to 10,000 troops. Troops above leadership × 100 are **unmanaged** (the owner's choice, November 4). A 30-leadership captain with 10,000 men really controls 3,000; the other 7,000:
+
+- desert at 5% of the excess per month in a city and 10% per month on the march (balance numbers), reported as "N men slipped away from X's camp";
+- fight badly: the formation's incoming damage is multiplied by (1 + 0.5 × excess share), so a formation that is 70% unmanaged takes ×1.35, and its starting morale is reduced by 20 × excess share;
+- are the first to be counted as casualties.
+
+The troop-count screen shows "controls N of M" and the city page recommends splitting. The AI's reserve organizer respects the soft cap when it has enough officers. Rookie officers thus carry men badly rather than being forbidden to carry them, and a great general with a large army is visibly different.
 
 Level-ups give +1 leadership alongside the existing +2 force. The officer directory, the city page's "recommended executor" and the wiki show the two new stats.
 
-## 4. Units: the three arms, done right
+## 4. Units of measure (量制) and the three arms
+
+### 4.1 Historical units of measure
+
+The owner's "units are not correct" meant the units that gold, food and the rest are counted in. Today the game shows bare numbers labelled gold (金钱) and food (粮食), and routes in kilometres. v0.5 names them as a Han official would, in both languages, without changing the stored quantities:
+
+| Quantity    | Stored as        | Shown as (zh)                                 | Shown as (en)                   | Note                                                                                             |
+| ----------- | ---------------- | --------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Money       | gold             | 钱, 1,000 钱 = 1 贯; large sums in 万钱       | cash; strings of 1,000; 10,000s | Han coinage was copper 五铢 cash; "gold" (金) was weighed in 斤 and is not a daily unit          |
+| Grain       | food             | 石 (dan)                                      | shi of grain                    | One 石 of unhusked grain is roughly a soldier's month; the existing food numbers read well as 石 |
+| Troops      | troops           | 人 / 兵                                       | men                             | unchanged                                                                                        |
+| Population  | population       | 口, with 户 = 口 ÷ 5 beside it                | people, households              | The census counted both                                                                          |
+| Distance    | km               | 里 (Han 里 ≈ 415 m)                           | li                              | Route kilometres convert for display; the ETA rule is unchanged                                  |
+| Time        | days             | 日 / 月 / 年, with reign-era years (初平元年) | days, months, 190 AD            | Reign eras are content: 中平, 初平, 兴平, 建安, 黄初                                             |
+| Development | farming/commerce | 田亩 / 市集 levels                            | farmland, markets               | labels only                                                                                      |
+
+One formatter module (`i18n/units.ts`) owns these; every screen, report, forecast and the wiki call it. Whether to also **rescale** gold so that sums read like Han figures (a Han soldier's monthly pay was a few hundred 钱, a city's revenue tens of thousands) is a tuning decision taken in L-04 after the formatter exists, because rescaling touches every cost in `balance/`.
+
+### 4.2 The three arms, done right
 
 A unit table `content/units.ts` holds everything about infantry, cavalry and archers that today sits in `battle/rules.ts:20-80`, `battle/engine.ts:127-161, 391-426` and `campaign/recruitment.ts:9-47`: move, terrain costs, range, matchup row, melee defence, charge and brace, food and gold rates, recruit cost and multiplier by region. No new arms. The roles sharpen through the rules in section 2.4 and these starting values:
 
@@ -222,11 +251,11 @@ Effort: S ≤ 2 days, M about a week, L 2–4 weeks. Every rule ticket ships wit
 
 ### O — Officers
 
-| ID   | Ticket                                                                                                                                          | Effort | Acceptance                                                                                                                                          |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| O-01 | Leadership and politics for 98 officers, with a provenance column; type and catalog changes; directory, city page and wiki show them.           | M      | **Owner approves the table.** Catalog validator passes                                                                                              |
-| O-02 | Leadership in battle: capacity, starting morale, hit quality term, commander selection.                                                         | S      | Fixtures: a 90-leadership officer with 3,000 men beats three 40-leadership officers with 1,000 each in a mirrored field; forecast equals resolution |
-| O-03 | Politics in the city: development, security, relief, trade; governor planner reads it; "recommended executor" prefers politics for civil tasks. | S      | Fixtures per action; 12-month probe shows the spread between a 90 and a 40 politics governor                                                        |
+| ID   | Ticket                                                                                                                                                                                             | Effort | Acceptance                                                                                                                                                                                                                 |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| O-01 | Leadership and politics for 98 officers, with a provenance column; type and catalog changes; directory, city page and wiki show them.                                                              | M      | **Owner approves the table.** Catalog validator passes                                                                                                                                                                     |
+| O-02 | Leadership in battle and in camp: soft capacity with desertion and the unmanaged damage multiplier, starting morale, hit quality term, commander selection; "controls N of M" in the troop screen. | M      | Fixtures: a 90-leadership officer with 3,000 men beats three 40-leadership officers with 1,000 each in a mirrored field; a 30-leadership officer with 10,000 loses men monthly and takes ×1.35; forecast equals resolution |
+| O-03 | Politics in the city: development, security, relief, trade; governor planner reads it; "recommended executor" prefers politics for civil tasks.                                                    | S      | Fixtures per action; 12-month probe shows the spread between a 90 and a 40 politics governor                                                                                                                               |
 
 ### B — Battle rules (one paired experiment each, in this order)
 
@@ -244,13 +273,14 @@ Effort: S ≤ 2 days, M about a week, L 2–4 weeks. Every rule ticket ships wit
 
 ### P — Presentation
 
-| ID   | Ticket                                                                                                                                                                   | Effort | Acceptance                                                                                               |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | -------------------------------------------------------------------------------------------------------- |
-| P-01 | Morning report panel; orders UI (order chips and target pick on the map); card picker; Commit day; direct command for a day kept.                                        | L      | F-06 probe: Battle tier 25–35 minutes, ≤ 8 clicks on an unchanged day; Chinese flows have no raw English |
-| P-02 | Playback v2: both sides, camera follow, speeds, facing sprites (cavalry sheet added), scaled formation size, arrows, dust, fire, floats, rout streaming, reduced motion. | L      | 60 fps at 1440×900 on the owner's laptop for an 8v8 day; reduced motion shows the summary only           |
-| P-03 | Duel scene: portraits, rounds, lines, result.                                                                                                                            | M      | Plays under 15 seconds; skippable                                                                        |
-| P-04 | Officer lines: content table for 98 officers plus trait fallbacks, both languages, seven moments.                                                                        | M      | **Owner reviews the lines.** Raw-English detection passes                                                |
-| P-05 | Highlights on the outcome screen and in the chronicle; the campaign's battle buttons name the tier and the city.                                                         | S      | Fixture: a scripted battle yields the expected three highlights                                          |
+| ID   | Ticket                                                                                                                                                                          | Effort | Acceptance                                                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| P-01 | Morning report panel; orders UI (order chips and target pick on the map); card picker; Commit day; direct command for a day kept.                                               | L      | F-06 probe: Battle tier 25–35 minutes, ≤ 8 clicks on an unchanged day; Chinese flows have no raw English                         |
+| P-02 | Playback v2: both sides, camera follow, speeds, facing sprites (cavalry sheet added), scaled formation size, arrows, dust, fire, floats, rout streaming, reduced motion.        | L      | 60 fps at 1440×900 on the owner's laptop for an 8v8 day; reduced motion shows the summary only                                   |
+| P-03 | Duel scene: portraits, rounds, lines, result.                                                                                                                                   | M      | Plays under 15 seconds; skippable                                                                                                |
+| P-04 | Officer lines: content table for 98 officers plus trait fallbacks, both languages, seven moments.                                                                               | M      | **Owner reviews the lines.** Raw-English detection passes                                                                        |
+| P-05 | Highlights on the outcome screen and in the chronicle; the campaign's battle buttons name the tier and the city.                                                                | S      | Fixture: a scripted battle yields the expected three highlights                                                                  |
+| P-06 | Historical units of measure (section 4.1): `i18n/units.ts` formatter for 钱/贯/万钱, 石, 人, 口/户, 里 and reign-era dates; every screen, report, forecast and the wiki use it. | M      | **Owner reviews the unit names.** No bare "gold"/"food" labels remain; the raw-English check passes; stored quantities unchanged |
 
 ### L — Land
 
@@ -291,7 +321,7 @@ Owner sessions (four, as in the v0.4 packet) add these debrief questions: Which 
 | 1     | O-01 … O-03                                                  | Owner approves the stat table first. Can run alongside Phase 2 (different modules).                        |
 | 2     | B-01 … B-05                                                  | The battle core: orders, facing, charge, baggage, break and pursuit. One paired experiment each, in order. |
 | 3     | B-06 … B-09, P-01                                            | The command layer and the new day flow. P-01 lands with B-06 so cards have a UI.                           |
-| 4     | P-02 … P-05                                                  | Spectacle. Can start its art (cavalry sheet, effects) during Phase 2.                                      |
+| 4     | P-02 … P-06                                                  | Spectacle. Can start its art (cavalry sheet, effects) during Phase 2.                                      |
 | 5     | L-01 … L-04                                                  | Land tuning. Independent of battles; a second editor can take it after Phase 0.                            |
 | 6     | Owner sessions, curves re-run, wiki and guide, release notes | Sign-off.                                                                                                  |
 
@@ -299,12 +329,12 @@ The one-editor-at-a-time rule stays for `engine.ts`, `battle/engine.ts`, `types.
 
 Stopping after Phase 3 still leaves a coherent game: shorter, steerable, readable battles with officers that matter. Phase 4 is what makes them beautiful.
 
-## 9. Open questions for the owner
+## 9. Owner answers (November 4, 2026)
 
-1. **"The units are not correct."** Section 4 reads this as roles that are too similar and numbers scattered across modules. If it means something else (sprites, names, how officers of one type are grouped into formations, troop counts), say so before F-02.
-2. **Dice.** Ordinary hits stay deterministic; dice live in duels, cards and signs. Confirm, or ask for a small variance on ordinary hits.
-3. **Capacity by leadership.** With leadership × 100 as the cap, a 40-leadership officer leads at most 4,000. Armies will need more officers or better ones. Confirm, or set a floor.
-4. **Baggage for the defender.** Section 2.5 gives the defender none. If the sortie-for-baggage asymmetry feels wrong in play, a defender camp token is the fallback.
+1. **"The units are not correct"** meant units of measure: gold, food and the rest should carry historical names such as 石 and 钱. Section 4.1 and ticket P-06 cover it.
+2. **Dice.** Ordinary hits stay exact; chance lives only in duels, cards and signs.
+3. **Capacity by leadership** is a soft cap: anyone can take 10,000, but troops above leadership × 100 desert gradually and the formation suffers much higher losses. Section 3.1 and O-02.
+4. **Baggage** belongs to the attacker only.
 
 ## Source index
 
