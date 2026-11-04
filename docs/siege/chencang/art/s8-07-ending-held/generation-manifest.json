@@ -1,0 +1,144 @@
+{
+  "id": "s8-07",
+  "folder": "s8-07-ending-held",
+  "name": "结局插画：魏军守住",
+  "directory": "docs/siege/chencang/art/s8-07-ending-held",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+    "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ]
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-07/codex.log"
+      },
+      "sourceFile": "exec-1f75abce-5141-49da-98c9-b5392cade847.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-07/sources/v1.png",
+      "sourceSha256": "722e090a6121b83d03febdc5002f187c5b42cd70043452f4cba617e0c3911ba5",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2166886,
+      "sha256": "63e09e08dd6eea4946c5b9044253304c46b2e02c7bcdf714c590ca91c2e9954f",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [163, 152, 146],
+        [210, 182, 159],
+        [175, 151, 140],
+        [225, 209, 199]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-07/codex.log"
+      },
+      "sourceFile": "exec-bdb66189-6aeb-46e0-bd5c-e160300aafc3.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-07/sources/v2.png",
+      "sourceSha256": "02d11e3b191dbecb4637a6d9b638c7b1d9aeb685e58a7b3032c0ab054ce90efd",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2142160,
+      "sha256": "9769c98a5ac4d761242203ce7809b9d7f66849b56eee55f6f430c772ed73255a",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [187, 176, 175],
+        [226, 198, 173],
+        [223, 202, 188],
+        [216, 199, 191]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-07/codex.log"
+      },
+      "sourceFile": "exec-4b971b70-4469-4363-822b-7082eec046c3.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-07/sources/v3.png",
+      "sourceSha256": "ec013bf7be1d5bcd3160588b72f830364b2de52fbd8fb3a2dcaf20bdeeb067f7",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2238544,
+      "sha256": "cc70fd57872aa937e9f9da60662a758cd7ebd3ae32a9d93e50824ed1dd903676",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [119, 106, 100],
+        [226, 199, 177],
+        [149, 128, 116],
+        [211, 194, 190]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "planner",
+    "reason": "Hao Zhao above the retreat, the wrecks by the trench, and a far line of relief banners",
+    "runtime": [
+      { "path": "runtime/illustration.webp", "size": [1536, 1024], "quality": 88 },
+      { "path": "runtime/illustration-small.webp", "size": [768, 512], "quality": 85 }
+    ]
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "All four corners and flags/banners inspected at native size for all candidates; no text, seals or signatures found."
+    ]
+  },
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons."
+}

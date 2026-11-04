@@ -3,6 +3,7 @@
 `s8-05-wei-sortie-sheet` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [03-chencang-v0.2-plan.md](../../../03-chencang-v0.2-plan.md) §9。
 
 - 版式同 S5-03：3×2 宫格，每格 512×512，同一个 S5-03 的魏步兵，手持火把。第一行：正面（朝南，出城向观者走来）持火把行进；背面（朝北，折返）持火把行进；侧面（朝东）持火把行进。第二行：正面把火把捅向身前（点火）；正面举盾后退（被击退）；侧面蹲下点燃脚下的柴（点火）。
+- **2026-11-03 选定 `attempts/v2.webp`**（planner 已选）：All six poses clean, and the crouching pose has the kindling bundle the prompt asks for。透明版 `selected-transparent.png` 由 `attempts/key.py` 抠出品红；`attempts/cut_poses.py` 按 3×2 切格，`min-island=0` 保留火星，`poses/`、`poses-game/` 和 `poses.json` 记录姿态、36/300 游戏缩放及脚底锚点；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-05/codex.log`。
 
 ## 参考图
 

@@ -1,0 +1,125 @@
+{
+  "id": "s8-09",
+  "folder": "s8-09-icons-counters",
+  "name": "图标表三",
+  "directory": "docs/siege/chencang/art/s8-09-icons-counters",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [],
+  "status": "selected",
+  "rounds": [{ "round": 1, "ids": [1, 2, 3], "references": [] }],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top\n2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails\n3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end\n4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures\n5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward\n6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)\n7. night sortie (夜袭): an open gate with a running figure holding a torch\n8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark\n9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope\n10. stack boulders (堆礌石): three boulders stacked on a wall edge\n11. morning report (晨报): a partly unrolled scroll with a rising sun above it\n12. foothold (立足): a wall top with three small notches, one filled in vermilion\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.",
+      "type": "generate",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-09/codex.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-44b9797d-71bc-452e-9fb7-32eafea4f8a6.png",
+      "referenceImages": [],
+      "sourcePath": "../../../../../attempts/s8-09/sources/v1.png",
+      "sourceSha256": "93c72b521c04d73d625f05af3d8f4585058c702d31c1372d91ab7874f5b57a9e",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 945358,
+      "sha256": "d889c3d7f2e5e6540c4c6bb91741eb2dbcc972c4f258c773f8647c4fa0eb00c2",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [1, 1, 1, 0],
+        [32, 20, 13, 0],
+        [34, 28, 24, 0],
+        [11, 10, 6, 0]
+      ]
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top\n2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails\n3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end\n4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures\n5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward\n6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)\n7. night sortie (夜袭): an open gate with a running figure holding a torch\n8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark\n9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope\n10. stack boulders (堆礌石): three boulders stacked on a wall edge\n11. morning report (晨报): a partly unrolled scroll with a rising sun above it\n12. foothold (立足): a wall top with three small notches, one filled in vermilion\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.",
+      "type": "generate",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-09/codex.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-8e9fe698-8a16-4556-9170-55ccfd852193.png",
+      "referenceImages": [],
+      "sourcePath": "../../../../../attempts/s8-09/sources/v2.png",
+      "sourceSha256": "bc37c0e45fb31edda020c16922075dce630848223a17e852463ab4fef897db75",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 932700,
+      "sha256": "e7b75bcc628c97bbb929d7fc2d8580607cca589dfea8b1bf8f1c6232a056425a",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [5, 2, 0, 0],
+        [42, 22, 14, 0],
+        [34, 29, 25, 0],
+        [14, 13, 10, 0]
+      ]
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top\n2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails\n3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end\n4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures\n5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward\n6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)\n7. night sortie (夜袭): an open gate with a running figure holding a torch\n8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark\n9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope\n10. stack boulders (堆礌石): three boulders stacked on a wall edge\n11. morning report (晨报): a partly unrolled scroll with a rising sun above it\n12. foothold (立足): a wall top with three small notches, one filled in vermilion\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.",
+      "type": "generate",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-09/codex.log",
+        "transparentRequested": true
+      },
+      "sourceFile": "exec-e8c350f7-c03a-4c40-beac-ab8d0308bf5f.png",
+      "referenceImages": [],
+      "sourcePath": "../../../../../attempts/s8-09/sources/v3.png",
+      "sourceSha256": "6233b8e4a199c1c66b14cd23482891fe48c2b484406acd0cbdb9057d78888df2",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 997106,
+      "sha256": "59d132ab38957d6ace4f371c8d2ad41914438e85f6ab87a024235989734c0c28",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [16, 14, 10, 0],
+        [27, 24, 17, 0],
+        [37, 32, 27, 0],
+        [15, 15, 12, 0]
+      ]
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "planner",
+    "reason": "The most distinct set at small size, especially the hide",
+    "png": "selected.png",
+    "sha256": "6358140cbce1f3b480847a0a740b084dd313b9dcdb1c61fae434fe112f85f612",
+    "derived": "icons/icons.json",
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "All twelve icons inspected at actual 32px on game paper #ece4d2 and white. No pair is confusable; torches and light-brazier are related but the tall flame and kindling/sparks distinguish them."
+    ],
+    "gameContactSheet": ".artifacts/siege/s8-icons-32.png"
+  },
+  "prompt": "Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.\n\nArrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.\n\nRows left to right, top to bottom:\n1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top\n2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails\n3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end\n4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures\n5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward\n6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)\n7. night sortie (夜袭): an open gate with a running figure holding a torch\n8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark\n9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope\n10. stack boulders (堆礌石): three boulders stacked on a wall edge\n11. morning report (晨报): a partly unrolled scroll with a rising sun above it\n12. foothold (立足): a wall top with three small notches, one filled in vermilion\n\nStyle: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.\n\nOutput a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.",
+  "alpha": "Lossless candidates preserve original RGBA including hidden RGB. Only selected.png normalises noisy alpha as S6: <=2 to 0, >=250 to 255, linear in between; no keying or repainting."
+}

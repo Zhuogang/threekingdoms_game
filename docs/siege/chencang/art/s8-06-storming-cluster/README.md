@@ -4,6 +4,8 @@
 
 - 几何：两件，每件 1 格宽、3 层高，贴在城墙正面（墙不画），占地格是墙前那一格（梯底或墙脚）。左「攀附」：十到十四个 S1-05 的蜀兵密密麻麻攀在墙面上，用绳索、挠钩和两架短梯，最高的已到女墙下，最低的在格底堆成一团往上挤。右「溃退」：同一位置，绳索空荡，三四个兵正从半高处滑下，格底一堆兵举盾退开，两个倒在地上（墨色晕开，不画血）。灰盒用一块 1×3 层的立面（`box` 高 3，薄 0.1 格）标出贴墙的面。
 - 灰盒两件只标出贴墙立面，不代画人群；anchor 是北边贴墙面的底部中心，wallFoot/wallTop 同时给出墙脚与墙顶的世界和像素坐标。
+- **2026-11-03 选定 `attempts/v2.webp`**（planner 已选）：Densest mass, widest usable aspect for one cell; no blood。透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-06/codex.log`。
+- 本件不按灰盒占地比例画：每件 `fitHeightLevels=3.5`，渲染从实际 alpha 框裁切，按高度等比缩放到 84px（每层 24px），用 `footCentreAnchor` 贴墙脚，不拉伸到一格宽。
 
 ## 参考图
 

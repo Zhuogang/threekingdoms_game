@@ -1,0 +1,202 @@
+{
+  "id": "s8-05",
+  "folder": "s8-05-wei-sortie-sheet",
+  "name": "魏军夜袭小队姿态表",
+  "directory": "docs/siege/chencang/art/s8-05-wei-sortie-sheet",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s8-05-wei-sortie-sheet/guide.png",
+    "docs/siege/chencang/art/s5-03-wei-infantry-sheet/attempts/v1.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": [
+        "docs/siege/chencang/art/s8-05-wei-sortie-sheet/guide.png",
+        "docs/siege/chencang/art/s5-03-wei-infantry-sheet/attempts/v1.webp"
+      ],
+      "blockout": "guide"
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Wei infantryman as on the second attached sheet, for a strategy game, drawn six times on a night sortie carrying a burning torch. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row: seen from the front (facing south, toward the viewer), striding forward with a torch held up in the right hand and a short sword in the left; seen from behind (facing north, away from the viewer), striding with the torch held up; seen from the side facing right (east), striding with the torch held ahead of him.\nBottom row: seen from the front, lunging to thrust the torch into something low in front of him; seen from the front, backing away behind his raised shield with the torch lowered (driven off); seen from the side facing right (east), crouching to touch the torch to a bundle of kindling at his feet.\nThe torch: a short wooden stave with a wrapped head burning with a small, simple orange-and-yellow flame and a few sparks; the flame is small and does not light the figure dramatically.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat under black-lacquered lamellar armour, a rounded iron helmet with a neck guard, wrapped leggings and boots, a tall rectangular wooden shield faced with lacquered hide, slung or held; no facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Wei infantry pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow; the torch adds only a faint warm tint to the hand holding it.\n\nRegistration on the guide: column centres x=256, 768, 1280; feet baselines y=456 (top row), y=968 (bottom row); helmet guide lines y=156 and y=668, exactly 300 pixels above the baselines.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-05/codex.log"
+      },
+      "sourceFile": "exec-4c12a312-5d74-4d75-9e47-e0fb5c377f1d.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-05-wei-sortie-sheet/guide.png",
+        "docs/siege/chencang/art/s5-03-wei-infantry-sheet/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-05/sources/v1.png",
+      "sourceSha256": "d22a977d571357fbe8bc4502c1bcda0dcd37ebe31b26f9c566953e382c9d083c",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1038816,
+      "sha256": "4dfa904a741c339d86d46638e8138914de6905210c01ddf6ac470834fe45284c",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 14, 243],
+        [247, 21, 244],
+        [240, 41, 240],
+        [244, 38, 243]
+      ]
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Wei infantryman as on the second attached sheet, for a strategy game, drawn six times on a night sortie carrying a burning torch. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row: seen from the front (facing south, toward the viewer), striding forward with a torch held up in the right hand and a short sword in the left; seen from behind (facing north, away from the viewer), striding with the torch held up; seen from the side facing right (east), striding with the torch held ahead of him.\nBottom row: seen from the front, lunging to thrust the torch into something low in front of him; seen from the front, backing away behind his raised shield with the torch lowered (driven off); seen from the side facing right (east), crouching to touch the torch to a bundle of kindling at his feet.\nThe torch: a short wooden stave with a wrapped head burning with a small, simple orange-and-yellow flame and a few sparks; the flame is small and does not light the figure dramatically.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat under black-lacquered lamellar armour, a rounded iron helmet with a neck guard, wrapped leggings and boots, a tall rectangular wooden shield faced with lacquered hide, slung or held; no facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Wei infantry pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow; the torch adds only a faint warm tint to the hand holding it.\n\nRegistration on the guide: column centres x=256, 768, 1280; feet baselines y=456 (top row), y=968 (bottom row); helmet guide lines y=156 and y=668, exactly 300 pixels above the baselines.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-05/codex.log"
+      },
+      "sourceFile": "exec-549743d2-d6be-4d39-8cab-73119ec6d75b.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-05-wei-sortie-sheet/guide.png",
+        "docs/siege/chencang/art/s5-03-wei-infantry-sheet/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-05/sources/v2.png",
+      "sourceSha256": "39205ae24acefe0b79f554fa37dcd85e08cf632f28e3d1a4f8350cc4db2c2031",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1090774,
+      "sha256": "d3904795eb3403cc292e1f14592a9fb93eea971548b853dd04bfac110c7bcab2",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 11, 243],
+        [246, 17, 242],
+        [238, 38, 238],
+        [243, 33, 242]
+      ]
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Subject: a character pose sheet of the same Wei infantryman as on the second attached sheet, for a strategy game, drawn six times on a night sortie carrying a burning torch. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.\nTop row: seen from the front (facing south, toward the viewer), striding forward with a torch held up in the right hand and a short sword in the left; seen from behind (facing north, away from the viewer), striding with the torch held up; seen from the side facing right (east), striding with the torch held ahead of him.\nBottom row: seen from the front, lunging to thrust the torch into something low in front of him; seen from the front, backing away behind his raised shield with the torch lowered (driven off); seen from the side facing right (east), crouching to touch the torch to a bundle of kindling at his feet.\nThe torch: a short wooden stave with a wrapped head burning with a small, simple orange-and-yellow flame and a few sparks; the flame is small and does not light the figure dramatically.\nCamera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.\nThe soldier: a deep indigo (#2f4a6e) padded war coat under black-lacquered lamellar armour, a rounded iron helmet with a neck guard, wrapped leggings and boots, a tall rectangular wooden shield faced with lacquered hide, slung or held; no facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.\nStyle: match the second attached sheet (the Wei infantry pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.\nLight: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow; the torch adds only a faint warm tint to the hand holding it.\n\nRegistration on the guide: column centres x=256, 768, 1280; feet baselines y=456 (top row), y=968 (bottom row); helmet guide lines y=156 and y=668, exactly 300 pixels above the baselines.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, scenery or cast shadows; additional figures, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-05/codex.log"
+      },
+      "sourceFile": "exec-e13a0ded-ee9e-4f3d-82f0-a3f724f71e41.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-05-wei-sortie-sheet/guide.png",
+        "docs/siege/chencang/art/s5-03-wei-infantry-sheet/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-05/sources/v3.png",
+      "sourceSha256": "1ced970ac3692825fecb8976dc38b0df8c3a7c01cc5368ceed725afca48d254b",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 1074484,
+      "sha256": "86110213695b5ca3b1602e3afd872111adc99e8d6814bea5fedd6da551c1eeba",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [244, 13, 243],
+        [247, 14, 243],
+        [239, 36, 239],
+        [245, 33, 242]
+      ]
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "planner",
+    "reason": "All six poses clean, and the crouching pose has the kindling bundle the prompt asks for",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "1645265e6f5766eebce2b141f4910fc9149874f242561fdf1eb2f3ccb8797aae",
+    "transparency": {
+      "script": "attempts/key.py",
+      "method": "Deterministic magenta key: b-g, min(r,b)-g and (r+b)/2-g near background; edges unmixed, faint/tinted edges neutralised; opaque pixels unchanged. No repainting."
+    },
+    "poses": "poses.json"
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "No visible magenta halo on paper or dark backgrounds; strong-magenta count is zero. Weak-tint counts are retained as a conservative diagnostic; no extra edge painting or cleanup was applied.",
+      "All six torches remain visible at 36/300 scale; min-island=0 preserves every disconnected spark. Crouching pose includes the kindling bundle."
+    ],
+    "magentaDefinition": "alpha > 0 and min(red, blue) - green > 25; includes every surviving edge pixel",
+    "weakTintDefinition": "Conservative additional diagnostic: alpha > 0 and min(red, blue) - green > 20; can include red trim and warm foreground colours",
+    "magentaPerPiece": [0, 0, 0, 0, 0, 0],
+    "weakTintPerPiece": [13, 7, 5, 4, 17, 91],
+    "maxMagentaPerPiece": 0,
+    "maxWeakTintPerPiece": 91,
+    "torchChecks": [
+      {
+        "name": "south-march",
+        "gameSize": [27, 50],
+        "warmFlamePixels": 24,
+        "preservedIslandsUnder64": 4,
+        "droppedIslands": 0
+      },
+      {
+        "name": "north-march",
+        "gameSize": [25, 50],
+        "warmFlamePixels": 18,
+        "preservedIslandsUnder64": 4,
+        "droppedIslands": 0
+      },
+      {
+        "name": "east-march",
+        "gameSize": [32, 45],
+        "warmFlamePixels": 24,
+        "preservedIslandsUnder64": 3,
+        "droppedIslands": 0
+      },
+      {
+        "name": "south-thrust",
+        "gameSize": [39, 38],
+        "warmFlamePixels": 27,
+        "preservedIslandsUnder64": 3,
+        "droppedIslands": 0
+      },
+      {
+        "name": "south-repulsed",
+        "gameSize": [31, 41],
+        "warmFlamePixels": 20,
+        "preservedIslandsUnder64": 3,
+        "droppedIslands": 0
+      },
+      {
+        "name": "east-kindle",
+        "gameSize": [42, 33],
+        "warmFlamePixels": 20,
+        "preservedIslandsUnder64": 4,
+        "droppedIslands": 0
+      }
+    ],
+    "gameContactSheet": ".artifacts/siege/s8-05-game.png"
+  },
+  "styleReference": {
+    "asset": "S5-03",
+    "id": "v1",
+    "path": "../s5-03-wei-infantry-sheet/attempts/v1.webp"
+  },
+  "guide": "guide.png"
+}

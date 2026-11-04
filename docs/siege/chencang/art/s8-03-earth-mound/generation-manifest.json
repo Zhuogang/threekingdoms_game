@@ -1,0 +1,150 @@
+{
+  "id": "s8-03",
+  "folder": "s8-03-earth-mound",
+  "name": "土山三态",
+  "directory": "docs/siege/chencang/art/s8-03-earth-mound",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s8-03-earth-mound/blockout.png",
+    "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": [
+        "docs/siege/chencang/art/s8-03-earth-mound/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "blockout": "original"
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth mound, just begun:\n- whole piece: x=192..320, y=400..625\n- ground footprint, where it stands: x=192..320, y=438..630\n- wallFoot registration anchor: x=256, y=438; world (0.5, 17, 0)\n- rampCrest registration anchor: x=256, y=399.6; world (0.5, 17, 0.8)\n- wallTop registration anchor: x=256, y=294; world (0.5, 17, 3)\n- southBase registration anchor: x=256, y=630; world (0.5, 19, 0)\nPiece 2, the earth mound, half built:\n- whole piece: x=704..832, y=371..654\n- ground footprint, where it stands: x=704..832, y=462..654\n- wallFoot registration anchor: x=768, y=462; world (0.5, 17, 0)\n- rampCrest registration anchor: x=768, y=375.6; world (0.5, 17, 1.8)\n- wallTop registration anchor: x=768, y=318; world (0.5, 17, 3)\n- southBase registration anchor: x=768, y=654; world (0.5, 19, 0)\nPiece 3, the earth mound, finished:\n- whole piece: x=1216..1344, y=344..680\n- ground footprint, where it stands: x=1216..1344, y=488..680\n- wallFoot registration anchor: x=1280, y=488; world (0.5, 17, 0)\n- rampCrest registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- wallTop registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- southBase registration anchor: x=1280, y=680; world (0.5, 19, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a ramp up to its top, in three stages, three separate pieces side by side, one centred in each third of the image; the wall itself is NOT drawn. Each piece occupies one cell wide by two cells deep, its north end touching where the wall face would be. Left, just begun: a low heap of freshly dug ochre earth about a fifth of the wall's height, a few dropped wicker baskets and a wooden shovel at its south side, snow already dusting the top. Middle, half built: the heap now almost two levels high, its north face held by a crib of stacked logs notched at the corners, its south face a rough slope, two wooden stakes driven into the top, baskets of earth part-emptied on the slope. Right, finished: a solid rammed-earth ramp rising from ground level at the south end to the full three-level height of the wall top at the north end, log revetments along both sides, a trodden path of steps up the middle of the slope, the top edge flush with where the wall's parapet would be. Same earth colour and the same logs in all three; no soldiers.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-03/codex.log"
+      },
+      "sourceFile": "exec-ff1291c1-494e-493a-9f3f-3de6af73c639.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-03-earth-mound/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-03/sources/v1.png",
+      "sourceSha256": "666381bb2eb3c633979d7377ced2d352d09646fc1876089003f8f96389c4c3c1",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 817342,
+      "sha256": "4539ae9589624e53fe038c868329238710dd5f7b21eb57b466535042ea3b2701",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 12, 242],
+        [247, 18, 243],
+        [240, 36, 239],
+        [244, 31, 241]
+      ]
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth mound, just begun:\n- whole piece: x=192..320, y=400..625\n- ground footprint, where it stands: x=192..320, y=438..630\n- wallFoot registration anchor: x=256, y=438; world (0.5, 17, 0)\n- rampCrest registration anchor: x=256, y=399.6; world (0.5, 17, 0.8)\n- wallTop registration anchor: x=256, y=294; world (0.5, 17, 3)\n- southBase registration anchor: x=256, y=630; world (0.5, 19, 0)\nPiece 2, the earth mound, half built:\n- whole piece: x=704..832, y=371..654\n- ground footprint, where it stands: x=704..832, y=462..654\n- wallFoot registration anchor: x=768, y=462; world (0.5, 17, 0)\n- rampCrest registration anchor: x=768, y=375.6; world (0.5, 17, 1.8)\n- wallTop registration anchor: x=768, y=318; world (0.5, 17, 3)\n- southBase registration anchor: x=768, y=654; world (0.5, 19, 0)\nPiece 3, the earth mound, finished:\n- whole piece: x=1216..1344, y=344..680\n- ground footprint, where it stands: x=1216..1344, y=488..680\n- wallFoot registration anchor: x=1280, y=488; world (0.5, 17, 0)\n- rampCrest registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- wallTop registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- southBase registration anchor: x=1280, y=680; world (0.5, 19, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a ramp up to its top, in three stages, three separate pieces side by side, one centred in each third of the image; the wall itself is NOT drawn. Each piece occupies one cell wide by two cells deep, its north end touching where the wall face would be. Left, just begun: a low heap of freshly dug ochre earth about a fifth of the wall's height, a few dropped wicker baskets and a wooden shovel at its south side, snow already dusting the top. Middle, half built: the heap now almost two levels high, its north face held by a crib of stacked logs notched at the corners, its south face a rough slope, two wooden stakes driven into the top, baskets of earth part-emptied on the slope. Right, finished: a solid rammed-earth ramp rising from ground level at the south end to the full three-level height of the wall top at the north end, log revetments along both sides, a trodden path of steps up the middle of the slope, the top edge flush with where the wall's parapet would be. Same earth colour and the same logs in all three; no soldiers.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-03/codex.log"
+      },
+      "sourceFile": "exec-c28fe935-4e51-45c4-b605-018fda5c46e3.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-03-earth-mound/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-03/sources/v2.png",
+      "sourceSha256": "645ee2ef1c17cdb5ed648478ca24b4b969e74050e3754850623ae552a0eda692",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 786198,
+      "sha256": "34538c8a2ed4616e7dc28cb36a6cd42892f6d6cb72953556a5806568be72c924",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 12, 242],
+        [247, 18, 243],
+        [241, 33, 241],
+        [245, 33, 242]
+      ]
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the earth mound, just begun:\n- whole piece: x=192..320, y=400..625\n- ground footprint, where it stands: x=192..320, y=438..630\n- wallFoot registration anchor: x=256, y=438; world (0.5, 17, 0)\n- rampCrest registration anchor: x=256, y=399.6; world (0.5, 17, 0.8)\n- wallTop registration anchor: x=256, y=294; world (0.5, 17, 3)\n- southBase registration anchor: x=256, y=630; world (0.5, 19, 0)\nPiece 2, the earth mound, half built:\n- whole piece: x=704..832, y=371..654\n- ground footprint, where it stands: x=704..832, y=462..654\n- wallFoot registration anchor: x=768, y=462; world (0.5, 17, 0)\n- rampCrest registration anchor: x=768, y=375.6; world (0.5, 17, 1.8)\n- wallTop registration anchor: x=768, y=318; world (0.5, 17, 3)\n- southBase registration anchor: x=768, y=654; world (0.5, 19, 0)\nPiece 3, the earth mound, finished:\n- whole piece: x=1216..1344, y=344..680\n- ground footprint, where it stands: x=1216..1344, y=488..680\n- wallFoot registration anchor: x=1280, y=488; world (0.5, 17, 0)\n- rampCrest registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- wallTop registration anchor: x=1280, y=344; world (0.5, 17, 3)\n- southBase registration anchor: x=1280, y=680; world (0.5, 19, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a ramp up to its top, in three stages, three separate pieces side by side, one centred in each third of the image; the wall itself is NOT drawn. Each piece occupies one cell wide by two cells deep, its north end touching where the wall face would be. Left, just begun: a low heap of freshly dug ochre earth about a fifth of the wall's height, a few dropped wicker baskets and a wooden shovel at its south side, snow already dusting the top. Middle, half built: the heap now almost two levels high, its north face held by a crib of stacked logs notched at the corners, its south face a rough slope, two wooden stakes driven into the top, baskets of earth part-emptied on the slope. Right, finished: a solid rammed-earth ramp rising from ground level at the south end to the full three-level height of the wall top at the north end, log revetments along both sides, a trodden path of steps up the middle of the slope, the top edge flush with where the wall's parapet would be. Same earth colour and the same logs in all three; no soldiers.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-03/codex.log"
+      },
+      "sourceFile": "exec-26a78b3d-a1bc-4cbd-a1aa-d2018ce33ba4.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-03-earth-mound/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-03/sources/v3.png",
+      "sourceSha256": "a36ab0a8e0c54292855e42985e7f0557ab87ec922bdb391e2c95e651659b6766",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 799836,
+      "sha256": "386bbadb59ac64ad8fe9517eba96a63a85d45d96dd6a4743e72163ee9a656dfa",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [244, 15, 243],
+        [247, 19, 243],
+        [242, 35, 242],
+        [243, 29, 242]
+      ]
+    }
+  ],
+  "selected": {
+    "id": "v3",
+    "path": "attempts/v3.webp",
+    "selectedBy": "planner",
+    "reason": "The finished ramp has a stepped path up the middle and log revetments on both sides",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "ab0acdc22f49d58fa2377ed4c7cd8fc1f240e1a65c20e0648cf92ef70a44edab",
+    "transparency": {
+      "script": "attempts/key.py",
+      "method": "Deterministic magenta key: b-g, min(r,b)-g and (r+b)/2-g near background; edges unmixed, faint/tinted edges neutralised; opaque pixels unchanged. No repainting."
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "No visible magenta halo on paper or dark backgrounds; strong-magenta count is zero. Weak-tint counts are retained as a conservative diagnostic; no extra edge painting or cleanup was applied."
+    ],
+    "magentaDefinition": "alpha > 0 and min(red, blue) - green > 25; includes every surviving edge pixel",
+    "weakTintDefinition": "Conservative additional diagnostic: alpha > 0 and min(red, blue) - green > 20; can include red trim and warm foreground colours",
+    "magentaPerPiece": [0, 0, 0],
+    "weakTintPerPiece": [0, 0, 0],
+    "maxMagentaPerPiece": 0,
+    "maxWeakTintPerPiece": 0
+  },
+  "styleReference": { "asset": "S1-02", "id": "v4", "path": "../s1-02-south-gate/attempts/v4.webp" }
+}

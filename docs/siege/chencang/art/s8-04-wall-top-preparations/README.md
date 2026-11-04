@@ -4,6 +4,7 @@
 
 - 几何：四件，都是放在墙顶走道上的小件（游戏抬高 3 层，同 S4-07）：火盆未燃（0.6 层，三足铁盆，盆里是柴）；火盆燃着（同样的盆，柴烧红、盆口发亮，**不画火苗和烟**，程序加）；柴薪捆（0.5 层，两捆扎好的柴和一捆浸油的布箭）；礌石堆（0.7 层，六七块石头和两根滚木堆在女墙内侧）。每件 1 格，四件各居一个四分之一宽。
 - footprints.json 的 anchor 是每件地面占格的底面中心；游戏整体抬高 3 层放到墙顶走道。
+- **2026-11-03 选定 `attempts/v1.webp`**（planner 已选）：Rounded boulders; the brazier is a square iron pan, not the prompt's bowl, accepted as legible。透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-04/codex.log`。
 
 ## 参考图
 

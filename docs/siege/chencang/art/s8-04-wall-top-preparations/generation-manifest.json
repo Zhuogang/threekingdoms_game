@@ -1,0 +1,150 @@
+{
+  "id": "s8-04",
+  "folder": "s8-04-wall-top-preparations",
+  "name": "城头备物",
+  "directory": "docs/siege/chencang/art/s8-04-wall-top-preparations",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s8-04-wall-top-preparations/blockout.png",
+    "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": [
+        "docs/siege/chencang/art/s8-04-wall-top-preparations/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "blockout": "original"
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the unlit brazier:\n- whole piece: x=148..236, y=469..555\n- ground footprint, where it stands: x=128..256, y=482..578\n- baseCentre registration anchor: x=192, y=530; world (0.5, 16.5, 0)\nPiece 2, the lit brazier, embers only:\n- whole piece: x=532..620, y=469..555\n- ground footprint, where it stands: x=512..640, y=482..578\n- baseCentre registration anchor: x=576, y=530; world (0.5, 16.5, 0)\nPiece 3, fire-arrow supplies:\n- whole piece: x=906..1014, y=474..550\n- ground footprint, where it stands: x=896..1024, y=474..570\n- baseCentre registration anchor: x=960, y=522; world (0.5, 16.5, 0)\nPiece 4, boulders and rolling logs:\n- whole piece: x=1290..1398, y=459..566\n- ground footprint, where it stands: x=1280..1408, y=473..569\n- baseCentre registration anchor: x=1344, y=521; world (0.5, 16.5, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-04/codex.log"
+      },
+      "sourceFile": "exec-b9724e8b-710b-47a7-a542-aa8062c9d2c4.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-04-wall-top-preparations/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-04/sources/v1.png",
+      "sourceSha256": "63ed61a71b178bb71d1a6f052f48dc36f7eda65fd449b68d261e9d2b9dd5d7ca",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 681366,
+      "sha256": "1dbe1f59b10e55180bcb92937aa93cfcbf6a61b3e624a824bacbb81cbbe0f785",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [244, 19, 243],
+        [247, 18, 243],
+        [240, 33, 240],
+        [245, 32, 242]
+      ]
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the unlit brazier:\n- whole piece: x=148..236, y=469..555\n- ground footprint, where it stands: x=128..256, y=482..578\n- baseCentre registration anchor: x=192, y=530; world (0.5, 16.5, 0)\nPiece 2, the lit brazier, embers only:\n- whole piece: x=532..620, y=469..555\n- ground footprint, where it stands: x=512..640, y=482..578\n- baseCentre registration anchor: x=576, y=530; world (0.5, 16.5, 0)\nPiece 3, fire-arrow supplies:\n- whole piece: x=906..1014, y=474..550\n- ground footprint, where it stands: x=896..1024, y=474..570\n- baseCentre registration anchor: x=960, y=522; world (0.5, 16.5, 0)\nPiece 4, boulders and rolling logs:\n- whole piece: x=1290..1398, y=459..566\n- ground footprint, where it stands: x=1280..1408, y=473..569\n- baseCentre registration anchor: x=1344, y=521; world (0.5, 16.5, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-04/codex.log"
+      },
+      "sourceFile": "exec-5f41cf35-2853-4302-a8ea-ae329fad3924.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-04-wall-top-preparations/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-04/sources/v2.png",
+      "sourceSha256": "971ac5900ec2df36707028168ac46c31b3e6b688a723bc0f8aab844f262f751c",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 692150,
+      "sha256": "efed6af073ad391350d3e5855d192cee7a4bd4f9ea6f2174a554d1f6c076d9f3",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 12, 240],
+        [247, 18, 243],
+        [239, 32, 237],
+        [245, 30, 242]
+      ]
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the unlit brazier:\n- whole piece: x=148..236, y=469..555\n- ground footprint, where it stands: x=128..256, y=482..578\n- baseCentre registration anchor: x=192, y=530; world (0.5, 16.5, 0)\nPiece 2, the lit brazier, embers only:\n- whole piece: x=532..620, y=469..555\n- ground footprint, where it stands: x=512..640, y=482..578\n- baseCentre registration anchor: x=576, y=530; world (0.5, 16.5, 0)\nPiece 3, fire-arrow supplies:\n- whole piece: x=906..1014, y=474..550\n- ground footprint, where it stands: x=896..1024, y=474..570\n- baseCentre registration anchor: x=960, y=522; world (0.5, 16.5, 0)\nPiece 4, boulders and rolling logs:\n- whole piece: x=1290..1398, y=459..566\n- ground footprint, where it stands: x=1280..1408, y=473..569\n- baseCentre registration anchor: x=1344, y=521; world (0.5, 16.5, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-04/codex.log"
+      },
+      "sourceFile": "exec-de84a6b4-9ff7-4072-863f-f12cd760ff02.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-04-wall-top-preparations/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-04/sources/v3.png",
+      "sourceSha256": "c4fe5ddffa00ba9dff2159ad8f74b5f7befc549cc4cfce81e2dd14596ab5b6fd",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 688548,
+      "sha256": "a76ef0f5c7160da1be9c40d62734eeb0ca9ec6c8c2c8fcfaeb3d09c88db7260e",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [242, 14, 242],
+        [247, 18, 243],
+        [241, 33, 241],
+        [243, 30, 240]
+      ]
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "planner",
+    "reason": "Rounded boulders; the brazier is a square iron pan, not the prompt's bowl, accepted as legible",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "961c333df8b52bd5aa72db5e143faed5915c5c3174bd753d904dc4b95903c99d",
+    "transparency": {
+      "script": "attempts/key.py",
+      "method": "Deterministic magenta key: b-g, min(r,b)-g and (r+b)/2-g near background; edges unmixed, faint/tinted edges neutralised; opaque pixels unchanged. No repainting."
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "No visible magenta halo on paper or dark backgrounds; strong-magenta count is zero. Weak-tint counts are retained as a conservative diagnostic; no extra edge painting or cleanup was applied."
+    ],
+    "magentaDefinition": "alpha > 0 and min(red, blue) - green > 25; includes every surviving edge pixel",
+    "weakTintDefinition": "Conservative additional diagnostic: alpha > 0 and min(red, blue) - green > 20; can include red trim and warm foreground colours",
+    "magentaPerPiece": [0, 0, 0, 0],
+    "weakTintPerPiece": [0, 0, 36, 5],
+    "maxMagentaPerPiece": 0,
+    "maxWeakTintPerPiece": 36
+  },
+  "styleReference": { "asset": "S1-02", "id": "v4", "path": "../s1-02-south-gate/attempts/v4.webp" }
+}

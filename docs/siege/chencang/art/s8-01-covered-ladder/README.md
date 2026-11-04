@@ -3,6 +3,8 @@
 `s8-01-covered-ladder` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [03-chencang-v0.2-plan.md](../../../03-chencang-v0.2-plan.md) §9。
 
 - 几何：三格。左：蒙皮云梯车朝北，1×2 格，同 `ladderCart` 的车体和 2.5 层梯架，梯架两侧挂到地面的生牛皮帘（灰盒加两块 `HIDE` 色的薄板，从梯架顶沿两侧垂到车厢上沿）。中：朝东，2×1 格，同上。右：蒙皮云梯架上墙，几何同 `ladderOnWall`（车在墙前第 3 行，梯跨两行城堑到 3 层墙头），梯身两侧挂皮帘到梯的下半段。
+- **2026-11-03 选定 `attempts/v1.webp`**（planner 已选）：Hides cover the lower two thirds of the raised ladder; rungs stay visible。透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-01/codex.log`。
+- 本件实际只有 v1、v2 两张候选；没有 v3，也不补出图。
 
 ## 参考图
 

@@ -4,6 +4,8 @@
 
 - 几何：三格，每件占 1×2 格（城堑的外侧行 y 18 和内侧行 y 17，已填平），北端贴着城墙正面。左「起土」：一堆土 0.8 层高，南半格是空筐和铲；中「半高」：土堆 1.8 层，北面用原木井字架（`WOOD`）围住，南面是斜坡，顶上插两根木桩；右「成坡」：从南端地面升到北端 3 层的夯土斜坡（`EARTH`），两侧原木护坡，坡面有踏出的梯级，北端和墙头前沿齐平（墙不画）。灰盒用 `slope(..., 'n', rise)` 做坡，rise 分别 0.8、1.8、3。
 - 北端统一在世界 y=17（南墙 y=16 的正面），占 y=17、18 两行；与 S4-02 的梯顶在同一条墙前沿，成坡顶高严格为 3 层。
+- **2026-11-03 选定 `attempts/v3.webp`**（planner 已选）：The finished ramp has a stepped path up the middle and log revetments on both sides。透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-03/codex.log`。
+- 成坡的北端中心实际为 (1280,344)，与墙顶对位点一致；两侧原木略高到 y=340。渲染用 `selectedRegistration` 的实测坡顶和坡脚，保留灰盒 `registration` 作对照。
 
 ## 参考图
 

@@ -1,0 +1,201 @@
+{
+  "sheet": "selected-transparent.png",
+  "cols": 3,
+  "rows": 2,
+  "gameScale": 0.12,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 0 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "south-march",
+      "cell": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        160,
+        50,
+        226,
+        413
+      ],
+      "anchor": [
+        113.8,
+        413
+      ],
+      "path": "poses/south-march.png",
+      "game": {
+        "path": "poses-game/south-march.png",
+        "size": [
+          27,
+          50
+        ],
+        "anchor": [
+          13.7,
+          49.6
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "north-march",
+      "cell": [
+        512,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        663,
+        44,
+        206,
+        419
+      ],
+      "anchor": [
+        87.1,
+        419
+      ],
+      "path": "poses/north-march.png",
+      "game": {
+        "path": "poses-game/north-march.png",
+        "size": [
+          25,
+          50
+        ],
+        "anchor": [
+          10.5,
+          50.3
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "east-march",
+      "cell": [
+        1024,
+        0,
+        512,
+        512
+      ],
+      "box": [
+        1136,
+        86,
+        264,
+        377
+      ],
+      "anchor": [
+        41.7,
+        377
+      ],
+      "path": "poses/east-march.png",
+      "game": {
+        "path": "poses-game/east-march.png",
+        "size": [
+          32,
+          45
+        ],
+        "anchor": [
+          5.0,
+          45.2
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-thrust",
+      "cell": [
+        0,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        89,
+        632,
+        326,
+        313
+      ],
+      "anchor": [
+        171.2,
+        313
+      ],
+      "path": "poses/south-thrust.png",
+      "game": {
+        "path": "poses-game/south-thrust.png",
+        "size": [
+          39,
+          38
+        ],
+        "anchor": [
+          20.5,
+          37.6
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "south-repulsed",
+      "cell": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        610,
+        615,
+        261,
+        341
+      ],
+      "anchor": [
+        105.4,
+        341
+      ],
+      "path": "poses/south-repulsed.png",
+      "game": {
+        "path": "poses-game/south-repulsed.png",
+        "size": [
+          31,
+          41
+        ],
+        "anchor": [
+          12.6,
+          40.9
+        ]
+      },
+      "droppedIslands": 0
+    },
+    {
+      "name": "east-kindle",
+      "cell": [
+        1024,
+        512,
+        512,
+        512
+      ],
+      "box": [
+        1113,
+        668,
+        349,
+        279
+      ],
+      "anchor": [
+        224.5,
+        279
+      ],
+      "path": "poses/east-kindle.png",
+      "game": {
+        "path": "poses-game/east-kindle.png",
+        "size": [
+          42,
+          33
+        ],
+        "anchor": [
+          26.9,
+          33.5
+        ]
+      },
+      "droppedIslands": 0
+    }
+  ]
+}

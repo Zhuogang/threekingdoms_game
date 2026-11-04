@@ -1,0 +1,22 @@
+{
+  "icons": [
+    "suppress",
+    "cover",
+    "mound",
+    "assault",
+    "night-assault",
+    "torches",
+    "sortie",
+    "light-brazier",
+    "hoist-millstone",
+    "stack-boulders",
+    "morning-report",
+    "foothold"
+  ],
+  "sizes": [
+    128,
+    64,
+    32
+  ],
+  "preparation": "Each icon cropped from the selected sheet, centred on a transparent square with 6% margin, resized with Lanczos. No repainting."
+}

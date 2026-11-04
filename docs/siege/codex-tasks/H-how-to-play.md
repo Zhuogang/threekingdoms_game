@@ -39,17 +39,17 @@ characters in the report — the planner regenerates the fonts).
      井阑 → shoots over the parapet. Use the rules' numbers, not hard-coded text.
    - 城防: fire arrows burn engines near the wall, millstones break rams; the
      frontage caps (attack forecast shows them); keep wounded units rotating.
-   Opening the panel does not change the game state.
+     Opening the panel does not change the game state.
 2. **Day-1 walkthrough.** On a new game, after deploy, a small step box (not
    modal; the map stays usable) walks through, advancing when the player has
    actually done each step (derived from state/UI, not from a "next" click):
    1. open the 工棚 tab; 2. 营造土车 at a workshop; 3. 营造云梯 at the other;
-   4. 督造 one of them; 5. 结束本日. Then, when the first earth cart exists:
-   6. select it; 7. move it to the row south of the trench (highlight those
-   cells); 8. 填堑. The control each step needs gets a pulsing outline. "跳过引导"
-   ends it; done/skipped is remembered in the save's presentation data (like
-   `dismissedHints`) and a "重看引导" button in the 玩法 panel restarts it.
-   While it runs, first-time hints do not pop over it.
+   2. 督造 one of them; 5. 结束本日. Then, when the first earth cart exists:
+   3. select it; 7. move it to the row south of the trench (highlight those
+      cells); 8. 填堑. The control each step needs gets a pulsing outline. "跳过引导"
+      ends it; done/skipped is remembered in the save's presentation data (like
+      `dismissedHints`) and a "重看引导" button in the 玩法 panel restarts it.
+      While it runs, first-time hints do not pop over it.
 3. **督造 from the workshop.** In the 工棚 tab, each workshop that is building
    shows a 督造 button (Zhuge Liang's order, same command as the 军令 one),
    disabled with the rules' reason when unavailable (order already given today,

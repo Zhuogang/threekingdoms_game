@@ -1,0 +1,144 @@
+{
+  "id": "s8-10",
+  "folder": "s8-10-key-visual-wei",
+  "name": "魏军视角主视觉",
+  "directory": "docs/siege/chencang/art/s8-10-key-visual-wei",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+    "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ]
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-10/codex.log"
+      },
+      "sourceFile": "exec-3aa735ce-adb6-478b-b8e8-34635b6b5abe.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-10/sources/v1.png",
+      "sourceSha256": "c118435e230f0db98b2c2583e8c4d1e6b015d6fa2072753a3a8e5e84bee7684b",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2242332,
+      "sha256": "76d35832bdabb30107900985e2e2ebb0eafe9c9a42a4496950bb3065ac4fa30a",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [161, 123, 100],
+        [97, 96, 98],
+        [136, 120, 116],
+        [210, 192, 190]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-10/codex.log"
+      },
+      "sourceFile": "exec-3b992e75-2b7d-4797-b5b7-57c188955ca3.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-10/sources/v2.png",
+      "sourceSha256": "070b14efd31dbb159354928626a262673d896212d21c2a9d74d9c8e0200e7b40",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2216848,
+      "sha256": "88dac235928a768039d8e71a1c18df2a1272f7a6e73ac3ba1d459dff972bb181",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [84, 73, 77],
+        [60, 67, 81],
+        [209, 177, 163],
+        [213, 191, 184]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-10/codex.log"
+      },
+      "sourceFile": "exec-95b8fe64-43a0-4b1a-8ebe-bb718d9ba16f.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s7-01-key-visual/style-reference.png",
+        "docs/siege/chencang/art/s5-07-portrait-hao-zhao/attempts/v1.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-10/sources/v3.png",
+      "sourceSha256": "8251bafdf94cb4ab5c29f01fc4cfcd9e1167349299e55805b59e7ac43d335097",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2262678,
+      "sha256": "78b6d7f0c6df01f93b1568cb22086efb190b0fbca43638f27560542edb53c410",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [96, 92, 88],
+        [99, 100, 107],
+        [213, 180, 156],
+        [206, 173, 154]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "planner",
+    "reason": "Same night as S7-01 from the other side, with the millstone and the far carriage legible",
+    "runtime": [
+      { "path": "runtime/illustration.webp", "size": [1536, 1024], "quality": 88 },
+      { "path": "runtime/illustration-small.webp", "size": [768, 512], "quality": 85 }
+    ]
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "All four corners and flags/banners inspected at native size for all candidates; no text, seals or signatures found."
+    ]
+  },
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons."
+}

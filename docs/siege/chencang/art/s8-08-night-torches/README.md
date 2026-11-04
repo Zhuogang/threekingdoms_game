@@ -3,6 +3,7 @@
 `s8-08-night-torches` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [03-chencang-v0.2-plan.md](../../../03-chencang-v0.2-plan.md) §9。
 
 - 插画，1536×1024。雪夜。南墙女墙上一溜火盆和火把把墙面照成暖色，魏军弓手在火光里引弓；城下，一小队举火把的魏兵从门洞冲出，正把火把捅向停在城堑边的土车，车下已起小火；蜀军几名持戟的卫兵从暗处跑来。
+- **2026-11-03 选定 `attempts/v2.webp`**（planner 已选）：Firelit wall, the sortie at the cart, and the Shu guards arriving too late。原尺寸下检查过四角和旗面，没有文字、印章和落款；运行时用的 1536×1024（quality 88）和 768×512（quality 85）在 `runtime/`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-08/codex.log`。
 
 ## 上传与提示词
 

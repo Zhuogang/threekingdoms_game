@@ -3,6 +3,7 @@
 `s8-02-covered-ram` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [03-chencang-v0.2-plan.md](../../../03-chencang-v0.2-plan.md) §9。
 
 - 几何：三格。左：朝北，1×2 格，同 `ram` 的几何（车棚高 0.9 层、脊 1.5 层），棚顶加一层 `HIDE` 色的厚皮并铺湿泥（顶面略隆起 0.15 层）。中：朝东，2×1 格。右：被石磨砸中但未毁：同朝北的几何，棚顶正中凹下一块（高度降到 0.6 层），皮和椽子破开，但车体和撞木完好。
+- **2026-11-03 选定 `attempts/v2.webp`**（planner 已选）：The damaged piece reads as crushed at game size, with the chassis and beam intact。透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-02/codex.log`。
 
 ## 参考图
 

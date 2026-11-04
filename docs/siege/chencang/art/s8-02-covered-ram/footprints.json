@@ -18,7 +18,10 @@
           "cells": [0, 17, 0, 18],
           "height": 1.65,
           "anchor": [192, 654],
-          "bbox": [198, 382, 314, 643]
+          "bbox": [198, 382, 314, 643],
+          "alphaBBox": [184, 365, 325, 648],
+          "alphaBBoxOffset": [-14, -17, 11, 5],
+          "footCentreAnchor": [255.3, 648]
         }
       ]
     },
@@ -35,7 +38,10 @@
           "cells": [0, 18, 1, 18],
           "height": 1.65,
           "anchor": [611, 606],
-          "bbox": [610, 464, 925, 590]
+          "bbox": [610, 464, 925, 590],
+          "alphaBBox": [576, 462, 940, 609],
+          "alphaBBoxOffset": [-34, -2, 15, 19],
+          "footCentreAnchor": [730.8, 609]
         }
       ]
     },
@@ -52,9 +58,18 @@
           "cells": [0, 17, 0, 18],
           "height": 1.65,
           "anchor": [1216, 654],
-          "bbox": [1222, 382, 1338, 643]
+          "bbox": [1222, 382, 1338, 643],
+          "alphaBBox": [1192, 398, 1352, 648],
+          "alphaBBoxOffset": [-30, 16, 14, 5],
+          "footCentreAnchor": [1278.5, 648]
         }
       ]
     }
-  ]
+  ],
+  "selected": {
+    "path": "selected-transparent.png",
+    "bboxConvention": "alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order",
+    "anchorConvention": "footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite",
+    "placement": "Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale"
+  }
 }

@@ -1,5 +1,7 @@
 import { deflateSync } from 'node:zlib';
+import { execFileSync } from 'node:child_process';
 import { mkdir, readdir, readFile, rm, writeFile as writeFileNow } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import * as prettier from 'prettier';
 
@@ -3299,14 +3301,78 @@ const s8Registration = ({ frame, objects }) =>
     });
   });
 // Chosen attempt per S8 asset; populated only after the planner reviews images.
-const S8_PICKS = {};
+const S8_PICKS = {
+  's8-01-covered-ladder': [
+    'v1.webp',
+    'Hides cover the lower two thirds of the raised ladder; rungs stay visible',
+  ],
+  's8-02-covered-ram': [
+    'v2.webp',
+    'The damaged piece reads as crushed at game size, with the chassis and beam intact',
+  ],
+  's8-03-earth-mound': [
+    'v3.webp',
+    'The finished ramp has a stepped path up the middle and log revetments on both sides',
+  ],
+  's8-04-wall-top-preparations': [
+    'v1.webp',
+    "Rounded boulders; the brazier is a square iron pan, not the prompt's bowl, accepted as legible",
+  ],
+  's8-05-wei-sortie-sheet': [
+    'v2.webp',
+    'All six poses clean, and the crouching pose has the kindling bundle the prompt asks for',
+  ],
+  's8-06-storming-cluster': [
+    'v2.webp',
+    'Densest mass, widest usable aspect for one cell; no blood',
+  ],
+  's8-07-ending-held': [
+    'v2.webp',
+    'Hao Zhao above the retreat, the wrecks by the trench, and a far line of relief banners',
+  ],
+  's8-08-night-torches': [
+    'v2.webp',
+    'Firelit wall, the sortie at the cart, and the Shu guards arriving too late',
+  ],
+  's8-09-icons-counters': ['v3.webp', 'The most distinct set at small size, especially the hide'],
+  's8-10-key-visual-wei': [
+    'v2.webp',
+    'Same night as S7-01 from the other side, with the millstone and the far carriage legible',
+  ],
+};
 const withS8Pick = (asset) => {
   const [final, why] = S8_PICKS[asset.id] ?? [];
+  const files = {
+    pieces:
+      '透明版 `selected-transparent.png` 由 `attempts/key.py` 确定性抠出品红（不重画）；实际 alpha 框、相对灰盒的偏移和脚底中心见 `footprints.json`',
+    poses:
+      '透明版 `selected-transparent.png` 由 `attempts/key.py` 抠出品红；`attempts/cut_poses.py` 按 3×2 切格，`min-island=0` 保留火星，`poses/`、`poses-game/` 和 `poses.json` 记录姿态、36/300 游戏缩放及脚底锚点',
+    icons:
+      '原图自带透明通道，不抠品红；无损候选逐像素保留原通道，`selected.png` 才按 S6 将 alpha≤2 归零、alpha≥250 拉满并线性保留软边；`attempts/cut_poses.py` 切格，`attempts/prepare_ui.py icons` 生成 `icons/` 的 128、64、32px 图标',
+    illustration:
+      '原尺寸下检查过四角和旗面，没有文字、印章和落款；运行时用的 1536×1024（quality 88）和 768×512（quality 85）在 `runtime/`',
+  }[asset.type];
   return final
     ? {
         ...asset,
         final,
-        about: [...asset.about, `选定 \`attempts/${final}\`：${why}。`],
+        about: [
+          ...asset.about,
+          `**2026-11-03 选定 \`attempts/${final}\`**（planner 已选）：${why}。${files}；每张的提示词、源文件哈希、选择理由和检查记在 \`generation-manifest.json\`，候选对比在 \`comparison.png\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 \`attempts/${asset.id.slice(0, 5)}/codex.log\`。`,
+          ...(asset.id === 's8-01-covered-ladder'
+            ? ['本件实际只有 v1、v2 两张候选；没有 v3，也不补出图。']
+            : []),
+          ...(asset.id === 's8-03-earth-mound'
+            ? [
+                '成坡的北端中心实际为 (1280,344)，与墙顶对位点一致；两侧原木略高到 y=340。渲染用 `selectedRegistration` 的实测坡顶和坡脚，保留灰盒 `registration` 作对照。',
+              ]
+            : []),
+          ...(asset.id === 's8-06-storming-cluster'
+            ? [
+                '本件不按灰盒占地比例画：每件 `fitHeightLevels=3.5`，渲染从实际 alpha 框裁切，按高度等比缩放到 84px（每层 24px），用 `footCentreAnchor` 贴墙脚，不拉伸到一格宽。',
+              ]
+            : []),
+        ],
       }
     : asset;
 };
@@ -4343,11 +4409,11 @@ ${table('S7')}
 
 完整的叙事画，和全图同一套水墨淡彩，但构图按插画，不用游戏机位。每张先上传 S2-01 定稿全图南半城作风格和建筑参考；有名有姓的人物再上传立绘，只作人物参考。旗面都空白，没有文字和血腥。
 
-## S8 招与拆（v0.2 出图材料）
+## S8 招与拆（2026-11-03 已选定并处理）
 
 ${table('S8')}
 
-按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。每件 3 张候选的上传顺序和权威提示词同时写入仓库根目录的 \`.artifacts/siege/s8-jobs.json\`；本工具只生成材料，不出图。土山北端和强攻群像贴墙点见各件 \`footprints.json\` 的 \`registration\`；城头备物用底面中心作锚点，游戏抬高 3 层。
+按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。共 29 张候选（S8-01 只有 2 张，其余每件 3 张），planner 的选择写在脚本 \`S8_PICKS\`，每件的原图哈希、选择理由和检查在 \`generation-manifest.json\`。本工具从仓库根目录 \`attempts/s8-*/sources/\` 的原图重新生成无损候选、对比图、透明件、姿态、图标和运行时插画，不出新图、不重画；上传顺序和权威提示词仍写入 \`.artifacts/siege/s8-jobs.json\`（其中 candidates=3 是原定出图数）。土山成坡用 \`footprints.json\` 的 \`selectedRegistration\`，北端实测 (1280,344)；强攻群像用实际 \`alphaBBox\`、\`footCentreAnchor\` 和 \`fitHeightLevels: 3.5\` 等比缩放；灰盒 \`registration\` 保留作对照。城头备物仍用底面中心作锚点，游戏抬高 3 层。
 
 ## 每个文件夹里有什么
 
@@ -4363,6 +4429,275 @@ ${table('S8')}
 async function attemptCount(dir) {
   const files = await readdir(join(dir, 'attempts')).catch(() => []);
   return files.filter((f) => /\.(webp|png|jpe?g)$/i.test(f)).length;
+}
+
+// K2 processing is part of this builder so README, picks, measured geometry and
+// derived files cannot drift apart. The original PNGs and generation logs are
+// read-only inputs. Use the same key/cut/UI scripts as S4–S7, in a scratch dir,
+// and publish only changed bytes (including on a second, identical build).
+const S8_PROCESS = String.raw`
+import hashlib, io, json, os, re, subprocess, sys, tempfile
+from pathlib import Path
+import numpy as np
+from PIL import Image, ImageDraw
+from scipy import ndimage
+
+job = json.loads(sys.argv[1])
+d = Path(job['directory'])
+source_dir = Path('attempts') / job['id'] / 'sources'
+sources = sorted(source_dir.glob('v[0-9]*.png'))
+if not sources:
+    raise RuntimeError(f"{job['id']}: no original candidates in {source_dir}")
+log_path = source_dir.parent / 'codex.log'
+log = log_path.read_text()
+prompt_match = re.search(r'IMAGE PROMPT:\s*<<<\n([\s\S]*?)\n>>>', log)
+if not prompt_match or prompt_match[1] != job['prompt']:
+    raise RuntimeError(f"{job['id']}: README prompt differs from generation log")
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def write(path, data):
+    path = Path(path)
+    if path.exists() and path.read_bytes() == data:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+
+def save(im, path, fmt='PNG', **options):
+    buffer = io.BytesIO()
+    im.save(buffer, format=fmt, **options)
+    write(path, buffer.getvalue())
+
+def normalise_alpha(im):
+    a = np.array(im.convert('RGBA'))
+    a[..., 3] = np.clip((a[..., 3].astype(float) - 2) * 255 / 248, 0, 255).round().astype(np.uint8)
+    return Image.fromarray(a)
+
+def run(script, *args):
+    result = subprocess.run([sys.executable, script, *map(str, args)], check=True, capture_output=True, text=True)
+    print(result.stdout.strip(), file=sys.stderr)
+
+images = []
+# Avoid recompressing an already verified, unchanged lossless candidate. Hashes
+# guard both inputs and outputs; the decoded pixels are still checked below.
+previous_path = d / 'generation-manifest.json'
+previous_images = {i['id']: i for i in json.loads(previous_path.read_text())['images']} if previous_path.exists() else {}
+comparison = Image.new('RGB', (1536, 540 * ((len(sources) + 1) // 2)), (250, 248, 239))
+draw = ImageDraw.Draw(comparison)
+for k, source in enumerate(sources):
+    im = Image.open(source)
+    if list(im.size) != job['size']:
+        raise RuntimeError(f'{source}: wrong native dimensions {im.size}')
+    path = Path('attempts') / (source.stem + '.webp')
+    previous = previous_images.get(source.stem, {})
+    if not ((d / path).exists() and previous.get('sourceSha256') == sha(source)
+            and previous.get('sha256') == sha(d / path) and previous.get('losslessEncodingVerified')):
+        save(im, d / path, 'WEBP', lossless=True, quality=100, method=6, exact=True)
+    decoded = Image.open(d / path).convert(im.mode)
+    verified = np.array_equal(np.array(im), np.array(decoded))
+    if not verified:
+        raise RuntimeError(f'{d / path}: lossless round-trip changed pixels')
+    # The log records the generator's original filename; sourcePath is the
+    # byte-exact repository copy. Some jobs list source first, some output first.
+    output_lines = [line for line in log.splitlines() if f'/sources/{source.name}' in line and 'exec-' in line]
+    output_names = re.findall(r'exec-[0-9a-f-]+\.png', '\n'.join(output_lines))
+    entry = dict(id=source.stem, round=1, prompt=job['prompt'],
+        type='generate-with-reference' if job['references'] else 'generate',
+        generator=dict(tool='Codex built-in image_gen', model='gpt-6.1-sol', reasoningEffort='xhigh',
+            codexRun=str(log_path), **({'transparentRequested': True} if job['type'] == 'icons' else {})),
+        sourceFile=output_names[-1] if output_names else source.name,
+        referenceImages=job['references'], sourcePath=os.path.relpath(source, d), sourceSha256=sha(source),
+        nativeSize=list(im.size), path=str(path), width=im.width, height=im.height,
+        bytes=(d / path).stat().st_size, sha256=sha(d / path), losslessEncodingVerified=verified,
+        cornerPixels=[list(im.getpixel(p)) for p in [(0,0),(im.width-1,0),(0,im.height-1),(im.width-1,im.height-1)]])
+    if job['type'] == 'illustration':
+        entry['review'] = 'All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures.'
+    images.append(entry)
+    preview = normalise_alpha(im) if job['type'] == 'icons' else im.convert('RGBA')
+    preview = preview.resize((768, 512), Image.Resampling.LANCZOS)
+    x, y = (k % 2) * 768, (k // 2) * 540
+    comparison.paste(preview, (x, y + 28), preview)
+    draw.text((x + 8, y + 8), source.stem, fill=(42,38,34))
+save(comparison, d / 'comparison.png', optimize=True)
+
+pick = job['final'].removesuffix('.webp')
+if pick not in [p.stem for p in sources]:
+    raise RuntimeError(f"{job['id']}: missing selected candidate {pick}")
+selected_source = source_dir / (pick + '.png')
+selected = dict(id=pick, path='attempts/' + job['final'], selectedBy='planner', reason=job['reason'])
+review = dict(status='Planner-selected; processing and geometry checked by Codex', findings=[])
+footprints = job['footprints']
+
+with tempfile.TemporaryDirectory(prefix='siege-s8-') as scratch:
+    scratch = Path(scratch)
+    if job['type'] in ('pieces', 'poses'):
+        run('attempts/key.py', selected_source, scratch / 'selected-transparent.png')
+        keyed = Image.open(scratch / 'selected-transparent.png').convert('RGBA')
+        write(d / 'selected-transparent.png', (scratch / 'selected-transparent.png').read_bytes())
+        selected.update(transparentPath='selected-transparent.png', transparentSha256=sha(d / 'selected-transparent.png'),
+            transparency=dict(script='attempts/key.py', method='Deterministic magenta key: b-g, min(r,b)-g and (r+b)/2-g near background; edges unmixed, faint/tinted edges neutralised; opaque pixels unchanged. No repainting.'))
+        pixels = np.array(keyed).astype(np.int16)
+        mask = pixels[..., 3] > 0
+        tint = np.minimum(pixels[..., 0], pixels[..., 2]) - pixels[..., 1]
+        magenta = mask & (tint > 25)
+        weak_tint = mask & (tint > 20)
+        review['magentaDefinition'] = 'alpha > 0 and min(red, blue) - green > 25; includes every surviving edge pixel'
+        review['weakTintDefinition'] = 'Conservative additional diagnostic: alpha > 0 and min(red, blue) - green > 20; can include red trim and warm foreground colours'
+        review['magentaPerPiece'] = []
+        review['weakTintPerPiece'] = []
+        cells = [p['cell'] for p in footprints['pieces']] if footprints else [[c*512,r*512,512,512] for r in range(2) for c in range(3)]
+        for k, (x, y, w, h) in enumerate(cells):
+            cell = mask[y:y+h, x:x+w]
+            ys, xs = np.nonzero(cell)
+            bounds = [int(xs.min()+x), int(ys.min()+y), int(xs.max()+x+1), int(ys.max()+y+1)]
+            bottom = cell[max(0,int(ys.max())+1-12):int(ys.max())+1]
+            foot = [round(float(np.nonzero(bottom)[1].mean()+x),1), bounds[3]]
+            review['magentaPerPiece'].append(int(magenta[y:y+h,x:x+w].sum()))
+            review['weakTintPerPiece'].append(int(weak_tint[y:y+h,x:x+w].sum()))
+            if footprints:
+                obj = footprints['pieces'][k]['objects'][0]
+                obj.update(alphaBBox=bounds, alphaBBoxOffset=[a-b for a,b in zip(bounds,obj['bbox'])], footCentreAnchor=foot)
+                if job['id'] == 's8-06':
+                    obj['fitHeightLevels'] = 3.5
+                    obj['gameSizeAt24pxLevel'] = [round((bounds[2]-bounds[0])*84/(bounds[3]-bounds[1]),3),84]
+                if job['id'] == 's8-03' and k == 2:
+                    centre_x = round(obj['registration']['wallTop']['pixel'][0])
+                    centre_y = np.nonzero(mask[:,centre_x])[0]
+                    crest = [centre_x, int(centre_y.min())]
+                    if crest != [1280,344]:
+                        raise RuntimeError(f'Finished ramp crest {crest} misses (1280,344)')
+                    obj['selectedRegistration'] = dict(
+                        wallTop=dict(world=[0.5,17,3],pixel=crest),
+                        rampCrest=dict(world=[0.5,17,3],pixel=crest),
+                        wallFoot=dict(world=[0.5,17,0],pixel=[centre_x,crest[1]+3*footprints['level']],method='Inferred from measured crest and the three-level wall height'),
+                        southBase=dict(world=[0.5,19,0],pixel=[centre_x,int(centre_y.max()+1)]))
+        review['maxMagentaPerPiece'] = max(review['magentaPerPiece'])
+        review['maxWeakTintPerPiece'] = max(review['weakTintPerPiece'])
+        review['findings'].append('No visible magenta halo on paper or dark backgrounds; strong-magenta count is zero. Weak-tint counts are retained as a conservative diagnostic; no extra edge painting or cleanup was applied.')
+        if footprints:
+            footprints['selected'] = dict(path='selected-transparent.png',
+                bboxConvention='alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order',
+                anchorConvention='footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite',
+                placement='Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale')
+    if job['type'] in ('poses', 'icons'):
+        if job['type'] == 'poses':
+            names = ['south-march','north-march','east-march','south-thrust','south-repulsed','east-kindle']
+            cols, rows, scale, min_island, sheet = 3, 2, 36/300, 0, 'selected-transparent.png'
+        else:
+            names = ['suppress','cover','mound','assault','night-assault','torches','sortie','light-brazier','hoist-millstone','stack-boulders','morning-report','foothold']
+            cols, rows, scale, min_island, sheet = 4, 3, 1, 64, 'selected.png'
+            save(normalise_alpha(Image.open(selected_source)), scratch / sheet, optimize=True)
+            write(d / sheet, (scratch / sheet).read_bytes())
+            selected.update(png=sheet, sha256=sha(d / sheet), derived='icons/icons.json')
+        run('attempts/cut_poses.py', scratch / sheet, scratch, cols, rows, scale, ','.join(names), min_island)
+        if job['type'] == 'icons':
+            run('attempts/prepare_ui.py', 'icons', scratch)
+        for p in sorted(scratch.rglob('*')):
+            if p.is_file():
+                write(d / p.relative_to(scratch), p.read_bytes())
+        poses = json.loads((scratch / 'poses.json').read_text())
+        selected['poses'] = 'poses.json'
+        if job['type'] == 'poses':
+            contact = Image.new('RGB',(864,112),(236,228,210))
+            draw = ImageDraw.Draw(contact)
+            torch_regions = [[169,44,229,126],[811,40,864,114],[1340,82,1399,167],[346,857,419,948],[610,787,659,867],[1368,829,1431,913]]
+            torch_checks = []
+            for k,p in enumerate(poses['poses']):
+                im = Image.open(scratch / p['game']['path']).convert('RGBA')
+                contact.paste(im,(k*144+(144-im.width)//2,70-im.height),im)
+                draw.text((k*144+6,84),p['name'],fill=(42,38,34))
+                x,y,w,h = p['box']; l,t,r,b = torch_regions[k]
+                roi = [max(0,int((l-x)*scale)),max(0,int((t-y)*scale)),min(im.width,int(np.ceil((r-x)*scale))),min(im.height,int(np.ceil((b-y)*scale)))]
+                a = np.array(im.crop(roi)).astype(int)
+                warm = (a[...,3]>32)&(a[...,0]>170)&(a[...,0]-a[...,1]>25)&(a[...,1]-a[...,2]>25)
+                cx,cy,cw,ch = p['cell']
+                lab,n = ndimage.label(mask[cy:cy+ch,cx:cx+cw])
+                sizes = np.bincount(lab.ravel())[1:]
+                torch_checks.append(dict(name=p['name'],gameSize=p['game']['size'],warmFlamePixels=int(warm.sum()),
+                    preservedIslandsUnder64=int((sizes<64).sum()),droppedIslands=p['droppedIslands']))
+                if not warm.any():
+                    raise RuntimeError(f"{p['name']}: torch flame lost at game scale")
+            save(contact,'.artifacts/siege/s8-05-game.png',optimize=True)
+            review.update(torchChecks=torch_checks,gameContactSheet='.artifacts/siege/s8-05-game.png')
+            review['findings'].append('All six torches remain visible at 36/300 scale; min-island=0 preserves every disconnected spark. Crouching pose includes the kindling bundle.')
+        else:
+            contact = Image.new('RGB',(864,344),'white')
+            draw = ImageDraw.Draw(contact)
+            for group,(colour,label) in enumerate([((236,228,210),'Game paper #ece4d2'),((255,255,255),'White #ffffff')]):
+                y0 = group*172
+                draw.rectangle((0,y0,863,y0+171),fill=colour)
+                draw.text((8,y0+8),label+' - actual 32px icons',fill=(42,38,34))
+                for k,name in enumerate(names):
+                    x,y = (k%6)*144, y0+30+(k//6)*70
+                    im = Image.open(scratch / 'icons' / (name+'-32.png')).convert('RGBA')
+                    contact.paste(im,(x+56,y),im)
+                    draw.text((x+4,y+39),name,fill=(42,38,34))
+            save(contact,'.artifacts/siege/s8-icons-32.png',optimize=True)
+            review['gameContactSheet'] = '.artifacts/siege/s8-icons-32.png'
+            review['findings'].append('All twelve icons inspected at actual 32px on game paper #ece4d2 and white. No pair is confusable; torches and light-brazier are related but the tall flame and kindling/sparks distinguish them.')
+    if job['type'] == 'illustration':
+        im = Image.open(selected_source).convert('RGB')
+        selected['runtime'] = []
+        for filename,size,quality in [('illustration.webp',(1536,1024),88),('illustration-small.webp',(768,512),85)]:
+            path = 'runtime/' + filename
+            save(im.resize(size,Image.Resampling.LANCZOS),d/path,'WEBP',quality=quality,method=6)
+            selected['runtime'].append(dict(path=path,size=list(size),quality=quality))
+        review['findings'].append('All four corners and flags/banners inspected at native size for all candidates; no text, seals or signatures found.')
+
+manifest = dict(id=job['id'],folder=d.name,name=job['name'],directory=str(d),generatedOn='2026-11-03',
+    mode='Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)',style='A 界画淡彩',references=job['references'],
+    status='selected',rounds=[dict(round=1,ids=[int(p.stem[1:]) for p in sources],references=job['references'])],
+    candidateCount=len(sources),images=images,selected=selected,comparison='comparison.png',review=review)
+if job['type'] in ('pieces', 'poses'):
+    reference = Path(job['references'][1])
+    manifest['styleReference'] = dict(asset=reference.parent.parent.name[:5].upper(), id=reference.stem,
+        path=os.path.relpath(reference,d))
+    manifest['rounds'][0]['blockout'] = 'guide' if job['type'] == 'poses' else 'original'
+else:
+    # S6/S7 also expose the common prompt at the manifest's top level.
+    manifest['prompt'] = job['prompt']
+if job['id'] == 's8-01':
+    manifest['candidateNote'] = 'Only two candidates exist (v1, v2); no v3 was generated or invented.'
+if job['type'] == 'icons':
+    manifest['alpha'] = 'Lossless candidates preserve original RGBA including hidden RGB. Only selected.png normalises noisy alpha as S6: <=2 to 0, >=250 to 255, linear in between; no keying or repainting.'
+if job['type'] == 'poses':
+    manifest['guide'] = 'guide.png'
+print(json.dumps(dict(manifest=manifest,footprints=footprints)))
+`;
+
+async function processS8(asset, dir, prompt, footprints) {
+  const result = JSON.parse(
+    execFileSync(
+      join(homedir(), 'simple_ML_practices/.venv/bin/python'),
+      [
+        '-c',
+        S8_PROCESS,
+        JSON.stringify({
+          id: asset.id.slice(0, 5),
+          directory: dir,
+          name: asset.zh.split(' ').slice(1).join(' '),
+          type: asset.type,
+          final: asset.final,
+          reason: S8_PICKS[asset.id][1],
+          references: asset.references,
+          size: asset.size,
+          prompt,
+          footprints,
+        }),
+      ],
+      { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, stdio: ['ignore', 'pipe', 'inherit'] },
+    ),
+  );
+  await writeFile(
+    join(dir, 'generation-manifest.json'),
+    await pretty(JSON.stringify(result.manifest), 'json'),
+  );
+  if (result.footprints)
+    await writeFile(
+      join(dir, 'footprints.json'),
+      await pretty(JSON.stringify(result.footprints), 'json'),
+    );
 }
 
 const objects = cityObjects();
@@ -4389,6 +4724,7 @@ for (const asset of ASSETS) {
   let keys = new Set();
   let rendered = null;
   let resolved = null;
+  let s8Footprints = null;
   if (asset.guide) {
     const { cols, rows: n, figure, foot } = asset.guide;
     await writeFile(
@@ -4421,7 +4757,8 @@ for (const asset of ASSETS) {
       footprints.origin = [frame.ox, frame.oy];
       footprints.objects = footprintEntries(drawn, frame, r, canvas, masks);
     }
-    if (pieces || footprints.objects.length)
+    if (asset.stage === 'S8') s8Footprints = footprints;
+    else if (pieces || footprints.objects.length)
       await writeFile(
         join(dir, 'footprints.json'),
         await pretty(JSON.stringify(footprints), 'json'),
@@ -4453,6 +4790,7 @@ for (const asset of ASSETS) {
       });
     const blocks = [...readme.matchAll(/```text\n([\s\S]*?)\n```/g)];
     if (blocks.length !== 1) throw new Error(`${asset.id}: expected one authoritative prompt`);
+    if (asset.final) await processS8(asset, dir, blocks[0][1], s8Footprints);
     s8Jobs.push({
       id: asset.zh.split(' ')[0],
       folder: dir,

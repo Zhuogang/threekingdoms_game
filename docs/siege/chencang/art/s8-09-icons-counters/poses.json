@@ -1,0 +1,393 @@
+{
+  "sheet": "selected.png",
+  "cols": 4,
+  "rows": 3,
+  "gameScale": 1.0,
+  "preparation": "Cut per cell from the keyed sheet; alpha islands under 64 px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.",
+  "poses": [
+    {
+      "name": "suppress",
+      "cell": [
+        0,
+        0,
+        384,
+        341
+      ],
+      "box": [
+        34,
+        33,
+        307,
+        288
+      ],
+      "anchor": [
+        140.3,
+        288
+      ],
+      "path": "poses/suppress.png",
+      "game": {
+        "path": "poses-game/suppress.png",
+        "size": [
+          307,
+          288
+        ],
+        "anchor": [
+          140.3,
+          288.0
+        ]
+      },
+      "droppedIslands": 204
+    },
+    {
+      "name": "cover",
+      "cell": [
+        384,
+        0,
+        384,
+        341
+      ],
+      "box": [
+        452,
+        26,
+        228,
+        299
+      ],
+      "anchor": [
+        65.2,
+        299
+      ],
+      "path": "poses/cover.png",
+      "game": {
+        "path": "poses-game/cover.png",
+        "size": [
+          228,
+          299
+        ],
+        "anchor": [
+          65.2,
+          299.0
+        ]
+      },
+      "droppedIslands": 142
+    },
+    {
+      "name": "mound",
+      "cell": [
+        768,
+        0,
+        384,
+        341
+      ],
+      "box": [
+        784,
+        77,
+        349,
+        219
+      ],
+      "anchor": [
+        55.2,
+        219
+      ],
+      "path": "poses/mound.png",
+      "game": {
+        "path": "poses-game/mound.png",
+        "size": [
+          349,
+          219
+        ],
+        "anchor": [
+          55.2,
+          219.0
+        ]
+      },
+      "droppedIslands": 117
+    },
+    {
+      "name": "assault",
+      "cell": [
+        1152,
+        0,
+        384,
+        341
+      ],
+      "box": [
+        1191,
+        14,
+        317,
+        319
+      ],
+      "anchor": [
+        71.1,
+        319
+      ],
+      "path": "poses/assault.png",
+      "game": {
+        "path": "poses-game/assault.png",
+        "size": [
+          317,
+          319
+        ],
+        "anchor": [
+          71.1,
+          319.0
+        ]
+      },
+      "droppedIslands": 185
+    },
+    {
+      "name": "night-assault",
+      "cell": [
+        0,
+        341,
+        384,
+        342
+      ],
+      "box": [
+        22,
+        366,
+        298,
+        281
+      ],
+      "anchor": [
+        190.9,
+        281
+      ],
+      "path": "poses/night-assault.png",
+      "game": {
+        "path": "poses-game/night-assault.png",
+        "size": [
+          298,
+          281
+        ],
+        "anchor": [
+          190.9,
+          281.0
+        ]
+      },
+      "droppedIslands": 207
+    },
+    {
+      "name": "torches",
+      "cell": [
+        384,
+        341,
+        384,
+        342
+      ],
+      "box": [
+        457,
+        356,
+        230,
+        306
+      ],
+      "anchor": [
+        119.2,
+        306
+      ],
+      "path": "poses/torches.png",
+      "game": {
+        "path": "poses-game/torches.png",
+        "size": [
+          230,
+          306
+        ],
+        "anchor": [
+          119.2,
+          306.0
+        ]
+      },
+      "droppedIslands": 155
+    },
+    {
+      "name": "sortie",
+      "cell": [
+        768,
+        341,
+        384,
+        342
+      ],
+      "box": [
+        783,
+        384,
+        349,
+        263
+      ],
+      "anchor": [
+        115.2,
+        263
+      ],
+      "path": "poses/sortie.png",
+      "game": {
+        "path": "poses-game/sortie.png",
+        "size": [
+          349,
+          263
+        ],
+        "anchor": [
+          115.2,
+          263.0
+        ]
+      },
+      "droppedIslands": 228
+    },
+    {
+      "name": "light-brazier",
+      "cell": [
+        1152,
+        341,
+        384,
+        342
+      ],
+      "box": [
+        1209,
+        382,
+        265,
+        282
+      ],
+      "anchor": [
+        140.1,
+        282
+      ],
+      "path": "poses/light-brazier.png",
+      "game": {
+        "path": "poses-game/light-brazier.png",
+        "size": [
+          265,
+          282
+        ],
+        "anchor": [
+          140.1,
+          282.0
+        ]
+      },
+      "droppedIslands": 256
+    },
+    {
+      "name": "hoist-millstone",
+      "cell": [
+        0,
+        683,
+        384,
+        341
+      ],
+      "box": [
+        18,
+        716,
+        327,
+        278
+      ],
+      "anchor": [
+        160.6,
+        278
+      ],
+      "path": "poses/hoist-millstone.png",
+      "game": {
+        "path": "poses-game/hoist-millstone.png",
+        "size": [
+          327,
+          278
+        ],
+        "anchor": [
+          160.6,
+          278.0
+        ]
+      },
+      "droppedIslands": 225
+    },
+    {
+      "name": "stack-boulders",
+      "cell": [
+        384,
+        683,
+        384,
+        341
+      ],
+      "box": [
+        403,
+        728,
+        333,
+        263
+      ],
+      "anchor": [
+        36.1,
+        263
+      ],
+      "path": "poses/stack-boulders.png",
+      "game": {
+        "path": "poses-game/stack-boulders.png",
+        "size": [
+          333,
+          263
+        ],
+        "anchor": [
+          36.1,
+          263.0
+        ]
+      },
+      "droppedIslands": 150
+    },
+    {
+      "name": "morning-report",
+      "cell": [
+        768,
+        683,
+        384,
+        341
+      ],
+      "box": [
+        789,
+        714,
+        312,
+        280
+      ],
+      "anchor": [
+        182.9,
+        280
+      ],
+      "path": "poses/morning-report.png",
+      "game": {
+        "path": "poses-game/morning-report.png",
+        "size": [
+          312,
+          280
+        ],
+        "anchor": [
+          182.9,
+          280.0
+        ]
+      },
+      "droppedIslands": 301
+    },
+    {
+      "name": "foothold",
+      "cell": [
+        1152,
+        683,
+        384,
+        341
+      ],
+      "box": [
+        1171,
+        809,
+        337,
+        126
+      ],
+      "anchor": [
+        204.4,
+        126
+      ],
+      "path": "poses/foothold.png",
+      "game": {
+        "path": "poses-game/foothold.png",
+        "size": [
+          337,
+          126
+        ],
+        "anchor": [
+          204.4,
+          126.0
+        ]
+      },
+      "droppedIslands": 73
+    }
+  ]
+}

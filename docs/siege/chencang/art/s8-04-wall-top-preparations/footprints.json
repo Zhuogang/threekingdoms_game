@@ -20,7 +20,10 @@
           "anchor": [192, 530],
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [192, 530] } },
-          "bbox": [148, 468, 236, 556]
+          "bbox": [148, 468, 236, 556],
+          "alphaBBox": [148, 468, 238, 555],
+          "alphaBBoxOffset": [0, 0, 2, -1],
+          "footCentreAnchor": [191.9, 555]
         }
       ]
     },
@@ -39,7 +42,10 @@
           "anchor": [576, 530],
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [576, 530] } },
-          "bbox": [532, 468, 620, 556]
+          "bbox": [532, 468, 620, 556],
+          "alphaBBox": [531, 468, 621, 555],
+          "alphaBBoxOffset": [-1, 0, 1, -1],
+          "footCentreAnchor": [575.7, 555]
         }
       ]
     },
@@ -58,7 +64,10 @@
           "anchor": [960, 522],
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [960, 522] } },
-          "bbox": [905, 473, 1015, 551]
+          "bbox": [905, 473, 1015, 551],
+          "alphaBBox": [900, 473, 1018, 552],
+          "alphaBBoxOffset": [-5, 0, 3, 1],
+          "footCentreAnchor": [957.7, 552]
         }
       ]
     },
@@ -77,9 +86,18 @@
           "anchor": [1344, 521],
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [1344, 521] } },
-          "bbox": [1289, 458, 1399, 567]
+          "bbox": [1289, 458, 1399, 567],
+          "alphaBBox": [1286, 456, 1401, 566],
+          "alphaBBoxOffset": [-3, -2, 2, -1],
+          "footCentreAnchor": [1342.9, 566]
         }
       ]
     }
-  ]
+  ],
+  "selected": {
+    "path": "selected-transparent.png",
+    "bboxConvention": "alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order",
+    "anchorConvention": "footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite",
+    "placement": "Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale"
+  }
 }

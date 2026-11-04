@@ -23,7 +23,12 @@
             "wallFoot": { "world": [0.5, 17, 0], "pixel": [384, 589] },
             "wallTop": { "world": [0.5, 17, 3], "pixel": [384, 445] }
           },
-          "bbox": [319, 435, 449, 590]
+          "bbox": [319, 435, 449, 590],
+          "alphaBBox": [259, 327, 555, 837],
+          "alphaBBoxOffset": [-60, -108, 106, 247],
+          "footCentreAnchor": [396.4, 837],
+          "fitHeightLevels": 3.5,
+          "gameSizeAt24pxLevel": [48.753, 84]
         }
       ]
     },
@@ -45,9 +50,20 @@
             "wallFoot": { "world": [0.5, 17, 0], "pixel": [1152, 589] },
             "wallTop": { "world": [0.5, 17, 3], "pixel": [1152, 445] }
           },
-          "bbox": [1087, 435, 1217, 590]
+          "bbox": [1087, 435, 1217, 590],
+          "alphaBBox": [939, 342, 1253, 835],
+          "alphaBBoxOffset": [-148, -93, 36, 245],
+          "footCentreAnchor": [1091.8, 835],
+          "fitHeightLevels": 3.5,
+          "gameSizeAt24pxLevel": [53.501, 84]
         }
       ]
     }
-  ]
+  ],
+  "selected": {
+    "path": "selected-transparent.png",
+    "bboxConvention": "alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order",
+    "anchorConvention": "footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite",
+    "placement": "Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale"
+  }
 }

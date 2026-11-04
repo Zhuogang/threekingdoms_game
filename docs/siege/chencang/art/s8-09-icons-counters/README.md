@@ -3,6 +3,7 @@
 `s8-09-icons-counters` · 由 `node tools/build-siege-blockout.mjs` 生成，请改脚本而不是改这个文件。计划见 [03-chencang-v0.2-plan.md](../../../03-chencang-v0.2-plan.md) §9。
 
 - 版式同 S6-03：4×3 宫格每格 384×341，透明底，墨色剪影加一处朱红。十二个：压制、蒙皮、土山、强攻；夜攻、举火、夜袭、备火；吊石磨、堆礌石、晨报、立足。
+- **2026-11-03 选定 `attempts/v3.webp`**（planner 已选）：The most distinct set at small size, especially the hide。原图自带透明通道，不抠品红；无损候选逐像素保留原通道，`selected.png` 才按 S6 将 alpha≤2 归零、alpha≥250 拉满并线性保留软边；`attempts/cut_poses.py` 切格，`attempts/prepare_ui.py icons` 生成 `icons/` 的 128、64、32px 图标；每张的提示词、源文件哈希、选择理由和检查记在 `generation-manifest.json`，候选对比在 `comparison.png`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 `attempts/s8-09/codex.log`。
 
 ## 上传与提示词
 

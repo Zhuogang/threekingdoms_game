@@ -1,0 +1,129 @@
+{
+  "id": "s8-08",
+  "folder": "s8-08-night-torches",
+  "name": "幕间插画：雪夜举火与夜袭",
+  "directory": "docs/siege/chencang/art/s8-08-night-torches",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": ["docs/siege/chencang/art/s7-01-key-visual/style-reference.png"],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2, 3],
+      "references": ["docs/siege/chencang/art/s7-01-key-visual/style-reference.png"]
+    }
+  ],
+  "candidateCount": 3,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-08/codex.log"
+      },
+      "sourceFile": "exec-268c4a8f-04a4-4bcb-85b5-f762d7ef93eb.png",
+      "referenceImages": ["docs/siege/chencang/art/s7-01-key-visual/style-reference.png"],
+      "sourcePath": "../../../../../attempts/s8-08/sources/v1.png",
+      "sourceSha256": "6b7dd52772196a43dd15349b877579b4a018017185841e9b02b7569c1fda6fdc",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2182736,
+      "sha256": "aeb36683c76ce3ac47f69ea4d5f0f75613760d6933b92b6e0f1324022b6a674a",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [76, 85, 100],
+        [44, 56, 74],
+        [168, 160, 167],
+        [154, 145, 153]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-08/codex.log"
+      },
+      "sourceFile": "exec-5a32227e-9dc0-4995-a472-ce9501085b33.png",
+      "referenceImages": ["docs/siege/chencang/art/s7-01-key-visual/style-reference.png"],
+      "sourcePath": "../../../../../attempts/s8-08/sources/v2.png",
+      "sourceSha256": "67b4b8ec84c0954d5a7028e1e142d324733b63c9c0cd7d9e9ae8ea2e42afab97",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2157428,
+      "sha256": "ac777a30c43965b59ec1711bba770e5eed70b0d54417ea68c2b753c46dac2bc8",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [87, 92, 93],
+        [75, 83, 99],
+        [156, 156, 169],
+        [159, 154, 170]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    },
+    {
+      "id": "v3",
+      "round": 1,
+      "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-08/codex.log"
+      },
+      "sourceFile": "exec-4523b132-5c6f-45a4-b355-4858d8ec9c3d.png",
+      "referenceImages": ["docs/siege/chencang/art/s7-01-key-visual/style-reference.png"],
+      "sourcePath": "../../../../../attempts/s8-08/sources/v3.png",
+      "sourceSha256": "bb30798c2a57efb8bdbc18e24f4e03c8b7a86d5229ee2ec71241d067bfc87adf",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v3.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2203916,
+      "sha256": "eccddc7766cbe4dc323678c71c70f2f859d3beadd5d584839b77bee7839a7b14",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [89, 95, 108],
+        [31, 45, 63],
+        [141, 141, 161],
+        [159, 159, 179]
+      ],
+      "review": "All four corners and flags/banners inspected at native 1536x1024: no text, seals or signatures."
+    }
+  ],
+  "selected": {
+    "id": "v2",
+    "path": "attempts/v2.webp",
+    "selectedBy": "planner",
+    "reason": "Firelit wall, the sortie at the cart, and the Shu guards arriving too late",
+    "runtime": [
+      { "path": "runtime/illustration.webp", "size": [1536, 1024], "quality": 88 },
+      { "path": "runtime/illustration-small.webp", "size": [768, 512], "quality": 85 }
+    ]
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "All four corners and flags/banners inspected at native size for all candidates; no text, seals or signatures found."
+    ]
+  },
+  "prompt": "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.\n\nSetting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.\n\nStyle: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.\n\nDo not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons."
+}

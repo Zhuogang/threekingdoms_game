@@ -25,7 +25,10 @@
             "wallTop": { "world": [0.5, 17, 3], "pixel": [256, 294] },
             "southBase": { "world": [0.5, 19, 0], "pixel": [256, 630] }
           },
-          "bbox": [191, 399, 321, 626]
+          "bbox": [191, 399, 321, 626],
+          "alphaBBox": [188, 491, 324, 630],
+          "alphaBBoxOffset": [-3, 92, 3, 4],
+          "footCentreAnchor": [299.8, 630]
         }
       ]
     },
@@ -49,7 +52,10 @@
             "wallTop": { "world": [0.5, 17, 3], "pixel": [768, 318] },
             "southBase": { "world": [0.5, 19, 0], "pixel": [768, 654] }
           },
-          "bbox": [703, 370, 833, 655]
+          "bbox": [703, 370, 833, 655],
+          "alphaBBox": [691, 367, 845, 655],
+          "alphaBBoxOffset": [-12, -3, 12, 0],
+          "footCentreAnchor": [767.2, 655]
         }
       ]
     },
@@ -73,9 +79,28 @@
             "wallTop": { "world": [0.5, 17, 3], "pixel": [1280, 344] },
             "southBase": { "world": [0.5, 19, 0], "pixel": [1280, 680] }
           },
-          "bbox": [1215, 343, 1345, 681]
+          "bbox": [1215, 343, 1345, 681],
+          "alphaBBox": [1196, 340, 1361, 683],
+          "alphaBBoxOffset": [-19, -3, 16, 2],
+          "footCentreAnchor": [1278.1, 683],
+          "selectedRegistration": {
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [1280, 344] },
+            "rampCrest": { "world": [0.5, 17, 3], "pixel": [1280, 344] },
+            "wallFoot": {
+              "world": [0.5, 17, 0],
+              "pixel": [1280, 488],
+              "method": "Inferred from measured crest and the three-level wall height"
+            },
+            "southBase": { "world": [0.5, 19, 0], "pixel": [1280, 682] }
+          }
         }
       ]
     }
-  ]
+  ],
+  "selected": {
+    "path": "selected-transparent.png",
+    "bboxConvention": "alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order",
+    "anchorConvention": "footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite",
+    "placement": "Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale"
+  }
 }

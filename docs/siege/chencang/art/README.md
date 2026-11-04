@@ -107,22 +107,22 @@ S1-02 以后的提示词按脚本里的 `CHOSEN_STYLE`（风格字母）和 `CHO
 
 完整的叙事画，和全图同一套水墨淡彩，但构图按插画，不用游戏机位。每张先上传 S2-01 定稿全图南半城作风格和建筑参考；有名有姓的人物再上传立绘，只作人物参考。旗面都空白，没有文字和血腥。
 
-## S8 招与拆（v0.2 出图材料）
+## S8 招与拆（2026-11-03 已选定并处理）
 
-| ID    | 资产                                                      | 尺寸      | 出图   |
-| ----- | --------------------------------------------------------- | --------- | ------ |
-| S8-01 | [蒙皮云梯车与蒙皮云梯](s8-01-covered-ladder/README.md)    | 1536×1024 | 待出图 |
-| S8-02 | [轒輼车，蒙皮冲车](s8-02-covered-ram/README.md)           | 1536×1024 | 待出图 |
-| S8-03 | [土山三态](s8-03-earth-mound/README.md)                   | 1536×1024 | 待出图 |
-| S8-04 | [城头备物](s8-04-wall-top-preparations/README.md)         | 1536×1024 | 待出图 |
-| S8-05 | [魏军夜袭小队姿态表](s8-05-wei-sortie-sheet/README.md)    | 1536×1024 | 待出图 |
-| S8-06 | [蚁附强攻群像](s8-06-storming-cluster/README.md)          | 1536×1024 | 待出图 |
-| S8-07 | [结局插画：魏军守住](s8-07-ending-held/README.md)         | 1536×1024 | 待出图 |
-| S8-08 | [幕间插画：雪夜举火与夜袭](s8-08-night-torches/README.md) | 1536×1024 | 待出图 |
-| S8-09 | [图标表三](s8-09-icons-counters/README.md)                | 1536×1024 | 待出图 |
-| S8-10 | [魏军视角主视觉](s8-10-key-visual-wei/README.md)          | 1536×1024 | 待出图 |
+| ID    | 资产                                                      | 尺寸      | 出图                 |
+| ----- | --------------------------------------------------------- | --------- | -------------------- |
+| S8-01 | [蒙皮云梯车与蒙皮云梯](s8-01-covered-ladder/README.md)    | 1536×1024 | 2 张，定稿 `v1.webp` |
+| S8-02 | [轒輼车，蒙皮冲车](s8-02-covered-ram/README.md)           | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S8-03 | [土山三态](s8-03-earth-mound/README.md)                   | 1536×1024 | 3 张，定稿 `v3.webp` |
+| S8-04 | [城头备物](s8-04-wall-top-preparations/README.md)         | 1536×1024 | 3 张，定稿 `v1.webp` |
+| S8-05 | [魏军夜袭小队姿态表](s8-05-wei-sortie-sheet/README.md)    | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S8-06 | [蚁附强攻群像](s8-06-storming-cluster/README.md)          | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S8-07 | [结局插画：魏军守住](s8-07-ending-held/README.md)         | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S8-08 | [幕间插画：雪夜举火与夜袭](s8-08-night-torches/README.md) | 1536×1024 | 3 张，定稿 `v2.webp` |
+| S8-09 | [图标表三](s8-09-icons-counters/README.md)                | 1536×1024 | 3 张，定稿 `v3.webp` |
+| S8-10 | [魏军视角主视觉](s8-10-key-visual-wei/README.md)          | 1536×1024 | 3 张，定稿 `v2.webp` |
 
-按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。每件 3 张候选的上传顺序和权威提示词同时写入仓库根目录的 `.artifacts/siege/s8-jobs.json`；本工具只生成材料，不出图。土山北端和强攻群像贴墙点见各件 `footprints.json` 的 `registration`；城头备物用底面中心作锚点，游戏抬高 3 层。
+按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。共 29 张候选（S8-01 只有 2 张，其余每件 3 张），planner 的选择写在脚本 `S8_PICKS`，每件的原图哈希、选择理由和检查在 `generation-manifest.json`。本工具从仓库根目录 `attempts/s8-*/sources/` 的原图重新生成无损候选、对比图、透明件、姿态、图标和运行时插画，不出新图、不重画；上传顺序和权威提示词仍写入 `.artifacts/siege/s8-jobs.json`（其中 candidates=3 是原定出图数）。土山成坡用 `footprints.json` 的 `selectedRegistration`，北端实测 (1280,344)；强攻群像用实际 `alphaBBox`、`footCentreAnchor` 和 `fitHeightLevels: 3.5` 等比缩放；灰盒 `registration` 保留作对照。城头备物仍用底面中心作锚点，游戏抬高 3 层。
 
 ## 每个文件夹里有什么
 

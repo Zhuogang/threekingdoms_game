@@ -33,9 +33,12 @@ Everything in the plan §8 table:
    2 → two (`a`, `b`), 3 → one at the top (`top`). Use the real pose names.
 3. **Storming mass**: S8-06 `攀附` glued to the wall face at a climbing position where the unit has
    `assaultedDay === state.day`; replaced by `溃退`, fading, during the night replay if it did not
-   mount. It replaces single climbers there.
+   mount. It replaces single climbers there. This sheet is deliberately not to footprint scale: scale
+   each piece uniformly by its `fitHeightLevels` in `footprints.json` (3.5 wall levels, about 49×84px in
+   the game), with its recorded foot-centre anchor at the wall foot.
 4. **Mound**: S8-03 by `state.mounds`: 1–2, 3–5 and 6, spanning rows 17–18, north end flush with the
-   wall. Correct occlusion against units standing on it and against the wall.
+   wall, using the crest and base anchors recorded in `footprints.json`. Correct occlusion against
+   units standing on it and against the wall.
 5. **Covered engines**: `covered` ladder carts, raised ladders and rams use S8-01 and S8-02. A
    covered ram damaged below half uses S8-02's damaged piece. Burning stays on the existing path.
 6. **Wall-top preparations**: S8-04 lit brazier with S6-01's code-driven flame, firewood bundle,

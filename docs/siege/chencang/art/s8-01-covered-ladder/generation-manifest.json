@@ -1,0 +1,127 @@
+{
+  "id": "s8-01",
+  "folder": "s8-01-covered-ladder",
+  "name": "蒙皮云梯车与蒙皮云梯",
+  "directory": "docs/siege/chencang/art/s8-01-covered-ladder",
+  "generatedOn": "2026-11-03",
+  "mode": "Codex built-in image_gen (codex exec, gpt-6.1-sol, xhigh)",
+  "style": "A 界画淡彩",
+  "references": [
+    "docs/siege/chencang/art/s8-01-covered-ladder/blockout.png",
+    "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp",
+    "docs/siege/chencang/art/s4-01-ladder-cart/attempts/v2.webp"
+  ],
+  "status": "selected",
+  "rounds": [
+    {
+      "round": 1,
+      "ids": [1, 2],
+      "references": [
+        "docs/siege/chencang/art/s8-01-covered-ladder/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp",
+        "docs/siege/chencang/art/s4-01-ladder-cart/attempts/v2.webp"
+      ],
+      "blockout": "original"
+    }
+  ],
+  "candidateCount": 2,
+  "images": [
+    {
+      "id": "v1",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the covered ladder cart, heading north:\n- whole piece: x=205..307, y=370..654\n- ground footprint, where it stands: x=192..320, y=476..668\nPiece 2, the covered ladder cart, heading east:\n- whole piece: x=646..890, y=421..603\n- ground footprint, where it stands: x=640..896, y=526..622\nPiece 3, the covered ladder raised against the wall:\n- whole piece: x=1229..1331, y=258..767\n- ground footprint, where it stands: x=1216..1344, y=402..786\n- wallFoot registration anchor: x=1280, y=402; world (0.5, 17, 0)\n- wallTop registration anchor: x=1280, y=258; world (0.5, 17, 3)\n- cartBase registration anchor: x=1280, y=738; world (0.5, 20.5, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the same Shu-Han siege ladder cart (云梯车) as on the third attached sheet, now protected against fire arrows with raw ox-hides (蒙生牛皮), three separate pieces side by side, one centred in each third of the image. Fresh, stiff, wet-looking ox-hides, hair side out, in mottled dun and dark brown, are lashed with cord to both sides of the ladder truss and hang down to the top of the chassis like curtains; a few hides are also pegged over the crew shelter at the rear. The rungs of the ladder remain visible between the hide curtains. Left: the covered cart heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same covered cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the covered ladder raised against a city wall (the wall itself is NOT drawn): the cart stands at the bottom, the ladder leans north across the trench rows up to the height of a three-level wall top, and the hide curtains hang along the lower two thirds of the ladder; snow has settled on the top edges of the hides. Same cart, same size, same timber and hides in all three; no fire, no scorch marks.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-01/codex.log"
+      },
+      "sourceFile": "exec-362cadfd-abca-4129-be59-eecf61b73b43.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-01-covered-ladder/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp",
+        "docs/siege/chencang/art/s4-01-ladder-cart/attempts/v2.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-01/sources/v1.png",
+      "sourceSha256": "bfde299827a313648f334e4d449ae0932a1ab1e5b5f97663af7f06a955281588",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v1.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 810028,
+      "sha256": "1b9746afd603aa7a490c8772437c38e2e6f6ca9d912c0ef1b742f7cc3c415b55",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [241, 14, 242],
+        [246, 18, 242],
+        [240, 36, 239],
+        [244, 32, 242]
+      ]
+    },
+    {
+      "id": "v2",
+      "round": 1,
+      "prompt": "Output requirements: create an image exactly 1536 by 1024 pixels. Treat the first attached block-out as the exact 1536×1024 registration canvas. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.\n\nRegistration landmarks on this canvas (pixel boxes measured from the block-out):\nPiece 1, the covered ladder cart, heading north:\n- whole piece: x=205..307, y=370..654\n- ground footprint, where it stands: x=192..320, y=476..668\nPiece 2, the covered ladder cart, heading east:\n- whole piece: x=646..890, y=421..603\n- ground footprint, where it stands: x=640..896, y=526..622\nPiece 3, the covered ladder raised against the wall:\n- whole piece: x=1229..1331, y=258..767\n- ground footprint, where it stands: x=1216..1344, y=402..786\n- wallFoot registration anchor: x=1280, y=402; world (0.5, 17, 0)\n- wallTop registration anchor: x=1280, y=258; world (0.5, 17, 3)\n- cartBase registration anchor: x=1280, y=738; world (0.5, 20.5, 0)\nKeep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.\n\nMatch the brushwork, line weight, colours and lighting of the second attached image exactly.\n\nStyle priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.\n\nThe first attached image is a colour-coded 3D block-out, not a style reference. Strictly preserve the position, footprint, height and outline of every block: each block's top face and front face must stay within about a quarter of a grid cell of where it is drawn. Replace the flat colours with finished materials and keep straight architecture straight. Natural features (snow drifts, ice edges, trench banks, paths) may have soft organic edges, within half a cell of where they are marked.\n\nCamera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.\n\nSubject: the same Shu-Han siege ladder cart (云梯车) as on the third attached sheet, now protected against fire arrows with raw ox-hides (蒙生牛皮), three separate pieces side by side, one centred in each third of the image. Fresh, stiff, wet-looking ox-hides, hair side out, in mottled dun and dark brown, are lashed with cord to both sides of the ladder truss and hang down to the top of the chassis like curtains; a few hides are also pegged over the crew shelter at the rear. The rungs of the ladder remain visible between the hide curtains. Left: the covered cart heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same covered cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the covered ladder raised against a city wall (the wall itself is NOT drawn): the cart stands at the bottom, the ladder leans north across the trench rows up to the height of a three-level wall top, and the hide curtains hang along the lower two thirds of the ladder; snow has settled on the top edges of the hides. Same cart, same size, same timber and hides in all three; no fire, no scorch marks.\nIn the block-out, one grid cell is 128 pixels wide and 96 pixels deep, and one height level is 48 pixels.\n\nIsolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.\n\nLight: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.\n\nStyle: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.\n\nDo not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects.",
+      "type": "generate-with-reference",
+      "generator": {
+        "tool": "Codex built-in image_gen",
+        "model": "gpt-6.1-sol",
+        "reasoningEffort": "xhigh",
+        "codexRun": "attempts/s8-01/codex.log"
+      },
+      "sourceFile": "exec-a365ea91-c56c-455c-a549-9d402e52530c.png",
+      "referenceImages": [
+        "docs/siege/chencang/art/s8-01-covered-ladder/blockout.png",
+        "docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp",
+        "docs/siege/chencang/art/s4-01-ladder-cart/attempts/v2.webp"
+      ],
+      "sourcePath": "../../../../../attempts/s8-01/sources/v2.png",
+      "sourceSha256": "d2c65e0123468e44c24492420e461c10e63c70566694960532e97463ed0bd432",
+      "nativeSize": [1536, 1024],
+      "path": "attempts/v2.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 799136,
+      "sha256": "4c158988bb774e9b16d737385faeab3cc24d1d171941e93f880fe4f33a6a9aa3",
+      "losslessEncodingVerified": true,
+      "cornerPixels": [
+        [243, 14, 242],
+        [246, 17, 242],
+        [241, 36, 241],
+        [243, 33, 242]
+      ]
+    }
+  ],
+  "selected": {
+    "id": "v1",
+    "path": "attempts/v1.webp",
+    "selectedBy": "planner",
+    "reason": "Hides cover the lower two thirds of the raised ladder; rungs stay visible",
+    "transparentPath": "selected-transparent.png",
+    "transparentSha256": "6e954d895c9d3033a788fb835783f672e770fa1fc362b4f3387f97cfebfd0faa",
+    "transparency": {
+      "script": "attempts/key.py",
+      "method": "Deterministic magenta key: b-g, min(r,b)-g and (r+b)/2-g near background; edges unmixed, faint/tinted edges neutralised; opaque pixels unchanged. No repainting."
+    }
+  },
+  "comparison": "comparison.png",
+  "review": {
+    "status": "Planner-selected; processing and geometry checked by Codex",
+    "findings": [
+      "No visible magenta halo on paper or dark backgrounds; strong-magenta count is zero. Weak-tint counts are retained as a conservative diagnostic; no extra edge painting or cleanup was applied."
+    ],
+    "magentaDefinition": "alpha > 0 and min(red, blue) - green > 25; includes every surviving edge pixel",
+    "weakTintDefinition": "Conservative additional diagnostic: alpha > 0 and min(red, blue) - green > 20; can include red trim and warm foreground colours",
+    "magentaPerPiece": [0, 0, 0],
+    "weakTintPerPiece": [201, 146, 342],
+    "maxMagentaPerPiece": 0,
+    "maxWeakTintPerPiece": 342
+  },
+  "styleReference": {
+    "asset": "S1-02",
+    "id": "v4",
+    "path": "../s1-02-south-gate/attempts/v4.webp"
+  },
+  "candidateNote": "Only two candidates exist (v1, v2); no v3 was generated or invented."
+}
