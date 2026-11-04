@@ -4,7 +4,7 @@
 
 **Date:** November 4, 2026. Written against `v0.4` at `b543ee7` (the tip of `v0.4`, which `v0.5` branches from) and `siege_v0.2` at `44cb0b8`.
 
-**Status:** Brainstorm. No code is changed on `v0.5` yet. Section 8 lists the decisions the owner needs to make before the first implementation ticket is written.
+**Status:** Brainstorm, superseded by the [v0.5 plan](plan.md). The owner decided on November 4, 2026: keep the 24 cities and 6 houses (D1 a, D2 a), add leadership and politics (D3 b), keep day-by-day turns with persistent orders (D5 a), siege later (D8 b), ignore save compatibility (D11 a), and no new cities or named troop corps (D4 a). The plan limits v0.5 to the battlefield, officers, one balance module and land tuning.
 
 ---
 
