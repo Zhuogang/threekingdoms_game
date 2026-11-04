@@ -3,7 +3,7 @@
 # its foot anchor; also writes a game-size copy (unit-scale, e.g. 36/300 so a
 # soldier is 36px tall). Islands under min-island px of alpha (default 64) are
 # dropped (stray specks; pass 0 for sparks and smoke); nothing is repainted. Writes <out-dir>/poses.json.
-import sys, os, json
+import sys, os, json, subprocess
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -38,3 +38,6 @@ json.dump(dict(sheet=os.path.basename(sheet), cols=cols, rows=rows, gameScale=sc
                preparation=f'Cut per cell from the keyed sheet; alpha islands under {MIN} px dropped; cropped to the figure; anchor is the foot point (mean x of the lowest 12 rows, bottom edge); game copy scaled by gameScale. No repainting.',
                poses=poses), open(f'{out}/poses.json', 'w'), indent=2)
 print(out, len(poses), 'poses', [p['game']['size'] for p in poses][:3])
+
+# Match repository formatting for generated metadata.
+subprocess.run(['node', 'node_modules/prettier/bin/prettier.cjs', '--write', f'{out}/poses.json'], check=True)

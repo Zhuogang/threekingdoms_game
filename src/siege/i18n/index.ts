@@ -10,9 +10,12 @@ export function siegeText(
   key: SiegeTextKey,
   params: Record<string, string | number> = {},
 ): string {
-  return SIEGE_COPY[locale][key].replace(/\{([^}]+)\}/g, (_, name: string) =>
+  const text = SIEGE_COPY[locale][key].replace(/\{([^}]+)\}/g, (_, name: string) =>
     String(params[name] ?? ''),
   );
+  return locale === 'zh' && key.startsWith('report')
+    ? text.replace(/(?<=[\u3400-\u9fff]) +| +(?=[\u3400-\u9fff])/gu, '')
+    : text;
 }
 export function rejectionText(locale: SiegeLocale, reason: string): string {
   return (SIEGE_REASONS[locale][reason as keyof typeof enReasons] ?? reason).replace(

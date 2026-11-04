@@ -388,3 +388,27 @@ it('skips a routed climber when selecting a boulder target', () => {
   const actions = planDefenderTurn(state);
   expect(actions.some((a) => a.type === 'dropBoulders')).toBe(false);
 });
+
+it('waits two nights after wasted torches, falls through the cascade, and ignores pending enemy orders', () => {
+  const state = createSiegeState(228);
+  state.day = 5;
+  state.engines.forEach((e) => {
+    e.covered = true;
+  });
+  state.log.push({ day: 4, code: 'torches', params: { assault: false } });
+  state.gates.south.durability = 100;
+  for (const day of [5, 6]) {
+    state.day = day;
+    expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'nightRepair' });
+    const hidden = structuredClone(state);
+    hidden.nightOrders.shu = { kind: 'nightAssault' };
+    expect(planDefenderTurn(hidden)).toEqual(planDefenderTurn(state));
+  }
+  state.gates.south.durability = 600;
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'holdFast' });
+  state.day = 7;
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'torches' });
+  state.day = 5;
+  state.log[0]!.params.assault = true;
+  expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'torches' });
+});

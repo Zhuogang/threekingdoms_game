@@ -1,7 +1,7 @@
 # prepare_ui.py icons <folder>   -> icons/<name>-{128,64,32}.png (square, centred, padded)
 # prepare_ui.py paper <folder>   -> pieces/*.png, scroll-left/right/middle.png, paper-tile.png
 # Works on the selected sheet of an S6 folder; nothing is repainted.
-import sys, os, json
+import sys, os, json, subprocess
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -44,3 +44,7 @@ elif mode == 'paper':
     json.dump(dict(pieces={k: list(map(int, b)) for k, b in names.items()}, derived=['scroll-left.png', 'scroll-right.png', 'scroll-middle.png (256px wide, cross-faded to tile)', 'paper-tile.png (512px, seamless by half-offset blend)'],
                    preparation='Pieces cut from the selected sheet by alpha components; scroll ends 6% of its width; no repainting except the tiling blends noted.'), open(f'{d}/pieces/pieces.json', 'w'), indent=2)
     print(d, sorted(names))
+
+# Match repository formatting for generated metadata.
+metadata = f'{d}/icons/icons.json' if mode == 'icons' else f'{d}/pieces/pieces.json'
+subprocess.run(['node', 'node_modules/prettier/bin/prettier.cjs', '--write', metadata], check=True)

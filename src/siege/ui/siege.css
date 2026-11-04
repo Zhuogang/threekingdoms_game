@@ -265,11 +265,12 @@
   object-position: center;
 }
 .siege-campaign-card > div {
+  /* Reserve room below the side choices for the host start page’s sticky action bar. */
   position: relative;
   max-width: 62%;
   text-shadow: 0 1px 5px #000;
   background: linear-gradient(90deg, #182629c9, transparent);
-  padding: 8px;
+  padding: 8px 8px 96px;
 }
 .siege-campaign-card h2 {
   font-size: clamp(23px, 3vw, 32px);
@@ -922,7 +923,21 @@
   background: #1e252938;
 }
 .siege-report {
-  width: min(600px, 100%);
+  width: min(680px, 100%);
+  padding: 18px 22px;
+}
+.siege-report li > button strong {
+  line-height: 1.4;
+}
+.siege-report li p {
+  margin: 4px 0 0 28px;
+  line-height: 1.4;
+}
+.siege-report-pages {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
 }
 .siege-report ul {
   list-style: none;

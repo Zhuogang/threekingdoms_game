@@ -284,7 +284,7 @@ function performAction(
       return 'Choose an adjacent, unfilled south trench cell.';
     if (action.y === 17 && state.trenchFill[`${action.x},18`] !== T.trenchCapacity)
       return 'Fill the outer trench cell first.';
-    // Plan §4.6: infantry fills at half efficiency (0.5); carts carry three 1.5-point loads.
+    // Fill rates and cart loads follow the v0.2 tuning table.
     const fill = unit ? T.infantryFill : T.cartFill;
     state.trenchFill[key] = Math.min(
       T.trenchCapacity,

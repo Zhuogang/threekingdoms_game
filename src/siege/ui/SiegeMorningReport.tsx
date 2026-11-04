@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../v03/ui/kit';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { SiegeIcon } from './storyAssets';
-import type { ReportItem } from './report';
+import { REPORT_PAGE_SIZE, type ReportItem } from './report';
 
 export function SiegeMorningReport({
   items,
@@ -16,6 +16,11 @@ export function SiegeMorningReport({
   focus?: (place: NonNullable<ReportItem['place']>) => void;
 }) {
   const panel = useRef<HTMLElement>(null);
+  const [page, setPage] = useState(0);
+  const start = page * REPORT_PAGE_SIZE;
+  const visible = items.slice(start, start + REPORT_PAGE_SIZE);
+  const remaining = Math.max(0, items.length - start - REPORT_PAGE_SIZE);
+  const counters = new Set<string>();
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     panel.current?.querySelector('button')?.focus();
@@ -56,23 +61,41 @@ export function SiegeMorningReport({
         </header>
         {items.length ? (
           <ul>
-            {items.map((item, i) => (
-              <li key={`${item.code}-${i}`} data-testid="report-item" data-code={item.code}>
-                <button
-                  type="button"
-                  data-testid="report-focus"
-                  disabled={!item.place}
-                  onClick={() => item.place && focus?.(item.place)}
-                >
-                  <SiegeIcon name={item.icon} />
-                  <strong>{item.text}</strong>
-                  <p>{item.counter}</p>
-                </button>
-              </li>
-            ))}
+            {visible.map((item, i) => {
+              const showCounter = !counters.has(item.counter);
+              counters.add(item.counter);
+              return (
+                <li key={`${item.code}-${i}`} data-testid="report-item" data-code={item.code}>
+                  <button
+                    type="button"
+                    data-testid="report-focus"
+                    disabled={!item.place}
+                    onClick={() => item.place && focus?.(item.place)}
+                  >
+                    <SiegeIcon name={item.icon} />
+                    <strong>{item.text}</strong>
+                    {showCounter && <p>{item.counter}</p>}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p data-testid="report-empty">{siegeText(locale, 'reportEmpty')}</p>
+        )}
+        {(page > 0 || remaining > 0) && (
+          <nav className="siege-report-pages" aria-label={siegeText(locale, 'morningReport')}>
+            {page > 0 && (
+              <Button data-testid="report-previous" onClick={() => setPage(page - 1)}>
+                {siegeText(locale, 'reportPrevious')}
+              </Button>
+            )}
+            {remaining > 0 && (
+              <Button data-testid="report-more" onClick={() => setPage(page + 1)}>
+                {siegeText(locale, 'reportMore', { n: remaining })}
+              </Button>
+            )}
+          </nav>
         )}
       </section>
     </div>

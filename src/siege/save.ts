@@ -28,6 +28,7 @@ export interface SiegePresentation {
   walkthrough?: SiegeWalkthrough;
   dismissedCounters?: CounterKind[];
   reportReadDay?: number;
+  reportSeen?: Record<string, number>;
   reportObservations?: SiegeLogEntry[];
   attackerTurnDay?: number;
 }
@@ -231,6 +232,7 @@ const saveSchema = z.strictObject({
       dismissedHints: z.array(z.enum(HINT_KINDS)),
       dismissedCounters: z.array(z.enum(COUNTER_KINDS)).optional(),
       reportReadDay: integer.min(1).max(T.days).optional(),
+      reportSeen: z.record(z.string(), integer.min(1).max(T.days)).optional(),
       attackerTurnDay: integer.min(1).max(T.days).optional(),
       reportObservations: z
         .array(

@@ -57,7 +57,7 @@ import { SiegeIcon, storyArt } from './storyAssets';
 import { SiegeHowToPlay, SiegeWalkthroughBox } from './SiegeHowToPlay';
 import { Forecast, ClimbForecast } from './SiegeForecast';
 import { SiegeMorningReport } from './SiegeMorningReport';
-import { morningReport, reportObservations } from './report';
+import { morningReport, reportObservations, rememberReport } from './report';
 import { counterCards } from './counters';
 import { enqueueCards, visibleCard, type QueuedCard } from './cardQueue';
 import { placeName } from './places';
@@ -229,9 +229,17 @@ export default function SiegeApp({
         presentation.reportObservations ?? [],
         state,
         playerSide,
+        presentation.reportSeen,
       ),
-    [state, locale, playerSide, presentation.reportObservations],
+    [state, locale, playerSide, presentation.reportObservations, presentation.reportSeen],
   );
+  useEffect(() => {
+    if (!reportVisible) return;
+    const seen = presentation.reportSeen ?? {};
+    const next = rememberReport(reportItems, seen, state.day);
+    if (Object.keys(next).length === Object.keys(seen).length) return;
+    setGame((g) => ({ ...g, presentation: { ...presentationFor(g), reportSeen: next } }));
+  }, [reportVisible, reportItems, state.day, presentation.reportSeen]);
   const availableCounters = counterCards(
     state,
     presentation.dismissedCounters ?? [],
@@ -707,7 +715,7 @@ export default function SiegeApp({
     if (!import.meta.env.DEV) return;
     const hook: SiegeDev = {
       snapshot: () => structuredClone(game),
-      playScript: async (strategy, days = 21) => {
+      playScript: async (strategy, days = T.days) => {
         if (game.phase !== 'battle' || playing)
           throw new Error('Start battle and finish playback first.');
         const { playScriptDays } = await import('./devPlaythrough');
@@ -1768,7 +1776,7 @@ function Defence({
                 !p.braziers[key] && !p.millstones[key] && !p.boulders[key] && !state.footholds[key]
               );
             });
-          if (quiet && !stores) return null;
+          if (quiet) return null;
           const place = placeName(run[0], locale);
           return (
             <button

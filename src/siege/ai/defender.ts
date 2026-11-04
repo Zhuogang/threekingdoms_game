@@ -229,7 +229,15 @@ function dailyOrder(state: SiegeState, threats: Threat[]): SiegeAction | null {
       GATES.south.cells.some((c) => sameCell(c, u)),
   );
   if (sortie && raider) return { type: 'order', side: 'wei', kind: 'sortie', target: sortie.id };
-  if (state.day > 2 && engines.filter((e) => e.y <= 21).length >= 2)
+  // Only resolved public history is consulted; pending Shu orders remain hidden.
+  const wastedTorches = state.log.some(
+    (e) =>
+      e.code === 'torches' &&
+      e.params.assault === false &&
+      e.day < state.day &&
+      state.day - e.day <= SIEGE_TUNING.torchesCooldownNights,
+  );
+  if (!wastedTorches && state.day > 2 && engines.filter((e) => e.y <= 21).length >= 2)
     return { type: 'order', side: 'wei', kind: 'torches' };
   const damaged = (Object.keys(GATES) as GateId[])
     .filter((id) => !state.gates[id].broken && state.gates[id].durability < state.gates[id].max / 2)

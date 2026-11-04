@@ -19,7 +19,7 @@ export function preparationRows(state: SiegeState) {
           u.level === 'wall' &&
           (table === 'braziers'
             ? u.troopType === 'archer' && distance(u, place) <= 1
-            : cellKey(u) === cell && (table !== 'boulders' || u.troopType === 'infantry')),
+            : cellKey(u) === cell),
       );
       const status: SiegeTextKey =
         'hoisted' in prep && !prep.hoisted

@@ -54,9 +54,9 @@ describe('M2 place names and coherent morning stories', () => {
       expect(items.map((i) => i.code)).toEqual([
         'millstonePrepared',
         'engineLost',
-        'brazierPrepared',
+        'brazierDoused',
       ]);
-      expect(items[2]!.text).toContain(locale === 'zh' ? '雪夜灭了火盆' : 'snow extinguished');
+      expect(items[2]!.text).toContain(locale === 'zh' ? '火盆熄灭' : 'snow extinguished');
       expect(items[2]!.counter).toContain(locale === 'zh' ? '推进' : 'advance');
       expect(items[2]!.text).not.toContain('29,16');
       expect(items[2]!.place).toEqual({ x: 29, y: 16, level: 'wall' });
@@ -81,7 +81,7 @@ describe('M2 place names and coherent morning stories', () => {
       [],
       state,
     );
-    expect(items[0]!.priority).toBe(1);
+    expect(items[0]!.priority).toBe(3);
     expect(items[0]!.text).toContain('no defender can use it today');
     expect(fireRangeCells(state)).toEqual([]);
   });
@@ -95,10 +95,9 @@ describe('M2 place names and coherent morning stories', () => {
       2,
       'en',
     );
-    expect(items).toHaveLength(2);
+    expect(items).toHaveLength(1);
     expect(items[0]!.priority).toBe(0);
-    expect(items[1]!.text).toContain('no longer ready');
-    expect(items[1]!.counter).not.toContain('before ramming');
+    expect(items[0]!.code).toBe('brazierPrepared');
   });
 });
 

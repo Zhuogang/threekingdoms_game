@@ -144,6 +144,8 @@ test('Wei side choice screenshot', async ({ page }) => {
   await page.goto('/?lang=zh');
   await expect(page.getByTestId('start-wei')).toHaveText('魏军 · 郝昭');
   await expect(page.getByTestId('start-shu')).toHaveText('汉军 · 诸葛亮');
+  const card = page.getByTestId('chencang-campaign');
+  await card.scrollIntoViewIfNeeded();
   await shot(page, 'wei-card');
 });
 test('Wei deployment screenshot', async ({ page }) => {
@@ -162,6 +164,17 @@ test('Wei preparations screenshot and row focus', async ({ page }) => {
   await prepare(page);
   await page.getByRole('tab', { name: 'Preparations', exact: true }).click();
   const tab = page.getByTestId('wei-defense-tab');
+  await expect(tab).not.toContainText('North wall');
+  const storesRuns = await tab
+    .locator('[data-testid^="defense-run-"]')
+    .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-testid')));
+  await page.getByRole('tab', { name: 'Defence', exact: true }).click();
+  const defenseRuns = await page
+    .getByTestId('defense-panel')
+    .locator('[data-testid^="defense-run-"]')
+    .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-testid')));
+  expect(storesRuns).toEqual(defenseRuns);
+  await page.getByRole('tab', { name: 'Preparations', exact: true }).click();
   await expect(tab.getByTestId('preparation-row')).toHaveCount(2);
   await tab
     .locator('[data-testid^="defense-run-"]')

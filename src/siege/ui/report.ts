@@ -27,7 +27,67 @@ export interface ReportItem {
   counter: string;
   place: SiegePosition | null;
   priority: number;
+  noticeKeys?: string[];
 }
+export const REPORT_PAGE_SIZE = 5;
+export type ReportSeen = Record<string, number>;
+/** Presentation memory survives save/load, including notices behind “more”. */
+export function rememberReport(items: ReportItem[], seen: ReportSeen, day: number): ReportSeen {
+  const next = { ...seen };
+  for (const item of items) for (const key of item.noticeKeys ?? []) next[key] ??= day;
+  return next;
+}
+
+interface CandidateReport extends ReportItem {
+  template: SiegeTextKey;
+  params: Record<string, string | number>;
+  group: string;
+}
+
+/** One engine's damage and destruction during the same resolution are one story. */
+function engineChains(entries: SiegeLogEntry[]): SiegeLogEntry[] {
+  const damage = new Set([
+    'fireArrowHit',
+    'engineBurning',
+    'millstoneHit',
+    'sortieHit',
+    'engineLost',
+  ]);
+  const groups = new Map<string, SiegeLogEntry[]>();
+  for (const entry of entries) {
+    if (!damage.has(entry.code) || !entry.params.engineId) continue;
+    const id = `${entry.day}:${entry.params.engineId}`;
+    groups.set(id, [...(groups.get(id) ?? []), entry]);
+  }
+  return entries.flatMap((entry) => {
+    const group = groups.get(`${entry.day}:${entry.params.engineId}`);
+    if (!group || group.length < 2 || !damage.has(entry.code)) return [entry];
+    if (entry !== group[0]) return [];
+    const hits = group.filter((e) => typeof e.params.before === 'number');
+    const lost = group.some((e) => e.code === 'engineLost');
+    const cause = group.some((e) => e.code === 'fireArrowHit')
+      ? 'reportCauseFire'
+      : group.some((e) => e.code === 'sortieHit')
+        ? 'reportCauseSortie'
+        : group.some((e) => e.code === 'millstoneHit')
+          ? 'reportCauseMill'
+          : 'reportCauseBurn';
+    return [
+      {
+        ...entry,
+        code: lost ? 'engineLost' : entry.code,
+        params: {
+          ...entry.params,
+          chain: true,
+          cause,
+          before: hits[0]?.params.before ?? 0,
+          after: lost ? 0 : (hits.at(-1)?.params.after ?? 0),
+        },
+      },
+    ];
+  });
+}
+
 export const REPORT_CODES = [
   'brazierPrepared',
   'millstonePrepared',
@@ -91,6 +151,7 @@ export function morningReport(
   observations: SiegeLogEntry[] = [],
   state?: SiegeState,
   playerSide: SiegeSide = 'shu',
+  seenNotices: ReportSeen = {},
 ): ReportItem[] {
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
@@ -110,13 +171,15 @@ export function morningReport(
   };
   const recent = [...log, ...observations].filter(
     (entry) =>
-      entry.day === day - 1 ||
+      (entry.day === day - 1 &&
+        (playerSide === 'shu' || ['nightAssault', 'brazierDoused'].includes(entry.code))) ||
       (entry.day === day && (playerSide === 'wei' || entry.code === 'brazierDoused')),
   );
   const entries = [...recent];
   if (playerSide === 'wei' && state) {
     for (const [cell, fill] of Object.entries(state.trenchFill))
-      if (fill >= T.trenchCapacity) entries.push({ day, code: 'trenchFilled', params: { cell } });
+      if (fill >= T.trenchCapacity)
+        entries.push({ day, code: 'trenchFilled', params: { cell, notice: `filled:${cell}` } });
     for (const engine of state.engines.filter(
       (e) =>
         !e.wrecked && e.durability > 0 && SOUTH_TRENCH.some((c) => distance(c, e) <= T.sortieRange),
@@ -126,7 +189,7 @@ export function morningReport(
       entries.push({
         day,
         code: bridge ? 'ramAtBridge' : 'engineNear',
-        params: { engineId: engine.id },
+        params: { engineId: engine.id, notice: `${bridge ? 'bridge' : 'near'}:${engine.id}` },
       });
     }
   }
@@ -147,12 +210,13 @@ export function morningReport(
     recent.filter((e) => e.code === 'brazierDoused').map((e) => e.params.cell),
   );
   const seen = new Set<string>();
-  return entries
-    .flatMap((entry, index): ReportItem[] => {
+  const candidates = engineChains(entries)
+    .flatMap((entry, index): CandidateReport[] => {
       const mapping = (playerSide === 'wei' ? weiCopy : copy)[entry.code];
       if (!mapping) return [];
       const [icon, base, baseCounter] = mapping;
       const p = entry.params;
+      const eventIndex = recent.indexOf(entry);
       if (playerSide === 'wei' && entry.code === 'suppressed' && entry.day !== day) return [];
       if (
         playerSide === 'wei' &&
@@ -162,13 +226,7 @@ export function morningReport(
         return [];
       let key = base;
       let counter = baseCounter;
-      const merged = entry.code === 'brazierPrepared' && doused.has(p.cell);
-      if (
-        playerSide === 'shu' &&
-        entry.code === 'brazierDoused' &&
-        recent.some((e) => e.code === 'brazierPrepared' && e.params.cell === p.cell)
-      )
-        return [];
+      if (playerSide === 'shu' && entry.code === 'brazierPrepared' && doused.has(p.cell)) return [];
       const preparation =
         entry.code === 'brazierPrepared'
           ? preparations.braziers[String(p.cell)]
@@ -196,22 +254,36 @@ export function morningReport(
               u.level === 'wall' &&
               (entry.code === 'brazierPrepared'
                 ? u.troopType === 'archer' && distance(u, cellPosition) <= 1
-                : u.x === cellPosition.x &&
-                  u.y === cellPosition.y &&
-                  (entry.code !== 'bouldersPrepared' || u.troopType === 'infantry')),
+                : u.x === cellPosition.x && u.y === cellPosition.y),
           ),
         );
       const ready = preparedReady && hasOperator;
-      if (merged) {
-        key = 'reportBrazierDoused';
-        counter = 'counterSnow';
-      } else if (entry.code.endsWith('Prepared') && !ready) {
-        key = preparedReady ? 'reportBlocked' : 'reportSpent';
+      // A standing weapon is news while it can strike, or once when it loses its operator.
+      const preparedDay =
+        preparation && ('litDay' in preparation ? preparation.litDay : preparation.day);
+      const notice =
+        typeof p.notice === 'string'
+          ? p.notice
+          : entry.code.endsWith('Prepared') && preparedReady && !hasOperator
+            ? `blocked:${entry.code}:${p.cell}:${preparedDay}`
+            : undefined;
+      if (notice && seenNotices[notice] !== undefined && seenNotices[notice] !== day) return [];
+      // Consumed preparations are already explained by their strike; no stale “spent” item.
+      if (entry.code.endsWith('Prepared') && !preparedReady) return [];
+      if (entry.code.endsWith('Prepared') && !ready) {
+        key = 'reportBlocked';
         counter = 'counterSpent';
       }
       const identity = `${entry.code}-${JSON.stringify(p)}`;
       if (seen.has(identity)) return [];
       seen.add(identity);
+      if (
+        playerSide === 'shu' &&
+        entry.code === 'nightAssault' &&
+        p.result === 'stopped' &&
+        recent.some((e) => e.code === 'torches' && e.params.assault === true)
+      )
+        return [];
       if (entry.code === 'holdFastOrdered' && p.effectiveDay !== day) return [];
       if (entry.code === 'torches' && p.assault === true) key = 'reportTorchesCaught';
       if (entry.code === 'nightAssault' && p.result === 'stopped')
@@ -225,7 +297,9 @@ export function morningReport(
               : 'reportSortieUnavailable';
       if (
         entry.code === 'fireArrowHit' &&
-        recent.slice(0, index).some((e) => e.code === 'torches' && e.params.assault === true)
+        recent
+          .slice(0, eventIndex < 0 ? recent.length : eventIndex)
+          .some((e) => e.code === 'torches' && e.params.assault === true)
       )
         key = 'reportNightFire';
       const engineId = String(p.engineId ?? '');
@@ -242,7 +316,7 @@ export function morningReport(
                 ? 'earthCart'
                 : { ...GATES.south.cells[0]!, level: 'wall' as const });
       const roster = [...SHU_ROSTER, ...WEI_ROSTER].find((u) => u.id === (p.targetId ?? p.unitId));
-      const loss = [...recent.slice(0, index)]
+      const loss = [...recent.slice(0, eventIndex < 0 ? recent.length : eventIndex)]
         .reverse()
         .find(
           (e) =>
@@ -293,9 +367,13 @@ export function morningReport(
         preparation: t(icon),
         max: T.moundComplete,
         loss: loss ? Number(loss.params.before) - Number(loss.params.after) : 0,
+        cause: p.cause ? t(p.cause as SiegeTextKey) : '',
       };
+      if (p.chain) {
+        key = entry.code === 'engineLost' ? 'reportEngineDestroyed' : 'reportEngineDamaged';
+        if (entry.code === 'engineLost') counter = 'counterEngineLoss';
+      }
       const good =
-        merged ||
         ['brazierDoused', 'sortieRepelled'].includes(entry.code) ||
         (entry.code === 'nightAssault' && p.result !== 'stopped') ||
         (entry.code === 'torches' && p.assault !== true);
@@ -304,14 +382,97 @@ export function morningReport(
           ? ['wallGained', 'suppressed', 'assault', 'ramAtBridge'].includes(entry.code)
             ? 0
             : 1
-          : good
-            ? 2
-            : ready || entry.code === 'holdFastOrdered'
-              ? 0
-              : 1;
+          : notice?.startsWith('blocked:')
+            ? 3
+            : good
+              ? 2
+              : ready || entry.code === 'holdFastOrdered'
+                ? 0
+                : 1;
+      const mergeByKind = [
+        'raiseLadder',
+        'covered',
+        'suppressed',
+        'assault',
+        'wallGained',
+        'engineNear',
+        'ramAtBridge',
+        'trenchFilled',
+      ].includes(entry.code);
       return [
-        { code: entry.code, icon, text: t(key, params), counter: t(counter), place, priority },
+        {
+          code: entry.code,
+          icon,
+          text: t(key, params),
+          counter: t(counter),
+          place,
+          priority,
+          noticeKeys: notice ? [notice] : [],
+          template: key,
+          params,
+          group:
+            p.chain || entry.code === 'engineLost'
+              ? `${key}:${params.engine}:${params.cause ?? ''}:${params.before ?? ''}:${params.after ?? ''}`
+              : mergeByKind
+                ? `${key}:${entry.code === 'covered' || entry.code === 'engineNear' ? params.engine : ''}`
+                : entry.code.endsWith('Prepared') || entry.code === 'brazierDoused'
+                  ? `${key}:${cell}:${icon}`
+                  : `event:${index}`,
+        },
       ];
     })
     .sort((a, b) => a.priority - b.priority);
+  const groups = new Map<string, CandidateReport[]>();
+  for (const item of candidates) groups.set(item.group, [...(groups.get(item.group) ?? []), item]);
+  const groupedKeys: Partial<Record<SiegeTextKey, SiegeTextKey>> = {
+    reportBrazier: 'reportBrazierGroup',
+    reportMillstone: 'reportMillstoneGroup',
+    reportBoulders: 'reportBouldersGroup',
+    reportBlocked: 'reportBlockedGroup',
+    reportSnow: 'reportSnowGroup',
+    reportWeiSnow: 'reportWeiSnowGroup',
+    reportWeiLadder: 'reportWeiLadderGroup',
+    reportWeiCover: 'reportWeiCoverGroup',
+    reportWeiSuppress: 'reportWeiSuppressGroup',
+    reportWeiAssault: 'reportWeiAssaultGroup',
+    reportWeiMounted: 'reportWeiMountedGroup',
+    reportWeiEngineNear: 'reportWeiEngineNearGroup',
+    reportWeiFill: 'reportWeiFillGroup',
+    reportEngineDestroyed: 'reportEngineDestroyedGroup',
+    reportEngineDamaged: 'reportEngineDamagedGroup',
+    reportEngineLost: 'reportEngineLostGroup',
+  };
+  const unique = new Set<string>();
+  return [...groups.values()].flatMap((group): ReportItem[] => {
+    const first = group[0]!;
+    const join = (key: string) =>
+      [...new Set(group.map((item) => String(item.params[key])))].join(
+        locale === 'zh' ? '、' : ' and ',
+      );
+    let cell = join('cell');
+    const west = t('placeSouthWest'),
+      east = t('placeSouthEast');
+    if (
+      group.some((i) => i.params.cell === west) &&
+      group.some((i) => i.params.cell === east) &&
+      group.every((i) => i.params.cell === west || i.params.cell === east)
+    )
+      cell = t('placeSouthBoth');
+    const template =
+      group.length > 1 ? (groupedKeys[first.template] ?? first.template) : first.template;
+    const text = t(template, { ...first.params, cell, count: group.length, unit: join('unit') });
+    if (unique.has(text)) return [];
+    unique.add(text);
+    return [
+      {
+        code: first.code,
+        icon: first.icon,
+        text,
+        counter: first.counter,
+        place: first.place,
+        priority: first.priority,
+        noticeKeys: group.flatMap((i) => i.noticeKeys ?? []),
+      },
+    ];
+  });
 }

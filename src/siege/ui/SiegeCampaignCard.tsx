@@ -25,7 +25,11 @@ export function SiegeCampaignCard({ locale }: { locale: SiegeLocale }) {
               variant="primary"
               data-testid={`start-${side}`}
               style={{
-                backgroundImage: `linear-gradient(#211c11aa, #211c11aa), url("${storyArt(side === 'shu' ? 1 : 's8-10')}")`,
+                // Each side's army colour over its art, so the choice reads at a glance.
+                backgroundImage:
+                  side === 'shu'
+                    ? `linear-gradient(#35643fd9, #35643fd9), url("${storyArt(1)}")`
+                    : `linear-gradient(#2f4a6ed9, #2f4a6ed9), url("${storyArt('s8-10')}")`,
               }}
               onClick={() => {
                 window.location.hash = `chencang/${side}`;

@@ -1,4 +1,36 @@
 export const en = {
+  reportEngineDestroyedGroup:
+    '{count} {engine} engines destroyed after being {cause} (each {before} → {after}).',
+  reportEngineDamagedGroup:
+    '{count} {engine} engines damaged after being {cause} (each {before} → {after}).',
+  reportEngineLostGroup: '{count} {engine} engines were destroyed; choose another way forward.',
+  reportMore: 'More ({n} remaining)',
+  reportPrevious: 'Previous items',
+  placeSouthBoth: 'both south wall runs',
+  reportCauseFire: 'hit by fire arrows',
+  reportCauseMill: 'struck by millstones',
+  reportCauseSortie: 'raided overnight',
+  reportCauseBurn: 'burned overnight',
+  reportEngineDestroyed: '{engine} destroyed after being {cause} ({before} → {after}).',
+  reportEngineDamaged: '{engine} damaged after being {cause} ({before} → {after}).',
+  counterEngineLoss:
+    'Replace engines, fill the trench and build mounds, or assault along another route.',
+  reportBrazierGroup:
+    'Wei prepared {count} braziers at {cell}; nearby archers can fire flaming arrows.',
+  reportMillstoneGroup: 'Wei hoisted {count} millstones at {cell}, threatening rams below.',
+  reportBouldersGroup: 'Wei stacked boulders at {count} positions on {cell}, threatening climbers.',
+  reportBlockedGroup:
+    'Wei has {count} {preparation} preparations at {cell}, but no defender can use them today.',
+  reportSnowGroup: 'Overnight snow extinguished {count} braziers at {cell}.',
+  reportWeiSnowGroup: 'Snow extinguished {count} braziers at {cell}.',
+  reportWeiLadderGroup: 'Shu raised {count} ladders at {cell}.',
+  reportWeiCoverGroup: 'Shu covered {count} {engine} engines at {cell}.',
+  reportWeiSuppressGroup: '{unit} at {cell} are suppressed today.',
+  reportWeiAssaultGroup: 'Shu made {count} assaults on {cell}.',
+  reportWeiMountedGroup: 'Shu’s {unit} mounted {cell}.',
+  reportWeiEngineNearGroup: 'Shu advanced {count} {engine} engines near the trench at {cell}.',
+  reportWeiFillGroup: '{count} trench cells at {cell} are filled.',
+
   continueShu: 'Han army',
   continueWei: 'Wei army',
   playbackWei: 'Shu turn / night · Esc to skip',
@@ -127,8 +159,6 @@ export const en = {
   placeWestSouth: 'West wall, south run',
   placeEastNorth: 'East wall, north run',
   placeEastSouth: 'East wall, south run',
-  reportBrazierDoused: 'Wei prepared fire at {cell}, but overnight snow extinguished the brazier.',
-  reportSpent: 'Wei prepared {preparation} at {cell}; it is no longer ready today.',
   counterSpent: 'This preparation cannot strike now; check the remaining threats.',
   contextLadder: 'At a ladder base: climb for +{gain} foothold.',
   contextDefender: 'Defenders overhead: attack or assault.',
@@ -226,7 +256,7 @@ export const en = {
   reportMillHit: 'A Wei millstone struck {engine}: durability {before} → {after}.',
   reportBoulderHit: 'Wei boulders hit {unit}: {casualties} casualties and {loss} foothold lost.',
   reportWall: 'Wei completed inner-wall segment {segment}, blocking the route inside.',
-  reportThrown: 'Low morale threw {unit} off {from}, back to {to}.',
+  reportThrown: 'Low morale threw {unit} off the wall, back to the ground below.',
   howCounters: 'Moves and counters',
   howCounterFire:
     'Ladders versus fire: cover (fire damage ×{cover}, no burning), suppress brazier archers, assault at night or change wall runs.',

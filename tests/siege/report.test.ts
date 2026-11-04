@@ -90,7 +90,7 @@ describe('pure morning report', () => {
     ];
     const items = morningReport(log, p, 2, 'en');
     expect(items.find((i) => i.code === 'fireArrowHit')!.text).toMatch(/^Wei fire arrows/);
-    expect(items.find((i) => i.code === 'nightAssault')!.text).toContain('stopped');
+    expect(items.some((i) => i.code === 'nightAssault')).toBe(false);
     expect(items.find((i) => i.code === 'torches')!.text).toContain('failed');
     expect(items.filter((i) => i.code === 'fireArrowHit')[1]!.text).toContain('met Wei torches');
     expect(items.some((i) => i.text.includes('Guards repelled'))).toBe(true);
