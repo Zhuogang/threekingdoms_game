@@ -97,7 +97,9 @@ export function SiegeWalkthroughBox({
         {siegeText(locale, 'walkthrough')} ·{' '}
         {siegeText(locale, 'walkProgress', { n: progress.step, max: walkthroughSteps(playerSide) })}
       </strong>
-      <p aria-live="polite">{siegeText(locale, key, { max: T.footholdComplete })}</p>
+      <p aria-live="polite">
+        {siegeText(locale, key, { max: T.footholdComplete, gain: T.climbFoothold })}
+      </p>
       <Button size="sm" onClick={skip}>
         {siegeText(locale, 'skipWalkthrough')}
       </Button>

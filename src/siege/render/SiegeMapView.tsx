@@ -90,9 +90,11 @@ interface Props {
   state: SiegeState;
   locale: SiegeLocale;
   selected?: string | null;
+  preferCells?: boolean;
   reachable?: SiegePosition[];
   targets?: SiegePosition[];
   tutorialCells?: SiegePosition[];
+  climbBase?: { base: SiegePosition; label: string };
   tutorialFill?: boolean;
   deploy?: boolean;
   playerSide?: 'shu' | 'wei';
@@ -117,9 +119,11 @@ export const SiegeMapView = memo(
       state,
       locale,
       selected,
+      preferCells = false,
       reachable = NO_CELLS,
       targets = NO_CELLS,
       tutorialCells = NO_CELLS,
+      climbBase,
       tutorialFill = false,
       deploy = false,
       playerSide = 'shu',
@@ -798,7 +802,6 @@ export const SiegeMapView = memo(
             {climbableCells(state)
               .filter((c) => targets.some((t) => t.x === c.x && t.y === c.y && t.level === c.level))
               .map((c) => cellOutline(c, '#dfb347', 'climb', 0.04, 1))}
-            {tutorialCells.map((c) => cellOutline(c, '#bc841d', 'tutorial', 0.08))}
             {reachable.map((c) => cellOutline(c, '#609d80', 'reachable'))}
             {targets
               .filter(
@@ -808,6 +811,7 @@ export const SiegeMapView = memo(
                   ),
               )
               .map((c) => cellOutline(c, '#b74e3c', 'target', 0.22))}
+            {tutorialCells.map((c) => cellOutline(c, '#bc841d', 'tutorial', 0.08))}
           </g>
           {effectAction && (
             <BattleEffect key={`${state.log.length}-${effectAction.type}`} action={effectAction} />
@@ -905,7 +909,15 @@ export const SiegeMapView = memo(
             const d = drag.current;
             drag.current = null;
             if (d?.moved) return;
-            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const stack = document.elementsFromPoint(event.clientX, event.clientY);
+            const element = stack[0];
+            const topSelect = element?.closest('[data-select]')?.getAttribute('data-select');
+            const green = stack.find((el) => el.getAttribute('data-overlay') === 'reachable');
+            if (green && (preferCells || !topSelect)) {
+              const [x, y, level] = green.getAttribute('data-cell')!.split(',');
+              onCell?.({ x: Number(x), y: Number(y), level: level === 'wall' ? 'wall' : 'ground' });
+              return;
+            }
             const marker = element?.closest('[data-cell]');
             if (
               marker &&
@@ -958,6 +970,34 @@ export const SiegeMapView = memo(
           onPointerLeave={() => setHover(null)}
         >
           {drawing}
+          {climbBase &&
+            !deploy &&
+            !night &&
+            (() => {
+              const [x, y] = project(FRAME, climbBase.base.x + 0.5, climbBase.base.y + 0.5, 0);
+              const scale = view.width / (frame.current?.clientWidth || view.width);
+              return (
+                <g
+                  pointerEvents="none"
+                  data-testid="climb-base-label"
+                  data-cell={`${climbBase.base.x},${climbBase.base.y},ground`}
+                  transform={`translate(${x} ${y}) scale(${scale})`}
+                >
+                  <text
+                    textAnchor="middle"
+                    y={4}
+                    fontSize={12}
+                    fontWeight={700}
+                    fill="#49320f"
+                    stroke="#fff3cf"
+                    strokeWidth={4}
+                    paintOrder="stroke"
+                  >
+                    {climbBase.label}
+                  </text>
+                </g>
+              );
+            })()}
           <FootholdPips
             state={state}
             forecast={

@@ -211,10 +211,21 @@ describe('Shu approaches, climbing and gates', () => {
           ...(condition === 'destroyed' ? { durability: 0 } : {}),
         }),
       ];
-      expect(pathTo(state, unit.id, 20, 19, 'ground')).toBeNull();
+      if (condition === 'unraised')
+        expect(pathTo(state, unit.id, 20, 19, 'ground')).toEqual([
+          ground(unit),
+          ground({ x: 20, y: 19 }),
+        ]);
+      else expect(pathTo(state, unit.id, 20, 19, 'ground')).toBeNull();
       expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
     },
   );
+
+  it.each(['ram', 'earthCart', 'tower'] as const)('a %s still blocks troops', (kind) => {
+    const { state, unit } = fixture('shu', 20, 20);
+    state.engines = [engine(kind, 20, 19)];
+    expect(pathTo(state, unit.id, 20, 19, 'ground')).toBeNull();
+  });
 
   it('opens the ground-level south gate to Shu only after it breaks; Wei can use the intact passage', () => {
     const { state, unit } = fixture('shu', 23, 17);

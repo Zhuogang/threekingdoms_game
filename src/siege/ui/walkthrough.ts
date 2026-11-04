@@ -1,5 +1,6 @@
 import { SOUTH_TRENCH, sameCell } from '../content/chencang';
-import { wallRun, usableEngine } from '../rules/combat';
+import { activeUnit, wallRun, usableEngine } from '../rules/combat';
+import { reachableCells } from '../rules/movement';
 import type { SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 import type { SiegeWalkthrough } from '../save';
 
@@ -11,6 +12,27 @@ export const WALKTHROUGH_CELLS: SiegePosition[] = SOUTH_TRENCH.filter(
 ).map((c) => ({ x: c.x, y: TRENCH_SOUTH_ROW, level: 'ground' }));
 export function startWalkthrough(state: SiegeState): SiegeWalkthrough {
   return { status: 'active', step: 1, startDay: state.day, logStart: state.log.length };
+}
+/** Step three waits for tomorrow when no remaining infantry move can reach its ladder. */
+export function walkthroughNeedsEndDay(
+  progress: SiegeWalkthrough | undefined,
+  state: SiegeState,
+  playerSide: SiegeSide,
+): boolean {
+  if (playerSide !== 'shu' || progress?.status !== 'active' || progress.step !== 3) return false;
+  const ladder = state.engines.find(
+    (e) => e.id === progress.ladderId && e.kind === 'ladder' && usableEngine(e),
+  );
+  if (!ladder) return false;
+  return !state.units.some(
+    (u) =>
+      u.side === 'shu' &&
+      u.troopType === 'infantry' &&
+      u.level === 'ground' &&
+      activeUnit(u) &&
+      !u.moved &&
+      reachableCells(state, u.id).some((c) => c.level === 'ground' && sameCell(c, ladder)),
+  );
 }
 export function walkthroughTargets(
   progress: SiegeWalkthrough | undefined,
@@ -73,8 +95,8 @@ export function walkthroughTargets(
       return [];
   }
 }
-/** Real action logs, not clicks, advance action steps. Replaying records fresh actions.
- * Selection steps observe UI state; reading the report is persisted presentation state. */
+/** Action steps observe real logs; selection and arrival steps observe current state.
+ * Reading the report is persisted presentation state. */
 export function advanceWalkthrough(
   progress: SiegeWalkthrough | undefined,
   state: SiegeState,
@@ -141,8 +163,7 @@ export function advanceWalkthrough(
             u.troopType === 'infantry' &&
             u.level === 'ground' &&
             ladder &&
-            sameCell(u, ladder) &&
-            events.some((e) => e.code === 'move' && e.params.unitId === u.id),
+            sameCell(u, ladder),
         );
         complete = Boolean(infantry);
         if (infantry) next.infantryId = infantry.id;

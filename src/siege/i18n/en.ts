@@ -165,6 +165,22 @@ export const en = {
   contextFill: 'You can fill the trench here.',
   contextMound: 'At a mound: climb for +{gain} foothold.',
   contextWallFoot: 'At the wall foot: climb for +{gain} foothold.',
+  climbActed: 'Already acted today. It can climb tomorrow.',
+  climbDefenderAbove: '{name} holds the wall above. Attack or assault to build footholds.',
+  climbRaiseAtBase: 'The ladder is not raised. Select it, press Raise ladder, then Climb.',
+  climbRaiseThenWalk:
+    'The ladder is not raised. Select it, press Raise ladder, then move to the gold frame.',
+  climbWalkLadder: "Stand on the gold frame, the ladder's own cell, to climb: {n} to go.",
+  climbWalkWallFoot: 'Stand on the gold frame, the filled wall foot, to climb: {n} to go.',
+  climbTooFar: 'The gold frame is too far today ({n} to go). Move closer and climb tomorrow.',
+  climbMoved: 'This unit has moved and the gold frame is {n} away. Continue tomorrow.',
+  climbOccupied: '{name} holds the gold frame. Use another ladder or move it first.',
+  climbNoRoute:
+    'No ladders left. Build one at a workshop, or fill the trench and climb the wall foot.',
+  climbBaseLabel: 'Ladder base',
+  climbWallFootLabel: 'Wall foot',
+  climbUnraisedLabel: 'Not raised',
+  contextRaiseLadder: 'Infantry can climb from this cell once it is raised.',
   contextGeneral: '{place} · {level}',
   actionReady: 'Choose an action. Point at a greyed one to see why.',
   unitGroup: 'Troops',
@@ -272,7 +288,7 @@ export const en = {
     'Night raids burn engines: guard them nearby or withdraw beyond {range} cells of the south-gate approach; mounds cannot burn. Snow nights extinguish braziers.',
   howFoothold: 'Climbing and footholds',
   howFootholdBody:
-    'Reach a ladder base or filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again.',
+    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again.',
   howCourtyardClear:
     'The courtyard must be clear of active Wei units at day’s end to count as captured.',
   howKeys: 'Keyboard',
@@ -312,10 +328,12 @@ export const en = {
   skipWalkthrough: 'Skip walkthrough',
   walkthrough: 'First siege',
   walkProgress: 'Step {n} / {max}',
-  walk1: 'Select a usable ladder.',
-  walk2: 'Choose Raise ladder to connect it to the wall.',
-  walk3: 'Select infantry and move onto this ladder’s base; end the day to continue if needed.',
-  walk4: 'Climb or attack the defender above the ladder to gain footholds; mount at {max}.',
+  walk1: 'Raise a ladder first. Select a ladder in a gold frame on the map.',
+  walk2: 'Press Raise ladder to connect it to the wall.',
+  walk3:
+    "Select infantry and move onto the gold frame (the ladder's own cell; the cell south of it does not count). If it is too far today, move closer, end the day and continue tomorrow.",
+  walk4:
+    'Press Climb to gain +{gain} foothold; reach {max} to stand on the wall. If a defender holds the top, press Attack.',
   walk5: 'Select an archer unit.',
   walk6: 'Move into range and suppress the defender above the ladder.',
   walkWait: 'The earth cart is still being built. End the day to finish it.',
@@ -341,7 +359,7 @@ export const en = {
   howCart:
     'Move an earth cart to row {row} south of the trench, fill outer row {outer}, then inner row {inner}. Each load fills {cart}; infantry fill {infantry}, a ratio of {ratio}.',
   howLadder:
-    'Ladder → move to the same row {row}, Raise ladder, then move a unit onto the ladder and choose Climb wall.',
+    'Ladder → move south of the trench and press Raise ladder first. Its base is its own cell, marked by a gold frame when infantry is selected. Move infantry onto that frame and press Climb.',
   howRam: 'Ram → follow the road to the bridge before the south gate, then Ram gate once per day.',
   howTower: 'Siege tower → select an enemy and Attack; it shoots over the parapet.',
   howDefenceBody:

@@ -820,12 +820,12 @@
   grid-column: 1 / -1;
 }
 .siege-actions {
-  gap: 4px 6px;
+  gap: 3px 6px;
   margin-top: 4px;
 }
 .siege-actions button {
   width: 100%;
-  padding: 6px 4px;
+  padding: 5px 4px;
 }
 .siege-actions button[data-unavailable='true'] {
   font-size: 12px;
@@ -838,7 +838,9 @@
   height: 18px;
 }
 .siege-action-context {
-  margin: 4px 0;
+  margin: 2px 0;
+  font-size: 12px;
+  line-height: 1.35;
   font-weight: 600;
 }
 .siege-action-reason {

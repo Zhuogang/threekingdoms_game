@@ -61,11 +61,13 @@ import { morningReport, reportObservations, rememberReport } from './report';
 import { counterCards } from './counters';
 import { enqueueCards, visibleCard, type QueuedCard } from './cardQueue';
 import { placeName } from './places';
+import { climbGuide, climbGuideText } from './climbGuide';
 import { unitVisual } from '../render/stateArt';
 import {
   advanceWalkthrough,
   startWalkthrough,
   settleWalkthrough,
+  walkthroughNeedsEndDay,
   walkthroughTargets,
 } from './walkthrough';
 import {
@@ -131,6 +133,7 @@ export default function SiegeApp({
   const opening = game.phase === 'opening';
   const [cards, setCards] = useState<QueuedCard[]>([]);
   const [actionExplanation, setActionExplanation] = useState<string | null>(null);
+  const [explanationKind, setExplanationKind] = useState<CommandKind | null>(null);
   const [focusPlace, setFocusPlace] = useState<SiegePosition | null>(null);
   const [summary, setSummary] = useState(false);
   const [howTo, setHowTo] = useState(false);
@@ -163,6 +166,7 @@ export default function SiegeApp({
   const unit = state.units.find((u) => u.id === selected),
     engine = state.engines.find((e) => e.id === selected);
   const actor = unit ?? engine;
+  const guide = useMemo(() => (selected ? climbGuide(state, selected) : null), [state, selected]);
   const commands = useMemo(
     () => (selected ? siegeCommands(state, selected, playerSide) : []),
     [state, selected, playerSide],
@@ -353,6 +357,26 @@ export default function SiegeApp({
     if (e) return text(engineKey(e.kind));
     return id in GATES ? text(id as GateId) : id;
   };
+  const commandExplanation = (reason: string, kind: CommandKind | null) =>
+    guide && kind === 'climb' ? climbGuideText(guide, locale, name) : rejectionText(locale, reason);
+  const explainAction = (reason: string | null, kind: CommandKind | null = null) => {
+    setActionExplanation(reason);
+    setExplanationKind(kind);
+  };
+  const guideBase =
+    !deploy && !playing && guide && 'base' in guide
+      ? { ...guide.base, level: 'ground' as const }
+      : null;
+  const guideLabel = text(
+    guide?.kind === 'ladderNotRaised'
+      ? 'climbUnraisedLabel'
+      : (guide?.kind === 'walkToBase' && guide.route === 'wallFoot') ||
+          (guide?.kind === 'defenderAbove' &&
+            unit &&
+            climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')
+        ? 'climbWallFootLabel'
+        : 'climbBaseLabel',
+  );
   const clearTimer = () => {
     if (timer.current !== null) {
       clearTimeout(timer.current);
@@ -530,7 +554,7 @@ export default function SiegeApp({
   }, [needsAttacker, playing]);
   const select = (id: string) => {
     setSelected(id);
-    setActionExplanation(null);
+    explainAction(null);
     setTarget(null);
     setMode(null);
     setExtraKind(null);
@@ -606,6 +630,15 @@ export default function SiegeApp({
     if (!selected || playing || opening || banner || reportVisible || howTo || deploy) return;
     const entry = commands.find((c) => c.kind === kind);
     if (entry?.reason) {
+      if (kind === 'climb' && guide) {
+        explainAction(entry.reason, kind);
+        if ('base' in guide) {
+          const base = { ...guide.base, level: 'ground' as const };
+          setFocusPlace(base);
+          map.current?.focus(base);
+        }
+        return;
+      }
       setFeedback({ reason: entry.reason });
       return;
     }
@@ -910,7 +943,10 @@ export default function SiegeApp({
                 onClick={end}
                 data-testid="end-day"
                 disabled={playing || banner || reportVisible}
-                className={pulse(walkStep === (playerSide === 'wei' ? 5 : 7))}
+                className={pulse(
+                  walkStep === (playerSide === 'wei' ? 5 : 7) ||
+                    (walkStep === 3 && walkthroughNeedsEndDay(walkthrough, state, playerSide)),
+                )}
               >
                 {text('endDay')}
               </Button>
@@ -1004,17 +1040,20 @@ export default function SiegeApp({
               state={state}
               locale={locale}
               selected={selected}
+              preferCells={mode === 'move' || mode === 'fillTrench'}
               deploy={deploy}
               playerSide={playerSide}
               reachable={!deploy ? rangedReachable : []}
               targets={mode === 'attack' ? targets : []}
-              tutorialCells={
-                focusPlace
-                  ? [focusPlace]
-                  : walkStep
-                    ? walkthroughTargets(walkthrough, state, playerSide)
-                    : []
-              }
+              tutorialCells={[
+                ...(focusPlace ? [focusPlace] : []),
+                ...(walkStep ? walkthroughTargets(walkthrough, state, playerSide) : []),
+                ...(guideBase ? [guideBase] : []),
+              ].filter(
+                (c, i, cells) =>
+                  cells.findIndex((other) => sameCell(c, other) && c.level === other.level) === i,
+              )}
+              climbBase={guideBase && guide ? { base: guideBase, label: guideLabel } : undefined}
               notice={activeCard ? notice : null}
               facings={game.facings}
               activity={activity}
@@ -1215,12 +1254,12 @@ export default function SiegeApp({
                                       size="sm"
                                       data-testid={`target-${extraKind}-${'targetId' in action ? action.targetId : 'engineId' in action && ['coverEngine', 'fireArrows', 'dropMillstone'].includes(action.type) ? action.engineId : i}`}
                                       aria-disabled={playing || Boolean(reason)}
-                                      onFocus={() => setActionExplanation(reason)}
-                                      onMouseEnter={() => setActionExplanation(reason)}
+                                      onFocus={() => explainAction(reason)}
+                                      onMouseEnter={() => explainAction(reason)}
                                       aria-describedby="siege-action-reason"
                                       title={reason ? rejectionText(locale, reason) : undefined}
                                       onClick={() => {
-                                        setActionExplanation(reason);
+                                        explainAction(reason);
                                         if (!reason && !playing) {
                                           act(action);
                                           setExtraKind(null);
@@ -1280,13 +1319,16 @@ export default function SiegeApp({
                                             (walkStep === 9 && c.kind === 'coverEngine'),
                                     )}
                                     aria-disabled={Boolean(c.reason) || playing}
-                                    onFocus={() => setActionExplanation(c.reason)}
-                                    onMouseEnter={() => setActionExplanation(c.reason)}
+                                    onFocus={() => explainAction(c.reason, c.kind)}
+                                    onMouseEnter={() => explainAction(c.reason, c.kind)}
                                     aria-describedby="siege-action-reason"
-                                    title={c.reason ? rejectionText(locale, c.reason) : undefined}
+                                    title={
+                                      c.reason ? commandExplanation(c.reason, c.kind) : undefined
+                                    }
                                     onClick={() => {
-                                      setActionExplanation(c.reason);
-                                      if (!c.reason && !playing) command(c.kind);
+                                      explainAction(c.reason, c.kind);
+                                      if (!playing && (!c.reason || c.kind === 'climb'))
+                                        command(c.kind);
                                     }}
                                     aria-pressed={mode === c.kind}
                                   >
@@ -1303,7 +1345,7 @@ export default function SiegeApp({
                               aria-live="polite"
                             >
                               {actionExplanation
-                                ? rejectionText(locale, actionExplanation)
+                                ? commandExplanation(actionExplanation, explanationKind)
                                 : text('actionReady')}
                             </p>
                           </>

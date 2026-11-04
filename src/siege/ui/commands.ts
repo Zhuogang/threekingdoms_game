@@ -3,6 +3,7 @@ import { applySiegeAction } from '../rules/actions';
 import { activeUnit, usableEngine, predictSiegeClimb, climbingPosition } from '../rules/combat';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { placeName } from './places';
+import { climbGuide, climbGuideText } from './climbGuide';
 import { engineReachable, reachableCells } from '../rules/movement';
 import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 
@@ -74,6 +75,20 @@ export function actionContext(state: SiegeState, id: string, locale: SiegeLocale
   const unit = state.units.find((u) => u.id === id);
   const actor = unit ?? state.engines.find((e) => e.id === id);
   if (!actor) return '';
+  const guide = climbGuide(state, id);
+  if (guide) {
+    const sentence = climbGuideText(guide, locale, (unitId) => {
+      const other = state.units.find((u) => u.id === unitId)!;
+      return locale === 'zh' ? other.officer.chinese : other.officer.name;
+    });
+    if (guide.kind === 'ready' || guide.kind === 'defenderAbove') return sentence;
+    const canFill = siegeCommands(state, id, 'shu').some(
+      (c) => c.kind === 'fillTrench' && !c.reason,
+    );
+    return canFill ? `${siegeText(locale, 'contextFill')} ${sentence}` : sentence;
+  }
+  if (!unit && siegeCommands(state, id, 'shu').some((c) => c.kind === 'raiseLadder' && !c.reason))
+    return siegeText(locale, 'contextRaiseLadder');
   if (unit && unit.troopType !== 'archer') {
     if (
       state.units.some(

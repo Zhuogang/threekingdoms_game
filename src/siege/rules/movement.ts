@@ -5,7 +5,6 @@ import { cellTerrain, gateAt, isMapCell, isWallFoot } from './map';
 import type {
   Cell,
   ReachableCell,
-  SiegeEngine,
   SiegeLevel,
   SiegePosition,
   SiegeSide,
@@ -44,16 +43,6 @@ function groundPassable(state: SiegeState, side: SiegeSide, { x, y }: Cell): boo
     return side === 'wei' || (id !== undefined && state.gates[id].broken);
   }
   return true;
-}
-
-function raisedLadder(state: SiegeState, engine: SiegeEngine): boolean {
-  return (
-    engine.kind === 'ladder' &&
-    !engine.wrecked &&
-    engine.durability > 0 &&
-    engine.raisedAt !== undefined &&
-    isWalkway(state, engine.raisedAt)
-  );
 }
 
 function unitNeighbors(state: SiegeState, unit: SiegeUnit, from: SiegePosition): SiegePosition[] {
@@ -146,9 +135,10 @@ function unitSearch(state: SiegeState, unitId: string): Map<string, SearchNode> 
     state.units.filter((other) => other.id !== unitId && other.troops > 0).map(positionKey),
   );
   for (const engine of state.engines) {
-    // A usable raised ladder's base must admit troops so they can climb it.
+    // A usable ladder admits troops before or after raising, in either action order.
     // All other engines, including wrecks, occupy their ground cell.
-    if (!raisedLadder(state, engine)) occupied.add(positionKey(ground(engine)));
+    if (engine.kind !== 'ladder' || engine.wrecked || engine.durability <= 0)
+      occupied.add(positionKey(ground(engine)));
   }
   return search(
     { x: unit.x, y: unit.y, level: unit.level },
