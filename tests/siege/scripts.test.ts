@@ -147,7 +147,7 @@ describe('v0.2 attacker and defender integration', () => {
     const seeds = Array.from({ length: 200 }, (_, i) => i + 1);
     expect(seeds.filter((s) => attackerMethodForSeed(s) === 'careful')).toHaveLength(100);
     expect(seeds.filter((s) => attackerMethodForSeed(s) === 'anyPrice')).toHaveLength(100);
-    const plans = seeds.map(attackerPlan);
+    const plans = seeds.map((seed) => attackerPlan(seed));
     for (const key of ['columns', 'cartFirst', 'ramDay', 'rotation', 'assaultDay'] as const)
       expect(new Set(plans.map((p) => JSON.stringify(p[key]))).size).toBeGreaterThan(1);
     for (const p of plans) {

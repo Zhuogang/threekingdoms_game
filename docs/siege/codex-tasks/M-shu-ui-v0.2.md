@@ -41,7 +41,9 @@ working?**
    (on a climbing position under an empty wall cell). Each shows why when disabled, using the rule's reason.
 5. **Attack forecast**: an 强攻 checkbox at a climbing position, showing both sets: frontage, casualties, counterattack,
    foothold gain, and foothold after ("立足 +2 → 3/3 登城"). The uphill modifier is shown. Hovering blinks the wall cell's
-   foothold pips.
+   foothold pips. A climb on an empty cell has the same checkbox (`predictSiegeClimb`): free at +1, or an assault at +2 with its
+   casualties and morale. When a mounted unit is thrown off the wall (`thrownOffWall`), the report says so and says what to do next.
+   Explain in the how-to-play panel that the courtyard must be cleared of Wei units to count.
 6. **军令**: 夜攻 added to orders; the card explains that the result is unknown until the morning.
 7. **城防 panel** (§7.3): one row per wall run: defenders, a pressure bar, icons for its preparations, and footholds per
    cell. Selecting a row pans to it.

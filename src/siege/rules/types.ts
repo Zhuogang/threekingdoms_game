@@ -6,7 +6,8 @@ export type SiegeTroopType = 'infantry' | 'archer';
 export type SiegeWeather = 'clear' | 'snow' | 'wind';
 export type GateId = 'south' | 'north' | 'west' | 'east';
 export type EngineKind = 'ladder' | 'ram' | 'earthCart' | 'tower';
-export type TrenchProgress = 0 | 0.5 | 1 | 1.5 | 2 | 2.5 | 3;
+export type TrenchProgress =
+  0 | 0.25 | 0.5 | 0.75 | 1 | 1.25 | 1.5 | 1.75 | 2 | 2.25 | 2.5 | 2.75 | 3;
 export type BuildProgress = 0 | 1 | 2 | 3 | 4;
 export type SiegeTerrain =
   | 'plain'
@@ -148,6 +149,7 @@ export interface SiegeState {
     moundsBuilt: number;
     gateEverBroken: boolean;
     wallEverHeldAtNight: boolean;
+    wallNights: number;
     firstFootholdDay: number | null;
     firstWallDay: number | null;
   };
@@ -164,7 +166,7 @@ export interface SiegeState {
 
 export type SiegeAction =
   | ({ type: 'move'; unitId: string } & SiegePosition)
-  | { type: 'climb'; unitId: string }
+  | { type: 'climb'; unitId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; targetId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; gateId: GateId }
   | { type: 'attack'; engineId: string; targetId: string }

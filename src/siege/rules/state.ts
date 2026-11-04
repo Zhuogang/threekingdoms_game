@@ -115,6 +115,7 @@ export function createSiegeState(seed: number): SiegeState {
       moundsBuilt: 0,
       gateEverBroken: false,
       wallEverHeldAtNight: false,
+      wallNights: 0,
       firstFootholdDay: null,
       firstWallDay: null,
     },

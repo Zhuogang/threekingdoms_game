@@ -30,6 +30,7 @@ import {
   distance,
   inflictCasualties,
   predictSiegeAttack,
+  predictSiegeClimb,
   suppressionCasualties,
   usableEngine,
   wallRun,
@@ -56,6 +57,51 @@ const availableUnit = (state: SiegeState, id: string): SiegeUnit | undefined =>
 const availableEngine = (state: SiegeState, id: string): SiegeEngine | undefined =>
   state.engines.find((engine) => engine.id === id && usableEngine(engine) && !engine.acted);
 const validGate = (id: string): id is GateId => Object.hasOwn(GATES, id);
+
+/** The same post-ascent morale cost applies to defended and empty-cell assaults. */
+function assaultCosts(
+  state: SiegeState,
+  source: SiegeUnit,
+  mounted: boolean,
+  cell: string,
+  targetId: string,
+  frontage: number | null,
+  casualties: number,
+): void {
+  const before = source.morale;
+  source.assaultedDay = state.day;
+  source.morale = Math.max(MIN_MORALE, source.morale - T.assaultMoraleLoss);
+  Object.assign(source, settleUnitRout(state, source));
+  state.stats.assaults++;
+  logEvent(state, 'assault', {
+    unitId: source.id,
+    targetId,
+    cell,
+    before,
+    after: source.morale,
+    mounted,
+    frontage,
+    counterCasualties: casualties,
+  });
+  if (!mounted)
+    for (const neighbour of state.units.filter(
+      (entry) =>
+        entry.id !== source.id &&
+        entry.side === 'shu' &&
+        activeUnit(entry) &&
+        distance(entry, source) <= T.assaultNeighbourRange,
+    )) {
+      const moraleBefore = neighbour.morale;
+      neighbour.morale = Math.max(MIN_MORALE, neighbour.morale - T.assaultNeighbourLoss);
+      Object.assign(neighbour, settleUnitRout(state, neighbour));
+      logEvent(state, 'assaultMorale', {
+        unitId: neighbour.id,
+        sourceId: source.id,
+        before: moraleBefore,
+        after: neighbour.morale,
+      });
+    }
+}
 
 function applyOrder(
   state: SiegeState,
@@ -318,29 +364,24 @@ function performAction(
   }
   if (action.type === 'climb') {
     const unit = availableUnit(state, action.unitId);
-    if (
-      !unit ||
-      unit.side !== 'shu' ||
-      unit.level !== 'ground' ||
-      ('assault' in action && action.assault)
-    )
-      return 'Use a ground Shu unit to climb without assault.';
-    const top = [
-      { x: unit.x, y: unit.y - 1, level: 'wall' as const },
-      ...state.engines
-        .filter((engine) => engine.raisedAt && sameCell(engine, unit))
-        .map((engine) => ({ ...engine.raisedAt!, level: 'wall' as const })),
-    ].find(
-      (cell) =>
-        climbingPosition(state, unit, cell) !== null &&
-        !state.units.some(
-          (other) => other.troops > 0 && other.level === 'wall' && sameCell(other, cell),
-        ),
-    );
-    if (!top) return 'Climb from a ladder base or wall foot to an empty wall cell.';
+    const forecast = unit && predictSiegeClimb(state, unit, { assault: action.assault });
+    if (!unit || !forecast) return 'Climb from a ladder base or wall foot to an empty wall cell.';
     unit.acted = true;
     unit.climbing = true;
-    gainWall(state, unit, top, 1, 'climb');
+    if (forecast.casualties > 0)
+      Object.assign(unit, inflictCasualties(state, unit, forecast.casualties));
+    const mounted =
+      activeUnit(unit) && gainWall(state, unit, forecast.top, forecast.footholdGain, 'climb');
+    if (action.assault)
+      assaultCosts(
+        state,
+        unit,
+        mounted,
+        cellKey(forecast.top),
+        cellKey(forecast.top),
+        forecast.frontage,
+        forecast.casualties,
+      );
     return null;
   }
   if (action.type === 'suppress') {
@@ -419,41 +460,16 @@ function performAction(
         'side' in source &&
         activeUnit(source) &&
         gainWall(state, source, wallCell, forecast.footholdGain);
-      if (assault && 'side' in source) {
-        const before = source.morale;
-        source.assaultedDay = state.day;
-        source.morale = Math.max(MIN_MORALE, source.morale - T.assaultMoraleLoss);
-        Object.assign(source, settleUnitRout(state, source));
-        state.stats.assaults++;
-        logEvent(state, 'assault', {
-          unitId: source.id,
-          targetId: target.id,
-          cell: cellKey(wallCell),
-          before,
-          after: source.morale,
+      if (assault && 'side' in source)
+        assaultCosts(
+          state,
+          source,
           mounted,
-          frontage: forecast.frontage,
-          counterCasualties: forecast.counterattack.casualties,
-        });
-        if (!mounted)
-          for (const neighbour of state.units.filter(
-            (entry) =>
-              entry.id !== source.id &&
-              entry.side === 'shu' &&
-              activeUnit(entry) &&
-              distance(entry, source) <= T.assaultNeighbourRange,
-          )) {
-            const moraleBefore = neighbour.morale;
-            neighbour.morale = Math.max(MIN_MORALE, neighbour.morale - T.assaultNeighbourLoss);
-            Object.assign(neighbour, settleUnitRout(state, neighbour));
-            logEvent(state, 'assaultMorale', {
-              unitId: neighbour.id,
-              sourceId: source.id,
-              before: moraleBefore,
-              after: neighbour.morale,
-            });
-          }
-      }
+          cellKey(wallCell),
+          target.id,
+          forecast.frontage,
+          forecast.counterattack.casualties,
+        );
       state.log.push({
         day: state.day,
         code: 'combat',

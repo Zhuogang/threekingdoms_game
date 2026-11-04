@@ -51,15 +51,15 @@ export function scoreSiege(state: SiegeState, side: SiegeSide): SiegeScore {
       ? 'cityFallen'
       : defeat
         ? 'annihilation'
-        : stats.gateEverBroken && stats.wallEverHeldAtNight
+        : stats.gateEverBroken && stats.wallNights > S.wallNightAllowance
           ? 'narrowDefense'
-          : stats.gateEverBroken || stats.wallEverHeldAtNight
+          : stats.gateEverBroken || stats.wallNights > S.wallNightAllowance
             ? 'firmDefense'
             : 'perfectDefense';
     parts = {
       outcome: victory ? S.weiFall : defeat ? S.weiAnnihilation : S.weiHeld,
       gate: stats.gateEverBroken ? 0 : S.gatePoints,
-      wall: stats.wallEverHeldAtNight ? 0 : S.wallPoints,
+      wall: stats.wallNights > S.wallNightAllowance ? 0 : S.wallPoints,
       casualties: S.casualtyPoints * Math.max(0, 1 - stats.weiLost / S.weiCasualtyScale),
       engines: stats.enginesLost >= S.engineKills ? S.weiEnginePoints : 0,
       speed: state.withdrawn && state.day <= S.withdrawalDay ? S.withdrawalPoints : 0,

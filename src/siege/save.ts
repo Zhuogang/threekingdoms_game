@@ -131,18 +131,7 @@ const stateSchema = z.strictObject({
       ]),
     ),
   ),
-  trenchFill: z.record(
-    z.string(),
-    z.union([
-      z.literal(0),
-      z.literal(0.5),
-      z.literal(1),
-      z.literal(1.5),
-      z.literal(2),
-      z.literal(2.5),
-      z.literal(3),
-    ]),
-  ),
+  trenchFill: z.record(z.string(), z.number().min(0).max(T.trenchCapacity).multipleOf(0.25)),
   innerWall: z.record(z.string(), integer.min(0).max(4)),
   workshops: z.array(
     z.object({
@@ -196,6 +185,7 @@ const stateSchema = z.strictObject({
     moundsBuilt: integer.nonnegative(),
     gateEverBroken: z.boolean(),
     wallEverHeldAtNight: z.boolean(),
+    wallNights: integer.min(0).max(T.days),
     firstFootholdDay: integer.min(1).max(T.days).nullable(),
     firstWallDay: integer.min(1).max(T.days).nullable(),
   }),

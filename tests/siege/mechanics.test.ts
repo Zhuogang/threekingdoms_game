@@ -50,12 +50,12 @@ describe('gates and rams', () => {
 });
 
 describe('trench filling and ladders', () => {
-  it('refuses inner-first work and adds half a point from adjacent infantry', () => {
+  it('refuses inner-first work and adds a quarter point from adjacent infantry', () => {
     const { state, shu } = duel({ x: 23, y: 17 });
     refused(state, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 }, /outer/);
     state.trenchFill['22,18'] = 3;
     const next = act(state, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 });
-    expect(next.trenchFill['22,17']).toBe(0.5);
+    expect(next.trenchFill['22,17']).toBe(T.infantryFill);
     refused(next, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 });
     refused(state, { type: 'fillTrench', unitId: shu.id, x: 21, y: 17 });
     shu.troopType = 'archer';
@@ -80,15 +80,15 @@ describe('trench filling and ladders', () => {
     expect(state.enginesLostAct1 ?? 0).toBe(0);
   });
 
-  it('takes six infantry actions to fill a cell and clamps mixed cart/infantry work at three', () => {
+  it('takes twelve infantry actions to fill a cell and clamps mixed cart/infantry work at three', () => {
     let { state, shu } = duel();
-    for (let day = 1; day <= 6; day++) {
+    for (let day = 1; day <= 12; day++) {
       state = act(state, { type: 'fillTrench', unitId: shu.id, x: 20, y: 18 });
-      expect(state.trenchFill['20,18']).toBe(day * 0.5);
-      if (day < 6) state = endDay(state);
+      expect(state.trenchFill['20,18']).toBe(day * T.infantryFill);
+      if (day < 12) state = endDay(state);
     }
     refused(state, { type: 'fillTrench', unitId: shu.id, x: 20, y: 18 });
-    state = endDay(state);
+    state = createSiegeState(42);
     state.trenchFill['21,18'] = 2.5;
     state.engines = [engine('earthCart', 21, 19)];
     state = act(state, { type: 'fillTrench', engineId: 'engine', x: 21, y: 18 });

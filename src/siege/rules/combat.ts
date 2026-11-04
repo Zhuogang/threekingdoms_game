@@ -302,6 +302,79 @@ function towerSource(state: SiegeState, engine: SiegeEngine): SiegeUnit {
   };
 }
 
+export interface SiegeClimbForecast {
+  sourceId: string;
+  top: Cell;
+  position: ClimbingPosition;
+  assault: boolean;
+  frontage: number;
+  /** Casualties to the climber; the target wall cell is empty. */
+  casualties: number;
+  footholdGain: number;
+  footholdAfter: number;
+  wouldMount: boolean;
+  sourceMoraleAfter: number;
+  neighbourMoraleLoss: number;
+}
+
+/** Pure empty-cell ascent forecast for the UI; normal climb has no personnel or morale cost. */
+export function predictSiegeClimb(
+  state: SiegeState,
+  climber: string | SiegeUnit,
+  options: { assault?: boolean } = {},
+): SiegeClimbForecast | null {
+  const source = state.units.find(
+    (u) => u.id === (typeof climber === 'string' ? climber : climber.id),
+  );
+  if (
+    !source ||
+    !activeUnit(source) ||
+    source.side !== 'shu' ||
+    source.level !== 'ground' ||
+    !isMapCell(source.x, source.y)
+  )
+    return null;
+  const top = [
+    { x: source.x, y: source.y - 1, level: 'wall' as const },
+    ...state.engines
+      .filter((e) => e.raisedAt && sameCell(e, source))
+      .map((e) => ({ ...e.raisedAt!, level: 'wall' as const })),
+  ].find(
+    (cell) =>
+      climbingPosition(state, source, cell) !== null &&
+      !state.units.some((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, cell)),
+  );
+  if (!top) return null;
+  const position = climbingPosition(state, source, top)!;
+  const assault = options.assault === true;
+  const frontage = assault ? T.climbing[position].assaultFrontage : T.climbing[position].frontage;
+  const casualties = assault
+    ? Math.min(source.troops, Math.floor(T.assaultClimbLoss * frontage))
+    : 0;
+  const morale = moraleAfterCasualties(source, casualties);
+  const footholdGain = activeUnit({ ...source, troops: source.troops - casualties, morale })
+    ? assault
+      ? 2
+      : 1
+    : 0;
+  const footholdAfter = Math.min(T.footholdComplete, wallFoothold(state, top) + footholdGain);
+  const wouldMount = footholdGain > 0 && footholdAfter === T.footholdComplete;
+  const moraleAfter = Math.max(MIN_MORALE, morale - (assault ? T.assaultMoraleLoss : 0));
+  return {
+    sourceId: source.id,
+    top: { x: top.x, y: top.y },
+    position,
+    assault,
+    frontage,
+    casualties,
+    footholdGain,
+    footholdAfter,
+    wouldMount,
+    sourceMoraleAfter: wouldMount && moraleAfter < ROUTED_MORALE ? ROUTED_MORALE : moraleAfter,
+    neighbourMoraleLoss: assault && !wouldMount ? T.assaultNeighbourLoss : 0,
+  };
+}
+
 export interface SiegeAttackForecast extends SiegeEngagement {
   sourceId: string;
   targetId: string;

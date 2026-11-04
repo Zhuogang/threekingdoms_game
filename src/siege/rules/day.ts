@@ -359,8 +359,10 @@ export function endDay(state: SiegeState): SiegeState {
   next.zhangheDistance = Math.max(0, next.zhangheDistance - 1);
   logEvent(next, 'daySupplies', { grain: next.grain, zhangheDistance: next.zhangheDistance });
   updateMainBodyThreat(next);
-  if (next.units.some((unit) => unit.side === 'shu' && unit.troops > 0 && unit.level === 'wall'))
+  if (next.units.some((unit) => unit.side === 'shu' && unit.troops > 0 && unit.level === 'wall')) {
     next.stats.wallEverHeldAtNight = true;
+    next.stats.wallNights++;
+  }
   updatePersonnelStats(next);
   if (next.stats.lastActiveDay !== next.day) next.stats.idleDays++;
   next.outcome = beforeRecoveryOutcome ?? siegeOutcome(next, true);

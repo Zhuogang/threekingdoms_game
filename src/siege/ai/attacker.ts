@@ -49,7 +49,7 @@ export function attackerMethodForSeed(seed: number): 'careful' | 'anyPrice' {
 }
 
 /** Independent hashes select a plan without consuming the weather RNG. */
-export function attackerPlan(seed: number) {
+export function attackerPlan(seed: number, method: AttackerMethod = 'careful') {
   const hash = (name: string) => {
     let value = tacticalSeed(`shu-${name}`, seed);
     value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
@@ -65,7 +65,7 @@ export function attackerPlan(seed: number) {
     columns,
     moundColumn: columns[0]!,
     cartFirst: choice('queue', 2) === 0,
-    ramDay: 5 + choice('ram', 5),
+    ramDay: method === 'brute' ? 5 + choice('ram', 5) : 2 + choice('ram', 4),
     rotation: 0.4 + choice('rotation', 4) * 0.1,
     assaultDay: 5 + choice('assault', 4),
   };
@@ -156,7 +156,7 @@ function attackerTurn(
   if (state.outcome) return { actions: [], state };
   let draft = state;
   const actions: SiegeAction[] = [];
-  const plan = attackerPlan(state.seed);
+  const plan = attackerPlan(state.seed, method);
   const lastNight = state.log.filter((e) => e.day === state.day - 1);
   const torches = lastNight.some((e) => e.code === 'torches');
   const sortie = lastNight.some((e) => ['sortieHit', 'sortieRepelled'].includes(e.code));
@@ -168,6 +168,10 @@ function attackerTurn(
     actions.push(action);
   };
   const unitNow = (id: string) => draft.units.find((u) => u.id === id)!;
+  const dailyAssault = (u: SiegeUnit) =>
+    method === 'anyPrice' &&
+    draft.day >= 2 &&
+    climbSites(draft).some((site) => climbingPosition(draft, u, site.top) !== null);
   const availableInfantry = () =>
     draft.units.filter(
       (u) =>
@@ -260,13 +264,12 @@ function attackerTurn(
         draft.workshops.filter((w) => w.queue === kind).length;
       const needsMound = (draft.mounds[`${plan.moundColumn},17`] ?? 0) < T.moundComplete;
       let kind: EngineKind | undefined;
-      if (draft.day === 1)
+      if (!draft.gates.south.broken && count('ram') < 1) kind = 'ram';
+      else if (draft.day === 1)
         kind = (workshop.id === 'workshop-1') === plan.cartFirst ? 'earthCart' : 'ladder';
       else if (needsMound && count('earthCart') < 2) kind = 'earthCart';
       else if (count('ladder') < (method === 'anyPrice' ? plan.columns.length : 2)) kind = 'ladder';
       else if (draft.act === 2 && count('tower') < 2) kind = 'tower';
-      else if (draft.day >= plan.ramDay && !draft.gates.south.broken && count('ram') < 1)
-        kind = 'ram';
       if (kind) act({ type: 'queueEngine', workshopId: workshop.id, kind });
     }
   }
@@ -356,6 +359,7 @@ function attackerTurn(
       (u) =>
         !reserved.has(u.id) &&
         !buildingCrew.has(u.id) &&
+        !dailyAssault(u) &&
         !draft.engines.some((e) => e.raisedAt && sameCell(e, u)) &&
         (distance(u, engine) <= 1 ||
           reachableCells(draft, u.id).some(
@@ -405,7 +409,7 @@ function attackerTurn(
     const task = fill ?? ((draft.mounds[cellKey(pile)] ?? 0) < T.moundComplete ? pile : null);
     if (task) {
       const builders = availableInfantry()
-        .filter((u) => !reserved.has(u.id) && !climbingCrew.has(u.id))
+        .filter((u) => !reserved.has(u.id) && !climbingCrew.has(u.id) && !dailyAssault(u))
         .sort(
           (a, b) =>
             (a.id.startsWith('shu-captain') ? 0 : 1) - (b.id.startsWith('shu-captain') ? 0 : 1) ||
@@ -430,9 +434,12 @@ function attackerTurn(
   }
 
   // Read only resolved last-night events; the opponent's pending order is hidden information.
-  if (method !== 'brute' && sortie) {
+  if (method !== 'brute') {
     for (const engine of draft.engines.filter(
-      (e) => usableEngine(e) && GATES.south.approaches.some((c) => distance(c, e) <= T.sortieRange),
+      (e) =>
+        usableEngine(e) &&
+        (sortie || (e.kind === 'ram' && !draft.gates.south.broken)) &&
+        GATES.south.approaches.some((c) => distance(c, e) <= T.sortieRange),
     )) {
       const guard = draft.units.some(
         (u) =>
@@ -444,11 +451,11 @@ function attackerTurn(
       );
       if (guard) {
         const u = availableInfantry().find((u) => distance(u, engine) <= 1);
-        if (u) reserved.add(u.id);
+        if (u && !dailyAssault(u)) reserved.add(u.id);
         continue;
       }
       const u = availableInfantry()
-        .filter((u) => !reserved.has(u.id))
+        .filter((u) => !reserved.has(u.id) && !dailyAssault(u))
         .sort((a, b) => distance(a, engine) - distance(b, engine))[0];
       if (u) {
         move(u, adjacent(engine).map(ground));
@@ -480,7 +487,7 @@ function attackerTurn(
           !(
             method === 'anyPrice' &&
             draft.day >= 2 &&
-            targets.some((target) => climbingPosition(draft, u, target) !== null)
+            climbSites(draft).some((site) => climbingPosition(draft, u, site.top) !== null)
           ),
       ),
       ...draft.engines.filter((e) => usableEngine(e) && !e.acted && e.kind === 'tower'),
@@ -572,7 +579,7 @@ function attackerTurn(
       !draft.gates.south.broken &&
       GATES.south.approaches.some((c) => sameCell(c, engine)) &&
       draft.day >= plan.ramDay &&
-      (!dangerous || engine.covered || method === 'brute')
+      (!dangerous || method !== 'careful')
     )
       act({ type: 'ram', engineId: engine.id, gateId: 'south' });
   }
@@ -586,10 +593,16 @@ function attackerTurn(
           u.wounded > 0 &&
           u.y > CITY_BOUNDS.south &&
           u.rotateRecoveryDay === undefined &&
-          (freshness(u) < plan.rotation || u.morale < WAVERING_MORALE),
+          freshness(u) < plan.rotation,
       )
       .sort((a, b) => b.wounded - a.wounded)[0];
     if (exhausted) act({ type: 'order', side: 'shu', kind: 'rotate', target: exhausted.id });
+    else {
+      const shaken = availableInfantry()
+        .filter((u) => dailyAssault(u) && u.morale < WAVERING_MORALE)
+        .sort((a, b) => a.morale - b.morale)[0];
+      if (shaken) act({ type: 'order', side: 'shu', kind: 'rally', target: shaken.id });
+    }
   }
   const troops = draft.units
     .filter(
@@ -602,7 +615,13 @@ function attackerTurn(
     );
   for (const initial of troops) {
     let u = unitNow(initial.id);
-    if (u.level === 'wall' || u.y < 16 || draft.gates.south.broken) {
+    const reinforcingClimb =
+      method === 'anyPrice' && climbingCrew.has(u.id) && u.level === 'ground' && u.y > 16;
+    if (
+      !dailyAssault(u) &&
+      !reinforcingClimb &&
+      (u.level === 'wall' || u.y < 16 || draft.gates.south.broken)
+    ) {
       move(u, COURTYARD.map(ground));
       u = unitNow(u.id);
       if (!u.moved && !u.acted) {
@@ -648,7 +667,7 @@ function attackerTurn(
         ),
     );
     if (emptyTop) {
-      act({ type: 'climb', unitId: u.id });
+      act({ type: 'climb', unitId: u.id, ...(allowAssault ? { assault: true } : {}) });
       continue;
     }
     const enemies = draft.units

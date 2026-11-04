@@ -184,7 +184,7 @@ describe('footholds, displacement and assaults', () => {
     ['ladder', false, 150, 1, 1.5],
     ['wallFoot', false, 100, 1, 1.5],
     ['mound', false, 300, 2, 1.2],
-    ['ladder', true, 400, 2, T.climbing.ladder.assaultCounter],
+    ['ladder', true, T.climbing.ladder.assaultFrontage, 2, T.climbing.ladder.assaultCounter],
     ['wallFoot', true, 300, 2, T.climbing.wallFoot.assaultCounter],
     ['mound', true, 600, 3, T.climbing.mound.assaultCounter],
   ] as const)(
@@ -493,10 +493,10 @@ describe('night orders and clashes', () => {
 describe('scores and v0.2 persistence', () => {
   it.each([
     ['victory', 6, 9000, false, 'swiftVictory'],
-    ['victory', 7, 5000, false, 'victory'],
-    ['victory', 7, 5001, false, 'costlyVictory'],
-    ['historical', 12, 4000, false, 'orderlyWithdrawal'],
-    ['historical', 12, 4001, false, 'grainWithdrawal'],
+    ['victory', 7, T.score.costlyVictoryLosses, false, 'victory'],
+    ['victory', 7, T.score.costlyVictoryLosses + 1, false, 'costlyVictory'],
+    ['historical', 12, T.score.orderlyWithdrawalLosses, false, 'orderlyWithdrawal'],
+    ['historical', 12, T.score.orderlyWithdrawalLosses + 1, false, 'grainWithdrawal'],
     ['historical', 5, 0, true, 'grainWithdrawal'],
     ['defeat', 4, 5000, false, 'defeat'],
   ] as const)(
@@ -523,6 +523,7 @@ describe('scores and v0.2 persistence', () => {
     state.outcome = outcome;
     state.stats.gateEverBroken = gate;
     state.stats.wallEverHeldAtNight = wall;
+    state.stats.wallNights = wall ? 3 : 0;
     const score = scoreSiege(state, 'wei');
     expect(score.tier).toBe(tier);
     expect(score.score).toBe(Object.values(score.parts).reduce((sum, value) => sum + value, 0));
@@ -531,7 +532,7 @@ describe('scores and v0.2 persistence', () => {
     const state = createSiegeState(228);
     state.outcome = 'victory';
     state.day = 4;
-    state.stats.shuLost = 1500;
+    state.stats.shuLost = T.score.shuCasualtyScale / 4;
     expect(scoreSiege(state, 'shu')).toMatchObject({
       score: 103.25,
       parts: { outcome: 60, speed: 24, casualties: 11.25, engines: 5, mainBody: 3 },

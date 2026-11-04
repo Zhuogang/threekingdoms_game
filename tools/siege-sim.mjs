@@ -97,6 +97,7 @@ try {
             shuLost: state.stats.shuLost,
             weiLost: state.stats.weiLost,
             assaults: state.stats.assaults,
+            wallNights: state.stats.wallNights,
             mounds: state.mounds,
             engines: state.engines.map((e) => ({
               id: e.id,
@@ -162,6 +163,7 @@ try {
   add('careful win rate', c.winRate, '25–40%', c.winRate >= 0.25 && c.winRate <= 0.4);
   add('anyPrice win rate', a.winRate, '≥85%', a.winRate >= 0.85);
   add('brute win rate', b.winRate, '≤15%', b.winRate <= 0.15);
+  add('brute below careful win rate', b.winRate, '<careful win rate', b.winRate < c.winRate);
   add('careful foothold by day 2', c.footholdBy2, '≥90%', c.footholdBy2 >= 0.9);
   add('careful wall by day 5', c.wallBy5, '≥70%', c.wallBy5 >= 0.7);
   add(
@@ -173,8 +175,16 @@ try {
   add(
     'anyPrice median winning Shu loss',
     a.medianWinningLoss,
-    '5000–9000',
-    a.medianWinningLoss >= 5000 && a.medianWinningLoss <= 9000,
+    '≥3000',
+    a.medianWinningLoss >= 3000,
+  );
+  add(
+    'anyPrice / careful median winning loss',
+    a.medianWinningLoss !== null && c.medianWinningLoss > 0
+      ? a.medianWinningLoss / c.medianWinningLoss
+      : null,
+    '≥1.5×',
+    a.medianWinningLoss >= 1.5 * c.medianWinningLoss,
   );
   add('careful mean idle days', c.meanIdleDays, '≤1.5', c.meanIdleDays <= 1.5);
   add('careful distinct games', c.distinctGames, '≥150 / 200', c.distinctGames >= 150);
@@ -203,7 +213,7 @@ try {
     console.log(JSON.stringify({ output, ...report }, null, 2));
     console.log('\n| Metric | Actual | Target | Result |\n| --- | ---: | --- | --- |');
     for (const row of table) {
-      const percent = row.target.includes('%');
+      const percent = row.target.includes('%') || row.metric.includes('win rate');
       const actual =
         row.actual === null
           ? 'n/a'

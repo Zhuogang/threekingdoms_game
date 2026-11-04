@@ -8,7 +8,6 @@ import { endDay } from '../../src/siege/rules/day';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { siegeCommands } from '../../src/siege/ui/commands';
-import type { SiegeAction } from '../../src/siege/rules/types';
 import { act, duel, engine, refused } from './rulesFixtures';
 
 describe('J2 climbing', () => {
@@ -24,7 +23,6 @@ describe('J2 climbing', () => {
         state.trenchFill['20,18'] = 3;
       }
       refused(state, { type: 'move', unitId: shu.id, x: 20, y: 16, level: 'wall' });
-      refused(state, { type: 'climb', unitId: shu.id, assault: true } as unknown as SiegeAction);
       let next = state;
       for (let day = 1; day <= 3; day++) {
         next = act(next, { type: 'climb', unitId: shu.id });
