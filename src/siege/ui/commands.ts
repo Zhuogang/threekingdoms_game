@@ -61,6 +61,7 @@ export function siegeCommands(state: SiegeState, id: string): SiegeCommand[] {
     choose('move', [moveAction(move[0] ?? { x: -1, y: -1, level: 'ground' })]),
     choose('attack', attacks.length ? attacks : [{ type: 'attack', unitId: id, targetId: '' }]),
     choose('climb', [
+      { type: 'climb', unitId: id },
       {
         type: 'move',
         unitId: id,

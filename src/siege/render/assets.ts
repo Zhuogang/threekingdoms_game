@@ -35,14 +35,14 @@ const LAYOUT = only(
   .trimEnd()
   .split('\n');
 const SHEETS = import.meta.glob<SheetFootprints>(
-  '/docs/siege/chencang/art/s[24]-*/footprints.json',
+  '/docs/siege/chencang/art/s[248]-*/footprints.json',
   {
     eager: true,
     import: 'default',
   },
 );
 const SHEET_IMAGES = urls(
-  import.meta.glob('/docs/siege/chencang/art/s[24]-*/selected-transparent.png', {
+  import.meta.glob('/docs/siege/chencang/art/s[248]-*/selected-transparent.png', {
     query: '?url',
     import: 'default',
     eager: true,
@@ -95,16 +95,25 @@ interface PoseFile {
   }>;
   targetBodyHeight?: number;
 }
-const POSE_FILES = import.meta.glob<PoseFile>('/docs/siege/chencang/art/s[15]-0*/poses.json', {
-  eager: true,
-  import: 'default',
-});
-const POSE_IMAGES = urls(
-  import.meta.glob('/docs/siege/chencang/art/s[15]-0*/{poses,poses-game}/*.png', {
-    query: '?url',
-    import: 'default',
+const POSE_FILES = import.meta.glob<PoseFile>(
+  ['/docs/siege/chencang/art/s[15]-0*/poses.json', '/docs/siege/chencang/art/s8-05-*/poses.json'],
+  {
     eager: true,
-  }),
+    import: 'default',
+  },
+);
+const POSE_IMAGES = urls(
+  import.meta.glob(
+    [
+      '/docs/siege/chencang/art/s[15]-0*/{poses,poses-game}/*.png',
+      '/docs/siege/chencang/art/s8-05-*/poses-game/*.png',
+    ],
+    {
+      query: '?url',
+      import: 'default',
+      eager: true,
+    },
+  ),
 );
 const EFFECT_IMAGES = urls(
   import.meta.glob('/docs/siege/chencang/art/s6-0{1,2}-*/poses-game/*.png', {
@@ -150,7 +159,7 @@ const POSE_SETS: Record<string, { side: Side; poses: Map<string, Pose> }> = {};
 for (const [path, file] of Object.entries(POSE_FILES)) {
   const dir = path.slice(0, path.lastIndexOf('/'));
   const id = dir.split('/').pop()!.slice(0, 5);
-  const side: Side = ['s1-06', 's5-03', 's5-06'].includes(id) ? 'wei' : 'shu';
+  const side: Side = ['s1-06', 's5-03', 's5-06', 's8-05'].includes(id) ? 'wei' : 'shu';
   const poses = new Map<string, Pose>();
   for (const pose of file.poses) {
     if (pose.game)

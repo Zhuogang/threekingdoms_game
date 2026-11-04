@@ -124,8 +124,11 @@ export function routeSiegeActor(
       })
       .map(ground);
     if (unit.side === 'shu') {
-      if (isWallFoot(state, from.x, from.y)) next.push(wall({ x: from.x, y: from.y - 1 }));
-      for (const ladder of ladders) if (sameCell(ladder, from)) next.push(wall(ladder.raisedAt!));
+      if (
+        isWallFoot(state, from.x, from.y) &&
+        state.mounds[cellKey(from)] === SIEGE_TUNING.moundComplete
+      )
+        next.push(wall({ x: from.x, y: from.y - 1 }));
     }
     return next;
   };
@@ -386,7 +389,26 @@ function movementCandidate(
       state.units.some((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, c));
     // Cover the climbing cell itself before adding support beside a Shu foothold.
     const held = unit.level === 'wall' ? threats.find((t) => sameCell(t, unit)) : undefined;
-    goals = threats.filter((t) => !occupied(t) && (!held || t.pressure > held.pressure)).map(wall);
+    goals = threats
+      .filter(
+        (t) =>
+          !occupied(t) &&
+          (!held || t.pressure > held.pressure) &&
+          !(
+            unit.troopType === 'infantry' &&
+            state.engines.some((e) => usableEngine(e) && e.raisedAt && sameCell(e.raisedAt, t)) &&
+            state.units.some(
+              (archer) =>
+                archer.side === 'wei' &&
+                activeUnit(archer) &&
+                archer.troopType === 'archer' &&
+                !archer.acted &&
+                archer.level === 'wall' &&
+                distance(archer, t) <= 3,
+            )
+          ),
+      )
+      .map(wall);
     if (!goals.length)
       goals = threats
         .filter((t) =>

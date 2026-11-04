@@ -4,9 +4,16 @@ import { isWallFoot, cellHeight } from '../rules/map';
 import { usableEngine } from '../rules/combat';
 import type { SiegeEngine, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
-import { FRAME, INNER_WALL_JOB, POSE_SETS, WALL_FOOT, patchOf, sheet } from './assets';
+import { FRAME, INNER_WALL_JOB, MAP, POSE_SETS, WALL_FOOT, patchOf, sheet } from './assets';
 import { placePiece, type Sprite } from './mapPieces';
 import { project, STANDING_EPSILON, type SceneObject, type ScreenRect } from './scene';
+import {
+  climberPoses,
+  climbingWall,
+  figureBounds,
+  formationOffsets,
+  moundStandingHeight,
+} from './v02Art';
 
 export interface StatePatch {
   id: string;
@@ -89,6 +96,16 @@ export function engineSprite(engine: SiegeEngine, facing: Facing = 'north'): Eng
     asset = 's4-06-earth-cart';
     if (engine.acted || engine.wrecked) piece = 2;
   }
+  if (engine.covered && !engine.burning && !engine.wrecked) {
+    if (engine.kind === 'ladder') {
+      asset = 's8-01-covered-ladder';
+      piece = engine.raisedAt ? 2 : facing === 'east' || facing === 'west' ? 1 : 0;
+    } else if (engine.kind === 'ram') {
+      asset = 's8-02-covered-ram';
+      piece =
+        engine.durability < engine.max / 2 ? 2 : facing === 'east' || facing === 'west' ? 1 : 0;
+    }
+  }
   const at: [number, number] =
     engine.raisedAt && !engine.wrecked ? [engine.raisedAt.x, 17] : [engine.x, engine.y];
   return {
@@ -114,14 +131,12 @@ export function unitVisual(
   facing: Facing = unit.side === 'shu' ? 'north' : 'south',
   activity?: string,
 ) {
-  const ladder = state.engines.find(
-    (e) => e.raisedAt && usableEngine(e) && e.x === unit.x && e.y === unit.y,
-  );
-  const climbing =
-    unit.climbing ||
-    (unit.side === 'shu' &&
-      unit.level === 'ground' &&
-      (ladder || isWallFoot(state, unit.x, unit.y)));
+  const wall = climbingWall(state, unit);
+  const progress = wall ? (state.footholds[`${wall.x},${wall.y}`] ?? 0) : 0;
+  const storming = Boolean(wall && unit.assaultedDay === state.day);
+  const moundHeight =
+    unit.level === 'ground' ? moundStandingHeight(state, unit.x, unit.y) : undefined;
+  const climbing = Boolean(wall && progress > 0 && !storming && moundHeight === undefined);
   const filling = activity === 'fillTrench';
   const set =
     unit.officer.id === 'zhugeliang'
@@ -161,18 +176,55 @@ export function unitVisual(
   const h =
     unit.level === 'wall'
       ? cellHeight(state, unit.x, unit.y, unit.level)
-      : climbing
-        ? 1.5
-        : cellHeight(state, unit.x, unit.y, unit.level);
-  const y = climbing && ladder ? 18 : unit.y;
-  const foot = project(FRAME, unit.x + 0.5, y + (unit.level === 'wall' ? WALL_FOOT : 0.5), h);
+      : (moundHeight ?? cellHeight(state, unit.x, unit.y, unit.level));
+  const gateTop =
+    unit.level === 'wall'
+      ? MAP.objects.find(
+          (object) =>
+            object.kind === 'gate-tower' &&
+            unit.x >= object.cells[0] &&
+            unit.x <= object.cells[2] &&
+            unit.y >= object.cells[1] &&
+            unit.y <= object.cells[3],
+        )
+      : undefined;
+  const foot =
+    climbing || storming
+      ? project(FRAME, wall!.x + 0.5, wall!.y + 1, 0)
+      : project(
+          FRAME,
+          unit.x + 0.5,
+          (gateTop?.cells[3] ?? unit.y) + (unit.level === 'wall' ? WALL_FOOT : 0.5),
+          h,
+        );
+  const figures = storming
+    ? []
+    : climbing
+      ? climberPoses(progress).map((poseName, i) => ({
+          name: poseName,
+          pose: POSE_SETS['s5-01']!.poses.get(poseName)!,
+          offset: [0, -(progress === 3 ? 3 : i === 0 ? 0.5 : 1.8) * FRAME.lh] as [number, number],
+        }))
+      : formationOffsets(unit.troops).map((offset) => ({ name, pose: poses.get(name)!, offset }));
+  const bounds = figureBounds(figures, foot);
+  const rect: ScreenRect =
+    facing === 'west'
+      ? [2 * foot[0] - bounds[2], bounds[1], 2 * foot[0] - bounds[0], bounds[3]]
+      : bounds;
   return {
     set,
     action,
     pose: poses.get(name)!,
     flip: facing === 'west',
     foot,
-    rect: [foot[0] - 22, foot[1] - 48, foot[0] + 22, foot[1] + 10] as ScreenRect,
-    depth: { row: climbing && ladder ? 19 : unit.y, height: (climbing ? 3 : h) + STANDING_EPSILON },
+    figures,
+    rect,
+    gateTop: gateTop?.id,
+    depth: {
+      row: gateTop?.cells[3] ?? (climbing || storming ? wall!.y + 1 : unit.y),
+      height:
+        (gateTop?.height ?? (climbing || storming || moundHeight !== undefined ? 3 : h)) +
+        STANDING_EPSILON,
+    },
   };
 }

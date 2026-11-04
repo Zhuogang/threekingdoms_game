@@ -316,6 +316,33 @@ function performAction(
     }
     return null;
   }
+  if (action.type === 'climb') {
+    const unit = availableUnit(state, action.unitId);
+    if (
+      !unit ||
+      unit.side !== 'shu' ||
+      unit.level !== 'ground' ||
+      ('assault' in action && action.assault)
+    )
+      return 'Use a ground Shu unit to climb without assault.';
+    const top = [
+      { x: unit.x, y: unit.y - 1, level: 'wall' as const },
+      ...state.engines
+        .filter((engine) => engine.raisedAt && sameCell(engine, unit))
+        .map((engine) => ({ ...engine.raisedAt!, level: 'wall' as const })),
+    ].find(
+      (cell) =>
+        climbingPosition(state, unit, cell) !== null &&
+        !state.units.some(
+          (other) => other.troops > 0 && other.level === 'wall' && sameCell(other, cell),
+        ),
+    );
+    if (!top) return 'Climb from a ladder base or wall foot to an empty wall cell.';
+    unit.acted = true;
+    unit.climbing = true;
+    gainWall(state, unit, top, 1, 'climb');
+    return null;
+  }
   if (action.type === 'suppress') {
     const unit = 'unitId' in action ? availableUnit(state, action.unitId) : undefined;
     const engine = 'engineId' in action ? availableEngine(state, action.engineId) : undefined;
@@ -334,8 +361,8 @@ function performAction(
     )
       return 'Suppress a wall defender with ground Shu archers or a tower.';
     const source = unit ?? engine!;
-    const forecast = predictSiegeAttack(state, source.id, target.id);
-    if (!forecast?.inRange) return 'Choose a wall defender in suppression range.';
+    if (distance(source, target) > (engine ? T.towerRange : T.suppressRange))
+      return 'Choose a wall defender in suppression range.';
     const before = target.troops;
     const targetCell = cellKey(target);
     const casualties = suppressionCasualties(state, source, target);

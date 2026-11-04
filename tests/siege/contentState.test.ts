@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
@@ -40,7 +41,7 @@ describe('Chencang layout and derived geometry', () => {
     expect(GATES).toEqual({
       south: {
         id: 'south',
-        max: 600,
+        max: T.southGateDurability,
         cells: [
           { x: 23, y: 16 },
           { x: 24, y: 16 },

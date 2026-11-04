@@ -44,6 +44,7 @@ import {
   type CommandKind,
 } from './commands';
 import { resolveSiegeDay } from './playback';
+import { REPLAY_STEP_MS, type NightPresentation } from '../render/nightReplay';
 import { OPENING, encounteredHints, engineKey } from './story';
 import { SiegeActBanner, SiegeEnding, SiegeHint, SiegeOpening, paperStyle } from './SiegeStory';
 import { SiegeIcon } from './storyAssets';
@@ -110,6 +111,8 @@ export default function SiegeApp({
     [xray, setXray] = useState(false),
     [showRange, setShowRange] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [night, setNight] = useState<NightPresentation | null>(null);
+  const [forecastHovered, setForecastHovered] = useState(false);
   const [activity, setActivity] = useState<{ id: string; type: string } | null>(null);
   const [effectAction, setEffectAction] = useState<{
     from: SiegePosition;
@@ -220,6 +223,7 @@ export default function SiegeApp({
       pending.current = null;
     }
     setPlaying(false);
+    setNight(null);
     setActivity(null);
     setEffectAction(null);
   };
@@ -233,6 +237,7 @@ export default function SiegeApp({
       clearTimer();
       pending.current = null;
       setPlaying(false);
+      setNight(null);
       setActivity(null);
       setEffectAction(null);
       setGame(saved);
@@ -306,6 +311,7 @@ export default function SiegeApp({
         finishPlayback();
         return;
       }
+      setNight(frame.night ?? null);
       const action = frame.action;
       const id = 'unitId' in action ? action.unitId : 'engineId' in action ? action.engineId : null;
       if (id) setActivity({ id, type: action.type === 'moveEngine' ? 'move' : action.type });
@@ -328,9 +334,9 @@ export default function SiegeApp({
           : null,
       );
       setGame((g) => ({ ...g, state: frame.state }));
-      timer.current = setTimeout(advance, 260);
+      timer.current = setTimeout(advance, frame.night?.duration ?? REPLAY_STEP_MS);
     };
-    timer.current = setTimeout(advance, 180);
+    timer.current = setTimeout(advance, 90);
   };
   const select = (id: string) => {
     setSelected(id);
@@ -396,6 +402,10 @@ export default function SiegeApp({
       setGame((g) => ({ ...g, state: standBy(g.state, selected) }));
       setMode(null);
       setTarget(null);
+      return;
+    }
+    if (kind === 'climb' && entry?.action?.type === 'climb') {
+      act(entry.action);
       return;
     }
     if (kind === 'move' || kind === 'attack' || kind === 'climb' || kind === 'fillTrench') {
@@ -688,6 +698,8 @@ export default function SiegeApp({
               facings={game.facings}
               activity={activity}
               effectAction={effectAction}
+              night={night}
+              forecastCell={forecastHovered ? state.units.find((u) => u.id === target) : null}
               xray={xray}
               showRange={showRange}
               onSelect={mapSelect}
@@ -829,15 +841,20 @@ export default function SiegeApp({
                           </p>
                         )}
                         {forecast && (
-                          <Forecast
-                            forecast={forecast}
-                            locale={locale}
-                            target={name(target!)}
-                            reason={forecastReason}
-                            confirm={executeAttack}
-                            disabled={playing || deploy}
-                            cancel={() => setTarget(null)}
-                          />
+                          <div
+                            onMouseEnter={() => setForecastHovered(true)}
+                            onMouseLeave={() => setForecastHovered(false)}
+                          >
+                            <Forecast
+                              forecast={forecast}
+                              locale={locale}
+                              target={name(target!)}
+                              reason={forecastReason}
+                              confirm={executeAttack}
+                              disabled={playing || deploy}
+                              cancel={() => setTarget(null)}
+                            />
+                          </div>
                         )}
                         {!deploy && (
                           <>

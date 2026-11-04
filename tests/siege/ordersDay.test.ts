@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { describe, expect, it } from 'vitest';
 import { CAMP_CELLS, COURTYARD } from '../../src/siege/content/chencang';
 import { predictSiegeAttack } from '../../src/siege/rules/combat';
@@ -86,7 +87,7 @@ describe('daily commander orders', () => {
 
   it('repairs an intact gate by 100 with a maximum and damaged-art update, never a broken gate', () => {
     const state = createSiegeState(6);
-    state.gates.south.durability = 250;
+    state.gates.south.durability = T.southGateDurability / 2 - 50;
     state.gates.south.damaged = true;
     const ordered = act(state, {
       type: 'order',
@@ -94,13 +95,16 @@ describe('daily commander orders', () => {
       kind: 'nightRepair',
       target: 'south',
     });
-    expect(ordered.gates.south.durability).toBe(250);
-    expect(endDay(ordered).gates.south).toMatchObject({ durability: 350, damaged: false });
-    state.gates.south.durability = 550;
+    expect(ordered.gates.south.durability).toBe(T.southGateDurability / 2 - 50);
+    expect(endDay(ordered).gates.south).toMatchObject({
+      durability: T.southGateDurability / 2 + 50,
+      damaged: false,
+    });
+    state.gates.south.durability = T.southGateDurability - 50;
     expect(
       endDay(act(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' })).gates
         .south.durability,
-    ).toBe(600);
+    ).toBe(T.southGateDurability);
     Object.assign(state.gates.south, { durability: 0, broken: true });
     refused(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' });
   });
@@ -131,6 +135,7 @@ describe('day sequence, acts and outcomes', () => {
       'engineLost',
       'engineBurning',
       'engineCompleted',
+      ...Array(6).fill('weiNightRecovery'),
       'daySupplies',
       'dayStarted',
     ]);

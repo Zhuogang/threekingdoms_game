@@ -4,6 +4,9 @@ import { applyCombatDamage, troopDamageMultiplier } from '../../v03/battle/exper
 import type { TacticalBattleUnit } from '../../v03/battle/types';
 import {
   GATES,
+  CITY_BOUNDS,
+  MAP_WIDTH,
+  MAP_HEIGHT,
   RAMPS,
   SHU_ROSTER,
   WEI_ROSTER,
@@ -103,13 +106,24 @@ export interface SiegeDamageModifiers {
   parapet: number;
   height: number;
   climbing: number;
+  climbingAttackMultiplier: number;
   holdFast: number;
   gate: number;
   suppression: number;
 }
 
 export interface SiegeEngagement {
-  kind: 'field' | 'volley' | 'ladder' | 'wallFoot' | 'mound' | 'gate' | 'tower' | 'height';
+  kind:
+    | 'field'
+    | 'volley'
+    | 'ladder'
+    | 'wallFoot'
+    | 'mound'
+    | 'gate'
+    | 'tower'
+    | 'height'
+    | 'wall'
+    | 'city';
   frontage: number | null;
   countedTroops: number;
   modifiers: SiegeDamageModifiers;
@@ -138,6 +152,7 @@ function engagement(
     parapet: 1,
     height: 1,
     climbing: 1,
+    climbingAttackMultiplier: 1,
     holdFast: holdFastMultiplier(state, target),
     gate: 1,
     suppression: counter && source.suppressedDay === state.day ? T.suppressedCounterMultiplier : 1,
@@ -149,6 +164,10 @@ function engagement(
   } else if (climb !== null) {
     kind = climb;
     frontage = assault ? T.climbing[climb].assaultFrontage : T.climbing[climb].frontage;
+    if (!counter) modifiers.climbingAttackMultiplier = T.climbingAttackMultiplier;
+  } else if (source.level === 'wall' && target.level === 'wall') {
+    kind = 'wall';
+    frontage = T.wallFrontage;
   } else if (
     source.side === 'shu' &&
     source.level === 'ground' &&
@@ -170,6 +189,18 @@ function engagement(
   ) {
     kind = 'gate';
     frontage = T.gateFrontage;
+  } else if (
+    [source, target].every(
+      (unit) =>
+        unit.level === 'ground' &&
+        unit.x > CITY_BOUNDS.west &&
+        unit.x < CITY_BOUNDS.east &&
+        unit.y > CITY_BOUNDS.north &&
+        unit.y < CITY_BOUNDS.south,
+    )
+  ) {
+    kind = 'city';
+    frontage = T.cityFrontage;
   } else if (source.side === 'wei' && source.level === 'wall' && target.level === 'ground') {
     kind = 'height';
     modifiers.height = 1.3;
@@ -231,7 +262,20 @@ function damage(
 export function moraleAfterCasualties(unit: SiegeUnit, casualties: number): number {
   const loss =
     casualties > 0
-      ? Math.min(45, Math.max(1, Math.ceil((casualties / Math.max(1, unit.troops)) * 55)))
+      ? Math.min(
+          45,
+          Math.max(
+            1,
+            Math.ceil(
+              (casualties /
+                Math.max(
+                  1,
+                  unit.level === 'wall' ? Math.min(unit.troops, T.wallFrontage) : unit.troops,
+                )) *
+                55,
+            ),
+          ),
+        )
       : 0;
   return Math.max(MIN_MORALE, unit.morale - loss);
 }
@@ -402,7 +446,7 @@ export function predictSiegeAttack(
   };
 }
 
-/** Suppression is a half volley even if the archer stands at a climbing position. */
+/** Suppression is a quarter volley even if the archer stands at a climbing position. */
 export function suppressionCasualties(
   state: SiegeState,
   actor: SiegeUnit | SiegeEngine,
@@ -416,11 +460,12 @@ export function suppressionCasualties(
     clash.frontage = T.volleyFrontage;
     clash.countedTroops = Math.min(source.troops, T.volleyFrontage);
     clash.modifiers.parapet = T.parapetMultiplier;
+    clash.modifiers.climbingAttackMultiplier = 1;
   }
   return Math.floor(damage(state, source, target, clash) * T.suppressionDamageMultiplier);
 }
 
-/** Pure personnel calculation, including the field wounded remainder and wall retreat. */
+/** Personnel calculation on the rules draft; a Shu fall also records its cleared foothold. */
 export function inflictCasualties(
   state: SiegeState,
   target: SiegeUnit,
@@ -446,6 +491,79 @@ export function inflictCasualties(
 /** Routed wall defenders vacate their cell and retreat up to one move toward the nearest ramp. */
 export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUnit {
   const unit = { ...original };
+  if (
+    unit.side === 'shu' &&
+    unit.level === 'wall' &&
+    unit.troops > 0 &&
+    unit.morale < ROUTED_MORALE
+  ) {
+    const from = { x: unit.x, y: unit.y };
+    const free = (cell: Cell) =>
+      !state.units.some(
+        (other) =>
+          other.id !== unit.id &&
+          other.troops > 0 &&
+          other.level === 'ground' &&
+          sameCell(other, cell),
+      ) &&
+      !state.engines.some(
+        (engine) =>
+          sameCell(engine, cell) &&
+          !(engine.kind === 'ladder' && usableEngine(engine) && engine.raisedAt),
+      );
+    const below = [
+      { x: unit.x, y: unit.y + 1 },
+      ...state.engines
+        .filter(
+          (engine) =>
+            engine.kind === 'ladder' &&
+            usableEngine(engine) &&
+            engine.raisedAt &&
+            sameCell(engine.raisedAt, unit),
+        )
+        .map(({ x, y }) => ({ x, y })),
+    ].find(
+      (cell) =>
+        free(cell) &&
+        climbingPosition(
+          state,
+          { ...unit, ...cell, level: 'ground' },
+          { ...from, level: 'wall' },
+        ) !== null,
+    );
+    const landing =
+      below ??
+      Array.from({ length: MAP_WIDTH * MAP_HEIGHT }, (_, i) => ({
+        x: i % MAP_WIDTH,
+        y: Math.floor(i / MAP_WIDTH),
+      }))
+        .filter(
+          (cell) =>
+            cell.y > 18 &&
+            isMapCell(cell.x, cell.y) &&
+            ['plain', 'hill', 'wood', 'works'].includes(cellTerrain(state, cell.x, cell.y)) &&
+            free(cell),
+        )
+        .sort((a, b) => distance(a, from) - distance(b, from) || a.y - b.y || a.x - b.x)[0];
+    if (!landing) throw new Error('No free ground cell for a unit thrown off the wall.');
+    Object.assign(unit, landing, {
+      level: 'ground',
+      morale: ROUTED_MORALE,
+      routed: false,
+      moved: true,
+      acted: true,
+      climbing: false,
+    });
+    changeFoothold(state, from, 0, 'thrownOffWall', unit.id);
+    logEvent(state, 'thrownOffWall', {
+      unitId: unit.id,
+      from: cellKey(from),
+      to: cellKey(unit),
+      moraleBefore: original.morale,
+      moraleAfter: unit.morale,
+    });
+    return unit;
+  }
   unit.routed = unit.routed || unit.morale < ROUTED_MORALE;
   if (unit.troops > 0 && !unit.routed) return unit;
   unit.moved = true;
@@ -635,9 +753,10 @@ export function gainWall(
   source: SiegeUnit,
   wallCell: Cell,
   gain: number,
+  reason = 'attack',
 ): boolean {
   if (!activeUnit(source) || gain <= 0) return false;
-  changeFoothold(state, wallCell, wallFoothold(state, wallCell) + gain, 'attack', source.id);
+  changeFoothold(state, wallCell, wallFoothold(state, wallCell) + gain, reason, source.id);
   if (wallFoothold(state, wallCell) < T.footholdComplete) return false;
   const defender = state.units.find(
     (unit) =>

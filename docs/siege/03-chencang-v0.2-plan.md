@@ -132,7 +132,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 | 井阑 | 3    | 250  | 2        | 第二幕；射程 4，正面 300，无视女墙；可压制 |
 
 - 场上可用器械上限 6 → **8**。督造 −1 日不变。完工器械仍出现在工棚门口。
-- 城门：南门耐久 **600**，其余 400（本轮用不到）。夜修 +100。
+- 城门：南门耐久 **800**，其余 400（本轮用不到）。夜修 +100。撞门见 §5.11。
 - 器械燃烧每夜 −20 不变；蒙皮器械不会进入燃烧态。
 
 ### 5.4 立足
@@ -143,7 +143,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 - **满 3**：当即登城。墙格无守军则攻方上墙；有守军则守军被挤开：沿墙向最近马道方向退 1 格（空格才退），无处可退则按 v0.1 的 `settleUnitRout` 离开城墙；被挤开的守军士气 −10。攻方上墙后 `moved` 和 `acted` 都置为 true，该墙格立足清零。
 - **礌石**：命中攀城部队时立足 −2（最低 0）。
 - **夜间清理**：墙格的攀城位置上没有可行动的蜀军，或云梯已毁，立足归零。
-- **无守军**的墙格仍可直接移动登上（v0.1 规则），不经立足。
+- **无守军**的墙格不能直接走上去，要用「攀爬」动作攒立足（§5.11）。只有建成的土山可以直接走上无守军的墙格。
 - 预测里写「立足 +1 → 2/3」；墙格正面画三格墨点；梯上按立足数画攀爬的兵（§8）。
 
 ### 5.5 招拆表
@@ -163,8 +163,8 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 **压制** `{ type: 'suppress', unitId | engineId, targetId }`
 
-- 发起：地面的蜀军弓弩兵，目标是射程 3 以内墙上的魏军；或井阑，射程 4。蜀军弓弩兵打城头的普通攻击射程也从 2 改为 3：城堑占 y 17、18 两行，y 19 到墙头正好 3 格，射程 2 在填平城堑前够不着，第 1 日就压制不了。
-- 效果：伤亡为普通齐射的 ×0.5（女墙 ×0.3 照算），目标 `suppressedDay = 当日`。当日魏军阶段里，被压制的部队**不能**放火箭、投石磨、投礌石、备火、吊石磨、堆礌石、夜袭（作为夜袭部队），反击伤害 ×0.7；可以移动、可以普通攻击、可以筑墙。夜间清除。
+- 发起：地面的蜀军弓弩兵，目标是射程 3 以内墙上的魏军；或井阑，射程 4。城堑占 y 17、18 两行，y 19 到墙头正好 3 格，所以第 1 日隔着城堑就能压制。普通齐射的射程仍是 2，要先填平城堑（§5.11）。
+- 效果：伤亡为普通齐射的 ×0.25（女墙 ×0.3 照算），目标 `suppressedDay = 当日`。当日魏军阶段里，被压制的部队**不能**放火箭、投石磨、投礌石、备火、吊石磨、堆礌石、夜袭（作为夜袭部队），反击伤害 ×0.7；可以移动、可以普通攻击、可以筑墙。夜间清除。
 - 预测写明「压制：对方今日不能放火箭、投石磨、投礌石」。
 
 **蒙皮** `{ type: 'coverEngine', unitId, engineId }`
@@ -226,7 +226,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 ### 5.9 胜负与评分
 
-胜负条件同 v0.1：日终蜀军占帅府前庭或魏军全灭即蜀胜；第 12 日日终粮尽或蜀军撤军为史实结局；蜀军全军溃散或本阵被击溃为蜀败。新增记录 `state.mainBodyThreatened`：任一时刻魏军与本阵距离 ≤ 3 则为 true（夜间结算检查）。
+胜负条件：日终蜀军占帅府前庭、且前庭内没有可行动的魏军，或魏军全灭，即蜀胜；第 12 日日终粮尽或蜀军撤军为史实结局；蜀军全军溃散或本阵被击溃为蜀败。新增记录 `state.mainBodyThreatened`：任一时刻魏军与本阵距离 ≤ 3 则为 true（夜间结算检查）。
 
 `src/siege/rules/score.ts` 输出 `{ side, tier, score, parts }`，两边都算，结局画面按玩家阵营显示。
 
@@ -245,15 +245,15 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 **魏军**
 
-| 等级 | 条件                                         |
-| ---- | -------------------------------------------- |
-| 全歼 | 蜀军溃败                                     |
-| 完守 | 守住，城门从未被破，日终从未有蜀军站在城墙上 |
-| 固守 | 守住，只发生过其中一样                       |
-| 险守 | 守住，两样都发生过                           |
-| 城破 | 蜀胜                                         |
+| 等级 | 条件                                      |
+| ---- | ----------------------------------------- |
+| 全歼 | 蜀军溃败                                  |
+| 完守 | 守住，城门从未被破，蜀军在墙上过夜 ≤ 2 夜 |
+| 固守 | 守住，只发生过其中一样                    |
+| 险守 | 守住，两样都发生过                        |
+| 城破 | 蜀胜                                      |
 
-分数 = 结局基数（全歼 60，守住 50，城破 0）+ 城防（城门未破 +10，日终从未有蜀军在墙上 +10）+ 伤亡（15 × max(0, 1 − 魏军损失 / 800)）+ 战绩（击毁器械 ≥ 3 件 +5）+ 速胜（蜀军第 8 日以前撤军 +5）。
+分数 = 结局基数（全歼 60，守住 50，城破 0）+ 城防（城门未破 +10，蜀军在墙上过夜 ≤ 2 夜 +10）+ 伤亡（15 × max(0, 1 − 魏军损失 / 800)）+ 战绩（击毁器械 ≥ 3 件 +5）+ 速胜（蜀军第 8 日以前撤军 +5）。
 
 ### 5.10 数值一览（`tuning.ts` 草案）
 
@@ -263,20 +263,50 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 | 第二幕                     | 第 4 日          | 器械上限               | 8               |
 | 云梯 工期/耐久/移动        | 1 / 200 / 3      | 冲车                   | 2 / 300 / 3     |
 | 土车                       | 1 / 80 / 3       | 井阑                   | 3 / 250 / 2     |
-| 南门耐久 / 撞门            | 600 / 200        | 夜修                   | +100            |
+| 南门耐久 / 撞门            | 800 / 160        | 夜修                   | +100            |
 | 石磨 / 蒙皮                | 200 / 100        | 火箭系数 / 蒙皮        | 0.4 / ×0.4      |
 | 礌石系数 / 攀爬 / 强攻     | 0.25 / ×1.5 / ×2 | 礌石立足               | −2              |
-| 填堑每格 / 土车每载 / 步兵 | 3 / 1.5 / 0.5    | 土山建成 / 土车 / 步兵 | 6 / +2 / +1     |
+| 填堑每格 / 土车每载 / 步兵 | 3 / 1.5 / 0.25   | 土山建成 / 土车 / 步兵 | 6 / +2 / +1     |
 | 梯底正面 / 立足            | 150 / +1         | 墙脚正面 / 立足        | 100 / +1        |
 | 土山正面 / 立足            | 300 / +2         | 强攻正面（梯/脚/山）   | 400 / 300 / 600 |
 | 强攻立足                   | +2 / +2 / +3     | 强攻反击（梯脚 / 山）  | ×2.5 / ×2.0     |
-| 强攻士气 / 邻队            | −10 / −5         | 压制伤亡 / 反击        | ×0.5 / ×0.7     |
+| 强攻士气 / 邻队            | −10 / −5         | 压制伤亡 / 反击        | ×0.25 / ×0.7    |
 | 夜攻推进 / 士气            | 2 格 / −3        | 举火对撞士气           | −5              |
 | 夜袭伤害 / 蒙皮 / 击退损失 | 150 / 75 / 10%   | 夜袭射程               | 南门接近格 4 格 |
 | 燃烧每夜                   | −20              | 井阑射程 / 正面        | 4 / 300         |
-| 弓弩兵打城头射程           | 3                | 城头弓兵射程           | 3               |
+| 齐射城头射程 / 压制射程    | 2 / 3            | 城头弓兵射程           | 3               |
+| 墙上正面 / 城内正面        | 200 / 400        | 仰攻修正（攀城位置）   | ×0.35           |
+| 魏军夜间救治伤兵           | 25%              | 攀爬立足（无守军）     | +1              |
 | 齐射正面 / 女墙            | 600 / ×0.3       | 门洞正面               | 300             |
 | 本阵受威胁距离             | ≤ 3              | 士气回复               | +5 到 80        |
+
+### 5.11 规则修订（2026-11-03，第一轮模拟之后）
+
+任务 J 的 200 局模拟只有 3/11 项达标：蛮攻胜率 100%，不惜代价的获胜局只损失 467 人（目标 5000–9000），强攻几乎没被用过。原因都在规则结构上，调数字解决不了：
+
+| 观察                                             | 原因                                                      | 修订                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 所有打法第 3–5 日上墙；第 2 日有立足的局只有 54% | 无守军的墙格可以直接走上去，立足被绕开了                  | **攀爬**：梯底或墙脚对正上方的空墙格 `climb`，立足 +1，满 3 上墙。不能强攻     |
+| 魏军 1300 人，中位数损失 1000–1150               | 上墙后两三千人全员参战；一次攻击打掉一支部队              | **墙上正面 200**：墙上对墙上双方都按 200 人算，墙上部队的士气冲击也按 200 算   |
+| 上墙就再也下不来                                 | 魏军的打击对两千人的部队几乎没有士气影响                  | **被打下城**：墙上的蜀军士气跌破 20，回到梯底、墙脚或城堑南，士气 20，不算溃散 |
+| 弓弩兵每日无代价地削减守军                       | 射程 3 让弓弩兵隔着城堑就能齐射（这是之前一处修订带来的） | **齐射射程回到 2**，压制仍是 3，压制伤亡 ×0.25                                 |
+| 攀城攻击很快打光墙头守军                         | 仰攻没有任何惩罚                                          | **仰攻 ×0.35**：攀城位置发起的攻击都乘这个修正，强攻也算                       |
+| 冲车第 1 日到桥头，第 3 日破门，先于第二次投石磨 | 南门 600、每撞 −200，三下就破                             | **南门 800、每撞 −160**：五下才破，石磨和夜修有时间起作用                      |
+| 一支部队溜进前庭就赢，哪怕魏军还站在那里         | 胜利条件只看有没有蜀军                                    | **前庭要清空**：日终前庭内没有可行动的魏军才算占领                             |
+| 守军只减不增，打到后期必然见底                   | 没有恢复手段                                              | **夜间救治**：魏军每夜恢复 25% 伤兵；城内地面**正面 400**                      |
+| 不惜代价和合格打法没有区别                       | 强攻第 5–8 日才开始，而那时已经走上墙了                   | **anyPrice 从第 2 日起**，只要头上有守军就强攻，并把受伤部队轮换下来顶上       |
+
+第二轮模拟（任务 J2）之后，立足、上墙和每日都有事发生的指标达标，蛮攻降到 24%，城墙每天易手；但合格打法只在第 12 日才赢，蛮攻反而比它强，强攻第 3 日后就停了。再修订：
+
+| 观察                                      | 原因                                    | 修订                                                                              |
+| ----------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------- |
+| 空墙格比有守军的墙格还慢，强攻第 3 日就停 | 攀爬只能 +1，强攻（+2）只能打有守军的格 | **强攻攀爬**：`climb` 可以 `assault`，立足 +2，士气代价同强攻，自损强攻正面的 25% |
+| 不造器械也能填出一条烧不掉的路            | 步兵填堑每次 0.5                        | **步兵填堑 0.25**：土车仍是每载 1.5，工棚才有意义                                 |
+| 合格打法第 12 日才赢                      | 冲车第 5–9 日才开始，而破门要五下       | **第 2–5 日起撞门**；anyPrice 不管石磨，careful 先拆石磨                          |
+| 强攻的代价看不到                          | 损失集中在头几天                        | **anyPrice 从第 2 日起每日强攻**，有没有守军都强攻                                |
+| 「完守」几乎不可能（1%）                  | 十二天里一支蜀军在墙上过一夜就没了      | **完守**改为城门未破且蜀军在墙上过夜 ≤ 2 夜；评分阈值改为跟着两种打法的实际损失走 |
+
+魏军只有 1300 人，能造成的损失有上限，所以 anyPrice 的损失目标从 5000–9000 改为 ≥ 3000 且 ≥ careful 的 1.5 倍；`costlyVictoryLosses`（攻克和惨胜的分界）取两种打法获胜损失中位数的中点。
 
 ## 6. AI
 
@@ -305,19 +335,19 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 ### 6.3 模拟目标（200 局，`node tools/siege-sim.mjs 200`）
 
-| 指标                                           | 目标      |
-| ---------------------------------------------- | --------- |
-| careful 胜率                                   | 25–40%    |
-| anyPrice 胜率                                  | ≥ 85%     |
-| brute 胜率                                     | ≤ 15%     |
-| 第 2 日结束前立足 ≥ 1 的局                     | ≥ 90%     |
-| 第 5 日结束前有蜀军站上城墙的局                | ≥ 70%     |
-| careful 获胜平均日数                           | 8–11      |
-| anyPrice 获胜时蜀军总损失中位数                | 5000–9000 |
-| 没有任何交战、立足、器械损毁的日子（每局平均） | ≤ 1.5     |
-| 200 个种子的不同对局（结局、日数、损失三元组） | ≥ 150     |
-| 守城 AI 一回合 / 攻城 AI 一回合                | ≤ 1 秒    |
-| 守城 AI 对 careful 的「完守」率                | 20–40%    |
+| 指标                                           | 目标                           |
+| ---------------------------------------------- | ------------------------------ |
+| careful 胜率                                   | 25–40%                         |
+| anyPrice 胜率                                  | ≥ 85%                          |
+| brute 胜率                                     | ≤ 15%                          |
+| 第 2 日结束前立足 ≥ 1 的局                     | ≥ 90%                          |
+| 第 5 日结束前有蜀军站上城墙的局                | ≥ 70%                          |
+| careful 获胜平均日数                           | 8–11                           |
+| anyPrice 获胜时蜀军总损失中位数                | ≥ 3000，且 ≥ careful 的 1.5 倍 |
+| 没有任何交战、立足、器械损毁的日子（每局平均） | ≤ 1.5                          |
+| 200 个种子的不同对局（结局、日数、损失三元组） | ≥ 150                          |
+| 守城 AI 一回合 / 攻城 AI 一回合                | ≤ 1 秒                         |
+| 守城 AI 对 careful 的「完守」率                | 10–40%                         |
 
 模拟输出新增：每局首次立足日、首次上墙日、强攻次数、夜令对撞结果、两边的评分。
 
@@ -447,7 +477,7 @@ Subject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a
 - 看什么：都是能放在一格宽的走道上的小物件，缩到游戏尺寸还认得出是火盆、柴、石头；燃着的火盆只有红光，没有火苗。
 
 ```text
-Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
+Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). The block-out's plain boxes only mark where each piece stands and how tall it is; draw the real objects, which are not boxes. First: an unlit iron brazier (火盆): a ROUND, shallow, bowl-shaped cast-iron basin standing on three splayed legs, seen from the same high three-quarter camera so that its round rim reads as an ellipse, heaped with split firewood and kindling. It is round, never square or rectangular, with no flat tray or frame. Second: the same round brazier lit: a low heap of charcoal and split wood in the bowl, mostly dark charcoal with deep red and orange embers glowing between the pieces, and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). It stays mostly dark with embers, never a solid sheet of red. Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
 ```
 
 #### S8-05 魏军夜袭小队姿态表（`s8-05-wei-sortie-sheet`）

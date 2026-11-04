@@ -11,12 +11,19 @@ export function siegeOutcome(state: SiegeState, atDayEnd = false): SiegeState['o
   if (!atDayEnd) return null;
   if (
     !state.units.some((unit) => unit.side === 'wei' && activeUnit(unit)) ||
-    shu.some(
+    (shu.some(
       (unit) =>
         activeUnit(unit) &&
         unit.level === 'ground' &&
         COURTYARD.some((cell) => sameCell(cell, unit)),
-    )
+    ) &&
+      !state.units.some(
+        (unit) =>
+          unit.side === 'wei' &&
+          activeUnit(unit) &&
+          unit.level === 'ground' &&
+          COURTYARD.some((cell) => sameCell(cell, unit)),
+      ))
   )
     return 'victory';
   return state.grain <= 0 ? 'historical' : null;

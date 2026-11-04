@@ -8,6 +8,7 @@ import {
   settleUnitRout,
   siegeBaseDamage,
 } from '../../src/siege/rules/combat';
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { endDay } from '../../src/siege/rules/day';
 import { pathTo } from '../../src/siege/rules/movement';
 import { act, duel, engine, refused } from './rulesFixtures';
@@ -26,7 +27,9 @@ describe('siege combat frontage and modifiers', () => {
       modifiers: { parapet: 1, height: 1, climbing: 1 },
       counterattack: { possible: true, modifiers: { height: 1.3, climbing: 1.5 } },
     });
-    expect(forecast.casualties).toBe(Math.floor(siegeBaseDamage(state, shu, wei, 150)));
+    expect(forecast.casualties).toBe(
+      Math.floor(siegeBaseDamage(state, shu, wei, 150) * T.climbingAttackMultiplier),
+    );
     const result = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id });
     expect(result.units[1]!.troops).toBe(wei.troops - forecast.casualties);
     expect(result.units[0]!.troops).toBe(shu.troops - forecast.counterattack.casualties);
@@ -162,7 +165,7 @@ describe('siege combat frontage and modifiers', () => {
       ),
     );
     const result = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
-    expect(result.gates.south.durability).toBe(600 - forecast.gateDamage!);
+    expect(result.gates.south.durability).toBe(T.southGateDurability - forecast.gateDamage!);
     refused(result, { type: 'attack', unitId: shu.id, gateId: 'south' });
   });
 
@@ -184,7 +187,7 @@ describe('siege combat frontage and modifiers', () => {
 
 describe('vacating and climbing the wall', () => {
   it.each(['destroyed', 'routed'] as const)(
-    'vacates a %s wall defender, allowing ascent on the next move',
+    'vacates a %s wall defender, allowing a climb to finish the foothold',
     (condition) => {
       const { state, shu, wei } = duel(
         {},
@@ -198,10 +201,10 @@ describe('vacating and climbing the wall', () => {
       // Keep another active defender so the next day can begin.
       hit.units.push({ ...wei, id: 'reserve', x: 30, y: 16, morale: 80, troops: 200 });
       const next = endDay(hit);
-      expect(pathTo(next, shu.id, 20, 16, 'wall')).not.toBeNull();
-      expect(
-        act(next, { type: 'move', unitId: shu.id, x: 20, y: 16, level: 'wall' }).units[0]!.level,
-      ).toBe('wall');
+      expect(pathTo(next, shu.id, 20, 16, 'wall')).toBeNull();
+      const climbing = act(next, { type: 'climb', unitId: shu.id });
+      expect(climbing.footholds['20,16']).toBe(2);
+      expect(act(endDay(climbing), { type: 'climb', unitId: shu.id }).units[0]!.level).toBe('wall');
     },
   );
 });

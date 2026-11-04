@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { describe, expect, it } from 'vitest';
 import { INNER_WALL_SEGMENTS, WORKSHOPS } from '../../src/siege/content/chencang';
 import { siegeBaseDamage } from '../../src/siege/rules/combat';
@@ -8,14 +9,19 @@ import { createSiegeState } from '../../src/siege/rules/state';
 import { act, duel, engine, refused } from './rulesFixtures';
 
 describe('gates and rams', () => {
-  it('breaks the south gate after three daily ram hits and opens the passage with a single morale shock', () => {
+  it('breaks the south gate after the tuned number of daily ram hits and opens the passage with a single morale shock', () => {
     let state = createSiegeState(3);
     state.engines = [engine('ram', 23, 17)];
-    for (let day = 1; day <= 3; day++) {
+    const hits = Math.ceil(T.southGateDurability / T.ramDamage);
+    for (let day = 1; day <= hits; day++) {
       state = act(state, { type: 'ram', engineId: 'engine', gateId: 'south' });
-      expect(state.gates.south.durability).toBe(600 - day * 200);
-      expect(state.gates.south.damaged).toBe(day >= 2);
-      if (day < 3) {
+      expect(state.gates.south.durability).toBe(
+        Math.max(0, T.southGateDurability - day * T.ramDamage),
+      );
+      expect(state.gates.south.damaged).toBe(
+        state.gates.south.durability < T.southGateDurability / 2,
+      );
+      if (day < hits) {
         refused(state, { type: 'ram', engineId: 'engine', gateId: 'south' });
         state = endDay(state);
       }
@@ -35,7 +41,7 @@ describe('gates and rams', () => {
     const { state, shu, wei } = duel({ x: 23, y: 17 }, { x: 23 });
     const normal = siegeBaseDamage(state, shu, { ...wei, level: 'ground' }, 100);
     const hit = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
-    expect(hit.gates.south.durability).toBe(600 - Math.floor(normal * 0.1));
+    expect(hit.gates.south.durability).toBe(T.southGateDurability - Math.floor(normal * 0.1));
     shu.y = 19;
     refused(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
     Object.assign(shu, { x: 22, y: 16, level: 'wall' });
@@ -189,12 +195,13 @@ function readyCounters(state: ReturnType<typeof createSiegeState>) {
 
 describe('Wei countermeasures', () => {
   it.each([
-    ['clear', 80],
-    ['wind', 100],
-    ['snow', 48],
+    ['clear', 1],
+    ['wind', T.windFireMultiplier],
+    ['snow', T.snowFireMultiplier],
   ] as const)(
     'applies %s fire-arrow damage and then burns for twenty at day end',
-    (weather, damage) => {
+    (weather, weatherMultiplier) => {
+      const damage = Math.floor(200 * T.fireArrowCoefficient * weatherMultiplier);
       const { state, wei } = duel({}, { troopType: 'archer', troops: 200 });
       readyCounters(state);
       state.weather = weather;
@@ -215,7 +222,7 @@ describe('Wei countermeasures', () => {
     state.engines = [engine('tower', 20, 19)];
     expect(
       act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }).engines[0]!.durability,
-    ).toBe(250 - Math.floor(251 * 0.4 * 0.6));
+    ).toBe(250 - Math.floor(251 * T.fireArrowCoefficient * T.snowFireMultiplier));
   });
 
   it('recognizes boulder exposure from an attack earlier in the day, including wall-foot attacks', () => {
@@ -224,11 +231,11 @@ describe('Wei countermeasures', () => {
     state.trenchFill['20,17'] = 3;
     expect(
       act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id }).units[0]!.troops,
-    ).toBe(2000 - 112);
+    ).toBe(2000 - Math.floor(300 * T.boulderCoefficient * T.climbingBoulderMultiplier));
     shu.attackedFromBelowDay = 0;
     expect(
       act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id }).units[0]!.troops,
-    ).toBe(2000 - 75);
+    ).toBe(2000 - Math.floor(300 * T.boulderCoefficient));
   });
 
   it('turns destroyed engines into blocking wrecks and schedules act 2 after two losses', () => {
@@ -271,7 +278,10 @@ describe('Wei countermeasures', () => {
       readyCounters(state);
       state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
       const hit = act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
-      expect(hit.units[0]!.troops).toBe(2000 - Math.floor(300 * 0.25 * (climbing ? 1.5 : 1)));
+      expect(hit.units[0]!.troops).toBe(
+        2000 -
+          Math.floor(300 * T.boulderCoefficient * (climbing ? T.climbingBoulderMultiplier : 1)),
+      );
       refused(hit, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
     },
   );

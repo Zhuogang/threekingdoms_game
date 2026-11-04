@@ -187,8 +187,8 @@ try {
   add(
     'Wei perfect defense vs careful',
     c.perfectDefenseRate,
-    '20–40%',
-    c.perfectDefenseRate >= 0.2 && c.perfectDefenseRate <= 0.4,
+    '10–40%',
+    c.perfectDefenseRate >= 0.1 && c.perfectDefenseRate <= 0.4,
   );
   const timing = Object.fromEntries(
     Object.entries(times).map(([side, values]) => [

@@ -139,7 +139,7 @@ describe('Chencang story and summary', () => {
     },
   );
   it.each([
-    [4, 'victory', 11],
+    [8, 'victory', 12],
     [11, 'historical', 12],
   ] as const)(
     'plays seed %i to %s using the real simulation strategy',

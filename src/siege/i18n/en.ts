@@ -128,6 +128,7 @@ export const en = {
   unlimited: 'unlimited',
   parapet: 'parapet ×{n}',
   height: 'height ×{n}',
+  climbingAttackMultiplier: 'uphill attack ×{n}',
   climbing: 'climbing ×{n}',
   holdFast: 'hold fast ×{n}',
   gateModifier: 'gate ×{n}',
@@ -278,6 +279,10 @@ export const enReasons = {
     'Choose an adjacent inner trench cell with both rows filled and an unfinished mound.',
   'Suppress a wall defender with ground Shu archers or a tower.':
     'Suppress a wall defender with ground Shu archers or a tower.',
+  'Use a ground Shu unit to climb without assault.':
+    'Use a ground Shu unit to climb without assault.',
+  'Climb from a ladder base or wall foot to an empty wall cell.':
+    'Climb from a ladder base or wall foot to an empty wall cell.',
   'Choose a wall defender in suppression range.': 'Choose a wall defender in suppression range.',
   'A suppressed unit cannot prepare or strike with siege countermeasures.':
     'A suppressed unit cannot prepare or strike with siege countermeasures.',

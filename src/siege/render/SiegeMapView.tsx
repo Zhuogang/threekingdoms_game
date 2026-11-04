@@ -45,6 +45,7 @@ import {
   project,
   rectsOverlap,
   sliceObject,
+  STANDING_EPSILON,
   type SceneSlice,
   type ScreenRect,
 } from './scene';
@@ -56,8 +57,23 @@ import {
   type EngineSprite,
 } from './stateArt';
 import { composeSiegePainting } from './painting';
+import { boundSprites } from './spriteBudget';
+import { SPRITE_CAP, moundSprite, preparationSprites, stormingSprite } from './v02Art';
+import type { NightPresentation } from './nightReplay';
+import {
+  Displacement,
+  FootholdPips,
+  NightOverlay,
+  PreparationFlames,
+  SortieParty,
+} from './v02Effects';
 
 const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
+const NO_CELLS: SiegePosition[] = [];
+const NO_FACINGS: Record<string, Facing> = {};
+const NO_IDS: readonly string[] = [];
+export const SILHOUETTE_OPACITY = 0.35;
+export const SILHOUETTE_TINTS = { shu: '#58865b', wei: '#365778' };
 interface Layer {
   slice: SceneSlice;
   sprite?: Sprite;
@@ -82,6 +98,11 @@ interface Props {
   facings?: Record<string, Facing>;
   activity?: { id: string; type: string } | null;
   effectAction?: { from: SiegePosition; to: SiegePosition; type: string } | null;
+  initialFocus?: SiegePosition;
+  initialZoom?: number;
+  night?: NightPresentation | null;
+  forecastCell?: SiegePosition | null;
+  repulsedUnits?: readonly string[];
   onSelect?: (id: string) => void;
   onCell?: (cell: SiegePosition) => void;
   onZoom?: (scale: number) => void;
@@ -92,16 +113,21 @@ export const SiegeMapView = memo(
       state,
       locale,
       selected,
-      reachable = [],
-      targets = [],
-      tutorialCells = [],
+      reachable = NO_CELLS,
+      targets = NO_CELLS,
+      tutorialCells = NO_CELLS,
       tutorialFill = false,
       deploy = false,
       xray = false,
       showRange = true,
-      facings = {},
+      facings = NO_FACINGS,
       activity,
       effectAction,
+      night,
+      initialFocus,
+      initialZoom = 1,
+      forecastCell,
+      repulsedUnits = NO_IDS,
       onSelect,
       onCell,
       onZoom,
@@ -160,7 +186,17 @@ export const SiegeMapView = memo(
         first = false;
         setView((current) =>
           initial
-            ? { left: 1536 - width / 2, top: 900 - height / 2, width, height }
+            ? (() => {
+                const centre = initialFocus
+                  ? project(FRAME, initialFocus.x + 0.5, initialFocus.y + 0.5, 0)
+                  : [1536, 900];
+                return {
+                  left: centre[0]! - width / initialZoom / 2,
+                  top: centre[1]! - height / initialZoom / 2,
+                  width: width / initialZoom,
+                  height: height / initialZoom,
+                };
+              })()
             : resizeBattlefieldViewport(BOUNDS, current, width / height),
         );
       });
@@ -236,13 +272,82 @@ export const SiegeMapView = memo(
       () => state.engines.map((e) => engineSprite(e, facings[e.id])),
       [state.engines, facings],
     );
+    const units = useMemo(
+      () =>
+        state.units
+          .filter((u) => u.troops > 0 && isMapCell(u.x, u.y))
+          .map((unit) => ({
+            unit,
+            visual: unitVisual(
+              state,
+              unit,
+              facings[unit.id],
+              activity?.id === unit.id ? activity.type : undefined,
+            ),
+          })),
+      [state, facings, activity],
+    );
+    const preparations = useMemo(() => preparationSprites(state), [state.preparations, state.day]);
+    const decorations = useMemo(
+      () => [
+        ...Object.entries(state.mounds).flatMap(([key, progress]) => {
+          const sprite = moundSprite(key, progress);
+          return sprite ? [sprite] : [];
+        }),
+        ...state.units.flatMap((unit) => {
+          const sprite = stormingSprite(
+            state,
+            unit,
+            Boolean(night) || repulsedUnits.includes(unit.id),
+          );
+          return sprite ? [sprite] : [];
+        }),
+        ...preparations,
+      ],
+      [state, preparations, Boolean(night), repulsedUnits],
+    );
+    // All scenery and gameplay images are mandatory. Only silhouettes use
+    // the remaining allowance; row slices each count as a visible image.
+    const staticLayers = useMemo(
+      () =>
+        MAP.objects.flatMap((object) =>
+          sliceObject(FRAME, object).map((slice) => ({
+            slice,
+            mask: {
+              href: MAP_FILES[`${MAP_DIR}/${object.mask}`]!,
+              rect: [0, 0, W, H] as ScreenRect,
+            },
+          })),
+        ),
+      [],
+    );
+    const budget = useMemo(
+      () =>
+        boundSprites(
+          [...engines, ...decorations, ...CAMP],
+          staticLayers.length +
+            patches.reduce(
+              (n, patch) => n + (patch.occluder ? sliceObject(FRAME, patch.occluder).length : 0),
+              0,
+            ) +
+            2 +
+            units.reduce((n, u) => n + u.visual.figures.length, 0) +
+            engines.filter((e) => e.burning).length * 2 +
+            (night?.party ? (night.party.kindle ? 4 : 3) : 0) +
+            engines.reduce((n, sprite) => {
+              const previous = night?.previousEngine;
+              if (previous?.id !== sprite.id) return n;
+              // Replay replaces all row slices with one whole sprite, plus
+              // the lowered ladder during the raising crossfade.
+              return n + 1 + Number(!previous.raisedAt && Boolean(sprite.engine.raisedAt)) -
+                sliceObject(FRAME, spriteObject(sprite)).length;
+            }, 0) +
+            (effectAction ? 1 : 0),
+        ),
+      [engines, decorations, staticLayers, patches, units, night, effectAction],
+    );
     const layers = useMemo(() => {
-      const list: Layer[] = MAP.objects.flatMap((object) =>
-        sliceObject(FRAME, object).map((slice) => ({
-          slice,
-          mask: { href: MAP_FILES[`${MAP_DIR}/${object.mask}`]!, rect: [0, 0, W, H] as ScreenRect },
-        })),
-      );
+      const list: Layer[] = [...staticLayers];
       for (const patch of patches)
         if (patch.occluder) {
           const variant = INNER_WALL_JOB.states.find((s) => s.id === patch.state)!;
@@ -261,25 +366,30 @@ export const SiegeMapView = memo(
               },
             });
         }
-      for (const sprite of [...CAMP, ...engines])
-        for (const slice of sliceObject(FRAME, spriteObject(sprite))) list.push({ slice, sprite });
+      for (const sprite of budget.sprites) {
+        const ladder = sprite.kind.startsWith('storm')
+          ? engines.find(
+              (e) =>
+                e.engine.raisedAt?.x === sprite.cells[0] &&
+                e.engine.raisedAt.y === sprite.cells[1] - 1,
+            )
+          : undefined;
+        for (const slice of sliceObject(FRAME, spriteObject(sprite)))
+          list.push({
+            slice: ladder
+              ? {
+                  ...slice,
+                  // The whole mass, including repulse, stands in front of every
+                  // row of its raised ladder. Its painted registration stays fixed.
+                  row: Math.max(slice.row, ladder.cells[3]),
+                  height: Math.max(slice.height, ladder.height) + STANDING_EPSILON,
+                }
+              : slice,
+            sprite,
+          });
+      }
       return list;
-    }, [patches, engines]);
-    const units = useMemo(
-      () =>
-        state.units
-          .filter((u) => u.troops > 0 && isMapCell(u.x, u.y))
-          .map((unit) => ({
-            unit,
-            visual: unitVisual(
-              state,
-              unit,
-              facings[unit.id],
-              activity?.id === unit.id ? activity.type : undefined,
-            ),
-          })),
-      [state, facings, activity],
-    );
+    }, [patches, budget, staticLayers, engines]);
     const items = useMemo(
       () =>
         [
@@ -296,6 +406,20 @@ export const SiegeMapView = memo(
           compareDepth(l.slice, visual.depth) > 0 &&
           rectsOverlap(l.slice.rect, visual.rect),
       );
+    const silhouetteUnits = new Set<string>();
+    let silhouetteCount = 0;
+    for (const entry of [...units].sort(
+      (a, b) => Number(b.unit.id === selected) - Number(a.unit.id === selected),
+    )) {
+      if (
+        !occluders(entry.visual).length ||
+        silhouetteCount + entry.visual.figures.length > budget.remaining
+      )
+        continue;
+      silhouetteUnits.add(entry.unit.id);
+      silhouetteCount += entry.visual.figures.length;
+    }
+    const spriteCount = budget.used + silhouetteCount;
     const focusedVisual = units.find((u) => u.unit.id === selected)?.visual;
     const fadedLayers = new Set(focusedVisual ? occluders(focusedVisual) : []);
     const layerKey = (l: Layer) => `${prefix}-${l.slice.objectId}-${l.slice.row}`;
@@ -322,15 +446,17 @@ export const SiegeMapView = memo(
       const max = unit.troops + unit.wounded;
       return (
         <g
+          id={silhouette ? undefined : `${prefix}-${unit.id}-motion`}
           data-select={unit.id}
           data-unit={unit.id}
+          data-gate-top={visual.gateTop}
           data-x={unit.x}
           data-y={unit.y}
           data-troops={unit.troops}
           transform={`translate(${visual.foot[0]} ${visual.foot[1]})`}
           className="siege-unit-motion"
           style={{
-            transition: activity?.id === unit.id ? 'transform 220ms linear' : 'none',
+            transition: activity?.id === unit.id ? 'transform 130ms linear' : 'none',
             cursor: 'pointer',
           }}
         >
@@ -345,15 +471,20 @@ export const SiegeMapView = memo(
               strokeWidth={selected === unit.id ? 3 : 1}
             />
           )}
-          <image
-            href={visual.pose.href}
-            x={-visual.pose.anchor[0]}
-            y={-visual.pose.anchor[1]}
-            width={visual.pose.size[0]}
-            height={visual.pose.size[1]}
-            transform={visual.flip ? 'scale(-1 1)' : undefined}
-            filter={silhouette ? `url(#${prefix}-silhouette)` : undefined}
-          />
+          {visual.figures.map((figure, index) => (
+            <image
+              key={index}
+              data-sprite={silhouette ? 'silhouette' : 'figure'}
+              data-pose={figure.name}
+              href={figure.pose.href}
+              x={figure.offset[0] - figure.pose.anchor[0]}
+              y={figure.offset[1] - figure.pose.anchor[1]}
+              width={figure.pose.size[0]}
+              height={figure.pose.size[1]}
+              transform={visual.flip ? 'scale(-1 1)' : undefined}
+              filter={silhouette ? `url(#${prefix}-silhouette-${unit.side})` : undefined}
+            />
+          ))}
           {!silhouette && (
             <g pointerEvents="none">
               <rect x={-18} y={9} width={36} height={4} fill="#453d33" />
@@ -374,6 +505,7 @@ export const SiegeMapView = memo(
       color: string,
       kind: string,
       fill = 0.16,
+      strokeWidth = 2,
     ): ReactNode => {
       const [x, y] = project(FRAME, cell.x, cell.y, cellHeight(state, cell.x, cell.y, cell.level));
       return (
@@ -394,7 +526,7 @@ export const SiegeMapView = memo(
           fill={color}
           fillOpacity={fill}
           stroke={color}
-          strokeWidth={2}
+          strokeWidth={strokeWidth}
         />
       );
     };
@@ -421,14 +553,13 @@ export const SiegeMapView = memo(
             <filter id={`${prefix}-white`}>
               <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
             </filter>
-            <filter id={`${prefix}-silhouette`}>
-              <feColorMatrix
-                in="SourceAlpha"
-                type="matrix"
-                values="0 0 0 0 .13 0 0 0 0 .17 0 0 0 0 .13 0 0 0 1 0"
-              />
-              <feMorphology operator="dilate" radius="0.6" />
-            </filter>
+            {Object.entries(SILHOUETTE_TINTS).map(([side, tint]) => (
+              <filter key={side} id={`${prefix}-silhouette-${side}`}>
+                <feFlood floodColor={tint} />
+                <feComposite in2="SourceAlpha" operator="in" />
+                <feMorphology operator="dilate" radius="0.6" />
+              </filter>
+            ))}
             {layers.map((layer) => {
               const key = layerKey(layer),
                 [x0, y0, x1, y1] = layer.slice.rect;
@@ -506,6 +637,59 @@ export const SiegeMapView = memo(
               return <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>;
             const layer = item.layer,
               key = layerKey(layer);
+            if (
+              night?.previousEngine &&
+              layer.sprite &&
+              night.previousEngine.id === layer.sprite.id
+            ) {
+              const sprite = layer.sprite as EngineSprite;
+              if (layer.slice.row !== sprite.cells[3]) return null;
+              const previous = night.previousEngine;
+              const raising = !previous.raisedAt && Boolean(sprite.engine.raisedAt);
+              const duration = `${night.duration}ms`;
+              return (
+                <g
+                  key={`${key}-${previous.x},${previous.y}-${Boolean(previous.raisedAt)}-${Boolean(sprite.engine.raisedAt)}`}
+                  data-piece={sprite.id}
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="translate"
+                    from={`${(previous.x - sprite.engine.x) * FRAME.cw} ${(previous.y - sprite.engine.y) * FRAME.cd}`}
+                    to="0 0"
+                    dur={duration}
+                    fill="freeze"
+                  />
+                  {raising && (
+                    <g opacity={0} data-testid="ladder-lowered">
+                      {spriteImage(engineSprite(previous, facings[sprite.id]))}
+                      <animate
+                        attributeName="opacity"
+                        from="1"
+                        to="0"
+                        dur={duration}
+                        fill="freeze"
+                      />
+                    </g>
+                  )}
+                  <g
+                    opacity={raising ? 0 : 1}
+                    data-testid={raising ? 'ladder-raised' : 'engine-slide'}
+                  >
+                    {spriteImage(sprite)}
+                    {raising && (
+                      <animate
+                        attributeName="opacity"
+                        from="0"
+                        to="1"
+                        dur={duration}
+                        fill="freeze"
+                      />
+                    )}
+                  </g>
+                </g>
+              );
+            }
             return (
               <g
                 key={key}
@@ -514,10 +698,18 @@ export const SiegeMapView = memo(
                 opacity={
                   (xray || fadedLayers.has(layer)) && layer.slice.kind !== 'engine' ? 0.4 : 1
                 }
+                data-piece={layer.sprite?.id}
+                data-object={layer.slice.objectId}
+                data-sheet={layer.sprite?.sheet}
                 data-select={layer.sprite?.kind === 'engine' ? layer.sprite.id : undefined}
               >
                 {layer.sprite ? (
-                  spriteImage(layer.sprite)
+                  <g>
+                    {layer.sprite.kind === 'storm-repulsed' && night && (
+                      <animate attributeName="opacity" from="1" to="0" dur=".13s" fill="freeze" />
+                    )}
+                    {spriteImage(layer.sprite)}
+                  </g>
                 ) : (
                   <image href={painting} width={W} height={H} />
                 )}
@@ -525,12 +717,28 @@ export const SiegeMapView = memo(
             );
           })}
           {units.map(({ unit, visual }) =>
-            occluders(visual).length ? (
-              <g key={unit.id} mask={`url(#${prefix}-cover-${unit.id})`} opacity={xray ? 1 : 0.75}>
+            silhouetteUnits.has(unit.id) ? (
+              <g
+                key={unit.id}
+                data-silhouette={unit.side}
+                mask={`url(#${prefix}-cover-${unit.id})`}
+                opacity={SILHOUETTE_OPACITY}
+              >
                 {drawUnit(unit, visual, true)}
               </g>
             ) : null,
           )}
+          <FootholdPips state={state} forecast={forecastCell} />
+          {!night && <PreparationFlames sprites={preparations} />}
+          {units.map(({ unit, visual }) => (
+            <Displacement
+              key={unit.id}
+              state={state}
+              unit={unit}
+              foot={visual.foot}
+              motionId={`${prefix}-${unit.id}-motion`}
+            />
+          ))}
           <g pointerEvents="none">
             {engines
               .filter((e) => e.burning)
@@ -563,14 +771,25 @@ export const SiegeMapView = memo(
           ))}
           <g>
             {deploy && DEPLOY_SHU.map((c) => cellOutline(c, '#51835c', 'deploy', 0.12))}
-            {climbableCells(state).map((c) => cellOutline(c, '#dfb347', 'climb'))}
+            {climbableCells(state)
+              .filter((c) => targets.some((t) => t.x === c.x && t.y === c.y && t.level === c.level))
+              .map((c) => cellOutline(c, '#dfb347', 'climb', 0.04, 1))}
             {tutorialCells.map((c) => cellOutline(c, '#bc841d', 'tutorial', 0.08))}
             {reachable.map((c) => cellOutline(c, '#609d80', 'reachable'))}
-            {targets.map((c) => cellOutline(c, '#b74e3c', 'target', 0.22))}
+            {targets
+              .filter(
+                (c) =>
+                  !climbableCells(state).some(
+                    (t) => t.x === c.x && t.y === c.y && t.level === c.level,
+                  ),
+              )
+              .map((c) => cellOutline(c, '#b74e3c', 'target', 0.22))}
           </g>
           {effectAction && (
             <BattleEffect key={`${state.log.length}-${effectAction.type}`} action={effectAction} />
           )}
+          {night && <NightOverlay prefix={prefix} preparations={preparations} night={night} />}
+          {night && <SortieParty night={night} />}
           {state.weather === 'snow' && (
             <g pointerEvents="none" opacity={0.45} fill="#fffdf2">
               {Array.from({ length: 36 }, (_, i) => (
@@ -595,9 +814,9 @@ export const SiegeMapView = memo(
         selected,
         xray,
         effectAction,
-        reachable,
-        targets,
-        tutorialCells,
+        JSON.stringify(reachable),
+        JSON.stringify(targets),
+        JSON.stringify(tutorialCells),
         tutorialFill,
         deploy,
         painting,
@@ -606,6 +825,10 @@ export const SiegeMapView = memo(
         units,
         items,
         extendedRange,
+        preparations,
+        budget,
+        night,
+        forecastCell,
       ],
     );
     return (
@@ -613,6 +836,10 @@ export const SiegeMapView = memo(
         <svg
           ref={svg}
           data-testid="siege-map"
+          data-sprite-cap={SPRITE_CAP}
+          data-sprite-count={spriteCount}
+          data-mandatory-sprite-count={budget.used}
+          data-sprites-omitted={budget.omitted}
           data-ready={!patches.length || composed?.signature === signature}
           data-zoom={frame.current ? (frame.current.clientWidth / view.width).toFixed(2) : '1.00'}
           aria-label={siegeText(locale, 'map')}
@@ -669,7 +896,7 @@ export const SiegeMapView = memo(
             // as DOM tokens, including silhouettes above occluding walls.
             const point = pointAt(event.clientX, event.clientY);
             const hit = [...units]
-              .reverse()
+              .sort((a, b) => compareDepth(b.visual.depth, a.visual.depth))
               .find(
                 (u) =>
                   point.x >= u.visual.rect[0] &&
@@ -703,7 +930,14 @@ export const SiegeMapView = memo(
           onPointerLeave={() => setHover(null)}
         >
           {drawing}
-          {hover && cellOutline(hover, '#e0ad3d', 'hover', 0.1)}
+          {hover && targets.some((t) => t.x === hover.x && t.y === hover.y) && !forecastCell && (
+            <FootholdPips state={state} forecast={hover} />
+          )}
+          {hover &&
+            [...targets, ...reachable, ...(deploy ? DEPLOY_SHU : [])].some(
+              (c) => c.x === hover.x && c.y === hover.y && c.level === hover.level,
+            ) &&
+            cellOutline(hover, '#e0ad3d', 'hover', 0.04, 1)}
         </svg>
         <svg
           className="siege-minimap"

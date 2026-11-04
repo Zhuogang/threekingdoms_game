@@ -123,6 +123,7 @@ export const zh = {
   unlimited: '不限',
   parapet: '女墙掩护 ×{n}',
   height: '居高 ×{n}',
+  climbingAttackMultiplier: '仰攻 ×{n}',
   climbing: '攀爬 ×{n}',
   holdFast: '固守 ×{n}',
   gateModifier: '城门 ×{n}',
@@ -257,6 +258,9 @@ export const zhReasons = {
     '请选择相邻的内侧城堑格，两行须已填平且土山尚未建成。',
   'Suppress a wall defender with ground Shu archers or a tower.':
     '请用蜀军地面弓兵或井阑压制城头守军。',
+  'Use a ground Shu unit to climb without assault.': '请用地面的蜀军部队攀爬，不能强攻。',
+  'Climb from a ladder base or wall foot to an empty wall cell.':
+    '请从梯底或墙脚攀爬至无守军的墙格。',
   'Choose a wall defender in suppression range.': '请选择压制射程内的城头守军。',
   'A suppressed unit cannot prepare or strike with siege countermeasures.':
     '受压制的部队不能准备或使用攻城反制手段。',

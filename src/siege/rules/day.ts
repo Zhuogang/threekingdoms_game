@@ -315,6 +315,18 @@ export function endDay(state: SiegeState): SiegeState {
   // Establish rout outcomes before morale recovery can mask an annihilation.
   const beforeRecoveryOutcome = siegeOutcome(next, true);
   for (const unit of next.units) {
+    if (unit.side === 'wei' && unit.troops > 0) {
+      const before = unit.troops;
+      const recovered = Math.floor(unit.wounded * T.weiNightRecovery);
+      unit.troops += recovered;
+      unit.wounded -= recovered;
+      logEvent(next, 'weiNightRecovery', {
+        unitId: unit.id,
+        recovered,
+        before,
+        after: unit.troops,
+      });
+    }
     if (
       unit.troops > 0 &&
       !(unit.lostTroopsToday ?? 0) &&

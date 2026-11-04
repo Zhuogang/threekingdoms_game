@@ -1,4 +1,4 @@
-import { ENGINE_RULES } from './tuning';
+import { ENGINE_RULES, SIEGE_TUNING as T } from './tuning';
 import { movementBudget } from '../../v03/battle/rules';
 import { MAP_WIDTH, MAP_HEIGHT, RAMPS, cellKey, layoutSymbol, sameCell } from '../content/chencang';
 import { cellTerrain, gateAt, isMapCell, isWallFoot } from './map';
@@ -84,10 +84,8 @@ function unitNeighbors(state: SiegeState, unit: SiegeUnit, from: SiegePosition):
     return !targetRamp || (sameCell(from, targetRamp.ground) && sameCell(to, targetRamp.cells[0]!));
   });
   if (unit.side === 'shu') {
-    if (isWallFoot(state, from.x, from.y)) next.push(wall({ x: from.x, y: from.y - 1 }));
-    for (const engine of state.engines) {
-      if (sameCell(engine, from) && raisedLadder(state, engine)) next.push(wall(engine.raisedAt!));
-    }
+    if (isWallFoot(state, from.x, from.y) && state.mounds[cellKey(from)] === T.moundComplete)
+      next.push(wall({ x: from.x, y: from.y - 1 }));
   }
   return next;
 }

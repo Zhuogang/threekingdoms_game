@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { describe, expect, it } from 'vitest';
 import { deployUnit, siegeCommands, standBy, nextShuUnit } from '../../src/siege/ui/commands';
 import { resolveSiegeDay } from '../../src/siege/ui/playback';
@@ -54,7 +55,7 @@ describe('playable siege adapters', () => {
 describe('state-driven artwork', () => {
   it('changes gates by durability, trench cells by exact thresholds, and walls per segment', () => {
     const state = createSiegeState(1);
-    state.gates.south.durability = 299;
+    state.gates.south.durability = T.southGateDurability / 2 - 1;
     state.gates.north.durability = 0;
     state.trenchFill['20,18'] = 1;
     state.trenchFill['21,18'] = 1.5;
@@ -75,7 +76,7 @@ describe('state-driven artwork', () => {
     expect(built.occluder?.cells).toEqual([17, 14, 22, 14]);
     expect(built.clip?.[0]).toBe(17 * 64);
     expect(built.clip?.[2]).toBe(23 * 64);
-    state.gates.south.durability = 300;
+    state.gates.south.durability = T.southGateDurability / 2;
     expect(statePatches(state).find((p) => p.id === 'south')).toBeUndefined();
     expect(INNER_WALL_SEGMENTS).toHaveLength(4);
   });
@@ -109,6 +110,7 @@ describe('state-driven artwork', () => {
     state.trenchFill['21,17'] = 3;
     expect(climbableCells(state)).toContainEqual({ x: 20, y: 16, level: 'wall' });
     expect(climbableCells(state)).toContainEqual({ x: 21, y: 16, level: 'wall' });
+    state.footholds['20,16'] = 1;
     expect(unitVisual(state, { ...state.units[1]!, x: 20, y: 19 }).action).toBe('climb-a');
   });
 });

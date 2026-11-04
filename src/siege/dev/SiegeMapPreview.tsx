@@ -1,3 +1,5 @@
+import RenderScenePreview from './RenderScenePreview';
+import { RENDER_SCENES, type RenderSceneName } from './renderScenes';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import {
   campSprites,
@@ -467,7 +469,7 @@ type Layer =
   | { type: 'sprite'; slice: SceneSlice; sprite: Sprite };
 const sliceKey = (slice: SceneSlice) => `${slice.objectId}-${slice.row}`;
 
-export default function SiegeMapPreview() {
+function LegacySiegeMapPreview() {
   const [states, setStates] = useState<States>(NO_STATES);
   const [painting, setPainting] = useState<string | null>(null);
   const [zoom, setZoom] = useState(0.5);
@@ -1069,5 +1071,14 @@ function CellOutline({
       strokeWidth={2}
       pointerEvents="none"
     />
+  );
+}
+
+export default function SiegeMapPreview() {
+  const scene = new URLSearchParams(location.search).get('scene');
+  return scene && RENDER_SCENES.includes(scene as RenderSceneName) ? (
+    <RenderScenePreview name={scene as RenderSceneName} />
+  ) : (
+    <LegacySiegeMapPreview />
   );
 }

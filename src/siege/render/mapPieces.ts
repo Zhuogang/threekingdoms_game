@@ -19,6 +19,16 @@ export interface SheetObject {
   /** South-west ground point of the footprint, in sheet pixels. */
   anchor: [number, number];
   bbox: ScreenRect;
+  alphaBBox?: ScreenRect;
+  footCentreAnchor?: [number, number];
+  fitHeightLevels?: number;
+  moundHeight?: number;
+  registration?: Record<string, Registration>;
+  selectedRegistration?: Record<string, Registration>;
+}
+export interface Registration {
+  world: [number, number, number];
+  pixel: [number, number];
 }
 export interface SheetPiece {
   piece: number;
@@ -108,7 +118,7 @@ export function placePiece(
       y0 - CROP_MARGIN,
       x1 + CROP_MARGIN,
       y1 + CROP_MARGIN,
-    ])(union(piece.objects.map((o) => o.bbox))) as ScreenRect,
+    ])(union(piece.objects.map((o) => o.alphaBBox ?? o.bbox))) as ScreenRect,
     piece.cell,
   );
   const [x0, y0, x1, y1] = union(piece.objects.map((o) => [...o.cells] as ScreenRect));
@@ -122,6 +132,36 @@ export function placePiece(
     cells: [to[0], to[1], to[0] + x1 - x0, to[1] + y1 - y0],
     height: Math.max(...piece.objects.map((o) => o.height)),
   };
+}
+
+/** Map a recorded sheet landmark onto a projected map point. Storming art is
+ * deliberately oversized: fit the actual alpha height uniformly, never the grid. */
+export function placeAnchoredPiece(
+  sheet: SheetFootprints,
+  pieceIndex: number,
+  to: [number, number],
+  frame: SiegeFrame,
+  options: {
+    id: string;
+    kind?: string;
+    anchor: [number, number];
+    target: [number, number];
+    scale?: number;
+    scaleY?: number;
+  },
+): Sprite {
+  const sprite = placePiece(sheet, pieceIndex, to, frame, options);
+  const scale = options.scale ?? 1 / sheetScale(sheet, frame);
+  const sy = options.scaleY ?? scale;
+  const [ax, ay] = options.anchor;
+  const [tx, ty] = options.target;
+  sprite.rect = [
+    tx + (sprite.crop[0] - ax) * scale,
+    ty + (sprite.crop[1] - ay) * sy,
+    tx + (sprite.crop[2] - ax) * scale,
+    ty + (sprite.crop[3] - ay) * sy,
+  ];
+  return sprite;
 }
 
 /** Sprites sort and slice like painted objects (scene.ts). */

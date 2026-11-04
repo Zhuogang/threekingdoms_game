@@ -164,6 +164,7 @@ export interface SiegeState {
 
 export type SiegeAction =
   | ({ type: 'move'; unitId: string } & SiegePosition)
+  | { type: 'climb'; unitId: string }
   | { type: 'attack'; unitId: string; targetId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; gateId: GateId }
   | { type: 'attack'; engineId: string; targetId: string }

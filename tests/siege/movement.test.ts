@@ -155,7 +155,7 @@ describe('Shu approaches, climbing and gates', () => {
     );
   });
 
-  it('crosses a filled trench pair to the wall foot and climbs an empty wall cell', () => {
+  it('crosses a filled trench pair but steps onto the wall only from a finished mound', () => {
     const { state, unit } = fixture('shu', 20, 19);
     state.trenchFill['20,18'] = 3;
     state.trenchFill['20,17'] = 2;
@@ -166,6 +166,8 @@ describe('Shu approaches, climbing and gates', () => {
       ground({ x: 20, y: 18 }),
       ground({ x: 20, y: 17 }),
     ]);
+    expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
+    state.mounds['20,17'] = 6;
     expect(pathTo(state, unit.id, 20, 16, 'wall')).toEqual([
       ground({ x: 20, y: 19 }),
       ground({ x: 20, y: 18 }),
@@ -184,16 +186,16 @@ describe('Shu approaches, climbing and gates', () => {
     expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
   });
 
-  it('admits troops to the base of a raised ladder and climbs from that cell', () => {
+  it('admits troops to a raised ladder base but requires the climb action', () => {
     const { state, unit } = fixture('shu', 20, 20);
     state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-    expect(pathTo(state, unit.id, 20, 16, 'wall')).toEqual([
-      ground({ x: 20, y: 20 }),
+    expect(pathTo(state, unit.id, 20, 19, 'ground')).toEqual([
+      ground(unit),
       ground({ x: 20, y: 19 }),
-      wall({ x: 20, y: 16 }),
     ]);
+    expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
     Object.assign(unit, { x: 20, y: 19 });
-    expect(pathTo(state, unit.id, 20, 16, 'wall')).toEqual([ground(unit), wall({ x: 20, y: 16 })]);
+    expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
     state.units.push({ ...unit, id: 'defender', side: 'wei', x: 20, y: 16, level: 'wall' });
     expect(pathTo(state, unit.id, 20, 16, 'wall')).toBeNull();
   });
