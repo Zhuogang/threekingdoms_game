@@ -26,7 +26,9 @@ export function scoringScreen(state: SiegeState, locale: SiegeLocale, side: Sieg
       label: siegeText(locale, labels[key]!),
       value,
     })),
-    history: siegeText(locale, 'scoreHistory', { n: state.day }),
+    history: siegeText(locale, side === 'wei' ? 'weiScoreHistory' : 'scoreHistory', {
+      n: state.day,
+    }),
     summary: [
       { label: siegeText(locale, 'assaultCount'), value: state.stats.assaults },
       { label: siegeText(locale, 'nightClashCount'), value: state.stats.nightClashes },

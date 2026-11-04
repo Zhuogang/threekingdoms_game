@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
-import { SIEGE_SAVE_KEY } from '../../src/siege/save';
+import { siegeSaveKey } from '../../src/siege/save';
 import { begin, closeReport, endDay, loadFixture, snapshot, start } from './helpers';
 
 test('v0.2 workshop, defense, report, replay skip, bilingual save and load', async ({ page }) => {
@@ -59,7 +59,7 @@ test('actual engine cap, all-standby key, corrupted save and withdrawal', async 
   ).toBe(true);
   await endDay(page);
   await closeReport(page);
-  await page.evaluate((key) => localStorage.setItem(key, '{}'), SIEGE_SAVE_KEY);
+  await page.evaluate((key) => localStorage.setItem(key, '{}'), siegeSaveKey('shu'));
   await page.getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Siege save is invalid');
   await page.getByRole('button', { name: 'Withdraw', exact: true }).click();

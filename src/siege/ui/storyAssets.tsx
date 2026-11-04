@@ -2,6 +2,7 @@ import type { SiegeTextKey } from '../i18n';
 
 const urls = import.meta.glob<string>(
   [
+    '/docs/siege/chencang/art/s8-{07,08,10}-*/runtime/illustration.webp',
     '/docs/siege/chencang/art/s7-0{1,2,3,5,6,7}-*/runtime/illustration.webp',
     '/docs/siege/chencang/art/s5-0{7,9}-*/runtime/*-small.webp',
     '/docs/siege/chencang/art/s6-0{3,4}-*/icons/*-{32,64}.png',
@@ -16,12 +17,21 @@ function asset(part: string): string {
   if (!value) throw new Error(`Missing siege UI art: ${part}`);
   return value;
 }
-export const storyArt = (scene: 1 | 2 | 3 | 5 | 6 | 7) => asset(`/s7-0${scene}-`);
+export const storyArt = (scene: 1 | 2 | 3 | 5 | 6 | 7 | 's8-07' | 's8-08' | 's8-10') =>
+  asset(typeof scene === 'number' ? `/s7-0${scene}-` : `/${scene}-`);
 export const storyPortrait = (id: 'jinxiang' | 'haozhao') => asset(`/runtime/${id}-small.webp`);
 export const paperPiece = (
   name: 'dialog' | 'plaque' | 'scroll-left' | 'scroll-middle' | 'scroll-right' | 'paper-tile',
 ) => asset(`/pieces/${name}.png`);
 const iconNames: Partial<Record<SiegeTextKey, string>> = {
+  lightBrazier: 'light-brazier',
+  fireArrows: 'fire-arrow',
+  hoistMillstone: 'hoist-millstone',
+  dropMillstone: 'millstone',
+  stackBoulders: 'stack-boulders',
+  dropBoulders: 'boulders',
+  holdFastOrder: 'hold-fast',
+  nightRepair: 'night-repair',
   morningReport: 'morning-report',
   suppress: 'suppress',
   coverEngine: 'cover',

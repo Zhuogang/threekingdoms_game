@@ -1,4 +1,116 @@
 export const en = {
+  continueShu: 'Han army',
+  continueWei: 'Wei army',
+  playbackWei: 'Shu turn / night · Esc to skip',
+  act1WeiLine: 'The attackers are below the walls. Prepare now, strike tomorrow.',
+  hintWeiWall:
+    'Parapets shelter your garrison. Prepare on the wall, keep reserves nearby and prevent Shu from clearing the courtyard.',
+  hintWeiTrench:
+    'Shu must fill the outer trench before the inner one. Fire on earth carts and prepare boulders above filled wall feet.',
+  hintWeiLadder:
+    'A raised ladder lets Shu gain footholds. Fire arrows damage it; ready boulders knock footholds back before the enemy mounts.',
+  hintWeiFrontage:
+    'Only the front ranks fight on a narrow wall. Use the forecast to judge losses before committing your small garrison.',
+  hintWeiInnerWall:
+    'Build unfinished inner-wall segments in the later act. Keep the courtyard defended while work continues.',
+  reportWeiSnow: 'Snow extinguished your brazier at {cell}.',
+  counterWeiSnow:
+    'Prepare fire again for tomorrow, or use ready millstones, boulders and ordinary attacks today.',
+
+  lightBrazier: 'Light brazier',
+  hoistMillstone: 'Hoist millstone',
+  stackBoulders: 'Stack boulders',
+  chooseShu: 'Han army · Zhuge Liang',
+  chooseWei: 'Wei army · Hao Zhao',
+  continueSide: 'Continue ({side})',
+  openingDefend: 'All troops to the walls. Prepare fire arrows, millstones and boulders.',
+  act2WeiLine: 'Shu is building siege towers. Build the inner wall; work faster through the night.',
+  deployWeiHelp:
+    'Select a Wei unit, then a highlighted wall, gate top or city cell to place it or swap positions.',
+  defenseStores: 'Preparations',
+  preparationSpent: 'Spent · prepare again',
+  preparationBlocked: 'Suppressed today',
+  preparationNoOperator: 'No available operator here',
+  noPreparations: 'No preparations on this run. Prepare today to strike tomorrow.',
+  orderTonight: 'Tonight’s order',
+  orderNone: 'No order chosen',
+  holdFastOrder: 'Hold fast',
+  nightRepair: 'Night repairs',
+  weiHeld: 'Chencang held',
+  weiRouted: 'Shu routed',
+  weiFallen: 'The city has fallen',
+  weiHeldLine1: 'Shu has withdrawn. The garrison still holds Chencang.',
+  weiHeldLine2: 'Fire, stone and the work of each night bought the days the city needed.',
+  weiRoutedLine1: 'The attackers have broken. Chencang’s small garrison has prevailed.',
+  weiRoutedLine2: 'The siege is lifted; count the cost to the defenders.',
+  weiFallenLine1: 'Shu has cleared the courtyard. Chencang can no longer hold.',
+  weiFallenLine2: 'The defense ends here; the losses and the breaches remain in the record.',
+  weiRatingHeld: 'The city held until the siege ended.',
+  weiRatingRouted: 'The garrison has routed the besieging army.',
+  weiRatingFallen: 'The courtyard was lost to Shu.',
+  weiScoreHistory:
+    'Historically, Hao Zhao held Chencang until Shu ran out of grain; your defense lasted {n} days.',
+  counterWeiSuppress:
+    'Shu is suppressing your defenders: they cannot prepare or use countermeasures today. Move an unsuppressed unit to the prepared position, or attack normally.',
+  counterWeiCover:
+    'Shu has covered an engine. Fire still damages it, but cannot ignite it; a covered ram also takes less millstone damage. Use stones, ordinary attacks and other targets.',
+  counterWeiMound:
+    'Shu is piling a fireproof mound. Fire at the earth cart, strike the workers and reinforce the wall above; a finished slope weakens boulders.',
+  counterWeiAssault:
+    'Shu is assaulting for faster footholds at a cost in troops and morale. Drop ready boulders now, attack the climbers, or order hold fast for tomorrow.',
+  counterWeiNight:
+    'Shu attacked at night. For the next night, torches stop the advance and let ready archers fire; a sortie can be repelled by a night assault. Choose one order.',
+  counterWeiMounted:
+    'Shu has mounted the wall. Attack the foothold with nearby defenders, move reserves onto the run, or fall back to the inner wall and keep the courtyard defended. Boulders target climbers below, not troops already on top.',
+  reportWeiLadder: 'Shu raised a ladder at {cell}.',
+  reportWeiFill: 'The trench at {cell} is filled.',
+  reportWeiMound: 'Shu’s mound at {cell}: {after}/{max}.',
+  reportWeiMoundDone: 'Shu finished a mound at {cell}.',
+  reportWeiCover: 'Shu covered its {engine} at {cell}.',
+  reportWeiSuppress: '{unit} at {cell} is suppressed today.',
+  reportWeiAssault: 'Shu launched an assault at {cell}.',
+  reportWeiNightAdvanced: 'Shu’s night assault advanced its engines.',
+  reportWeiNightStopped: 'Your torches stopped Shu’s night assault.',
+  reportWeiEngineNear: 'Shu’s {engine} has reached the approaches at {cell}.',
+  reportWeiRam: 'Shu’s ram is at the south bridgehead.',
+  reportWeiMounted: 'Shu’s {unit} mounted the wall at {cell}.',
+  counterWeiLadder:
+    'Light a brazier today for tomorrow’s fire arrows; use ready fire now, or stack boulders above the ladder.',
+  counterWeiRam:
+    'Drop a ready millstone from above the ram; otherwise hoist one for tomorrow. Night repairs can restore an unbroken gate.',
+  counterWeiFill:
+    'Stack boulders over the wall foot and reinforce that run; build the inner wall in the later act.',
+  nightEventTitle: 'Torches outside Chencang',
+  nightEventBody:
+    'Torches and sorties now contest the approaches. Read the morning report for the resolved result; tonight you can choose a new answer.',
+  howWeiTitle: 'How to hold Chencang',
+  howWeiGoal: 'Hold the city',
+  howWeiGoalBody:
+    'Hold until Shu’s grain runs out after {days} days, or rout the attackers. You lose when Shu clears and occupies the courtyard.',
+  howWeiDay:
+    'First watch Shu’s skippable turn, read the report, then act with Wei. End day resolves the night, followed by the next Shu turn and report.',
+  howWeiPrepare:
+    'Today’s preparations are usable tomorrow. Each unit can move and act; preparation or a strike uses its action. Suppression blocks preparations and countermeasures today, while ordinary attacks and movement remain possible.',
+  howWeiFire:
+    'Wall archers light braziers; a ready brazier nearby enables fire arrows within {range} cells. Covered engines take ×{cover} damage and do not ignite. Snow at dawn extinguishes braziers.',
+  howWeiMillstone:
+    'Hoist on a gate top or above an approach. Tomorrow drop onto the ram directly below: {raw} damage, or {covered} against a covered ram. Hoist again after use.',
+  howWeiBoulders:
+    'Wall infantry stack boulders for tomorrow. Drop onto climbers below to remove {loss} footholds. A mound reduces the damage to ×{mound}. Restack after use.',
+  howWeiOrders:
+    'One order per day: rally +{rally} morale; hold fast reduces tomorrow’s damage to ×{hold}; repair an unbroken gate by {repair} at night; torches stop a night assault; a sortie within {range} cells deals {damage} engine damage ({covered} to covered engines).',
+  howWeiNight:
+    'Choose a target for repairs, hold fast or a sortie. Nearby Shu guards or a night assault can repel a sortie. Your night order is hidden until it resolves.',
+  howWeiWall:
+    'From the later act (normally day {day}), move onto an unfinished inner-wall segment and build. Check segment progress and preparations in the Preparations tab.',
+  weiWalk1: 'Select Hao Zhao from your army or the gate top.',
+  weiWalk2: 'Hoist a millstone with Hao Zhao. It will be usable tomorrow.',
+  weiWalk3: 'Select a Wei archer on the south wall.',
+  weiWalk4: 'Light a brazier with that archer for tomorrow’s fire arrows.',
+  weiWalk5: 'End the day. Watch the night and the next Shu turn, or skip the replay.',
+  weiWalk6:
+    'Read the new report, then select a ready archer and fire arrows at a ladder. A suppressed archer needs an unsuppressed replacement. Snow means preparing fire again.',
+
   reportBlocked: 'Wei has {preparation} at {cell}, but no defender can use it today.',
   placeBattlefield: 'Battlefield',
   placeCamp: 'Army camp',
@@ -36,7 +148,7 @@ export const en = {
   moraleAfter: 'Morale after',
   otherGates: 'Other gates',
   preparationReady: 'Ready today',
-  preparationTomorrow: 'Ready tomorrow',
+  preparationTomorrow: 'Prepared today · usable tomorrow',
   footholdPips: '{place}: foothold {n}/{max}',
   wayBuildLadder: 'Build a replacement ladder at a workshop, then climb from its base.',
   wayBuildRam: 'Build a replacement ram and advance along the gate road.',
@@ -409,8 +521,8 @@ export const en = {
   moveEngine: 'Engine moved',
   queueEngine: 'Construction queued',
   fireArrows: 'Fire arrows',
-  dropMillstone: 'Millstone dropped',
-  dropBoulders: 'Boulders dropped',
+  dropMillstone: 'Drop millstone',
+  dropBoulders: 'Drop boulders',
   engineCompleted: 'Engine completed',
   engineBurning: 'Engine fire damage',
   daySupplies: 'Daily grain consumed',

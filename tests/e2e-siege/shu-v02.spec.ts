@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SIEGE_SAVE_KEY } from '../../src/siege/save';
+import { siegeSaveKey } from '../../src/siege/save';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { predictSiegeAttack, predictSiegeClimb } from '../../src/siege/rules/combat';
 import { createSiegeState } from '../../src/siege/rules/state';
@@ -139,7 +139,7 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   const before = await snapshot(page);
   const stored = await page.evaluate(
     (key) => JSON.parse(localStorage.getItem(key)!),
-    SIEGE_SAVE_KEY,
+    siegeSaveKey('shu'),
   );
   expect(stored).toEqual(before);
   await page.goto('/?lang=en#chencang/load');

@@ -5,6 +5,13 @@ import { placeName, reportCell } from './places';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
 
 export const COUNTER_KINDS = [
+  'suppress',
+  'cover',
+  'mound',
+  'assault',
+  'nightAssault',
+  'wallMounted',
+  'nightEvent',
   'fire',
   'millstone',
   'boulders',
@@ -15,6 +22,17 @@ export const COUNTER_KINDS = [
 ] as const;
 export type CounterKind = (typeof COUNTER_KINDS)[number];
 const moves: Record<CounterKind, { codes: string[]; title: SiegeTextKey; answer: SiegeTextKey }> = {
+  suppress: { codes: ['suppressed'], title: 'suppress', answer: 'counterWeiSuppress' },
+  cover: { codes: ['covered'], title: 'covered', answer: 'counterWeiCover' },
+  mound: { codes: ['earthPiled', 'moundFinished'], title: 'pileEarth', answer: 'counterWeiMound' },
+  assault: { codes: ['assault'], title: 'assault', answer: 'counterWeiAssault' },
+  nightAssault: { codes: ['nightAssault'], title: 'nightAssault', answer: 'counterWeiNight' },
+  wallMounted: { codes: ['wallGained'], title: 'climb', answer: 'counterWeiMounted' },
+  nightEvent: {
+    codes: ['sortieHit', 'sortieRepelled', 'torches'],
+    title: 'nightEventTitle',
+    answer: 'nightEventBody',
+  },
   fire: { codes: ['brazierPrepared', 'fireArrowHit'], title: 'brazier', answer: 'counterFire' },
   millstone: {
     codes: ['millstonePrepared', 'millstoneHit'],
@@ -60,12 +78,29 @@ export function counterCards(
   locale: SiegeLocale,
   playerSide: SiegeSide = 'shu',
 ) {
-  if (playerSide !== 'shu' || state.outcome) return [];
+  if (state.outcome) return [];
+  const weiKinds: CounterKind[] = [
+    'wallMounted',
+    'suppress',
+    'cover',
+    'mound',
+    'assault',
+    'nightAssault',
+    'nightEvent',
+  ];
   // A loss takes priority over the preparation that caused it.
   const kinds = (
-    ['engineLoss', ...COUNTER_KINDS.filter((k) => k !== 'engineLoss')] as CounterKind[]
+    [
+      'engineLoss',
+      'wallMounted',
+      ...COUNTER_KINDS.filter((k) => !['engineLoss', 'wallMounted', 'nightEvent'].includes(k)),
+      'nightEvent',
+    ] as CounterKind[]
   ).filter(
     (k) =>
+      (playerSide === 'wei'
+        ? weiKinds.includes(k)
+        : !new Set<CounterKind>(weiKinds.filter((kind) => kind !== 'nightEvent')).has(k)) &&
       !dismissed.includes(k) &&
       state.log.some(
         (e) =>
@@ -92,6 +127,7 @@ export function counterCards(
     return {
       kind,
       icon: move.title,
+      art: kind === 'nightEvent' ? ('s8-08' as const) : undefined,
       title: siegeText(locale, move.title) + (location ? ` · ${placeName(location, locale)}` : ''),
       lines: (kind === 'engineLoss' ? engineLossAnswers(state) : [move.answer]).map((key) =>
         siegeText(locale, key),

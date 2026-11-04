@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '../../v03/ui/kit';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
+import type { SiegeSide } from '../rules/types';
 import type { SiegeWalkthrough } from '../save';
 import { howToSections, type HowToRules } from './howToPlay';
-import { WALKTHROUGH_STEPS } from './walkthrough';
+import { walkthroughSteps } from './walkthrough';
 import { SIEGE_TUNING as T } from '../rules/tuning';
 
 export function SiegeHowToPlay({
@@ -11,11 +12,13 @@ export function SiegeHowToPlay({
   close,
   replay,
   rules,
+  playerSide = 'shu',
 }: {
   locale: SiegeLocale;
   close: () => void;
   replay: () => void;
   rules?: HowToRules;
+  playerSide?: SiegeSide;
 }) {
   const panel = useRef<HTMLElement>(null);
   const t = (key: SiegeTextKey) => siegeText(locale, key);
@@ -50,10 +53,10 @@ export function SiegeHowToPlay({
         }}
       >
         <header>
-          <h1 id="siege-howto-title">{t('howTitle')}</h1>
+          <h1 id="siege-howto-title">{t(playerSide === 'wei' ? 'howWeiTitle' : 'howTitle')}</h1>
           <Button onClick={close}>{t('closeGuide')}</Button>
         </header>
-        {howToSections(locale, rules).map((section) => (
+        {howToSections(locale, rules, playerSide).map((section) => (
           <section key={section.title}>
             <h2>{t(section.title)}</h2>
             {section.lines.map((line) => (
@@ -71,14 +74,18 @@ export function SiegeWalkthroughBox({
   progress,
   locale,
   waiting,
+  playerSide = 'shu',
   skip,
 }: {
   progress: SiegeWalkthrough;
   locale: SiegeLocale;
   waiting: boolean;
+  playerSide?: SiegeSide;
   skip: () => void;
 }) {
-  const key = (waiting ? 'walkWait' : `walk${progress.step}`) as SiegeTextKey;
+  const key = (
+    waiting ? 'walkWait' : `${playerSide === 'wei' ? 'weiWalk' : 'walk'}${progress.step}`
+  ) as SiegeTextKey;
   return (
     <section
       className="siege-walkthrough"
@@ -88,7 +95,7 @@ export function SiegeWalkthroughBox({
     >
       <strong>
         {siegeText(locale, 'walkthrough')} ·{' '}
-        {siegeText(locale, 'walkProgress', { n: progress.step, max: WALKTHROUGH_STEPS })}
+        {siegeText(locale, 'walkProgress', { n: progress.step, max: walkthroughSteps(playerSide) })}
       </strong>
       <p aria-live="polite">{siegeText(locale, key, { max: T.footholdComplete })}</p>
       <Button size="sm" onClick={skip}>

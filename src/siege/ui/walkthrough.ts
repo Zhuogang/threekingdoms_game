@@ -4,6 +4,7 @@ import type { SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 import type { SiegeWalkthrough } from '../save';
 
 export const WALKTHROUGH_STEPS = 9;
+export const walkthroughSteps = (side: SiegeSide) => (side === 'wei' ? 6 : WALKTHROUGH_STEPS);
 export const TRENCH_SOUTH_ROW = Math.max(...SOUTH_TRENCH.map((c) => c.y)) + 1;
 export const WALKTHROUGH_CELLS: SiegePosition[] = SOUTH_TRENCH.filter(
   (c) => c.y === TRENCH_SOUTH_ROW - 1,
@@ -17,6 +18,19 @@ export function walkthroughTargets(
   playerSide: SiegeSide,
 ): SiegePosition[] {
   if (progress?.status !== 'active') return [];
+  if (playerSide === 'wei') {
+    if (progress.step <= 2)
+      return state.units
+        .filter((u) => u.officer.id === 'haozhao')
+        .map((u) => ({ x: u.x, y: u.y, level: u.level }));
+    if (progress.step <= 4)
+      return state.units
+        .filter((u) => u.side === 'wei' && u.troopType === 'archer' && u.troops > 0)
+        .map((u) => ({ x: u.x, y: u.y, level: u.level }));
+    return state.engines
+      .filter((e) => e.kind === 'ladder' && usableEngine(e))
+      .map((e) => ({ x: e.x, y: e.y, level: 'ground' }));
+  }
   const ladders = state.engines.filter(
     (e) =>
       e.kind === 'ladder' && usableEngine(e) && (!progress.ladderId || e.id === progress.ladderId),
@@ -64,7 +78,7 @@ export function walkthroughTargets(
 export function advanceWalkthrough(
   progress: SiegeWalkthrough | undefined,
   state: SiegeState,
-  ui: { tab: string; selected: string | null; reportReadDay?: number },
+  ui: { tab: string; selected: string | null; reportReadDay?: number; playerSide?: SiegeSide },
 ): SiegeWalkthrough | undefined {
   if (!progress || progress.status !== 'active') return progress;
   const next = { ...progress };
@@ -72,72 +86,108 @@ export function advanceWalkthrough(
   const unit = state.units.find((u) => u.id === ui.selected);
   const ladder = state.engines.find((e) => e.id === next.ladderId);
   let complete = false;
-  switch (next.step) {
-    case 1: {
-      const selected = state.engines.find(
-        (e) => e.id === ui.selected && e.kind === 'ladder' && usableEngine(e),
-      );
-      complete = Boolean(selected);
-      if (selected) next.ladderId = selected.id;
-      break;
+  if (ui.playerSide === 'wei') {
+    switch (next.step) {
+      case 1:
+        complete = unit?.officer.id === 'haozhao';
+        break;
+      case 2:
+        complete = events.some(
+          (e) => e.code === 'millstonePrepared' && e.params.unitId === 'wei-haozhao',
+        );
+        break;
+      case 3:
+        complete = unit?.side === 'wei' && unit.troopType === 'archer';
+        if (complete) next.archerId = unit!.id;
+        break;
+      case 4:
+        complete = events.some(
+          (e) => e.code === 'brazierPrepared' && e.params.unitId === next.archerId,
+        );
+        break;
+      case 5:
+        complete = state.day > next.startDay;
+        break;
+      case 6:
+        complete =
+          state.day > next.startDay &&
+          (ui.reportReadDay ?? 0) >= state.day &&
+          events.some(
+            (e) =>
+              e.code === 'fireArrowHit' &&
+              state.engines.some(
+                (engine) => engine.id === e.params.engineId && engine.kind === 'ladder',
+              ),
+          );
+        break;
     }
-    case 2:
-      complete = Boolean(ladder?.raisedAt);
-      break;
-    case 3: {
-      const infantry = state.units.find(
-        (u) =>
-          u.side === 'shu' &&
-          u.troopType === 'infantry' &&
-          u.level === 'ground' &&
-          ladder &&
-          sameCell(u, ladder) &&
-          events.some((e) => e.code === 'move' && e.params.unitId === u.id),
-      );
-      complete = Boolean(infantry);
-      if (infantry) next.infantryId = infantry.id;
-      break;
+  } else
+    switch (next.step) {
+      case 1: {
+        const selected = state.engines.find(
+          (e) => e.id === ui.selected && e.kind === 'ladder' && usableEngine(e),
+        );
+        complete = Boolean(selected);
+        if (selected) next.ladderId = selected.id;
+        break;
+      }
+      case 2:
+        complete = Boolean(ladder?.raisedAt);
+        break;
+      case 3: {
+        const infantry = state.units.find(
+          (u) =>
+            u.side === 'shu' &&
+            u.troopType === 'infantry' &&
+            u.level === 'ground' &&
+            ladder &&
+            sameCell(u, ladder) &&
+            events.some((e) => e.code === 'move' && e.params.unitId === u.id),
+        );
+        complete = Boolean(infantry);
+        if (infantry) next.infantryId = infantry.id;
+        break;
+      }
+      case 4:
+        complete = events.some(
+          (e) =>
+            e.code === 'footholdChanged' &&
+            e.params.sourceId === next.infantryId &&
+            Number(e.params.after) > Number(e.params.before),
+        );
+        break;
+      case 5:
+        complete = Boolean(unit?.side === 'shu' && unit.troopType === 'archer');
+        if (complete) next.archerId = unit!.id;
+        break;
+      case 6:
+        complete = events.some(
+          (e) =>
+            e.code === 'suppressed' &&
+            e.params.sourceId === next.archerId &&
+            (!ladder?.raisedAt ||
+              wallRun(state, ladder.raisedAt).some((c) => e.params.cell === `${c.x},${c.y}`)),
+        );
+        break;
+      case 7:
+        complete = events.some((e) => e.code === 'daySupplies' && e.day >= next.startDay);
+        break;
+      case 8:
+        complete = state.day > next.startDay && (ui.reportReadDay ?? 0) >= state.day;
+        break;
+      case 9:
+        complete = events.some(
+          (e) =>
+            e.code === 'covered' &&
+            state.engines.some(
+              (engine) => engine.id === e.params.engineId && engine.kind === 'ladder',
+            ),
+        );
+        break;
     }
-    case 4:
-      complete = events.some(
-        (e) =>
-          e.code === 'footholdChanged' &&
-          e.params.sourceId === next.infantryId &&
-          Number(e.params.after) > Number(e.params.before),
-      );
-      break;
-    case 5:
-      complete = Boolean(unit?.side === 'shu' && unit.troopType === 'archer');
-      if (complete) next.archerId = unit!.id;
-      break;
-    case 6:
-      complete = events.some(
-        (e) =>
-          e.code === 'suppressed' &&
-          e.params.sourceId === next.archerId &&
-          (!ladder?.raisedAt ||
-            wallRun(state, ladder.raisedAt).some((c) => e.params.cell === `${c.x},${c.y}`)),
-      );
-      break;
-    case 7:
-      complete = events.some((e) => e.code === 'daySupplies' && e.day >= next.startDay);
-      break;
-    case 8:
-      complete = state.day > next.startDay && (ui.reportReadDay ?? 0) >= state.day;
-      break;
-    case 9:
-      complete = events.some(
-        (e) =>
-          e.code === 'covered' &&
-          state.engines.some(
-            (engine) => engine.id === e.params.engineId && engine.kind === 'ladder',
-          ),
-      );
-      break;
-  }
   if (complete) {
     next.logCursor = state.log.length;
-    if (next.step === WALKTHROUGH_STEPS) next.status = 'done';
+    if (next.step === walkthroughSteps(ui.playerSide ?? 'shu')) next.status = 'done';
     else next.step++;
   }
   return JSON.stringify(next) === JSON.stringify(progress) ? progress : next;

@@ -1,9 +1,11 @@
 import { SIEGE_TUNING as T } from './rules/tuning';
 import { z } from 'zod';
 import { COUNTER_KINDS, type CounterKind } from './ui/counters';
-import type { SiegeState, SiegeLogEntry } from './rules/types';
+import type { SiegeState, SiegeLogEntry, SiegeSide } from './rules/types';
 
 export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang-v2';
+export const siegeSaveKey = (side: SiegeSide) => `${SIEGE_SAVE_KEY}-${side}`;
+const LAST_SIDE_KEY = `${SIEGE_SAVE_KEY}-last-side`;
 export type Facing = 'north' | 'east' | 'west' | 'south';
 export const HINT_KINDS = ['wall', 'trench', 'ladder', 'frontage', 'innerWall'] as const;
 export type HintKind = (typeof HINT_KINDS)[number];
@@ -27,6 +29,7 @@ export interface SiegePresentation {
   dismissedCounters?: CounterKind[];
   reportReadDay?: number;
   reportObservations?: SiegeLogEntry[];
+  attackerTurnDay?: number;
 }
 export interface SiegeSave {
   state: SiegeState;
@@ -228,6 +231,7 @@ const saveSchema = z.strictObject({
       dismissedHints: z.array(z.enum(HINT_KINDS)),
       dismissedCounters: z.array(z.enum(COUNTER_KINDS)).optional(),
       reportReadDay: integer.min(1).max(T.days).optional(),
+      attackerTurnDay: integer.min(1).max(T.days).optional(),
       reportObservations: z
         .array(
           z.object({
@@ -267,15 +271,33 @@ export function deserializeSiegeSave(payload: string): SiegeSave & { playerSide:
   return value as SiegeSave & { playerSide: 'shu' | 'wei' };
 }
 export function saveSiege(save: SiegeSave, storage: Pick<Storage, 'setItem'> = localStorage): void {
-  storage.setItem(SIEGE_SAVE_KEY, serializeSiegeSave(save));
+  const side = save.playerSide ?? 'shu';
+  storage.setItem(siegeSaveKey(side), serializeSiegeSave(save));
+  storage.setItem(LAST_SIDE_KEY, side);
 }
-export function loadSiege(storage: Pick<Storage, 'getItem'> = localStorage): SiegeSave | null {
-  const payload = storage.getItem(SIEGE_SAVE_KEY);
-  return payload === null ? null : deserializeSiegeSave(payload);
+export function loadSiege(
+  storage: Pick<Storage, 'getItem'> = localStorage,
+  side?: SiegeSide,
+): SiegeSave | null {
+  const preferred = side ?? (storage.getItem(LAST_SIDE_KEY) === 'wei' ? 'wei' : 'shu');
+  const sides: SiegeSide[] = side ? [side] : [preferred, preferred === 'shu' ? 'wei' : 'shu'];
+  for (const candidate of sides) {
+    const payload = storage.getItem(siegeSaveKey(candidate));
+    if (payload !== null) {
+      const save = deserializeSiegeSave(payload);
+      if (save.playerSide !== candidate) throw new Error('Save side does not match its slot.');
+      return save;
+    }
+  }
+  // Read the package M slot without moving or overwriting it.
+  const legacy = storage.getItem(SIEGE_SAVE_KEY);
+  if (legacy === null) return null;
+  const save = deserializeSiegeSave(legacy);
+  return !side || save.playerSide === side ? save : null;
 }
-export function hasSiegeSave(): boolean {
+export function hasSiegeSave(side?: SiegeSide): boolean {
   try {
-    return localStorage.getItem(SIEGE_SAVE_KEY) !== null;
+    return loadSiege(localStorage, side) !== null;
   } catch {
     return false;
   }

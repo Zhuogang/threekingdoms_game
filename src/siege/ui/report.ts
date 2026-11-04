@@ -1,7 +1,22 @@
-import { GATES, INNER_WALL_SEGMENTS, SHU_ROSTER, WEI_ROSTER, cellKey } from '../content/chencang';
+import {
+  GATES,
+  INNER_WALL_SEGMENTS,
+  SHU_ROSTER,
+  WEI_ROSTER,
+  SOUTH_TRENCH,
+  cellKey,
+} from '../content/chencang';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
-import type { EngineKind, GateId, SiegeLogEntry, SiegePosition, SiegeState } from '../rules/types';
+import type {
+  EngineKind,
+  GateId,
+  SiegeLogEntry,
+  SiegePosition,
+  SiegeState,
+  SiegeSide,
+} from '../rules/types';
 import { engineKey } from './story';
+import { SIEGE_TUNING as T } from '../rules/tuning';
 import { activeUnit, distance } from '../rules/combat';
 import { placeName, reportCell } from './places';
 
@@ -75,39 +90,81 @@ export function morningReport(
   locale: SiegeLocale,
   observations: SiegeLogEntry[] = [],
   state?: SiegeState,
+  playerSide: SiegeSide = 'shu',
 ): ReportItem[] {
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
+  const weiCopy: Record<string, [SiegeTextKey, SiegeTextKey, SiegeTextKey]> = {
+    brazierDoused: ['snow', 'reportWeiSnow', 'counterWeiSnow'],
+    raiseLadder: ['ladder', 'reportWeiLadder', 'counterWeiLadder'],
+    trenchFilled: ['filled', 'reportWeiFill', 'counterWeiFill'],
+    earthPiled: ['pileEarth', 'reportWeiMound', 'counterWeiMound'],
+    moundFinished: ['pileEarth', 'reportWeiMoundDone', 'counterWeiMound'],
+    covered: ['covered', 'reportWeiCover', 'counterWeiCover'],
+    suppressed: ['suppress', 'reportWeiSuppress', 'counterWeiSuppress'],
+    assault: ['assault', 'reportWeiAssault', 'counterWeiAssault'],
+    nightAssault: ['nightAssault', 'reportWeiNightAdvanced', 'counterWeiNight'],
+    engineNear: ['move', 'reportWeiEngineNear', 'counterWeiLadder'],
+    ramAtBridge: ['ramEngine', 'reportWeiRam', 'counterWeiRam'],
+    wallGained: ['climb', 'reportWeiMounted', 'counterWeiMounted'],
+  };
   const recent = [...log, ...observations].filter(
-    (entry) => entry.day === day - 1 || (entry.day === day && entry.code === 'brazierDoused'),
+    (entry) =>
+      entry.day === day - 1 ||
+      (entry.day === day && (playerSide === 'wei' || entry.code === 'brazierDoused')),
   );
   const entries = [...recent];
-  for (const [table, code, dayKey] of [
-    ['braziers', 'brazierPrepared', 'litDay'],
-    ['millstones', 'millstonePrepared', 'day'],
-    ['boulders', 'bouldersPrepared', 'day'],
-  ] as const) {
-    for (const [cell, value] of Object.entries(preparations[table])) {
-      const prepared = value as { day?: number; litDay?: number; hoisted?: boolean };
-      if (prepared.hoisted === false || (prepared[dayKey] ?? day) >= day) continue;
-      if (!entries.some((e) => e.code === code && e.params.cell === cell))
-        entries.push({ day: day - 1, code, params: { cell } });
+  if (playerSide === 'wei' && state) {
+    for (const [cell, fill] of Object.entries(state.trenchFill))
+      if (fill >= T.trenchCapacity) entries.push({ day, code: 'trenchFilled', params: { cell } });
+    for (const engine of state.engines.filter(
+      (e) =>
+        !e.wrecked && e.durability > 0 && SOUTH_TRENCH.some((c) => distance(c, e) <= T.sortieRange),
+    )) {
+      const bridge =
+        engine.kind === 'ram' && GATES.south.approaches.some((c) => cellKey(c) === cellKey(engine));
+      entries.push({
+        day,
+        code: bridge ? 'ramAtBridge' : 'engineNear',
+        params: { engineId: engine.id },
+      });
     }
   }
+  if (playerSide === 'shu')
+    for (const [table, code, dayKey] of [
+      ['braziers', 'brazierPrepared', 'litDay'],
+      ['millstones', 'millstonePrepared', 'day'],
+      ['boulders', 'bouldersPrepared', 'day'],
+    ] as const) {
+      for (const [cell, value] of Object.entries(preparations[table])) {
+        const prepared = value as { day?: number; litDay?: number; hoisted?: boolean };
+        if (prepared.hoisted === false || (prepared[dayKey] ?? day) >= day) continue;
+        if (!entries.some((e) => e.code === code && e.params.cell === cell))
+          entries.push({ day: day - 1, code, params: { cell } });
+      }
+    }
   const doused = new Set(
     recent.filter((e) => e.code === 'brazierDoused').map((e) => e.params.cell),
   );
   const seen = new Set<string>();
   return entries
     .flatMap((entry, index): ReportItem[] => {
-      const mapping = copy[entry.code];
+      const mapping = (playerSide === 'wei' ? weiCopy : copy)[entry.code];
       if (!mapping) return [];
       const [icon, base, baseCounter] = mapping;
       const p = entry.params;
+      if (playerSide === 'wei' && entry.code === 'suppressed' && entry.day !== day) return [];
+      if (
+        playerSide === 'wei' &&
+        entry.code === 'earthPiled' &&
+        recent.some((e) => e.code === 'moundFinished' && e.params.cell === p.cell)
+      )
+        return [];
       let key = base;
       let counter = baseCounter;
       const merged = entry.code === 'brazierPrepared' && doused.has(p.cell);
       if (
+        playerSide === 'shu' &&
         entry.code === 'brazierDoused' &&
         recent.some((e) => e.code === 'brazierPrepared' && e.params.cell === p.cell)
       )
@@ -157,7 +214,8 @@ export function morningReport(
       seen.add(identity);
       if (entry.code === 'holdFastOrdered' && p.effectiveDay !== day) return [];
       if (entry.code === 'torches' && p.assault === true) key = 'reportTorchesCaught';
-      if (entry.code === 'nightAssault' && p.result === 'stopped') key = 'reportNightStopped';
+      if (entry.code === 'nightAssault' && p.result === 'stopped')
+        key = playerSide === 'wei' ? 'reportWeiNightStopped' : 'reportNightStopped';
       if (entry.code === 'sortieRepelled')
         key =
           p.reason === 'guard'
@@ -200,7 +258,13 @@ export function morningReport(
         state?.units.find((u) => u.id === (p.targetId ?? p.unitId));
       const segment = INNER_WALL_SEGMENTS[Number(p.segment) - 1];
       const place =
-        reportCell(p.cell ?? p.start ?? p.from) ??
+        reportCell(
+          p.cell ?? p.start ?? p.from,
+          playerSide === 'wei' &&
+            ['earthPiled', 'moundFinished', 'trenchFilled'].includes(entry.code)
+            ? 'ground'
+            : 'wall',
+        ) ??
         (p.gateId && GATES[p.gateId as GateId]
           ? { ...GATES[p.gateId as GateId].cells[0]!, level: 'wall' as const }
           : segment
@@ -227,6 +291,7 @@ export function morningReport(
         from: placeName(reportCell(p.from), locale),
         to: placeName(reportCell(p.to, 'ground'), locale),
         preparation: t(icon),
+        max: T.moundComplete,
         loss: loss ? Number(loss.params.before) - Number(loss.params.after) : 0,
       };
       const good =
@@ -234,7 +299,16 @@ export function morningReport(
         ['brazierDoused', 'sortieRepelled'].includes(entry.code) ||
         (entry.code === 'nightAssault' && p.result !== 'stopped') ||
         (entry.code === 'torches' && p.assault !== true);
-      const priority = good ? 2 : ready || entry.code === 'holdFastOrdered' ? 0 : 1;
+      const priority =
+        playerSide === 'wei'
+          ? ['wallGained', 'suppressed', 'assault', 'ramAtBridge'].includes(entry.code)
+            ? 0
+            : 1
+          : good
+            ? 2
+            : ready || entry.code === 'holdFastOrdered'
+              ? 0
+              : 1;
       return [
         { code: entry.code, icon, text: t(key, params), counter: t(counter), place, priority },
       ];

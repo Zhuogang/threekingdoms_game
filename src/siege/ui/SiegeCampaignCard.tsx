@@ -1,5 +1,5 @@
 import { Button } from '../../v03/ui/kit';
-import { hasSiegeSave } from '../save';
+import { hasSiegeSave, loadSiege } from '../save';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { storyArt } from './storyAssets';
 import './siege.css';
@@ -18,21 +18,33 @@ export function SiegeCampaignCard({ locale }: { locale: SiegeLocale }) {
         </small>
         <h2>{t('campaign')}</h2>
         <p>{t('intro')}</p>
-        <Button
-          variant="primary"
-          onClick={() => {
-            window.location.hash = 'chencang';
-          }}
-        >
-          {t('start')}
-        </Button>
+        <div className="siege-side-choices">
+          {(['shu', 'wei'] as const).map((side) => (
+            <Button
+              key={side}
+              variant="primary"
+              data-testid={`start-${side}`}
+              style={{
+                backgroundImage: `linear-gradient(#211c11aa, #211c11aa), url("${storyArt(side === 'shu' ? 1 : 's8-10')}")`,
+              }}
+              onClick={() => {
+                window.location.hash = `chencang/${side}`;
+              }}
+            >
+              {t(side === 'shu' ? 'chooseShu' : 'chooseWei')}
+            </Button>
+          ))}
+        </div>
         {hasSiegeSave() && (
           <Button
+            data-testid="continue-siege"
             onClick={() => {
               window.location.hash = 'chencang/load';
             }}
           >
-            {t('continue')}
+            {siegeText(locale, 'continueSide', {
+              side: t(loadSiege()?.playerSide === 'wei' ? 'continueWei' : 'continueShu'),
+            })}
           </Button>
         )}
       </div>

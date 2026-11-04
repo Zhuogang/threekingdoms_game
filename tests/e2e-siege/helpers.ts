@@ -1,13 +1,14 @@
 import { mkdir } from 'node:fs/promises';
 import { expect, type Page } from '@playwright/test';
-import { SIEGE_SAVE_KEY, type SiegeSave } from '../../src/siege/save';
+import { siegeSaveKey, type SiegeSave } from '../../src/siege/save';
 
 export async function snapshot(page: Page) {
   await page.waitForFunction(() => typeof window.__siegeDev?.snapshot === 'function');
   return page.evaluate(() => window.__siegeDev!.snapshot());
 }
 export async function selectActor(page: Page, id: string) {
-  if (id.startsWith('wei-')) {
+  const side = await page.locator('.siege-app').getAttribute('data-player-side');
+  if ((side === 'wei' && !id.startsWith('wei-')) || (side !== 'wei' && id.startsWith('wei-'))) {
     await page.getByTestId(`map-unit-${id}`).click();
     return;
   }
@@ -67,10 +68,7 @@ export async function dismissCounters(page: Page) {
 }
 export async function start(page: Page, locale: 'en' | 'zh' = 'en', seed = 228) {
   await page.goto(`/?lang=${locale}&siegeSeed=${seed}`);
-  await page
-    .getByTestId('chencang-campaign')
-    .getByRole('button', { name: locale === 'en' ? 'Start' : '开始', exact: true })
-    .click();
+  await page.getByTestId('chencang-campaign').getByTestId('start-shu').click();
   await page
     .getByRole('button', { name: locale === 'en' ? 'Skip opening' : '跳过开场', exact: true })
     .click();
@@ -80,6 +78,9 @@ export async function begin(page: Page, locale: 'en' | 'zh' = 'en') {
   await page
     .getByRole('button', { name: locale === 'en' ? 'Begin siege' : '开始攻城', exact: true })
     .click();
+  await page
+    .getByTestId('replay-skip')
+    .evaluateAll((buttons) => (buttons[0] as HTMLButtonElement | undefined)?.click());
   await page.getByTestId('banner-act1').getByRole('button').click();
   await closeReport(page);
 }
@@ -96,7 +97,7 @@ export async function loadFixture(page: Page, game: SiegeSave, locale: 'en' | 'z
     ({ key, value }) => {
       if (!localStorage.getItem(key)) localStorage.setItem(key, value);
     },
-    { key: SIEGE_SAVE_KEY, value: JSON.stringify(game) },
+    { key: siegeSaveKey(game.playerSide ?? 'shu'), value: JSON.stringify(game) },
   );
   await page.goto(`/?lang=${locale}#chencang/load`);
   await expect(

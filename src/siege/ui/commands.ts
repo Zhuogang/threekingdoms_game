@@ -1,4 +1,4 @@
-import { DEPLOY_SHU, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
+import { DEPLOY_SHU, DEPLOY_WEI, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
 import { applySiegeAction } from '../rules/actions';
 import { activeUnit, usableEngine, predictSiegeClimb, climbingPosition } from '../rules/combat';
 import { siegeText, type SiegeLocale } from '../i18n';
@@ -6,7 +6,15 @@ import { placeName } from './places';
 import { engineReachable, reachableCells } from '../rules/movement';
 import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 
+export type ExtraCommandKind =
+  'suppress' | 'coverEngine' | 'pileEarth' | 'fireArrows' | 'dropMillstone' | 'dropBoulders';
 export type CommandKind =
+  | 'lightBrazier'
+  | 'fireArrows'
+  | 'hoistMillstone'
+  | 'dropMillstone'
+  | 'stackBoulders'
+  | 'dropBoulders'
   | 'suppress'
   | 'coverEngine'
   | 'pileEarth'
@@ -32,7 +40,20 @@ export function actorCommandKinds(
   const unit = state.units.find((u) => u.id === id);
   if (unit) {
     if (unit.side !== playerSide) return [];
-    if (unit.side === 'wei') return ['move', 'attack', 'buildWall', 'order', 'standby'];
+    if (unit.side === 'wei')
+      return [
+        'move',
+        'attack',
+        ...(unit.troopType === 'archer'
+          ? (['lightBrazier', 'fireArrows'] as const)
+          : (['stackBoulders'] as const)),
+        'hoistMillstone',
+        'dropMillstone',
+        'dropBoulders',
+        ...(state.act >= 2 ? (['buildWall'] as const) : []),
+        'order',
+        'standby',
+      ];
     return unit.troopType === 'archer'
       ? ['move', 'attack', 'suppress', 'order', 'standby']
       : ['move', 'attack', 'coverEngine', 'pileEarth', 'climb', 'fillTrench', 'order', 'standby'];
@@ -111,7 +132,7 @@ export function siegeCommands(
         ? { type: 'attack', unitId: id, targetId: u.id }
         : { type: 'attack', engineId: id, targetId: u.id },
     );
-  if (unit)
+  if (unit?.side === 'shu')
     attacks.push(
       ...(Object.keys(GATES) as Array<keyof typeof GATES>).map((gateId) => ({
         type: 'attack' as const,
@@ -124,6 +145,21 @@ export function siegeCommands(
       ? unit.id
       : (state.units.find((u) => u.side === playerSide && u.troops > 0)?.id ?? '');
   const commands: SiegeCommand[] = [
+    ...(['lightBrazier', 'hoistMillstone', 'stackBoulders'] as const).map((kind) =>
+      choose(kind, [{ type: kind, unitId: id }]),
+    ),
+    ...(['fireArrows', 'dropMillstone', 'dropBoulders'] as const).map((kind) =>
+      choose(
+        kind,
+        extraActionTargets(state, id, kind, playerSide).length
+          ? extraActionTargets(state, id, kind, playerSide)
+          : [
+              kind === 'dropBoulders'
+                ? { type: kind, unitId: id, targetId: '' }
+                : { type: kind, unitId: id, engineId: '' },
+            ],
+      ),
+    ),
     choose(
       'suppress',
       state.units
@@ -207,7 +243,7 @@ export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = '
     state.outcome ||
     (unit
       ? unit.side !== playerSide || !activeUnit(unit) || unit.acted
-      : !engine || !usableEngine(engine) || engine.acted)
+      : playerSide !== 'shu' || !engine || !usableEngine(engine) || engine.acted)
   )
     return state;
   const next = structuredClone(state);
@@ -221,15 +257,21 @@ export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = '
   });
   return next;
 }
-export function deployUnit(state: SiegeState, id: string, to: SiegePosition): SiegeState {
-  const unit = state.units.find((u) => u.id === id && u.side === 'shu');
-  if (!unit || !DEPLOY_SHU.some((c) => sameCell(c, to) && to.level === 'ground')) return state;
+export function deployUnit(
+  state: SiegeState,
+  id: string,
+  to: SiegePosition,
+  playerSide: SiegeSide = 'shu',
+): SiegeState {
+  const unit = state.units.find((u) => u.id === id && u.side === playerSide);
+  const cells = playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
+  if (!unit || !cells.some((c) => sameCell(c, to) && to.level === c.level)) return state;
   const next = structuredClone(state),
     actor = next.units.find((u) => u.id === id)!;
-  const other = next.units.find((u) => u.id !== id && u.level === 'ground' && sameCell(u, to));
-  if (other && other.side !== 'shu') return state;
-  if (other) Object.assign(other, { x: actor.x, y: actor.y });
-  Object.assign(actor, to);
+  const other = next.units.find((u) => u.id !== id && u.level === to.level && sameCell(u, to));
+  if (other && other.side !== playerSide) return state;
+  if (other) Object.assign(other, { x: actor.x, y: actor.y, level: actor.level });
+  Object.assign(actor, { x: to.x, y: to.y, level: to.level });
   return next;
 }
 
@@ -274,10 +316,18 @@ export function standByAll(state: SiegeState, playerSide: SiegeSide) {
 export function extraActionTargets(
   state: SiegeState,
   id: string,
-  kind: 'suppress' | 'coverEngine' | 'pileEarth',
+  kind: ExtraCommandKind,
   playerSide: SiegeSide = 'shu',
 ): SiegeAction[] {
   const unit = state.units.find((u) => u.id === id);
+  if (kind === 'fireArrows' || kind === 'dropMillstone')
+    return state.engines
+      .filter(usableEngine)
+      .map((e) => ({ type: kind, unitId: id, engineId: e.id }));
+  if (kind === 'dropBoulders')
+    return state.units
+      .filter((u) => u.side !== playerSide && activeUnit(u))
+      .map((u) => ({ type: kind, unitId: id, targetId: u.id }));
   if (kind === 'coverEngine')
     return state.engines
       .filter(usableEngine)

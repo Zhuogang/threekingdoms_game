@@ -20,16 +20,25 @@ const copy =
 
 export function SiegeOpening({
   step,
+  playerSide = 'shu',
   locale,
   next,
   skip,
 }: {
   step: number;
+  playerSide?: SiegeSide;
   locale: SiegeLocale;
   next: () => void;
   skip: () => void;
 }) {
-  const line = OPENING[Math.min(step, OPENING.length - 1)]!;
+  const line =
+    playerSide === 'wei' && step === OPENING.length - 1
+      ? {
+          ...OPENING[OPENING.length - 1]!,
+          speaker: 'haozhao' as const,
+          text: 'openingDefend' as const,
+        }
+      : OPENING[Math.min(step, OPENING.length - 1)]!;
   const t = copy(locale);
   return (
     <section
@@ -72,10 +81,12 @@ export function SiegeOpening({
 
 export function SiegeActBanner({
   act,
+  playerSide = 'shu',
   locale,
   close,
 }: {
   act: 1 | 2;
+  playerSide?: SiegeSide;
   locale: SiegeLocale;
   close: () => void;
 }) {
@@ -100,6 +111,9 @@ export function SiegeActBanner({
         if (event.key === 'Escape') close();
       }}
     >
+      {act === 2 && playerSide === 'wei' && (
+        <img className="siege-banner-art" src={storyArt('s8-08')} alt="" />
+      )}
       <div className="siege-scroll">
         <img src={paperPiece('scroll-left')} alt="" />
         <div
@@ -108,7 +122,17 @@ export function SiegeActBanner({
         >
           <div className="siege-scroll-copy">
             <h1 id="siege-act-title">{t(act === 1 ? 'act1Title' : 'act2Title')}</h1>
-            <p>{t(act === 1 ? 'act1Line' : 'act2Line')}</p>
+            <p>
+              {t(
+                act === 1
+                  ? playerSide === 'wei'
+                    ? 'act1WeiLine'
+                    : 'act1Line'
+                  : playerSide === 'wei'
+                    ? 'act2WeiLine'
+                    : 'act2Line',
+              )}
+            </p>
             <Button variant="primary" onClick={close}>
               {t('enterAct')}
             </Button>
@@ -121,12 +145,14 @@ export function SiegeActBanner({
 }
 
 export function SiegeHint({
+  playerSide = 'shu',
   kind,
   locale,
   dismiss,
   place,
 }: {
   kind: HintKind;
+  playerSide?: SiegeSide;
   locale: SiegeLocale;
   dismiss: () => void;
   place?: string;
@@ -137,12 +163,37 @@ export function SiegeHint({
     <aside className="siege-hint" role="region" aria-label={t(title)} data-testid={`hint-${kind}`}>
       <h3>{t(title)}</h3>
       {place && <small>{place}</small>}
-      <p>{t(body, { trench: T.trenchCapacity, wall: INNER_WALL_SEGMENTS[0]!.buildPoints })}</p>
+      <p>
+        {t(
+          playerSide === 'wei'
+            ? (
+                {
+                  wall: 'hintWeiWall',
+                  trench: 'hintWeiTrench',
+                  ladder: 'hintWeiLadder',
+                  frontage: 'hintWeiFrontage',
+                  innerWall: 'hintWeiInnerWall',
+                } as const
+              )[kind]
+            : body,
+          { trench: T.trenchCapacity, wall: INNER_WALL_SEGMENTS[0]!.buildPoints },
+        )}
+      </p>
       <Button size="sm" onClick={dismiss}>
         {t('dismissHint')}
       </Button>
     </aside>
   );
+}
+
+export function endingArt(state: SiegeState, side: SiegeSide): 5 | 6 | 7 | 's8-07' {
+  return state.outcome === 'victory'
+    ? 5
+    : state.outcome === 'defeat'
+      ? 7
+      : side === 'wei'
+        ? 's8-07'
+        : 6;
 }
 
 export function SiegeEnding({
@@ -173,32 +224,62 @@ export function SiegeEnding({
       />
     );
   const narration: SiegeTextKey[] =
-    outcome === 'victory'
-      ? ['victoryLine1', 'victoryLine2']
-      : outcome === 'defeat'
-        ? ['defeatLine1', 'defeatLine2']
-        : state.withdrawn
-          ? ['withdrawLine1', 'withdrawLine2']
-          : ['historicalLine1', 'historicalLine2'];
+    playerSide === 'wei'
+      ? outcome === 'victory'
+        ? ['weiFallenLine1', 'weiFallenLine2']
+        : outcome === 'defeat'
+          ? ['weiRoutedLine1', 'weiRoutedLine2']
+          : ['weiHeldLine1', 'weiHeldLine2']
+      : outcome === 'victory'
+        ? ['victoryLine1', 'victoryLine2']
+        : outcome === 'defeat'
+          ? ['defeatLine1', 'defeatLine2']
+          : state.withdrawn
+            ? ['withdrawLine1', 'withdrawLine2']
+            : ['historicalLine1', 'historicalLine2'];
   const rating =
-    outcome === 'victory'
-      ? 'ratingVictory'
-      : outcome === 'defeat'
-        ? 'ratingDefeat'
-        : state.withdrawn
-          ? 'ratingWithdraw'
-          : 'ratingHistorical';
+    playerSide === 'wei'
+      ? outcome === 'victory'
+        ? 'weiRatingFallen'
+        : outcome === 'defeat'
+          ? 'weiRatingRouted'
+          : 'weiRatingHeld'
+      : outcome === 'victory'
+        ? 'ratingVictory'
+        : outcome === 'defeat'
+          ? 'ratingDefeat'
+          : state.withdrawn
+            ? 'ratingWithdraw'
+            : 'ratingHistorical';
   return (
     <section className="siege-ending siege-story-scene" data-testid={`ending-${outcome}`}>
       <img
         className="siege-scene-picture"
         data-testid="ending-picture"
-        src={storyArt(outcome === 'victory' ? 5 : outcome === 'historical' ? 6 : 7)}
-        alt={t(outcome)}
+        src={storyArt(endingArt(state, playerSide))}
+        alt={t(
+          playerSide === 'wei'
+            ? outcome === 'victory'
+              ? 'weiFallen'
+              : outcome === 'defeat'
+                ? 'weiRouted'
+                : 'weiHeld'
+            : outcome,
+        )}
       />
       <div className="siege-ending-copy">
         <small>{t('ending')}</small>
-        <h1>{t(outcome)}</h1>
+        <h1>
+          {t(
+            playerSide === 'wei'
+              ? outcome === 'victory'
+                ? 'weiFallen'
+                : outcome === 'defeat'
+                  ? 'weiRouted'
+                  : 'weiHeld'
+              : outcome,
+          )}
+        </h1>
         <div data-testid="ending-narration">
           {narration.map((key) => (
             <p key={key}>{t(key)}</p>

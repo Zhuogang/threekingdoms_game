@@ -18,10 +18,12 @@ export default function V03App() {
   const context1 = useCommands(context0);
   const context2 = useCampaignOrders(context1);
   const context = context2;
-  if (route === '#chencang' || route === '#chencang/load')
+  if (/^#chencang(?:\/(?:shu|wei|load))?$/.test(route))
     return (
       <Suspense fallback={null}>
         <SiegeApp
+          key={route}
+          initialSide={route.endsWith('/wei') ? 'wei' : 'shu'}
           locale={context.locale}
           setLocale={context.setLocale}
           initialLoad={route.endsWith('/load')}

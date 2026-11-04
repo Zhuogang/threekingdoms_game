@@ -143,8 +143,8 @@ describe('counter cards', () => {
       const state = createSiegeState(1);
       state.log = [entry(code)];
       expect(selectCounterCard(state, [], 'zh')?.kind).toBe(kind);
-      expect(selectCounterCard(state, [kind], 'en')).toBeNull();
-      expect(selectCounterCard(state, [], 'en', 'wei')).toBeNull();
+      expect(selectCounterCard(state, [kind, 'nightEvent'], 'en')).toBeNull();
+      expect(selectCounterCard(state, ['nightEvent'], 'en', 'wei')).toBeNull();
       const save = {
         state,
         playerSide: 'shu' as const,

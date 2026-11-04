@@ -5,7 +5,7 @@ import { SIEGE_TUNING as T } from '../rules/tuning';
 import { SIEGE_DAYS } from '../rules/constants';
 import { ENGINE_RULES } from '../rules/day';
 import { createSiegeState } from '../rules/state';
-import type { EngineKind, SiegeAction, SiegeEngine, SiegeState } from '../rules/types';
+import type { EngineKind, SiegeAction, SiegeEngine, SiegeState, SiegeSide } from '../rules/types';
 import { TRENCH_SOUTH_ROW } from './walkthrough';
 
 const applied = (state: SiegeState, action: SiegeAction) => {
@@ -77,9 +77,63 @@ export const HOW_TO_RULES = {
 };
 export type HowToRules = typeof HOW_TO_RULES;
 
-export function howToSections(locale: SiegeLocale, rules: HowToRules = HOW_TO_RULES) {
+export function howToSections(
+  locale: SiegeLocale,
+  rules: HowToRules = HOW_TO_RULES,
+  playerSide: SiegeSide = 'shu',
+) {
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
+  if (playerSide === 'wei')
+    return [
+      { title: 'howWeiGoal', lines: [t('howWeiGoalBody', { days: rules.tuning.days })] },
+      { title: 'howDay', lines: [t('howWeiDay')] },
+      {
+        title: 'defenseStores',
+        lines: [
+          t('howWeiPrepare'),
+          t('howWeiFire', {
+            range: rules.tuning.wallArcherRange,
+            cover: rules.tuning.coveredFireMultiplier,
+          }),
+          t('howWeiMillstone', {
+            raw: rules.tuning.millstoneDamage,
+            covered: rules.tuning.coveredMillstoneDamage,
+          }),
+          t('howWeiBoulders', {
+            loss: rules.tuning.boulderFootholdLoss,
+            mound: rules.tuning.moundBoulderMultiplier,
+          }),
+        ],
+      },
+      {
+        title: 'order',
+        lines: [
+          t('howWeiOrders', {
+            repair: rules.tuning.nightRepair,
+            range: rules.tuning.sortieRange,
+            damage: rules.tuning.sortieDamage,
+            covered: rules.tuning.coveredSortieDamage,
+            rally: rules.tuning.rallyMorale,
+            hold: rules.tuning.holdFastMultiplier,
+          }),
+          t('howWeiNight'),
+        ],
+      },
+      { title: 'innerWall', lines: [t('howWeiWall', { day: rules.tuning.act2Day })] },
+      {
+        title: 'howCounters',
+        lines: [
+          t('counterWeiSuppress'),
+          t('counterWeiCover'),
+          t('counterWeiMound'),
+          t('counterWeiAssault'),
+          t('counterWeiNight'),
+          t('counterWeiMounted'),
+        ],
+      },
+      { title: 'howKeys', lines: [t('howKeysBody')] },
+    ] satisfies Array<{ title: SiegeTextKey; lines: string[] }>;
   return [
     {
       title: 'howGoal',

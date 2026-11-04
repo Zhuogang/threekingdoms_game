@@ -170,6 +170,8 @@ describe('actor actions and forecast comparison', () => {
     for (const kind of ['coverEngine', 'climb', 'fillTrench', 'pileEarth'])
       expect(archer).not.toContain(kind);
     expect(actorCommandKinds(state, 'wei-haozhao', 'shu')).toEqual([]);
+    expect(actorCommandKinds(state, 'wei-haozhao', 'wei')).not.toContain('buildWall');
+    state.act = 2;
     expect(actorCommandKinds(state, 'wei-haozhao', 'wei')).toContain('buildWall');
     const commands = siegeCommands(state, 'shu-weiyan');
     const split = commands.findIndex((c) => c.reason);

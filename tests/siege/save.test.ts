@@ -5,6 +5,7 @@ import {
   saveSiege,
   serializeSiegeSave,
   SIEGE_SAVE_KEY,
+  siegeSaveKey,
   type SiegeSave,
   presentationFor,
 } from '../../src/siege/save';
@@ -89,7 +90,12 @@ describe('independent Chencang saves', () => {
     saveSiege(save, storage);
     expect(loadSiege(storage)).toEqual(save);
     expect([...values.keys()].sort()).toEqual(
-      ['threekingdoms-v03-autosave', 'threekingdoms-siege-chencang', SIEGE_SAVE_KEY].sort(),
+      [
+        'threekingdoms-v03-autosave',
+        'threekingdoms-siege-chencang',
+        siegeSaveKey('shu'),
+        `${SIEGE_SAVE_KEY}-last-side`,
+      ].sort(),
     );
     expect(values.get('threekingdoms-v03-autosave')).toBe('campaign payload');
     expect(values.get('threekingdoms-siege-chencang')).toBe('v0.1 payload');

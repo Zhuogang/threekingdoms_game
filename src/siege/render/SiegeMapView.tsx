@@ -17,7 +17,7 @@ import {
   zoomBattlefieldViewport,
   type BattlefieldViewBox,
 } from '../../v03/rendering/battlefield-viewport';
-import { DEPLOY_SHU, cellKey } from '../content/chencang';
+import { DEPLOY_SHU, DEPLOY_WEI, cellKey } from '../content/chencang';
 import { cellHeight, cellTerrain, isMapCell } from '../rules/map';
 import { activeUnit } from '../rules/combat';
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
@@ -95,6 +95,7 @@ interface Props {
   tutorialCells?: SiegePosition[];
   tutorialFill?: boolean;
   deploy?: boolean;
+  playerSide?: 'shu' | 'wei';
   xray?: boolean;
   showRange?: boolean;
   facings?: Record<string, Facing>;
@@ -121,6 +122,7 @@ export const SiegeMapView = memo(
       tutorialCells = NO_CELLS,
       tutorialFill = false,
       deploy = false,
+      playerSide = 'shu',
       xray = false,
       showRange = true,
       facings = NO_FACINGS,
@@ -138,6 +140,7 @@ export const SiegeMapView = memo(
     },
     ref,
   ) {
+    const deployCells = playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
     const prefix = useId().replace(/:/g, '');
     const frame = useRef<HTMLDivElement>(null);
     const svg = useRef<SVGSVGElement>(null);
@@ -791,7 +794,7 @@ export const SiegeMapView = memo(
             </g>
           ))}
           <g>
-            {deploy && DEPLOY_SHU.map((c) => cellOutline(c, '#51835c', 'deploy', 0.12))}
+            {deploy && deployCells.map((c) => cellOutline(c, '#51835c', 'deploy', 0.12))}
             {climbableCells(state)
               .filter((c) => targets.some((t) => t.x === c.x && t.y === c.y && t.level === c.level))
               .map((c) => cellOutline(c, '#dfb347', 'climb', 0.04, 1))}
@@ -840,6 +843,7 @@ export const SiegeMapView = memo(
         JSON.stringify(tutorialCells),
         tutorialFill,
         deploy,
+        deployCells,
         painting,
         engines,
         layers,
@@ -965,7 +969,7 @@ export const SiegeMapView = memo(
             }
           />
           {hover &&
-            [...targets, ...reachable, ...(deploy ? DEPLOY_SHU : [])].some(
+            [...targets, ...reachable, ...(deploy ? deployCells : [])].some(
               (c) => c.x === hover.x && c.y === hover.y && c.level === hover.level,
             ) &&
             cellOutline(hover, '#e0ad3d', 'hover', 0.04, 1)}
