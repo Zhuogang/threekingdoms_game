@@ -13,7 +13,7 @@ import { SiegeHowToPlay } from '../../src/siege/ui/SiegeHowToPlay';
 import {
   advanceWalkthrough,
   startWalkthrough,
-  WALKTHROUGH_CELLS,
+  settleWalkthrough,
 } from '../../src/siege/ui/walkthrough';
 import { act, engine } from './rulesFixtures';
 
@@ -105,72 +105,106 @@ describe('how to play', () => {
 });
 
 describe('walkthrough observations', () => {
-  it('advances all eight steps only on the relevant UI or successful rule changes', () => {
+  it('advances nine steps on selection, ladder, move, foothold, suppression, night, report and cover', () => {
     let state = createSiegeState(228);
-    state.engines = []; // Isolated legacy eight-step workshop tutorial.
+    const ladder = state.engines[0]!;
+    Object.assign(state.units[1]!, { x: 18, y: 20 });
+    Object.assign(state.units[8]!, { x: 17, y: 19 });
     let progress = startWalkthrough(state);
-    const observe = (view = ui) => {
+    const observe = (selected: string | null = null, reportReadDay?: number) => {
       const before = structuredClone(state);
-      progress = advanceWalkthrough(progress, state, view)!;
+      progress = advanceWalkthrough(progress, state, { tab: 'commands', selected, reportReadDay })!;
       expect(state).toEqual(before);
       return progress.step;
     };
     expect(observe()).toBe(1);
-    expect(observe({ ...ui, tab: 'defence' })).toBe(1);
-    expect(observe({ ...ui, tab: 'workshop' })).toBe(2);
+    expect(observe(ladder.id)).toBe(2);
     expect(observe()).toBe(2);
-    state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'earthCart' });
+    state = act(state, { type: 'raiseLadder', engineId: ladder.id });
     expect(observe()).toBe(3);
-    expect(progress.cartWorkshopId).toBe('workshop-1');
-    const sameWorkshop = structuredClone(state);
-    sameWorkshop.workshops[0]!.queue = 'ladder';
-    expect(advanceWalkthrough(progress, sameWorkshop, ui)?.step).toBe(3);
-    state = act(state, { type: 'queueEngine', workshopId: 'workshop-2', kind: 'ladder' });
+    state = act(state, { type: 'move', unitId: 'shu-weiyan', x: 18, y: 19, level: 'ground' });
     expect(observe()).toBe(4);
-    const rallied = act(state, { type: 'order', side: 'shu', kind: 'rally', target: ui.selected });
-    expect(advanceWalkthrough(progress, rallied, ui)?.step).toBe(4);
-    state = act(state, { type: 'order', side: 'shu', kind: 'supervise', target: 'workshop-2' });
+    state = act(state, { type: 'climb', unitId: 'shu-weiyan' });
     expect(observe()).toBe(5);
-    expect(observe()).toBe(5);
-    state = endDay(state);
-    expect(observe()).toBe(6);
-    expect(observe({ ...ui, tab: 'workshop' })).toBe(6);
-    const cart = state.engines.find((e) => e.kind === 'earthCart')!;
-    const selectedCart = { ...ui, selected: cart.id };
-    expect(observe(selectedCart)).toBe(7);
-    expect(progress.cartId).toBe(cart.id);
-    const target = WALKTHROUGH_CELLS[0]!;
-    Object.assign(cart, target);
-    expect(observe(selectedCart)).toBe(7); // A position alone is not a movement.
-    cart.y++;
-    state = act(state, { type: 'moveEngine', engineId: cart.id, x: target.x, y: target.y });
-    expect(observe(selectedCart)).toBe(8);
-    const other = structuredClone(state);
-    other.engines.push(engine('earthCart', target.x + 1, target.y, { id: 'another-cart' }));
-    const otherFilled = act(other, {
-      type: 'fillTrench',
-      engineId: 'another-cart',
-      x: target.x + 1,
-      y: target.y - 1,
+    expect(observe('shu-captain-3')).toBe(6);
+    state = act(state, {
+      type: 'suppress',
+      unitId: 'shu-captain-3',
+      targetId: state.units[12]!.id,
     });
-    expect(advanceWalkthrough(progress, otherFilled, selectedCart)?.status).toBe('active');
-    state = act(state, { type: 'fillTrench', engineId: cart.id, x: target.x, y: target.y - 1 });
-    expect(observe(selectedCart)).toBe(8);
+    expect(observe()).toBe(7);
+    expect(observe()).toBe(7);
+    state = endDay(state);
+    expect(observe()).toBe(8);
+    expect(observe()).toBe(8);
+    expect(observe(null, state.day)).toBe(9);
+    state = act(state, { type: 'coverEngine', unitId: 'shu-weiyan', engineId: ladder.id });
+    observe();
     expect(progress.status).toBe('done');
     expect(advanceWalkthrough(progress, state, ui)).toBe(progress);
   });
 
-  it('waits for the cart, ignores old orders on replay, and preserves terminal progress', () => {
+  it('ignores previous actions on replay and retains skipped progress', () => {
     const state = createSiegeState(228);
-    const waiting = { ...startWalkthrough(state), step: 6 };
-    expect(advanceWalkthrough(waiting, state, ui)).toBe(waiting);
-    state.log.push({ day: 1, code: 'order', params: { side: 'shu', kind: 'supervise' } });
-    const replay = { ...startWalkthrough(state), step: 4 };
+    state.log.push({ day: 1, code: 'covered', params: { engineId: state.engines[0]!.id } });
+    const replay = { ...startWalkthrough(state), step: 9 };
     expect(advanceWalkthrough(replay, state, ui)).toBe(replay);
     const skipped = { ...replay, status: 'skipped' as const };
     expect(advanceWalkthrough(skipped, state, ui)).toBe(skipped);
     expect(advanceWalkthrough(undefined, state, ui)).toBeUndefined();
-    expect(startWalkthrough(state)).toMatchObject({ step: 1, status: 'active' });
+  });
+
+  it('does not count an end day or cover that happened before the current step', () => {
+    const state = createSiegeState(228),
+      ladder = state.engines[0]!;
+    ladder.raisedAt = { x: 18, y: 16 };
+    state.log = [
+      { day: 1, code: 'daySupplies', params: {} },
+      { day: 1, code: 'covered', params: { engineId: ladder.id } },
+      { day: 1, code: 'suppressed', params: { sourceId: 'shu-captain-3', cell: '17,16' } },
+    ];
+    const progress = {
+      status: 'active' as const,
+      step: 6,
+      startDay: 1,
+      logStart: 0,
+      ladderId: ladder.id,
+      archerId: 'shu-captain-3',
+    };
+    const advanced = advanceWalkthrough(progress, state, ui)!;
+    expect(advanced.step).toBe(7);
+    expect(advanceWalkthrough(advanced, state, ui)).toBe(advanced);
+    const cover = { ...progress, step: 9, logCursor: state.log.length };
+    expect(advanceWalkthrough(cover, state, ui)).toBe(cover);
+  });
+
+  it('settles pending-replay progress before save and restores it identically', () => {
+    const state = createSiegeState(228),
+      progress = { ...startWalkthrough(state), step: 7 };
+    const final = endDay(state),
+      walkthrough = settleWalkthrough(progress, final, ui)!;
+    expect(walkthrough.step).toBe(8);
+    const save: SiegeSave = {
+      state: final,
+      playerSide: 'shu',
+      phase: 'battle',
+      facings: {},
+      presentation: {
+        openingStep: 6,
+        bannersSeen: [1],
+        dismissedHints: [],
+        reportReadDay: 1,
+        walkthrough,
+      },
+    };
+    const loaded = deserializeSiegeSave(serializeSiegeSave(save));
+    expect(loaded).toEqual(save);
+    expect(
+      settleWalkthrough(loaded.presentation!.walkthrough, loaded.state, {
+        ...ui,
+        reportReadDay: 1,
+      }),
+    ).toEqual(walkthrough);
   });
 
   it('serializes active, done and skipped progress and accepts older presentation data', () => {
@@ -195,7 +229,7 @@ describe('walkthrough observations', () => {
       };
       expect(deserializeSiegeSave(serializeSiegeSave(save))).toEqual(save);
     }
-    save.presentation!.walkthrough!.step = 9;
+    save.presentation!.walkthrough!.step = 10;
     expect(() => serializeSiegeSave(save)).toThrow();
   });
 });

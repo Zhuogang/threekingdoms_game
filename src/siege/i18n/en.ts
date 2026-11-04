@@ -1,23 +1,146 @@
 export const en = {
+  wayBuildLadder: 'Build a replacement ladder at a workshop, then climb from its base.',
+  wayBuildRam: 'Build a replacement ram and advance along the gate road.',
+  morningReport: 'Morning report',
+  reportClose: 'Understood',
+  reportEmpty: 'No changes to report from the enemy phase or last night.',
+  suppress: 'Suppress',
+  coverEngine: 'Cover engine',
+  pileEarth: 'Pile earth',
+  covered: 'Covered',
+  assault: 'Assault',
+  normalAttack: 'Normal',
+  nightAssault: 'Night assault',
+  nightUnknown: 'Resolves tonight; the result is revealed in the morning.',
+  confirmClimb: 'Confirm climb',
+  footholdLine: 'Foothold +{gain} → {after}/{max}{mount}',
+  mountNow: ' · mount wall',
+  forecastMorale: 'Morale after {n}; nearby units −{loss} morale',
+  suppressHelp:
+    'Today the target cannot fire arrows, drop millstones or boulders, prepare weapons, or join a sortie.',
+  chooseActionTarget: 'Choose this action’s target',
+  pressure: 'Climbing pressure {attackers}/{defenders} · {ratio}',
+  footholdCell: '({cell}) foothold {n}/{max}',
+  brazier: 'Brazier',
+  millstone: 'Millstone',
+  boulders: 'Boulders',
+  sortie: 'Sortie',
+  torches: 'Torches',
+  engineLoss: 'Engine losses and ways forward',
+  counterCard: 'Move and counter',
+  counterFire:
+    'Cover against burning; suppress archers by braziers; try a night assault or another wall run.',
+  counterMillstone:
+    'Suppress the gate tower before ramming; cover the ram; shoot the gate tower with a siege tower.',
+  counterBoulders:
+    'Fill the trench and build a mound to reduce losses; climb at several points to split the defenders.',
+  counterSortie:
+    'Guard engines with nearby troops; pull them beyond sortie range; build a fireproof mound.',
+  counterTorches: 'Torches can stop a night assault; use daytime suppression and covers.',
+  counterSnow: 'Snow extinguished the braziers; advance during daylight.',
+  counterThrown:
+    'Rally or rotate to recover morale, then return to the ladder and climb; suppress the wall to reduce counterattacks.',
+  counterWall: 'Enter through an unfinished gap, or suppress builders with a siege tower.',
+  counterRepair: 'Keep ramming and suppress the gate tower to protect the ram.',
+  counterHold: 'Attack another run, or suppress and build foothold progress.',
+  wayLadder: 'A ladder remains: switch ladders or wall runs and keep climbing.',
+  wayRam: 'A ram remains: suppress the gate tower, then ram the gate.',
+  wayTower: 'A siege tower remains: suppress brazier archers or wall builders.',
+  wayBuild: 'Replace engines at a workshop; let an existing queue finish or supervise it.',
+  wayFill: 'Use infantry or an earth cart to fill the trench and open a fireproof wall-foot route.',
+  wayMound: 'After filling both trench rows, use infantry or an earth cart to build a mound.',
+  wayAssault:
+    'Troops can assault from a filled wall foot: fill the trench, then trade casualties for foothold progress.',
+  reportBrazier:
+    'Wei prepared a brazier at wall cell {cell}; nearby archers can fire flaming arrows.',
+  reportMillstone: 'Wei hoisted a millstone at {cell}, threatening the ram below.',
+  reportBoulders: 'Wei stacked boulders at wall cell {cell}, threatening climbers.',
+  reportTorchesCaught: 'Your night assault met Wei torches and failed.',
+  reportTorchesIdle:
+    'Wei lit torches last night; you did not assault, so Wei forfeited morale recovery.',
+  reportNightAdvanced: 'Last night’s assault succeeded; engines advanced along clear paths.',
+  reportNightStopped: 'Wei torches stopped last night’s assault.',
+  reportSortieHit: 'Wei raided {engine} last night, causing {damage} durability loss.',
+  reportSortieGuard: 'Guards repelled Wei’s raid on {engine} last night.',
+  reportSortieAssault: 'Your night assault defeated Wei’s raid on {engine} last night.',
+  reportSortieUnavailable:
+    'Wei’s raid on {engine} failed because the target or raiders were unavailable.',
+  reportRepair: 'Wei repaired {gate} overnight: durability {before} → {after}.',
+  reportHold: 'Wei holds wall run {start}–{end} fast today.',
+  reportSnow: 'Overnight snow extinguished the brazier at {cell}.',
+  reportFireHit: 'Wei fire arrows hit {engine}: durability {before} → {after}.',
+  reportNightFire:
+    'Your night assault met Wei torches; fire arrows hit {engine}: durability {before} → {after}.',
+  reportBurn: '{engine} burned overnight: durability {before} → {after}.',
+  reportEngineLost: '{engine} was destroyed; choose another way forward.',
+  reportMillHit: 'A Wei millstone struck {engine}: durability {before} → {after}.',
+  reportBoulderHit: 'Wei boulders hit {unit}: {casualties} casualties and {loss} foothold lost.',
+  reportWall: 'Wei completed inner-wall segment {segment}, blocking the route inside.',
+  reportThrown: 'Low morale threw {unit} off wall cell {from}, back to {to}.',
+  howCounters: 'Moves and counters',
+  howCounterFire:
+    'Ladders versus fire: cover (fire damage ×{cover}, no burning), suppress brazier archers, assault at night or change wall runs.',
+  howCounterRam:
+    'Rams versus millstones: suppress the gate tower, cover ({raw} → {covered} damage), or shoot it with a siege tower.',
+  howCounterGround:
+    'Trench routes versus boulders and inner walls: build mounds (boulders ×{boulder}, complete at {max}), climb at several points; towers suppress builders while troops rush unfinished gaps.',
+  howCounterAssault:
+    'Assault trades casualties for footholds: morale −{morale}, nearby units −{near} if it fails to mount; boulders are more deadly.',
+  howCounterNight:
+    'Torches stop night assaults; the result is revealed in the morning. Answer with daytime suppression and covers.',
+  howCounterGuard:
+    'Night raids burn engines: guard them nearby or withdraw beyond {range} cells of the south-gate approach; mounds cannot burn. Snow nights extinguish braziers.',
+  howFoothold: 'Climbing and footholds',
+  howFootholdBody:
+    'Reach a ladder base or filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again.',
+  howCourtyardClear:
+    'The courtyard must be clear of active Wei units at day’s end to count as captured.',
+  howKeys: 'Keyboard',
+  howKeysBody:
+    'Tab: next active unit; A: attack; W: selected unit stands by; Q: all remaining units stand by; E: end day; Esc: skip replay; H: guide.',
+  scoreTitle: 'Rating and score',
+  scoreValue: 'Score {n}',
+  scoreHistory:
+    'Historically Shu withdrew when grain ran out after a prolonged siege; your campaign lasted {n} days.',
+  scorePartOutcome: 'Outcome',
+  scorePartSpeed: 'Speed',
+  scorePartCasualties: 'Casualties',
+  scorePartEngines: 'Engines',
+  scorePartMainBody: 'Main body',
+  scorePartGate: 'Gates',
+  scorePartWall: 'Wall defense',
+  swiftVictory: 'Swift victory',
+  costlyVictory: 'Costly victory',
+  orderlyWithdrawal: 'Orderly withdrawal',
+  grainWithdrawal: 'Grain withdrawal',
+  annihilation: 'Annihilation',
+  perfectDefense: 'Perfect defense',
+  firmDefense: 'Firm defense',
+  narrowDefense: 'Narrow defense',
+  cityFallen: 'City fallen',
+  scoreVictory: 'Victory',
+  scoreDefeat: 'Defeat',
+  assaultCount: 'Assaults',
+  nightClashCount: 'Night clashes',
+  moundCount: 'Mounds built',
+  walk9:
+    'Choose Cover engine with fresh infantry beside a ladder; if destroyed, build a replacement and cover it.',
   howToPlay: 'How to play [H]',
   howTitle: 'How to play',
   closeGuide: 'Close guide',
   replayWalkthrough: 'Replay walkthrough',
   skipWalkthrough: 'Skip walkthrough',
   walkthrough: 'First siege',
-  walkProgress: 'Step {n} / 8',
-  walk1: 'Open the Workshop tab.',
-  walk2: 'Choose Build Earth cart at one workshop. Each workshop builds one engine at a time.',
-  walk3: 'Choose Build Ladder at the other workshop.',
-  walk4:
-    'Choose Supervise beside a building queue. This is Zhuge Liang’s daily order; Rally, Supervise and Rotate share it. If already spent, end the day first.',
-  walk5: 'Choose End day [E] to let Wei act and finish construction.',
-  walk6: 'Open Units & actions and select the first earth cart.',
+  walkProgress: 'Step {n} / {max}',
+  walk1: 'Select a usable ladder.',
+  walk2: 'Choose Raise ladder to connect it to the wall.',
+  walk3: 'Select infantry and move onto this ladder’s base; end the day to continue if needed.',
+  walk4: 'Climb or attack the defender above the ladder to gain footholds; mount at {max}.',
+  walk5: 'Select an archer unit.',
+  walk6: 'Move into range and suppress the defender above the ladder.',
   walkWait: 'The earth cart is still being built. End the day to finish it.',
-  walk7:
-    'Select the earth cart, choose Move, then move toward highlighted row {row}, just south of the trench. It moves {move} cells per day; end the day and continue if needed.',
-  walk8:
-    'With the earth cart selected, choose Fill trench, then click an adjacent trench cell. Fill the outer row first.',
+  walk7: 'End the day and watch Wei act and the night resolve.',
+  walk8: 'Read the morning report on the new day and choose Understood.',
   workshopAfterDeploy: 'Construction starts after you choose “{begin}”.',
   howGoal: 'Goal',
   howGoalBody:
@@ -33,10 +156,10 @@ export const en = {
   howBuildDoor:
     'A finished engine appears at its workshop door at day’s end (in the nearest free cell if blocked). At the engine limit, it waits in the workshop.',
   howSuperviseBody:
-    'Zhuge Liang’s order makes one building queue finish {days} day sooner. Use Supervise in the Workshop tab or under Orders on a unit card. One order per day: Rally / Supervise / Rotate.',
+    'Supervise advances a workshop by {days} day; Rally, Supervise, Rotate and Night assault share the daily order.',
   howUse: 'Use engines',
   howCart:
-    'Earth cart → move to row {row}, just south of the trench, then Fill trench: outer row {outer} first, then row {inner} under the wall. A cart fills {cart} per load; infantry fill {infantry}, 1/{ratio} of a cart load.',
+    'Move an earth cart to row {row} south of the trench, fill outer row {outer}, then inner row {inner}. Each load fills {cart}; infantry fill {infantry}, a ratio of {ratio}.',
   howLadder:
     'Ladder → move to the same row {row}, Raise ladder, then move a unit onto the ladder and choose Climb wall.',
   howRam: 'Ram → follow the road to the bridge before the south gate, then Ram gate once per day.',
@@ -46,8 +169,7 @@ export const en = {
   campaign: 'The Siege of Chencang',
   year: 'Winter 228',
   special: 'Special campaign',
-  intro:
-    'Lead Shu against Chencang. Capture the command courtyard before twenty days of grain run out.',
+  intro: 'Lead Shu against Chencang and capture the command courtyard before the grain runs out.',
   start: 'Start',
   continue: 'Continue siege',
   back: 'Return to start',
@@ -87,7 +209,7 @@ export const en = {
   gateTop: '{gate} tower · {n} troops',
   innerWall: 'Inner wall progress',
   segment: 'Segment {n}',
-  progress: '{n}/4',
+  progress: '{n}/{max}',
   raised: 'Raised ladders',
   filled: 'Filled wall feet',
   none: 'None',
@@ -138,8 +260,8 @@ export const en = {
   earthCart: 'Earth cart',
   tower: 'Siege tower',
   ramEngine: 'Battering ram',
-  engineCap: 'Usable engines {n}/6',
-  engineRule: 'At most six usable engines; completed engines wait in the workshop while full.',
+  engineCap: 'Usable engines {n}/{max}',
+  engineRule: 'At most {max} usable engines; completed engines wait in the workshop while full.',
   workshopName: 'Workshop {n}',
   empty: 'Idle',
   queue: 'Build {kind}',
@@ -190,7 +312,7 @@ export const en = {
   victoryLine1: 'Shu banners rise over Chencang. The fortress has fallen in this campaign.',
   victoryLine2: 'The road beyond the walls lies open. This victory changes the historical course.',
   historicalLine1:
-    'After some twenty days before Chencang, the grain is gone. Zhuge Liang orders a retreat as Zhang He’s relief draws near.',
+    'With the grain exhausted before Chencang, Zhuge Liang orders a retreat as Zhang He’s relief draws near.',
   historicalLine2:
     'Wang Shuang pursues the retreating Shu army and is killed in the pursuit. Chencang remains in Wei hands.',
   withdrawLine1:
@@ -233,7 +355,7 @@ export const en = {
     'Walls block ground movement and parapets shelter the defenders. Bring up ladders, fill a wall foot, or use rams against a gate to open a route.',
   hintTrenchTitle: 'Crossing the trench',
   hintTrench:
-    'Fill the outer trench cell before the inner one; a cell is full at 3. Use earth carts for faster work, then move infantry onto the filled wall foot to climb.',
+    'Fill the outer trench cell before the inner one; a cell is full at {trench}. Use earth carts for faster work, then move infantry onto the filled wall foot to climb.',
   hintLadderTitle: 'A ladder is raised',
   hintLadder:
     'Infantry can climb from this ladder’s base to the wall. Ladder attacks have a narrow frontage; protect the ladder from fire arrows and open more routes.',
@@ -242,7 +364,7 @@ export const en = {
     'This forecast counts only the troops allowed by the frontage shown. Spread the assault across several ladders or filled wall feet instead of crowding one approach.',
   hintInnerWallTitle: 'A second wall',
   hintInnerWall:
-    'The defenders are raising a second wall inside the city; each segment is complete at 4. Advance through the gaps before the defenders seal the routes.',
+    'The defenders are raising a second wall inside the city; each segment is complete at {wall}. Advance through the gaps before the defenders seal the routes.',
   noLog: 'No actions yet.',
   logEntry: 'Day {n} · {event}',
   logCombat: '{source} → {target}: {loss} casualties, {counter} counterattack',
@@ -263,7 +385,7 @@ export const en = {
   spent: 'Already acted today.',
   chooseFriendly: 'Choose an active Shu unit or engine.',
   deploymentOnly: 'Deploy within the green zone.',
-  keys: 'Tab next · A attack · W stand by · E end day · H help · Esc skip',
+  keys: 'Tab next unit · A attack · W stand by · Q all stand by · E end day · H guide',
 } as const;
 export const enReasons = {
   'The engine limit has been reached.': 'The engine limit has been reached.',
@@ -321,7 +443,7 @@ export const enReasons = {
   'This workshop is already building an engine.': 'This workshop is already building an engine.',
   'Siege towers unlock in act 2.': 'Siege towers unlock in act 2.',
   'There are already six usable engines on the map.':
-    'There are already six usable engines on the map.',
+    'There are already {max} usable engines on the map.',
   'This unit cannot move today.': 'This unit cannot move today.',
   'That destination is blocked or beyond movement range.':
     'That destination is blocked or beyond movement range.',

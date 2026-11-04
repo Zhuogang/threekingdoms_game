@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from '../rules/tuning';
 import { en, enReasons } from './en';
 import { zh, zhReasons } from './zh';
 export type SiegeLocale = 'en' | 'zh';
@@ -14,5 +15,8 @@ export function siegeText(
   );
 }
 export function rejectionText(locale: SiegeLocale, reason: string): string {
-  return SIEGE_REASONS[locale][reason as keyof typeof enReasons] ?? reason;
+  return (SIEGE_REASONS[locale][reason as keyof typeof enReasons] ?? reason).replace(
+    '{max}',
+    String(T.engineCap),
+  );
 }

@@ -1,0 +1,169 @@
+import { describe, expect, it } from 'vitest';
+import { morningReport, REPORT_CODES, reportObservations } from '../../src/siege/ui/report';
+import { createSiegeState } from '../../src/siege/rules/state';
+import { siegeText, type SiegeTextKey } from '../../src/siege/i18n';
+import { selectCounterCard, engineLossAnswers, COUNTER_KINDS } from '../../src/siege/ui/counters';
+import { serializeSiegeSave, deserializeSiegeSave } from '../../src/siege/save';
+import type { SiegeLogEntry } from '../../src/siege/rules/types';
+
+const keys: Record<(typeof REPORT_CODES)[number], [SiegeTextKey, SiegeTextKey]> = {
+  brazierPrepared: ['reportBrazier', 'counterFire'],
+  millstonePrepared: ['reportMillstone', 'counterMillstone'],
+  bouldersPrepared: ['reportBoulders', 'counterBoulders'],
+  torches: ['reportTorchesIdle', 'counterTorches'],
+  nightAssault: ['reportNightAdvanced', 'counterTorches'],
+  sortieHit: ['reportSortieHit', 'counterSortie'],
+  sortieRepelled: ['reportSortieUnavailable', 'counterSortie'],
+  nightRepair: ['reportRepair', 'counterRepair'],
+  holdFastOrdered: ['reportHold', 'counterHold'],
+  brazierDoused: ['reportSnow', 'counterSnow'],
+  fireArrowHit: ['reportFireHit', 'counterFire'],
+  engineBurning: ['reportBurn', 'counterFire'],
+  engineLost: ['reportEngineLost', 'wayBuild'],
+  millstoneHit: ['reportMillHit', 'counterMillstone'],
+  bouldersHit: ['reportBoulderHit', 'counterBoulders'],
+  innerWallCompleted: ['reportWall', 'counterWall'],
+  thrownOffWall: ['reportThrown', 'counterThrown'],
+};
+const entry = (code: string, params: SiegeLogEntry['params'] = {}): SiegeLogEntry => ({
+  day: 1,
+  code,
+  params,
+});
+describe('pure morning report', () => {
+  for (const code of REPORT_CODES)
+    for (const locale of ['zh', 'en'] as const)
+      it(`${code}: ${locale} cause and counter`, () => {
+        const state = createSiegeState(228);
+        const params = {
+          cell: '18,16',
+          engineId: 'starting-ladder-1',
+          targetId: 'shu-weiyan',
+          unitId: 'shu-weiyan',
+          gateId: 'south',
+          before: 90,
+          after: 30,
+          damage: 60,
+          casualties: 12,
+          effectiveDay: 2,
+          start: '17,16',
+          end: '22,16',
+          segment: 1,
+          from: '18,16',
+          to: '18,19',
+        };
+        const log = [entry(code, params)];
+        const before = structuredClone(log);
+        const items = morningReport(log, state.preparations, 2, locale);
+        const expected = siegeText(locale, keys[code][0], {
+          ...params,
+          engine: siegeText(locale, 'ladder'),
+          unit: locale === 'zh' ? '魏延' : 'Wei Yan',
+          gate: siegeText(locale, 'south'),
+          loss: 0,
+        });
+        expect(items).toHaveLength(1);
+        expect(items[0]!.text).toBe(expected);
+        expect(items[0]!.counter).toBe(siegeText(locale, keys[code][1]));
+        expect(items[0]!.icon).toBeTruthy();
+        expect(log).toEqual(before);
+      });
+  it('explains night collisions in order, guards and unavailable raids, and observed foothold loss', () => {
+    const p = createSiegeState(1).preparations;
+    const log = [
+      entry('fireArrowHit', { engineId: 'ram', before: 100, after: 90 }),
+      entry('nightAssault', { result: 'stopped' }),
+      entry('torches', { assault: true }),
+      entry('fireArrowHit', { engineId: 'ladder', before: 90, after: 20 }),
+      entry('sortieRepelled', { reason: 'guard', engineId: 'ram' }),
+      entry('sortieRepelled', { reason: 'nightAssault', engineId: 'ram' }),
+      entry('footholdChanged', { cell: '18,16', reason: 'boulders', before: 1, after: 0 }),
+      entry('bouldersHit', { cell: '18,16', casualties: 10, targetId: 'shu-weiyan' }),
+    ];
+    const items = morningReport(log, p, 2, 'en');
+    expect(items[0]!.text).toMatch(/^Wei fire arrows/);
+    expect(items[1]!.text).toContain('stopped');
+    expect(items[2]!.text).toContain('failed');
+    expect(items[3]!.text).toContain('met Wei torches');
+    expect(items[4]!.text).toContain('Guards repelled');
+    expect(items[5]!.text).toContain('Your night assault defeated');
+    expect(items[6]!.text).toContain('1 foothold lost');
+  });
+  it('lists surviving preparations once, ignores consumed/new preparations, stale events and hidden orders', () => {
+    const state = createSiegeState(1);
+    state.preparations.braziers['18,16'] = { litDay: 1 };
+    state.preparations.millstones['23,16'] = { day: 1, hoisted: false };
+    state.preparations.boulders['20,16'] = { day: 2 };
+    const log = [
+      entry('brazierPrepared', { cell: '18,16' }),
+      entry('order', { side: 'wei' }),
+      { day: 0, code: 'engineLost', params: {} },
+    ];
+    expect(morningReport(log, state.preparations, 2, 'en').map((i) => i.code)).toEqual([
+      'brazierPrepared',
+    ]);
+    expect(morningReport([], state.preparations, 2, 'en')).toHaveLength(1);
+    expect(morningReport([], createSiegeState(1).preparations, 1, 'en')).toEqual([]);
+  });
+  it('observes completed inner walls from before/after snapshots without mutating the rules', () => {
+    const before = createSiegeState(1),
+      after = structuredClone(before);
+    before.innerWall[0] = 3;
+    after.innerWall[0] = 4;
+    after.innerWall[1] = 3;
+    const originals = structuredClone([before, after]);
+    const observations = reportObservations(before, after);
+    expect(observations).toEqual([entry('innerWallCompleted', { segment: 1 })]);
+    expect(morningReport([], after.preparations, 2, 'en', observations)[0]!.text).toContain(
+      'segment 1',
+    );
+    expect([before, after]).toEqual(originals);
+  });
+});
+describe('counter cards', () => {
+  for (const [kind, code] of [
+    ['fire', 'brazierPrepared'],
+    ['millstone', 'millstoneHit'],
+    ['boulders', 'bouldersHit'],
+    ['sortie', 'sortieHit'],
+    ['torches', 'torches'],
+    ['snow', 'brazierDoused'],
+    ['engineLoss', 'engineLost'],
+  ] as const)
+    it(`selects ${kind} once and persists dismissal`, () => {
+      const state = createSiegeState(1);
+      state.log = [entry(code)];
+      expect(selectCounterCard(state, [], 'zh')?.kind).toBe(kind);
+      expect(selectCounterCard(state, [kind], 'en')).toBeNull();
+      expect(selectCounterCard(state, [], 'en', 'wei')).toBeNull();
+      const save = {
+        state,
+        playerSide: 'shu' as const,
+        phase: 'battle' as const,
+        facings: {},
+        presentation: {
+          openingStep: 6,
+          bannersSeen: [],
+          dismissedHints: [],
+          dismissedCounters: [kind],
+        },
+      };
+      expect(deserializeSiegeSave(serializeSiegeSave(save))).toEqual(save);
+    });
+  it('prioritizes burning/loss and provides at least three actual routes without phantom ladders', () => {
+    const state = createSiegeState(228);
+    state.log = [entry('brazierPrepared'), entry('engineBurning')];
+    expect(selectCounterCard(state, [], 'en')!.kind).toBe('engineLoss');
+    expect(engineLossAnswers(state)).toContain('wayLadder');
+    state.engines.forEach((e) => (e.wrecked = true));
+    const lines = engineLossAnswers(state);
+    expect(lines.length).toBeGreaterThanOrEqual(3);
+    expect(lines).not.toContain('wayLadder');
+    expect(lines).not.toContain('wayRam');
+    expect(lines).toContain('wayBuild');
+    expect(lines).toContain('wayMound');
+    state.units.filter((u) => u.troopType === 'infantry').forEach((u) => (u.routed = true));
+    expect(engineLossAnswers(state)).not.toContain('wayMound');
+    expect(selectCounterCard(state, COUNTER_KINDS, 'en')).toBeNull();
+  });
+});

@@ -3,8 +3,10 @@ import { Button } from '../../v03/ui/kit';
 import { OfficerPortrait } from '../../v03/rendering/OfficerPortrait';
 import { GATES, INNER_WALL_SEGMENTS } from '../content/chencang';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
-import type { GateId, SiegeState } from '../rules/types';
+import type { GateId, SiegeState, SiegeSide } from '../rules/types';
 import type { HintKind } from '../save';
+import { SIEGE_TUNING as T } from '../rules/tuning';
+import { scoringScreen } from './scoring';
 import { HINT_COPY, OPENING, engineKey, siegeSummary } from './story';
 import { SiegeIcon, paperPiece, storyArt, storyPortrait } from './storyAssets';
 
@@ -132,7 +134,7 @@ export function SiegeHint({
   return (
     <aside className="siege-hint" role="region" aria-label={t(title)} data-testid={`hint-${kind}`}>
       <h3>{t(title)}</h3>
-      <p>{t(body)}</p>
+      <p>{t(body, { trench: T.trenchCapacity, wall: INNER_WALL_SEGMENTS[0]!.buildPoints })}</p>
       <Button size="sm" onClick={dismiss}>
         {t('dismissHint')}
       </Button>
@@ -144,12 +146,14 @@ export function SiegeEnding({
   state,
   locale,
   summary,
+  playerSide = 'shu',
   onSummary,
   onExit,
 }: {
   state: SiegeState;
   locale: SiegeLocale;
   summary: boolean;
+  playerSide?: SiegeSide;
   onSummary: (show: boolean) => void;
   onExit: () => void;
 }) {
@@ -160,6 +164,7 @@ export function SiegeEnding({
       <SiegeSummary
         state={state}
         locale={locale}
+        playerSide={playerSide}
         onEnding={() => onSummary(false)}
         onExit={onExit}
       />
@@ -199,6 +204,7 @@ export function SiegeEnding({
         <p className="siege-rating" data-testid="ending-rating">
           {t(rating)}
         </p>
+        <Score state={state} locale={locale} side={playerSide} />
         <Button variant="primary" onClick={() => onSummary(true)}>
           {t('viewSummary')}
         </Button>
@@ -211,11 +217,13 @@ export function SiegeSummary({
   state,
   locale,
   onEnding,
+  playerSide = 'shu',
   onExit,
 }: {
   state: SiegeState;
   locale: SiegeLocale;
   onEnding: () => void;
+  playerSide?: SiegeSide;
   onExit: () => void;
 }) {
   const t = copy(locale),
@@ -311,11 +319,12 @@ export function SiegeSummary({
           {INNER_WALL_SEGMENTS.map((s) => (
             <p key={s.index}>
               {t('segment', { n: s.index + 1 })} ·{' '}
-              {t('progress', { n: state.innerWall[s.index] ?? 0 })}
+              {t('progress', { n: state.innerWall[s.index] ?? 0, max: s.buildPoints })}
             </p>
           ))}
         </section>
       </div>
+      <Score state={state} locale={locale} side={playerSide} />
       <section className="siege-history">
         <h2>{t('inHistory')}</h2>
         <p>{t('historyParagraph')}</p>
@@ -324,6 +333,45 @@ export function SiegeSummary({
         <Button onClick={onEnding}>{t('viewEnding')}</Button>
         <Button onClick={onExit}>{t('back')}</Button>
       </nav>
+    </section>
+  );
+}
+
+function Score({
+  state,
+  locale,
+  side,
+}: {
+  state: SiegeState;
+  locale: SiegeLocale;
+  side: SiegeSide;
+}) {
+  const result = scoringScreen(state, locale, side);
+  return (
+    <section className="siege-score" data-testid="score-panel">
+      <h2>
+        {siegeText(locale, 'scoreTitle')} · {result.tier}
+      </h2>
+      <strong>{siegeText(locale, 'scoreValue', { n: Math.round(result.score) })}</strong>
+      <dl>
+        {result.parts.map((part) => (
+          <div key={part.key} data-testid={`score-part-${part.key}`}>
+            <dt>{part.label}</dt>
+            <dd>{Number(part.value.toFixed(2))}</dd>
+          </div>
+        ))}
+      </dl>
+      <p>{result.history}</p>
+      <table data-testid="extended-summary">
+        <tbody>
+          {result.summary.map((row) => (
+            <tr key={row.label}>
+              <th>{row.label}</th>
+              <td>{row.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </section>
   );
 }

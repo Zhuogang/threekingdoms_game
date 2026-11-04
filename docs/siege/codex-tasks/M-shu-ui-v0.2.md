@@ -65,6 +65,9 @@ working?**
   cover, the assault forecast's two sets of numbers, night assault; then save, reload, and check the state is identical.
   Screenshots to `.artifacts/siege/screens/`: `report.png`, `counter-card.png`, `assault-forecast.png`, `defense-panel.png`,
   `score.png`, `walk-1.png`, `walk-4.png`. Your sandbox cannot start Chromium: write them, and the planner runs them.
+  Since you cannot run them, keep their assertions about behaviour and text, not exact pixels. Earlier specs failed because
+  Chromium's SVG bounding boxes include stroke widths and whole-image masks, and because selecting a unit reorders the map's layers.
+  Use stable `data-testid`s for every new panel and button.
 
 ## Checks to run and report
 

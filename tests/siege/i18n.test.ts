@@ -47,7 +47,8 @@ describe('siege bilingual text', () => {
     expect(reasons.length).toBeGreaterThan(25);
     for (const reason of reasons) {
       expect(SIEGE_REASONS.en).toHaveProperty(reason);
-      expect(rejectionText('en', reason)).toBe(reason);
+      if (reason.includes('six usable engines')) expect(rejectionText('en', reason)).toContain('8');
+      else expect(rejectionText('en', reason)).toBe(reason);
       expect(rejectionText('zh', reason)).not.toBe(reason);
     }
   });

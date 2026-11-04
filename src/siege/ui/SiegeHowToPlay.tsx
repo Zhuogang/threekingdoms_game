@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '../../v03/ui/kit';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
-import { ENGINE_RULES } from '../rules/day';
 import type { SiegeWalkthrough } from '../save';
 import { howToSections, type HowToRules } from './howToPlay';
-import { TRENCH_SOUTH_ROW } from './walkthrough';
+import { WALKTHROUGH_STEPS } from './walkthrough';
+import { SIEGE_TUNING as T } from '../rules/tuning';
 
 export function SiegeHowToPlay({
   locale,
@@ -88,11 +88,9 @@ export function SiegeWalkthroughBox({
     >
       <strong>
         {siegeText(locale, 'walkthrough')} ·{' '}
-        {siegeText(locale, 'walkProgress', { n: progress.step })}
+        {siegeText(locale, 'walkProgress', { n: progress.step, max: WALKTHROUGH_STEPS })}
       </strong>
-      <p aria-live="polite">
-        {siegeText(locale, key, { row: TRENCH_SOUTH_ROW, move: ENGINE_RULES.earthCart.move })}
-      </p>
+      <p aria-live="polite">{siegeText(locale, key, { max: T.footholdComplete })}</p>
       <Button size="sm" onClick={skip}>
         {siegeText(locale, 'skipWalkthrough')}
       </Button>

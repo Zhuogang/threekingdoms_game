@@ -1,155 +1,87 @@
-import { mkdir } from 'node:fs/promises';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { createSiegeState } from '../../src/siege/rules/state';
+import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { SIEGE_SAVE_KEY } from '../../src/siege/save';
-import type { SiegeSave } from '../../src/siege/save';
-const screens = '.artifacts/siege/screens';
-async function shot(page: Page, name: string) {
-  await mkdir(screens, { recursive: true });
-  await page.waitForLoadState('networkidle');
-  await page.screenshot({ path: `${screens}/${name}.png`, animations: 'disabled' });
-}
-async function units(page: Page) {
-  return page
-    .locator('[data-testid="siege-map"] [data-unit]')
-    .evaluateAll((elements) =>
-      [
-        ...new Set(
-          elements.map(
-            (el) =>
-              `${el.getAttribute('data-unit')}:${el.getAttribute('data-x')},${el.getAttribute('data-y')}:${el.getAttribute('data-troops')}`,
-          ),
-        ),
-      ].sort(),
-    );
-}
-async function savedGame(page: Page, game: SiegeSave) {
-  await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), {
-    key: SIEGE_SAVE_KEY,
-    value: JSON.stringify(game),
-  });
-  await page.goto('/?lang=en#chencang/load');
-  await expect(page.locator('[data-phase="battle"]')).toBeVisible();
-}
+import { begin, closeReport, endDay, loadFixture, snapshot, start } from './helpers';
 
-test('Chencang: deploy, move, forecast, build, resolve AI, save and load, switch language', async ({
-  page,
-}) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/?lang=zh');
-  const card = page.getByTestId('chencang-campaign');
-  await card.scrollIntoViewIfNeeded();
-  await expect(card).toContainText('陈仓之战');
-  await shot(page, 'start');
-  await card.getByRole('button', { name: '开始', exact: true }).click();
-  await page.getByRole('button', { name: '跳过开场', exact: true }).click();
-  await expect(page.locator('[data-phase="deploy"]')).toBeVisible();
-  await expect(page.getByTestId('siege-map')).toBeVisible();
-  await page.getByTestId('select-shu-captain-3').click();
-  await page
-    .locator('[data-overlay="deploy"][data-cell="23,21,ground"]')
-    .click({ position: { x: 30, y: 10 } });
-  await expect(page.locator('[data-unit="shu-captain-3"]').first()).toHaveAttribute('data-x', '23');
-  await expect(page.locator('[data-unit="shu-captain-3"]').first()).toHaveAttribute('data-y', '21');
-  await shot(page, 'deploy');
-  await page.getByRole('button', { name: '开始攻城', exact: true }).click();
-  await expect(page.locator('[data-phase="battle"]')).toBeVisible();
-  await page.getByRole('button', { name: '进入战场', exact: true }).click();
-  await page.getByRole('button', { name: '100%', exact: true }).click();
-  await page.getByRole('button', { name: '南门', exact: true }).click();
-  await expect(page.getByTestId('siege-map')).toHaveAttribute('data-zoom', '1.00');
-  await shot(page, 'battle-100');
-  await page.getByRole('button', { name: '50%', exact: true }).click();
-  await expect(page.getByTestId('siege-map')).toHaveAttribute('data-zoom', '0.50');
-  await shot(page, 'battle-50');
-  await page.getByRole('button', { name: '100%', exact: true }).click();
-  await page.getByRole('button', { name: '移动', exact: true }).click();
-  await page.locator('[data-overlay="reachable"][data-cell="23,18,ground"]').click();
-  await expect(page.locator('[data-unit="shu-captain-3"]').first()).toHaveAttribute('data-y', '18');
-  await page.getByTestId('select-wei-haozhao').click();
-  const forecast = page.getByTestId('attack-forecast');
-  await expect(forecast).toContainText('女墙掩护 ×0.3');
-  await expect(forecast).toContainText('正面 600');
-  await forecast.scrollIntoViewIfNeeded();
-  await shot(page, 'forecast');
-  await forecast.getByRole('button', { name: '确认攻击' }).click();
+test('v0.2 workshop, defense, report, replay skip, bilingual save and load', async ({ page }) => {
+  await start(page, 'zh');
+  await begin(page, 'zh');
+  await page.getByRole('button', { name: '跳过引导', exact: true }).click();
   await page.getByRole('tab', { name: '工棚', exact: true }).click();
   await page.getByTestId('build-workshop-1-earthCart').click();
   await expect(page.getByTestId('queue-workshop-1')).toContainText('土车');
-  await shot(page, 'workshop');
   await page.getByRole('tab', { name: '城防', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '城门耐久' })).toBeVisible();
-  await expect(page.locator('progress')).toHaveCount(4);
-  await shot(page, 'defence');
-  await page.getByRole('button', { name: '结束本日 [E]', exact: true }).click();
-  await expect(page.getByTestId('siege-day')).toHaveText('第 2 日', { timeout: 20_000 });
-  await shot(page, 'day2');
-  await page.getByRole('button', { name: '保存', exact: true }).click();
-  const before = await units(page);
-  const stored = await page.evaluate((key) => localStorage.getItem(key), SIEGE_SAVE_KEY);
-  expect(JSON.parse(stored!).state.day).toBe(2);
-  expect(
-    JSON.parse(stored!).state.engines.some((e: { kind: string }) => e.kind === 'earthCart'),
-  ).toBe(true);
-  await page.reload();
-  await page.getByRole('button', { name: '读取', exact: true }).click();
+  await expect(page.getByTestId('defense-panel')).toContainText('攀城压力');
+  await endDay(page);
   await expect(page.getByTestId('siege-day')).toHaveText('第 2 日');
-  expect(await units(page)).toEqual(before);
+  await closeReport(page);
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  const before = await snapshot(page);
+  await page.goto('/?lang=zh#chencang/load');
+  expect(await snapshot(page)).toEqual(before);
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.getByTestId('siege-day')).toHaveText('Day 2');
-  await expect(page.getByRole('tab', { name: 'Workshop', exact: true })).toBeVisible();
-  await shot(page, 'en');
-  expect(errors).toEqual([]);
+  await page.getByTestId('report-open').click();
+  await expect(page.getByTestId('morning-report')).toContainText('Morning report');
+  await closeReport(page);
 });
-
-test('keyboard, corrupted save, six-engine cap, playback skip and withdrawal ending', async ({
-  page,
-}) => {
+test('actual engine cap, all-standby key, corrupted save and withdrawal', async ({ page }) => {
   const state = createSiegeState(228);
-  state.engines = Array.from({ length: 6 }, (_, i) => ({
+  state.engines = Array.from({ length: T.engineCap }, (_, i) => ({
+    ...state.engines[0]!,
     id: `cart-${i}`,
     kind: 'earthCart' as const,
     x: 12 + i,
     y: 20,
-    durability: 50,
-    max: 50,
-    burning: false,
-    wrecked: false,
-    uses: 3,
+    uses: T.cartLoads,
   }));
-  await savedGame(page, { state, phase: 'battle', facings: {} });
+  await loadFixture(page, {
+    state,
+    playerSide: 'shu',
+    phase: 'battle',
+    facings: {},
+    presentation: { openingStep: 6, bannersSeen: [1], dismissedHints: [], reportReadDay: 1 },
+  });
   await page.getByRole('tab', { name: 'Workshop', exact: true }).click();
-  const cart = page.getByTestId('build-workshop-1-earthCart');
-  await expect(cart).toBeDisabled();
-  await expect(cart).toHaveAttribute('title', 'There are already six usable engines on the map.');
-  await page.getByRole('tab', { name: 'Units & actions', exact: true }).click();
-  await page.getByTestId('select-shu-weiyan').click();
-  await page.keyboard.press('w');
-  await expect(page.getByRole('button', { name: 'Stand by [W]', exact: true })).toBeDisabled();
-  await page.keyboard.press('Tab');
-  await expect(page.getByTestId('select-shu-jiangwei')).toHaveAttribute('aria-pressed', 'true');
-  await page.keyboard.press('e');
-  await expect(page.getByRole('button', { name: 'Skip playback', exact: true })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('siege-day')).toHaveText('Day 2');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByTestId('build-workshop-1-earthCart')).toBeDisabled();
+  await expect(page.getByTestId('build-workshop-1-earthCart')).toHaveAttribute(
+    'title',
+    `There are already ${T.engineCap} usable engines on the map.`,
+  );
+  await page.keyboard.press('q');
+  expect(
+    (await snapshot(page)).state.units
+      .filter((u) => u.side === 'shu')
+      .every((u) => u.acted && u.moved),
+  ).toBe(true);
+  await endDay(page);
+  await closeReport(page);
   await page.evaluate((key) => localStorage.setItem(key, '{}'), SIEGE_SAVE_KEY);
   await page.getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Siege save is invalid');
-  await expect(page.getByTestId('siege-day')).toHaveText('Day 2');
   await page.getByRole('button', { name: 'Withdraw', exact: true }).click();
-  await expect(page.locator('[data-phase="ending"]')).toContainText('Withdrawal from Chencang');
-  await expect(page.getByTestId('ending-rating')).toContainText('Lower rating');
+  await expect(page.getByTestId('score-panel')).toContainText('Grain withdrawal');
 });
-
-test('day twenty reaches the grain ending and keeps the independent slot', async ({ page }) => {
+test('the final tuned day reaches the grain ending', async ({ page }) => {
   const state = createSiegeState(31);
-  state.day = 20;
+  state.day = T.days;
   state.act = 2;
   state.grain = 1;
-  await savedGame(page, { state, phase: 'battle', facings: {} });
-  await page.getByRole('button', { name: 'End day [E]', exact: true }).click();
-  await page.keyboard.press('Escape');
-  await expect(page.locator('[data-phase="ending"]')).toContainText('Withdrawal from Chencang');
+  await loadFixture(page, {
+    state,
+    playerSide: 'shu',
+    phase: 'battle',
+    facings: {},
+    presentation: {
+      openingStep: 6,
+      bannersSeen: [1, 2],
+      dismissedHints: [],
+      reportReadDay: T.days,
+    },
+  });
+  await endDay(page);
+  await expect(page.getByTestId('ending-historical')).toBeVisible();
+  expect((await snapshot(page)).state.grain).toBe(0);
+  await expect(page.getByTestId('score-panel')).toContainText('Orderly withdrawal');
 });

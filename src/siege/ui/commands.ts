@@ -2,9 +2,12 @@ import { DEPLOY_SHU, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
 import { applySiegeAction } from '../rules/actions';
 import { activeUnit, usableEngine } from '../rules/combat';
 import { engineReachable, reachableCells } from '../rules/movement';
-import type { SiegeAction, SiegePosition, SiegeState } from '../rules/types';
+import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 
 export type CommandKind =
+  | 'suppress'
+  | 'coverEngine'
+  | 'pileEarth'
   | 'move'
   | 'attack'
   | 'climb'
@@ -24,7 +27,11 @@ export function actionReason(state: SiegeState, action: SiegeAction): string | n
   return result.ok ? null : result.reason;
 }
 /** Every action entry uses the same validator as its eventual execution. */
-export function siegeCommands(state: SiegeState, id: string): SiegeCommand[] {
+export function siegeCommands(
+  state: SiegeState,
+  id: string,
+  playerSide: SiegeSide = 'shu',
+): SiegeCommand[] {
   const unit = state.units.find((u) => u.id === id),
     engine = state.engines.find((e) => e.id === id);
   const move = unit ? reachableCells(state, id) : engineReachable(state, id);
@@ -35,11 +42,11 @@ export function siegeCommands(state: SiegeState, id: string): SiegeCommand[] {
   const choose = (kind: CommandKind, actions: SiegeAction[]): SiegeCommand => {
     for (const action of actions)
       if (actionReason(state, action) === null) return { kind, action, reason: null };
-    const action = actions[0]!;
+    const action = actions[0] ?? { type: 'suppress', unitId: id, targetId: '' };
     return { kind, action, reason: actionReason(state, action) };
   };
   const attacks: SiegeAction[] = state.units
-    .filter((u) => u.side === 'wei' && u.troops > 0)
+    .filter((u) => u.side !== playerSide && u.troops > 0)
     .map((u) =>
       unit
         ? { type: 'attack', unitId: id, targetId: u.id }
@@ -58,6 +65,35 @@ export function siegeCommands(state: SiegeState, id: string): SiegeCommand[] {
       ? unit.id
       : (state.units.find((u) => u.side === 'shu' && u.troops > 0)?.id ?? '');
   const commands = [
+    choose(
+      'suppress',
+      state.units
+        .filter((u) => u.side !== playerSide && u.troops > 0)
+        .map((u): SiegeAction =>
+          unit
+            ? { type: 'suppress', unitId: id, targetId: u.id }
+            : { type: 'suppress', engineId: id, targetId: u.id },
+        ),
+    ),
+    choose(
+      'coverEngine',
+      state.engines.length
+        ? state.engines.map((e): SiegeAction => ({
+            type: 'coverEngine',
+            unitId: id,
+            engineId: e.id,
+          }))
+        : [{ type: 'coverEngine', unitId: id, engineId: '' }],
+    ),
+    choose(
+      'pileEarth',
+      SOUTH_TRENCH.filter((c) => c.y === Math.min(...SOUTH_TRENCH.map((p) => p.y))).map(
+        (c): SiegeAction =>
+          unit
+            ? { type: 'pileEarth', unitId: id, ...c }
+            : { type: 'pileEarth', engineId: id, ...c },
+      ),
+    ),
     choose('move', [moveAction(move[0] ?? { x: -1, y: -1, level: 'ground' })]),
     choose('attack', attacks.length ? attacks : [{ type: 'attack', unitId: id, targetId: '' }]),
     choose('climb', [
@@ -101,17 +137,17 @@ export function siegeCommands(state: SiegeState, id: string): SiegeCommand[] {
     },
   ];
   // The defender is visible and inspectable, but receives its actions from the AI.
-  if (unit?.side === 'wei')
+  if (unit && unit.side !== playerSide)
     return commands.map((c) => ({ ...c, reason: 'Choose a living friendly unit.' }));
   return commands;
 }
-export function standBy(state: SiegeState, id: string): SiegeState {
+export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = 'shu'): SiegeState {
   const unit = state.units.find((u) => u.id === id),
     engine = state.engines.find((e) => e.id === id);
   if (
     state.outcome ||
     (unit
-      ? unit.side !== 'shu' || !activeUnit(unit) || unit.acted
+      ? unit.side !== playerSide || !activeUnit(unit) || unit.acted
       : !engine || !usableEngine(engine) || engine.acted)
   )
     return state;
@@ -139,12 +175,67 @@ export function deployUnit(state: SiegeState, id: string, to: SiegePosition): Si
 }
 
 /** Cycle from the selected roster position, including when that unit just spent its action. */
-export function nextShuUnit(state: SiegeState, selected: string | null) {
-  const roster = state.units.filter((unit) => unit.side === 'shu');
+export function nextShuUnit(
+  state: SiegeState,
+  selected: string | null,
+  playerSide: SiegeSide = 'shu',
+) {
+  const roster = state.units.filter((unit) => unit.side === playerSide);
   const index = roster.findIndex((unit) => unit.id === selected);
   for (let offset = 1; offset <= roster.length; offset++) {
     const candidate = roster[(index + offset) % roster.length]!;
     if (activeUnit(candidate) && !candidate.acted) return candidate;
   }
   return null;
+}
+
+/** Presentation standby uses the existing per-actor standby operation. */
+export function standByAll(state: SiegeState, playerSide: SiegeSide) {
+  if (state.outcome) return state;
+  let next = state;
+  for (const unit of state.units.filter(
+    (u) => u.side === playerSide && activeUnit(u) && (!u.acted || !u.moved),
+  )) {
+    // An actor that already acted may still have a move; standby finishes that move too.
+    if (unit.acted) {
+      if (next === state) next = structuredClone(state);
+      next.units.find((u) => u.id === unit.id)!.moved = true;
+    } else next = standBy(next, unit.id, playerSide);
+  }
+  if (playerSide === 'shu')
+    for (const engine of state.engines.filter((e) => usableEngine(e) && (!e.acted || !e.moved))) {
+      if (engine.acted) {
+        if (next === state) next = structuredClone(state);
+        next.engines.find((e) => e.id === engine.id)!.moved = true;
+      } else next = standBy(next, engine.id, playerSide);
+    }
+  return next;
+}
+
+export function extraActionTargets(
+  state: SiegeState,
+  id: string,
+  kind: 'suppress' | 'coverEngine' | 'pileEarth',
+  playerSide: SiegeSide = 'shu',
+): SiegeAction[] {
+  const unit = state.units.find((u) => u.id === id);
+  if (kind === 'coverEngine')
+    return state.engines
+      .filter(usableEngine)
+      .map((e) => ({ type: kind, unitId: id, engineId: e.id }));
+  if (kind === 'suppress')
+    return state.units
+      .filter((u) => u.side !== playerSide && activeUnit(u))
+      .map((u) =>
+        unit
+          ? { type: kind, unitId: id, targetId: u.id }
+          : { type: kind, engineId: id, targetId: u.id },
+      );
+  const actor = unit ?? state.engines.find((e) => e.id === id);
+  return SOUTH_TRENCH.filter(
+    (c) =>
+      c.y === Math.min(...SOUTH_TRENCH.map((p) => p.y)) &&
+      actor &&
+      Math.abs(c.x - actor.x) + Math.abs(c.y - actor.y) === 1,
+  ).map((c) => (unit ? { type: kind, unitId: id, ...c } : { type: kind, engineId: id, ...c }));
 }

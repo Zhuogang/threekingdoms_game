@@ -1,6 +1,7 @@
 import { SIEGE_TUNING as T } from './rules/tuning';
 import { z } from 'zod';
-import type { SiegeState } from './rules/types';
+import { COUNTER_KINDS, type CounterKind } from './ui/counters';
+import type { SiegeState, SiegeLogEntry } from './rules/types';
 
 export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang-v2';
 export type Facing = 'north' | 'east' | 'west' | 'south';
@@ -11,14 +12,21 @@ export interface SiegeWalkthrough {
   step: number;
   startDay: number;
   logStart: number;
+  logCursor?: number;
   cartWorkshopId?: string;
   cartId?: string;
+  ladderId?: string;
+  infantryId?: string;
+  archerId?: string;
 }
 export interface SiegePresentation {
   openingStep: number;
   bannersSeen: Array<1 | 2>;
   dismissedHints: HintKind[];
   walkthrough?: SiegeWalkthrough;
+  dismissedCounters?: CounterKind[];
+  reportReadDay?: number;
+  reportObservations?: SiegeLogEntry[];
 }
 export interface SiegeSave {
   state: SiegeState;
@@ -218,14 +226,29 @@ const saveSchema = z.strictObject({
       openingStep: integer.min(0).max(6),
       bannersSeen: z.array(z.union([z.literal(1), z.literal(2)])),
       dismissedHints: z.array(z.enum(HINT_KINDS)),
+      dismissedCounters: z.array(z.enum(COUNTER_KINDS)).optional(),
+      reportReadDay: integer.min(1).max(T.days).optional(),
+      reportObservations: z
+        .array(
+          z.object({
+            day: integer,
+            code: z.literal('innerWallCompleted'),
+            params: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])),
+          }),
+        )
+        .optional(),
       walkthrough: z
         .object({
           status: z.enum(['active', 'done', 'skipped']),
-          step: integer.min(1).max(8),
+          step: integer.min(1).max(9),
           startDay: integer.min(1).max(T.days),
           logStart: integer.nonnegative(),
+          logCursor: integer.nonnegative().optional(),
           cartWorkshopId: z.string().optional(),
           cartId: z.string().optional(),
+          ladderId: z.string().optional(),
+          infantryId: z.string().optional(),
+          archerId: z.string().optional(),
         })
         .optional(),
     })

@@ -1,6 +1,7 @@
 import { COURTYARD, MAP_HEIGHT, MAP_WIDTH, SOUTH_TRENCH } from '../content/chencang';
 import { siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
 import { applySiegeAction } from '../rules/actions';
+import { SIEGE_TUNING as T } from '../rules/tuning';
 import { SIEGE_DAYS } from '../rules/constants';
 import { ENGINE_RULES } from '../rules/day';
 import { createSiegeState } from '../rules/state';
@@ -72,6 +73,7 @@ export const HOW_TO_RULES = {
   trenchOuter: TRENCH_SOUTH_ROW - 1,
   trenchInner: Math.min(...SOUTH_TRENCH.map((c) => c.y)),
   ...observedRules(),
+  tuning: T,
 };
 export type HowToRules = typeof HOW_TO_RULES;
 
@@ -87,6 +89,7 @@ export function howToSections(locale: SiegeLocale, rules: HowToRules = HOW_TO_RU
           first: rules.courtyardFirst,
           last: rules.courtyardLast,
         }),
+        t('howCourtyardClear'),
       ],
     },
     { title: 'howDay', lines: [t('howDayBody')] },
@@ -121,5 +124,39 @@ export function howToSections(locale: SiegeLocale, rules: HowToRules = HOW_TO_RU
       ],
     },
     { title: 'defence', lines: [t('howDefenceBody')] },
+    {
+      title: 'howCounters',
+      lines: [
+        t('howCounterFire', { cover: rules.tuning.coveredFireMultiplier }),
+        t('howCounterRam', {
+          raw: rules.tuning.millstoneDamage,
+          covered: rules.tuning.coveredMillstoneDamage,
+        }),
+        t('howCounterGround', {
+          boulder: rules.tuning.moundBoulderMultiplier,
+          max: rules.tuning.moundComplete,
+        }),
+        t('howCounterAssault', {
+          morale: rules.tuning.assaultMoraleLoss,
+          near: rules.tuning.assaultNeighbourLoss,
+        }),
+        t('howCounterNight'),
+        t('howCounterGuard', { range: rules.tuning.sortieRange }),
+      ],
+    },
+    {
+      title: 'howFoothold',
+      lines: [
+        t('howFootholdBody', {
+          climb: rules.tuning.climbFoothold,
+          assault: rules.tuning.assaultClimbFoothold,
+          loss: rules.tuning.assaultClimbLoss,
+          max: rules.tuning.footholdComplete,
+          uphill: rules.tuning.climbingAttackMultiplier,
+          mound: rules.tuning.climbing.mound.foothold,
+        }),
+      ],
+    },
+    { title: 'howKeys', lines: [t('howKeysBody')] },
   ] satisfies Array<{ title: SiegeTextKey; lines: string[] }>;
 }
