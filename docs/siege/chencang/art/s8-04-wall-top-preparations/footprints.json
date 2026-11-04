@@ -1,0 +1,85 @@
+{
+  "asset": "s8-04-wall-top-preparations",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "火盆未燃",
+      "cell": [0, 0, 384, 1024],
+      "origin": [128, -1054],
+      "objects": [
+        {
+          "id": "wall-preparation-unlit",
+          "kind": "wall-preparation-unlit",
+          "layer": "L3",
+          "cells": [0, 16, 0, 16],
+          "height": 0.6,
+          "anchor": [192, 530],
+          "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
+          "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [192, 530] } },
+          "bbox": [148, 468, 236, 556]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "火盆燃着",
+      "cell": [384, 0, 384, 1024],
+      "origin": [512, -1054],
+      "objects": [
+        {
+          "id": "wall-preparation-lit",
+          "kind": "wall-preparation-lit",
+          "layer": "L3",
+          "cells": [0, 16, 0, 16],
+          "height": 0.6,
+          "anchor": [576, 530],
+          "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
+          "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [576, 530] } },
+          "bbox": [532, 468, 620, 556]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "柴薪捆",
+      "cell": [768, 0, 384, 1024],
+      "origin": [896, -1062],
+      "objects": [
+        {
+          "id": "wall-preparation-supplies",
+          "kind": "wall-preparation-supplies",
+          "layer": "L3",
+          "cells": [0, 16, 0, 16],
+          "height": 0.5,
+          "anchor": [960, 522],
+          "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
+          "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [960, 522] } },
+          "bbox": [905, 473, 1015, 551]
+        }
+      ]
+    },
+    {
+      "piece": 4,
+      "name": "礌石堆",
+      "cell": [1152, 0, 384, 1024],
+      "origin": [1280, -1063],
+      "objects": [
+        {
+          "id": "wall-preparation-boulders",
+          "kind": "wall-preparation-boulders",
+          "layer": "L3",
+          "cells": [0, 16, 0, 16],
+          "height": 0.7,
+          "anchor": [1344, 521],
+          "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
+          "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [1344, 521] } },
+          "bbox": [1289, 458, 1399, 567]
+        }
+      ]
+    }
+  ]
+}

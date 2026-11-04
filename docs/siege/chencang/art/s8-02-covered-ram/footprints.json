@@ -1,0 +1,60 @@
+{
+  "asset": "s8-02-covered-ram",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "轒輼车朝北",
+      "cell": [0, 0, 512, 1024],
+      "origin": [192, -1170],
+      "objects": [
+        {
+          "id": "covered-ram-n",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 1.65,
+          "anchor": [192, 654],
+          "bbox": [198, 382, 314, 643]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "轒輼车朝东",
+      "cell": [512, 0, 512, 1024],
+      "origin": [611, -1218],
+      "objects": [
+        {
+          "id": "covered-ram-e",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [0, 18, 1, 18],
+          "height": 1.65,
+          "anchor": [611, 606],
+          "bbox": [610, 464, 925, 590]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "轒輼车受损",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [1216, -1170],
+      "objects": [
+        {
+          "id": "covered-ram-dented",
+          "kind": "ram",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 1.65,
+          "anchor": [1216, 654],
+          "bbox": [1222, 382, 1338, 643]
+        }
+      ]
+    }
+  ]
+}

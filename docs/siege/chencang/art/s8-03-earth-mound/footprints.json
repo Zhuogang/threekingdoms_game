@@ -1,0 +1,81 @@
+{
+  "asset": "s8-03-earth-mound",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "起土",
+      "cell": [0, 0, 512, 1024],
+      "origin": [192, -1194],
+      "objects": [
+        {
+          "id": "earth-mound-1",
+          "kind": "earth-mound",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 0.8,
+          "anchor": [192, 630],
+          "moundHeight": 0.8,
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [256, 438] },
+            "rampCrest": { "world": [0.5, 17, 0.8], "pixel": [256, 399.6] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [256, 294] },
+            "southBase": { "world": [0.5, 19, 0], "pixel": [256, 630] }
+          },
+          "bbox": [191, 399, 321, 626]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "半高",
+      "cell": [512, 0, 512, 1024],
+      "origin": [704, -1170],
+      "objects": [
+        {
+          "id": "earth-mound-2",
+          "kind": "earth-mound",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 2.1,
+          "anchor": [704, 654],
+          "moundHeight": 1.8,
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [768, 462] },
+            "rampCrest": { "world": [0.5, 17, 1.8], "pixel": [768, 375.6] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [768, 318] },
+            "southBase": { "world": [0.5, 19, 0], "pixel": [768, 654] }
+          },
+          "bbox": [703, 370, 833, 655]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "成坡",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [1216, -1144],
+      "objects": [
+        {
+          "id": "earth-mound-3",
+          "kind": "earth-mound",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 3,
+          "anchor": [1216, 680],
+          "moundHeight": 3,
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [1280, 488] },
+            "rampCrest": { "world": [0.5, 17, 3], "pixel": [1280, 344] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [1280, 344] },
+            "southBase": { "world": [0.5, 19, 0], "pixel": [1280, 680] }
+          },
+          "bbox": [1215, 343, 1345, 681]
+        }
+      ]
+    }
+  ]
+}

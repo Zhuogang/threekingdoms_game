@@ -1,0 +1,53 @@
+{
+  "asset": "s8-06-storming-cluster",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "攀附",
+      "cell": [0, 0, 768, 1024],
+      "origin": [320, -1043],
+      "objects": [
+        {
+          "id": "storming-assault",
+          "kind": "storming-cluster",
+          "layer": "L3",
+          "cells": [0, 17, 0, 17],
+          "height": 3,
+          "anchor": [384, 589],
+          "anchorKind": "wall-face base centre; glue to the south face of the wall",
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [384, 589] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [384, 445] }
+          },
+          "bbox": [319, 435, 449, 590]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "溃退",
+      "cell": [768, 0, 768, 1024],
+      "origin": [1088, -1043],
+      "objects": [
+        {
+          "id": "storming-repulse",
+          "kind": "storming-cluster",
+          "layer": "L3",
+          "cells": [0, 17, 0, 17],
+          "height": 3,
+          "anchor": [1152, 589],
+          "anchorKind": "wall-face base centre; glue to the south face of the wall",
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [1152, 589] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [1152, 445] }
+          },
+          "bbox": [1087, 435, 1217, 590]
+        }
+      ]
+    }
+  ]
+}

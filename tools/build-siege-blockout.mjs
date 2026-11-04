@@ -729,6 +729,13 @@ function drawPart(canvas, f, part, base) {
         { color: part.front, obj, key },
         outline,
       );
+  } else if (part.type === 'polygon') {
+    face(
+      canvas,
+      part.points.map(([x, y, h]) => P(x, y, h)),
+      { color: part.color, obj, key },
+      outline,
+    );
   } else if (part.type === 'panel') {
     const { x0, x1, y, b, t } = part;
     face(
@@ -1141,6 +1148,15 @@ const LANDMARK_RULE =
 
 function partBox(f, p) {
   const P = project(f);
+  if (p.type === 'polygon') {
+    const points = p.points.map(([x, y, h]) => P(x, y, h));
+    return [
+      Math.min(...points.map(([x]) => x)),
+      Math.min(...points.map(([, y]) => y)),
+      Math.max(...points.map(([x]) => x)),
+      Math.max(...points.map(([, y]) => y)),
+    ];
+  }
   if (p.type === 'panel') return [...P(p.x0, p.y, p.t), ...P(p.x1, p.y, p.b)];
   if (p.type === 'box') return [...P(p.x0, p.y0, p.t), ...P(p.x1, p.y1, p.b)];
   if (p.type === 'ramp') {
@@ -1466,7 +1482,19 @@ const EXCLUDE_PIECES = EXCLUDE_SPRITE.replace(
   'ground, scenery or cast shadows;',
   'ground, snowfield, cast shadows or anything besides the requested pieces;',
 );
-const sheetAsset = ({ id, zh, stage = 'S2', final, about, slots, subject, checks }) => ({
+const sheetAsset = ({
+  id,
+  zh,
+  stage = 'S2',
+  final,
+  about,
+  slots,
+  subject,
+  checks,
+  uploads = ['`blockout.png`', GATE_UPLOAD],
+  exclude = EXCLUDE_PIECES,
+  registration = () => [],
+}) => ({
   id,
   stage,
   zh,
@@ -1487,6 +1515,7 @@ const sheetAsset = ({ id, zh, stage = 'S2', final, about, slots, subject, checks
           ...pieces.flatMap((p) => [
             `Piece ${p.piece}, ${p.name}:`,
             ...pieceLandmarks(p.frame, p.objects).map((line) => `- ${line}`),
+            ...registration(p).map((line) => `- ${line}`),
           ]),
           'Keep each piece inside its whole-piece box and stand it on its ground footprint; match heights to the block-out rather than making anything taller.',
         ].join('\n'),
@@ -1498,11 +1527,11 @@ const sheetAsset = ({ id, zh, stage = 'S2', final, about, slots, subject, checks
         SPRITE,
         LIGHT_SPRITE,
         STYLES[CHOSEN_STYLE].text,
-        EXCLUDE_PIECES,
+        exclude,
       ].join('\n\n'),
     },
   ],
-  uploads: ['`blockout.png`', GATE_UPLOAD],
+  uploads,
   checks: [
     '和 S1-02 标准件、S1-01 v2-a 是不是同一套笔法、颜色和光照。',
     '每件都在自己的框里，底边落在灰盒的地面框上；背景纯品红，没有地面、雪地和落地影子。',
@@ -3021,6 +3050,598 @@ const STORY_ASSETS = [
   }),
 ];
 
+// ---------------------------------------------------------------------------
+// S8 materials (v0.2 plan §9). No image jobs run here. Prompts below retain
+// the plan's complete Subject/Output blocks verbatim; only piece registration
+// and the established fixed segments are assembled around them.
+
+// A convex painted face, used for sloping hide curtains. Bounds also let the
+// existing sheet centring, outlines and footprints handle it like other parts.
+const materialFace = (points, color) => ({
+  type: 'polygon',
+  points,
+  color,
+  x0: Math.min(...points.map(([x]) => x)),
+  x1: Math.max(...points.map(([x]) => x)),
+  y0: Math.min(...points.map(([, y]) => y)),
+  y1: Math.max(...points.map(([, y]) => y)),
+  b: Math.min(...points.map(([, , h]) => h)),
+  t: Math.max(...points.map(([, , h]) => h)),
+});
+// The top edge and the south-facing curtain are visible in the no-yaw camera;
+// the east/west vertical faces must remain invisible, just like the old pieces.
+const hideDrape = (x0, x1, y0, y1, top, bottom) => [
+  materialFace(
+    [
+      [x0, y0, top(x0, y0)],
+      [x1, y0, top(x1, y0)],
+      [x1, y1, top(x1, y1)],
+      [x0, y1, top(x0, y1)],
+    ],
+    HIDE,
+  ),
+  materialFace(
+    [
+      [x0, y1, top(x0, y1)],
+      [x1, y1, top(x1, y1)],
+      [x1, y1, bottom(x1, y1)],
+      [x0, y1, bottom(x0, y1)],
+    ],
+    shade(HIDE, 0.25),
+  ),
+];
+const coveredLadder = (id, x, y, side = false, raised = false) => {
+  const o = raised ? ladderOnWall(id, x, y) : ladderCart(id, x, y, side);
+  const ladder = o.parts[1];
+  const top = (a, b) => Math.max(raised ? 0.1 : 0.75, rampHeight(ladder, a, b));
+  const bottom = (a, b) => (raised ? Math.max(0.1, top(a, b) - 0.8) : 0.75);
+  const start = raised ? ladder.y0 + (ladder.y1 - ladder.y0) / 3 : ladder.y0;
+  const strips = side
+    ? [
+        [ladder.x0, ladder.x1, ladder.y0 - 0.04, ladder.y0 + 0.04],
+        [ladder.x0, ladder.x1, ladder.y1 - 0.04, ladder.y1 + 0.04],
+      ]
+    : [
+        [ladder.x0 - 0.04, ladder.x0 + 0.04, start, ladder.y1],
+        [ladder.x1 - 0.04, ladder.x1 + 0.04, start, ladder.y1],
+      ];
+  o.parts.push(...strips.flatMap((s) => hideDrape(...s, top, bottom)));
+  if (raised) {
+    o.registration = {
+      wallFoot: [x + 0.5, y, 0],
+      wallTop: [x + 0.5, y, 3],
+      cartBase: [x + 0.5, y + 3.5, 0],
+    };
+  }
+  return o;
+};
+const coveredRam = (id, x, y, side = false, damaged = false) => {
+  const o = ram(id, x, y, side);
+  // Keep the original body and the projecting beam; only replace the roof.
+  const [body, originalRoof, beam] = o.parts;
+  const cover = { ...originalRoof, e: 1.05, r: 1.65, color: HIDE };
+  const mud = {
+    ...cover,
+    x0: cover.x0 + 0.06,
+    x1: cover.x1 - 0.06,
+    y0: cover.y0 + 0.06,
+    y1: cover.y1 - 0.06,
+    e: 1.07,
+    color: C.bank,
+  };
+  o.parts = damaged
+    ? [
+        body,
+        // Join the intact ends around a shallow central dent, rather than
+        // showing two disconnected roofs. The body and ram beam stay intact.
+        { ...cover, y1: y - 0.45 },
+        { ...mud, y1: y - 0.45 },
+        ...[false, true].flatMap((right) => {
+          const outer = x + (right ? 0.95 : 0.05);
+          const inner = x + (right ? 0.78 : 0.22);
+          return [
+            materialFace(
+              [
+                [outer, y - 0.45, 1.05],
+                [x + 0.5, y - 0.45, 1.65],
+                [x + 0.5, y - 0.2, 0.6],
+                [inner, y - 0.2, 0.6],
+              ],
+              C.bank,
+            ),
+            materialFace(
+              [
+                [outer, y - 0.45, 1.05],
+                [inner, y - 0.2, 0.6],
+                [inner, y + 0.2, 0.6],
+                [outer, y + 0.45, 1.05],
+              ],
+              HIDE,
+            ),
+          ];
+        }),
+        box(x + 0.22, x + 0.78, y - 0.2, y + 0.2, 0.5, 0.6, HIDE),
+        ...[false, true].map((right) =>
+          materialFace(
+            [
+              [x + (right ? 0.78 : 0.22), y + 0.2, 0.6],
+              [x + 0.5, y + 0.2, 0.6],
+              [x + 0.5, y + 0.45, 1.65],
+              [x + (right ? 0.95 : 0.05), y + 0.45, 1.05],
+            ],
+            C.bank,
+          ),
+        ),
+        { ...cover, y0: y + 0.45 },
+        { ...mud, y0: y + 0.45 },
+        box(x + 0.22, x + 0.32, y - 0.32, y + 0.08, 0.6, 1.08, WOOD),
+        box(x + 0.68, x + 0.78, y - 0.08, y + 0.32, 0.6, 1.12, WOOD),
+        beam,
+      ]
+    : [body, cover, mud, beam];
+  return o;
+};
+const earthMound = (id, x, y, stage) => {
+  const height = [0.8, 1.8, 3][stage];
+  const end = stage === 0 ? y + 1.15 : y + 2;
+  const earth = slope(x, x + 1, y, end, height, 'n', EARTH, shade(EARTH, 0.3));
+  const parts = [earth];
+  if (stage > 0) {
+    // North crib, built up in notched courses, fits below the earth's crest.
+    for (let h = 0.25; h <= height; h += 0.35)
+      parts.push(box(x, x + 1, y, y + 0.1, h - 0.12, h, WOOD));
+    if (stage === 1) {
+      for (const dx of [0.12, 0.83])
+        parts.push(box(x + dx, x + dx + 0.05, y + 0.1, y + 0.15, 1.6, 2.1, WOOD));
+    } else {
+      // Log revetments follow the ramp, with a clear central path. Their north
+      // ends remain exactly at level 3; no timber projects above wall height.
+      for (const dx of [0, 0.9]) parts.push(slope(x + dx, x + dx + 0.1, y, y + 2, 3, 'n', WOOD));
+      for (let step = 1; step < 8; step++) {
+        const a = y + step / 4;
+        const h = rampHeight(earth, x + 0.5, a);
+        parts.push(box(x + 0.18, x + 0.82, a, a + 0.07, h - 0.08, h, shade(EARTH, 0.1)));
+      }
+    }
+  }
+  if (stage < 2) {
+    const a = stage === 0 ? y + 1.45 : y + 1.5;
+    const base = stage === 0 ? 0 : rampHeight(earth, x + 0.25, a + 0.25);
+    for (const dx of [0.12, 0.56])
+      parts.push(box(x + dx, x + dx + 0.25, a, a + 0.25, base, base + 0.2, HIDE));
+    if (stage === 0) {
+      parts.push(box(x + 0.8, x + 0.84, y + 1.2, y + 1.85, 0, 0.06, WOOD));
+      parts.push(box(x + 0.73, x + 0.91, y + 1.75, y + 1.95, 0, 0.04, STONE));
+    }
+  }
+  return {
+    ...engine(id, 'earth-mound', x, y, [x, y, x, y + 1], parts),
+    moundHeight: height,
+    registration: {
+      wallFoot: [x + 0.5, y, 0],
+      rampCrest: [x + 0.5, y, height],
+      wallTop: [x + 0.5, y, 3],
+      southBase: [x + 0.5, y + 2, 0],
+    },
+  };
+};
+const wallPreparation = (id, x, y, kind) => {
+  const parts = [];
+  if (kind === 'unlit' || kind === 'lit') {
+    for (const [dx, dy] of [
+      [0.24, 0.25],
+      [0.7, 0.25],
+      [0.48, 0.7],
+    ])
+      parts.push(box(x + dx, x + dx + 0.06, y + dy, y + dy + 0.06, 0, 0.38, CHAR));
+    parts.push(box(x + 0.16, x + 0.84, y + 0.16, y + 0.84, 0.32, 0.52, CHAR));
+    parts.push(
+      box(x + 0.22, x + 0.78, y + 0.22, y + 0.78, 0.52, 0.57, kind === 'lit' ? '#cf4b24' : WOOD),
+    );
+    for (const [a, b, c, d] of [
+      [0.16, 0.22, 0.16, 0.84],
+      [0.78, 0.84, 0.16, 0.84],
+      [0.22, 0.78, 0.16, 0.22],
+      [0.22, 0.78, 0.78, 0.84],
+    ])
+      parts.push(box(x + a, x + b, y + c, y + d, 0.52, 0.6, kind === 'lit' ? '#b65b36' : CHAR));
+  } else if (kind === 'supplies') {
+    for (const dy of [0.18, 0.56]) {
+      parts.push(box(x + 0.08, x + 0.57, y + dy, y + dy + 0.23, 0, 0.34, WOOD));
+      parts.push(box(x + 0.29, x + 0.34, y + dy, y + dy + 0.23, 0.34, 0.36, HIDE));
+    }
+    parts.push(box(x + 0.65, x + 0.92, y + 0.33, y + 0.7, 0, 0.28, WOOD_DARK));
+    for (const dx of [0.69, 0.78, 0.87])
+      parts.push(box(x + dx, x + dx + 0.03, y + 0.44, y + 0.49, 0.25, 0.5, CHAR));
+  } else {
+    // Seven boulders: four in the lower course, three stacked above it.
+    for (const [dx, dy, z] of [
+      [0.12, 0.15, 0],
+      [0.4, 0.15, 0],
+      [0.67, 0.15, 0],
+      [0.26, 0.43, 0],
+      [0.18, 0.2, 0.34],
+      [0.48, 0.2, 0.34],
+      [0.36, 0.45, 0.34],
+    ])
+      parts.push(box(x + dx, x + dx + 0.22, y + dy, y + dy + 0.22, z, z + 0.36, STONE));
+    for (const dy of [0.74, 0.88])
+      parts.push(box(x + 0.08, x + 0.92, y + dy, y + dy + 0.09, 0, 0.2, WOOD));
+  }
+  return {
+    ...engine(id, `wall-preparation-${kind}`, x, y, [x, y, x, y], parts),
+    anchor3d: [x + 0.5, y + 0.5, 0],
+    anchorKind: 'base-centre; lift by 3 levels to the wall walkway in game',
+    registration: { baseCentre: [x + 0.5, y + 0.5, 0] },
+  };
+};
+const stormingFace = (id, x, y) => ({
+  ...engine(
+    id,
+    'storming-cluster',
+    x,
+    y,
+    [x, y, x, y],
+    // The thin slab extends into the wall; its visible south face is exactly
+    // on y, so wallFoot glues the painted face itself to the wall front.
+    [box(x, x + 1, y - 0.1, y, 0, 3, '#577b5d', '#35503a')],
+  ),
+  anchor3d: [x + 0.5, y, 0],
+  anchorKind: 'wall-face base centre; glue to the south face of the wall',
+  registration: { wallFoot: [x + 0.5, y, 0], wallTop: [x + 0.5, y, 3] },
+});
+const s8Registration = ({ frame, objects }) =>
+  objects.flatMap((o) => {
+    const P = project(frame);
+    return Object.entries(o.registration ?? {}).map(([name, world]) => {
+      const [x, y] = P(...world).map(round);
+      return `${name} registration anchor: x=${x}, y=${y}; world (${world.join(', ')})`;
+    });
+  });
+// Chosen attempt per S8 asset; populated only after the planner reviews images.
+const S8_PICKS = {};
+const withS8Pick = (asset) => {
+  const [final, why] = S8_PICKS[asset.id] ?? [];
+  return final
+    ? {
+        ...asset,
+        final,
+        about: [...asset.about, `选定 \`attempts/${final}\`：${why}。`],
+      }
+    : asset;
+};
+// Resolve references through the existing choices rather than silently asking
+// for an obsolete attempt when a pick is changed. Existence is checked below.
+const s8Chosen = (folder, planned, picks) => {
+  const actual = picks[folder]?.[0] ?? planned;
+  if (actual !== planned)
+    console.warn(`S8 reference ${folder}: plan ${planned}; using chosen ${actual}`);
+  return `${OUT}/${folder}/attempts/${actual}`;
+};
+const S8_GATE = s8Chosen('s1-02-south-gate', 'v4.webp', {
+  's1-02-south-gate': [CHOSEN_GATE],
+});
+const S8_LADDER = s8Chosen('s4-01-ladder-cart', 'v2.webp', ENGINE_PICKS);
+const S8_RAM = s8Chosen('s4-03-ram', 'v1.webp', ENGINE_PICKS);
+const S8_WEI = s8Chosen('s5-03-wei-infantry-sheet', 'v1.webp', ROSTER_PICKS);
+const S8_SHU = `${OUT}/s1-05-shu-halberd-sheet/attempts/v5.webp`;
+const S8_STYLE = `${OUT}/s7-01-key-visual/style-reference.png`;
+const S8_HAO = s8Chosen('s5-07-portrait-hao-zhao', 'v1.webp', ROSTER_PICKS);
+const s8Uploads = (id, references) =>
+  references.map(
+    (path) => `\`${path.startsWith(`${OUT}/${id}/`) ? path.slice(`${OUT}/${id}/`.length) : path}\``,
+  );
+const s8Pieces = ({ references: extra = [], ...o }) => {
+  const references = [`${OUT}/${o.id}/blockout.png`, S8_GATE, ...extra];
+  return {
+    ...sheetAsset({
+      ...o,
+      stage: 'S8',
+      uploads: s8Uploads(o.id, references),
+      registration: s8Registration,
+    }),
+    type: 'pieces',
+    references,
+  };
+};
+const s8PromptAsset = ({ type, references, subject, guide, ...o }) => ({
+  ...o,
+  stage: 'S8',
+  type,
+  references,
+  size: [1536, 1024],
+  ...(guide ? { guide } : { noImage: true }),
+  prompts: () => [
+    {
+      text:
+        type === 'poses'
+          ? [
+              subject,
+              'Registration on the guide: column centres x=256, 768, 1280; feet baselines y=456 (top row), y=968 (bottom row); helmet guide lines y=156 and y=668, exactly 300 pixels above the baselines.',
+              SPRITE,
+              EXCLUDE_UNIT_SHEET,
+            ].join('\n\n')
+          : subject,
+    },
+  ],
+  uploads: references.length ? s8Uploads(o.id, references) : ['不上传参考图。'],
+  naming:
+    type === 'icons'
+      ? '依次命名 `v1.webp`、`v2.webp`……（无损 webp，保留透明通道）。'
+      : '依次命名 `v1.webp`、`v2.webp`……（1536×1024）。',
+});
+const S8_ASSETS = [
+  s8Pieces({
+    id: 's8-01-covered-ladder',
+    zh: 'S8-01 蒙皮云梯车与蒙皮云梯',
+    references: [S8_LADDER],
+    about: [
+      '几何：三格。左：蒙皮云梯车朝北，1×2 格，同 `ladderCart` 的车体和 2.5 层梯架，梯架两侧挂到地面的生牛皮帘（灰盒加两块 `HIDE` 色的薄板，从梯架顶沿两侧垂到车厢上沿）。中：朝东，2×1 格，同上。右：蒙皮云梯架上墙，几何同 `ladderOnWall`（车在墙前第 3 行，梯跨两行城堑到 3 层墙头），梯身两侧挂皮帘到梯的下半段。',
+    ],
+    slots: () => [
+      [
+        'the covered ladder cart, heading north',
+        '蒙皮云梯朝北',
+        [0, 0, 512, 1024],
+        [coveredLadder('covered-ladder-n', 0, 18)],
+      ],
+      [
+        'the covered ladder cart, heading east',
+        '蒙皮云梯朝东',
+        [512, 0, 512, 1024],
+        [coveredLadder('covered-ladder-e', 0, 18, true)],
+      ],
+      [
+        'the covered ladder raised against the wall',
+        '蒙皮云梯架上墙',
+        [1024, 0, 512, 1024],
+        [coveredLadder('covered-ladder-raised', 0, 17, false, true)],
+      ],
+    ],
+    subject: [
+      'Subject: the same Shu-Han siege ladder cart (云梯车) as on the third attached sheet, now protected against fire arrows with raw ox-hides (蒙生牛皮), three separate pieces side by side, one centred in each third of the image. Fresh, stiff, wet-looking ox-hides, hair side out, in mottled dun and dark brown, are lashed with cord to both sides of the ladder truss and hang down to the top of the chassis like curtains; a few hides are also pegged over the crew shelter at the rear. The rungs of the ladder remain visible between the hide curtains. Left: the covered cart heading north, away from the viewer, the truss rising toward its far (north) end. Middle: the same covered cart heading east, seen from its side, the truss rising toward its right (east) end. Right: the covered ladder raised against a city wall (the wall itself is NOT drawn): the cart stands at the bottom, the ladder leans north across the trench rows up to the height of a three-level wall top, and the hide curtains hang along the lower two thirds of the ladder; snow has settled on the top edges of the hides. Same cart, same size, same timber and hides in all three; no fire, no scorch marks.',
+    ].join('\n'),
+    checks: [
+      '和 S4-01、S4-02 是同一辆车，只多了皮帘；皮帘是绷紧的生牛皮，毛面朝外，缝线和木钉看得见；梯级在皮帘之间仍露出来，游戏要把人摆上去。',
+    ],
+  }),
+  s8Pieces({
+    id: 's8-02-covered-ram',
+    zh: 'S8-02 轒輼车，蒙皮冲车',
+    references: [S8_RAM],
+    about: [
+      '几何：三格。左：朝北，1×2 格，同 `ram` 的几何（车棚高 0.9 层、脊 1.5 层），棚顶加一层 `HIDE` 色的厚皮并铺湿泥（顶面略隆起 0.15 层）。中：朝东，2×1 格。右：被石磨砸中但未毁：同朝北的几何，棚顶正中凹下一块（高度降到 0.6 层），皮和椽子破开，但车体和撞木完好。',
+    ],
+    slots: () => [
+      [
+        'the covered ram, heading north',
+        '轒輼车朝北',
+        [0, 0, 512, 1024],
+        [coveredRam('covered-ram-n', 0, 18)],
+      ],
+      [
+        'the covered ram, heading east',
+        '轒輼车朝东',
+        [512, 0, 512, 1024],
+        [coveredRam('covered-ram-e', 0, 18, true)],
+      ],
+      [
+        'the covered ram, dented but usable',
+        '轒輼车受损',
+        [1024, 0, 512, 1024],
+        [coveredRam('covered-ram-dented', 0, 18, false, true)],
+      ],
+    ],
+    subject: [
+      'Subject: the same Shu-Han battering ram (冲车) as on the third attached sheet, rebuilt as a fenwen cart (轒輼车) with a reinforced roof, three separate pieces side by side, one centred in each third of the image. The roofed shed on wheels now carries a double layer of raw ox-hides lashed over the roof and sides, with a thick coat of wet grey mud smeared over the hides against fire and falling stones; the iron-capped ram beam still projects from the front. Left: heading north, away from the viewer. Middle: the same cart heading east, seen from its side. Right: the same cart heading north after a millstone has been dropped on it from the wall: the middle of the roof is crushed into a shallow dent, hides torn and a few rafters splintered and poking up, mud flaked off around the dent, but the chassis, wheels and ram beam are intact and the cart is still usable. Same cart, same size, timber and hides in all three; no fire.',
+    ].join('\n'),
+    checks: [
+      '三件是 S4-03 那辆冲车加了厚皮顶；受损那件看得出被砸过，但还能用（撞木没断，轮子没掉）。',
+    ],
+  }),
+  s8Pieces({
+    id: 's8-03-earth-mound',
+    zh: 'S8-03 土山三态',
+    references: [],
+    about: [
+      "几何：三格，每件占 1×2 格（城堑的外侧行 y 18 和内侧行 y 17，已填平），北端贴着城墙正面。左「起土」：一堆土 0.8 层高，南半格是空筐和铲；中「半高」：土堆 1.8 层，北面用原木井字架（`WOOD`）围住，南面是斜坡，顶上插两根木桩；右「成坡」：从南端地面升到北端 3 层的夯土斜坡（`EARTH`），两侧原木护坡，坡面有踏出的梯级，北端和墙头前沿齐平（墙不画）。灰盒用 `slope(..., 'n', rise)` 做坡，rise 分别 0.8、1.8、3。",
+      '北端统一在世界 y=17（南墙 y=16 的正面），占 y=17、18 两行；与 S4-02 的梯顶在同一条墙前沿，成坡顶高严格为 3 层。',
+    ],
+    slots: () =>
+      [0, 1, 2].map((stage) => [
+        ['the earth mound, just begun', 'the earth mound, half built', 'the earth mound, finished'][
+          stage
+        ],
+        ['起土', '半高', '成坡'][stage],
+        [stage * 512, 0, 512, 1024],
+        [earthMound(`earth-mound-${stage + 1}`, 0, 17, stage)],
+      ]),
+    subject: [
+      "Subject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a ramp up to its top, in three stages, three separate pieces side by side, one centred in each third of the image; the wall itself is NOT drawn. Each piece occupies one cell wide by two cells deep, its north end touching where the wall face would be. Left, just begun: a low heap of freshly dug ochre earth about a fifth of the wall's height, a few dropped wicker baskets and a wooden shovel at its south side, snow already dusting the top. Middle, half built: the heap now almost two levels high, its north face held by a crib of stacked logs notched at the corners, its south face a rough slope, two wooden stakes driven into the top, baskets of earth part-emptied on the slope. Right, finished: a solid rammed-earth ramp rising from ground level at the south end to the full three-level height of the wall top at the north end, log revetments along both sides, a trodden path of steps up the middle of the slope, the top edge flush with where the wall's parapet would be. Same earth colour and the same logs in all three; no soldiers.",
+    ].join('\n'),
+    checks: [
+      '三态是同一个位置越堆越高；成坡那件的北端正好到 3 层，看得出人能从南面走上去；雪落在土堆顶上，坡面因为踩踏是土色。',
+    ],
+  }),
+  s8Pieces({
+    id: 's8-04-wall-top-preparations',
+    zh: 'S8-04 城头备物',
+    references: [],
+    about: [
+      '几何：四件，都是放在墙顶走道上的小件（游戏抬高 3 层，同 S4-07）：火盆未燃（0.6 层，三足铁盆，盆里是柴）；火盆燃着（同样的盆，柴烧红、盆口发亮，**不画火苗和烟**，程序加）；柴薪捆（0.5 层，两捆扎好的柴和一捆浸油的布箭）；礌石堆（0.7 层，六七块石头和两根滚木堆在女墙内侧）。每件 1 格，四件各居一个四分之一宽。',
+      'footprints.json 的 anchor 是每件地面占格的底面中心；游戏整体抬高 3 层放到墙顶走道。',
+    ],
+    slots: () =>
+      ['unlit', 'lit', 'supplies', 'boulders'].map((kind, i) => [
+        [
+          'the unlit brazier',
+          'the lit brazier, embers only',
+          'fire-arrow supplies',
+          'boulders and rolling logs',
+        ][i],
+        ['火盆未燃', '火盆燃着', '柴薪捆', '礌石堆'][i],
+        [i * 384, 0, 384, 1024],
+        [wallPreparation(`wall-preparation-${kind}`, 0, 16, kind)],
+      ]),
+    subject: [
+      "Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.",
+    ].join('\n'),
+    checks: [
+      '都是能放在一格宽的走道上的小物件，缩到游戏尺寸还认得出是火盆、柴、石头；燃着的火盆只有红光，没有火苗。',
+    ],
+  }),
+  s8PromptAsset({
+    id: 's8-05-wei-sortie-sheet',
+    zh: 'S8-05 魏军夜袭小队姿态表',
+    type: 'poses',
+    references: [`${OUT}/s8-05-wei-sortie-sheet/guide.png`, S8_WEI],
+    about: [
+      '版式同 S5-03：3×2 宫格，每格 512×512，同一个 S5-03 的魏步兵，手持火把。第一行：正面（朝南，出城向观者走来）持火把行进；背面（朝北，折返）持火把行进；侧面（朝东）持火把行进。第二行：正面把火把捅向身前（点火）；正面举盾后退（被击退）；侧面蹲下点燃脚下的柴（点火）。',
+    ],
+    guide: { cols: 3, rows: 2, figure: 300, foot: 56 },
+    subject: [
+      'Subject: a character pose sheet of the same Wei infantryman as on the second attached sheet, for a strategy game, drawn six times on a night sortie carrying a burning torch. Arrange the sheet as a 3 by 2 grid of equal cells (512×512 pixels each) exactly as in the first attached guide: one figure per cell, every figure the same size (about 300 pixels from the soles to the top of the helmet, up to the dashed line), feet on the solid baseline.',
+      'Top row: seen from the front (facing south, toward the viewer), striding forward with a torch held up in the right hand and a short sword in the left; seen from behind (facing north, away from the viewer), striding with the torch held up; seen from the side facing right (east), striding with the torch held ahead of him.',
+      'Bottom row: seen from the front, lunging to thrust the torch into something low in front of him; seen from the front, backing away behind his raised shield with the torch lowered (driven off); seen from the side facing right (east), crouching to touch the torch to a bundle of kindling at his feet.',
+      'The torch: a short wooden stave with a wrapped head burning with a small, simple orange-and-yellow flame and a few sparks; the flame is small and does not light the figure dramatically.',
+      'Camera: the same orthographic three-quarter top-down camera as the battlefield, about 50 degrees from above, so the top of the helmet and the shoulders are visible and the figure is slightly foreshortened.',
+      'The soldier: a deep indigo (#2f4a6e) padded war coat under black-lacquered lamellar armour, a rounded iron helmet with a neck guard, wrapped leggings and boots, a tall rectangular wooden shield faced with lacquered hide, slung or held; no facial features. Identical armour, colours and proportions in every cell, and the same soldier as on the second attached sheet.',
+      'Style: match the second attached sheet (the Wei infantry pose sheet) exactly in brushwork and colour handling: bold dark ink outline, flat ink-textured colour fills, no facial features. Match its style, proportions and figure size.',
+      'Light: low winter sun from the lower left (south-west); shade the figure only, with no cast shadow; the torch adds only a faint warm tint to the hand holding it.',
+    ].join('\n'),
+    checks: [
+      '和 S5-03 是同一个兵；火把是暖橙色的一点，不画大火；六格都踩在基线上；缩到 36px 看得出拿着火把。',
+    ],
+  }),
+  s8Pieces({
+    id: 's8-06-storming-cluster',
+    zh: 'S8-06 蚁附强攻群像',
+    references: [S8_SHU],
+    about: [
+      '几何：两件，每件 1 格宽、3 层高，贴在城墙正面（墙不画），占地格是墙前那一格（梯底或墙脚）。左「攀附」：十到十四个 S1-05 的蜀兵密密麻麻攀在墙面上，用绳索、挠钩和两架短梯，最高的已到女墙下，最低的在格底堆成一团往上挤。右「溃退」：同一位置，绳索空荡，三四个兵正从半高处滑下，格底一堆兵举盾退开，两个倒在地上（墨色晕开，不画血）。灰盒用一块 1×3 层的立面（`box` 高 3，薄 0.1 格）标出贴墙的面。',
+      '灰盒两件只标出贴墙立面，不代画人群；anchor 是北边贴墙面的底部中心，wallFoot/wallTop 同时给出墙脚与墙顶的世界和像素坐标。',
+    ],
+    slots: () => [
+      [
+        'the storming mass, climbing',
+        '攀附',
+        [0, 0, 768, 1024],
+        [stormingFace('storming-assault', 0, 17)],
+      ],
+      [
+        'the storming mass, repulsed',
+        '溃退',
+        [768, 0, 768, 1024],
+        [stormingFace('storming-repulse', 0, 17)],
+      ],
+    ],
+    exclude: EXCLUDE_PIECES.replace(
+      'people, soldiers, horses,',
+      'additional people or soldiers beyond the requested clusters, horses,',
+    ),
+    subject: [
+      'Subject: two pieces showing a mass of Shu-Han infantry storming a city wall by swarming up its face (蚁附攻城), for a strategy game, two separate pieces side by side, one centred in each half of the image; the wall itself is NOT drawn, only the men on it, so paint them as if clinging to an invisible vertical face one cell wide and three levels tall, with their feet at the bottom of the piece. Left, the assault: twelve to fourteen soldiers in jade-green coats, the same soldiers as on the third attached sheet, packed shoulder to shoulder and climbing with knotted ropes, iron grapnels and two short wooden ladders; the highest man reaches up just below where the parapet would be, the lowest men crowd at the base pushing upward, shields raised over their heads, halberds slung. Right, the repulse: the same place a moment later, the ropes hanging loose, three or four men sliding and tumbling down the face, a knot of men at the base backing away under raised shields, and two figures lying crumpled at the foot drawn only as soft dissolving ink blots, with no blood and no wounds shown. Both pieces are the same width and height; the figures are drawn at the same scale as the soldiers on the third attached sheet, so each man is about the height of one wall level.',
+    ].join('\n'),
+    checks: [
+      '和 S1-05 是同一支军队；看得出是「一群人往上爬」而不是一个人；缩到游戏尺寸（约 64×144px）仍能看出人形的密集感；溃退那件没有血。',
+    ],
+  }),
+  s8PromptAsset({
+    id: 's8-07-ending-held',
+    zh: 'S8-07 结局插画：魏军守住',
+    type: 'illustration',
+    references: [S8_STYLE, S8_HAO],
+    about: [
+      '插画，1536×1024，用于魏方「守住」的三种等级。黎明，雪后初晴。郝昭立在南门门楼上远眺；城下蜀军大营正在拔营，车队沿散关道向南远去，烧毁的云梯残骸还在城堑边；东方地平线上尘土扬起，隐约有骑兵的旗。',
+    ],
+    subject: [
+      'Output: a landscape painting exactly 1536 by 1024 pixels. Ending scene: Chencang holds. Dawn after a snowfall, the sky clearing to pale gold in the east. On the south gate tower of Chencang stands Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, one hand on the parapet, looking south over the plain; a few exhausted Wei soldiers in deep indigo rest against the crenels beside him, and a hoisted millstone still hangs from a crane on the tower. Below, across the frozen trench, the Shu-Han camp is striking its tents: columns of soldiers in jade green and lines of carts file away southward along the snowy road toward the mountains, banners lowered, while the charred skeletons of two scaling ladders and a crushed ram lie abandoned at the edge of the trench. Far on the eastern horizon, a long plume of dust and the small dark shapes of cavalry banners mark the approach of the Wei relief army. Quiet and spare, with no fighting.',
+      '',
+      'Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.',
+      '',
+      'Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; restrained winter palette of paper-white snow, ochre earth, grey brick, slate roofs, Shu-Han jade green with red trim and Wei deep indigo, with the dawn in pale gold washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.',
+      '',
+      'Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.',
+    ].join('\n'),
+    checks: [
+      '和 S7-05、S7-06 是同一套画风；郝昭的样子对得上立绘；没有文字、印章；蜀军是在退，不是在攻。',
+    ],
+  }),
+  s8PromptAsset({
+    id: 's8-08-night-torches',
+    zh: 'S8-08 幕间插画：雪夜举火与夜袭',
+    type: 'illustration',
+    references: [S8_STYLE],
+    about: [
+      '插画，1536×1024。雪夜。南墙女墙上一溜火盆和火把把墙面照成暖色，魏军弓手在火光里引弓；城下，一小队举火把的魏兵从门洞冲出，正把火把捅向停在城堑边的土车，车下已起小火；蜀军几名持戟的卫兵从暗处跑来。',
+    ],
+    subject: [
+      "Output: a landscape painting exactly 1536 by 1024 pixels. Event scene: torches on the wall and a night sortie. A snowy night, the sky deep ink-blue with falling snow. Along the top of Chencang's south wall a row of iron braziers and torches burns between the crenels, throwing warm orange light down the brick face and onto the snow below; Wei archers in deep indigo stand in the firelight with bows drawn, aiming down. Below the wall, a small party of Wei infantrymen carrying torches has rushed out through the gate and across the bridge; two of them thrust their torches into a wheeled earth cart parked at the edge of the frozen trench, and small flames are already licking up its side. From the darkness to the south, a few Shu-Han halberdiers in jade green run toward the cart with shields raised, too late. The far camp of the Shu-Han army is a line of faint tent shapes and dying campfires in the snow. Dramatic but without gore.",
+      '',
+      'Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.',
+      '',
+      'Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes as the main light source. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.',
+      '',
+      'Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.',
+    ].join('\n'),
+    checks: ['夜景但不是全黑，火光是主光源；看得出是魏军出城放火、蜀军赶来护车；没有血。'],
+  }),
+  s8PromptAsset({
+    id: 's8-09-icons-counters',
+    zh: 'S8-09 图标表三',
+    type: 'icons',
+    references: [],
+    about: [
+      '版式同 S6-03：4×3 宫格每格 384×341，透明底，墨色剪影加一处朱红。十二个：压制、蒙皮、土山、强攻；夜攻、举火、夜袭、备火；吊石磨、堆礌石、晨报、立足。',
+    ],
+    subject: [
+      'Output: an image exactly 1536 by 1024 pixels. A sheet of twelve user-interface icons for a Three Kingdoms siege strategy game.',
+      '',
+      'Arrange the sheet as a 4 by 3 grid of equal cells (384×341 pixels each, no borders drawn): one element centred in each cell with clear empty space around it, nothing crossing into a neighbouring cell.',
+      '',
+      'Rows left to right, top to bottom:',
+      '1. suppressing volley (压制): three arrows flying in a flat fan toward a crenellated wall top',
+      '2. hide covering (蒙皮): a ladder with a draped animal hide hanging over its rails',
+      '3. earth mound (土山): a ramp of heaped earth with a log crib at its tall end',
+      '4. storm the wall (蚁附强攻): a wall face with a rope and grapnel and three small climbing figures',
+      '5. night assault (夜攻): a crescent moon over a wheeled ladder cart moving forward',
+      '6. light the torches (举火): a brazier bowl with a tall flame (the flame is the vermilion accent)',
+      '7. night sortie (夜袭): an open gate with a running figure holding a torch',
+      '8. light a brazier (备火): a three-legged iron brazier bowl with kindling and a single spark',
+      '9. hoist the millstone (吊石磨): a crane arm with a round millstone hanging below it on a rope',
+      '10. stack boulders (堆礌石): three boulders stacked on a wall edge',
+      '11. morning report (晨报): a partly unrolled scroll with a rising sun above it',
+      '12. foothold (立足): a wall top with three small notches, one filled in vermilion',
+      '',
+      'Style: each icon is a single bold Chinese ink-brush pictogram in near-black ink (#2a2622) with exactly one small accent in vermilion (#b5402e), like a carved seal motif without the seal border: confident thick brush strokes, simple flat silhouette, no shading or gradients, no circle, square or frame around it. All twelve share the same stroke weight and visual size, and each must stay recognisable when shrunk to 32 pixels.',
+      '',
+      'Output a PNG with a genuinely transparent background (a real alpha channel): every pixel outside the elements is fully transparent; soft smoke, dust, glow and spray keep their partial transparency. No background colour, paper, ground or frame.',
+      '',
+      'Do not include: any text, letters, calligraphy, seals or signatures; grid lines, cell borders or guide marks; ground, scenery or backgrounds; people, soldiers, horses, flags or banners other than described; modern objects.',
+    ].join('\n'),
+    checks: ['和 S6-03、S6-04 放一起笔画一致；32px 下十二个都认得出、彼此不混。'],
+  }),
+  s8PromptAsset({
+    id: 's8-10-key-visual-wei',
+    zh: 'S8-10 魏军视角主视觉',
+    type: 'illustration',
+    references: [S8_STYLE, S8_HAO],
+    about: [
+      '插画，1536×1024，开始画面魏军按钮的底图（和 S7-01 并排，同一个雪夜）。视角从城头向外：郝昭在门楼上挥手下令，身边弓手放火箭，火箭划向城下着火的云梯；门楼边吊着石磨；城下雪地里蜀军的人潮和诸葛亮的四轮车在远处。',
+    ],
+    subject: [
+      "Output: a landscape painting exactly 1536 by 1024 pixels. Key visual from the defenders' side: the siege of Chencang seen from the top of the south gate tower on a snowy night. In the foreground on the tower, Hao Zhao, the Wei commander, the man of the second attached portrait, in dark lamellar armour and a red cloak, raises his arm to give an order; beside him Wei archers in deep indigo loose fire arrows that streak down toward the plain, and a great round millstone hangs from a timber crane at the tower's edge, ready to drop. Below and beyond the parapet, across the frozen trench, a Shu-Han scaling ladder is burning against the wall, Shu-Han soldiers in jade green mass in the snow with shields and banners, and far back among the tents of their camp a small four-wheeled carriage with a seated figure in a scholar's robe and feathered fan can just be made out. Snow falls through the firelight. Dramatic but without gore.",
+      '',
+      'Setting: the siege of Chencang, a small Wei frontier fortress in the snowy Wei River valley, winter of 228 AD; the walled city has brick-faced rammed-earth walls, a two-storey timber gate tower over the south gate with a wooden bridge across a frozen trench.',
+      '',
+      'Style: a traditional Chinese narrative painting in ink and light colour (水墨淡彩) on warm rice paper, matching the first attached painting in brushwork, line weight and palette: the city wall, gate tower and timber drawn with the fine ruled ink lines of jiehua (界画), people and landscape in looser expressive ink with soft transparent washes; a night palette of deep indigo and ink greys with paper-white snow, the firelight in vermilion and orange washes. Painterly and atmospheric, with generous calm empty areas; not a photograph, not 3D, not anime.',
+      '',
+      'Do not include: any text, letters, calligraphy, seals or signatures; borders or frames; gore or blood; modern objects; anachronistic stirrup-era plate armour or European weapons.',
+    ].join('\n'),
+    checks: ['和 S7-01 是同一晚的另一边；郝昭对得上立绘；没有文字。'],
+  }),
+];
+
 const ASSETS = [
   {
     id: 's1-01-city-vignette',
@@ -3550,6 +4171,7 @@ const ASSETS = [
   ...ROSTER_ASSETS.map(withRosterPick),
   ...EFFECT_ASSETS.map(withEffectPick),
   ...STORY_ASSETS.map(withStoryPick),
+  ...S8_ASSETS.map(withS8Pick),
 ];
 
 // ---------------------------------------------------------------------------
@@ -3594,7 +4216,19 @@ function footprintEntries(objects, frame, r, canvas, withMasks) {
         layer: g.layer,
         cells: o.cells,
         height: Math.max(...g.parts.map((p) => (p.type === 'roof' ? p.r : p.t))),
-        anchor: P(x0, y1 + 1, 0).map(round),
+        anchor: (o.anchor3d ? P(...o.anchor3d) : P(x0, y1 + 1, 0)).map(round),
+        ...(o.anchorKind ? { anchorKind: o.anchorKind } : {}),
+        ...(o.moundHeight ? { moundHeight: o.moundHeight } : {}),
+        ...(o.registration
+          ? {
+              registration: Object.fromEntries(
+                Object.entries(o.registration).map(([name, world]) => [
+                  name,
+                  { world, pixel: P(...world).map(round) },
+                ]),
+              ),
+            }
+          : {}),
         bbox: box,
         ...(withMasks ? { mask: `masks/${id}.png` } : {}),
       });
@@ -3611,10 +4245,12 @@ function assetReadme(asset, prompts) {
     )
     .join('\n\n');
   const image = asset.guide ? 'guide.png' : 'blockout.png';
-  const section = asset.stage === 'S1' || !asset.stage ? '§10' : '§9.2、§13';
+  const plan = asset.stage === 'S8' ? '03-chencang-v0.2-plan.md' : PLAN;
+  const section =
+    asset.stage === 'S8' ? '§9' : asset.stage === 'S1' || !asset.stage ? '§10' : '§9.2、§13';
   return `# ${asset.zh}
 
-\`${asset.id}\` · 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${PLAN}](../../../${PLAN}) ${section}。
+\`${asset.id}\` · 由 \`node tools/build-siege-blockout.mjs\` 生成，请改脚本而不是改这个文件。计划见 [${plan}](../../../${plan}) ${section}。
 
 ${asset.about.map((line) => `- ${line}`).join('\n')}
 
@@ -3707,6 +4343,12 @@ ${table('S7')}
 
 完整的叙事画，和全图同一套水墨淡彩，但构图按插画，不用游戏机位。每张先上传 S2-01 定稿全图南半城作风格和建筑参考；有名有姓的人物再上传立绘，只作人物参考。旗面都空白，没有文字和血腥。
 
+## S8 招与拆（v0.2 出图材料）
+
+${table('S8')}
+
+按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。每件 3 张候选的上传顺序和权威提示词同时写入仓库根目录的 \`.artifacts/siege/s8-jobs.json\`；本工具只生成材料，不出图。土山北端和强攻群像贴墙点见各件 \`footprints.json\` 的 \`registration\`；城头备物用底面中心作锚点，游戏抬高 3 层。
+
 ## 每个文件夹里有什么
 
 - \`blockout.png\`（姿态表是 \`guide.png\`）：上传 ImageGen 的参考图。
@@ -3740,6 +4382,7 @@ await writeFile(join(OUT, 'layout.txt'), `${LAYOUT.join('\n')}\n`);
 }
 
 const rows = [];
+const s8Jobs = [];
 for (const asset of ASSETS) {
   const dir = join(OUT, asset.id);
   await mkdir(join(dir, 'attempts'), { recursive: true });
@@ -3798,10 +4441,28 @@ for (const asset of ASSETS) {
     await asset.write?.(dir, rendered, r);
     resolved = r;
   }
-  await writeFile(
-    join(dir, 'README.md'),
-    await pretty(assetReadme(asset, asset.prompts(keys, rendered, resolved)), 'markdown'),
+  const readme = await pretty(
+    assetReadme(asset, asset.prompts(keys, rendered, resolved)),
+    'markdown',
   );
+  await writeFile(join(dir, 'README.md'), readme);
+  if (asset.stage === 'S8') {
+    for (const reference of asset.references)
+      await readFile(reference).catch((error) => {
+        throw new Error(`${asset.id}: missing upload reference ${reference}`, { cause: error });
+      });
+    const blocks = [...readme.matchAll(/```text\n([\s\S]*?)\n```/g)];
+    if (blocks.length !== 1) throw new Error(`${asset.id}: expected one authoritative prompt`);
+    s8Jobs.push({
+      id: asset.zh.split(' ')[0],
+      folder: dir,
+      type: asset.type,
+      candidates: 3,
+      references: asset.references,
+      prompt: blocks[0][1],
+      size: asset.size,
+    });
+  }
   const n = await attemptCount(dir);
   rows.push({
     stage: asset.stage ?? 'S1',
@@ -3810,3 +4471,5 @@ for (const asset of ASSETS) {
   console.log(`${asset.id}: ${n} attempt(s)`);
 }
 await writeFile(join(OUT, 'README.md'), await pretty(indexReadme(rows), 'markdown'));
+await mkdir('.artifacts/siege', { recursive: true });
+await writeFile('.artifacts/siege/s8-jobs.json', await pretty(JSON.stringify(s8Jobs), 'json'));

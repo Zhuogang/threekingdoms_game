@@ -1,0 +1,65 @@
+{
+  "asset": "s8-01-covered-ladder",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "pieces": [
+    {
+      "piece": 1,
+      "name": "蒙皮云梯朝北",
+      "cell": [0, 0, 512, 1024],
+      "origin": [192, -1156],
+      "objects": [
+        {
+          "id": "covered-ladder-n",
+          "kind": "ladder-cart",
+          "layer": "L3",
+          "cells": [0, 17, 0, 18],
+          "height": 2.5,
+          "anchor": [192, 668],
+          "bbox": [204, 370, 308, 654]
+        }
+      ]
+    },
+    {
+      "piece": 2,
+      "name": "蒙皮云梯朝东",
+      "cell": [512, 0, 512, 1024],
+      "origin": [640, -1202],
+      "objects": [
+        {
+          "id": "covered-ladder-e",
+          "kind": "ladder-cart",
+          "layer": "L3",
+          "cells": [0, 18, 1, 18],
+          "height": 2.5,
+          "anchor": [640, 622],
+          "bbox": [646, 421, 890, 604]
+        }
+      ]
+    },
+    {
+      "piece": 3,
+      "name": "蒙皮云梯架上墙",
+      "cell": [1024, 0, 512, 1024],
+      "origin": [1216, -1230],
+      "objects": [
+        {
+          "id": "covered-ladder-raised",
+          "kind": "ladder-raised",
+          "layer": "L3",
+          "cells": [0, 17, 0, 20],
+          "height": 3,
+          "anchor": [1216, 786],
+          "registration": {
+            "wallFoot": { "world": [0.5, 17, 0], "pixel": [1280, 402] },
+            "wallTop": { "world": [0.5, 17, 3], "pixel": [1280, 258] },
+            "cartBase": { "world": [0.5, 20.5, 0], "pixel": [1280, 738] }
+          },
+          "bbox": [1228, 257, 1332, 768]
+        }
+      ]
+    }
+  ]
+}
