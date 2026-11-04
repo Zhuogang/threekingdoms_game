@@ -86,11 +86,13 @@ for (const scene of RENDER_SCENES) {
           for (const rig of [crane, stone]) {
             await expect(rig).toBeVisible();
             await expect(rig).toHaveAttribute('pointer-events', 'none');
+            // Selection reorders the layers, so paint order means something only before any click.
+            const selection = await page.getByTestId('preview-selection').textContent();
+            if (state.units.some((candidate) => candidate.id === selection)) continue;
             expect(
               await rig.evaluate((el, id) => {
-                const unit = document.querySelector(`[data-unit="${id}"]`)!;
                 const covers = [
-                  unit,
+                  document.querySelector(`[data-unit="${id}"]`)!,
                   ...document.querySelectorAll(
                     '[data-object="gate-south"], [data-object="wall-south-e-parapet"]',
                   ),
