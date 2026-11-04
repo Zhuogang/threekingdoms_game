@@ -86,6 +86,7 @@ export default function RenderScenePreview({ name }: { name: RenderSceneName }) 
             key={zoom}
             data-testid={`zoom-${zoom}`}
             onClick={() => {
+              setSelected(null);
               map.current?.zoom(zoom);
               map.current?.focus({ x: 24, y: 19, level: 'ground' });
             }}

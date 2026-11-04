@@ -4,12 +4,13 @@ import {
   CROP_MARGIN,
   campSprites,
   palisadeSprites,
+  placeAnchoredPiece,
   placeCrop,
   placePiece,
   spriteObject,
   type SheetFootprints,
 } from '../../src/siege/render/mapPieces';
-import { sliceObject, type SiegeFrame } from '../../src/siege/render/scene';
+import { project, sliceObject, type SiegeFrame } from '../../src/siege/render/scene';
 
 const read = <T>(path: string) =>
   JSON.parse(readFileSync(`docs/siege/chencang/art/${path}`, 'utf8')) as T;
@@ -53,6 +54,43 @@ describe('siege map pieces', () => {
     expect(b.rect[0] - a.rect[0]).toBeCloseTo(8 * 64);
     expect(b.rect[1] - a.rect[1]).toBeCloseTo(2 * 48);
     expect(b.cells).toEqual([20, 29, 20, 29]);
+  });
+
+  it('fits all four S8-04 alpha groups uniformly and registers their feet independently of the old blockout', () => {
+    const sheet = read<SheetFootprints>('s8-04-wall-top-preparations/footprints.json');
+    const expected = [
+      [118, 450, 349, 640],
+      [480, 449, 707, 637],
+      [829, 390, 1061, 646],
+      [1159, 408, 1432, 641],
+    ];
+    sheet.pieces.forEach((piece, i) => {
+      const object = piece.objects[0]!;
+      expect(object.alphaBBox).toEqual(expected[i]);
+      expect(piece.cell).toEqual([
+        expected[i]![0],
+        expected[i]![1],
+        expected[i]![2]! - expected[i]![0]!,
+        expected[i]![3]! - expected[i]![1]!,
+      ]);
+      expect(object.fitWidthPx).toBe([34, 34, 32, 40][i]);
+      for (const gameFrame of [frame, { ...frame, cw: 32, cd: 24, lh: 12 }]) {
+        const target = project(gameFrame, 20.5, 16.5, 3);
+        const sprite = placeAnchoredPiece(sheet, i, [20, 16], gameFrame, {
+          id: 'measured',
+          anchor: object.footCentreAnchor!,
+          target,
+        });
+        expect(sprite.crop).toEqual(expected[i]);
+        const [left, top, right, bottom] = sprite.crop;
+        const sx = (sprite.rect[2] - sprite.rect[0]) / (right - left);
+        const sy = (sprite.rect[3] - sprite.rect[1]) / (bottom - top);
+        expect(sx).toBeCloseTo(sy, 10);
+        expect(sprite.rect[2] - sprite.rect[0]).toBeCloseTo(object.fitWidthPx!);
+        expect(sprite.rect[0] + (object.footCentreAnchor![0] - left) * sx).toBeCloseTo(target[0]);
+        expect(sprite.rect[1] + (object.footCentreAnchor![1] - top) * sy).toBeCloseTo(target[1]);
+      }
+    });
   });
 
   it('crops whole pieces to their objects plus a margin, inside their sheet slot', () => {

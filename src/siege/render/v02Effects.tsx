@@ -21,7 +21,7 @@ export function FootholdPips({
         const key = `${cell.x},${cell.y}`,
           count = state.footholds[key] ?? 0;
         // A vertical column on the east side of the climbing position, mid-wall.
-        const [x, y] = project(FRAME, cell.x + 0.88, cell.y + 1, 1.5);
+        const [x, y] = project(FRAME, cell.x + 0.98, cell.y + 1, 1.5);
         const blinking = forecast?.x === cell.x && forecast.y === cell.y;
         return (
           <g key={key} data-foothold={key} data-progress={count}>
@@ -74,15 +74,17 @@ export function PreparationFlames({
         .filter((s) => s.flame)
         .map((s) => {
           const [x, y] = s.flame!;
+          const width = (s.rect[2] - s.rect[0]) / 3;
+          const height = width * 1.5;
           return (
             <image
               key={s.id}
               data-flame={s.id}
               href={effect('flame-small')}
-              x={x - FRAME.cw / 8}
-              y={y - FRAME.lh}
-              width={FRAME.cw / 4}
-              height={FRAME.lh * (flare ? 1.5 : 1)}
+              x={x - width / 2}
+              y={y - height}
+              width={width}
+              height={height * (flare ? 1.5 : 1)}
             >
               <animate
                 attributeName="opacity"

@@ -473,11 +473,32 @@ Subject: a Shu-Han siege earthwork (土山) heaped against a city wall to make a
 #### S8-04 城头备物（`s8-04-wall-top-preparations`）
 
 - 几何：四件，都是放在墙顶走道上的小件（游戏抬高 3 层，同 S4-07）：火盆未燃（0.6 层，三足铁盆，盆里是柴）；火盆燃着（同样的盆，柴烧红、盆口发亮，**不画火苗和烟**，程序加）；柴薪捆（0.5 层，两捆扎好的柴和一捆浸油的布箭）；礌石堆（0.7 层，六七块石头和两根滚木堆在女墙内侧）。每件 1 格，四件各居一个四分之一宽。
-- 上传：`blockout.png`；S1-02 v4。
+- 上传：仅 `docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp`（S1-02 标准件）。
+- Generated without a blockout because its plain box overrode the round-bowl prompt.
+- 三轮记录：v1–v3、v4–v6 用同一灰盒提示词；v7–v9 不上传灰盒，选 v8。前两轮日志 `attempts/s8-04/codex.log`；第三轮 `attempts/s8-04/codex-round3.log`，以下是第三轮完整权威提示词，代替 §9.1 的灰盒拼接。
+- 渲染：实际 alpha islands 从左到右切四件（零碎的腿和滚木不能丢）；footCentreAnchor 放在墙格走道中心，高 3 层，按 fitWidthPx 等比缩放到 34、34、32、40px（100% 缩放）。
 - 看什么：都是能放在一格宽的走道上的小物件，缩到游戏尺寸还认得出是火盆、柴、石头；燃着的火盆只有红光，没有火苗。
 
 ```text
-Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). The block-out's plain boxes only mark where each piece stands and how tall it is; draw the real objects, which are not boxes. First: an unlit iron brazier (火盆): a ROUND, shallow, bowl-shaped cast-iron basin standing on three splayed legs, seen from the same high three-quarter camera so that its round rim reads as an ellipse, heaped with split firewood and kindling. It is round, never square or rectangular, with no flat tray or frame. Second: the same round brazier lit: a low heap of charcoal and split wood in the bowl, mostly dark charcoal with deep red and orange embers glowing between the pieces, and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). It stays mostly dark with embers, never a solid sheet of red. Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
+Output requirements: create an image exactly 1536 by 1024 pixels. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.
+
+Layout: the four pieces stand in a row with their bases on the line y=560, centred at x=192, 576, 960 and 1344, each about 110 pixels wide and at most 120 pixels tall, with clear empty magenta between them.
+
+Match the brushwork, line weight, colours and lighting of the attached image exactly.
+
+Style priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.
+
+Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
+
+Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆): a ROUND, shallow, bowl-shaped cast-iron basin standing on three splayed legs, seen from the same high three-quarter camera so that its round rim reads as an ellipse, heaped with split firewood and kindling. It is round, never square or rectangular, with no flat tray or frame. Second: the same round brazier lit: a low heap of charcoal and split wood in the bowl, mostly dark charcoal with deep red and orange embers glowing between the pieces, and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). It stays mostly dark with embers, never a solid sheet of red. Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
+
+Isolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.
+
+Light: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.
+
+Style: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.
+
+Do not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects. No square trays, boxes or rectangular frames for the braziers.
 ```
 
 #### S8-05 魏军夜袭小队姿态表（`s8-05-wei-sortie-sheet`）

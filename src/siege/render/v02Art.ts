@@ -8,7 +8,6 @@ import { project, type ScreenRect } from './scene';
 
 // Includes the full worst-case review fixture; only silhouettes are optional.
 export const SPRITE_CAP = 512;
-export const BRAZIER_SCALE = 0.72;
 export const NIGHT_COLOR = '#1b2233';
 export const NIGHT_OPACITY = 0.45;
 export const formationCount = (troops: number): 1 | 3 | 5 =>
@@ -120,16 +119,15 @@ export interface PreparationSprite extends Sprite {
 export function preparationSprites(state: SiegeState): PreparationSprite[] {
   const result: PreparationSprite[] = [],
     source = sheet('s8-04-wall-top-preparations');
-  const prop = (key: string, index: number, offset = 0): PreparationSprite => {
+  const prop = (key: string, index: number): PreparationSprite => {
     const { x, y } = parseCell(key),
       object = source.pieces[index]!.objects[0]!;
-    const target = project(FRAME, x + 0.25 + offset, y + 0.65, WALL_HEIGHT);
+    const target = project(FRAME, x + 0.5, y + 0.5, WALL_HEIGHT);
     const sprite: PreparationSprite = placeAnchoredPiece(source, index, [x, y], FRAME, {
       id: `preparation-${key}-${index}`,
       kind: 'preparation',
-      anchor: object.registration!.baseCentre!.pixel,
+      anchor: object.footCentreAnchor!,
       target,
-      scale: (FRAME.cw / source.cell[0]) * (index <= 1 ? BRAZIER_SCALE : 1),
     });
     // Sort between the walkway and parapet, like wall-top units.
     sprite.height = WALL_HEIGHT + 0.01;
@@ -140,21 +138,11 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
   for (const [key, brazier] of Object.entries(state.preparations.braziers)) {
     result.push(prop(key, 1));
     if (brazier.litDay === state.day) {
-      const bundle = prop(key, 2, 0.5);
+      const bundle = prop(key, 2);
       const bowl = result[result.length - 1]!;
-      // Separate actual painted bounds, rather than the transparent crop margins.
-      const bowlObject = source.pieces[1]!.objects[0]!;
-      const bundleObject = source.pieces[2]!.objects[0]!;
-      const bowlRight =
-        bowl.rect[0] +
-        ((bowlObject.alphaBBox ?? bowlObject.bbox)[2] - bowl.crop[0]) *
-          (FRAME.cw / source.cell[0]) *
-          BRAZIER_SCALE;
-      const bundleLeft =
-        bundle.rect[0] +
-        ((bundleObject.alphaBBox ?? bundleObject.bbox)[0] - bundle.crop[0]) *
-          (FRAME.cw / source.cell[0]);
-      const shift = Math.max(0, bowlRight + 3 - bundleLeft);
+      // These crops are the complete alpha boxes. Keep a 3px painted gap,
+      // with both feet on the same walkway line and the bowl centred in its cell.
+      const shift = Math.max(0, bowl.rect[2] + 3 - bundle.rect[0]);
       bundle.rect = [
         bundle.rect[0] + shift,
         bundle.rect[1],

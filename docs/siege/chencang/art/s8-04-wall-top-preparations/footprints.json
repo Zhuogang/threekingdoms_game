@@ -8,7 +8,7 @@
     {
       "piece": 1,
       "name": "火盆未燃",
-      "cell": [0, 0, 384, 1024],
+      "cell": [118, 450, 231, 190],
       "origin": [128, -1054],
       "objects": [
         {
@@ -21,16 +21,21 @@
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [192, 530] } },
           "bbox": [148, 468, 236, 556],
-          "alphaBBox": [148, 468, 238, 555],
-          "alphaBBoxOffset": [0, 0, 2, -1],
-          "footCentreAnchor": [191.9, 555]
+          "alphaBBox": [118, 450, 349, 640],
+          "alphaBBoxOffset": [-30, -18, 113, 84],
+          "footCentreAnchor": [233.3, 640],
+          "fitWidthPx": 34,
+          "alphaIslandCount": 1,
+          "alphaPixelCount": 30013,
+          "gameSizeAt100Percent": [34, 27.965368]
         }
-      ]
+      ],
+      "blockoutCell": [0, 0, 384, 1024]
     },
     {
       "piece": 2,
       "name": "火盆燃着",
-      "cell": [384, 0, 384, 1024],
+      "cell": [480, 449, 227, 188],
       "origin": [512, -1054],
       "objects": [
         {
@@ -43,16 +48,21 @@
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [576, 530] } },
           "bbox": [532, 468, 620, 556],
-          "alphaBBox": [531, 468, 621, 555],
-          "alphaBBoxOffset": [-1, 0, 1, -1],
-          "footCentreAnchor": [575.7, 555]
+          "alphaBBox": [480, 449, 707, 637],
+          "alphaBBoxOffset": [-52, -19, 87, 81],
+          "footCentreAnchor": [593.6, 637],
+          "fitWidthPx": 34,
+          "alphaIslandCount": 1,
+          "alphaPixelCount": 28879,
+          "gameSizeAt100Percent": [34, 28.15859]
         }
-      ]
+      ],
+      "blockoutCell": [384, 0, 384, 1024]
     },
     {
       "piece": 3,
       "name": "柴薪捆",
-      "cell": [768, 0, 384, 1024],
+      "cell": [829, 390, 232, 256],
       "origin": [896, -1062],
       "objects": [
         {
@@ -65,16 +75,21 @@
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [960, 522] } },
           "bbox": [905, 473, 1015, 551],
-          "alphaBBox": [900, 473, 1018, 552],
-          "alphaBBoxOffset": [-5, 0, 3, 1],
-          "footCentreAnchor": [957.7, 552]
+          "alphaBBox": [829, 390, 1061, 646],
+          "alphaBBoxOffset": [-76, -83, 46, 95],
+          "footCentreAnchor": [931.4, 646],
+          "fitWidthPx": 32,
+          "alphaIslandCount": 1,
+          "alphaPixelCount": 43187,
+          "gameSizeAt100Percent": [32, 35.310345]
         }
-      ]
+      ],
+      "blockoutCell": [768, 0, 384, 1024]
     },
     {
       "piece": 4,
       "name": "礌石堆",
-      "cell": [1152, 0, 384, 1024],
+      "cell": [1159, 408, 273, 233],
       "origin": [1280, -1063],
       "objects": [
         {
@@ -87,17 +102,22 @@
           "anchorKind": "base-centre; lift by 3 levels to the wall walkway in game",
           "registration": { "baseCentre": { "world": [0.5, 16.5, 0], "pixel": [1344, 521] } },
           "bbox": [1289, 458, 1399, 567],
-          "alphaBBox": [1286, 456, 1401, 566],
-          "alphaBBoxOffset": [-3, -2, 2, -1],
-          "footCentreAnchor": [1342.9, 566]
+          "alphaBBox": [1159, 408, 1432, 641],
+          "alphaBBoxOffset": [-130, -50, 33, 74],
+          "footCentreAnchor": [1288.7, 641],
+          "fitWidthPx": 40,
+          "alphaIslandCount": 1,
+          "alphaPixelCount": 40220,
+          "gameSizeAt100Percent": [40, 34.139194]
         }
-      ]
+      ],
+      "blockoutCell": [1152, 0, 384, 1024]
     }
   ],
   "selected": {
     "path": "selected-transparent.png",
     "bboxConvention": "alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order",
     "anchorConvention": "footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite",
-    "placement": "Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale"
+    "placement": "Crop each measured alpha group (piece.cell), retaining every island; uniformly scale alphaBBox to fitWidthPx at 100% zoom; place footCentreAnchor at the wall cell centre, height 3. Historical blockout coordinates are comparison only."
   }
 }

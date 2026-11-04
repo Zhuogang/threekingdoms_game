@@ -6,7 +6,8 @@
  * origin + x · cell − h · level for grid point (x, y, h), the same formula as
  * the map. A piece cropped from the sheet therefore lands on its own block-out
  * cells by dividing by the scale, and on any other cells by adding whole cell
- * steps. Nothing is repainted or registered by eye.
+ * steps. S8-04 instead records its actual alpha groups and fitWidthPx because
+ * it was generated without a blockout. Nothing is repainted or registered by eye.
  */
 import type { SceneObject, ScreenRect, SiegeFrame } from './scene';
 
@@ -22,6 +23,8 @@ export interface SheetObject {
   alphaBBox?: ScreenRect;
   footCentreAnchor?: [number, number];
   fitHeightLevels?: number;
+  /** Actual alpha width at 100% zoom, independent of the blockout scale. */
+  fitWidthPx?: number;
   moundHeight?: number;
   registration?: Record<string, Registration>;
   selectedRegistration?: Record<string, Registration>;
@@ -134,8 +137,8 @@ export function placePiece(
   };
 }
 
-/** Map a recorded sheet landmark onto a projected map point. Storming art is
- * deliberately oversized: fit the actual alpha height uniformly, never the grid. */
+/** Map a recorded sheet landmark onto a projected map point. Pieces with
+ * fitWidthPx use their complete alpha box and a uniform game-pixel scale. */
 export function placeAnchoredPiece(
   sheet: SheetFootprints,
   pieceIndex: number,
@@ -151,7 +154,13 @@ export function placeAnchoredPiece(
   },
 ): Sprite {
   const sprite = placePiece(sheet, pieceIndex, to, frame, options);
-  const scale = options.scale ?? 1 / sheetScale(sheet, frame);
+  const object = sheet.pieces[pieceIndex]!.objects[0]!;
+  if (object.fitWidthPx !== undefined) sprite.crop = object.alphaBBox!;
+  const scale =
+    options.scale ??
+    (object.fitWidthPx !== undefined
+      ? object.fitWidthPx / (sprite.crop[2] - sprite.crop[0])
+      : 1 / sheetScale(sheet, frame));
   const sy = options.scaleY ?? scale;
   const [ax, ay] = options.anchor;
   const [tx, ty] = options.target;

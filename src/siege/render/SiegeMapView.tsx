@@ -339,8 +339,12 @@ export const SiegeMapView = memo(
               if (previous?.id !== sprite.id) return n;
               // Replay replaces all row slices with one whole sprite, plus
               // the lowered ladder during the raising crossfade.
-              return n + 1 + Number(!previous.raisedAt && Boolean(sprite.engine.raisedAt)) -
-                sliceObject(FRAME, spriteObject(sprite)).length;
+              return (
+                n +
+                1 +
+                Number(!previous.raisedAt && Boolean(sprite.engine.raisedAt)) -
+                sliceObject(FRAME, spriteObject(sprite)).length
+              );
             }, 0) +
             (effectAction ? 1 : 0),
         ),
@@ -728,7 +732,6 @@ export const SiegeMapView = memo(
               </g>
             ) : null,
           )}
-          <FootholdPips state={state} forecast={forecastCell} />
           {!night && <PreparationFlames sprites={preparations} />}
           {units.map(({ unit, visual }) => (
             <Displacement
@@ -828,7 +831,6 @@ export const SiegeMapView = memo(
         preparations,
         budget,
         night,
-        forecastCell,
       ],
     );
     return (
@@ -930,9 +932,16 @@ export const SiegeMapView = memo(
           onPointerLeave={() => setHover(null)}
         >
           {drawing}
-          {hover && targets.some((t) => t.x === hover.x && t.y === hover.y) && !forecastCell && (
-            <FootholdPips state={state} forecast={hover} />
-          )}
+          <FootholdPips
+            state={state}
+            forecast={
+              forecastCell ??
+              (hover &&
+              targets.some((t) => t.x === hover.x && t.y === hover.y && t.level === hover.level)
+                ? hover
+                : null)
+            }
+          />
           {hover &&
             [...targets, ...reachable, ...(deploy ? DEPLOY_SHU : [])].some(
               (c) => c.x === hover.x && c.y === hover.y && c.level === hover.level,

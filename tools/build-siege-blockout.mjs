@@ -3315,8 +3315,8 @@ const S8_PICKS = {
     'The finished ramp has a stepped path up the middle and log revetments on both sides',
   ],
   's8-04-wall-top-preparations': [
-    'v1.webp',
-    "Rounded boulders; the brazier is a square iron pan, not the prompt's bowl, accepted as legible",
+    'v8.webp',
+    "Round bowls on splayed legs that read at game size; the lit one is mostly dark charcoal with embers, not a red sheet. Generated without a blockout, because the blockout's box overrode the prompt.",
   ],
   's8-05-wei-sortie-sheet': [
     'v2.webp',
@@ -3358,7 +3358,7 @@ const withS8Pick = (asset) => {
         final,
         about: [
           ...asset.about,
-          `**2026-11-03 选定 \`attempts/${final}\`**（planner 已选）：${why}。${files}；每张的提示词、源文件哈希、选择理由和检查记在 \`generation-manifest.json\`，候选对比在 \`comparison.png\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 \`attempts/${asset.id.slice(0, 5)}/codex.log\`。`,
+          `**2026-11-03 选定 \`attempts/${final}\`**（planner 已选）：${why}${why.endsWith('.') ? '' : '。'}${files}；每张的提示词、源文件哈希、选择理由和检查记在 \`generation-manifest.json\`，候选对比在 \`comparison.png\`。出图用 Codex 内置 image_gen（gpt-6.1-sol，xhigh），日志在仓库根目录 \`attempts/${asset.id.slice(0, 5)}/${asset.promptRounds ? 'codex-round3.log' : 'codex.log'}\`。`,
           ...(asset.id === 's8-01-covered-ladder'
             ? ['本件实际只有 v1、v2 两张候选；没有 v3，也不补出图。']
             : []),
@@ -3408,6 +3408,81 @@ const s8Pieces = ({ references: extra = [], ...o }) => {
     }),
     type: 'pieces',
     references,
+  };
+};
+// Round three deliberately omits the blockout and fidelity paragraph. Keep the
+// exact submitted prompt independent of the logs so integrity checks can fail.
+const S8_04_PROMPT = `Output requirements: create an image exactly 1536 by 1024 pixels. Paint only the requested pieces; every empty background pixel must be perfectly uniform pure magenta RGB(255,0,255), hex #FF00FF. Apply paper grain and watercolour texture only inside their silhouettes, never on the magenta background. No paper sheet, paper margin, background texture, cast shadow, floor or haze.
+
+Layout: the four pieces stand in a row with their bases on the line y=560, centred at x=192, 576, 960 and 1344, each about 110 pixels wide and at most 120 pixels tall, with clear empty magenta between them.
+
+Match the brushwork, line weight, colours and lighting of the attached image exactly.
+
+Style priority — A 界画淡彩: Paint the object as a TWO-DIMENSIONAL TRADITIONAL CHINESE JIEHUA PAINTING. Finely ruled, uniform slender ink contours define the architecture with quiet precise architectural draughtsmanship. Flat, pale, transparent ochre and grey watercolour washes with soft ink diffusion; snow left as clean paper-white. Keep brick and roof-tile marks sparse and deliberately drawn by hand, with generous calm untextured surfaces. The result must unmistakably read as fine Chinese ink-and-light-colour architectural painting, not a realistic digital render. No photographic material textures, physically based rendering, glossy surfaces, dense mottling or dark heavy outlines.
+
+Camera: orthographic three-quarter top-down view, looking due north and tilted about 50 degrees down from the horizon. Strictly parallel projection: no perspective, no vanishing points, near and far objects the same size. Every vertical edge is perfectly vertical, every east-west edge perfectly horizontal, and north-south edges run straight up the image. Only top faces and south-facing front faces are visible; east and west side faces are never visible.
+
+Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆): a ROUND, shallow, bowl-shaped cast-iron basin standing on three splayed legs, seen from the same high three-quarter camera so that its round rim reads as an ellipse, heaped with split firewood and kindling. It is round, never square or rectangular, with no flat tray or frame. Second: the same round brazier lit: a low heap of charcoal and split wood in the bowl, mostly dark charcoal with deep red and orange embers glowing between the pieces, and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). It stays mostly dark with embers, never a solid sheet of red. Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.
+
+Isolated object only, on a perfectly flat solid magenta (#FF00FF) background with no gradient, texture or ground. Nothing else in the frame. Clean edges against the background, and no magenta tint reflected onto the object.
+
+Light: low winter sun from the lower left (south-west). Front faces catch a pale warm light and top faces carry fresh snow. Shade the object itself only; do not paint any cast shadow on the ground.
+
+Style: traditional Chinese ink-wash painting with light colour (水墨淡彩), with the precision of jiehua (界画) ruled-line architectural painting: crisp, straight, evenly weighted ink lines on walls, gate towers, timber and roof tiles; soft transparent washes on snow, earth, ice and water; subtle rice-paper grain. Restrained winter palette: warm paper-white snow, ochre rammed earth, grey brick, dark timber, slate roof tiles, muted pine green, with small accents of red lacquer.
+
+Do not include: any text, letters, calligraphy, seals or signatures; grid lines or guide marks; ground, snowfield, cast shadows or anything besides the requested pieces; people, soldiers, horses, flags, banners or pennants; modern objects. No square trays, boxes or rectangular frames for the braziers.`;
+const S8_04_NO_BLOCKOUT =
+  'Generated without a blockout because its plain box overrode the round-bowl prompt.';
+const s8WallPreparations = (definition) => {
+  const original = s8Pieces(definition);
+  const oldReferences = original.references;
+  return {
+    ...original,
+    noImage: true,
+    references: [S8_GATE],
+    uploads: s8Uploads(original.id, [S8_GATE]),
+    promptRounds: [
+      {
+        round: 1,
+        ids: [1, 2, 3],
+        promptBlock: 1,
+        references: oldReferences,
+        log: 'attempts/s8-04/codex.log',
+        blockout: 'original',
+      },
+      {
+        round: 2,
+        ids: [4, 5, 6],
+        promptBlock: 1,
+        references: oldReferences,
+        log: 'attempts/s8-04/codex.log',
+        blockout: 'original',
+        note: 'Second run of the same prompt, per K3 brief; the retained log contains only the first run and no original filenames for v4-v6.',
+      },
+      {
+        round: 3,
+        ids: [7, 8, 9],
+        promptBlock: 0,
+        references: [S8_GATE],
+        log: 'attempts/s8-04/codex-round3.log',
+        blockout: 'none',
+        reason: S8_04_NO_BLOCKOUT,
+      },
+    ],
+    prompts: (...args) => [
+      { title: '第三轮：v7–v9（权威提示词）', text: S8_04_PROMPT },
+      {
+        title: '第一、二轮：v1–v6（历史提示词）',
+        note: '两轮使用同一提示词，上传顺序：`blockout.png`、`docs/siege/chencang/art/s1-02-south-gate/attempts/v4.webp`；日志 `attempts/s8-04/codex.log` 只保留第一轮的原始文件名。',
+        text: original.prompts(...args)[0].text,
+      },
+    ],
+    checks: [
+      '和 S1-02 标准件是同一套笔法、颜色和光照。',
+      '按实际 alpha islands 从左到右切四件；所有腿、柴和滚木都随所属物件保留，背景无品红边。',
+      ...definition.checks,
+      '100% 游戏尺寸：火盆各宽 34px，柴薪捆宽 32px，礌石堆宽 40px；用 footCentreAnchor 对齐墙格走道中心，等比缩放。',
+    ],
   };
 };
 const s8PromptAsset = ({ type, references, subject, guide, ...o }) => ({
@@ -3529,13 +3604,15 @@ const S8_ASSETS = [
       '三态是同一个位置越堆越高；成坡那件的北端正好到 3 层，看得出人能从南面走上去；雪落在土堆顶上，坡面因为踩踏是土色。',
     ],
   }),
-  s8Pieces({
+  s8WallPreparations({
     id: 's8-04-wall-top-preparations',
     zh: 'S8-04 城头备物',
     references: [],
     about: [
       '几何：四件，都是放在墙顶走道上的小件（游戏抬高 3 层，同 S4-07）：火盆未燃（0.6 层，三足铁盆，盆里是柴）；火盆燃着（同样的盆，柴烧红、盆口发亮，**不画火苗和烟**，程序加）；柴薪捆（0.5 层，两捆扎好的柴和一捆浸油的布箭）；礌石堆（0.7 层，六七块石头和两根滚木堆在女墙内侧）。每件 1 格，四件各居一个四分之一宽。',
-      'footprints.json 的 anchor 是每件地面占格的底面中心；游戏整体抬高 3 层放到墙顶走道。',
+      '前三轮共九张：第一轮 v1–v3、第二轮 v4–v6 沿用同一灰盒提示词；第三轮 v7–v9 只上传 S1-02 v4，定稿 v8。第三轮日志：`attempts/s8-04/codex-round3.log`。',
+      S8_04_NO_BLOCKOUT,
+      '旧 blockout.png、grid.png 和灰盒坐标只作历史对照，不上传；从实际 alpha islands 切件，footCentreAnchor 放在墙格走道中心（3 层），fitWidthPx 为 34、34、32、40，等比缩放。',
     ],
     slots: () =>
       ['unlit', 'lit', 'supplies', 'boulders'].map((kind, i) => [
@@ -3549,9 +3626,8 @@ const S8_ASSETS = [
         [i * 384, 0, 384, 1024],
         [wallPreparation(`wall-preparation-${kind}`, 0, 16, kind)],
       ]),
-    subject: [
+    subject:
       "Subject: four small pieces of a Wei garrison's wall-top equipment (守城备物) for a strategy game, four separate pieces side by side, one centred in each quarter of the image, each standing on a single grid cell of a wall walkway (the walkway itself is NOT drawn). First: an unlit iron brazier (火盆), a shallow three-legged iron bowl heaped with split firewood and kindling. Second: the same brazier lit, the wood glowing deep red and orange with bright embers and a warm glow on the iron rim, but NO flames and NO smoke (the game adds them). Third: fire-arrow supplies, two bundles of split firewood tied with rope and a bundle of arrows with oil-soaked cloth heads standing in a wooden tub. Fourth: a pile of boulders (礌石), six or seven rough grey stones the size of a man's head stacked with two rolling logs, ready to be pushed over the parapet. Each piece small enough to sit within one cell, with snow on the upper surfaces of the wood and stone.",
-    ].join('\n'),
     checks: [
       '都是能放在一格宽的走道上的小物件，缩到游戏尺寸还认得出是火盆、柴、石头；燃着的火盆只有红光，没有火苗。',
     ],
@@ -4413,7 +4489,7 @@ ${table('S7')}
 
 ${table('S8')}
 
-按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。共 29 张候选（S8-01 只有 2 张，其余每件 3 张），planner 的选择写在脚本 \`S8_PICKS\`，每件的原图哈希、选择理由和检查在 \`generation-manifest.json\`。本工具从仓库根目录 \`attempts/s8-*/sources/\` 的原图重新生成无损候选、对比图、透明件、姿态、图标和运行时插画，不出新图、不重画；上传顺序和权威提示词仍写入 \`.artifacts/siege/s8-jobs.json\`（其中 candidates=3 是原定出图数）。土山成坡用 \`footprints.json\` 的 \`selectedRegistration\`，北端实测 (1280,344)；强攻群像用实际 \`alphaBBox\`、\`footCentreAnchor\` 和 \`fitHeightLevels: 3.5\` 等比缩放；灰盒 \`registration\` 保留作对照。城头备物仍用底面中心作锚点，游戏抬高 3 层。
+按 [v0.2 计划](../../03-chencang-v0.2-plan.md) §9：分件表沿用 S4 的灰盒和品红底，夜袭姿态表沿用 S5 的版式图，图标透明底同 S6，插画同 S7。共 35 张候选（S8-01 只有 2 张，S8-04 三轮共 9 张，其余每件 3 张），planner 的选择写在脚本 \`S8_PICKS\`，每件的原图哈希、选择理由和检查在 \`generation-manifest.json\`。本工具从仓库根目录 \`attempts/s8-*/sources/\` 的原图重新生成无损候选、对比图、透明件、姿态、图标和运行时插画，不出新图、不重画；上传顺序和权威提示词仍写入 \`.artifacts/siege/s8-jobs.json\`（其中 candidates=3 是原定出图数）。土山成坡用 \`footprints.json\` 的 \`selectedRegistration\`，北端实测 (1280,344)；强攻群像用实际 \`alphaBBox\`、\`footCentreAnchor\` 和 \`fitHeightLevels: 3.5\` 等比缩放；灰盒 \`registration\` 保留作对照。城头备物第三轮不上传灰盒（方盒压过圆盆提示词），选 v8；按实际 alpha islands 切件，footCentreAnchor 放在墙格走道中心，抬高 3 层，fitWidthPx 分别为 34、34、32、40，等比缩放。
 
 ## 每个文件夹里有什么
 
@@ -4450,9 +4526,17 @@ if not sources:
     raise RuntimeError(f"{job['id']}: no original candidates in {source_dir}")
 log_path = source_dir.parent / 'codex.log'
 log = log_path.read_text()
-prompt_match = re.search(r'IMAGE PROMPT:\s*<<<\n([\s\S]*?)\n>>>', log)
-if not prompt_match or prompt_match[1] != job['prompt']:
-    raise RuntimeError(f"{job['id']}: README prompt differs from generation log")
+rounds = job.get('rounds') or [dict(round=1, ids=[int(p.stem[1:]) for p in sources],
+    references=job['references'], prompt=job['prompt'], log=str(log_path))]
+logs = {}
+for generation in rounds:
+    path = generation['log']
+    logs[path] = Path(path).read_text()
+    prompt_match = re.search(r'IMAGE PROMPT:\s*<<<\n([\s\S]*?)\n>>>', logs[path])
+    if not prompt_match or prompt_match[1] != generation['prompt']:
+        raise RuntimeError(f"{job['id']}: round {generation['round']} README prompt differs from {path}")
+if sorted(i for r in rounds for i in r['ids']) != sorted(int(p.stem[1:]) for p in sources):
+    raise RuntimeError(f"{job['id']}: generation rounds do not cover every candidate exactly once")
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -4486,6 +4570,7 @@ previous_images = {i['id']: i for i in json.loads(previous_path.read_text())['im
 comparison = Image.new('RGB', (1536, 540 * ((len(sources) + 1) // 2)), (250, 248, 239))
 draw = ImageDraw.Draw(comparison)
 for k, source in enumerate(sources):
+    generation = next(r for r in rounds if int(source.stem[1:]) in r['ids'])
     im = Image.open(source)
     if list(im.size) != job['size']:
         raise RuntimeError(f'{source}: wrong native dimensions {im.size}')
@@ -4500,14 +4585,14 @@ for k, source in enumerate(sources):
         raise RuntimeError(f'{d / path}: lossless round-trip changed pixels')
     # The log records the generator's original filename; sourcePath is the
     # byte-exact repository copy. Some jobs list source first, some output first.
-    output_lines = [line for line in log.splitlines() if f'/sources/{source.name}' in line and 'exec-' in line]
+    output_lines = [line for line in logs[generation['log']].splitlines() if f'/sources/{source.name}' in line and 'exec-' in line]
     output_names = re.findall(r'exec-[0-9a-f-]+\.png', '\n'.join(output_lines))
-    entry = dict(id=source.stem, round=1, prompt=job['prompt'],
-        type='generate-with-reference' if job['references'] else 'generate',
+    entry = dict(id=source.stem, round=generation['round'], prompt=generation['prompt'],
+        type='generate-with-reference' if generation['references'] else 'generate',
         generator=dict(tool='Codex built-in image_gen', model='gpt-6.1-sol', reasoningEffort='xhigh',
-            codexRun=str(log_path), **({'transparentRequested': True} if job['type'] == 'icons' else {})),
+            codexRun=generation['log'], **({'transparentRequested': True} if job['type'] == 'icons' else {})),
         sourceFile=output_names[-1] if output_names else source.name,
-        referenceImages=job['references'], sourcePath=os.path.relpath(source, d), sourceSha256=sha(source),
+        referenceImages=generation['references'], sourcePath=os.path.relpath(source, d), sourceSha256=sha(source),
         nativeSize=list(im.size), path=str(path), width=im.width, height=im.height,
         bytes=(d / path).stat().st_size, sha256=sha(d / path), losslessEncodingVerified=verified,
         cornerPixels=[list(im.getpixel(p)) for p in [(0,0),(im.width-1,0),(0,im.height-1),(im.width-1,im.height-1)]])
@@ -4547,6 +4632,31 @@ with tempfile.TemporaryDirectory(prefix='siege-s8-') as scratch:
         review['magentaPerPiece'] = []
         review['weakTintPerPiece'] = []
         cells = [p['cell'] for p in footprints['pieces']] if footprints else [[c*512,r*512,512,512] for r in range(2) for c in range(3)]
+        if job['id'] == 's8-04':
+            # Group by actual alpha support, never the old quarter-sheet slots.
+            # Close horizontal gaps up to 48px so detached legs/logs stay with
+            # their piece. Ambiguous sheets must fail instead of losing islands.
+            labels, island_count = ndimage.label(mask, structure=np.ones((3,3)))
+            bands, count = ndimage.label(ndimage.binary_closing(mask.any(axis=0), structure=np.ones(49)))
+            if count != 4:
+                raise RuntimeError(f'S8-04: cannot cleanly separate four alpha groups (found {count})')
+            cells, island_counts = [], []
+            for band in ndimage.find_objects(bands):
+                columns = band[0]
+                yy, xx = np.nonzero(mask[:,columns])
+                left, right = int(xx.min()+columns.start), int(xx.max()+columns.start+1)
+                top, bottom = int(yy.min()), int(yy.max()+1)
+                cells.append([left,top,right-left,bottom-top])
+                island_counts.append(len(np.unique(labels[top:bottom,left:right][mask[top:bottom,left:right]])))
+            accounted = sum(int(mask[y:y+h,x:x+w].sum()) for x,y,w,h in cells)
+            gaps = [b[0]-(a[0]+a[2]) for a,b in zip(cells,cells[1:])]
+            if accounted != int(mask.sum()) or sum(island_counts) != island_count or min(gaps) <= 48:
+                raise RuntimeError('S8-04: overlapping, clipped or unassigned alpha islands; stop for review')
+            for piece, cell in zip(footprints['pieces'], cells):
+                piece['blockoutCell'] = piece['cell']
+                piece['cell'] = cell
+            review['alphaSeparation'] = dict(method='8-connected alpha>0 islands grouped left to right across horizontal gaps <=48px; require four disjoint groups and account for every pixel/island',
+                islandCount=island_count,islandsPerPiece=island_counts,gapsPx=gaps,alphaPixels=accounted)
         for k, (x, y, w, h) in enumerate(cells):
             cell = mask[y:y+h, x:x+w]
             ys, xs = np.nonzero(cell)
@@ -4561,6 +4671,11 @@ with tempfile.TemporaryDirectory(prefix='siege-s8-') as scratch:
                 if job['id'] == 's8-06':
                     obj['fitHeightLevels'] = 3.5
                     obj['gameSizeAt24pxLevel'] = [round((bounds[2]-bounds[0])*84/(bounds[3]-bounds[1]),3),84]
+                if job['id'] == 's8-04':
+                    width = [34,34,32,40][k]
+                    obj.update(fitWidthPx=width, alphaIslandCount=island_counts[k],
+                        alphaPixelCount=int(cell.sum()),
+                        gameSizeAt100Percent=[width,round((bounds[3]-bounds[1])*width/(bounds[2]-bounds[0]),6)])
                 if job['id'] == 's8-03' and k == 2:
                     centre_x = round(obj['registration']['wallTop']['pixel'][0])
                     centre_y = np.nonzero(mask[:,centre_x])[0]
@@ -4580,6 +4695,20 @@ with tempfile.TemporaryDirectory(prefix='siege-s8-') as scratch:
                 bboxConvention='alphaBBox and bbox are [left, top, right, bottom], right/bottom exclusive; alphaBBoxOffset is actual minus blockout in that order',
                 anchorConvention='footCentreAnchor is in sheet pixels: mean x of alpha>0 in lowest 12 rows, bottom exclusive; subtract alphaBBox origin for a cropped sprite',
                 placement='Keep the blockout anchor/registration for footprint-scale pieces; finished mound uses selectedRegistration; S8-06 uses footCentreAnchor at wall foot and uniform fitHeightLevels scale')
+            if job['id'] == 's8-04':
+                footprints['selected']['placement'] = 'Crop each measured alpha group (piece.cell), retaining every island; uniformly scale alphaBBox to fitWidthPx at 100% zoom; place footCentreAnchor at the wall cell centre, height 3. Historical blockout coordinates are comparison only.'
+                contact = Image.new('RGB',(480,112),'#ece4d2')
+                draw = ImageDraw.Draw(contact)
+                for k,piece in enumerate(footprints['pieces']):
+                    obj = piece['objects'][0]
+                    box = obj['alphaBBox']
+                    width,height = obj['gameSizeAt100Percent']
+                    sprite = keyed.crop(tuple(box)).resize((width,round(height)),Image.Resampling.LANCZOS)
+                    contact.paste(sprite,(k*120+40,62-sprite.height),sprite)
+                    draw.text((k*120+8,72),['unlit','lit','supplies','boulders'][k],fill='#2a2622')
+                    draw.text((k*120+8,88),f'{width}px wide',fill='#2a2622')
+                save(contact,'.artifacts/siege/s8-04-game.png',optimize=True)
+                review['gameContactSheet'] = '.artifacts/siege/s8-04-game.png'
     if job['type'] in ('poses', 'icons'):
         if job['type'] == 'poses':
             names = ['south-march','north-march','east-march','south-thrust','south-repulsed','east-kindle']
@@ -4650,10 +4779,14 @@ manifest = dict(id=job['id'],folder=d.name,name=job['name'],directory=str(d),gen
     status='selected',rounds=[dict(round=1,ids=[int(p.stem[1:]) for p in sources],references=job['references'])],
     candidateCount=len(sources),images=images,selected=selected,comparison='comparison.png',review=review)
 if job['type'] in ('pieces', 'poses'):
-    reference = Path(job['references'][1])
+    reference = Path(job['references'][0 if job['id'] == 's8-04' else 1])
     manifest['styleReference'] = dict(asset=reference.parent.parent.name[:5].upper(), id=reference.stem,
         path=os.path.relpath(reference,d))
-    manifest['rounds'][0]['blockout'] = 'guide' if job['type'] == 'poses' else 'original'
+    if job['id'] == 's8-04':
+        manifest['rounds'] = rounds
+        manifest['prompt'] = job['prompt']
+    else:
+        manifest['rounds'][0]['blockout'] = 'guide' if job['type'] == 'poses' else 'original'
 else:
     # S6/S7 also expose the common prompt at the manifest's top level.
     manifest['prompt'] = job['prompt']
@@ -4666,7 +4799,8 @@ if job['type'] == 'poses':
 print(json.dumps(dict(manifest=manifest,footprints=footprints)))
 `;
 
-async function processS8(asset, dir, prompt, footprints) {
+async function processS8(asset, dir, blocks, footprints) {
+  const prompt = blocks[0][1];
   const result = JSON.parse(
     execFileSync(
       join(homedir(), 'simple_ML_practices/.venv/bin/python'),
@@ -4683,6 +4817,14 @@ async function processS8(asset, dir, prompt, footprints) {
           references: asset.references,
           size: asset.size,
           prompt,
+          ...(asset.promptRounds
+            ? {
+                rounds: asset.promptRounds.map(({ promptBlock, ...round }) => ({
+                  ...round,
+                  prompt: blocks[promptBlock][1],
+                })),
+              }
+            : {}),
           footprints,
         }),
       ],
@@ -4789,8 +4931,12 @@ for (const asset of ASSETS) {
         throw new Error(`${asset.id}: missing upload reference ${reference}`, { cause: error });
       });
     const blocks = [...readme.matchAll(/```text\n([\s\S]*?)\n```/g)];
-    if (blocks.length !== 1) throw new Error(`${asset.id}: expected one authoritative prompt`);
-    if (asset.final) await processS8(asset, dir, blocks[0][1], s8Footprints);
+    const expectedBlocks = asset.promptRounds ? 2 : 1;
+    if (blocks.length !== expectedBlocks)
+      throw new Error(
+        `${asset.id}: expected ${expectedBlocks} prompt blocks (authoritative first)`,
+      );
+    if (asset.final) await processS8(asset, dir, blocks, s8Footprints);
     s8Jobs.push({
       id: asset.zh.split(' ')[0],
       folder: dir,

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { FRAME, POSE_SETS, sheet } from '../../src/siege/render/assets';
+import { CAMP, FRAME, MAP, POSE_SETS, sheet } from '../../src/siege/render/assets';
 import { placeCrop, placePiece, spriteObject } from '../../src/siege/render/mapPieces';
 import { compareDepth, project, sliceObject } from '../../src/siege/render/scene';
 import { engineSprite, unitVisual } from '../../src/siege/render/stateArt';
@@ -16,10 +16,26 @@ import {
   stormingSprite,
   SPRITE_CAP,
 } from '../../src/siege/render/v02Art';
-import { SiegeMapView } from '../../src/siege/render/SiegeMapView';
+import {
+  SiegeMapView,
+  SILHOUETTE_OPACITY,
+  SILHOUETTE_TINTS,
+} from '../../src/siege/render/SiegeMapView';
+import {
+  FootholdPips,
+  FOOTHOLD_RADIUS,
+  PreparationFlames,
+} from '../../src/siege/render/v02Effects';
 import { createRenderScene, RENDER_SCENES } from '../../src/siege/dev/renderScenes';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { engine } from './rulesFixtures';
+
+const markupFor = (fixture: ReturnType<typeof createRenderScene>, props = {}) =>
+  renderToStaticMarkup(
+    createElement(SiegeMapView, { ...fixture, locale: 'en', showRange: false, ...props }),
+  );
+const visibleImages = (markup: string) =>
+  markup.replace(/<defs>[\s\S]*?<\/defs>/g, '').match(/<image\b/g)?.length ?? 0;
 
 describe('v0.2 pure sprite mapping and registration', () => {
   it.each([
@@ -114,11 +130,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
     );
   });
   it('keeps all footprint-scale S8 anchors on the projected cells, including raised ladder wall top', () => {
-    for (const asset of [
-      's8-01-covered-ladder',
-      's8-02-covered-ram',
-      's8-04-wall-top-preparations',
-    ]) {
+    for (const asset of ['s8-01-covered-ladder', 's8-02-covered-ram']) {
       const source = sheet(asset);
       source.pieces.forEach((piece, i) => {
         const object = piece.objects[0]!,
@@ -196,20 +208,140 @@ describe('v0.2 pure sprite mapping and registration', () => {
     expect(stormingSprite(state, unit)).toBeUndefined();
     expect(unitVisual(state, unit).figures.length).toBe(formationCount(unit.troops));
   });
+  it('draws both storming masses after every slice of their own raised ladder', () => {
+    const fixture = createRenderScene('assault');
+    for (const covered of [false, true]) {
+      fixture.state.engines.forEach((e) => {
+        e.covered = covered;
+      });
+      const markup = markupFor(fixture);
+      for (const [index, x] of [18, 29].entries()) {
+        const storm = markup.indexOf(`data-piece="storm-${fixture.state.units[index + 1]!.id}"`);
+        expect(storm).toBeGreaterThan(markup.lastIndexOf(`data-piece="ladder-${x}"`));
+        expect(markup.indexOf('data-testid="foothold-pips"')).toBeGreaterThan(storm);
+      }
+    }
+  });
+  it('draws gate-top units at the front parapet, after all tower slices, without a tower silhouette', () => {
+    const fixture = createRenderScene('preparations');
+    const unit = fixture.state.units.find((u) => u.side === 'wei')!;
+    for (const gate of MAP.objects.filter((o) => o.kind === 'gate-tower')) {
+      Object.assign(unit, {
+        x: gate.cells[0] + Math.floor((gate.cells[2] - gate.cells[0]) / 2),
+        y: Math.floor((gate.cells[1] + gate.cells[3]) / 2),
+        level: 'wall',
+      });
+      const visual = unitVisual(fixture.state, unit);
+      expect(visual.foot).toEqual(project(FRAME, unit.x + 0.5, gate.cells[3] + 1, 3));
+      for (const slice of sliceObject(FRAME, gate))
+        expect(compareDepth(slice, visual.depth)).toBeLessThan(0);
+      const markup = markupFor(fixture);
+      const normalUnit = markup.indexOf(`data-unit="${unit.id}"`);
+      expect(normalUnit).toBeGreaterThan(markup.lastIndexOf(`data-object="${gate.id}"`));
+      expect(markup).toContain(`data-gate-top="${gate.id}"`);
+      const cover = markup.match(
+        new RegExp(`<mask[^>]+id="[^"]*-cover-${unit.id}"[^>]*>([\\s\\S]*?)</mask>`),
+      )![1]!;
+      // A side gate's feet can still sit behind the adjoining wall. Its own
+      // tower must never be the occluder; the south gate is fully unobscured.
+      expect(cover).not.toContain(`-${gate.id}-`);
+      if (gate.id === 'gate-south')
+        expect(markup).not.toContain(`cover-${unit.id})" opacity="0.35"`);
+    }
+  });
+  it('shows larger hollow empty pips beside the ladder with dark outlines and paper rings', () => {
+    const state = createRenderScene('footholds').state;
+    const markup = renderToStaticMarkup(createElement(FootholdPips, { state }));
+    expect(FOOTHOLD_RADIUS).toBeCloseTo((FRAME.lh / 8) * 1.8);
+    const cores = [...markup.matchAll(/<circle data-pip-core="true"[^>]+/g)].map((m) => m[0]);
+    expect(cores).toHaveLength(12);
+    expect(cores.filter((c) => c.includes('fill="none"'))).toHaveLength(6);
+    expect(cores.filter((c) => c.includes('fill="#edbd56"'))).toHaveLength(6);
+    expect(cores.every((c) => c.includes('stroke="#372e26"'))).toBe(true);
+    for (const x of [16, 19, 28, 31])
+      expect(markup).toContain(`cx="${project(FRAME, x + 0.98, 17, 1.5)[0]}"`);
+    expect(markup.match(/stroke="#ece4d2"/g)).toHaveLength(12);
+  });
+  it('keeps hidden units findable with side-tinted 35% silhouettes, including xray', () => {
+    const fixture = createRenderScene('formations');
+    for (const xray of [false, true]) {
+      const markup = markupFor(fixture, { xray });
+      const silhouettes = [...markup.matchAll(/<g[^>]+data-silhouette="(shu|wei)"[^>]+>/g)];
+      expect(silhouettes.length).toBeGreaterThan(0);
+      expect(silhouettes.every((m) => m[0].includes(`opacity="${SILHOUETTE_OPACITY}"`))).toBe(true);
+      for (const tint of Object.values(SILHOUETTE_TINTS))
+        expect(markup).toContain(`flood-color="${tint}"`);
+    }
+  });
+  it('fits preparations uniformly to their game widths, with measured feet on the walkway centre and bundles beside bowls', () => {
+    const state = createRenderScene('preparations').state;
+    const sprites = preparationSprites(state);
+    const source = sheet('s8-04-wall-top-preparations');
+    for (const sprite of sprites.filter((s) => s.id.startsWith('preparation-'))) {
+      const index = Number(sprite.id.at(-1));
+      const object = source.pieces[index]!.objects[0]!;
+      expect(sprite.crop).toEqual(object.alphaBBox);
+      const sx = (sprite.rect[2] - sprite.rect[0]) / (sprite.crop[2] - sprite.crop[0]);
+      const sy = (sprite.rect[3] - sprite.rect[1]) / (sprite.crop[3] - sprite.crop[1]);
+      expect(sx).toBeCloseTo(sy, 10);
+      expect(sprite.rect[2] - sprite.rect[0]).toBeCloseTo([34, 34, 32, 40][index]!);
+      const [x, y] = sprite.cells;
+      const target = project(FRAME, x + 0.5, y + 0.5, 3);
+      const anchor = object.footCentreAnchor!;
+      expect(sprite.rect[1] + (anchor[1] - sprite.crop[1]) * sy).toBeCloseTo(target[1]);
+      if (index !== 2)
+        expect(sprite.rect[0] + (anchor[0] - sprite.crop[0]) * sx).toBeCloseTo(target[0]);
+      if (sprite.flame) {
+        expect(sprite.flame[0]).toBe(target[0]);
+        expect(sprite.flame[1]).toBeGreaterThan(sprite.rect[1]);
+        expect(sprite.flame[1]).toBeLessThan(sprite.rect[3]);
+      }
+    }
+    for (const [key, brazier] of Object.entries(state.preparations.braziers)) {
+      const bowl = sprites.find((s) => s.id === `preparation-${key}-1`)!;
+      const bundle = sprites.find((s) => s.id === `preparation-${key}-2`);
+      if (brazier.litDay === state.day) {
+        expect(bundle).toBeDefined();
+        expect(bundle!.rect[0] - bowl.rect[2]).toBeCloseTo(3, 10);
+        expect(bundle!.rect[3]).toBeCloseTo(bowl.rect[3]);
+        expect(bundle!.cells).toEqual(bowl.cells);
+      } else expect(bundle).toBeUndefined();
+    }
+    for (const flare of [false, true]) {
+      const flames = renderToStaticMarkup(createElement(PreparationFlames, { sprites, flare }));
+      const images = [...flames.matchAll(/<image[^>]+data-flame="[^"]+"[^>]+>/g)];
+      expect(images).toHaveLength(3);
+      for (const [image] of images) {
+        expect(Number(image.match(/\bwidth="([^"]+)"/)![1])).toBeCloseTo(34 / 3);
+        expect(Number(image.match(/\bheight="([^"]+)"/)![1])).toBeCloseTo(17 * (flare ? 1.5 : 1));
+      }
+    }
+  });
+  it('shows thin ladder wall frames only when the cell is a legal action target', () => {
+    const fixture = createRenderScene('footholds');
+    expect(markupFor(fixture)).not.toContain('data-overlay="climb"');
+    expect(markupFor(fixture, { selected: 'ladder-19' })).not.toContain('data-overlay="climb"');
+    const markup = markupFor(fixture, { targets: [{ x: 19, y: 16, level: 'wall' }] });
+    const frames = markup.match(/<rect[^>]+data-overlay="climb"[^>]+/g)!;
+    expect(frames).toHaveLength(1);
+    expect(frames[0]).toContain('data-cell="19,16,wall"');
+    expect(frames[0]).toContain('stroke-width="1"');
+    expect(markup).not.toContain('data-overlay="target"');
+  });
   it('enforces the visible image budget, counts silhouettes and leaves source state untouched in all scenes', () => {
     const counts: Record<string, number> = {};
     for (const name of RENDER_SCENES) {
       const fixture = createRenderScene(name),
         before = structuredClone(fixture);
-      const markup = renderToStaticMarkup(
-        createElement(SiegeMapView, { ...fixture, locale: 'en', showRange: false }),
-      );
+      const markup = markupFor(fixture);
       const count = Number(markup.match(/data-sprite-count="(\d+)"/)![1]);
-      const visible = markup.replace(/<defs>[\s\S]*?<\/defs>/g, '').match(/<image\b/g)?.length ?? 0;
+      const visible = visibleImages(markup);
       counts[name] = count;
-      expect(visible, name).toBeLessThanOrEqual(count);
+      expect(visible, name).toBe(count);
       expect(count, name).toBeLessThanOrEqual(SPRITE_CAP);
       expect(markup).not.toContain('href="undefined"');
+      expect(markup).toContain('data-sprites-omitted="0"');
+      for (const sprite of CAMP) expect(markup, sprite.id).toContain(`data-piece="${sprite.id}"`);
       expect(fixture).toEqual(before);
     }
     console.info('render-v02 visible sprite budgets:', JSON.stringify(counts));
@@ -217,8 +349,35 @@ describe('v0.2 pure sprite mapping and registration', () => {
       placePiece(sheet('s8-02-covered-ram'), 0, [i, 20], FRAME, { id: `ram-${i}` }),
     );
     const bounded = boundSprites(candidates, 120);
-    expect(bounded.used).toBeLessThanOrEqual(300);
-    expect(bounded.omitted).toBeGreaterThan(0);
+    expect(bounded.sprites).toHaveLength(500);
+    expect(bounded.used).toBe(1120);
+    expect(bounded.omitted).toBe(0);
+    expect(bounded.remaining).toBe(0);
+    expect(counts.worst).toBe(448);
+  });
+  it('counts replay replacements and effects exactly, and keeps scenery when every optional silhouette is exhausted', () => {
+    const fixture = createRenderScene('worst');
+    for (const extra of [
+      { night: { ...fixture.night!, previousEngine: { ...fixture.state.engines[0]!, y: 22 } } },
+      {
+        effectAction: {
+          type: 'fireArrows',
+          from: { x: 16, y: 16, level: 'wall' },
+          to: { x: 16, y: 20, level: 'ground' },
+        },
+      },
+    ]) {
+      const markup = markupFor(fixture, extra);
+      expect(visibleImages(markup)).toBe(Number(markup.match(/data-sprite-count="(\d+)"/)![1]));
+    }
+    fixture.state.engines = Array.from({ length: 100 }, (_, i) => ({
+      ...fixture.state.engines[0]!,
+      id: `overflow-${i}`,
+    }));
+    const markup = markupFor(fixture);
+    expect(visibleImages(markup)).toBeGreaterThan(SPRITE_CAP);
+    expect(markup).not.toContain('data-silhouette=');
+    for (const sprite of CAMP) expect(markup).toContain(`data-piece="${sprite.id}"`);
   });
   it('retains processed art metadata verbatim', () => {
     for (const asset of [

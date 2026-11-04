@@ -194,7 +194,7 @@ export function unitVisual(
       : project(
           FRAME,
           unit.x + 0.5,
-          (gateTop?.cells[3] ?? unit.y) + (unit.level === 'wall' ? WALL_FOOT : 0.5),
+          gateTop ? gateTop.cells[3] + 1 : unit.y + (unit.level === 'wall' ? WALL_FOOT : 0.5),
           h,
         );
   const figures = storming
