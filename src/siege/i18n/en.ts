@@ -167,6 +167,8 @@ export const en = {
   contextWallFoot: 'At the wall foot: climb for +{gain} foothold.',
   climbActed: 'Already acted today. It can climb tomorrow.',
   climbDefenderAbove: '{name} holds the wall above. Attack or assault to build footholds.',
+  climbAllyAbove: '{name} holds the top of the ladder. Move that unit along the wall, then climb.',
+  climbAllyAboveFoot: '{name} holds the wall above. Move that unit along the wall, then climb.',
   climbRaiseAtBase: 'The ladder is not raised. Select it, press Raise ladder, then Climb.',
   climbRaiseThenWalk:
     'The ladder is not raised. Select it, press Raise ladder, then move to the gold frame.',

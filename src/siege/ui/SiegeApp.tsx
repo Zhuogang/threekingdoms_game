@@ -370,7 +370,8 @@ export default function SiegeApp({
   const guideLabel = text(
     guide?.kind === 'ladderNotRaised'
       ? 'climbUnraisedLabel'
-      : (guide?.kind === 'walkToBase' && guide.route === 'wallFoot') ||
+      : ((guide?.kind === 'walkToBase' || guide?.kind === 'allyAbove') &&
+            guide.route === 'wallFoot') ||
           (guide?.kind === 'defenderAbove' &&
             unit &&
             climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')

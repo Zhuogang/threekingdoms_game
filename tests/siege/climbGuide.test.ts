@@ -5,6 +5,7 @@ import { createSiegeState } from '../../src/siege/rules/state';
 import { cellTerrain } from '../../src/siege/rules/map';
 import { reachableCells } from '../../src/siege/rules/movement';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
+import type { SiegeUnit } from '../../src/siege/rules/types';
 import { actionContext, deployUnit, siegeCommands } from '../../src/siege/ui/commands';
 import { climbGuide, climbGuideText, type ClimbGuide } from '../../src/siege/ui/climbGuide';
 import {
@@ -114,6 +115,110 @@ describe('climb guide rule observations', () => {
       canReach: false,
       moved: true,
     });
+  });
+  it.each(['ladder', 'wallFoot'] as const)(
+    'reports an ally above a %s at the base and on the way without changing routes or state',
+    (route) => {
+      const { state, unit, ladder } = fixture();
+      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      if (route === 'ladder') ladder.raisedAt = top;
+      else {
+        state.engines = [];
+        state.trenchFill['18,17'] = T.trenchCapacity;
+        state.trenchFill['18,18'] = T.trenchCapacity;
+      }
+      const ally: SiegeUnit = { ...unit, id: 'ally', ...top, level: 'wall', routed: true };
+      state.units.push(ally);
+      for (const atBase of [false, true]) {
+        Object.assign(unit, { x: routeBase.x, y: routeBase.y + (atBase ? 0 : 1) });
+        const before = structuredClone(state);
+        expect(climbGuide(state, unit.id)).toEqual({
+          kind: 'allyAbove',
+          allyId: ally.id,
+          route,
+          top,
+          base: routeBase,
+          atBase,
+        });
+        expect(state).toEqual(before);
+      }
+      // Living occupants block the top even when routed; dead or ground allies do not.
+      ally.troops = 0;
+      expect(climbGuide(state, unit.id)?.kind).toBe('ready');
+      ally.troops = unit.troops;
+      ally.level = 'ground';
+      expect(climbGuide(state, unit.id)?.kind).toBe('ready');
+    },
+  );
+  it('uses raisedAt for the chosen ladder and keeps the nearest route despite an occupied top', () => {
+    const { state, unit, ladder } = fixture();
+    ladder.raisedAt = { x: 19, y: 16 };
+    state.engines.push(engine('ladder', 21, 21, { id: 'far', raisedAt: { x: 21, y: 16 } }));
+    Object.assign(unit, { x: 18, y: 20 });
+    state.units.push({ ...unit, id: 'ally', ...ladder.raisedAt, level: 'wall' });
+    expect(climbGuide(state, unit.id)).toMatchObject({
+      kind: 'allyAbove',
+      base,
+      top: ladder.raisedAt,
+      atBase: false,
+    });
+  });
+  it('checks defenders before allies at either kind of base', () => {
+    for (const y of [19, 17]) {
+      const { state, unit, ladder } = fixture();
+      Object.assign(unit, { x: 18, y });
+      ladder.x = 18;
+      ladder.y = y;
+      ladder.raisedAt = { x: 19, y: 16 };
+      if (y === 17) state.trenchFill['18,17'] = T.trenchCapacity;
+      else state.engines.push(engine('ladder', 18, 19, { id: 'second', raisedAt: top }));
+      state.units.push(
+        { ...unit, id: 'ally', ...ladder.raisedAt, level: 'wall' },
+        { ...unit, id: 'enemy', side: 'wei', ...top, level: 'wall' },
+      );
+      expect(climbGuide(state, unit.id)).toMatchObject({
+        kind: 'defenderAbove',
+        defenderId: 'enemy',
+      });
+    }
+  });
+  it('checks an unraised ladder before a Shu unit on the wall, at the base and on the way', () => {
+    const { state, unit } = fixture();
+    state.units.push({ ...unit, id: 'ally', ...top, level: 'wall' });
+    for (const y of [19, 20]) {
+      unit.y = y;
+      expect(climbGuide(state, unit.id)).toMatchObject({
+        kind: 'ladderNotRaised',
+        atBase: y === 19,
+      });
+    }
+  });
+  it('never reports walkToBase with zero steps across route and occupant states', () => {
+    for (const route of ['ladder', 'wallFoot'] as const)
+      for (const occupant of ['none', 'ally', 'enemy', 'dead'] as const)
+        for (const atBase of [false, true])
+          for (const moved of [false, true]) {
+            const { state, unit, ladder } = fixture();
+            const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+            ladder.raisedAt = top;
+            if (route === 'wallFoot') {
+              state.engines = [];
+              state.trenchFill['18,17'] = T.trenchCapacity;
+            }
+            Object.assign(unit, { ...routeBase, y: routeBase.y + (atBase ? 0 : 1), moved });
+            if (occupant !== 'none')
+              state.units.push({
+                ...unit,
+                id: 'occupant',
+                side: occupant === 'enemy' ? 'wei' : 'shu',
+                ...top,
+                level: 'wall',
+                troops: occupant === 'dead' ? 0 : unit.troops,
+              });
+            const guide = climbGuide(state, unit.id)!;
+            if (guide.kind === 'walkToBase') expect(guide.steps).toBeGreaterThan(0);
+            if (atBase) expect(guide.kind).not.toBe('walkToBase');
+          }
   });
   it('uses actual reachability rather than Manhattan distance for blocked routes', () => {
     const { state, unit, ladder } = fixture();
@@ -242,6 +347,16 @@ const sentences: [ClimbGuide, string, string][] = [
     'Name holds the wall above. Attack or assault to build footholds.',
   ],
   [
+    { kind: 'allyAbove', allyId: 'ally', route: 'ladder', top, base, atBase: true },
+    '梯顶被姓名占着：先让姓名沿城墙走开，才能继续攀爬。',
+    'Name holds the top of the ladder. Move that unit along the wall, then climb.',
+  ],
+  [
+    { kind: 'allyAbove', allyId: 'ally', route: 'wallFoot', top, base, atBase: false },
+    '墙头被姓名占着：先让姓名沿城墙走开，才能继续攀爬。',
+    'Name holds the wall above. Move that unit along the wall, then climb.',
+  ],
+  [
     { kind: 'ladderNotRaised', ladderId: 'ladder', base, atBase: true, steps: 0 },
     '云梯还没架起：选中云梯点「架梯」，再点「登城」。',
     'The ladder is not raised. Select it, press Raise ladder, then Climb.',
@@ -323,6 +438,8 @@ describe('bilingual climb guide sentences', () => {
       for (const key of [
         'climbActed',
         'climbDefenderAbove',
+        'climbAllyAbove',
+        'climbAllyAboveFoot',
         'climbRaiseAtBase',
         'climbRaiseThenWalk',
         'climbWalkLadder',

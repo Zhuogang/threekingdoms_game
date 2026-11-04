@@ -147,6 +147,8 @@ export const zh = {
   contextWallFoot: '你在墙脚：攀爬，立足 +{gain}。',
   climbActed: '今天已行动，明天才能攀爬。',
   climbDefenderAbove: '头上有守军（{name}），不能攀爬：用「攻击」或强攻积累立足。',
+  climbAllyAbove: '梯顶被{name}占着：先让{name}沿城墙走开，才能继续攀爬。',
+  climbAllyAboveFoot: '墙头被{name}占着：先让{name}沿城墙走开，才能继续攀爬。',
   climbRaiseAtBase: '云梯还没架起：选中云梯点「架梯」，再点「登城」。',
   climbRaiseThenWalk: '云梯还没架起：选中云梯点「架梯」，部队再移到金框。',
   climbWalkLadder: '要站到金框（云梯所在那一格）才能登城，还差 {n} 格。',

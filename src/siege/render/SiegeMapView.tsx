@@ -74,6 +74,7 @@ const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
 const NO_CELLS: SiegePosition[] = [];
 const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
+const DOUBLE_CLICK_MS = 500;
 export const SILHOUETTE_OPACITY = 0.35;
 export const SILHOUETTE_TINTS = { shu: '#58865b', wei: '#365778' };
 interface Layer {
@@ -148,6 +149,10 @@ export const SiegeMapView = memo(
     const prefix = useId().replace(/:/g, '');
     const frame = useRef<HTMLDivElement>(null);
     const svg = useRef<SVGSVGElement>(null);
+    const selectedAt = useRef(performance.now());
+    useEffect(() => {
+      selectedAt.current = performance.now();
+    }, [selected]);
     const drag = useRef<{ x: number; y: number; view: BattlefieldViewBox; moved: boolean } | null>(
       null,
     );
@@ -913,7 +918,14 @@ export const SiegeMapView = memo(
             const element = stack[0];
             const topSelect = element?.closest('[data-select]')?.getAttribute('data-select');
             const green = stack.find((el) => el.getAttribute('data-overlay') === 'reachable');
-            if (green && (preferCells || !topSelect)) {
+            const framed =
+              green &&
+              tutorialCells.some(
+                (c) => `${c.x},${c.y},${c.level}` === green.getAttribute('data-cell'),
+              );
+            const ownBody =
+              topSelect === selected && performance.now() - selectedAt.current >= DOUBLE_CLICK_MS;
+            if (green && (preferCells || !topSelect || framed || ownBody)) {
               const [x, y, level] = green.getAttribute('data-cell')!.split(',');
               onCell?.({ x: Number(x), y: Number(y), level: level === 'wall' ? 'wall' : 'ground' });
               return;

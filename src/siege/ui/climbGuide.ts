@@ -16,6 +16,14 @@ export type ClimbGuide =
   | { kind: 'acted' }
   | { kind: 'ready'; position: ClimbingPosition; gain: number; top: Cell }
   | { kind: 'defenderAbove'; defenderId: string; top: Cell; base: Cell }
+  | {
+      kind: 'allyAbove';
+      allyId: string;
+      route: 'ladder' | 'wallFoot';
+      top: Cell;
+      base: Cell;
+      atBase: boolean;
+    }
   | { kind: 'ladderNotRaised'; ladderId: string; base: Cell; atBase: boolean; steps: number }
   | {
       kind: 'walkToBase';
@@ -58,6 +66,18 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
       top: { x: defender.x, y: defender.y },
       base: { x: unit.x, y: unit.y },
     };
+  const ally = state.units.find(
+    (u) => u.side === 'shu' && u.troops > 0 && climbingPosition(state, unit, u) !== null,
+  );
+  if (ally)
+    return {
+      kind: 'allyAbove',
+      allyId: ally.id,
+      route: climbingPosition(state, unit, ally) === 'ladder' ? 'ladder' : 'wallFoot',
+      top: { x: ally.x, y: ally.y },
+      base: { x: unit.x, y: unit.y },
+      atBase: true,
+    };
 
   const routes = [
     ...state.engines
@@ -67,12 +87,14 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
         base: { x: e.x, y: e.y },
         ladderId: e.id,
         raised: Boolean(e.raisedAt),
+        top: e.raisedAt,
       })),
     ...SOUTH_TRENCH.filter((c) => isWallFoot(state, c.x, c.y)).map((base) => ({
       route: 'wallFoot' as const,
       base,
       ladderId: '',
       raised: true,
+      top: { x: base.x, y: base.y - 1 },
     })),
   ].map((route) => ({
     ...route,
@@ -99,6 +121,19 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
   const { base, steps } = route;
   if (!route.raised)
     return { kind: 'ladderNotRaised', ladderId: route.ladderId, base, atBase: steps === 0, steps };
+  const allyAbove = state.units.find(
+    (u) =>
+      u.side === 'shu' && u.troops > 0 && u.level === 'wall' && route.top && sameCell(u, route.top),
+  );
+  if (allyAbove && route.top)
+    return {
+      kind: 'allyAbove',
+      allyId: allyAbove.id,
+      route: route.route,
+      top: route.top,
+      base,
+      atBase: false,
+    };
   return {
     kind: 'walkToBase',
     route: route.route,
@@ -130,6 +165,10 @@ export function climbGuideText(
       );
     case 'defenderAbove':
       return siegeText(locale, 'climbDefenderAbove', { name: nameOf(guide.defenderId) });
+    case 'allyAbove':
+      return siegeText(locale, guide.route === 'ladder' ? 'climbAllyAbove' : 'climbAllyAboveFoot', {
+        name: nameOf(guide.allyId),
+      });
     case 'ladderNotRaised':
       return siegeText(locale, guide.atBase ? 'climbRaiseAtBase' : 'climbRaiseThenWalk');
     case 'walkToBase':

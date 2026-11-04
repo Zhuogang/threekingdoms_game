@@ -16,6 +16,31 @@ import {
 } from './helpers';
 
 test.use({ viewport: { width: 1280, height: 720 } });
+async function loadSkippedBattle(
+  page: Page,
+  state: ReturnType<typeof createSiegeState>,
+  locale: SiegeLocale,
+) {
+  await loadFixture(
+    page,
+    {
+      state,
+      playerSide: 'shu',
+      phase: 'battle',
+      facings: {},
+      presentation: {
+        openingStep: 6,
+        bannersSeen: [1],
+        dismissedHints: ['wall', 'trench', 'ladder', 'frontage', 'innerWall'],
+        reportReadDay: 1,
+        walkthrough: { status: 'skipped', step: 1, startDay: 1, logStart: 0 },
+      },
+    },
+    locale,
+  );
+  await dismissCards(page);
+  await expect(page.getByTestId('walkthrough')).toHaveCount(0);
+}
 async function expectGuide(page: Page, locale: SiegeLocale, kind: string) {
   const game = await snapshot(page);
   const id = await page.getByTestId('selected-actor').locator('h3').textContent();
@@ -239,35 +264,112 @@ for (const locale of ['zh', 'en'] as const) {
     }
   }
 
-  for (const pressMove of [false, true]) {
-    test(`${locale}: clicking the northern cell ${pressMove ? 'with Move moves' : 'without Move selects'} Wei Yan`, async ({
+  for (const unitId of ['shu-liaohua', 'shu-wangping']) {
+    test(`${locale}: the gold frame moves ${unitId} through Wang Ping's body without Move`, async ({
       page,
     }) => {
-      await start(page, locale);
-      await begin(page, locale);
+      const state = createSiegeState(228);
+      state.engines[0]!.raisedAt = { x: 18, y: 16 };
+      Object.assign(
+        state.units.find((u) => u.id === 'shu-weiyan')!,
+        {
+          x: 18,
+          y: 16,
+          level: 'wall',
+        },
+      );
+      Object.assign(
+        state.units.find((u) => u.id === 'shu-wangping')!,
+        { x: 18, y: 20 },
+      );
+      Object.assign(
+        state.units.find((u) => u.id === 'shu-liaohua')!,
+        { x: 17, y: 20 },
+      );
+      await loadSkippedBattle(page, state, locale);
+      await selectActor(page, unitId);
+      await expectGuide(page, locale, 'allyAbove');
+      await expectLabel(page, '18,19,ground', siegeText(locale, 'climbBaseLabel'));
+      if (unitId === 'shu-wangping') await page.waitForTimeout(600);
+      await clickCell(page, 'reachable', '18,19,ground');
+      const after = await snapshot(page);
+      expect(after.state.units.find((u) => u.id === unitId)).toMatchObject({
+        x: 18,
+        y: 19,
+        moved: true,
+      });
+      if (unitId === 'shu-liaohua')
+        expect(after.state.units.find((u) => u.id === 'shu-wangping')).toEqual(
+          state.units.find((u) => u.id === 'shu-wangping'),
+        );
+      const climber = after.state.units.find((u) => u.id === unitId)!;
+      await expect(page.getByTestId('selected-actor').locator('h3')).toHaveText(
+        locale === 'zh' ? climber.officer.chinese : climber.officer.name,
+      );
+      await expectGuide(page, locale, 'allyAbove');
+      const ally = state.units.find((u) => u.id === 'shu-weiyan')!;
+      await expect(page.getByTestId('action-context')).toContainText(
+        siegeText(locale, 'climbAllyAbove', {
+          name: locale === 'zh' ? ally.officer.chinese : ally.officer.name,
+        }),
+      );
+      await expect(page.getByTestId('action-context')).not.toContainText('0');
+      await expectLabel(page, '18,19,ground', siegeText(locale, 'climbBaseLabel'));
+      await expectNoPanelScroll(page, 'action-panel');
+    });
+  }
+
+  for (const pressMove of [false, true]) {
+    test(`${locale}: clicking the northern cell ${pressMove ? 'with Move' : 'without Move after 600 ms'} moves Wei Yan`, async ({
+      page,
+    }) => {
+      await loadSkippedBattle(page, createSiegeState(228), locale);
       await selectActor(page, 'shu-weiyan');
-      const before = await snapshot(page);
       if (pressMove) await page.getByTestId('command-move').click();
+      else await page.waitForTimeout(600);
       await clickCell(page, 'reachable', '20,20,ground');
       const after = await snapshot(page);
       expect(after.state.units.find((u) => u.id === 'shu-weiyan')).toMatchObject({
         x: 20,
-        y: pressMove ? 20 : 21,
-        moved: pressMove,
+        y: 20,
+        moved: true,
       });
       const unit = after.state.units.find((u) => u.id === 'shu-weiyan')!;
       await expect(page.getByTestId('selected-actor').locator('h3')).toHaveText(
         locale === 'zh' ? unit.officer.chinese : unit.officer.name,
       );
-      if (!pressMove) {
-        expect(after).toEqual(before);
-        const rect = (await page.getByTestId('map-unit-shu-weiyan').boundingBox())!;
-        await page.mouse.dblclick(rect.x + rect.width / 2, rect.y + rect.height / 4);
-        expect(await snapshot(page)).toEqual(before);
-      }
       await expectNoPanelScroll(page, 'action-panel');
     });
   }
+
+  test(`${locale}: double-clicking Wei Yan's upper body selects him without spending a move`, async ({
+    page,
+  }) => {
+    await loadSkippedBattle(page, createSiegeState(228), locale);
+    await selectActor(page, 'shu-weiyan');
+    const point = await page
+      .locator('[data-overlay="reachable"][data-cell="20,20,ground"]')
+      .evaluate((element) => {
+        const rect = element as SVGRectElement;
+        const p = new DOMPoint(
+          rect.x.baseVal.value + rect.width.baseVal.value / 2,
+          rect.y.baseVal.value + rect.height.baseVal.value / 2,
+        ).matrixTransform(rect.getScreenCTM()!);
+        return { x: p.x, y: p.y };
+      });
+    await selectActor(page, 'shu-jiangwei');
+    await expect(page.locator('[data-overlay="reachable"][data-cell="20,20,ground"]')).toHaveCount(
+      0,
+    );
+    const before = await snapshot(page);
+    await page.mouse.dblclick(point.x, point.y);
+    const unit = before.state.units.find((u) => u.id === 'shu-weiyan')!;
+    await expect(page.getByTestId('selected-actor').locator('h3')).toHaveText(
+      locale === 'zh' ? unit.officer.chinese : unit.officer.name,
+    );
+    expect(await snapshot(page)).toEqual(before);
+    await expectNoPanelScroll(page, 'action-panel');
+  });
 
   test(`${locale}: another infantry's upper body selects through a green cell without Move`, async ({
     page,
@@ -390,5 +492,37 @@ for (const locale of ['zh', 'en'] as const) {
     });
     await expect(page.getByTestId('hint-wall')).toHaveCount(0);
     await expect(page.getByTestId('climb-base-label')).toHaveCount(0);
+  });
+
+  test(`${locale}: an ally above a wall foot keeps the wall-foot label and fits the panel`, async ({
+    page,
+  }) => {
+    const state = createSiegeState(228);
+    state.engines = [];
+    state.trenchFill['18,17'] = T.trenchCapacity;
+    Object.assign(
+      state.units.find((u) => u.id === 'shu-wangping')!,
+      { x: 18, y: 17 },
+    );
+    Object.assign(
+      state.units.find((u) => u.id === 'shu-weiyan')!,
+      {
+        x: 18,
+        y: 16,
+        level: 'wall',
+      },
+    );
+    await loadSkippedBattle(page, state, locale);
+    await selectActor(page, 'shu-wangping');
+    await expectGuide(page, locale, 'allyAbove');
+    const ally = state.units.find((u) => u.id === 'shu-weiyan')!;
+    await expect(page.getByTestId('action-context')).toContainText(
+      siegeText(locale, 'climbAllyAboveFoot', {
+        name: locale === 'zh' ? ally.officer.chinese : ally.officer.name,
+      }),
+    );
+    await clickGreyClimb(page);
+    await expectLabel(page, '18,17,ground', siegeText(locale, 'climbWallFootLabel'));
+    await expectNoPanelScroll(page, 'action-panel');
   });
 }

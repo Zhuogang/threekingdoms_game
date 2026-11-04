@@ -33,7 +33,10 @@ describe('siege bilingual text', () => {
         zh = SIEGE_COPY.zh[key];
       expect(en.trim()).not.toBe('');
       expect(zh.trim()).not.toBe('');
-      expect(en.match(/\{[^}]+\}/g)?.sort() ?? []).toEqual(zh.match(/\{[^}]+\}/g)?.sort() ?? []);
+      // A translation can repeat a name while the other language uses a pronoun.
+      expect([...new Set(en.match(/\{[^}]+\}/g))].sort(), key).toEqual(
+        [...new Set(zh.match(/\{[^}]+\}/g))].sort(),
+      );
     }
     expect(siegeText('en', 'day', { n: 7 })).toBe('Day 7');
     expect(siegeText('zh', 'day', { n: 7 })).toBe('第 7 日');
