@@ -12,10 +12,16 @@ function keepWei(state: SiegeState, ids: string[]) {
 }
 
 describe('Wei defender AI', () => {
-  it('drops a millstone on a ram at the south approach and obeys its cooldown', () => {
+  it('prepares a millstone before striking a ram on a later day', () => {
     const state = createSiegeState(1);
     keepWei(state, ['wei-haozhao']);
     state.engines = [engine('ram', 23, 17)];
+    expect(planDefenderTurn(state)).toContainEqual({
+      type: 'hoistMillstone',
+      unitId: 'wei-haozhao',
+    });
+    state.day = 2;
+    state.preparations.millstones['23,16'] = { hoisted: true, day: 1 };
     const before = structuredClone(state);
     expect(planDefenderTurn(state)).toContainEqual({
       type: 'dropMillstone',
@@ -24,7 +30,7 @@ describe('Wei defender AI', () => {
     });
     expect(runDefenderTurn(state).engines[0]!.durability).toBe(100);
     expect(state).toEqual(before);
-    state.units.find((u) => u.id === 'wei-haozhao')!.lastMillstoneDay = state.day - 1;
+    state.preparations.millstones['23,16']!.hoisted = false;
     expect(planDefenderTurn(state).some((a) => a.type === 'dropMillstone')).toBe(false);
   });
 
@@ -35,6 +41,8 @@ describe('Wei defender AI', () => {
       state.units.find((u) => u.id === 'wei-captain-1')!,
       { x: 21, y: 16 },
     );
+    state.day = 2;
+    state.preparations.braziers['21,16'] = { litDay: 1 };
     state.engines = [
       engine('earthCart', 20, 18, { id: 'cart' }),
       engine('ladder', 21, 19, { id: 'ladder', raisedAt: { x: 21, y: 16 } }),
@@ -73,7 +81,7 @@ describe('Wei defender AI', () => {
 
   it('uses nightRepair on an intact gate below half, ahead of holdFast', () => {
     const state = createSiegeState(4);
-    state.gates.south.durability = 300;
+    state.gates.south.durability = 250;
     state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
     expect(planDefenderTurn(state)[0]).toEqual({
       type: 'order',
@@ -81,7 +89,9 @@ describe('Wei defender AI', () => {
       kind: 'nightRepair',
       target: 'south',
     });
-    expect(runDefenderTurn(state).gates.south.durability).toBe(400);
+    const defended = runDefenderTurn(state);
+    expect(defended.gates.south.durability).toBe(250);
+    expect(endDay(defended).gates.south.durability).toBe(350);
   });
 
   it('holds the most pressed wall run, otherwise rallies the lowest morale', () => {
@@ -124,6 +134,8 @@ describe('Wei defender AI', () => {
       targetId: state.units[1]!.id,
     });
     Object.assign(state.units[1]!, { x: 22, y: 21, level: 'ground' });
+    state.day = 2;
+    state.preparations.boulders['20,16'] = { day: 1 };
     expect(planDefenderTurn(state)).toContainEqual({
       type: 'dropBoulders',
       unitId: 'wei-wangsheng',
@@ -159,7 +171,8 @@ describe('Wei defender AI', () => {
       { x: 28, y: 16 },
     );
     state.act = 2;
-    state.day = 6;
+    state.engines = [];
+    state.day = 4;
     Object.assign(
       state.units.find((u) => u.id === 'wei-haozhao')!,
       { x: 23, y: 14, level: 'ground' },
@@ -172,7 +185,7 @@ describe('Wei defender AI', () => {
       level: 'ground',
     });
     expect(first.innerWall[2]).toBe(1);
-    const next = endDay(first, runDefenderTurn);
+    const next = endDay(runDefenderTurn(first));
     expect(next.innerWall[2]).toBe(1); // The builder cannot act twice in one day.
     expect(runDefenderTurn(next).innerWall[2]).toBe(2);
     expect(INNER_WALL_SEGMENTS[2]!.cells.some((c) => c.x === 25)).toBe(true);
@@ -215,7 +228,7 @@ describe('Wei defender AI', () => {
     ).toBe(true);
   });
 
-  it('moves wall archers over active work columns and fires there', () => {
+  it('moves wall archers over active work columns and prepares before firing', () => {
     const state = createSiegeState(12);
     keepWei(state, ['wei-haozhao', 'wei-captain-1']);
     state.engines = [engine('earthCart', 20, 19)];
@@ -225,7 +238,10 @@ describe('Wei defender AI', () => {
       y: 16,
       level: 'wall',
     });
-    expect(result.engines[0]!.durability).toBe(0);
+    expect(result.engines[0]!.durability).toBe(80);
+    expect(result.preparations.braziers['20,16']).toEqual({ litDay: 1 });
+    result.weatherByDay[2] = 'clear';
+    expect(runDefenderTurn(endDay(result)).engines[0]!.durability).toBe(0);
   });
 
   it('covers an imminent climb and replaces a routed holder', () => {

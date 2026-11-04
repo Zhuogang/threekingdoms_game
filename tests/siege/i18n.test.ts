@@ -39,7 +39,9 @@ describe('siege bilingual text', () => {
   });
   it('translates every rejection currently returned by the action rules', () => {
     expect(Object.keys(SIEGE_REASONS.en).sort()).toEqual(Object.keys(SIEGE_REASONS.zh).sort());
-    const source = readFileSync('src/siege/rules/actions.ts', 'utf8');
+    const source = ['actions', 'preparations']
+      .map((name) => readFileSync(`src/siege/rules/${name}.ts`, 'utf8'))
+      .join('\n');
     const reasons = [...source.matchAll(/return '([^']+)';/g)].map((match) => match[1]!);
     reasons.push('The siege has ended.');
     expect(reasons.length).toBeGreaterThan(25);

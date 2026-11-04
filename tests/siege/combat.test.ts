@@ -162,7 +162,7 @@ describe('siege combat frontage and modifiers', () => {
       ),
     );
     const result = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
-    expect(result.gates.south.durability).toBe(800 - forecast.gateDamage!);
+    expect(result.gates.south.durability).toBe(600 - forecast.gateDamage!);
     refused(result, { type: 'attack', unitId: shu.id, gateId: 'south' });
   });
 

@@ -53,8 +53,7 @@ export function advanceWalkthrough(
         break;
       case 5:
         complete = Boolean(
-          supervised &&
-          events.some((e) => e.code === 'defenderTurnComplete' && e.day >= supervised.day),
+          supervised && events.some((e) => e.code === 'daySupplies' && e.day >= supervised.day),
         );
         break;
       case 6: {

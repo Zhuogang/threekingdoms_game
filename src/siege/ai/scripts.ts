@@ -13,6 +13,7 @@ import { applySiegeAction } from '../rules/actions';
 import { activeUnit, distance, predictSiegeAttack, usableEngine } from '../rules/combat';
 import { WAVERING_MORALE, tacticalSeed } from '../rules/constants';
 import { endDay } from '../rules/day';
+import { ENGINE_RULES, SIEGE_TUNING } from '../rules/tuning';
 import { cellTerrain, gateAt, isMapCell, isWallFoot } from '../rules/map';
 import { engineReachable, pathTo, reachableCells } from '../rules/movement';
 import type {
@@ -355,7 +356,7 @@ export function runShuScript(
       if (!choice || engine.raisedAt) continue;
       for (const cell of engineRoute(next, engine, choice)?.slice(
         1,
-        engine.kind === 'tower' ? 2 : 3,
+        ENGINE_RULES[engine.kind].move + 1,
       ) ?? [])
         reserved.add(cellKey(cell));
     }
@@ -395,7 +396,7 @@ export function runShuScript(
       if (!target) {
         // If every work site is cut off by wrecks, still vacate the workshop's exit.
         const parking: SiegePosition[] = [];
-        const budget = engine.kind === 'tower' ? 1 : 2;
+        const budget = ENGINE_RULES[engine.kind].move;
         for (let y = engine.y - budget; y <= engine.y + budget; y++)
           for (let x = engine.x - budget; x <= engine.x + budget; x++) {
             const cell = ground({ x, y });
@@ -424,12 +425,12 @@ export function runShuScript(
     const path = engineRoute(next, engine, choice);
     if (path) {
       reserveRoutes();
-      for (const cell of path.slice(1, engine.kind === 'tower' ? 2 : 3))
+      for (const cell of path.slice(1, ENGINE_RULES[engine.kind].move + 1))
         reserved.add(cellKey(cell));
-      yieldRoute(path.slice(1, engine.kind === 'tower' ? 2 : 3));
+      yieldRoute(path.slice(1, ENGINE_RULES[engine.kind].move + 1));
       const available = engineReachable(next, engine.id);
       const to = path
-        .slice(1, engine.kind === 'tower' ? 2 : 3)
+        .slice(1, ENGINE_RULES[engine.kind].move + 1)
         .reverse()
         .find((p) => available.some((cell) => sameCell(cell, p)));
       if (to) {
@@ -466,7 +467,7 @@ export function runShuScript(
       const committed =
         next.engines.filter(usableEngine).length +
         next.workshops.filter((w) => w.queue !== null).length;
-      if (committed >= 6) break;
+      if (committed >= SIEGE_TUNING.engineCap) break;
       const kind = queueKind(next, workshop.id);
       if (workshop.queue === null && kind)
         act({ type: 'queueEngine', workshopId: workshop.id, kind });
@@ -569,7 +570,8 @@ export function runShuScript(
     }
   }
   const before = new Set(next.engines.map((e) => e.id));
-  next = endDay(next, defenderTurn);
+  const defended = defenderTurn(next);
+  next = endDay(defended ?? next);
   if (strategy === 'competent' && !next.outcome) {
     // Completion is at day end. Dispatch on the newly opened Shu day, spending that day's move.
     for (const engine of next.engines.filter((e) => !before.has(e.id))) dispatchEngine(engine.id);

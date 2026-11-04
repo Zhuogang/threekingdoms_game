@@ -1,3 +1,4 @@
+import { ENGINE_RULES } from './tuning';
 import { movementBudget } from '../../v03/battle/rules';
 import { MAP_WIDTH, MAP_HEIGHT, RAMPS, cellKey, layoutSymbol, sameCell } from '../content/chencang';
 import { cellTerrain, gateAt, isMapCell, isWallFoot } from './map';
@@ -225,7 +226,7 @@ export function engineReachable(state: SiegeState, engineId: string): ReachableC
   return destinations(
     search(
       ground(engine),
-      engine.kind === 'tower' ? 1 : 2,
+      ENGINE_RULES[engine.kind].move,
       (from) => cardinal(from).filter(passable),
       () => 1,
       (to) => occupied.has(positionKey(to)),

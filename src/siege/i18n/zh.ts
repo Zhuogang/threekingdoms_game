@@ -245,6 +245,39 @@ export const zh = {
   keys: 'Tab 下一队 · A 攻击 · W 待命 · E 结束本日 · H 玩法 · Esc 跳过',
 } satisfies Record<keyof typeof en, string>;
 export const zhReasons = {
+  'The engine limit has been reached.': '场上可用器械已达上限。',
+  'Choose a usable engine within sortie range of the south gate approach.':
+    '请选择南门接近格夜袭范围内的可用器械。',
+  'A sortie needs an active, unsuppressed unit on the south gate top.':
+    '夜袭需要南门楼顶未受压制的可行动部队。',
+  'Use adjacent ground Shu infantry to cover an uncovered ladder or ram.':
+    '请用相邻的蜀军地面步兵给未蒙皮的云梯或冲车蒙皮。',
+  'Use Shu ground infantry or a loaded earth cart.': '请使用蜀军地面步兵或尚有土载的土车。',
+  'Choose an adjacent inner trench cell with both rows filled and an unfinished mound.':
+    '请选择相邻的内侧城堑格，两行须已填平且土山尚未建成。',
+  'Suppress a wall defender with ground Shu archers or a tower.':
+    '请用蜀军地面弓兵或井阑压制城头守军。',
+  'Choose a wall defender in suppression range.': '请选择压制射程内的城头守军。',
+  'A suppressed unit cannot prepare or strike with siege countermeasures.':
+    '受压制的部队不能准备或使用攻城反制手段。',
+  'Preparations require a wall cell.': '准备必须在城头进行。',
+  'Only a wall archer can light a brazier.': '仅城头弓兵可备火。',
+  'This cell already has a brazier.': '该格已有火盆。',
+  'Hoist a millstone on a gate top or directly above an approach.':
+    '请在门楼顶或接近格正上方吊石磨。',
+  'This cell already has a hoisted millstone.': '该格已有吊起的石磨。',
+  'Only wall infantry can stack boulders.': '仅城头步兵可堆礌石。',
+  'This cell already has stacked boulders.': '该格已有堆好的礌石。',
+  'The ram must be below this unit and a millstone must be hoisted.':
+    '冲车须在该部队下方且石磨须已吊起。',
+  'The millstone must be prepared on an earlier day.': '石磨须在此前一日吊起，当日不能投放。',
+  'Stack boulders before dropping them.': '请先堆好礌石。',
+  'The boulders must be prepared on an earlier day.': '礌石须在此前一日堆好，当日不能投放。',
+  'A suppressed unit cannot fire arrows.': '受压制的部队不能放火箭。',
+  'Fire arrows require a wall archer.': '火箭仅限城头弓兵使用。',
+  'A lit brazier is required within one cell.': '一格内须有点燃的火盆。',
+  'The brazier must be prepared on an earlier day.': '火盆须在此前一日点燃，当日不能使用。',
+
   'The siege has ended.': '攻城已经结束。',
   'The commander cannot issue orders.': '主将无法下达军令。',
   'This side has already issued its daily order.': '本方今日已经下达过军令。',

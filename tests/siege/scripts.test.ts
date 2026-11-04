@@ -13,17 +13,19 @@ import {
 describe('scripted Shu strategies', () => {
   for (const strategy of ['competent', 'brute'] as const) {
     it.each([1, 2, 3, 4, 5])(
-      `${strategy} seed %i reaches an identical ending on replay within 21 days`,
+      `${strategy} seed %i reaches an identical ending on replay within 12 days`,
       (seed) => {
         const play = () => {
           let state = createSiegeState(seed);
-          for (let days = 0; days < 21 && !state.outcome; days++) {
+          for (let days = 0; days < 12 && !state.outcome; days++) {
             const before = structuredClone(state);
             const next = runShuScript(state, strategy);
             expect(state).toEqual(before);
-            expect(next.day).toBeLessThanOrEqual(21);
+            expect(next.day).toBeLessThanOrEqual(12);
             if (strategy === 'brute') {
-              expect(next.engines).toEqual([]);
+              expect(next.engines.map((engine) => engine.id)).toEqual(
+                state.engines.map((engine) => engine.id),
+              );
               expect(next.workshops.every((w) => w.queue === null)).toBe(true);
               expect(
                 next.log.some((e) => e.code === 'queueEngine' || e.code === 'engineCompleted'),
@@ -97,6 +99,7 @@ describe('scripted Shu strategies', () => {
     'keeps routes stable, clears exits and delivers every pre-day-8 build by day 10 (seed %i)',
     (seed) => {
       let state = createSiegeState(seed);
+      state.engines = [];
       const positions = new Map<string, { x: number; y: number }[]>();
       while (!state.outcome) {
         const before = state;
@@ -219,12 +222,16 @@ describe('scripted Shu strategies', () => {
   });
 
   it.each([1, 4])(
-    'keeps the early cart approach clear and exposes it to act 1 fire (seed %i)',
+    'keeps the early cart approach clear and exposes it to prepared fire (seed %i)',
     (seed) => {
       let state = createSiegeState(seed);
+      state.engines = [];
       for (let day = 0; day < 5; day++) state = runShuScript(state, 'competent');
-      expect(state.enginesLostAct1).toBeGreaterThan(0);
-      expect(state.engines.some((e) => e.kind === 'earthCart' && e.wrecked)).toBe(true);
+      const prepared = state.log.filter((entry) => entry.code === 'brazierPrepared');
+      expect(prepared.length).toBeGreaterThan(0);
+      expect(state.log.some((entry) => entry.code === 'fireArrows')).toBe(true);
+      for (const shot of state.log.filter((entry) => entry.code === 'fireArrowHit'))
+        expect(prepared.some((entry) => entry.day < shot.day)).toBe(true);
     },
   );
 

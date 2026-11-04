@@ -1,7 +1,9 @@
-export const SIEGE_VERSION = 'siege_v0.1';
-export const SIEGE_DAYS = 20;
-export const INITIAL_ZHANGHE_DISTANCE = 22;
-export const INITIAL_MORALE = 80;
+import { SIEGE_TUNING } from './tuning';
+
+export const SIEGE_VERSION = 'siege_v0.2';
+export const SIEGE_DAYS: number = SIEGE_TUNING.days;
+export const INITIAL_ZHANGHE_DISTANCE = SIEGE_TUNING.zhangheDistance;
+export const INITIAL_MORALE = SIEGE_TUNING.moraleRecoveryCap;
 
 // Private field-battle constants copied from src/v03/battle/engine.ts.
 export const WAVERING_MORALE = 40;

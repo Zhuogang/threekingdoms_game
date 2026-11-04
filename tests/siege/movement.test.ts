@@ -16,6 +16,7 @@ function fixture(side: SiegeSide, x: number, y: number, level: SiegeLevel = 'gro
   const unit = state.units.find((u) => u.side === side)!;
   Object.assign(unit, { x, y, level });
   state.units = [unit];
+  state.engines = [];
   return { state, unit };
 }
 
@@ -332,12 +333,12 @@ describe('engine movement', () => {
     return state;
   };
 
-  it('allows rams on plain ground and bridges with two movement points', () => {
+  it('allows rams on plain ground and bridges with three movement points', () => {
     const state = engineState('ram', 23, 19);
     const cells = engineReachable(state, 'engine');
     expect(cells).toContainEqual({ x: 23, y: 17, level: 'ground', cost: 2 });
     expect(cells).toContainEqual({ x: 22, y: 19, level: 'ground', cost: 1 });
-    expect(cells.every((p) => p.level === 'ground' && p.cost <= 2)).toBe(true);
+    expect(cells.every((p) => p.level === 'ground' && p.cost <= 3)).toBe(true);
     expect(cells.some((p) => p.x === 23 && p.y === 16)).toBe(false);
   });
 
@@ -398,13 +399,13 @@ describe('engine movement', () => {
     },
   );
 
-  it('limits towers to one point and other engines to two', () => {
+  it('limits towers to two points and other engines to three', () => {
     for (const kind of ['ladder', 'earthCart', 'tower'] as const) {
       const state = engineState(kind, 20, 20);
       const cells = engineReachable(state, 'engine');
-      const budget = kind === 'tower' ? 1 : 2;
+      const budget = kind === 'tower' ? 2 : 3;
       expect(Math.max(...cells.map((p) => p.cost))).toBe(budget);
-      expect(cells.some((p) => p.x === 22 && p.y === 20)).toBe(kind !== 'tower');
+      expect(cells.some((p) => p.x === 22 && p.y === 20)).toBe(true);
     }
   });
 

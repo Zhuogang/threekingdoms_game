@@ -1,3 +1,4 @@
+import { SIEGE_TUNING as T } from './tuning';
 import {
   CITY_BOUNDS,
   COURTYARD,
@@ -51,7 +52,9 @@ export function cellTerrain(state: SiegeState, x: number, y: number): SiegeTerra
     case '~':
       return 'water';
     case '-':
-      return southTrenchKeys.has(key) && state.trenchFill[key] === 3 ? 'plain' : 'trench';
+      return southTrenchKeys.has(key) && state.trenchFill[key] === T.trenchCapacity
+        ? 'plain'
+        : 'trench';
     case 'W':
     case 'O':
       return 'wall';
@@ -88,7 +91,7 @@ export function isWallFoot(state: SiegeState, x: number, y: number): boolean {
   return (
     y === CITY_BOUNDS.south + 1 &&
     southTrenchKeys.has(cellKey({ x, y })) &&
-    state.trenchFill[cellKey({ x, y })] === 3 &&
+    state.trenchFill[cellKey({ x, y })] === T.trenchCapacity &&
     cellTerrain(state, x, y - 1) === 'wall'
   );
 }

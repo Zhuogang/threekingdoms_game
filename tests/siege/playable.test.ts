@@ -47,14 +47,14 @@ describe('playable siege adapters', () => {
     const before = structuredClone(state),
       resolution = resolveSiegeDay(state);
     expect(resolution.frames.length).toBeGreaterThan(0);
-    expect(resolution.final).toEqual(endDay(state, runDefenderTurn));
+    expect(resolution.final).toEqual(endDay(runDefenderTurn(state)));
     expect(state).toEqual(before);
   });
 });
 describe('state-driven artwork', () => {
   it('changes gates by durability, trench cells by exact thresholds, and walls per segment', () => {
     const state = createSiegeState(1);
-    state.gates.south.durability = 399;
+    state.gates.south.durability = 299;
     state.gates.north.durability = 0;
     state.trenchFill['20,18'] = 1;
     state.trenchFill['21,18'] = 1.5;
@@ -75,7 +75,7 @@ describe('state-driven artwork', () => {
     expect(built.occluder?.cells).toEqual([17, 14, 22, 14]);
     expect(built.clip?.[0]).toBe(17 * 64);
     expect(built.clip?.[2]).toBe(23 * 64);
-    state.gates.south.durability = 400;
+    state.gates.south.durability = 300;
     expect(statePatches(state).find((p) => p.id === 'south')).toBeUndefined();
     expect(INNER_WALL_SEGMENTS).toHaveLength(4);
   });

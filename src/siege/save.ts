@@ -1,7 +1,8 @@
+import { SIEGE_TUNING as T } from './rules/tuning';
 import { z } from 'zod';
 import type { SiegeState } from './rules/types';
 
-export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang';
+export const SIEGE_SAVE_KEY = 'threekingdoms-siege-chencang-v2';
 export type Facing = 'north' | 'east' | 'west' | 'south';
 export const HINT_KINDS = ['wall', 'trench', 'ladder', 'frontage', 'innerWall'] as const;
 export type HintKind = (typeof HINT_KINDS)[number];
@@ -21,6 +22,8 @@ export interface SiegePresentation {
 }
 export interface SiegeSave {
   state: SiegeState;
+  /** Legacy call sites may omit this; the serializer writes Shu. Stored v0.2 saves require it. */
+  playerSide?: 'shu' | 'wei';
   phase: 'opening' | 'deploy' | 'battle';
   facings: Record<string, Facing>;
   presentation?: SiegePresentation;
@@ -37,18 +40,18 @@ export function presentationFor(save: SiegeSave): SiegePresentation {
 }
 const integer = z.number().int();
 const cell = { x: integer, y: integer };
-const stateSchema = z.object({
-  version: z.literal('siege_v0.1'),
+const stateSchema = z.strictObject({
+  version: z.literal('siege_v0.2'),
   seed: integer.nonnegative(),
   rngState: integer.nonnegative(),
-  day: integer.min(1).max(20),
+  day: integer.min(1).max(T.days),
   act: z.union([z.literal(1), z.literal(2)]),
   weather: z.enum(['clear', 'snow', 'wind']),
   weatherByDay: z.record(z.string(), z.enum(['clear', 'snow', 'wind'])),
   grain: integer.nonnegative(),
   zhangheDistance: integer.nonnegative(),
   units: z.array(
-    z.looseObject({
+    z.strictObject({
       ...cell,
       id: z.string(),
       side: z.enum(['shu', 'wei']),
@@ -62,7 +65,18 @@ const stateSchema = z.object({
       moved: z.boolean(),
       acted: z.boolean(),
       routed: z.boolean(),
-      officer: z.object({
+      casualtyRemainder: z.number().nonnegative().optional(),
+      troopExperience: z.number().nonnegative().optional(),
+      lostTroopsToday: integer.nonnegative().optional(),
+      attackedFromBelowDay: integer.min(1).max(T.days).optional(),
+      climbing: z.boolean().optional(),
+      suppressedDay: integer.min(1).max(T.days).optional(),
+      assaultedDay: integer.min(1).max(T.days).optional(),
+      rotateRecoveryDay: integer
+        .min(1)
+        .max(T.days + 1)
+        .optional(),
+      officer: z.strictObject({
         id: z.string(),
         name: z.string(),
         chinese: z.string(),
@@ -71,16 +85,17 @@ const stateSchema = z.object({
     }),
   ),
   engines: z.array(
-    z.looseObject({
+    z.strictObject({
       ...cell,
       id: z.string(),
       kind: z.enum(['ladder', 'ram', 'earthCart', 'tower']),
       durability: z.number().nonnegative(),
       max: z.number().positive(),
       burning: z.boolean(),
+      covered: z.boolean().optional(),
       wrecked: z.boolean(),
       raisedAt: z.object(cell).optional(),
-      uses: integer.optional(),
+      uses: integer.min(1).max(T.cartLoads).optional(),
       moved: z.boolean().optional(),
       acted: z.boolean().optional(),
     }),
@@ -89,10 +104,11 @@ const stateSchema = z.object({
     Object.fromEntries(
       ['south', 'north', 'west', 'east'].map((id) => [
         id,
-        z.looseObject({
+        z.strictObject({
           durability: z.number().nonnegative(),
           max: z.number().positive(),
           broken: z.boolean(),
+          damaged: z.boolean().optional(),
         }),
       ]),
     ),
@@ -117,6 +133,48 @@ const stateSchema = z.object({
       daysRemaining: integer.nonnegative(),
     }),
   ),
+  footholds: z.record(z.string().regex(/^\d+,\d+$/), integer.min(0).max(T.footholdComplete)),
+  mounds: z.record(z.string().regex(/^\d+,17$/), integer.min(0).max(T.moundComplete)),
+  preparations: z.strictObject({
+    braziers: z.record(
+      z.string().regex(/^\d+,\d+$/),
+      z.strictObject({ litDay: integer.min(1).max(T.days) }),
+    ),
+    millstones: z.record(
+      z.string().regex(/^\d+,\d+$/),
+      z.strictObject({ hoisted: z.boolean(), day: integer.min(1).max(T.days) }),
+    ),
+    boulders: z.record(
+      z.string().regex(/^\d+,\d+$/),
+      z.strictObject({ day: integer.min(1).max(T.days) }),
+    ),
+  }),
+  nightOrders: z.strictObject({
+    shu: z.strictObject({ kind: z.literal('nightAssault') }).optional(),
+    wei: z
+      .discriminatedUnion('kind', [
+        z.strictObject({ kind: z.literal('torches') }),
+        z.strictObject({
+          kind: z.literal('nightRepair'),
+          target: z.enum(['south', 'north', 'east', 'west']),
+        }),
+        z.strictObject({ kind: z.literal('sortie'), target: z.string(), unitId: z.string() }),
+      ])
+      .optional(),
+  }),
+  mainBodyThreatened: z.boolean(),
+  stats: z.strictObject({
+    shuLost: integer.nonnegative(),
+    weiLost: integer.nonnegative(),
+    enginesLost: integer.nonnegative(),
+    assaults: integer.nonnegative(),
+    nightClashes: integer.nonnegative(),
+    moundsBuilt: integer.nonnegative(),
+    gateEverBroken: z.boolean(),
+    wallEverHeldAtNight: z.boolean(),
+    firstFootholdDay: integer.min(1).max(T.days).nullable(),
+    firstWallDay: integer.min(1).max(T.days).nullable(),
+  }),
   ordersUsed: z.object({
     shu: z.record(z.string(), z.boolean()),
     wei: z.record(z.string(), z.boolean()),
@@ -131,11 +189,14 @@ const stateSchema = z.object({
   outcome: z.enum(['victory', 'historical', 'defeat']).nullable(),
   act2Day: integer.optional(),
   enginesLostAct1: integer.optional(),
-  holdFast: z.object({ day: integer, cells: z.array(z.object(cell)) }).optional(),
+  holdFast: z
+    .object({ day: integer.min(1).max(T.days + 1), cells: z.array(z.object(cell)) })
+    .optional(),
   withdrawn: z.boolean().optional(),
 });
-const saveSchema = z.object({
+const saveSchema = z.strictObject({
   state: stateSchema,
+  playerSide: z.enum(['shu', 'wei']),
   phase: z.enum(['opening', 'deploy', 'battle']),
   facings: z.record(z.string(), z.enum(['north', 'east', 'west', 'south'])),
   presentation: z
@@ -147,7 +208,7 @@ const saveSchema = z.object({
         .object({
           status: z.enum(['active', 'done', 'skipped']),
           step: integer.min(1).max(8),
-          startDay: integer.min(1).max(20),
+          startDay: integer.min(1).max(T.days),
           logStart: integer.nonnegative(),
           cartWorkshopId: z.string().optional(),
           cartId: z.string().optional(),
@@ -159,13 +220,14 @@ const saveSchema = z.object({
 
 export function serializeSiegeSave(save: SiegeSave): string {
   // Validate, then serialize the original so no rule fields or fractional remainders are discarded.
-  saveSchema.parse(save);
-  return JSON.stringify(save);
+  const value = { ...save, playerSide: save.playerSide ?? 'shu' };
+  saveSchema.parse(value);
+  return JSON.stringify(value);
 }
-export function deserializeSiegeSave(payload: string): SiegeSave {
+export function deserializeSiegeSave(payload: string): SiegeSave & { playerSide: 'shu' | 'wei' } {
   const value: unknown = JSON.parse(payload);
   saveSchema.parse(value);
-  return value as SiegeSave;
+  return value as SiegeSave & { playerSide: 'shu' | 'wei' };
 }
 export function saveSiege(save: SiegeSave, storage: Pick<Storage, 'setItem'> = localStorage): void {
   storage.setItem(SIEGE_SAVE_KEY, serializeSiegeSave(save));

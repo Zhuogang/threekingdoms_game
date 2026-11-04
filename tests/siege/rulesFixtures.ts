@@ -37,6 +37,7 @@ export function duel(shuChanges: Partial<SiegeUnit> = {}, weiChanges: Partial<Si
   Object.assign(shu, { x: 20, y: 19, troops: 2000 }, shuChanges);
   Object.assign(wei, { x: 20, y: 16, level: 'wall', troops: 300 }, weiChanges);
   state.units = [shu, wei];
+  state.engines = [];
   return { state, shu, wei };
 }
 

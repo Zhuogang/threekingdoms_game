@@ -1,3 +1,4 @@
+import { SIEGE_TUNING } from '../rules/tuning';
 import { OFFICER_CATALOG_BY_ID } from '../../v03/content/officer-catalog';
 import type { Cell, GateId, SiegePosition, SiegeRosterEntry, SiegeTroopType } from '../rules/types';
 
@@ -94,7 +95,7 @@ function gate(id: GateId): GateGeometry {
   return {
     id,
     cells,
-    max: id === 'south' ? 800 : 500,
+    max: id === 'south' ? SIEGE_TUNING.southGateDurability : SIEGE_TUNING.otherGateDurability,
     approaches: cells.flatMap((cell) =>
       adjacent(cell).filter((next) => layoutSymbol(next.x, next.y) === '='),
     ),

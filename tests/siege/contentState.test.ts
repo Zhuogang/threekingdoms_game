@@ -40,7 +40,7 @@ describe('Chencang layout and derived geometry', () => {
     expect(GATES).toEqual({
       south: {
         id: 'south',
-        max: 800,
+        max: 600,
         cells: [
           { x: 23, y: 16 },
           { x: 24, y: 16 },
@@ -52,7 +52,7 @@ describe('Chencang layout and derived geometry', () => {
       },
       north: {
         id: 'north',
-        max: 500,
+        max: 400,
         cells: [
           { x: 23, y: 4 },
           { x: 24, y: 4 },
@@ -64,13 +64,13 @@ describe('Chencang layout and derived geometry', () => {
       },
       west: {
         id: 'west',
-        max: 500,
+        max: 400,
         cells: [{ x: 14, y: 10 }],
         approaches: [{ x: 13, y: 10 }],
       },
       east: {
         id: 'east',
-        max: 500,
+        max: 400,
         cells: [{ x: 33, y: 10 }],
         approaches: [{ x: 34, y: 10 }],
       },
@@ -270,7 +270,7 @@ describe('siege rosters and deterministic initial state', () => {
     expect(state.units[0]).toMatchObject({ x: 23, y: 25, level: 'ground' });
     expect(state.units.slice(1, 10).every((u) => u.y >= 21 && u.y <= 23)).toBe(true);
     let rng = tacticalSeed('chencang', 42);
-    for (let day = 1; day <= 20; day++) {
+    for (let day = 1; day <= 12; day++) {
       rng = advanceRandomState(rng);
       expect(state.weatherByDay[day]).toBe(weatherFromRoll(rng / 0x100000000));
     }
@@ -345,20 +345,26 @@ describe('siege rosters and deterministic initial state', () => {
     expect(SHU_ROSTER[0]!.officer.name).toBe('Zhuge Liang');
   });
 
-  it('initializes the twenty-day siege, empty workshop queues and construction progress', () => {
+  it('initializes the twelve-day siege, empty workshop queues and construction progress', () => {
     const state = createSiegeState(9);
     expect(state).toMatchObject({
-      version: 'siege_v0.1',
+      version: 'siege_v0.2',
       day: 1,
       act: 1,
-      grain: 20,
-      zhangheDistance: 22,
-      engines: [],
+      grain: 12,
+      zhangheDistance: 14,
+
       log: [],
       outcome: null,
     });
+    expect(state.engines.map(({ kind, x, y }) => ({ kind, x, y }))).toEqual([
+      { kind: 'ladder', x: 18, y: 19 },
+      { kind: 'ladder', x: 29, y: 19 },
+      { kind: 'ram', x: 24, y: 21 },
+      { kind: 'earthCart', x: 21, y: 20 },
+    ]);
     expect(state.weather).toBe(state.weatherByDay[1]);
-    expect(Object.keys(state.weatherByDay)).toHaveLength(20);
+    expect(Object.keys(state.weatherByDay)).toHaveLength(12);
     expect(
       Object.values(state.weatherByDay).every((w) => ['clear', 'snow', 'wind'].includes(w)),
     ).toBe(true);

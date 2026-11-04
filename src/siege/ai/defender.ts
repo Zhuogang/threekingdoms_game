@@ -1,3 +1,4 @@
+import { fireArrowsReason, millstonePosition } from '../rules/preparations';
 import {
   CITY_BOUNDS,
   COURTYARD,
@@ -239,7 +240,9 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
     if (
       engine.kind === 'ram' &&
       unit.level === 'wall' &&
-      (unit.lastMillstoneDay === undefined || state.day - unit.lastMillstoneDay >= 2) &&
+      unit.suppressedDay !== state.day &&
+      state.preparations.millstones[cellKey(unit)]?.hoisted &&
+      state.preparations.millstones[cellKey(unit)]!.day < state.day &&
       Object.values(GATES).some(
         (g) =>
           g.approaches.some((c) => sameCell(c, engine)) &&
@@ -251,7 +254,7 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
         action: { type: 'dropMillstone', unitId: unit.id, engineId: engine.id },
         score: 10000,
       });
-    if (unit.troopType === 'archer' && distance(unit, engine) <= (unit.level === 'wall' ? 3 : 2)) {
+    if (fireArrowsReason(state, unit, engine) === null) {
       const priority = engine.raisedAt
         ? 4
         : engine.kind === 'tower'
@@ -269,6 +272,9 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
     if (
       unit.troopType === 'infantry' &&
       unit.level === 'wall' &&
+      unit.suppressedDay !== state.day &&
+      state.preparations.boulders[cellKey(unit)] !== undefined &&
+      state.preparations.boulders[cellKey(unit)]!.day < state.day &&
       climbingFrontage(state, target, unit) !== null
     ) {
       candidates.push({
@@ -282,6 +288,29 @@ function immediateActions(state: SiegeState, unit: SiegeUnit): Candidate[] {
         action: { type: 'attack', unitId: unit.id, targetId: target.id },
         score: (inside(target) ? 9950 : 6500) + forecast.casualties / 100,
       });
+  }
+  if (unit.level === 'wall' && unit.suppressedDay !== state.day) {
+    const key = cellKey(unit);
+    if (
+      millstonePosition(unit) &&
+      !state.preparations.millstones[key]?.hoisted &&
+      state.engines.some(
+        (engine) => usableEngine(engine) && engine.kind === 'ram' && distance(unit, engine) <= 5,
+      )
+    )
+      candidates.push({ action: { type: 'hoistMillstone', unitId: unit.id }, score: 6800 });
+    if (
+      unit.troopType === 'archer' &&
+      !state.preparations.braziers[key] &&
+      state.engines.some((engine) => usableEngine(engine) && distance(unit, engine) <= 4)
+    )
+      candidates.push({ action: { type: 'lightBrazier', unitId: unit.id }, score: 6700 });
+    if (
+      unit.troopType === 'infantry' &&
+      !state.preparations.boulders[key] &&
+      wallThreats(state).some((cell) => sameCell(cell, unit))
+    )
+      candidates.push({ action: { type: 'stackBoulders', unitId: unit.id }, score: 6600 });
   }
   return candidates;
 }
@@ -501,7 +530,7 @@ export function planDefenderTurn(state: SiegeState): SiegeAction[] {
   return actions;
 }
 
-/** Suitable as endDay's defenderTurn callback. Rejected actions are harmlessly skipped. */
+/** Drives the Wei phase independently; endDay resolves only the following night. */
 export function runDefenderTurn(state: SiegeState): SiegeState {
   let next = state;
   if (

@@ -265,6 +265,43 @@ export const en = {
   keys: 'Tab next · A attack · W stand by · E end day · H help · Esc skip',
 } as const;
 export const enReasons = {
+  'The engine limit has been reached.': 'The engine limit has been reached.',
+  'Choose a usable engine within sortie range of the south gate approach.':
+    'Choose a usable engine within sortie range of the south gate approach.',
+  'A sortie needs an active, unsuppressed unit on the south gate top.':
+    'A sortie needs an active, unsuppressed unit on the south gate top.',
+  'Use adjacent ground Shu infantry to cover an uncovered ladder or ram.':
+    'Use adjacent ground Shu infantry to cover an uncovered ladder or ram.',
+  'Use Shu ground infantry or a loaded earth cart.':
+    'Use Shu ground infantry or a loaded earth cart.',
+  'Choose an adjacent inner trench cell with both rows filled and an unfinished mound.':
+    'Choose an adjacent inner trench cell with both rows filled and an unfinished mound.',
+  'Suppress a wall defender with ground Shu archers or a tower.':
+    'Suppress a wall defender with ground Shu archers or a tower.',
+  'Choose a wall defender in suppression range.': 'Choose a wall defender in suppression range.',
+  'A suppressed unit cannot prepare or strike with siege countermeasures.':
+    'A suppressed unit cannot prepare or strike with siege countermeasures.',
+  'Preparations require a wall cell.': 'Preparations require a wall cell.',
+  'Only a wall archer can light a brazier.': 'Only a wall archer can light a brazier.',
+  'This cell already has a brazier.': 'This cell already has a brazier.',
+  'Hoist a millstone on a gate top or directly above an approach.':
+    'Hoist a millstone on a gate top or directly above an approach.',
+  'This cell already has a hoisted millstone.': 'This cell already has a hoisted millstone.',
+  'Only wall infantry can stack boulders.': 'Only wall infantry can stack boulders.',
+  'This cell already has stacked boulders.': 'This cell already has stacked boulders.',
+  'The ram must be below this unit and a millstone must be hoisted.':
+    'The ram must be below this unit and a millstone must be hoisted.',
+  'The millstone must be prepared on an earlier day.':
+    'The millstone must be prepared on an earlier day.',
+  'Stack boulders before dropping them.': 'Stack boulders before dropping them.',
+  'The boulders must be prepared on an earlier day.':
+    'The boulders must be prepared on an earlier day.',
+  'A suppressed unit cannot fire arrows.': 'A suppressed unit cannot fire arrows.',
+  'Fire arrows require a wall archer.': 'Fire arrows require a wall archer.',
+  'A lit brazier is required within one cell.': 'A lit brazier is required within one cell.',
+  'The brazier must be prepared on an earlier day.':
+    'The brazier must be prepared on an earlier day.',
+
   'The siege has ended.': 'The siege has ended.',
   'The commander cannot issue orders.': 'The commander cannot issue orders.',
   'This side has already issued its daily order.': 'This side has already issued its daily order.',

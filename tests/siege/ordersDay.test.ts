@@ -37,8 +37,8 @@ describe('daily commander orders', () => {
     refused(state, { type: 'order', side: 'shu', kind: 'supervise', target: 'workshop-1' });
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'ladder' });
     state = act(state, { type: 'order', side: 'shu', kind: 'supervise', target: 'workshop-1' });
-    expect(state.workshops[0]!.daysRemaining).toBe(1);
-    expect(endDay(state).engines[0]!.kind).toBe('ladder');
+    expect(state.workshops[0]!.daysRemaining).toBe(0);
+    expect(endDay(state).engines.filter((entry) => entry.kind === 'ladder')).toHaveLength(3);
   });
 
   it('rotates into free camp ground, prevents actions, and recovers half the wounded next day only once', () => {
@@ -67,7 +67,7 @@ describe('daily commander orders', () => {
     expect(endDay(state).units[1]!.wounded).toBe(51);
   });
 
-  it('holds only the selected wall run for the current day', () => {
+  it('holds only the selected wall run on the next day', () => {
     let state = createSiegeState(5);
     const shu = state.units[1]!;
     const wei = state.units[11]!;
@@ -75,6 +75,8 @@ describe('daily commander orders', () => {
     const normal = predictSiegeAttack(state, shu.id, wei.id)!;
     state = act(state, { type: 'order', side: 'wei', kind: 'holdFast', target: wei.id });
     expect(state.holdFast!.cells.map((cell) => cell.x)).toEqual([15, 16, 17, 18, 19, 20, 21, 22]);
+    expect(predictSiegeAttack(state, shu.id, wei.id)!.modifiers.holdFast).toBe(1);
+    state = endDay(state);
     const held = predictSiegeAttack(state, shu.id, wei.id)!;
     expect(held.modifiers.holdFast).toBe(0.7);
     expect(held.casualties).toBeLessThan(normal.casualties);
@@ -84,58 +86,49 @@ describe('daily commander orders', () => {
 
   it('repairs an intact gate by 100 with a maximum and damaged-art update, never a broken gate', () => {
     const state = createSiegeState(6);
-    state.gates.south.durability = 350;
+    state.gates.south.durability = 250;
     state.gates.south.damaged = true;
-    const repaired = act(state, {
+    const ordered = act(state, {
       type: 'order',
       side: 'wei',
       kind: 'nightRepair',
       target: 'south',
     });
-    expect(repaired.gates.south).toMatchObject({ durability: 450, damaged: false });
-    state.gates.south.durability = 750;
+    expect(ordered.gates.south.durability).toBe(250);
+    expect(endDay(ordered).gates.south).toMatchObject({ durability: 350, damaged: false });
+    state.gates.south.durability = 550;
     expect(
-      act(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' }).gates.south
-        .durability,
-    ).toBe(800);
+      endDay(act(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' })).gates
+        .south.durability,
+    ).toBe(600);
     Object.assign(state.gates.south, { durability: 0, broken: true });
     refused(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' });
   });
 });
 
 describe('day sequence, acts and outcomes', () => {
-  it('resolves defender actions before burning, construction, supplies and the next weather entry', () => {
+  it('resolves only the night in burning, construction, morale, supplies and weather order', () => {
     let state = createSiegeState(7);
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'earthCart' });
-    state.engines = [engine('ladder', 20, 19, { durability: 15 })];
+    state.engines = [engine('ladder', 20, 19, { durability: 15, burning: true })];
     state.units[1]!.morale = 60;
     state.units[2]!.morale = 60;
     state.units[2]!.lostTroopsToday = 1;
     const before = structuredClone(state);
-    let calls = 0;
-    const next = endDay(state, (draft) => {
-      calls++;
-      expect(draft.day).toBe(1);
-      expect(draft.grain).toBe(20);
-      expect(draft.engines).toHaveLength(1);
-      expect(draft.workshops[0]!.daysRemaining).toBe(1);
-      draft.engines[0]!.burning = true;
-      draft.units[1]!.acted = true;
-    });
+    const next = endDay(state);
     expect(state).toEqual(before);
-    expect(calls).toBe(1);
     expect(next.engines[0]).toMatchObject({ durability: 0, wrecked: true });
     expect(next.engines[1]!.kind).toBe('earthCart');
     expect(next).toMatchObject({
       day: 2,
-      grain: 19,
-      zhangheDistance: 21,
+      grain: 11,
+      zhangheDistance: 13,
       weather: state.weatherByDay[2],
     });
     expect(next.units[1]).toMatchObject({ morale: 65, acted: false, moved: false });
     expect(next.units[2]!.morale).toBe(60);
     expect(next.log.slice(state.log.length).map((entry) => entry.code)).toEqual([
-      'defenderTurnComplete',
+      'engineLost',
       'engineBurning',
       'engineCompleted',
       'daySupplies',
@@ -143,42 +136,42 @@ describe('day sequence, acts and outcomes', () => {
     ]);
   });
 
-  it('accepts a defender callback returning an immutable action result', () => {
+  it('requires the caller to drive a defender phase before the night', () => {
     const state = createSiegeState(8);
-    const next = endDay(state, (draft) =>
-      act(draft, { type: 'order', side: 'wei', kind: 'rally', target: draft.units[11]!.id }),
-    );
+    const defended = act(state, {
+      type: 'order',
+      side: 'wei',
+      kind: 'rally',
+      target: state.units[11]!.id,
+    });
+    const next = endDay(defended);
     expect(next.units[11]!.morale).toBe(95);
-    expect(state.units[11]!.morale).toBe(80);
+    expect(endDay(state).units[11]!.morale).toBe(80);
   });
 
-  it('enters act 2 on day 6 without resetting persistent construction', () => {
+  it('enters act 2 on day 4 without resetting persistent construction', () => {
     let state = createSiegeState(9);
     state.trenchFill['20,18'] = 1.5;
-    for (let day = 1; day <= 5; day++) {
+    for (let day = 1; day <= 3; day++) {
       expect(state.act).toBe(1);
       state = endDay(state);
     }
-    expect(state).toMatchObject({ day: 6, act: 2 });
+    expect(state).toMatchObject({ day: 4, act: 2 });
     expect(state.trenchFill['20,18']).toBe(1.5);
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'tower' });
-    expect(state.workshops[0]!.daysRemaining).toBe(4);
+    expect(state.workshops[0]!.daysRemaining).toBe(3);
   });
 
-  it('ends historically on day 20 when grain reaches zero and freezes finished games', () => {
+  it('ends historically on day 12 when grain reaches zero and freezes finished games', () => {
     let state = createSiegeState(10);
-    for (let day = 1; day <= 20; day++) {
+    for (let day = 1; day <= 12; day++) {
       expect(state.day).toBe(day);
       expect(state.outcome).toBeNull();
       state = act(state, { type: 'endDay' });
     }
-    expect(state).toMatchObject({ day: 20, grain: 0, zhangheDistance: 2, outcome: 'historical' });
+    expect(state).toMatchObject({ day: 12, grain: 0, zhangheDistance: 2, outcome: 'historical' });
     refused(state, { type: 'withdraw' });
-    expect(
-      endDay(state, () => {
-        throw new Error('Finished game must not call AI');
-      }),
-    ).toEqual(state);
+    expect(endDay(state)).toEqual(state);
   });
 
   it('checks courtyard victory only after the defender turn, and allows the defender to remove the occupier', () => {
@@ -186,11 +179,9 @@ describe('day sequence, acts and outcomes', () => {
     Object.assign(state.units[1]!, COURTYARD[0]);
     expect(state.outcome).toBeNull();
     expect(endDay(state).outcome).toBe('victory');
-    expect(
-      endDay(state, (draft) => {
-        draft.units[1]!.troops = 0;
-      }).outcome,
-    ).toBeNull();
+    const defended = structuredClone(state);
+    defended.units[1]!.troops = 0;
+    expect(endDay(defended).outcome).toBeNull();
   });
 
   it.each(['shu', 'wei'] as const)(
@@ -224,7 +215,7 @@ describe('day sequence, acts and outcomes', () => {
       outcome: 'historical',
       withdrawn: true,
       day: 1,
-      grain: 20,
+      grain: 12,
     });
   });
 

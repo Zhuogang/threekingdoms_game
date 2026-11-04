@@ -138,7 +138,7 @@ describe('Chencang story and summary', () => {
   );
   it.each([
     [2, 'victory'],
-    [1, 'historical'],
+    [11, 'historical'],
   ] as const)(
     'plays seed %i to %s using the real simulation strategy',
     (seed, outcome) => {
@@ -147,7 +147,7 @@ describe('Chencang story and summary', () => {
       expect(firstDay).toEqual(runShuScript(initial, 'competent'));
       const final = playScriptDays(firstDay, 'competent');
       expect(final.outcome).toBe(outcome);
-      expect(final.day).toBe(seed === 2 ? 16 : 20);
+      expect(final.day).toBe(seed === 2 ? 10 : 12);
       expect(initial.day).toBe(1);
       expect(() => playScriptDays(initial, 'competent', 0)).toThrow();
     },

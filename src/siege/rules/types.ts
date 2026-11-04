@@ -60,7 +60,8 @@ export interface SiegeUnit extends SiegeRosterEntry, SiegePosition {
   lostTroopsToday?: number;
   attackedFromBelowDay?: number;
   climbing?: boolean;
-  lastMillstoneDay?: number;
+  suppressedDay?: number;
+  assaultedDay?: number;
   rotateRecoveryDay?: number;
 }
 
@@ -70,6 +71,7 @@ export interface SiegeEngine extends Cell {
   durability: number;
   max: number;
   burning: boolean;
+  covered?: boolean;
   /** The ladder's base is its own (x, y), at ground level. */
   raisedAt?: Cell;
   uses?: number;
@@ -99,7 +101,7 @@ export interface SiegeLogEntry {
 
 /** Plain JSON; numeric record keys serialize as decimal strings. Days are 1-based. */
 export interface SiegeState {
-  version: 'siege_v0.1';
+  version: 'siege_v0.2';
   seed: number;
   rngState: number;
   day: number;
@@ -116,6 +118,33 @@ export interface SiegeState {
   trenchFill: Record<string, TrenchProgress>;
   innerWall: Record<number, BuildProgress>;
   workshops: SiegeWorkshop[];
+  footholds: Record<string, 0 | 1 | 2 | 3>;
+  mounds: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6>;
+  preparations: {
+    braziers: Record<string, { litDay: number }>;
+    millstones: Record<string, { hoisted: boolean; day: number }>;
+    boulders: Record<string, { day: number }>;
+  };
+  nightOrders: {
+    shu?: { kind: 'nightAssault' };
+    wei?:
+      | { kind: 'torches' }
+      | { kind: 'nightRepair'; target: GateId }
+      | { kind: 'sortie'; target: string; unitId: string };
+  };
+  mainBodyThreatened: boolean;
+  stats: {
+    shuLost: number;
+    weiLost: number;
+    enginesLost: number;
+    assaults: number;
+    nightClashes: number;
+    moundsBuilt: number;
+    gateEverBroken: boolean;
+    wallEverHeldAtNight: boolean;
+    firstFootholdDay: number | null;
+    firstWallDay: number | null;
+  };
   ordersUsed: Record<SiegeSide, Record<number, boolean>>;
   log: SiegeLogEntry[];
   outcome: null | 'victory' | 'historical' | 'defeat';
@@ -129,7 +158,7 @@ export interface SiegeState {
 
 export type SiegeAction =
   | ({ type: 'move'; unitId: string } & SiegePosition)
-  | { type: 'attack'; unitId: string; targetId: string }
+  | { type: 'attack'; unitId: string; targetId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; gateId: GateId }
   | { type: 'attack'; engineId: string; targetId: string }
   | ({ type: 'fillTrench'; unitId: string } & Cell)
@@ -141,6 +170,15 @@ export type SiegeAction =
   | { type: 'fireArrows' | 'dropMillstone'; unitId: string; engineId: string }
   | { type: 'dropBoulders'; unitId: string; targetId: string }
   | { type: 'buildWall'; unitId: string }
+  | { type: 'suppress'; unitId: string; targetId: string }
+  | { type: 'suppress'; engineId: string; targetId: string }
+  | { type: 'coverEngine'; unitId: string; engineId: string }
+  | ({ type: 'pileEarth'; unitId: string } & Cell)
+  | ({ type: 'pileEarth'; engineId: string } & Cell)
+  | { type: 'lightBrazier' | 'hoistMillstone' | 'stackBoulders'; unitId: string }
+  | { type: 'order'; side: 'shu'; kind: 'nightAssault'; target?: string }
+  | { type: 'order'; side: 'wei'; kind: 'torches'; target?: string }
+  | { type: 'order'; side: 'wei'; kind: 'sortie'; target: string }
   | { type: 'order'; side: 'shu'; kind: 'rally' | 'supervise' | 'rotate'; target: string }
   | { type: 'order'; side: 'wei'; kind: 'rally' | 'nightRepair'; target: string }
   | { type: 'order'; side: 'wei'; kind: 'holdFast'; target: Cell | string }
@@ -150,5 +188,5 @@ export type SiegeAction =
 export type SiegeActionResult =
   { ok: true; state: SiegeState; events: SiegeLogEntry[] } | { ok: false; reason: string };
 
-/** The defender may return a new state or modify the isolated draft passed to it. */
+/** Optional simulator hook, driven before endDay rather than by the night resolver. */
 export type SiegeDefenderTurn = (state: SiegeState) => SiegeState | void;

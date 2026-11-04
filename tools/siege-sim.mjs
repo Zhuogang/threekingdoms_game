@@ -131,9 +131,10 @@ try {
         if (!state.outcome) throw new Error('No outcome within the 21-day cap.');
         const engines = Object.fromEntries(
           kinds.map((kind) => {
-            const built = state.log.filter(
-              (e) => e.code === 'engineCompleted' && e.params.kind === kind,
-            ).length;
+            const built =
+              createSiegeState(seed).engines.filter((e) => e.kind === kind).length +
+              state.log.filter((e) => e.code === 'engineCompleted' && e.params.kind === kind)
+                .length;
             const destroyed = state.engines.filter(
               (e) => e.kind === kind && (e.wrecked || e.durability <= 0),
             ).length;

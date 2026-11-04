@@ -70,6 +70,7 @@ function initialGame(): SiegeSave {
   const state = createSiegeState(seed);
   return {
     state,
+    playerSide: 'shu',
     phase: 'opening',
     facings: {},
     presentation: {
@@ -1145,7 +1146,11 @@ function Forecast({
       {(Object.entries(engagement.modifiers) as Array<[keyof SiegeEngagement['modifiers'], number]>)
         .filter(([key, value]) => value !== 1 || key === 'parapet')
         .map(([key, value]) => (
-          <span key={key}>{t(key === 'gate' ? 'gateModifier' : key, { n: value })}</span>
+          <span key={key}>
+            {t(key === 'gate' ? 'gateModifier' : key === 'suppression' ? 'counter' : key, {
+              n: value,
+            })}
+          </span>
         ))}
     </div>
   );

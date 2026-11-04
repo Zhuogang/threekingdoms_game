@@ -107,6 +107,7 @@ describe('how to play', () => {
 describe('walkthrough observations', () => {
   it('advances all eight steps only on the relevant UI or successful rule changes', () => {
     let state = createSiegeState(228);
+    state.engines = []; // Isolated legacy eight-step workshop tutorial.
     let progress = startWalkthrough(state);
     const observe = (view = ui) => {
       const before = structuredClone(state);
@@ -175,6 +176,7 @@ describe('walkthrough observations', () => {
   it('serializes active, done and skipped progress and accepts older presentation data', () => {
     const state = createSiegeState(228);
     const save: SiegeSave = {
+      playerSide: 'shu',
       state,
       phase: 'battle',
       facings: {},

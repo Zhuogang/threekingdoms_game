@@ -17,5 +17,5 @@ export function resolveSiegeDay(state: SiegeState): { frames: PlaybackFrame[]; f
       frames.push({ state: draft, action });
     }
   }
-  return { frames, final: endDay(state, runDefenderTurn) };
+  return { frames, final: endDay(runDefenderTurn(state)) };
 }

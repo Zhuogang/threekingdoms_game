@@ -1,3 +1,4 @@
+import { ENGINE_RULES, SIEGE_TUNING } from './tuning';
 import {
   GATES,
   INNER_WALL_SEGMENTS,
@@ -75,7 +76,44 @@ export function createSiegeState(seed: number): SiegeState {
     grain: SIEGE_DAYS,
     zhangheDistance: INITIAL_ZHANGHE_DISTANCE,
     units,
-    engines: [],
+    engines: (
+      [
+        ['ladder', 18, 19],
+        ['ladder', 29, 19],
+        ['ram', 24, 21],
+        ['earthCart', 21, 20],
+      ] as const
+    ).map(([kind, x, y], index) => ({
+      id: `starting-${kind}-${index + 1}`,
+      kind,
+      x,
+      y,
+      durability: ENGINE_RULES[kind].durability,
+      max: ENGINE_RULES[kind].durability,
+      burning: false,
+      covered: false,
+      wrecked: false,
+      moved: false,
+      acted: false,
+      ...(kind === 'earthCart' ? { uses: SIEGE_TUNING.cartLoads } : {}),
+    })),
+    footholds: {},
+    mounds: {},
+    preparations: { braziers: {}, millstones: {}, boulders: {} },
+    nightOrders: {},
+    mainBodyThreatened: false,
+    stats: {
+      shuLost: 0,
+      weiLost: 0,
+      enginesLost: 0,
+      assaults: 0,
+      nightClashes: 0,
+      moundsBuilt: 0,
+      gateEverBroken: false,
+      wallEverHeldAtNight: false,
+      firstFootholdDay: null,
+      firstWallDay: null,
+    },
     gates: Object.fromEntries(
       (Object.keys(GATES) as GateId[]).map((id) => [
         id,
