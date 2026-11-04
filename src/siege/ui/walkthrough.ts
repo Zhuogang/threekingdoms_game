@@ -172,9 +172,10 @@ export function advanceWalkthrough(
       case 4:
         complete = events.some(
           (e) =>
-            e.code === 'footholdChanged' &&
-            e.params.sourceId === next.infantryId &&
-            Number(e.params.after) > Number(e.params.before),
+            (e.code === 'footholdChanged' &&
+              e.params.sourceId === next.infantryId &&
+              Number(e.params.after) > Number(e.params.before)) ||
+            (e.code === 'wallGained' && e.params.unitId === next.infantryId),
         );
         break;
       case 5:

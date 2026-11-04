@@ -200,7 +200,7 @@ describe('footholds, displacement and assaults', () => {
       });
       expect(forecast.counterattack.modifiers.climbing).toBe(counter);
       const next = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id, assault });
-      expect(wallFoothold(next, wei)).toBe(gain === 3 ? 0 : gain);
+      expect(wallFoothold(next, wei)).toBe(gain);
       expect(next.units[0]!.level).toBe(gain === 3 ? 'wall' : 'ground');
       expect(next.units[0]!.morale).toBe(forecast.sourceMoraleAfter);
     },
@@ -237,7 +237,7 @@ describe('footholds, displacement and assaults', () => {
       );
       expect(next.units[1]!.level).toBe(blocked ? 'ground' : 'wall');
       expect(next.stats.firstWallDay).toBe(1);
-      expect(wallFoothold(next, wei)).toBe(0);
+      expect(wallFoothold(next, wei)).toBe(3);
     },
   );
   it.each([0, 1, 2, 3])('boulders reduce foothold %i by two with a floor of zero', (foothold) => {

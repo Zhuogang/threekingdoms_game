@@ -106,6 +106,66 @@ async function expectLabel(page: Page, cell: string, text: string) {
 }
 
 for (const locale of ['zh', 'en'] as const) {
+  for (const route of ['ladder', 'wallFoot'] as const) {
+    for (const occupied of [false, true]) {
+      test(`${locale}: open ${route} breach ${occupied ? 'names the ally and disables Climb' : 'mounts in one click without a forecast'}`, async ({
+        page,
+      }) => {
+        const state = createSiegeState(228);
+        const base = { x: 18, y: route === 'ladder' ? 19 : 17, level: 'ground' as const };
+        const wangping = state.units.find((u) => u.id === 'shu-wangping')!;
+        const weiyan = state.units.find((u) => u.id === 'shu-weiyan')!;
+        state.footholds['18,16'] = T.footholdComplete;
+        if (route === 'ladder') state.engines[0]!.raisedAt = { x: 18, y: 16 };
+        else {
+          state.engines = [];
+          state.trenchFill['18,17'] = T.trenchCapacity;
+          state.trenchFill['18,18'] = T.trenchCapacity;
+        }
+        Object.assign(wangping, base);
+        if (occupied) Object.assign(weiyan, { x: 18, y: 16, level: 'wall' });
+        await loadSkippedBattle(page, state, locale);
+        await selectActor(page, wangping.id);
+        await expectGuide(page, locale, occupied ? 'allyAbove' : 'ready');
+        await expect(page.getByTestId('action-context')).toHaveText(
+          siegeText(locale, occupied ? 'climbAllyAboveBreach' : 'climbBreachOpen', {
+            name: locale === 'zh' ? weiyan.officer.chinese : weiyan.officer.name,
+          }),
+        );
+        await expect(page.getByTestId('command-climb')).toHaveAttribute(
+          'aria-disabled',
+          occupied ? 'true' : 'false',
+        );
+        await expect(page.getByTestId('climb-forecast')).toHaveCount(0);
+        await expectNoPanelScroll(page, 'action-panel');
+        if (occupied) {
+          const before = await snapshot(page);
+          await clickGreyClimb(page);
+          expect(await snapshot(page)).toEqual(before);
+          await expectGuide(page, locale, 'allyAbove');
+        } else {
+          await page.getByTestId('command-climb').click();
+          await expect(page.getByTestId('climb-forecast')).toHaveCount(0);
+          const after = await snapshot(page);
+          expect(after.state.units.find((u) => u.id === wangping.id)).toMatchObject({
+            x: 18,
+            y: 16,
+            level: 'wall',
+            moved: true,
+            acted: true,
+            troops: wangping.troops,
+            wounded: wangping.wounded,
+            morale: wangping.morale,
+          });
+          expect(after.state.footholds['18,16']).toBe(3);
+          expect(after.state.log.map((e) => e.code)).toContain('wallGained');
+        }
+        await expect(page.getByTestId('climb-forecast')).toHaveCount(0);
+        await expectNoPanelScroll(page, 'action-panel');
+      });
+    }
+  }
+
   test(`${locale}: default deployment raises and approaches on day one, then reaches the base on day two`, async ({
     page,
   }) => {

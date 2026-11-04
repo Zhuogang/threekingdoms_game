@@ -81,7 +81,7 @@ export const zh = {
   counterWeiNight:
     '蜀军发动夜攻。下次可举火阻止推进，并让备好火的弓手射击；夜袭可能被夜攻挡回。每夜择一军令。',
   counterWeiMounted:
-    '蜀军已登城。用邻近守军攻击立足点，调预备队增援本段，或退守重墙、守住前庭。礌石只能打城下攀爬者，不能打已上墙的部队。',
+    '蜀军已登城。站回缺口那一格就能封住，否则后面的蜀军会一步上墙。用邻近守军攻击立足点，调预备队增援本段，或退守重墙、守住前庭。礌石只能打城下攀爬者，不能打已上墙的部队。',
   reportWeiLadder: '蜀军在{cell}架起云梯。',
   reportWeiFill: '{cell}的城堑已填平。',
   reportWeiMound: '蜀军在{cell}堆土山：{after}/{max}。',
@@ -147,6 +147,8 @@ export const zh = {
   contextWallFoot: '你在墙脚：攀爬，立足 +{gain}。',
   climbActed: '今天已行动，明天才能攀爬。',
   climbDefenderAbove: '头上有守军（{name}），不能攀爬：用「攻击」或强攻积累立足。',
+  climbBreachOpen: '缺口已打开：点「登城」直接上墙。',
+  climbAllyAboveBreach: '上方被{name}占着：{name}沿城墙走开后，下一支一步上墙。',
   climbAllyAbove: '梯顶被{name}占着：先让{name}沿城墙走开，才能继续攀爬。',
   climbAllyAboveFoot: '墙头被{name}占着：先让{name}沿城墙走开，才能继续攀爬。',
   climbRaiseAtBase: '云梯还没架起：选中云梯点「架梯」，再点「登城」。',
@@ -242,6 +244,7 @@ export const zh = {
   reportMillHit: '魏军石磨砸中{engine}，耐久{before} → {after}。',
   reportBoulderHit: '魏军礌石命中{unit}，损失{casualties}人，立足减少{loss}。',
   reportWall: '魏军重墙第{segment}段已建成，挡住城内道路。',
+  reportBreachSealed: '魏军站回{cell}，缺口被封住。',
   reportThrown: '{unit}因士气过低被打下城，退到城下。',
   howCounters: '招与拆',
   howCounterFire: '云梯遇火箭：蒙皮（火箭 ×{cover}，不燃烧）、压制火盆旁弓手、夜攻或换墙段。',
@@ -254,7 +257,7 @@ export const zh = {
     '夜袭烧车：邻近驻军护车，或退到距南门接近格 {range} 格外；土山烧不掉。雪夜火盆熄灭。',
   howFoothold: '攀爬与立足',
   howFootholdBody:
-    '梯底就是云梯所在的格子，选步兵时以金框标出；云梯须先架起，再从梯底或填平的墙脚攀爬。空墙也要攀爬，普通 +{climb} 且无伤亡，强攻 +{assault}、自损正面的 ×{loss}。有守军时攻击积累立足，满 {max} 登城并挤开守军；仰攻 ×{uphill}。土山普通攻击立足 +{mound}。墙上士气过低会被打下城，恢复后再上。',
+    '梯底就是云梯所在的格子，选步兵时以金框标出；云梯须先架起，再从梯底或填平的墙脚攀爬。空墙也要攀爬，普通 +{climb} 且无伤亡，强攻 +{assault}、自损正面的 ×{loss}。有守军时攻击积累立足，满 {max} 登城并挤开守军；仰攻 ×{uphill}。土山普通攻击立足 +{mound}。墙上士气过低会被打下城，恢复后再上。登城后缺口保持打开：前一支走开，下一支一步上墙，一架云梯每天最多上一支；魏军站回这一格、把部队打下城，或云梯被毁，缺口才关上。',
   howCourtyardClear: '日终前庭必须没有可行动的魏军，才算占领。',
   howKeys: '键盘',
   howKeysBody:

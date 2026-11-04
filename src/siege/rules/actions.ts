@@ -23,6 +23,7 @@ import {
   climbingPosition,
   changeFoothold,
   gainWall,
+  sealBreaches,
   wallFoothold,
   settleUnitRout,
   damageEngine,
@@ -656,6 +657,7 @@ export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeA
     )
       next.stats.lastActiveDay = next.day;
     cancelOccupiedPreparations(next);
+    sealBreaches(next);
     next.outcome = siegeOutcome(next);
   }
   updatePersonnelStats(next);

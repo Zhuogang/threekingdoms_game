@@ -664,6 +664,10 @@ export default function SiegeApp({
       return;
     }
     if (kind === 'climb' && entry?.action?.type === 'climb') {
+      if (guide?.kind === 'ready' && guide.breach) {
+        act({ type: 'climb', unitId: selected });
+        return;
+      }
       setMode('climb');
       setTarget(null);
       setExtraKind(null);

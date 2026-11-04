@@ -77,6 +77,19 @@ export function changeFoothold(
   if (after > 0) state.stats.firstFootholdDay ??= state.day;
 }
 
+/** Living defenders seal completed breaches; partial footholds remain contested. */
+export function sealBreaches(state: SiegeState): void {
+  for (const unit of state.units) {
+    if (
+      unit.side === 'wei' &&
+      unit.troops > 0 &&
+      unit.level === 'wall' &&
+      wallFoothold(state, unit) === T.footholdComplete
+    )
+      changeFoothold(state, unit, 0, 'sealed', unit.id);
+  }
+}
+
 export function siegeAttackInRange(
   state: SiegeState,
   source: SiegeUnit,
@@ -838,7 +851,6 @@ export function gainWall(
   if (defender) displaceDefender(state, defender);
   const from = cellKey(source);
   Object.assign(source, wallCell, { level: 'wall', moved: true, acted: true, climbing: false });
-  changeFoothold(state, wallCell, 0, 'mounted', source.id);
   state.stats.firstWallDay ??= state.day;
   logEvent(state, 'wallGained', { unitId: source.id, from, cell: cellKey(wallCell) });
   return true;

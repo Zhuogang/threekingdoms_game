@@ -106,6 +106,7 @@ export const REPORT_CODES = [
   'bouldersHit',
   'innerWallCompleted',
   'thrownOffWall',
+  'footholdChanged',
 ] as const;
 const copy: Record<string, [SiegeTextKey, SiegeTextKey, SiegeTextKey]> = {
   brazierPrepared: ['brazier', 'reportBrazier', 'counterFire'],
@@ -125,6 +126,7 @@ const copy: Record<string, [SiegeTextKey, SiegeTextKey, SiegeTextKey]> = {
   bouldersHit: ['boulders', 'reportBoulderHit', 'counterBoulders'],
   innerWallCompleted: ['innerWall', 'reportWall', 'counterWall'],
   thrownOffWall: ['climb', 'reportThrown', 'counterThrown'],
+  footholdChanged: ['climb', 'reportBreachSealed', 'counterThrown'],
 };
 
 /** The rules log buildWall without a segment. Compare immutable rule snapshots
@@ -168,11 +170,14 @@ export function morningReport(
     engineNear: ['move', 'reportWeiEngineNear', 'counterWeiLadder'],
     ramAtBridge: ['ramEngine', 'reportWeiRam', 'counterWeiRam'],
     wallGained: ['climb', 'reportWeiMounted', 'counterWeiMounted'],
+    footholdChanged: ['climb', 'reportBreachSealed', 'counterWeiMounted'],
   };
   const recent = [...log, ...observations].filter(
     (entry) =>
       (entry.day === day - 1 &&
-        (playerSide === 'shu' || ['nightAssault', 'brazierDoused'].includes(entry.code))) ||
+        (playerSide === 'shu' ||
+          ['nightAssault', 'brazierDoused'].includes(entry.code) ||
+          (entry.code === 'footholdChanged' && entry.params.reason === 'sealed'))) ||
       (entry.day === day && (playerSide === 'wei' || entry.code === 'brazierDoused')),
   );
   const entries = [...recent];
@@ -212,6 +217,7 @@ export function morningReport(
   const seen = new Set<string>();
   const candidates = engineChains(entries)
     .flatMap((entry, index): CandidateReport[] => {
+      if (entry.code === 'footholdChanged' && entry.params.reason !== 'sealed') return [];
       const mapping = (playerSide === 'wei' ? weiCopy : copy)[entry.code];
       if (!mapping) return [];
       const [icon, base, baseCounter] = mapping;
@@ -386,7 +392,9 @@ export function morningReport(
             ? 3
             : good
               ? 2
-              : ready || entry.code === 'holdFastOrdered'
+              : ready ||
+                  entry.code === 'holdFastOrdered' ||
+                  (entry.code === 'footholdChanged' && p.reason === 'sealed')
                 ? 0
                 : 1;
       const mergeByKind = [

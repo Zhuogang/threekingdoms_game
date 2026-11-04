@@ -25,6 +25,7 @@ const keys: Record<(typeof REPORT_CODES)[number], [SiegeTextKey, SiegeTextKey]> 
   bouldersHit: ['reportBoulderHit', 'counterBoulders'],
   innerWallCompleted: ['reportWall', 'counterWall'],
   thrownOffWall: ['reportThrown', 'counterThrown'],
+  footholdChanged: ['reportBreachSealed', 'counterThrown'],
 };
 const entry = (code: string, params: SiegeLogEntry['params'] = {}): SiegeLogEntry => ({
   day: 1,
@@ -32,6 +33,61 @@ const entry = (code: string, params: SiegeLogEntry['params'] = {}): SiegeLogEntr
   params,
 });
 describe('pure morning report', () => {
+  it.each(['zh', 'en'] as const)(
+    'reports only sealed foothold changes for both sides in %s, with place names and Shu threat priority',
+    (locale) => {
+      const state = createSiegeState(228);
+      const sealed = entry('footholdChanged', {
+        cell: '18,16',
+        reason: 'sealed',
+        before: 3,
+        after: 0,
+        sourceId: 'wei-wangsheng',
+      });
+      const log = [
+        entry('footholdChanged', { cell: '20,16', reason: 'climb', before: 0, after: 1 }),
+        entry('footholdChanged', {
+          cell: '21,16',
+          reason: 'nightPositionEmpty',
+          before: 2,
+          after: 0,
+        }),
+        entry('engineLost', { engineId: 'starting-ladder-1' }),
+        sealed,
+      ];
+      for (const side of ['shu', 'wei'] as const) {
+        const items = morningReport(log, state.preparations, 2, locale, [], undefined, side);
+        const item = items.find((i) => i.code === 'footholdChanged')!;
+        const cell = placeName('18,16', locale);
+        expect(item.text).toBe(
+          locale === 'zh'
+            ? `魏军站回${cell}，缺口被封住。`
+            : `Wei retook ${cell} and sealed the breach.`,
+        );
+        expect(item.text).not.toMatch(/\d/);
+        expect(item.place).toEqual({ x: 18, y: 16, level: 'wall' });
+        expect(items.filter((i) => i.code === 'footholdChanged')).toHaveLength(1);
+        if (side === 'shu') {
+          expect(item.priority).toBe(0);
+          expect(items[0]).toBe(item);
+        }
+      }
+      const weiToday = morningReport(
+        [{ ...sealed, day: 2 }],
+        state.preparations,
+        2,
+        locale,
+        [],
+        undefined,
+        'wei',
+      );
+      expect(weiToday).toHaveLength(1);
+      const before = structuredClone(state);
+      morningReport(log, state.preparations, 2, locale);
+      expect(state).toEqual(before);
+    },
+  );
+
   for (const code of REPORT_CODES)
     for (const locale of ['zh', 'en'] as const)
       it(`${code}: ${locale} cause and counter`, () => {
@@ -44,6 +100,7 @@ describe('pure morning report', () => {
           gateId: 'south',
           before: 90,
           after: 30,
+          reason: 'sealed',
           damage: 60,
           casualties: 12,
           effectiveDay: 2,

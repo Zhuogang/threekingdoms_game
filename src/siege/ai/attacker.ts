@@ -15,6 +15,7 @@ import {
   distance,
   predictSiegeAttack,
   usableEngine,
+  wallFoothold,
 } from '../rules/combat';
 import { tacticalSeed, WAVERING_MORALE } from '../rules/constants';
 import { cellTerrain } from '../rules/map';
@@ -667,7 +668,13 @@ function attackerTurn(
         ),
     );
     if (emptyTop) {
-      act({ type: 'climb', unitId: u.id, ...(allowAssault ? { assault: true } : {}) });
+      act({
+        type: 'climb',
+        unitId: u.id,
+        ...(allowAssault && wallFoothold(draft, emptyTop.top) < T.footholdComplete
+          ? { assault: true }
+          : {}),
+      });
       continue;
     }
     const enemies = draft.units

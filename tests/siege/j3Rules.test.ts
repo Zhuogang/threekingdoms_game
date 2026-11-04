@@ -75,7 +75,7 @@ describe('J3 assault climb', () => {
       });
       expect(mounted.units[2]!.morale).toBe(tomorrow.units[2]!.morale);
       expect(mounted.stats.assaults).toBe(2);
-      expect(mounted.footholds['20,16']).toBe(0);
+      expect(mounted.footholds['20,16']).toBe(3);
     },
   );
 

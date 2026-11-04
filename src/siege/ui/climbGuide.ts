@@ -5,16 +5,18 @@ import {
   distance,
   predictSiegeClimb,
   usableEngine,
+  wallFoothold,
   type ClimbingPosition,
 } from '../rules/combat';
 import { isWallFoot } from '../rules/map';
+import { SIEGE_TUNING as T } from '../rules/tuning';
 import { reachableCells } from '../rules/movement';
 import type { Cell, SiegeState } from '../rules/types';
 import { siegeText, type SiegeLocale } from '../i18n';
 
 export type ClimbGuide =
   | { kind: 'acted' }
-  | { kind: 'ready'; position: ClimbingPosition; gain: number; top: Cell }
+  | { kind: 'ready'; position: ClimbingPosition; gain: number; top: Cell; breach: boolean }
   | { kind: 'defenderAbove'; defenderId: string; top: Cell; base: Cell }
   | {
       kind: 'allyAbove';
@@ -23,6 +25,7 @@ export type ClimbGuide =
       top: Cell;
       base: Cell;
       atBase: boolean;
+      breach: boolean;
     }
   | { kind: 'ladderNotRaised'; ladderId: string; base: Cell; atBase: boolean; steps: number }
   | {
@@ -55,6 +58,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
       position: forecast.position,
       gain: forecast.footholdGain,
       top: forecast.top,
+      breach: wallFoothold(state, forecast.top) === T.footholdComplete,
     };
   const defender = state.units.find(
     (u) => u.side !== unit.side && u.troops > 0 && climbingPosition(state, unit, u) !== null,
@@ -77,6 +81,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
       top: { x: ally.x, y: ally.y },
       base: { x: unit.x, y: unit.y },
       atBase: true,
+      breach: wallFoothold(state, ally) === T.footholdComplete,
     };
 
   const routes = [
@@ -133,6 +138,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
       top: route.top,
       base,
       atBase: false,
+      breach: wallFoothold(state, route.top) === T.footholdComplete,
     };
   return {
     kind: 'walkToBase',
@@ -154,6 +160,7 @@ export function climbGuideText(
     case 'acted':
       return siegeText(locale, 'climbActed');
     case 'ready':
+      if (guide.breach) return siegeText(locale, 'climbBreachOpen');
       return siegeText(
         locale,
         guide.position === 'ladder'
@@ -166,9 +173,15 @@ export function climbGuideText(
     case 'defenderAbove':
       return siegeText(locale, 'climbDefenderAbove', { name: nameOf(guide.defenderId) });
     case 'allyAbove':
-      return siegeText(locale, guide.route === 'ladder' ? 'climbAllyAbove' : 'climbAllyAboveFoot', {
-        name: nameOf(guide.allyId),
-      });
+      return siegeText(
+        locale,
+        guide.breach
+          ? 'climbAllyAboveBreach'
+          : guide.route === 'ladder'
+            ? 'climbAllyAbove'
+            : 'climbAllyAboveFoot',
+        { name: nameOf(guide.allyId) },
+      );
     case 'ladderNotRaised':
       return siegeText(locale, guide.atBase ? 'climbRaiseAtBase' : 'climbRaiseThenWalk');
     case 'walkToBase':

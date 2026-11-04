@@ -30,7 +30,7 @@ import {
   usableEngine,
 } from './combat';
 import { advanceRandomState } from './constants';
-import { cellTerrain, isMapCell } from './map';
+import { cellTerrain, isMapCell, isWallFoot } from './map';
 import { siegeOutcome } from './outcome';
 import { weatherFromRoll } from './state';
 import type { Cell, EngineKind, SiegeEngine, SiegeState } from './types';
@@ -298,7 +298,19 @@ export function endDay(state: SiegeState): SiegeState {
   for (const key of Object.keys(next.footholds)) {
     const [x, y] = key.split(',').map(Number);
     const wall = { x: x!, y: y!, level: 'wall' as const };
-    if (!next.units.some((unit) => activeUnit(unit) && climbingPosition(next, unit, wall) !== null))
+    const retained =
+      next.footholds[key] === T.footholdComplete
+        ? next.engines.some(
+            (engine) =>
+              engine.kind === 'ladder' &&
+              usableEngine(engine) &&
+              engine.raisedAt &&
+              sameCell(engine.raisedAt, wall),
+          ) || isWallFoot(next, x!, y! + 1)
+        : next.units.some(
+            (unit) => activeUnit(unit) && climbingPosition(next, unit, wall) !== null,
+          );
+    if (!retained)
       changeFoothold(
         next,
         wall,

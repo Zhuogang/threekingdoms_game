@@ -27,7 +27,7 @@ describe('J2 climbing', () => {
       for (let day = 1; day <= 3; day++) {
         next = act(next, { type: 'climb', unitId: shu.id });
         expect(next.units[0]).toMatchObject({ acted: true, level: day === 3 ? 'wall' : 'ground' });
-        expect(next.footholds['20,16']).toBe(day === 3 ? 0 : day);
+        expect(next.footholds['20,16']).toBe(day);
         expect(next.units.map((u) => u.troops)).toEqual(state.units.map((u) => u.troops));
         if (day < 3) next = endDay(next);
       }

@@ -93,7 +93,7 @@ export const en = {
   counterWeiNight:
     'Shu attacked at night. For the next night, torches stop the advance and let ready archers fire; a sortie can be repelled by a night assault. Choose one order.',
   counterWeiMounted:
-    'Shu has mounted the wall. Attack the foothold with nearby defenders, move reserves onto the run, or fall back to the inner wall and keep the courtyard defended. Boulders target climbers below, not troops already on top.',
+    'Shu has mounted the wall. Stand on that breach cell to seal it, or more Shu will go straight up. Attack the foothold with nearby defenders, move reserves onto the run, or fall back to the inner wall and keep the courtyard defended. Boulders target climbers below, not troops already on top.',
   reportWeiLadder: 'Shu raised a ladder at {cell}.',
   reportWeiFill: 'The trench at {cell} is filled.',
   reportWeiMound: 'Shu’s mound at {cell}: {after}/{max}.',
@@ -167,6 +167,9 @@ export const en = {
   contextWallFoot: 'At the wall foot: climb for +{gain} foothold.',
   climbActed: 'Already acted today. It can climb tomorrow.',
   climbDefenderAbove: '{name} holds the wall above. Attack or assault to build footholds.',
+  climbBreachOpen: 'The breach is open. Climb to go straight onto the wall.',
+  climbAllyAboveBreach:
+    '{name} holds the wall above. Once that unit moves along the wall, the next one goes straight up.',
   climbAllyAbove: '{name} holds the top of the ladder. Move that unit along the wall, then climb.',
   climbAllyAboveFoot: '{name} holds the wall above. Move that unit along the wall, then climb.',
   climbRaiseAtBase: 'The ladder is not raised. Select it, press Raise ladder, then Climb.',
@@ -274,6 +277,7 @@ export const en = {
   reportMillHit: 'A Wei millstone struck {engine}: durability {before} → {after}.',
   reportBoulderHit: 'Wei boulders hit {unit}: {casualties} casualties and {loss} foothold lost.',
   reportWall: 'Wei completed inner-wall segment {segment}, blocking the route inside.',
+  reportBreachSealed: 'Wei retook {cell} and sealed the breach.',
   reportThrown: 'Low morale threw {unit} off the wall, back to the ground below.',
   howCounters: 'Moves and counters',
   howCounterFire:
@@ -290,7 +294,7 @@ export const en = {
     'Night raids burn engines: guard them nearby or withdraw beyond {range} cells of the south-gate approach; mounds cannot burn. Snow nights extinguish braziers.',
   howFoothold: 'Climbing and footholds',
   howFootholdBody:
-    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again.',
+    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: once the first unit moves away, the next goes straight up, at most one unit per ladder each day. The breach closes only when Wei stands on that cell, throws the unit off the wall, or destroys the ladder.',
   howCourtyardClear:
     'The courtyard must be clear of active Wei units at day’s end to count as captured.',
   howKeys: 'Keyboard',

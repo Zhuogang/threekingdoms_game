@@ -29,6 +29,38 @@ function fixture() {
 }
 
 describe('climb guide rule observations', () => {
+  it.each(['ladder', 'wallFoot'] as const)(
+    'reports a breach on ready and allyAbove via %s, at the base and on the way',
+    (route) => {
+      const { state, unit, ladder } = fixture();
+      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      if (route === 'ladder') ladder.raisedAt = top;
+      else {
+        state.engines = [];
+        state.trenchFill['18,17'] = T.trenchCapacity;
+        state.trenchFill['18,18'] = T.trenchCapacity;
+      }
+      Object.assign(unit, routeBase);
+      state.footholds['18,16'] = T.footholdComplete;
+      const before = structuredClone(state);
+      expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ready', breach: true, top });
+      expect(state).toEqual(before);
+      state.units.push({ ...unit, id: 'ally', ...top, level: 'wall' });
+      for (const atBase of [true, false]) {
+        Object.assign(unit, { y: routeBase.y + (atBase ? 0 : 1) });
+        const beforeAlly = structuredClone(state);
+        expect(climbGuide(state, unit.id)).toMatchObject({
+          kind: 'allyAbove',
+          breach: true,
+          allyId: 'ally',
+          route,
+          atBase,
+        });
+        expect(state).toEqual(beforeAlly);
+      }
+    },
+  );
+
   it('ignores missing, enemy, archer, wall, dead, routed and inactive units', () => {
     const { state, unit } = fixture();
     expect(climbGuide(state, 'missing')).toBeNull();
@@ -52,7 +84,13 @@ describe('climb guide rule observations', () => {
     unit.acted = false;
     state.engines.push(engine('ladder', 18, 19, { id: 'second', raisedAt: { x: 19, y: 16 } }));
     state.units.push({ ...unit, id: 'enemy', side: 'wei', x: 19, y: 16, level: 'wall' });
-    expect(climbGuide(state, unit.id)).toEqual({ kind: 'ready', position: 'ladder', gain: 1, top });
+    expect(climbGuide(state, unit.id)).toEqual({
+      kind: 'ready',
+      position: 'ladder',
+      gain: 1,
+      top,
+      breach: false,
+    });
   });
   it('reports a living defender above a raised ladder, including a routed defender', () => {
     const { state, unit, ladder } = fixture();
@@ -134,6 +172,7 @@ describe('climb guide rule observations', () => {
         const before = structuredClone(state);
         expect(climbGuide(state, unit.id)).toEqual({
           kind: 'allyAbove',
+          breach: false,
           allyId: ally.id,
           route,
           top,
@@ -347,12 +386,20 @@ const sentences: [ClimbGuide, string, string][] = [
     'Name holds the wall above. Attack or assault to build footholds.',
   ],
   [
-    { kind: 'allyAbove', allyId: 'ally', route: 'ladder', top, base, atBase: true },
+    { kind: 'allyAbove', allyId: 'ally', route: 'ladder', top, base, atBase: true, breach: false },
     '梯顶被姓名占着：先让姓名沿城墙走开，才能继续攀爬。',
     'Name holds the top of the ladder. Move that unit along the wall, then climb.',
   ],
   [
-    { kind: 'allyAbove', allyId: 'ally', route: 'wallFoot', top, base, atBase: false },
+    {
+      kind: 'allyAbove',
+      allyId: 'ally',
+      route: 'wallFoot',
+      top,
+      base,
+      atBase: false,
+      breach: false,
+    },
     '墙头被姓名占着：先让姓名沿城墙走开，才能继续攀爬。',
     'Name holds the wall above. Move that unit along the wall, then climb.',
   ],
@@ -398,6 +445,33 @@ const sentences: [ClimbGuide, string, string][] = [
   ],
 ];
 describe('bilingual climb guide sentences', () => {
+  it.each(['ladder', 'wallFoot'] as const)(
+    'uses the open-breach sentences for %s in both locales',
+    (route) => {
+      const position = route;
+      const ready: ClimbGuide = { kind: 'ready', position, gain: 1, top, breach: true };
+      const ally: ClimbGuide = {
+        kind: 'allyAbove',
+        route,
+        allyId: 'ally',
+        base,
+        top,
+        atBase: true,
+        breach: true,
+      };
+      expect(climbGuideText(ready, 'zh', () => '')).toBe('缺口已打开：点「登城」直接上墙。');
+      expect(climbGuideText(ready, 'en', () => '')).toBe(
+        'The breach is open. Climb to go straight onto the wall.',
+      );
+      expect(climbGuideText(ally, 'zh', () => '魏延')).toBe(
+        '上方被魏延占着：魏延沿城墙走开后，下一支一步上墙。',
+      );
+      expect(climbGuideText(ally, 'en', () => 'Wei Yan')).toBe(
+        'Wei Yan holds the wall above. Once that unit moves along the wall, the next one goes straight up.',
+      );
+    },
+  );
+
   it.each(sentences)('renders $kind in both languages', (guide, zh, en) => {
     expect(climbGuideText(guide, 'zh', () => '姓名')).toBe(zh);
     expect(climbGuideText(guide, 'en', () => 'Name')).toBe(en);
@@ -428,9 +502,9 @@ describe('bilingual climb guide sentences', () => {
           : position === 'mound'
             ? 'contextMound'
             : 'contextWallFoot';
-      expect(climbGuideText({ kind: 'ready', position, gain: 1, top }, locale, () => '')).toBe(
-        siegeText(locale, key, { gain: 1 }),
-      );
+      expect(
+        climbGuideText({ kind: 'ready', position, gain: 1, top, breach: false }, locale, () => ''),
+      ).toBe(siegeText(locale, key, { gain: 1 }));
     }
   });
   it('has nonempty bilingual keys for every sentence and map label', () => {
@@ -440,6 +514,8 @@ describe('bilingual climb guide sentences', () => {
         'climbDefenderAbove',
         'climbAllyAbove',
         'climbAllyAboveFoot',
+        'climbBreachOpen',
+        'climbAllyAboveBreach',
         'climbRaiseAtBase',
         'climbRaiseThenWalk',
         'climbWalkLadder',
