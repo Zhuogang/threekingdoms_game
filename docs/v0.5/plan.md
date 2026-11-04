@@ -4,7 +4,7 @@
 
 **Branch:** `v0.5`, from `v0.4` at `b543ee7`. Written November 4, 2026. Line references point to that commit.
 
-**Status:** Plan. Supersedes the open questions in the [v0.5 brainstorm](brainstorm.md), whose decisions the owner made on November 4: keep the 24 cities and 6 houses, add leadership and politics to officers, keep day-by-day battle turns with persistent orders, siege later, no save compatibility, no new cities or named troop corps. The siege branch (`siege_v0.2`) continues on its own and is not merged here.
+**Status:** Plan, accepted November 4, 2026. The [implementation briefs](tickets.md) define every ticket in detail, the [art requests](art-requests.md) list every image, and the [ledger](README.md) tracks status. Supersedes the open questions in the [v0.5 brainstorm](brainstorm.md), whose decisions the owner made on November 4: keep the 24 cities and 6 houses, add leadership and politics to officers, keep day-by-day battle turns with persistent orders, siege later, no save compatibility, no new cities or named troop corps. The siege branch (`siege_v0.2`) continues on its own and is not merged here.
 
 ## 1. Direction
 
