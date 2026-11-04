@@ -371,6 +371,8 @@ export const SiegeMapView = memo(
             });
         }
       for (const sprite of budget.sprites) {
+        // Hoisted rigs draw whole with their explicit depth, outside unit masks.
+        if (sprite.kind === 'hoisted-millstone') continue;
         const ladder = sprite.kind.startsWith('storm')
           ? engines.find(
               (e) =>
@@ -399,8 +401,11 @@ export const SiegeMapView = memo(
         [
           ...layers.map((layer) => ({ kind: 'layer' as const, layer, depth: layer.slice })),
           ...units.map((u) => ({ kind: 'unit' as const, ...u, depth: u.visual.depth })),
+          ...preparations
+            .filter((sprite) => sprite.depth)
+            .map((sprite) => ({ kind: 'millstone' as const, sprite, depth: sprite.depth! })),
         ].sort((a, b) => compareDepth(a.depth, b.depth)),
-      [layers, units],
+      [layers, units, preparations],
     );
     const occluders = (visual: ReturnType<typeof unitVisual>) =>
       layers.filter(
@@ -637,6 +642,25 @@ export const SiegeMapView = memo(
             {extendedRange.map((c) => cellOutline(c, '#ae5a4f', 'range', 0.09))}
           </g>
           {items.map((item) => {
+            if (item.kind === 'millstone') {
+              const { sprite } = item;
+              return (
+                <g key={sprite.id} data-piece={sprite.id} pointerEvents="none">
+                  {sprite.rope && (
+                    <line
+                      data-millstone-rope={sprite.id}
+                      x1={sprite.rope[0]}
+                      y1={sprite.rope[1]}
+                      x2={sprite.rope[2]}
+                      y2={sprite.rope[3]}
+                      stroke="#4a3a2e"
+                      strokeWidth={1.5}
+                    />
+                  )}
+                  {spriteImage(sprite)}
+                </g>
+              );
+            }
             if (item.kind === 'unit')
               return <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>;
             const layer = item.layer,

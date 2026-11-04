@@ -2,9 +2,9 @@ import { CITY_BOUNDS, cellKey } from '../content/chencang';
 import { activeUnit, usableEngine } from '../rules/combat';
 import { isMapCell, isWallFoot } from '../rules/map';
 import type { Cell, SiegeState, SiegeUnit } from '../rules/types';
-import { FRAME, sheet, WALL_HEIGHT } from './assets';
-import { placeAnchoredPiece, placePiece, type Sprite } from './mapPieces';
-import { project, type ScreenRect } from './scene';
+import { FRAME, MAP, sheet, WALL_HEIGHT } from './assets';
+import { placeAnchoredPiece, type Sprite } from './mapPieces';
+import { project, STANDING_EPSILON, type DepthKey, type ScreenRect } from './scene';
 
 // Includes the full worst-case review fixture; only silhouettes are optional.
 export const SPRITE_CAP = 512;
@@ -115,6 +115,9 @@ export function stormingSprite(
 
 export interface PreparationSprite extends Sprite {
   flame?: [number, number];
+  /** Hoisted rigs sort whole after their local parapet, tower and unit. */
+  depth?: DepthKey;
+  rope?: ScreenRect;
 }
 export function preparationSprites(state: SiegeState): PreparationSprite[] {
   const result: PreparationSprite[] = [],
@@ -154,49 +157,49 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
   }
   for (const key of Object.keys(state.preparations.boulders)) result.push(prop(key, 3));
   for (const [key, millstone] of Object.entries(state.preparations.millstones)) {
+    if (!millstone.hoisted) continue;
     const { x, y } = parseCell(key),
       craneSheet = sheet('s4-07-millstone-crane');
-    const stone = placePiece(craneSheet, 1, [x, y], FRAME, {
-      id: `millstone-${key}`,
-      kind: 'preparation',
-      raise: WALL_HEIGHT * craneSheet.level,
-    });
-    stone.height = WALL_HEIGHT + 0.01;
-    if (millstone.hoisted) {
-      const crane = placePiece(craneSheet, 0, [x, y], FRAME, {
+    const tower = MAP.objects.find(
+      (o) =>
+        o.kind === 'gate-tower' &&
+        x >= o.cells[0] &&
+        x <= o.cells[2] &&
+        y >= o.cells[1] &&
+        y <= o.cells[3],
+    );
+    const frontRow = tower?.cells[3] ?? y;
+    const depth = {
+      row: frontRow,
+      height: (tower?.height ?? WALL_HEIGHT + 0.5) + 2 * STANDING_EPSILON,
+    };
+    // Presentation offset: the arm reaches south of the front parapet and
+    // half a cell east of the unit. The stone hangs below the unit's feet.
+    const hang = project(FRAME, x + 1, frontRow + 1, WALL_HEIGHT - 0.5);
+    const stoneTop: [number, number] = [hang[0], hang[1] + FRAME.lh * 0.5];
+    // Measured on selected-transparent.png: the painted pulley ends at
+    // (383,602), outside the old blockout bbox; the stone starts at y=487.
+    // Keep the existing sheet scale and art, registering these actual features.
+    const crane: PreparationSprite = {
+      ...placeAnchoredPiece(craneSheet, 0, [x, y], FRAME, {
         id: `crane-${key}`,
-        kind: 'preparation',
-        raise: WALL_HEIGHT * craneSheet.level,
-      });
-      crane.height += WALL_HEIGHT;
-      result.push(crane);
-      // The bottom centre of the recorded crane box is its arm's hanging point.
-      const craneObject = craneSheet.pieces[0]!.objects[0]!;
-      const arm = craneObject.bbox;
-      const from = craneSheet.pieces[0]!.origin;
-      const hang = project(
-        FRAME,
-        x + ((arm[0] + arm[2]) / 2 - from[0]) / craneSheet.cell[0] - craneObject.cells[0],
-        y + (arm[3] - from[1]) / craneSheet.cell[1] - craneObject.cells[1],
-        WALL_HEIGHT,
-      );
-      const stoneBox = craneSheet.pieces[1]!.objects[0]!.bbox;
-      const stoneOrigin = craneSheet.pieces[1]!.origin;
-      const stoneObject = craneSheet.pieces[1]!.objects[0]!;
-      const centre = project(
-        FRAME,
-        x +
-          ((stoneBox[0] + stoneBox[2]) / 2 - stoneOrigin[0]) / craneSheet.cell[0] -
-          stoneObject.cells[0],
-        y + (stoneBox[1] - stoneOrigin[1]) / craneSheet.cell[1] - stoneObject.cells[1],
-        WALL_HEIGHT,
-      );
-      const dx = hang[0] - centre[0],
-        dy = hang[1] - centre[1];
-      stone.rect = [stone.rect[0] + dx, stone.rect[1] + dy, stone.rect[2] + dx, stone.rect[3] + dy];
-      stone.height = crane.height + 0.01;
-    }
-    result.push(stone);
+        kind: 'hoisted-millstone',
+        anchor: [383, 602],
+        target: hang,
+      }),
+      depth,
+    };
+    const stone: PreparationSprite = {
+      ...placeAnchoredPiece(craneSheet, 1, [x, y], FRAME, {
+        id: `millstone-${key}`,
+        kind: 'hoisted-millstone',
+        anchor: [1154.5, 487],
+        target: stoneTop,
+      }),
+      depth,
+      rope: [...hang, ...stoneTop],
+    };
+    result.push(crane, stone);
   }
   return result;
 }

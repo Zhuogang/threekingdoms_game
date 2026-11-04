@@ -158,34 +158,65 @@ describe('v0.2 pure sprite mapping and registration', () => {
       });
     }
   });
-  it('maps preparations, uses firewood only today, and suspends stone directly under the recorded arm', () => {
+  it('maps preparations, uses firewood only today, and omits every part of a spent millstone', () => {
     const state = createRenderScene('preparations').state;
     const sprites = preparationSprites(state);
     expect(sprites.filter((s) => s.flame)).toHaveLength(3);
     expect(sprites.filter((s) => s.id.endsWith('-2'))).toHaveLength(1);
     expect(sprites.some((s) => s.id === 'preparation-16,16-2')).toBe(true);
     expect(sprites.some((s) => s.id === 'preparation-27,16-3')).toBe(true);
-    expect(sprites.filter((s) => s.id.startsWith('crane-'))).toHaveLength(1);
-    const crane = sprites.find((s) => s.id === 'crane-24,16')!,
-      stone = sprites.find((s) => s.id === 'millstone-24,16')!;
-    const source = sheet('s4-07-millstone-crane'),
-      armPiece = source.pieces[0]!,
-      arm = armPiece.objects[0]!;
-    const armEnd = placeCrop(
-      source,
-      armPiece,
-      [(arm.bbox[0] + arm.bbox[2]) / 2, arm.bbox[3], (arm.bbox[0] + arm.bbox[2]) / 2, arm.bbox[3]],
-      [arm.cells[0], arm.cells[1]],
-      [24, 16],
-      FRAME,
-      3 * source.level,
-    );
-    const stoneBox = source.pieces[1]!.objects[0]!.bbox;
-    const stoneTop = stone.rect[1] + (stoneBox[1] - stone.crop[1]) / 2;
-    expect(stoneTop).toBeCloseTo(armEnd[1]);
-    expect(stone.height).toBeGreaterThan(crane.height);
+    expect(sprites.filter((s) => s.id.startsWith('crane-'))).toHaveLength(2);
+    expect(sprites.filter((s) => s.rope)).toHaveLength(2);
+    for (const millstone of Object.values(state.preparations.millstones)) millstone.hoisted = false;
+    const spent = preparationSprites(state);
+    expect(spent.filter((s) => s.sheet === 's4-07-millstone-crane')).toHaveLength(0);
+    expect(spent.filter((s) => s.rope)).toHaveLength(0);
     state.day++;
     expect(preparationSprites(state).filter((s) => s.id.endsWith('-2'))).toHaveLength(0);
+  });
+  it('hangs millstones clear of units, after the parapet and every tower slice, with a connected short rope', () => {
+    const fixture = createRenderScene('preparations');
+    const unit = fixture.state.units.find((u) => u.side === 'wei')!;
+    // All gate orientations, including multi-row side towers, plus a plain wall.
+    for (const tower of [...MAP.objects.filter((o) => o.kind === 'gate-tower'), undefined]) {
+      const x = tower ? Math.floor((tower.cells[0] + tower.cells[2]) / 2) : 26;
+      const y = tower ? Math.floor((tower.cells[1] + tower.cells[3]) / 2) : 16;
+      const key = `${x},${y}`;
+      Object.assign(unit, { x, y, level: 'wall' });
+      fixture.state.preparations.millstones = { [key]: { day: 1, hoisted: true } };
+      const visual = unitVisual(fixture.state, unit);
+      const sprites = preparationSprites(fixture.state);
+      const crane = sprites.find((s) => s.id === `crane-${key}`)!;
+      const stone = sprites.find((s) => s.id === `millstone-${key}`)!;
+      expect(compareDepth(crane.depth!, visual.depth)).toBeGreaterThan(0);
+      expect(compareDepth(stone.depth!, visual.depth)).toBeGreaterThan(0);
+      if (tower)
+        for (const slice of sliceObject(FRAME, tower))
+          expect(compareDepth(crane.depth!, slice)).toBeGreaterThan(0);
+      else expect(compareDepth(crane.depth!, { row: y, height: 3.5 })).toBeGreaterThan(0);
+      const mapped = (sprite: typeof stone, px: number, py: number) => [
+        sprite.rect[0] + (px - sprite.crop[0]) / 2,
+        sprite.rect[1] + (py - sprite.crop[1]) / 2,
+      ];
+      expect(stone.rope!.slice(0, 2)).toEqual(mapped(crane, 383, 602));
+      expect(stone.rope!.slice(2)).toEqual(mapped(stone, 1154.5, 487));
+      expect(stone.rope![2]).toBe(stone.rope![0]);
+      expect(stone.rope![3] - stone.rope![1]).toBe(12);
+      expect(stone.rope![1]).toBeGreaterThan(visual.foot[1]);
+      expect(stone.rope![3]).toBeGreaterThan(visual.rect[3]);
+      // Selection and xray must not fade the warning or silhouette the unit over it.
+      for (const props of [{}, { selected: unit.id }, { selected: unit.id, xray: true }]) {
+        const markup = markupFor(fixture, props);
+        const normalUnit = markup.indexOf(`data-unit="${unit.id}"`);
+        for (const sprite of [crane, stone]) {
+          const rig = markup.indexOf(`data-piece="${sprite.id}"`);
+          expect(rig).toBeGreaterThan(normalUnit);
+          if (tower) expect(rig).toBeGreaterThan(markup.lastIndexOf(`data-object="${tower.id}"`));
+          expect(markup).toContain(`data-piece="${sprite.id}" pointer-events="none"`);
+        }
+        expect(markup).toContain(`data-millstone-rope="millstone-${key}"`);
+      }
+    }
   });
   it('fits both storming variants uniformly to 84px, at the recorded foot centre, and replaces climbers', () => {
     const state = createRenderScene('assault').state,

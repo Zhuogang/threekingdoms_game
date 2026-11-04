@@ -77,6 +77,54 @@ for (const scene of RENDER_SCENES) {
           expect(box!.x).toBeGreaterThan(ladderCentre);
         }
       }
+      if (scene === 'preparations') {
+        for (const x of [24, 26]) {
+          const unit = state.units.find((u) => u.side === 'wei' && u.x === x && u.y === 16)!;
+          const crane = map.locator(`[data-piece="crane-${x},16"]`);
+          const stone = map.locator(`[data-piece="millstone-${x},16"]`);
+          const rope = stone.locator('line');
+          for (const rig of [crane, stone]) {
+            await expect(rig).toBeVisible();
+            await expect(rig).toHaveAttribute('pointer-events', 'none');
+            expect(
+              await rig.evaluate((el, id) => {
+                const unit = document.querySelector(`[data-unit="${id}"]`)!;
+                const covers = [
+                  unit,
+                  ...document.querySelectorAll(
+                    '[data-object="gate-south"], [data-object="wall-south-e-parapet"]',
+                  ),
+                ];
+                return covers.every((cover) =>
+                  Boolean(cover.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING),
+                );
+              }, unit.id),
+            ).toBe(true);
+          }
+          await expect(rope).toHaveCount(1);
+          const ropeBox = await rope.boundingBox();
+          // Chromium's box for an SVG line includes its stroke.
+          expect(ropeBox!.height).toBeGreaterThanOrEqual(12 * zoom);
+          expect(ropeBox!.height).toBeLessThan(14 * zoom);
+          const figure = map.locator(`[data-unit="${unit.id}"] [data-sprite="figure"]`).last();
+          const box = await figure.boundingBox();
+          const stoneTop = await rope.evaluate((el) => {
+            const line = el as SVGLineElement;
+            return new DOMPoint(line.x2.baseVal.value, line.y2.baseVal.value).matrixTransform(
+              line.getScreenCTM()!,
+            ).y;
+          });
+          expect(stoneTop).toBeGreaterThan(box!.y + box!.height);
+          await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+          await expect(page.getByTestId('preview-selection')).toHaveText(unit.id);
+          // Selection must leave the whole warning opaque.
+          expect(await crane.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+          expect(await stone.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+        }
+        console.info(
+          `millstone rigs: 2; ropes: 2; rope length: ${12 * zoom}px at ${zoom * 100}%; gate/plain-wall selections: 2`,
+        );
+      }
       await page.screenshot({
         path: `.artifacts/siege/screens/render-${scene}-${zoom * 100}.png`,
         animations: 'disabled',

@@ -123,10 +123,12 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     state.preparations.boulders = { '27,16': { day: 1 } };
     state.preparations.millstones = {
       '24,16': { day: 1, hoisted: true },
-      '29,16': { day: state.day, hoisted: false },
+      // Synthetic plain-wall sample: today's map has no plain wall directly
+      // over a gate approach. Exercise the other cell type allowed by §5.7.
+      '26,16': { day: 1, hoisted: true },
     };
     result.legend =
-      'Brazier prepared today + firewood; usable brazier; hoisted millstone under crane; boulders; unhoisted millstone. Unlit brazier reference in the strip below.';
+      'Brazier prepared today + firewood; usable brazier; hoisted millstones in front of gate top (24,16) and plain wall (26,16, synthetic approach sample); boulders. Unlit brazier reference in the strip below.';
     if (name === 'nightTorches') {
       state.weather = 'snow';
       state.engines = [
