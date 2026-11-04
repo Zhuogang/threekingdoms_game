@@ -111,7 +111,7 @@ export const SIEGE_TUNING = {
     shuHistorical: 25,
     shuWithdrawn: 15,
     shuDefeat: 0,
-    fastVictoryDay: 6,
+    fastVictoryDay: 9,
     costlyVictoryLosses: 1900,
     orderlyWithdrawalLosses: 1520,
     speedPerDay: 3,
