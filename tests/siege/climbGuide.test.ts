@@ -238,7 +238,7 @@ const sentences: [ClimbGuide, string, string][] = [
   [{ kind: 'acted' }, '今天已行动，明天才能攀爬。', 'Already acted today. It can climb tomorrow.'],
   [
     { kind: 'defenderAbove', defenderId: 'defender', top, base },
-    '头上有守军姓名，不能攀爬：用「攻击」或强攻积累立足。',
+    '头上有守军（姓名），不能攀爬：用「攻击」或强攻积累立足。',
     'Name holds the wall above. Attack or assault to build footholds.',
   ],
   [

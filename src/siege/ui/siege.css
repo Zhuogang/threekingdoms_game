@@ -868,12 +868,14 @@
   display: inline-block;
   padding-right: 110px;
 }
-.siege-walkthrough > button {
+.siege-walkthrough > .v03-button.button-sm {
   position: absolute;
   right: 6px;
   top: 4px;
-  padding: 3px 6px;
+  min-height: 0;
+  padding: 1px 6px;
   font-size: 11px;
+  line-height: 1.2;
 }
 .siege-walkthrough p {
   margin: 4px 0 0;

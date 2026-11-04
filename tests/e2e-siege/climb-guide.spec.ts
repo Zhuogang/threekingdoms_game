@@ -54,6 +54,18 @@ async function dismissCards(page: Page) {
   await expect(page.getByTestId('counter-card')).toHaveCount(0);
   await expect(page.locator('[data-testid^="hint-"]')).toHaveCount(0);
 }
+async function expectSkipClearOfText(page: Page) {
+  const overlap = await page.getByTestId('walkthrough').evaluate((box) => {
+    const skip = box.querySelector('button')!.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(box.querySelector('p')!);
+    return [...range.getClientRects()].some(
+      (r) =>
+        r.left < skip.right && r.right > skip.left && r.top < skip.bottom && r.bottom > skip.top,
+    );
+  });
+  expect(overlap).toBe(false);
+}
 async function expectLabel(page: Page, cell: string, text: string) {
   await expect(page.locator(`[data-overlay="tutorial"][data-cell="${cell}"]`)).toHaveCount(1);
   const label = page.getByTestId('climb-base-label');
@@ -97,6 +109,7 @@ for (const locale of ['zh', 'en'] as const) {
     await page.getByTestId('command-raiseLadder').click();
     await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '3');
     await expect(page.getByTestId('walkthrough')).toContainText(siegeText(locale, 'walk3'));
+    await expectSkipClearOfText(page);
     await expect(page.getByTestId('end-day')).toHaveClass(/siege-pulse/);
     await selectActor(page, 'shu-weiyan');
     await expectGuide(page, locale, 'walkToBase');
@@ -134,6 +147,7 @@ for (const locale of ['zh', 'en'] as const) {
       moved: true,
     });
     await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '4');
+    await expectSkipClearOfText(page);
     const guide = climbGuide(morning.state, 'shu-weiyan')!;
     expect(['ready', 'defenderAbove']).toContain(guide.kind);
     await expectGuide(page, locale, guide.kind);
