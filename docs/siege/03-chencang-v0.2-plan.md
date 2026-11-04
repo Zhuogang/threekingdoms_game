@@ -1,6 +1,6 @@
 # 陈仓之战 v0.2 计划（siege_v0.2）：招与拆
 
-> 状态：**计划稿**（2026-11-03）。分支 `siege_v0.2`，从 `siege_v0.1`（`f51dccc`）分出。本文是 v0.2 的唯一依据：规则、AI、界面、渲染、美术清单和任务书都在这里；v0.1 的 [02 MVP 计划](02-chencang-mvp-plan.md) 只保留作历史，和本文冲突处以本文为准。美术的投影、风格、固定段仍按 [01 美术计划](01-chencang-art-plan.md)。实现交给 Opus，按 §11 的任务书一包一包做；出图仍由你用 Codex 内置 image_gen 跑，提示词在 §9。
+> 状态：**计划稿**（2026-11-03）。分支 `siege_v0.2`，从 `siege_v0.1`（`f51dccc`）分出。本文是 v0.2 的唯一依据：规则、AI、界面、渲染、美术清单和任务书都在这里；v0.1 的 [02 MVP 计划](02-chencang-mvp-plan.md) 只保留作历史，和本文冲突处以本文为准。美术的投影、风格、固定段仍按 [01 美术计划](01-chencang-art-plan.md)。写代码和出图都交给 Codex（2026-11-03 定），按 §11 的任务书一包一包做，提示词在 §9；Claude 负责计划、任务书、验收和测试。
 
 ## 0. 摘要
 
@@ -46,7 +46,7 @@
 | DV11 | 地道、张郃 | 推到 v0.3                                                                       | 最花图、最花规则；先把招拆做扎实                                                  |
 | DV12 | 名称       | 选边界面写「汉军 · 诸葛亮」「魏军 · 郝昭」；其余文本和代码仍用「蜀」/`shu`      | 你的用词；全局改名留到合并大地图时一起做                                          |
 | DV13 | 数值       | 所有数值进 `src/siege/rules/tuning.ts` 一张表；玩法面板和模拟都读它             | 调数值不改规则代码；§5.10 的草案由模拟定                                          |
-| DV14 | 实现       | Opus 按 §11 的任务书做，每包验收后提交；推送等你说                              | 沿用 v0.1 的工作约定                                                              |
+| DV14 | 实现       | Codex 按 §11 的任务书写代码、出图；Claude 写任务书、验收、提交；推送等你说      | 你的要求（2026-11-03），同 v0.1 的工作约定                                        |
 
 ## 3. 范围
 
@@ -163,7 +163,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 **压制** `{ type: 'suppress', unitId | engineId, targetId }`
 
-- 发起：地面的蜀军弓弩兵，目标是射程 2 以内墙上的魏军；或井阑，射程 4。
+- 发起：地面的蜀军弓弩兵，目标是射程 3 以内墙上的魏军；或井阑，射程 4。蜀军弓弩兵打城头的普通攻击射程也从 2 改为 3：城堑占 y 17、18 两行，y 19 到墙头正好 3 格，射程 2 在填平城堑前够不着，第 1 日就压制不了。
 - 效果：伤亡为普通齐射的 ×0.5（女墙 ×0.3 照算），目标 `suppressedDay = 当日`。当日魏军阶段里，被压制的部队**不能**放火箭、投石磨、投礌石、备火、吊石磨、堆礌石、夜袭（作为夜袭部队），反击伤害 ×0.7；可以移动、可以普通攻击、可以筑墙。夜间清除。
 - 预测写明「压制：对方今日不能放火箭、投石磨、投礌石」。
 
@@ -204,7 +204,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 
 - **火箭**改为只能从墙上、靠火盆放；去掉 v0.1 地面弓兵烧器械的情况。伤害 = 兵力 × 0.4 × 天气，蒙皮 ×0.4 且不点燃。
 - **石磨**去掉 v0.1 的两日冷却，改由「吊起」节奏控制。
-- `state.preparations = { braziers: Record<cell, { litDay }>, millstones: Record<cell, { hoisted: boolean; day }>, boulders: Record<cell, boolean> }`。
+- `state.preparations = { braziers: Record<cell, { litDay }>, millstones: Record<cell, { hoisted: boolean; day }>, boulders: Record<cell, { day }> }`。三种准备都要 `准备日 < 当日` 才能用，所以当日准备的不能当日用。
 
 ### 5.8 军令与夜间
 
@@ -274,6 +274,7 @@ AI 扮演的一方用固定部署（蜀军同 v0.1 的 `createSiegeState`；魏�
 | 夜攻推进 / 士气            | 2 格 / −3        | 举火对撞士气           | −5              |
 | 夜袭伤害 / 蒙皮 / 击退损失 | 150 / 75 / 10%   | 夜袭射程               | 南门接近格 4 格 |
 | 燃烧每夜                   | −20              | 井阑射程 / 正面        | 4 / 300         |
+| 弓弩兵打城头射程           | 3                | 城头弓兵射程           | 3               |
 | 齐射正面 / 女墙            | 600 / ×0.3       | 门洞正面               | 300             |
 | 本阵受威胁距离             | ≤ 3              | 士气回复               | +5 到 80        |
 
@@ -590,7 +591,7 @@ Do not include: any text, letters, calligraphy, seals or signatures; borders or 
 
 ## 11. 任务书（I–O）
 
-每包一份任务书放 `docs/siege/codex-tasks/`（沿用文件夹，格式同 `H-how-to-play.md`：Why / Constraints / Deliverables / Checks），由 Opus 实现。每包都要跑：`npx vitest run tests/siege`、`npx tsc --noEmit -p .`、`npx prettier --check src/siege tests/siege tests/e2e-siege tools docs/siege`、`npx vite build`；涉及文本的包跑字体子集。每包验收后提交一次，提交说明写包号。
+每包一份任务书放 `docs/siege/codex-tasks/`（沿用文件夹，格式同 `H-how-to-play.md`：Why / Constraints / Deliverables / Checks），由 Codex 实现，Claude 验收。每包都要跑：`npx vitest run tests/siege`、`npx tsc --noEmit -p .`、`npx prettier --check src/siege tests/siege tests/e2e-siege tools docs/siege`、`npx vite build`；涉及文本的包跑字体子集。每包验收后提交一次，提交说明写包号。
 
 | 包  | 名称          | 交付                                                                                                                                                                                                                                                           | 验收                                                                                                                                                                              |
 | --- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -602,7 +603,7 @@ Do not include: any text, letters, calligraphy, seals or signatures; borders or 
 | N   | 魏军可玩      | 选边与路由；魏军开场台词、部署、指令、守备页、晨报、夜令选目标、第 1 日引导、玩法面板；攻城 AI 回放；魏方结局与评分；S8-07、S8-10 接入                                                                                                                         | e2e：选魏军 → 部署 → 吊石磨、备火 → 结束本日 → 第 2 日火箭烧云梯、投石磨 → 守到结局；读档一致；截图 `wei-deploy.png`、`wei-day2.png`、`wei-ending.png`                            |
 | O   | 打磨与验收    | 两边各一局完整端到端；S8-08 幕间接入；字体子集；性能；`00-progress.md` 更新到 v0.2；玩家指南段落；试玩问题修复                                                                                                                                                 | §12 的验收清单全部打勾                                                                                                                                                            |
 
-顺序：**I → J →（K 与 J、L 并行）→ L → M → N → O**。K 的出图由你做，Opus 做脚本和接入；L 在 K 的图入库前先用灰盒占位（`mapPieces` 对灰盒和定稿用同一套 `footprints.json`）。
+顺序：**I → J →（K 与 J、L 并行）→ L → M → N → O**。K 的脚本、出图和接入都由 Codex 做，Claude 挑图、复核；L 在 K 的图入库前先用灰盒占位（`mapPieces` 对灰盒和定稿用同一套 `footprints.json`）。
 
 ## 12. 里程碑与验收
 
