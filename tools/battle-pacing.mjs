@@ -10,6 +10,8 @@ const args = process.argv.slice(2),
   dayLimitArg = args.find((arg) => arg.startsWith('--day-limit='))?.slice('--day-limit='.length),
   rosterKind = args.find((arg) => arg.startsWith('--roster='))?.slice('--roster='.length) ?? '3v3',
   label = args.find((arg) => arg.startsWith('--label='))?.slice('--label='.length),
+  // --compact drops the per-battle records so committed evidence stays small.
+  compact = args.includes('--compact'),
   positional = args.filter((arg) => !arg.startsWith('--'));
 if (!['3v3', '8v8'].includes(rosterKind)) throw new Error('--roster must be 3v3 or 8v8.');
 const output =
@@ -321,7 +323,11 @@ try {
         },
         measurement:
           'Separate exchange samples count primary hits, counterattacks and damaging tactics. Side-turn totals are retained separately.',
-        distributions,
+        distributions: compact
+          ? Object.fromEntries(
+              Object.entries(distributions).map(([id, { runs: _runs, ...rest }]) => [id, rest]),
+            )
+          : distributions,
       },
       null,
       2,
