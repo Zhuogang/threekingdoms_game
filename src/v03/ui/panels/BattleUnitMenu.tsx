@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { getBattleTacticTargets } from '../../battle';
+import {
+  battleOrderError,
+  defaultBattleOrder,
+  getBattleTacticTargets,
+  type BattleOrderKind,
+} from '../../battle';
+import { message } from '../../i18n';
 import { gridToWorld, V03_BATTLE_CELL } from '../../rendering';
 import { Button } from '../kit';
 import { tacticLabel, localizeTacticReason } from '../shared/app-copy-2';
@@ -7,7 +13,7 @@ import type { GameplayContext } from '../hooks/gameplayView';
 
 export function BattleUnitMenu({ context }: { context: GameplayContext }) {
   const { activeBattle, battleState, currentUnit, battleActionMenu: menu, locale, t } = context;
-  const [mode, setMode] = useState<'actions' | 'tactics'>('actions');
+  const [mode, setMode] = useState<'actions' | 'tactics' | 'orders'>('actions');
   if (
     !activeBattle ||
     !battleState ||
@@ -47,6 +53,32 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
     hasTargets:
       entry.allowed && getBattleTacticTargets(battleState, currentUnit.id, entry.tactic).length > 0,
   }));
+  const orderKinds: readonly BattleOrderKind[] = [
+    'free',
+    'advance',
+    'hold',
+    'skirmish',
+    'charge',
+    'screen',
+    'withdraw',
+    'pursue',
+  ];
+  const orders = orderKinds.map((kind) => {
+    const order = defaultBattleOrder(battleState, currentUnit, kind);
+    const error = order ? battleOrderError(battleState, currentUnit, order) : 'no target';
+    const reason =
+      (kind === 'charge' || kind === 'pursue') && currentUnit.troopType !== 'cavalry'
+        ? 'order.illegal.cavalry'
+        : kind === 'skirmish' && currentUnit.troopType !== 'archer'
+          ? 'order.illegal.archer'
+          : 'order.illegal.target';
+    return {
+      kind,
+      order,
+      legal: Boolean(order) && !error,
+      reason: reason as 'order.illegal.cavalry',
+    };
+  });
   return (
     <section
       className="v03-battle-unit-menu"
@@ -83,6 +115,7 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
           >
             {t.tactics}
           </Button>
+          <Button onClick={() => setMode('orders')}>{message(locale, 'order.menu')}</Button>
           <Button
             onClick={() =>
               context.dispatch({
@@ -95,6 +128,32 @@ export function BattleUnitMenu({ context }: { context: GameplayContext }) {
             {t.waitAction}
           </Button>
           {!context.attackTargets.length ? <small>{t.tacticNoTargets}</small> : null}
+        </>
+      ) : mode === 'orders' ? (
+        <>
+          <p role="status">{message(locale, 'order.menuHint')}</p>
+          {orders.map((entry) => (
+            <Button
+              key={entry.kind}
+              disabled={!entry.legal}
+              aria-pressed={(currentUnit.order?.kind ?? 'free') === entry.kind}
+              title={
+                entry.legal
+                  ? message(locale, `order.${entry.kind}.hint`)
+                  : message(locale, entry.reason)
+              }
+              onClick={() => {
+                context.dispatch({
+                  type: 'battleAction',
+                  battleId: activeBattle.id,
+                  action: { type: 'setOrder', unitId: currentUnit.id, order: entry.order! },
+                });
+                setMode('actions');
+              }}
+            >
+              {message(locale, `order.${entry.kind}`)}
+            </Button>
+          ))}
         </>
       ) : (
         <>

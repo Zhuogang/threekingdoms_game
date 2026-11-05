@@ -31,6 +31,7 @@ describe('balance tables', () => {
         'EVENTS',
         'LEADERSHIP',
         'MORALE',
+        'ORDERS',
         'PERSONNEL',
         'RECRUITMENT',
         'TACTICS',

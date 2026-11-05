@@ -122,6 +122,9 @@ export function BattleSidebar({
                           unit.troops.toLocaleString(),
                           `${unit.morale}%`,
                           unitBattleStatus(unit),
+                          unit.side === battleState.playerSide && unit.order
+                            ? message(locale, `order.${unit.order.kind}`)
+                            : null,
                           unit.side !== battleState.playerSide
                             ? message(locale, 'battleForceIntellect', {
                                 force: unit.force,

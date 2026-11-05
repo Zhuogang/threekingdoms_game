@@ -237,6 +237,7 @@ function executeCommand(state: V03GameState, command: V03Command): V03ActionResu
     case 'completeBattleDay': {
       const result = completeV03BattleDay(state, command.battleId, {
         remainingAct: command.remainingAct,
+        holdRemaining: command.holdRemaining,
       });
       return result.ok
         ? {

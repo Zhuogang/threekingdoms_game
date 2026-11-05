@@ -487,7 +487,12 @@ export type V03Command =
       exchangeOfficerId?: string;
     }
   | { type: 'recruitPrisoners'; cityId: string }
-  | { type: 'completeBattleDay'; battleId: string; remainingAct?: boolean }
+  | {
+      type: 'completeBattleDay';
+      battleId: string;
+      remainingAct?: boolean;
+      holdRemaining?: boolean;
+    }
   | { type: 'acknowledgeEvent'; eventId: string }
   | { type: 'acknowledgeEvents'; eventIds: string[] }
   | { type: 'fillOfficersFromReserve'; cityId: string };

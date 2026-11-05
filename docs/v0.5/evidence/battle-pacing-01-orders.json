@@ -1,0 +1,420 @@
+{
+  "countPerTemplate": 200,
+  "roster": "8v8",
+  "orders": "on",
+  "dayLimit": 30,
+  "summary": {
+    "battles": 3000,
+    "dayLimit": 30,
+    "firstContactMedian": 2,
+    "lengthMedian": 13,
+    "timeoutShare": 0.043666666666666666,
+    "outcomes": {
+      "elimination": 1984,
+      "rout": 885,
+      "retreat": 0,
+      "dayLimit": 131
+    },
+    "tactics": {
+      "fire": 15911,
+      "rally": 45356,
+      "confuse": 7061,
+      "ambush": 1133,
+      "rockfall": 76
+    },
+    "rallyShare": 0.6522570717747387,
+    "roster": "8v8",
+    "attackerWinRate": 0.458,
+    "routShare": 0.295,
+    "distinctOutcomesMedian": 180,
+    "orders": {
+      "skirmish": 88516
+    },
+    "rallyAllShare": 0.6522570717747387
+  },
+  "source": {
+    "ref": "working-tree",
+    "enginePath": "src/v03/battle/engine.ts",
+    "sha256": "5e0416ddac269dcdef9cbf3ad2d160fb64e2cc87f98019b447abc61cc9a838f1"
+  },
+  "measurement": "Separate exchange samples count primary hits, counterattacks and damaging tactics. Side-turn totals are retained separately.",
+  "distributions": {
+    "bf01-north-plain": {
+      "firstContactMedian": 2,
+      "lengthMedian": 14,
+      "lengthP90": 23,
+      "casualtiesPerExchangeMedian": 245,
+      "timeouts": 13,
+      "outcomes": {
+        "elimination": 121,
+        "rout": 66,
+        "retreat": 0,
+        "dayLimit": 13
+      },
+      "tactics": {
+        "fire": 1187,
+        "rally": 3059,
+        "confuse": 438,
+        "ambush": 144
+      },
+      "attackerWinRate": 0.585,
+      "routShare": 0.33,
+      "distinctOutcomes": 178,
+      "orders": {
+        "skirmish": 6212
+      }
+    },
+    "bf02-central-farmland": {
+      "firstContactMedian": 3,
+      "lengthMedian": 21,
+      "lengthP90": 30,
+      "casualtiesPerExchangeMedian": 194,
+      "timeouts": 29,
+      "outcomes": {
+        "elimination": 121,
+        "rout": 50,
+        "retreat": 0,
+        "dayLimit": 29
+      },
+      "tactics": {
+        "rally": 2000,
+        "confuse": 666,
+        "fire": 847,
+        "rockfall": 69
+      },
+      "attackerWinRate": 0.375,
+      "routShare": 0.25,
+      "distinctOutcomes": 190,
+      "orders": {
+        "skirmish": 5810
+      }
+    },
+    "bf03-yellow-river-ford": {
+      "firstContactMedian": 3,
+      "lengthMedian": 19,
+      "lengthP90": 28,
+      "casualtiesPerExchangeMedian": 191,
+      "timeouts": 17,
+      "outcomes": {
+        "elimination": 111,
+        "rout": 72,
+        "retreat": 0,
+        "dayLimit": 17
+      },
+      "tactics": {
+        "rally": 2053,
+        "fire": 759,
+        "confuse": 708,
+        "rockfall": 1,
+        "ambush": 1
+      },
+      "attackerWinRate": 0.85,
+      "routShare": 0.36,
+      "distinctOutcomes": 184,
+      "orders": {
+        "skirmish": 5592
+      }
+    },
+    "bf04-wetland-north": {
+      "firstContactMedian": 2,
+      "lengthMedian": 13,
+      "lengthP90": 21,
+      "casualtiesPerExchangeMedian": 255,
+      "timeouts": 10,
+      "outcomes": {
+        "elimination": 144,
+        "rout": 46,
+        "retreat": 0,
+        "dayLimit": 10
+      },
+      "tactics": {
+        "rally": 2836,
+        "fire": 1094,
+        "confuse": 379,
+        "ambush": 244
+      },
+      "attackerWinRate": 0.43,
+      "routShare": 0.23,
+      "distinctOutcomes": 181,
+      "orders": {
+        "skirmish": 6314
+      }
+    },
+    "bf04-wetland-south": {
+      "firstContactMedian": 2,
+      "lengthMedian": 13,
+      "lengthP90": 21,
+      "casualtiesPerExchangeMedian": 255,
+      "timeouts": 10,
+      "outcomes": {
+        "elimination": 144,
+        "rout": 46,
+        "retreat": 0,
+        "dayLimit": 10
+      },
+      "tactics": {
+        "rally": 2836,
+        "fire": 1094,
+        "confuse": 379,
+        "ambush": 244
+      },
+      "attackerWinRate": 0.43,
+      "routShare": 0.23,
+      "distinctOutcomes": 181,
+      "orders": {
+        "skirmish": 6314
+      }
+    },
+    "bf05-yangtze-bank": {
+      "firstContactMedian": 2,
+      "lengthMedian": 11,
+      "lengthP90": 16,
+      "casualtiesPerExchangeMedian": 262,
+      "timeouts": 3,
+      "outcomes": {
+        "elimination": 131,
+        "rout": 66,
+        "retreat": 0,
+        "dayLimit": 3
+      },
+      "tactics": {
+        "rally": 3907,
+        "fire": 907,
+        "confuse": 520,
+        "ambush": 49
+      },
+      "attackerWinRate": 0.28,
+      "routShare": 0.33,
+      "distinctOutcomes": 174,
+      "orders": {
+        "skirmish": 6078
+      }
+    },
+    "bf05-yangtze-crossing": {
+      "firstContactMedian": 4,
+      "lengthMedian": 19,
+      "lengthP90": 22,
+      "casualtiesPerExchangeMedian": 217,
+      "timeouts": 0,
+      "outcomes": {
+        "elimination": 138,
+        "rout": 62,
+        "retreat": 0,
+        "dayLimit": 0
+      },
+      "tactics": {
+        "rally": 2174,
+        "fire": 1158,
+        "confuse": 764,
+        "ambush": 267
+      },
+      "attackerWinRate": 0.76,
+      "routShare": 0.31,
+      "distinctOutcomes": 180,
+      "orders": {
+        "skirmish": 5540
+      }
+    },
+    "bf06-valley-north": {
+      "firstContactMedian": 3,
+      "lengthMedian": 12,
+      "lengthP90": 18,
+      "casualtiesPerExchangeMedian": 244,
+      "timeouts": 3,
+      "outcomes": {
+        "elimination": 125,
+        "rout": 72,
+        "retreat": 0,
+        "dayLimit": 3
+      },
+      "tactics": {
+        "rally": 2578,
+        "fire": 982,
+        "confuse": 431,
+        "ambush": 1
+      },
+      "attackerWinRate": 0.19,
+      "routShare": 0.36,
+      "distinctOutcomes": 180,
+      "orders": {
+        "skirmish": 5610
+      }
+    },
+    "bf06-valley-south": {
+      "firstContactMedian": 3,
+      "lengthMedian": 12,
+      "lengthP90": 18,
+      "casualtiesPerExchangeMedian": 244,
+      "timeouts": 3,
+      "outcomes": {
+        "elimination": 125,
+        "rout": 72,
+        "retreat": 0,
+        "dayLimit": 3
+      },
+      "tactics": {
+        "rally": 2578,
+        "fire": 982,
+        "confuse": 431,
+        "ambush": 1
+      },
+      "attackerWinRate": 0.19,
+      "routShare": 0.36,
+      "distinctOutcomes": 180,
+      "orders": {
+        "skirmish": 5610
+      }
+    },
+    "bf07-taihang": {
+      "firstContactMedian": 2,
+      "lengthMedian": 11,
+      "lengthP90": 15,
+      "casualtiesPerExchangeMedian": 259,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 142,
+        "rout": 57,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "rally": 3915,
+        "fire": 1076,
+        "confuse": 335,
+        "rockfall": 3
+      },
+      "attackerWinRate": 0.33,
+      "routShare": 0.285,
+      "distinctOutcomes": 168,
+      "orders": {
+        "skirmish": 6418
+      }
+    },
+    "bf07-rolling-hills": {
+      "firstContactMedian": 2,
+      "lengthMedian": 12,
+      "lengthP90": 15,
+      "casualtiesPerExchangeMedian": 261,
+      "timeouts": 7,
+      "outcomes": {
+        "elimination": 146,
+        "rout": 47,
+        "retreat": 0,
+        "dayLimit": 7
+      },
+      "tactics": {
+        "rally": 3918,
+        "fire": 976,
+        "confuse": 479,
+        "ambush": 5,
+        "rockfall": 2
+      },
+      "attackerWinRate": 0.35,
+      "routShare": 0.235,
+      "distinctOutcomes": 161,
+      "orders": {
+        "skirmish": 6103
+      }
+    },
+    "bf08-south-hills": {
+      "firstContactMedian": 2,
+      "lengthMedian": 11,
+      "lengthP90": 17,
+      "casualtiesPerExchangeMedian": 254,
+      "timeouts": 4,
+      "outcomes": {
+        "elimination": 148,
+        "rout": 48,
+        "retreat": 0,
+        "dayLimit": 4
+      },
+      "tactics": {
+        "rally": 3490,
+        "fire": 1092,
+        "confuse": 305,
+        "ambush": 120,
+        "rockfall": 1
+      },
+      "attackerWinRate": 0.2,
+      "routShare": 0.24,
+      "distinctOutcomes": 161,
+      "orders": {
+        "skirmish": 6575
+      }
+    },
+    "bf09-gorge": {
+      "firstContactMedian": 2,
+      "lengthMedian": 13,
+      "lengthP90": 19,
+      "casualtiesPerExchangeMedian": 226,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 144,
+        "rout": 55,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "rally": 3217,
+        "fire": 1424,
+        "confuse": 393,
+        "ambush": 19
+      },
+      "attackerWinRate": 0.61,
+      "routShare": 0.275,
+      "distinctOutcomes": 174,
+      "orders": {
+        "skirmish": 5493
+      }
+    },
+    "bf09-three-gorges": {
+      "firstContactMedian": 2,
+      "lengthMedian": 15,
+      "lengthP90": 30,
+      "casualtiesPerExchangeMedian": 207,
+      "timeouts": 22,
+      "outcomes": {
+        "elimination": 112,
+        "rout": 66,
+        "retreat": 0,
+        "dayLimit": 22
+      },
+      "tactics": {
+        "rally": 2895,
+        "fire": 1342,
+        "confuse": 432,
+        "ambush": 38
+      },
+      "attackerWinRate": 0.805,
+      "routShare": 0.33,
+      "distinctOutcomes": 186,
+      "orders": {
+        "skirmish": 5104
+      }
+    },
+    "bf10-mountain-pass": {
+      "firstContactMedian": 2,
+      "lengthMedian": 12,
+      "lengthP90": 18,
+      "casualtiesPerExchangeMedian": 260,
+      "timeouts": 8,
+      "outcomes": {
+        "elimination": 132,
+        "rout": 60,
+        "retreat": 0,
+        "dayLimit": 8
+      },
+      "tactics": {
+        "rally": 3900,
+        "fire": 991,
+        "confuse": 401
+      },
+      "attackerWinRate": 0.485,
+      "routShare": 0.3,
+      "distinctOutcomes": 168,
+      "orders": {
+        "skirmish": 5743
+      }
+    }
+  }
+}

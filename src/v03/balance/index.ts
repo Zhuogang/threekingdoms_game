@@ -9,3 +9,4 @@ export { LEADERSHIP } from './leadership';
 export { PERSONNEL } from './personnel';
 export { CAMPAIGN_AI } from './campaignAi';
 export { EVENTS } from './events';
+export { ORDERS } from './orders';

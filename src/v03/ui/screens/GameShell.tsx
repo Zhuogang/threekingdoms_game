@@ -175,11 +175,11 @@ export function GameShell({
               dispatch({
                 type: 'completeBattleDay',
                 battleId: activeBattle.id,
-                remainingAct: true,
+                holdRemaining: true,
               });
             }}
           >
-            {message(locale, 'battle.remainingAct')}
+            {message(locale, 'battle.holdRemaining')}
           </Button>
         </ConfirmDialog>
       ) : null}

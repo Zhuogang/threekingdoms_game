@@ -8,6 +8,7 @@ import {
   MORALE as MORALE_TABLE,
   LEADERSHIP as LEADERSHIP_TABLE,
   PERSONNEL as PERSONNEL_TABLE,
+  ORDERS as ORDERS_TABLE,
   TACTICS as TACTICS_TABLE,
 } from '../balance';
 import {
@@ -35,6 +36,8 @@ import {
   MAX_UNITS_PER_SIDE,
   type BattleAction,
   type BattleActionResult,
+  type BattleOrder,
+  type BattleOrderKind,
   type BattleOutcome,
   type BattlePosition,
   type BattleRosterEntry,
@@ -58,6 +61,7 @@ const UNITS = UNITS_TABLE;
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const BATTLE = BATTLE_TABLE;
 const BATTLE_AI = BATTLE_AI_TABLE;
+const ORDERS = ORDERS_TABLE;
 const MORALE = MORALE_TABLE;
 const LEADERSHIP = LEADERSHIP_TABLE;
 const PERSONNEL = PERSONNEL_TABLE;
@@ -1099,6 +1103,126 @@ function performTactic(
   return null;
 }
 
+/**
+ * The order of a kind with its target chosen automatically (the minimal order UI): the nearest
+ * living enemy to advance on or charge (a charge prefers one reachable down a straight lane),
+ * the nearest friendly formation to screen. Null when the kind needs a target that does not exist.
+ */
+export function defaultBattleOrder(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  kind: BattleOrderKind,
+): BattleOrder | null {
+  const nearest = (candidates: readonly TacticalBattleUnit[]) =>
+    candidates
+      .slice()
+      .sort(
+        (a, b) =>
+          manhattanDistance(unit, a) - manhattanDistance(unit, b) || a.id.localeCompare(b.id),
+      )[0];
+  const enemies = livingUnits(state, otherSide(unit.side));
+  switch (kind) {
+    case 'advance': {
+      const target = nearest(enemies);
+      return target ? { kind, target: { unitId: target.id } } : null;
+    }
+    case 'charge': {
+      const target =
+        nearest(enemies.filter((enemy) => chargeLane(state, unit, enemy) > 0)) ?? nearest(enemies);
+      return target ? { kind, target: { unitId: target.id } } : null;
+    }
+    case 'screen': {
+      const friend = nearest(livingUnits(state, unit.side).filter((ally) => ally.id !== unit.id));
+      return friend ? { kind, friendId: friend.id } : null;
+    }
+    case 'skirmish':
+      return { kind };
+    default:
+      return { kind };
+  }
+}
+
+/** Why a standing order cannot be given to this unit, or null when it is legal (B-01). */
+export function battleOrderError(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  order: BattleOrder,
+): string | null {
+  const enemy = (id: unknown) => {
+    const target = typeof id === 'string' ? unitById(state, id) : undefined;
+    return target && target.side !== unit.side ? target : undefined;
+  };
+  switch (order?.kind) {
+    case 'free':
+    case 'hold':
+    case 'withdraw':
+      return null;
+    case 'advance': {
+      const target = order.target as { unitId?: string; x?: number; y?: number } | undefined;
+      if (target && 'unitId' in target)
+        return enemy(target.unitId) ? null : 'Choose a living enemy formation.';
+      if (
+        !target ||
+        !Number.isInteger(target.x) ||
+        !Number.isInteger(target.y) ||
+        target.x! < 0 ||
+        target.y! < 0 ||
+        target.x! >= state.map.width ||
+        target.y! >= state.map.height ||
+        battleTerrainAt(state.map, { x: target.x!, y: target.y! }) === 'cliff'
+      )
+        return 'Choose a cell on the map.';
+      return null;
+    }
+    case 'charge':
+      if (unit.troopType !== 'cavalry') return 'Only cavalry can charge.';
+      return enemy(order.target?.unitId) ? null : 'Choose a living enemy formation.';
+    case 'skirmish':
+      if (unit.troopType !== 'archer') return 'Only archers can skirmish.';
+      return order.target && !enemy(order.target.unitId)
+        ? 'Choose a living enemy formation.'
+        : null;
+    case 'screen': {
+      const friend =
+        typeof order.friendId === 'string' ? unitById(state, order.friendId) : undefined;
+      return friend && friend.side === unit.side && friend.id !== unit.id
+        ? null
+        : 'Choose a living friendly formation.';
+    }
+    case 'pursue':
+      return unit.troopType === 'cavalry' ? null : 'Only cavalry can pursue.';
+    default:
+      return 'Unknown order.';
+  }
+}
+
+function performSetOrder(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  order: BattleOrder,
+): string | null {
+  const error = battleOrderError(state, unit, order);
+  if (error) return error;
+  if (order.kind === 'free') delete unit.order;
+  else unit.order = structuredClone(order);
+  const target: Record<string, string | number | null> =
+    order.kind === 'advance'
+      ? 'unitId' in order.target
+        ? { targetId: order.target.unitId }
+        : { x: order.target.x, y: order.target.y }
+      : order.kind === 'charge' || order.kind === 'skirmish'
+        ? { targetId: order.target?.unitId ?? null }
+        : order.kind === 'screen'
+          ? { targetId: order.friendId }
+          : {};
+  append(state, `${unit.name} is ordered to ${order.kind}.`, 'log.order', {
+    unitId: unit.id,
+    order: order.kind,
+    ...target,
+  });
+  return null;
+}
+
 function performAction(draft: V03TacticalBattleState, action: BattleAction): string | null {
   if (action.type === 'retreat') {
     const side = action.side ?? (action.unitId ? unitById(draft, action.unitId)?.side : undefined);
@@ -1120,6 +1244,7 @@ function performAction(draft: V03TacticalBattleState, action: BattleAction): str
   if (!unit) return 'Select a living unit.';
   if (unit.side !== draft.playerSide) return 'You can command only your own units.';
   if (draft.outcome) return 'This battle has ended.';
+  if (action.type === 'setOrder') return performSetOrder(draft, unit, action.order);
   if (unit.status === 'confused') return `${unit.name} is confused and will lose its next action.`;
   if (action.type === 'tactic') {
     const target = unitById(draft, action.targetId);
@@ -1430,6 +1555,8 @@ interface TacticalTurnContext {
   fields: Map<string, Map<number, BattlePosition>>;
   timeoutWinner: BattleSide | null;
   occupied: Map<number, TacticalBattleUnit>;
+  /** Standing orders constrain the evaluation unless this is false (default true). */
+  ordersActive?: boolean;
 }
 
 /** Reachable attacks on the enemy's next activation, with actual movement, ZOC,
@@ -1614,6 +1741,411 @@ function blockingPenalty(
   return penalty;
 }
 
+// ---------------------------------------------------------------------------
+// Standing orders (B-01). An order never changes a damage rule: it filters the
+// destination cells and actions the evaluator may choose and re-weights progress
+// and exposure. A free (or absent) order leaves the evaluation untouched.
+// ---------------------------------------------------------------------------
+
+const FREE_ORDER: BattleOrder = { kind: 'free' };
+
+/** What an order does to the evaluation of one formation's day. */
+export interface OrderConstraint {
+  /** Multiplies the progress term of the turn score. */
+  progressWeight: number;
+  /** Multiplies the exposure term of the turn score. */
+  exposureWeight: number;
+  /** Route distance toward the order's goal; replaces the nearest-enemy route for progress. */
+  distance?: number[];
+  /** Charge: the formation attacks this target whatever the score. */
+  forcedTarget?: string;
+  /** The destination cells (the current cell included) the order permits. Empty means stay. */
+  selectCells<T extends BattlePosition>(cells: readonly T[]): T[];
+  /** Whether the order permits this action from this cell. Holding is always permitted. */
+  actionAllowed(action: TacticalActionCandidate, x: number, y: number): boolean;
+  /** Narrows the sorted candidate list once all positions have been scored. */
+  filterChoices?<T extends TacticalActionCandidate>(choices: T[]): T[];
+}
+
+export type OrderProblem = 'targetDead' | 'friendDead' | 'noRoute';
+export interface ImpossibleOrder {
+  unitId: string;
+  order: BattleOrderKind;
+  reason: OrderProblem;
+}
+
+function orderRouteField(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  goal: { unitId: string } | BattlePosition,
+  enemies: readonly TacticalBattleUnit[],
+  routes: Map<string, number[]>,
+): number[] {
+  const key = `order:${unit.troopType}:${unit.attackRange}:${
+    'unitId' in goal ? goal.unitId : `${goal.x},${goal.y}`
+  }:${enemies.map((entry) => `${entry.id}:${entry.x}:${entry.y}`).join('|')}`;
+  const known = routes.get(key);
+  if (known) return known;
+  const goals: BattlePosition[] = [];
+  if ('unitId' in goal) {
+    const target = enemies.find((entry) => entry.id === goal.unitId);
+    if (target) {
+      const occupied = new Set(
+        enemies.map((entry) => battlePositionIndex(state.map, entry.x, entry.y)),
+      );
+      for (let dy = -unit.attackRange; dy <= unit.attackRange; dy++) {
+        const span = unit.attackRange - Math.abs(dy);
+        for (let dx = -span; dx <= span; dx++) {
+          const x = target.x + dx,
+            y = target.y + dy;
+          if (x < 0 || y < 0 || x >= state.map.width || y >= state.map.height) continue;
+          const index = battlePositionIndex(state.map, x, y);
+          if (occupied.has(index) || state.map.terrain[index] === 'cliff') continue;
+          goals.push({ x, y });
+        }
+      }
+    }
+  } else goals.push(goal);
+  const field = getBattleRouteDistanceField(state.map, unit, goals, enemies);
+  routes.set(key, field);
+  return field;
+}
+
+/** The nearest routed enemy a pursuing formation chases (ties by id), if any. */
+function nearestRoutedEnemy(
+  unit: TacticalBattleUnit,
+  enemies: readonly TacticalBattleUnit[],
+): TacticalBattleUnit | undefined {
+  let best: TacticalBattleUnit | undefined;
+  let bestDistance = Infinity;
+  for (const enemy of enemies) {
+    if (!isRouted(enemy)) continue;
+    const distance = manhattanDistance(unit, enemy);
+    if (distance < bestDistance || (distance === bestDistance && enemy.id < best!.id)) {
+      best = enemy;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+/** Why the unit's standing order cannot be carried out now, or null. */
+function orderProblem(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  routes: Map<string, number[]> = new Map(),
+): OrderProblem | null {
+  const order = unit.order;
+  if (!order) return null;
+  if (order.kind === 'screen') {
+    const friend = unitById(state, order.friendId);
+    return friend && friend.side === unit.side && friend.id !== unit.id ? null : 'friendDead';
+  }
+  if (order.kind !== 'advance' && order.kind !== 'charge') return null;
+  const enemies = livingUnits(state, otherSide(unit.side));
+  const goal = order.target;
+  if ('unitId' in goal && !enemies.some((entry) => entry.id === goal.unitId)) return 'targetDead';
+  const field = orderRouteField(state, unit, goal, enemies, routes);
+  return Number.isFinite(field[battlePositionIndex(state.map, unit.x, unit.y)]!) ? null : 'noRoute';
+}
+
+/** Orders of the side's living formations that can no longer be carried out (target dead, no route, friend dead). */
+export function impossibleOrders(
+  state: V03TacticalBattleState,
+  side: BattleSide,
+): ImpossibleOrder[] {
+  const routes = new Map<string, number[]>();
+  const found: ImpossibleOrder[] = [];
+  for (const unit of livingUnits(state, side)) {
+    const reason = orderProblem(state, unit, routes);
+    if (reason && unit.order) found.push({ unitId: unit.id, order: unit.order.kind, reason });
+  }
+  return found;
+}
+
+const nearestEnemyOf = (cell: BattlePosition, enemies: readonly TacticalBattleUnit[]) => {
+  let best = Infinity;
+  for (const enemy of enemies) best = Math.min(best, manhattanDistance(cell, enemy));
+  return best;
+};
+
+/**
+ * The constraint a formation's standing order puts on its evaluation, or null for
+ * a free formation, a routed one, or an order that cannot be carried out (it then
+ * acts free until the order lapses).
+ */
+export function orderConstraintFor(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  context?: Pick<TacticalTurnContext, 'routes'>,
+): OrderConstraint | null {
+  const order = unit.order;
+  if (!order || order.kind === 'free' || isRouted(unit)) return null;
+  const enemies = livingUnits(state, otherSide(unit.side));
+  if (!enemies.length) return null;
+  const routes = context?.routes ?? new Map<string, number[]>();
+  if (orderProblem(state, unit, routes)) return null;
+  const base = {
+    progressWeight: ORDERS.progressWeight[order.kind],
+    exposureWeight: ORDERS.exposureWeight[order.kind],
+  };
+  const here = <T extends BattlePosition>(cells: readonly T[]): T[] =>
+    cells.filter((cell) => cell.x === unit.x && cell.y === unit.y);
+  const preserve =
+    TACTICAL_VALUE.retaliation +
+    (unit.troopExperience / PERSONNEL.troopExperience.max) * BATTLE_AI.preserve.experience;
+  const isHold = (action: TacticalActionCandidate) => action.action === 'hold';
+  const targetOf = (action: TacticalActionCandidate) =>
+    action.targetId ? unitById(state, action.targetId) : undefined;
+  // Moves strictly closer (by route) to a goal than the current cell, or stays.
+  const closer = (field: number[]) => {
+    const at = (cell: BattlePosition) => field[battlePositionIndex(state.map, cell.x, cell.y)]!;
+    const now = at(unit);
+    return <T extends BattlePosition>(cells: readonly T[]) =>
+      cells.filter((cell) => (cell.x === unit.x && cell.y === unit.y) || at(cell) < now);
+  };
+  switch (order.kind) {
+    case 'advance':
+    case 'pursue': {
+      const goal =
+        order.kind === 'advance'
+          ? order.target
+          : (() => {
+              const chased = nearestRoutedEnemy(unit, enemies);
+              return chased ? { unitId: chased.id } : null;
+            })();
+      // Pursuit with nothing to chase behaves as free.
+      if (!goal) return null;
+      const field = orderRouteField(state, unit, goal, enemies, routes);
+      const goalUnit = 'unitId' in goal ? goal.unitId : null;
+      const select = closer(field);
+      return {
+        ...base,
+        distance: field,
+        selectCells: select,
+        actionAllowed: (action, x, y) => {
+          if (order.kind === 'pursue' || action.action !== 'attack') return true;
+          const adjacent =
+            goalUnit !== null &&
+            action.targetId === goalUnit &&
+            manhattanDistance({ x, y }, unitById(state, goalUnit) ?? { x: -9, y: -9 }) === 1;
+          return adjacent || action.outgoing - action.retaliation * preserve >= 0;
+        },
+        filterChoices:
+          order.kind === 'pursue'
+            ? (choices) => {
+                const routedHits = choices.filter(
+                  (choice) =>
+                    choice.action === 'attack' && isRouted(targetOf(choice) ?? { morale: 100 }),
+                );
+                return routedHits.length ? routedHits : choices;
+              }
+            : undefined,
+      };
+    }
+    case 'hold':
+      return {
+        ...base,
+        selectCells: here,
+        actionAllowed: () => true,
+      };
+    case 'skirmish': {
+      const pool = order.target
+        ? enemies.filter((entry) => entry.id === order.target?.unitId)
+        : enemies;
+      const watched = pool.length ? pool : enemies;
+      const pinned = enemies.some((enemy) => manhattanDistance(enemy, unit) === 1);
+      const { minDistance, maxDistance } = ORDERS.skirmish;
+      return {
+        ...base,
+        selectCells: <T extends BattlePosition>(cells: readonly T[]): T[] => {
+          if (pinned) return here(cells);
+          const dist = (cell: BattlePosition) => nearestEnemyOf(cell, watched);
+          const band = cells.filter(
+            (cell) => dist(cell) >= minDistance && dist(cell) <= maxDistance,
+          );
+          if (band.length) {
+            const far = band.filter((cell) => dist(cell) === maxDistance);
+            return unit.attackRange >= maxDistance && far.length ? far : band;
+          }
+          const now = dist(unit);
+          // Out of the band: close in without entering contact, or back away from it.
+          const fix =
+            now > maxDistance
+              ? cells.filter((cell) => dist(cell) >= minDistance && dist(cell) < now)
+              : cells.filter((cell) => dist(cell) > now);
+          if (!fix.length) return here(cells);
+          const best = now > maxDistance ? Math.min(...fix.map(dist)) : Math.max(...fix.map(dist));
+          return fix.filter((cell) => dist(cell) === best);
+        },
+        actionAllowed: (action, x, y) => {
+          if (isHold(action) || pinned) return true;
+          const target = targetOf(action);
+          return !target || manhattanDistance({ x, y }, target) >= minDistance;
+        },
+      };
+    }
+    case 'charge': {
+      const field = orderRouteField(state, unit, order.target, enemies, routes);
+      return {
+        ...base,
+        distance: field,
+        forcedTarget: order.target.unitId,
+        selectCells: <T extends BattlePosition>(cells: readonly T[]): T[] => {
+          const at = (cell: BattlePosition) =>
+            field[battlePositionIndex(state.map, cell.x, cell.y)]!;
+          const best = Math.min(...cells.map(at));
+          return cells.filter((cell) => at(cell) === best);
+        },
+        actionAllowed: (action) => isHold(action) || action.targetId === order.target.unitId,
+        filterChoices: (choices) => {
+          const strikes = choices.filter(
+            (choice) => choice.action === 'attack' && choice.targetId === order.target.unitId,
+          );
+          return strikes.length ? strikes : choices;
+        },
+      };
+    }
+    case 'screen': {
+      const friend = unitById(state, order.friendId)!;
+      return {
+        ...base,
+        selectCells: <T extends BattlePosition>(cells: readonly T[]): T[] => {
+          const gap = (cell: BattlePosition) => manhattanDistance(cell, friend);
+          const best = Math.min(...cells.map(gap));
+          return cells.filter((cell) => gap(cell) === Math.max(1, best));
+        },
+        actionAllowed: (action) => {
+          if (isHold(action)) return true;
+          const target = targetOf(action);
+          return (
+            action.action === 'attack' &&
+            !!target &&
+            manhattanDistance(target, friend) <= Math.max(1, unit.attackRange)
+          );
+        },
+      };
+    }
+    case 'withdraw': {
+      const away = (cell: BattlePosition) =>
+        enemies.reduce((sum, enemy) => sum + manhattanDistance(cell, enemy), 0);
+      const now = away(unit);
+      const zone = new Set(
+        getEnemyZoneOfControl(state, otherSide(unit.side)).map((cell) =>
+          battlePositionIndex(state.map, cell.x, cell.y),
+        ),
+      );
+      return {
+        ...base,
+        selectCells: (cells) =>
+          cells.filter(
+            (cell) => away(cell) > now && !zone.has(battlePositionIndex(state.map, cell.x, cell.y)),
+          ),
+        actionAllowed: isHold,
+      };
+    }
+  }
+}
+
+/** Frees the orders that cannot be carried out any more, logging each lapse. */
+function lapseOrders(
+  state: V03TacticalBattleState,
+  units: readonly TacticalBattleUnit[],
+  routes: Map<string, number[]>,
+): void {
+  for (const unit of units) {
+    if (!unit.order || unit.order.kind === 'free') continue;
+    const reason = orderProblem(state, unit, routes);
+    if (!reason) continue;
+    append(
+      state,
+      `${unit.name} can no longer carry out its ${unit.order.kind} order.`,
+      'log.orderLapsed',
+      {
+        unitId: unit.id,
+        order: unit.order.kind,
+        reason,
+      },
+    );
+    delete unit.order;
+  }
+}
+
+/** A straight lane of plain, empty cells from a cavalry formation to an enemy, and its length. */
+function chargeLane(
+  state: V03TacticalBattleState,
+  unit: TacticalBattleUnit,
+  target: TacticalBattleUnit,
+): number {
+  const dx = Math.sign(target.x - unit.x),
+    dy = Math.sign(target.y - unit.y);
+  if ((dx !== 0 && dy !== 0) || (dx === 0 && dy === 0)) return 0;
+  const length = manhattanDistance(unit, target) - 1;
+  for (let step = 1; step <= length; step++) {
+    const cell = { x: unit.x + dx * step, y: unit.y + dy * step };
+    if (
+      battleTerrainAt(state.map, cell) !== 'plain' ||
+      state.units.some((entry) => entry.troops > 0 && entry.x === cell.x && entry.y === cell.y)
+    )
+      return 0;
+  }
+  return length;
+}
+
+function assignOrdersInPlace(state: V03TacticalBattleState, side: BattleSide): void {
+  const withdraw = battleWithdrawalDue(state, side);
+  const enemies = livingUnits(state, otherSide(side));
+  const own = livingUnits(state, side);
+  const { chargeMinLane, skirmishInfantryRange } = ORDERS.ai;
+  for (const unit of own) {
+    let order: BattleOrder = FREE_ORDER;
+    if (withdraw) order = { kind: 'withdraw' };
+    else if (unit.acted || isRouted(unit) || unit.status === 'confused') order = FREE_ORDER;
+    else if (unit.troopType === 'cavalry' && unit.fierce) {
+      let best: TacticalBattleUnit | undefined;
+      let bestLane = Infinity;
+      for (const enemy of enemies) {
+        if (enemy.troopType !== 'archer' && !isWavering(enemy)) continue;
+        const lane = chargeLane(state, unit, enemy);
+        if (
+          lane >= chargeMinLane &&
+          lane <= movementBudget(unit.troopType) &&
+          (lane < bestLane || (lane === bestLane && enemy.id < best!.id))
+        ) {
+          best = enemy;
+          bestLane = lane;
+        }
+      }
+      if (best) order = { kind: 'charge', target: { unitId: best.id } };
+    } else if (
+      unit.troopType === 'archer' &&
+      own.some(
+        (ally) =>
+          ally.troopType === 'infantry' && manhattanDistance(ally, unit) <= skirmishInfantryRange,
+      )
+    )
+      order = { kind: 'skirmish' };
+    if (order.kind === 'free') {
+      if (unit.order) delete unit.order;
+    } else unit.order = order;
+  }
+}
+
+/**
+ * The enemy AI's order layer: withdraw when the side's withdrawal is due; charge for a
+ * fierce cavalry formation with a straight lane of plain cells to an archer or wavering
+ * formation; skirmish for archers backed by infantry within two cells; otherwise free.
+ * Orders are recomputed from the rules each turn, so they last while their rule holds.
+ */
+export function aiAssignOrders(
+  state: V03TacticalBattleState,
+  side: BattleSide,
+): V03TacticalBattleState {
+  const draft = structuredClone(state);
+  assignOrdersInPlace(draft, side);
+  return draft;
+}
+
 /** At most six legal destination cells including the current cell. Full action
  * comparisons run only there; cheap damage/route/risk terms shortlist the moves.
  */
@@ -1640,7 +2172,8 @@ export function evaluateBattleTurn(
         Math.ceil(state.dayLimit * BATTLE_AI.urgency.limitFraction),
       );
   const temperament = battleTemperament(unit);
-  const exposureFactor = exposureWeight(unit);
+  const order = turn.ordersActive === false ? null : orderConstraintFor(state, unit, turn);
+  const exposureFactor = exposureWeight(unit) * (order ? order.exposureWeight : 1);
   // A full move toward contact is worth at most roughly one normal hit. Scaling
   // by capability lets viable infantry cross an archer's firing zone without
   // treating a handful of route cells as more valuable than an army's survival.
@@ -1660,7 +2193,9 @@ export function evaluateBattleTurn(
         (!behind && remainingDays <= BATTLE_AI.approach.finalDays
           ? BATTLE_AI.approach.finalDaysFactor
           : 1);
-  const currentRoute = route?.[battlePositionIndex(state.map, unit.x, unit.y)] ?? 0;
+  const progressField = order?.distance ?? route;
+  const progressWeight = order ? order.progressWeight : 1;
+  const currentRoute = progressField?.[battlePositionIndex(state.map, unit.x, unit.y)] ?? 0;
   const rescuers = routed
     ? livingUnits(state, unit.side).filter(
         (entry) =>
@@ -1796,10 +2331,10 @@ export function evaluateBattleTurn(
   ].map((position) => {
     const moved = position.cost > 0;
     const candidate = { ...unit, x: position.x, y: position.y, moved: unit.moved || moved };
-    const distance = route?.[battlePositionIndex(state.map, position.x, position.y)] ?? 0;
+    const distance = progressField?.[battlePositionIndex(state.map, position.x, position.y)] ?? 0;
     const progress =
       Number.isFinite(currentRoute) && Number.isFinite(distance)
-        ? (currentRoute - distance) * approachValue
+        ? (currentRoute - distance) * approachValue * progressWeight
         : 0;
     const progressValue = routed
       ? (currentRescue - rescueDistance(position)) * BATTLE_AI.rescueStep
@@ -1836,9 +2371,12 @@ export function evaluateBattleTurn(
       cheap: shot + progressValue - exposure * exposureFactor - blocking,
     };
   });
-  const [current, ...moves] = positions;
+  const [current, ...allMoves] = positions;
+  // An order permits some of the destinations; with none permitted the formation stays.
+  const permitted = order ? order.selectCells(positions) : null;
+  const moves = permitted ? allMoves.filter((move) => permitted.includes(move)) : allMoves;
   moves.sort((a, b) => b.cheap - a.cheap || a.cost - b.cost || a.y - b.y || a.x - b.x);
-  const selected = [current!];
+  const selected = !permitted || permitted.includes(current!) || !moves.length ? [current!] : [];
   const keep = (position: typeof current) => {
     if (position && !selected.includes(position) && selected.length < BATTLE_AI.shortlist)
       selected.push(position);
@@ -1864,6 +2402,7 @@ export function evaluateBattleTurn(
       rationRemainders,
       turn.capabilities,
     )) {
+      if (order && !order.actionAllowed(original, position.x, position.y)) continue;
       const action = { ...original };
       if (
         action.action === 'confuse' &&
@@ -1912,7 +2451,7 @@ export function evaluateBattleTurn(
       });
     }
   }
-  return choices.sort(
+  choices.sort(
     (a, b) =>
       b.score - a.score ||
       a.pointCost - b.pointCost ||
@@ -1922,6 +2461,7 @@ export function evaluateBattleTurn(
       a.y - b.y ||
       a.x - b.x,
   );
+  return order?.filterChoices ? order.filterChoices(choices) : choices;
 }
 
 function traceTacticalChoices(
@@ -2001,6 +2541,10 @@ export function runBattleAiTurn(
     allowWithdrawal?: boolean;
     /** Log a change of posture for the player to read (the enemy's turn only). */
     announcePosture?: boolean;
+    /** Execute standing orders (B-01); formations with no order are evaluated free. */
+    useOrders?: boolean;
+    /** With `useOrders`, the AI order layer sets this side's orders first (default true). */
+    assignOrders?: boolean;
   } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
@@ -2093,6 +2637,8 @@ export function runBattleAiTurn(
   const routes = new Map<string, number[]>();
   const fields = new Map<string, Map<number, BattlePosition>>();
   const posture = { strikes: 0, toward: 0, away: 0 };
+  const useOrders = options.useOrders === true;
+  if (useOrders && options.assignOrders !== false) assignOrdersInPlace(draft, side);
   // Reconsider all unspent formations after each committed move/action. A cheap
   // finisher with no useful alternative can act before an otherwise stronger unit.
   for (let activation = 0; activation < MAX_UNITS_PER_SIDE && !draft.outcome; activation++) {
@@ -2103,6 +2649,8 @@ export function runBattleAiTurn(
       break;
     }
     const context = tacticalTurnContext(draft, side, routes, fields);
+    context.ordersActive = useOrders;
+    if (useOrders) lapseOrders(draft, remaining, routes);
     const options = available
       .map((unit) => {
         const choices = evaluateBattleTurn(draft, unit.id, rationRemainders, context);
@@ -2124,6 +2672,11 @@ export function runBattleAiTurn(
       );
     const { unit, choices, choice } = options[0]!;
     traceTacticalChoices(draft, unit, choices);
+    if (useOrders && unit.order && unit.order.kind !== 'free' && !isRouted(unit))
+      append(draft, `${unit.name} carries out its ${unit.order.kind} order.`, 'log.orderExecuted', {
+        unitId: unit.id,
+        order: unit.order.kind,
+      });
     if (choice.moveCost > 0) {
       const before = nearestEnemyDistance(draft, unit);
       const error = performMove(draft, unit, choice);
@@ -2242,6 +2795,7 @@ function resolveRout(state: V03TacticalBattleState): boolean {
 export function advanceBattleDay(
   state: V03TacticalBattleState,
   rationRemainders: BattleRationRemainders = {},
+  options: { useOrders?: boolean } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   let draft = structuredClone(state);
@@ -2254,6 +2808,7 @@ export function advanceBattleDay(
   }
   draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders, {
     announcePosture: true,
+    useOrders: options.useOrders,
   });
   if (draft.outcome) return draft;
   if (resolveRout(draft)) return draft;

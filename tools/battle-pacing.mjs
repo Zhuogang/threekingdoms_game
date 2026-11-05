@@ -12,7 +12,11 @@ const args = process.argv.slice(2),
   label = args.find((arg) => arg.startsWith('--label='))?.slice('--label='.length),
   // --compact drops the per-battle records so committed evidence stays small.
   compact = args.includes('--compact'),
+  // --orders=on lets the battle AI assign and execute standing orders (B-01); off is the default.
+  ordersMode = args.find((arg) => arg.startsWith('--orders='))?.slice('--orders='.length) ?? 'off',
   positional = args.filter((arg) => !arg.startsWith('--'));
+if (!['on', 'off'].includes(ordersMode)) throw new Error('--orders must be on or off.');
+const useOrders = ordersMode === 'on';
 if (!['3v3', '8v8'].includes(rosterKind)) throw new Error('--roster must be 3v3 or 8v8.');
 const output =
   positional[0] ??
@@ -147,7 +151,9 @@ try {
         for (const side of ['attacker', 'defender']) {
           const before = battle.units.reduce((sum, unit) => sum + unit.troops, 0),
             priorLog = battle.log.slice();
-          battle = runBattleAiTurn(battle, side);
+          battle = useOrders
+            ? runBattleAiTurn(battle, side, {}, { useOrders: true })
+            : runBattleAiTurn(battle, side);
           const lost = before - battle.units.reduce((sum, unit) => sum + unit.troops, 0);
           if (lost > 0) {
             firstContact ??= battle.day;
@@ -160,7 +166,10 @@ try {
           }
           if (battle.outcome) break;
         }
-        if (!battle.outcome) battle = advanceBattleDay(battle);
+        if (!battle.outcome)
+          battle = useOrders
+            ? advanceBattleDay(battle, {}, { useOrders: true })
+            : advanceBattleDay(battle);
       }
       // Structured entries survive log trimming better than message text; older engines lack them.
       const tactics = {};
@@ -314,6 +323,7 @@ try {
       {
         countPerTemplate: count,
         roster: rosterKind,
+        ...(useOrders ? { orders: 'on' } : {}),
         dayLimit,
         summary,
         source: {

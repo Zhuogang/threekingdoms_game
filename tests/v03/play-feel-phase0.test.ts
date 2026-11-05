@@ -7,7 +7,7 @@ import { createV03Game } from '../../src/v03/initial-state';
 import { deadlineFromDaysInput } from '../../src/v03/ui/shared/app-copy-3';
 
 describe('play-feel phase 0', () => {
-  it('lets the remaining player officers act through the shared tactical policy', () => {
+  it('executes orders for the remaining player officers by default and holds them on request', () => {
     const state = playtestFixture('battle');
     const battle = state.battles[0]!;
     const side = battle.battleData.playerSide;
@@ -16,14 +16,21 @@ describe('play-feel phase 0', () => {
     const before = positions(battle.battleData.units);
     const snapshot = JSON.stringify(state);
 
-    const held = executeV03Command(state, { type: 'completeBattleDay', battleId: battle.id });
-    const acted = executeV03Command(state, {
+    const held = executeV03Command(state, {
+      type: 'completeBattleDay',
+      battleId: battle.id,
+      holdRemaining: true,
+    });
+    const acted = executeV03Command(state, { type: 'completeBattleDay', battleId: battle.id });
+    const legacy = executeV03Command(state, {
       type: 'completeBattleDay',
       battleId: battle.id,
       remainingAct: true,
     });
 
-    expect(held.ok && acted.ok).toBe(true);
+    expect(held.ok && acted.ok && legacy.ok).toBe(true);
+    // `remainingAct` is the old name of the default step.
+    expect(JSON.stringify(legacy.state)).toBe(JSON.stringify(acted.state));
     expect(JSON.stringify(state)).toBe(snapshot);
     const heldBattle = held.state.battles.find((entry) => entry.id === battle.id)!;
     const actedBattle = acted.state.battles.find((entry) => entry.id === battle.id)!;

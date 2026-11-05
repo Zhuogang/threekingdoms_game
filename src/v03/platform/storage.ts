@@ -69,6 +69,26 @@ const battleMap = z
       .max(40),
   })
   .strict();
+const battleOrder = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('free') }).strict(),
+  z
+    .object({
+      kind: z.literal('advance'),
+      target: z.union([
+        z.object({ unitId: id }).strict(),
+        z.object({ x: safeInt.min(0).max(47), y: safeInt.min(0).max(31) }).strict(),
+      ]),
+    })
+    .strict(),
+  z.object({ kind: z.literal('hold') }).strict(),
+  z
+    .object({ kind: z.literal('skirmish'), target: z.object({ unitId: id }).strict().optional() })
+    .strict(),
+  z.object({ kind: z.literal('charge'), target: z.object({ unitId: id }).strict() }).strict(),
+  z.object({ kind: z.literal('screen'), friendId: id }).strict(),
+  z.object({ kind: z.literal('withdraw') }).strict(),
+  z.object({ kind: z.literal('pursue') }).strict(),
+]);
 const tacticalUnit = z
   .object({
     id,
@@ -99,6 +119,7 @@ const tacticalUnit = z
     status: z.enum(['normal', 'confused', 'inspired']),
     moved: z.boolean(),
     acted: z.boolean(),
+    order: battleOrder.optional(),
   })
   .strict();
 const tacticalBattle = z

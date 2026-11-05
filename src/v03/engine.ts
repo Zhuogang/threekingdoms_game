@@ -2049,8 +2049,12 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
     return false;
   }
   if (!playerFights || battle.autoCommand)
-    tactical = runBattleAiTurn(tactical, tactical.playerSide, rationRemainders);
-  tactical = advanceBattleDay(tactical, rationRemainders);
+    // The AI order layer plays only battles without a human; auto-command keeps the player's own orders.
+    tactical = runBattleAiTurn(tactical, tactical.playerSide, rationRemainders, {
+      useOrders: true,
+      assignOrders: !playerFights,
+    });
+  tactical = advanceBattleDay(tactical, rationRemainders, { useOrders: true });
   battle.battleData = tactical;
   battle.playerDayComplete = false;
   chargeBattleRations(battle, state.absoluteDay);
@@ -2285,7 +2289,12 @@ export function applyV03BattleAction(
 export function completeV03BattleDay(
   state: V03GameState,
   battleId: string,
-  options: { remainingAct?: boolean } = {},
+  options: {
+    /** Accepted for older callers; executing orders is now the default. */
+    remainingAct?: boolean;
+    /** Unacted formations hold instead of executing their orders. */
+    holdRemaining?: boolean;
+  } = {},
 ): { ok: boolean; state: V03GameState; error?: string; advancedWorldDay?: boolean } {
   const current = state.battles.find((battle) => battle.id === battleId && battle.active);
   if (!current) return { ok: false, state, error: 'This battle is no longer active.' };
@@ -2304,8 +2313,9 @@ export function completeV03BattleDay(
     };
 
   const next = cloneState(state);
-  if (options.remainingAct) {
-    // Officers who have not acted use the same tactical policy as auto-command.
+  if (!options.holdRemaining) {
+    // Officers who have not acted execute their standing orders; free formations use the
+    // same tactical policy as auto-command.
     const battle = next.battles.find((entry) => entry.id === battleId)!;
     const tactical = runBattleAiTurn(
       battle.battleData,
@@ -2314,7 +2324,7 @@ export function completeV03BattleDay(
         attacker: battle.attackerFoodRemainderMicro,
         defender: battle.defenderFoodRemainderMicro,
       },
-      { allowWithdrawal: false },
+      { allowWithdrawal: false, useOrders: true, assignOrders: false },
     );
     battle.battleData = tactical;
     battle.attackerFood = tactical.supplies.attacker;

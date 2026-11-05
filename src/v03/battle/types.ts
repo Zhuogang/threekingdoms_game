@@ -143,7 +143,21 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   status: 'normal' | 'confused' | 'inspired';
   moved: boolean;
   acted: boolean;
+  /** Standing order (B-01); absent means free. */
+  order?: BattleOrder;
 }
+
+/** A per-formation policy the tactical evaluator executes with a filter and a weight preset. */
+export type BattleOrder =
+  | { kind: 'free' }
+  | { kind: 'advance'; target: { unitId: string } | { x: number; y: number } }
+  | { kind: 'hold' }
+  | { kind: 'skirmish'; target?: { unitId: string } }
+  | { kind: 'charge'; target: { unitId: string } }
+  | { kind: 'screen'; friendId: string }
+  | { kind: 'withdraw' }
+  | { kind: 'pursue' };
+export type BattleOrderKind = BattleOrder['kind'];
 
 export type BattleTactic = 'fire' | 'rally' | 'confuse' | 'raidSupply' | 'ambush' | 'rockfall';
 
@@ -226,7 +240,8 @@ export type BattleAction =
   | { type: 'tactic'; unitId: string; tactic: BattleTactic; targetId: string }
   | { type: 'move'; unitId: string; x: number; y: number }
   | { type: 'attack'; unitId: string; targetId: string }
-  | { type: 'wait'; unitId: string };
+  | { type: 'wait'; unitId: string }
+  | { type: 'setOrder'; unitId: string; order: BattleOrder };
 
 export type BattleActionResult =
   | { ok: true; state: V03TacticalBattleState }

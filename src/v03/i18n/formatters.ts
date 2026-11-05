@@ -45,6 +45,8 @@ export function formatBattleLog(
     state.cities.find((city) => city.id === params.cityId)?.[
       locale === 'zh' ? 'chinese' : 'name'
     ] ?? (locale === 'zh' ? '野外' : 'the field');
+  if (entry.code.startsWith('log.order') && typeof params.order === 'string')
+    params.order = message(locale, `order.${params.order}` as MessageKey);
   if (params.tactic) params.tactic = message(locale, `tactic.${params.tactic}` as MessageKey);
   if (entry.code === 'log.posture') {
     params.army = message(
