@@ -230,7 +230,9 @@ describe('O-02 desertion', () => {
     const managed = monthEnd(100);
     const loose = monthEnd(30);
     expect(managed.officer.troops - loose.officer.troops).toBe(350);
-    expect(loose.city.population - managed.city.population).toBe(350);
+    // Growth (L-02) is rounded down on the 350 extra residents, so allow one of rounding.
+    expect(loose.city.population - managed.city.population).toBeGreaterThanOrEqual(350);
+    expect(loose.city.population - managed.city.population).toBeLessThanOrEqual(351);
     const notice = loose.state.events.find((event) => event.code === 'report.desertion')!;
     expect(notice).toMatchObject({
       tier: 'notice',

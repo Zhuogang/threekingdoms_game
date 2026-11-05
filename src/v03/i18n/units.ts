@@ -30,6 +30,11 @@ export function formatMen(n: number, locale: Locale): string {
   return locale === 'zh' ? `${group(n, locale)} 人` : `${group(n, locale)} men`;
 }
 
+/** A bare head count of residents, for tables of changes. */
+export function formatPeople(n: number, locale: Locale): string {
+  return locale === 'zh' ? `${group(n, locale)} 口` : `${group(n, locale)} people`;
+}
+
 export function formatPopulation(n: number, locale: Locale): string {
   const households = n / PEOPLE_PER_HOUSEHOLD;
   if (locale === 'zh') {

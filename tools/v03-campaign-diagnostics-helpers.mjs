@@ -384,3 +384,62 @@ export function aggregateResults(results) {
     },
   };
 }
+
+/** Per-faction economy snapshot for the --curves output. Troops are officers' men plus unstaffed militia. */
+export function curveSnapshot(state) {
+  const factions = {};
+  for (const faction of state.factions)
+    factions[faction.id] = { gold: 0, food: 0, population: 0, troops: 0, wounded: 0, cities: 0 };
+  for (const city of state.cities) {
+    const entry = city.factionId ? factions[city.factionId] : null;
+    if (!entry) continue;
+    entry.gold += city.gold;
+    entry.food += city.food;
+    entry.population += city.population;
+    entry.cities++;
+    const staffed = state.officers
+      .filter(
+        (o) =>
+          o.alive &&
+          o.factionId === city.factionId &&
+          o.location.kind === 'city' &&
+          o.location.cityId === city.id,
+      )
+      .reduce((sum, o) => sum + o.troops, 0);
+    entry.troops += Math.max(0, city.garrisonTroops - staffed);
+  }
+  for (const officer of state.officers) {
+    const entry = officer.alive && officer.factionId ? factions[officer.factionId] : null;
+    if (!entry) continue;
+    entry.troops += officer.troops;
+    entry.wounded += officer.wounded;
+  }
+  return factions;
+}
+
+/** Fixed-width table: one line per twelve months per faction, per run. */
+export function curvesTable(runs) {
+  const cols = ['gold', 'food', 'population', 'troops', 'wounded', 'cities'];
+  const lines = [];
+  for (const run of runs) {
+    lines.push(`${run.scenarioId} ${run.factionId} ${run.cohort} seed ${run.seed}`);
+    lines.push(
+      ['month', 'faction', ...cols]
+        .map((c, i) => (i === 1 ? c.padEnd(8) : c.padStart(10)))
+        .join(' '),
+    );
+    for (const row of run.months) {
+      if (row.month % 12 !== 0) continue;
+      for (const [id, v] of Object.entries(row.factions))
+        lines.push(
+          [
+            String(row.month).padStart(10),
+            id.padEnd(8),
+            ...cols.map((c) => String(v[c]).padStart(10)),
+          ].join(' '),
+        );
+    }
+    lines.push('');
+  }
+  return `${lines.join('\n')}\n`;
+}

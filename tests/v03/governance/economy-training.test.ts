@@ -123,7 +123,11 @@ describe('existing economy and training adjustments', () => {
       fullLoyalty.cities.find((entry) => entry.id === city.id)!.loyalty = 100;
       const full = advanceV03(fullLoyalty, 1).state.cities.find((entry) => entry.id === city.id)!;
       expect(settled.food).toBe(full.food);
-      expect(settled.population).toBe(full.population);
+      // Loyalty also sets the monthly growth rate (L-02): 0.3% at 70+, 0.1% at 50-69, none below.
+      expect(settled.population).toBe(
+        15_000 + Math.floor(15_000 * (loyalty >= 70 ? 0.003 : loyalty >= 50 ? 0.001 : 0)),
+      );
+      expect(full.population).toBe(15_000 + 45);
       expect(settled.garrisonTroops).toBe(full.garrisonTroops);
       expect(settled.reserve).toBe(full.reserve);
       expect(reload(result.state)).toEqual(result.state);

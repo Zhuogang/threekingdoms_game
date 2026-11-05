@@ -5,7 +5,12 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { createServer } from 'vite';
-import { aggregateResults, summarize } from './v03-campaign-diagnostics-helpers.mjs';
+import {
+  aggregateResults,
+  curveSnapshot,
+  curvesTable,
+  summarize,
+} from './v03-campaign-diagnostics-helpers.mjs';
 import { executeNextAdjacentCampaignOrder } from './v03-campaign-bot.mjs';
 import { simulationFingerprint } from './simulation-fingerprint.mjs';
 import { validateCampaignSaveCheckpoint } from './campaign-save-checkpoint.mjs';
@@ -29,6 +34,7 @@ function optionsFromArgs(args) {
     runtime: '.',
     onlyRun: null,
     validateSaves: false,
+    curves: null,
   };
   for (let index = 0; index < args.length; index++) {
     const arg = args[index];
@@ -38,12 +44,13 @@ function optionsFromArgs(args) {
     else if (arg === '--months') options.months = Number(args[++index]);
     else if (arg === '--scenario') options.scenarios = [args[++index]];
     else if (arg === '--factions') options.factions = args[++index].split(',');
+    else if (arg === '--curves') options.curves = args[++index];
     else if (arg === '--output') options.output = args[++index];
     else if (arg === '--runtime') options.runtime = args[++index];
     else if (arg === '--only-run') options.onlyRun = args[++index];
     else if (arg === '--help') {
       console.log(
-        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--runtime path] [--only-run scenario/faction/development|held-out] [--output path] [--trace-limit 200] [--validate-saves] [--quick]. --only-run preserves the configured matrix faction index and seed; --factions changes that index. --validate-saves checks initial, monthly and final snapshots through the runtime save codec without altering live play.',
+        'Usage: node tools/v03-campaign-diagnostics.mjs [--months 96] [--scenario divided-realm-190|guandu-200] [--factions cao,liu,sun,yuan,dong,yan,ma] [--runtime path] [--only-run scenario/faction/development|held-out] [--output path] [--curves path (per-month per-faction JSON plus path.txt)] [--trace-limit 200] [--validate-saves] [--quick]. --only-run preserves the configured matrix faction index and seed; --factions changes that index. --validate-saves checks initial, monthly and final snapshots through the runtime save codec without altering live play.',
       );
       process.exit(0);
     } else throw new Error(`Unknown argument: ${arg}`);
@@ -136,6 +143,7 @@ async function main() {
     ]);
     const checkpoints = [...new Set([Math.min(48, options.months), options.months])];
     const results = [];
+    const curveRuns = [];
     const unavailableFactions = {};
     const outputPath = resolve(options.output);
     let failure = null;
@@ -268,6 +276,8 @@ async function main() {
             .filter((city) => city.factionId === null)
             .map((city) => city.id);
           const months = {};
+          const curveMonths = [{ month: 0, factions: curveSnapshot(state) }];
+          let lastCurveMonth = 0;
           const bot = {
             campaignCandidatesTried: 0,
             campaignCommandsRejected: 0,
@@ -363,6 +373,11 @@ async function main() {
               await checkSave('month-boundary');
               lastValidatedMonth = month;
             }
+            if (options.curves)
+              while (lastCurveMonth < month && lastCurveMonth < options.months) {
+                lastCurveMonth++;
+                curveMonths.push({ month: lastCurveMonth, factions: curveSnapshot(state) });
+              }
             if (checkpoints.includes(month) && !months[month])
               months[month] = summarize(
                 state,
@@ -386,6 +401,13 @@ async function main() {
               initialIndependentCityIds,
               decisions,
             );
+          curveRuns.push({
+            scenarioId,
+            factionId,
+            cohort: cohort.cohort,
+            seed: cohort.seedBase + factionIndex,
+            months: curveMonths,
+          });
           results.push({
             scenarioId,
             factionId,
@@ -415,6 +437,17 @@ async function main() {
     )
       throw new Error('Runtime or diagnostic harness changed during the matrix.');
     await saveReport('complete');
+    if (options.curves) {
+      const curvesPath = resolve(options.curves);
+      await mkdir(dirname(curvesPath), { recursive: true });
+      await writeFile(
+        curvesPath,
+        `${JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), command: process.argv.slice(2), runs: curveRuns })}\n`,
+        'utf8',
+      );
+      await writeFile(`${curvesPath}.txt`, curvesTable(curveRuns), 'utf8');
+      console.log(`Wrote ${curvesPath}`);
+    }
     console.log(`Wrote ${outputPath}`);
   } finally {
     await server.close();

@@ -299,6 +299,8 @@ export interface V03MonthlyCitySummary {
   gold: number;
   food: number;
   troops: number;
+  /** Net population change over the month (absent in older saves). */
+  population?: number;
   governorActions: string[];
   shortage: boolean;
 }

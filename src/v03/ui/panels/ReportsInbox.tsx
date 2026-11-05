@@ -1,6 +1,6 @@
 import { message } from '../../i18n';
 import type { V03Locale } from '../../wiki';
-import { formatGrain, formatMen, formatMoney } from '../../i18n/units';
+import { formatGrain, formatMen, formatMoney, formatPeople } from '../../i18n/units';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { eventTier } from '../../campaign/reports';
 import { localizedEvent } from '../shared/app-copy-2';
@@ -41,6 +41,7 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
                 <th>{context.t.gold} Δ</th>
                 <th>{context.t.food} Δ</th>
                 <th>{context.t.troops} Δ</th>
+                <th>{message(locale, 'ui.population.94')} Δ</th>
               </tr>
             </thead>
             <tbody>
@@ -78,6 +79,7 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
                       <td>{delta(row.gold, formatMoney)}</td>
                       <td>{delta(row.food, formatGrain)}</td>
                       <td>{delta(row.troops, formatMen)}</td>
+                      <td>{delta(row.population ?? 0, formatPeople)}</td>
                     </tr>
                   );
                 })}
@@ -85,11 +87,16 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
             <tfoot>
               <tr>
                 <th>{message(locale, 'inbox.total')}</th>
-                {(['gold', 'food', 'troops'] as const).map((key) => (
+                {(['gold', 'food', 'troops', 'population'] as const).map((key) => (
                   <td key={key}>
                     {delta(
-                      event.monthlySummary!.reduce((sum, row) => sum + row[key], 0),
-                      { gold: formatMoney, food: formatGrain, troops: formatMen }[key],
+                      event.monthlySummary!.reduce((sum, row) => sum + (row[key] ?? 0), 0),
+                      {
+                        gold: formatMoney,
+                        food: formatGrain,
+                        troops: formatMen,
+                        population: formatPeople,
+                      }[key],
                     )}
                   </td>
                 ))}

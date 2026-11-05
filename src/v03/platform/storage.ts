@@ -469,6 +469,7 @@ const event = z
             gold: safeInt,
             food: safeInt,
             troops: safeInt,
+            population: safeInt.optional(),
             // Up to six banked paid points (PF-RL-01) plus free preparations in one pass.
             governorActions: z.array(z.string().max(100)).max(30),
             shortage: z.boolean(),

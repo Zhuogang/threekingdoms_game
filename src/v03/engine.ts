@@ -1701,7 +1701,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     city.troopServiceDaysThisMonth = 0;
     city.food = Math.min(RESOURCE_CAP, city.food + harvest);
     city.gold = Math.min(RESOURCE_CAP, city.gold + income);
-    if (city.food < foodUpkeep) {
+    const foodShort = city.food < foodUpkeep;
+    if (foodShort) {
       shortages.add(city.id);
       city.food = 0;
       city.loyalty = Math.max(0, city.loyalty - ECONOMY.shortage.foodCityLoyaltyLoss);
@@ -1759,6 +1760,23 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
       for (const officer of serving)
         officer.loyalty = Math.max(0, officer.loyalty - ECONOMY.shortage.goldOfficerLoyaltyLoss);
     } else city.gold -= goldUpkeep;
+    if (city.factionId !== null) {
+      const growth = ECONOMY.population;
+      if (foodShort) {
+        city.population -= Math.floor(city.population * growth.famineDecline);
+      } else {
+        const rate =
+          city.loyalty >= growth.loyaltyHigh
+            ? growth.growthHigh
+            : city.loyalty >= growth.loyaltyMid
+              ? growth.growthMid
+              : growth.growthLow;
+        city.population = Math.min(
+          RESOURCE_CAP,
+          city.population + Math.floor(city.population * rate),
+        );
+      }
+    }
   }
   // Every city bill is now paid. Governor forecasts must see the new month's
   // boundary, even though the outer timeline is still completing its callback.
@@ -1984,6 +2002,7 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
         gold: city.gold - before.gold,
         food: city.food - before.food,
         troops: city.garrisonTroops - before.garrisonTroops,
+        population: city.population - before.population,
         governorActions: governorActions.get(city.id) ?? [],
         shortage: shortages.has(city.id),
       };

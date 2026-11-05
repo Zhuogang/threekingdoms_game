@@ -42,6 +42,20 @@ export const ECONOMY = deepFreeze({
     /** Loyalty each serving officer loses when the gold bill cannot be paid. */
     goldOfficerLoyaltyLoss: 3,
   },
+  population: {
+    /** Monthly growth rate of an owned city at or above loyaltyHigh. */
+    growthHigh: 0.003,
+    /** Monthly growth rate at or above loyaltyMid. */
+    growthMid: 0.001,
+    /** Monthly growth rate below loyaltyMid. */
+    growthLow: 0,
+    /** Share of population lost in a month with a food shortfall. */
+    famineDecline: 0.005,
+    /** City loyalty at which growth is highest. */
+    loyaltyHigh: 70,
+    /** City loyalty at which growth is reduced. */
+    loyaltyMid: 50,
+  },
   conquest: {
     /** Highest city loyalty after a conquest. */
     loyaltyCap: 50,
