@@ -111,9 +111,13 @@ export interface BattleRosterEntry {
   leadership?: number;
   /** Share of the formation's men above its officers' managed capacity (0 to 1). */
   excessShare?: number;
-  /** Defaults to one tile, except archers (three tiles). */
+  /** Defaults to one tile, except archers (three tiles). Zero marks a baggage train. */
   attackRange?: number;
+  /** `baggage` marks a train that carries the field food (B-04); absent means a line formation. */
+  role?: BattleUnitRole;
 }
+
+export type BattleUnitRole = 'line' | 'baggage';
 
 export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   name: string;
@@ -138,6 +142,10 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   leadership?: number;
   excessShare?: number;
   attackRange: number;
+  /** Present only on a baggage train (B-04). */
+  role?: BattleUnitRole;
+  /** Which army-morale event of this formation was already counted (B-05); present only with army morale. */
+  counted?: 'routed' | 'destroyed';
   morale: number;
   /** Confused skips one next activation; Inspired boosts one normal/counterattack/Ambush hit. Neither expires at day rollover. */
   status: 'normal' | 'confused' | 'inspired';
@@ -196,9 +204,30 @@ export interface BattleTacticForecast {
   incomingDamageMultiplier: number;
 }
 
+export type BattleOutcomeCause = 'allRouted' | 'armyMorale' | 'baggage' | 'formations';
+
+/** The pursuit that followed a break: the winner's pursuing cavalry and the loser's rear guard (B-05). */
+export interface BattlePursuit {
+  pursuers: string[];
+  rearGuard: string | null;
+}
+
 export interface BattleOutcome {
   winner: BattleSide | null;
   reason: 'elimination' | 'dayLimit' | 'retreat' | 'rout';
+  /** Why a `rout` happened; present only in battles with army morale (B-05). */
+  cause?: BattleOutcomeCause;
+  pursuit?: BattlePursuit;
+}
+
+/** A broken army awaits the pursuit decision; a half left undefined is not yet decided (B-05). */
+export interface BattlePendingPursuit {
+  kind: 'pursuit';
+  winner: BattleSide;
+  loser: BattleSide;
+  cause?: BattleOutcomeCause;
+  pursuers?: string[];
+  rearGuard?: string | null;
 }
 
 /** Plain JSON-safe battle state; no functions, Maps or rendering objects are stored. */
@@ -227,6 +256,12 @@ export interface V03TacticalBattleState {
   weather: BattleWeather;
   nextWeather: BattleWeather;
   units: TacticalBattleUnit[];
+  /** Army morale per side, 0 to 100; present only in battles created with `armyMorale` (B-05). */
+  armyMorale?: Record<BattleSide, number>;
+  /** Whether each army was already shaken (B-05). */
+  shaken?: Record<BattleSide, boolean>;
+  /** A break waiting for its pursuit decision (B-05). */
+  pending?: BattlePendingPursuit | null;
   log: string[];
   logEntries?: V03BattleLogEntry[];
   outcome: BattleOutcome | null;
@@ -244,6 +279,8 @@ export interface CreateBattleStateOptions {
   seed?: number;
   /** Give every formation a facing (attacker east, defender west) and enable facing, charge and brace rules (B-02, B-03). */
   facing?: boolean;
+  /** Track army morale per side and enable the break rule, the shaken step and pursuit (B-05). */
+  armyMorale?: boolean;
 }
 
 export type BattleAction =
@@ -253,7 +290,9 @@ export type BattleAction =
   | { type: 'move'; unitId: string; x: number; y: number }
   | { type: 'attack'; unitId: string; targetId: string }
   | { type: 'wait'; unitId: string }
-  | { type: 'setOrder'; unitId: string; order: BattleOrder };
+  | { type: 'setOrder'; unitId: string; order: BattleOrder }
+  /** Answers a pending pursuit: the winner names its pursuing cavalry, the loser its rear guard (B-05). */
+  | { type: 'pursuit'; pursuers?: string[]; rearGuard?: string | null };
 
 export type BattleActionResult =
   | { ok: true; state: V03TacticalBattleState }

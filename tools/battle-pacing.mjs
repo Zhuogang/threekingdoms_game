@@ -16,7 +16,17 @@ const args = process.argv.slice(2),
   ordersMode = args.find((arg) => arg.startsWith('--orders='))?.slice('--orders='.length) ?? 'off',
   // --facing=on gives every formation a facing and enables flank, rear, charge and brace (B-02, B-03); off is the default.
   facingMode = args.find((arg) => arg.startsWith('--facing='))?.slice('--facing='.length) ?? 'off',
+  // --army-morale=on tracks army morale and enables the break rule, the shaken step and pursuit (B-05); off is the default.
+  armyMoraleMode =
+    args.find((arg) => arg.startsWith('--army-morale='))?.slice('--army-morale='.length) ?? 'off',
+  // --baggage=on gives the attacker a baggage train sized like the campaign's (B-04); off is the default.
+  baggageMode =
+    args.find((arg) => arg.startsWith('--baggage='))?.slice('--baggage='.length) ?? 'off',
   positional = args.filter((arg) => !arg.startsWith('--'));
+if (!['on', 'off'].includes(armyMoraleMode)) throw new Error('--army-morale must be on or off.');
+const useArmyMorale = armyMoraleMode === 'on';
+if (!['on', 'off'].includes(baggageMode)) throw new Error('--baggage must be on or off.');
+const useBaggage = baggageMode === 'on';
 if (!['on', 'off'].includes(ordersMode)) throw new Error('--orders must be on or off.');
 const useOrders = ordersMode === 'on';
 if (!['on', 'off'].includes(facingMode)) throw new Error('--facing must be on or off.');
@@ -107,6 +117,8 @@ function extras(runs) {
   if (Object.keys(causes).length) out.causes = causes;
   const baggage = runs.reduce((sum, run) => sum + (run.baggageCaptures ?? 0), 0);
   if (baggage) out.baggageCaptures = baggage;
+  const pursuits = runs.reduce((sum, run) => sum + (run.pursuit ? 1 : 0), 0);
+  if (pursuits) out.pursuits = pursuits;
   const duels = runs.reduce((sum, run) => sum + (run.duels ?? 0), 0);
   if (duels) out.duels = duels;
   const cards = runs.reduce((t, r) => mergeCounts(t, r.cards), {});
@@ -119,6 +131,7 @@ function extras(runs) {
 }
 try {
   const {
+    baggageRosterEntry,
     createBattleMap,
     createTacticalBattle,
     runBattleAiTurn,
@@ -141,16 +154,28 @@ try {
   for (const { id: regionId, map: templateMap } of templates) {
     const runs = [];
     for (let seed = 0; seed < count; seed++) {
+      const attackerRoster = buildRoster('a', seed);
       let battle = createTacticalBattle({
         id: `pacing-${seed}`,
         seed,
         map: templateMap(seed),
-        attackerUnits: buildRoster('a', seed),
+        attackerUnits: useBaggage
+          ? [
+              ...attackerRoster,
+              baggageRosterEntry(
+                'a-baggage',
+                attackerRoster.reduce((sum, entry) => sum + entry.troops, 0),
+              ),
+            ]
+          : attackerRoster,
         defenderUnits: buildRoster('d', seed),
         supplies: { attacker: 100000, defender: 100000 },
         dayLimit,
         ...(useFacing ? { facing: true } : {}),
+        ...(useArmyMorale ? { armyMorale: true } : {}),
       });
+      // A pursuit is decided by temperament on both sides, as in AI-vs-AI campaign battles.
+      const pursuit = useArmyMorale ? { autoPursuit: true } : {};
       let firstContact = null;
       const sideTurns = [],
         exchanges = [];
@@ -159,8 +184,8 @@ try {
           const before = battle.units.reduce((sum, unit) => sum + unit.troops, 0),
             priorLog = battle.log.slice();
           battle = useOrders
-            ? runBattleAiTurn(battle, side, {}, { useOrders: true })
-            : runBattleAiTurn(battle, side);
+            ? runBattleAiTurn(battle, side, {}, { useOrders: true, ...pursuit })
+            : runBattleAiTurn(battle, side, {}, pursuit);
           const lost = before - battle.units.reduce((sum, unit) => sum + unit.troops, 0);
           if (lost > 0) {
             firstContact ??= battle.day;
@@ -175,8 +200,8 @@ try {
         }
         if (!battle.outcome)
           battle = useOrders
-            ? advanceBattleDay(battle, {}, { useOrders: true })
-            : advanceBattleDay(battle);
+            ? advanceBattleDay(battle, {}, { useOrders: true, ...pursuit })
+            : advanceBattleDay(battle, {}, pursuit);
       }
       // Structured entries survive log trimming better than message text; older engines lack them.
       const tactics = {};
@@ -228,6 +253,7 @@ try {
           ? {}
           : { cause: typeof cause === 'string' ? cause : JSON.stringify(cause) }),
         ...(baggageCaptures ? { baggageCaptures } : {}),
+        ...(battle.outcome?.pursuit ? { pursuit: battle.outcome.pursuit.pursuers.length } : {}),
         ...(duels ? { duels } : {}),
         ...(Object.keys(cards).length ? { cards } : {}),
         ...(Object.keys(orders).length ? { orders } : {}),
@@ -343,6 +369,8 @@ try {
         roster: rosterKind,
         ...(useOrders ? { orders: 'on' } : {}),
         ...(useFacing ? { facing: 'on' } : {}),
+        ...(useBaggage ? { baggage: 'on' } : {}),
+        ...(useArmyMorale ? { armyMorale: 'on' } : {}),
         dayLimit,
         summary,
         source: {

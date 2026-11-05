@@ -113,7 +113,9 @@ const tacticalUnit = z
     fierce: z.boolean().optional(),
     leadership: z.number().finite().min(0).max(100).optional(),
     excessShare: z.number().finite().min(0).max(1).optional(),
-    attackRange: safeInt.min(1).max(24),
+    attackRange: safeInt.min(0).max(24),
+    role: z.enum(['line', 'baggage']).optional(),
+    counted: z.enum(['routed', 'destroyed']).optional(),
     morale: nonnegative.max(100),
     // Existing enum encodes a pending activation/hit; old v3 saves retain their effect.
     status: z.enum(['normal', 'confused', 'inspired']),
@@ -125,6 +127,9 @@ const tacticalUnit = z
     braced: z.boolean().optional(),
   })
   .strict();
+const battleCause = z.enum(['allRouted', 'armyMorale', 'baggage', 'formations']);
+const battleSides = <T extends z.ZodTypeAny>(value: T) =>
+  z.object({ attacker: value, defender: value }).strict();
 const tacticalBattle = z
   .object({
     schemaVersion: z.literal(1),
@@ -143,7 +148,21 @@ const tacticalBattle = z
     rngState: safeInt.min(0).max(0xffffffff),
     weather: z.enum(['clear', 'rain', 'wind']),
     nextWeather: z.enum(['clear', 'rain', 'wind']),
-    units: z.array(tacticalUnit).min(1).max(20),
+    units: z.array(tacticalUnit).min(1).max(22),
+    armyMorale: battleSides(nonnegative.max(100)).optional(),
+    shaken: battleSides(z.boolean()).optional(),
+    pending: z
+      .object({
+        kind: z.literal('pursuit'),
+        winner: z.enum(['attacker', 'defender']),
+        loser: z.enum(['attacker', 'defender']),
+        cause: battleCause.optional(),
+        pursuers: z.array(id).max(10).optional(),
+        rearGuard: id.nullable().optional(),
+      })
+      .strict()
+      .nullable()
+      .optional(),
     log: z.array(z.string().max(1000)).max(2000),
     logEntries: z
       .array(
@@ -165,6 +184,11 @@ const tacticalBattle = z
       .object({
         winner: z.enum(['attacker', 'defender']).nullable(),
         reason: z.enum(['elimination', 'dayLimit', 'retreat', 'rout']),
+        cause: battleCause.optional(),
+        pursuit: z
+          .object({ pursuers: z.array(id).max(10), rearGuard: id.nullable() })
+          .strict()
+          .optional(),
       })
       .strict()
       .nullable(),

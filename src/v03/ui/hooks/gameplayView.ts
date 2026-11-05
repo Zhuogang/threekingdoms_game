@@ -114,6 +114,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
     const officer = state.officers.find((entry) => entry.name === name);
     if (officer) return displayName(officer, locale);
     const unit = battleState?.units.find((unit) => unit.name === name);
+    if (unit?.role === 'baggage') return message(locale, 'battle.baggage');
     if (unit && activeBattle) {
       const ids =
         (unit.side === 'attacker'

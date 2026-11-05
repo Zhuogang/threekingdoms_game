@@ -54,6 +54,7 @@ import {
   getForcedBattleOutcome,
   advanceBattleDay,
   applyBattleAction,
+  baggageRosterEntry,
   battleWithdrawalDue,
   campaignBattleDays,
   createCanvasBattleMap,
@@ -382,7 +383,7 @@ export function chargeBattleRations(battle: V03BattleState, absoluteDay: number)
   battle.lastRationDay = absoluteDay;
   for (const side of ['attacker', 'defender'] as const) {
     const living = data.units.filter(
-      (unit) => unit.side === side && unit.troops + unit.wounded > 0,
+      (unit) => unit.side === side && unit.role !== 'baggage' && unit.troops + unit.wounded > 0,
     );
     const foodKey = side === 'attacker' ? 'attackerFood' : 'defenderFood';
     const remainderKey =
@@ -452,6 +453,8 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
     defender: [],
   };
   for (const unit of data.units) {
+    // Porters are not an officer's troops: nothing of the baggage train returns to the roster.
+    if (unit.role === 'baggage') continue;
     const gain = battleExperienceGain(unit, outcome);
     const membership =
       unit.side === 'attacker'
@@ -630,7 +633,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
         ? 'defender'
         : null;
   const sideReport = (side: 'attacker' | 'defender') => {
-    const units = data.units.filter((unit) => unit.side === side);
+    const units = data.units.filter((unit) => unit.side === side && unit.role !== 'baggage');
     const ids = Object.values(
       side === 'attacker' ? battle.attackerFormationOfficerIds : battle.defenderFormationOfficerIds,
     ).flat();
@@ -789,7 +792,13 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
   const tactical = createTacticalBattle({
     id,
     map,
-    attackerUnits: attacker.roster,
+    attackerUnits: [
+      ...attacker.roster,
+      baggageRosterEntry(
+        `${journey.id}:baggage`,
+        attacker.roster.reduce((sum, entry) => sum + entry.troops, 0),
+      ),
+    ],
     defenderUnits: defender.roster,
     playerSide: journey.ownerFactionId === state.playerFactionId ? 'attacker' : 'defender',
     dayLimit: battleDays,
@@ -797,6 +806,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
     supplies: { attacker: journey.manifest.carriedFood, defender: defenderFood },
     seed: state.rng + state.nextId,
     facing: true,
+    armyMorale: true,
   });
   const battle: V03BattleState = {
     id,
@@ -2068,14 +2078,20 @@ function advanceBattleDayWithSupplies(state: V03GameState, battleId: string): bo
     state.events.at(-1)!.code = 'battle.withdrawalAsked';
     return false;
   }
+  // Without a human at the controls a pursuit is decided by temperament on both sides (B-05).
+  const autoPursuit = !playerFights || Boolean(battle.autoCommand);
   if (!playerFights || battle.autoCommand)
     // The AI order layer plays only battles without a human; auto-command keeps the player's own orders.
     tactical = runBattleAiTurn(tactical, tactical.playerSide, rationRemainders, {
       useOrders: true,
       assignOrders: !playerFights,
+      autoPursuit,
     });
-  tactical = advanceBattleDay(tactical, rationRemainders, { useOrders: true });
+  tactical = advanceBattleDay(tactical, rationRemainders, { useOrders: true, autoPursuit });
   battle.battleData = tactical;
+  // A captured baggage train zeroes the field food at once.
+  battle.attackerFood = tactical.supplies.attacker;
+  battle.defenderFood = tactical.supplies.defender;
   battle.playerDayComplete = false;
   chargeBattleRations(battle, state.absoluteDay);
   if (tactical.outcome) finishBattle(state, battle);

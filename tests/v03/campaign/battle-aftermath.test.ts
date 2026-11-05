@@ -157,7 +157,10 @@ describe('wounded combat and campaign aftermath', () => {
     'matches ration preview, fractional charge and reload for the %s side',
     (side) => {
       const { state, battle } = battleFixture();
-      const units = battle.battleData.units.filter((unit) => unit.side === side);
+      // The baggage train eats nothing: the porters are fed from the carried food.
+      const units = battle.battleData.units.filter(
+        (unit) => unit.side === side && unit.role !== 'baggage',
+      );
       units.forEach((unit, i) =>
         Object.assign(unit, {
           troops: 101 + i,
@@ -280,11 +283,13 @@ describe('wounded combat and campaign aftermath', () => {
       expect(completed.ok, completed.error).toBe(true);
       const ended = completed.state.battles.find((entry) => entry.id === battle.id)!;
       expect(ended.resolved).toBe(true);
-      expect(ended.battleData.outcome).toEqual({ winner: 'defender', reason });
+      // A campaign battle tracks army morale: a rout carries its cause.
+      expect(ended.battleData.outcome).toMatchObject({ winner: 'defender', reason });
+      if (reason === 'rout') expect(ended.battleData.outcome?.cause).toBe('allRouted');
       expect(ended.foodShortfallDays).toBe(1);
       expect(
         ended.battleData.units
-          .filter((unit) => unit.side === 'attacker')
+          .filter((unit) => unit.side === 'attacker' && unit.role !== 'baggage')
           .every((unit) => unit.wounded === (reason === 'elimination' ? 0 : 99)),
       ).toBe(true);
       expect(validateV03State(completed.state)).toBe(true);
@@ -485,7 +490,7 @@ describe('wounded combat and campaign aftermath', () => {
         sum +
         Math.floor(
           battle.battleData.units
-            .filter((unit) => unit.side === side)
+            .filter((unit) => unit.side === side && unit.role !== 'baggage')
             .reduce(
               (count, unit) =>
                 count + (unit.troops + unit.wounded) * (unit.troopType === 'cavalry' ? 2 : 1),

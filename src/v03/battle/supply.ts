@@ -11,7 +11,7 @@ export function forecastBattleRations(
   remainderMicro = 0,
 ) {
   const demand = rationDemand(
-    battle.units.filter((unit) => unit.side === side),
+    battle.units.filter((unit) => unit.side === side && unit.role !== 'baggage'),
     PILOT_LOGISTICS_RATES.battleFoodPerTroopDay,
     remainderMicro,
   );

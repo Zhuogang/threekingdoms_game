@@ -2,7 +2,7 @@ import { message } from '../../i18n';
 import { formatGrain } from '../../i18n/units';
 
 import {
-  movementBudget,
+  unitMovementBudget,
   terrainDefenseMultiplier,
   fireWeatherMultiplier,
   fireTerrainMultiplier,
@@ -53,7 +53,7 @@ export function BattleReadout({
           <div>
             <small>{message(locale, 'ui.movement.budget.range.81')}</small>
             <strong>
-              {movementBudget(currentUnit.troopType)} / {currentUnit.attackRange}
+              {unitMovementBudget(currentUnit)} / {currentUnit.attackRange}
             </strong>
           </div>
           <div>

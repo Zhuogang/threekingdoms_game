@@ -11,6 +11,7 @@ import { tacticLabel, localizeTacticReason } from '../shared/app-copy-2';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { BattleConditions } from './BattleConditions';
+import { BattlePursuit } from './BattlePursuit';
 import { TroopProgress } from './TroopProgress';
 export function BattleSidebar({
   context,
@@ -64,6 +65,7 @@ export function BattleSidebar({
         </div>
         <p className="v03-muted">{t.moveHelp}</p>
         <BattleConditions context={{ ...context, battleState: battleState! }} />
+        <BattlePursuit context={context} />
         {(['player', 'enemy'] as const).map((group) => (
           <div className="v03-unit-list" key={group} data-roster={group}>
             <div className="v03-section-title v03-roster-title">

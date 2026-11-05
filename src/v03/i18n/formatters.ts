@@ -20,6 +20,7 @@ export function formatBattleLog(
   const name = (id: unknown) => {
     const unit = battle.units.find((item) => item.id === id);
     if (!unit) return '—';
+    if (unit.role === 'baggage') return message(locale, 'battle.baggage');
     const parent = state.battles.find((item) => item.id === battle.id);
     const ids =
       (unit.side === 'attacker'
@@ -36,8 +37,9 @@ export function formatBattleLog(
         : 'Militia';
   };
   const params: Record<string, string | number | boolean | null> = { ...entry.params };
-  for (const key of ['side', 'winner'])
-    params[key] = message(locale, `side.${params[key] ?? 'draw'}` as MessageKey);
+  for (const key of ['side', 'winner', 'loser'])
+    if (key in params || key !== 'loser')
+      params[key] = message(locale, `side.${params[key] ?? 'draw'}` as MessageKey);
   params.unit = name(params.unitId);
   params.source = name(params.sourceId);
   params.target = name(params.targetId);
@@ -47,6 +49,15 @@ export function formatBattleLog(
     ] ?? (locale === 'zh' ? '野外' : 'the field');
   if (entry.code.startsWith('log.order') && typeof params.order === 'string')
     params.order = message(locale, `order.${params.order}` as MessageKey);
+  if (entry.code === 'log.armyMorale') {
+    const delta = Number(entry.params.delta);
+    params.delta = `${delta > 0 ? '+' : '−'}${Math.abs(delta)}`;
+    params.cause = message(locale, `armyMorale.cause.${entry.params.cause}` as MessageKey);
+  }
+  if (entry.code === 'log.pursuit')
+    params.guard = entry.params.rearGuard
+      ? message(locale, 'log.pursuit.guard', { unit: name(entry.params.rearGuard) })
+      : '';
   if (params.tactic) params.tactic = message(locale, `tactic.${params.tactic}` as MessageKey);
   if (entry.code === 'log.posture') {
     params.army = message(

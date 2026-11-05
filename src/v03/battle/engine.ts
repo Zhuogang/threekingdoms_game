@@ -3,6 +3,7 @@ import { recordAiDecision, type AiDecisionEvent } from '../ai/decision-trace';
 import { applyCombatDamage } from './experience';
 import { PERSONNEL_RULES } from '../campaign/personnel';
 import {
+  ARMY_MORALE as ARMY_MORALE_TABLE,
   BATTLE as BATTLE_TABLE,
   BATTLE_AI as BATTLE_AI_TABLE,
   MORALE as MORALE_TABLE,
@@ -44,6 +45,7 @@ import {
   type BattleOrder,
   type BattleOrderKind,
   type BattleOutcome,
+  type BattleOutcomeCause,
   type BattlePosition,
   type BattleRosterEntry,
   type BattleSide,
@@ -72,6 +74,9 @@ const LEADERSHIP = LEADERSHIP_TABLE;
 const PERSONNEL = PERSONNEL_TABLE;
 const TACTICS = TACTICS_TABLE;
 const FACING = BATTLE.facing;
+const BAGGAGE = ARMY_MORALE_TABLE.baggage;
+const ARMY = ARMY_MORALE_TABLE.armyMorale;
+const PURSUIT = ARMY_MORALE_TABLE.pursuit;
 
 const DEFAULT_BATTLE_DAY_LIMIT = BATTLE.dayLimit.conquest;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
@@ -111,7 +116,7 @@ export function battleCommander(
   let best: TacticalBattleUnit | null = null;
   const lead = (unit: TacticalBattleUnit) => unit.leadership ?? unit.force;
   for (const unit of state.units) {
-    if (unit.side !== side || unit.troops <= 0 || unit.isMilitia) continue;
+    if (unit.side !== side || unit.troops <= 0 || unit.isMilitia || isBaggage(unit)) continue;
     if (
       !best ||
       lead(unit) > lead(best) ||
@@ -123,8 +128,37 @@ export function battleCommander(
   return best;
 }
 
+/** The roster entry of an attacker's baggage train: 5% of its line troops (at least 100), weak and unarmed (B-04). */
+export function baggageRosterEntry(id: string, lineTroops: number): BattleRosterEntry {
+  return {
+    id,
+    name: 'Baggage',
+    troopType: 'infantry',
+    role: 'baggage',
+    troops: Math.max(BAGGAGE.min, Math.round(BAGGAGE.share * lineTroops)),
+    force: BAGGAGE.stat,
+    intellect: BAGGAGE.stat,
+    leadership: BAGGAGE.stat,
+    attackRange: 0,
+  };
+}
+
 function livingUnits(state: V03TacticalBattleState, side?: BattleSide): TacticalBattleUnit[] {
   return state.units.filter((unit) => unit.troops > 0 && (!side || unit.side === side));
+}
+
+const isBaggage = (unit: Pick<TacticalBattleUnit, 'role'>): boolean => unit.role === 'baggage';
+
+/** Living line formations: everything but a baggage train. */
+function livingLine(state: V03TacticalBattleState, side?: BattleSide): TacticalBattleUnit[] {
+  return state.units.filter(
+    (unit) => unit.troops > 0 && !isBaggage(unit) && (!side || unit.side === side),
+  );
+}
+
+/** Movement points a formation has today: the arm's budget, or a baggage train's own. */
+export function unitMovementBudget(unit: Pick<TacticalBattleUnit, 'troopType' | 'role'>): number {
+  return isBaggage(unit) ? BAGGAGE.move : movementBudget(unit.troopType);
 }
 
 const isWavering = (unit: Pick<TacticalBattleUnit, 'morale'>): boolean =>
@@ -198,6 +232,7 @@ function makeUnits(
 ): TacticalBattleUnit[] {
   return roster.map((entry, index) => {
     const position = deployment[index]!;
+    const baggage = entry.role === 'baggage';
     return {
       id: entry.id,
       name: entry.name,
@@ -219,7 +254,8 @@ function makeUnits(
       ...(entry.fierce ? { fierce: true } : {}),
       ...(entry.leadership !== undefined ? { leadership: entry.leadership } : {}),
       ...(entry.excessShare !== undefined ? { excessShare: entry.excessShare } : {}),
-      attackRange: entry.attackRange ?? UNITS[entry.troopType].attackRange,
+      attackRange: baggage ? 0 : (entry.attackRange ?? UNITS[entry.troopType].attackRange),
+      ...(baggage ? { role: 'baggage' as const } : {}),
       x: position.x,
       y: position.y,
       morale: openingMorale(entry),
@@ -231,9 +267,64 @@ function makeUnits(
   });
 }
 
+/**
+ * Where a baggage train stands: the free deployment cell farthest from the enemy's deployment
+ * (the rear column of the band), nearest the band's middle row. When the band is full the nearest
+ * free passable cell takes it; never throws.
+ */
+function baggageCell(
+  map: V03TacticalBattleState['map'],
+  deployment: readonly BattlePosition[],
+  enemyDeployment: readonly BattlePosition[],
+  taken: ReadonlySet<number>,
+): BattlePosition {
+  const free = (cell: BattlePosition) => {
+    const terrain = battleTerrainAt(map, cell);
+    return (
+      terrain !== undefined &&
+      terrain !== 'cliff' &&
+      terrain !== 'water' &&
+      !taken.has(battlePositionIndex(map, cell.x, cell.y))
+    );
+  };
+  const middle = deployment.length
+    ? deployment.reduce((sum, cell) => sum + cell.y, 0) / deployment.length
+    : map.height / 2;
+  const rear = (cell: BattlePosition) =>
+    enemyDeployment.length
+      ? Math.min(...enemyDeployment.map((e) => manhattanDistance(cell, e)))
+      : 0;
+  const best = deployment
+    .filter(free)
+    .sort(
+      (a, b) =>
+        rear(b) - rear(a) ||
+        Math.abs(a.y - middle) - Math.abs(b.y - middle) ||
+        a.y - b.y ||
+        a.x - b.x,
+    )[0];
+  if (best) return best;
+  const anchor = deployment[0] ?? { x: 0, y: 0 };
+  let nearest: BattlePosition | undefined;
+  let bestDistance = Infinity;
+  for (let y = 0; y < map.height; y++)
+    for (let x = 0; x < map.width; x++) {
+      const cell = { x, y };
+      if (!free(cell)) continue;
+      const distance = manhattanDistance(cell, anchor);
+      if (distance < bestDistance) {
+        nearest = cell;
+        bestDistance = distance;
+      }
+    }
+  return nearest ?? anchor;
+}
+
 function rosterError(roster: readonly BattleRosterEntry[], side: BattleSide): string | null {
-  if (roster.length > MAX_UNITS_PER_SIDE)
+  if (roster.filter((unit) => unit.role !== 'baggage').length > MAX_UNITS_PER_SIDE)
     return `${side} cannot deploy more than ${MAX_UNITS_PER_SIDE} units.`;
+  if (roster.filter((unit) => unit.role === 'baggage').length > 1)
+    return `${side} can bring only one baggage train.`;
   if (new Set(roster.map((unit) => unit.id)).size !== roster.length)
     return `${side} roster contains duplicate unit IDs.`;
   for (const unit of roster) {
@@ -263,7 +354,7 @@ function rosterError(roster: readonly BattleRosterEntry[], side: BattleSide): st
       return `${unit.name} has an invalid level.`;
     if (
       unit.attackRange !== undefined &&
-      (!Number.isInteger(unit.attackRange) || unit.attackRange < 1)
+      (!Number.isInteger(unit.attackRange) || unit.attackRange < (unit.role === 'baggage' ? 0 : 1))
     )
       return `${unit.name} has an invalid attack range.`;
   }
@@ -282,9 +373,11 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
     options.attackerUnits.length + options.defenderUnits.length
   )
     throw new Error('Battle unit IDs must be unique across both sides.');
-  if (options.attackerUnits.length > options.map.attackerDeployment.length)
+  const lineCount = (roster: readonly BattleRosterEntry[]) =>
+    roster.filter((entry) => entry.role !== 'baggage').length;
+  if (lineCount(options.attackerUnits) > options.map.attackerDeployment.length)
     throw new Error('Attacker deployment does not have enough cells for its roster.');
-  if (options.defenderUnits.length > options.map.defenderDeployment.length)
+  if (lineCount(options.defenderUnits) > options.map.defenderDeployment.length)
     throw new Error('Defender deployment does not have enough cells for its roster.');
   const dayLimit = options.dayLimit ?? DEFAULT_BATTLE_DAY_LIMIT;
   if (!Number.isInteger(dayLimit) || dayLimit < 1)
@@ -296,17 +389,44 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
     )
       throw new Error(`${side} supplies must be a non-negative finite value.`);
 
+  const field = (
+    roster: readonly BattleRosterEntry[],
+    side: BattleSide,
+    deployment: readonly BattlePosition[],
+    enemyDeployment: readonly BattlePosition[],
+    facing?: BattleFacing,
+  ): TacticalBattleUnit[] => {
+    const line = makeUnits(
+      roster.filter((entry) => entry.role !== 'baggage'),
+      side,
+      deployment,
+      facing,
+    );
+    const taken = new Set(
+      [...line].map((unit) => battlePositionIndex(options.map, unit.x, unit.y)),
+    );
+    const trains = roster
+      .filter((entry) => entry.role === 'baggage')
+      .map((entry) => {
+        const cell = baggageCell(options.map, deployment, enemyDeployment, taken);
+        taken.add(battlePositionIndex(options.map, cell.x, cell.y));
+        return makeUnits([entry], side, [cell], facing)[0]!;
+      });
+    return [...line, ...trains];
+  };
   const units = [
-    ...makeUnits(
+    ...field(
       options.attackerUnits,
       'attacker',
       options.map.attackerDeployment,
+      options.map.defenderDeployment,
       options.facing ? 'e' : undefined,
     ),
-    ...makeUnits(
+    ...field(
       options.defenderUnits,
       'defender',
       options.map.defenderDeployment,
+      options.map.attackerDeployment,
       options.facing ? 'w' : undefined,
     ),
   ];
@@ -331,7 +451,7 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
       attacker: Math.min(
         BATTLE_TACTIC_POINT_CAP,
         units
-          .filter((unit) => unit.side === 'attacker' && !unit.isMilitia)
+          .filter((unit) => unit.side === 'attacker' && !unit.isMilitia && !isBaggage(unit))
           .reduce(
             (total, unit) =>
               total + Math.floor(unit.intellect / TACTICS.points.openingIntellectDivisor),
@@ -341,7 +461,7 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
       defender: Math.min(
         BATTLE_TACTIC_POINT_CAP,
         units
-          .filter((unit) => unit.side === 'defender' && !unit.isMilitia)
+          .filter((unit) => unit.side === 'defender' && !unit.isMilitia && !isBaggage(unit))
           .reduce(
             (total, unit) =>
               total + Math.floor(unit.intellect / TACTICS.points.openingIntellectDivisor),
@@ -365,7 +485,29 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
     logEntries: [{ day: 1, index: 0, code: 'log.begin', params: {} }],
     outcome: null,
   };
-  const deploymentErrors = validateBattleUnits(state.map, state.units);
+  if (options.armyMorale) {
+    const opening = (side: BattleSide) => {
+      const commander = battleCommander(state, side);
+      return Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(
+            ARMY.base +
+              (commander ? (commander.leadership ?? commander.force) : 0) * ARMY.commanderFactor,
+          ),
+        ),
+      );
+    };
+    state.armyMorale = { attacker: opening('attacker'), defender: opening('defender') };
+    state.shaken = { attacker: false, defender: false };
+    state.pending = null;
+  }
+  // A baggage train stands where the band has room and is not a deployed line formation.
+  const deploymentErrors = validateBattleUnits(
+    state.map,
+    state.units.filter((unit) => !isBaggage(unit)),
+  );
   if (deploymentErrors.length)
     throw new Error(`Invalid unit deployment: ${deploymentErrors.join(' ')}`);
   checkImmediateOutcome(state);
@@ -388,7 +530,7 @@ export function getUnitReachableTiles(
       state.map,
       unit,
       unit,
-      movementBudget(unit.troopType),
+      unitMovementBudget(unit),
       otherUnitsAsBlockers(state, unit),
       enemyZone,
       parents,
@@ -398,7 +540,7 @@ export function getUnitReachableTiles(
     state.map,
     unit,
     unit,
-    movementBudget(unit.troopType),
+    unitMovementBudget(unit),
     otherUnitsAsBlockers(state, unit),
     enemyZone,
     parents,
@@ -411,7 +553,8 @@ export function getEnemyZoneOfControl(
   enemySide: BattleSide,
 ): BattlePosition[] {
   const controlled = new Map<number, BattlePosition>();
-  for (const enemy of livingUnits(state, enemySide)) {
+  // A baggage train has no attack and controls no cells.
+  for (const enemy of livingLine(state, enemySide)) {
     for (const position of [
       { x: enemy.x, y: enemy.y - 1 },
       { x: enemy.x + 1, y: enemy.y },
@@ -437,7 +580,14 @@ export function getUnitAttackTargets(
   unitId: string,
 ): TacticalBattleUnit[] {
   const source = unitById(state, unitId);
-  if (!source || source.acted || source.status === 'confused' || isRouted(source) || state.outcome)
+  if (
+    !source ||
+    source.acted ||
+    source.status === 'confused' ||
+    isRouted(source) ||
+    isBaggage(source) ||
+    state.outcome
+  )
     return [];
   return livingUnits(state, otherSide(source.side))
     .filter((target) => isBattleAttackInRange(state.map, source, target, source.attackRange))
@@ -465,8 +615,8 @@ const append = appendBattleLog;
 
 function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | null {
   if (state.outcome) return state.outcome;
-  const attackerAlive = livingUnits(state, 'attacker').length > 0;
-  const defenderAlive = livingUnits(state, 'defender').length > 0;
+  const attackerAlive = livingLine(state, 'attacker').length > 0;
+  const defenderAlive = livingLine(state, 'defender').length > 0;
   if (!attackerAlive || !defenderAlive) {
     const winner = attackerAlive ? 'attacker' : defenderAlive ? 'defender' : null;
     state.outcome = { winner, reason: 'elimination' };
@@ -479,6 +629,282 @@ function checkImmediateOutcome(state: V03TacticalBattleState): BattleOutcome | n
     return state.outcome;
   }
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Baggage train (B-04), army morale and pursuit (B-05). Everything here is inert
+// in a battle created without a baggage entry or the `armyMorale` option.
+// ---------------------------------------------------------------------------
+
+/** Changes a side's army morale, logs a change of at least the log threshold, and applies the shaken step once. */
+function adjustArmyMorale(
+  state: V03TacticalBattleState,
+  side: BattleSide,
+  delta: number,
+  cause: string,
+): void {
+  const armyMorale = state.armyMorale;
+  if (!armyMorale || delta === 0) return;
+  armyMorale[side] = Math.max(0, Math.min(100, armyMorale[side] + delta));
+  if (Math.abs(delta) >= ARMY.logThreshold)
+    append(
+      state,
+      `${side} army morale ${delta > 0 ? '+' : '−'}${Math.abs(delta)} (${cause}).`,
+      'log.armyMorale',
+      { side, delta, cause },
+    );
+  const shaken = state.shaken;
+  if (shaken && !shaken[side] && armyMorale[side] <= ARMY.shakenAt) {
+    shaken[side] = true;
+    for (const unit of livingUnits(state, side))
+      unit.morale = Math.max(MIN_MORALE, unit.morale + ARMY.shakenUnitMorale);
+    append(state, `${side} army is shaken; every formation loses morale.`, 'log.armyShaken', {
+      side,
+    });
+  }
+}
+
+/**
+ * Counts each line formation's rout and destruction once against army morale. Run after
+ * anything that can rout or destroy a formation; a formation routed and later destroyed
+ * costs its owner the destroyed total (-12) in all, not both.
+ */
+function syncArmyMorale(state: V03TacticalBattleState): void {
+  if (!state.armyMorale) return;
+  for (let pass = 0; pass < 4; pass++) {
+    let changed = false;
+    for (const unit of state.units) {
+      if (isBaggage(unit)) continue;
+      const enemy = otherSide(unit.side);
+      if (unit.troops <= 0) {
+        if (unit.counted === 'destroyed') continue;
+        const wasRouted = unit.counted === 'routed';
+        unit.counted = 'destroyed';
+        changed = true;
+        adjustArmyMorale(
+          state,
+          unit.side,
+          ARMY.unitDestroyed - (wasRouted ? ARMY.unitRouted : 0),
+          'destroyed',
+        );
+        adjustArmyMorale(
+          state,
+          enemy,
+          ARMY.enemyDestroyed - (wasRouted ? ARMY.enemyRouted : 0),
+          'enemyDestroyed',
+        );
+      } else if (isRouted(unit)) {
+        if (unit.counted === 'routed') continue;
+        unit.counted = 'routed';
+        changed = true;
+        adjustArmyMorale(state, unit.side, ARMY.unitRouted, 'routed');
+        if (battleCommander(state, unit.side)?.id === unit.id)
+          adjustArmyMorale(state, unit.side, ARMY.commanderRouted, 'commander');
+        adjustArmyMorale(state, enemy, ARMY.enemyRouted, 'enemyRouted');
+      } else if (unit.counted === 'routed') delete unit.counted;
+    }
+    if (!changed) break;
+  }
+}
+
+/** A baggage train is unscreened when no living, non-routed friendly line formation stands next to it. */
+export function baggageUnscreened(
+  state: V03TacticalBattleState,
+  baggage: Pick<TacticalBattleUnit, 'side' | 'x' | 'y'>,
+): boolean {
+  return !state.units.some(
+    (unit) =>
+      unit.side === baggage.side &&
+      unit.troops > 0 &&
+      !isBaggage(unit) &&
+      !isRouted(unit) &&
+      manhattanDistance(unit, baggage) === 1,
+  );
+}
+
+/** The owner loses its field food, army morale and 10 morale in every formation, once. */
+function baggageFell(
+  state: V03TacticalBattleState,
+  baggage: TacticalBattleUnit,
+  source: TacticalBattleUnit,
+  captured: boolean,
+): void {
+  const owner = baggage.side;
+  const food = state.supplies[owner];
+  state.supplies[owner] = 0;
+  for (const unit of livingUnits(state, owner))
+    unit.morale = Math.max(MIN_MORALE, unit.morale + BAGGAGE.unitMorale);
+  append(
+    state,
+    `${source.name} ${captured ? 'captures' : 'destroys'} the ${owner} baggage train; ${food} food is lost.`,
+    captured ? 'log.baggageCaptured' : 'log.baggageLost',
+    { unitId: baggage.id, side: owner, sourceId: source.id, food },
+  );
+  adjustArmyMorale(state, owner, BAGGAGE.armyMorale, 'baggage');
+}
+
+/** Casualty-equivalent worth to the enemy AI of a baggage train falling: the food denied and the army-morale swing. */
+function baggageFallValue(state: V03TacticalBattleState, baggage: TacticalBattleUnit): number {
+  const horizon = Math.min(BATTLE_AI.raidSupply.horizonDays, state.dayLimit - state.day + 1);
+  const rations = forecastBattleRations(state, baggage.side);
+  const deniedDays = rations.dailyFood > 0 ? Math.min(horizon, rations.supplyDays) : 0;
+  const personnel = livingLine(state, baggage.side).reduce(
+    (sum, entry) => sum + entry.troops + entry.wounded * BATTLE_AI.value.woundedWeight,
+    0,
+  );
+  return (
+    deniedDays * personnel * BATTLE_AI.raidSupply.personDayValue +
+    (state.armyMorale ? -BAGGAGE.armyMorale * BAGGAGE.captureMoraleWeight : 0)
+  );
+}
+
+/** What ends an army: every living line formation routed, army morale at the floor, or too many formations lost. */
+function breakCause(state: V03TacticalBattleState, side: BattleSide): BattleOutcomeCause | null {
+  const line = state.units.filter((unit) => unit.side === side && !isBaggage(unit));
+  const living = line.filter((unit) => unit.troops > 0);
+  if (living.length > 0 && living.every(isRouted)) return 'allRouted';
+  const armyMorale = state.armyMorale;
+  if (!armyMorale) return null;
+  if (armyMorale[side] <= ARMY.breakAt)
+    return state.units.some((unit) => unit.side === side && isBaggage(unit) && unit.troops <= 0)
+      ? 'baggage'
+      : 'armyMorale';
+  const lost = line.filter((unit) => unit.troops <= 0 || isRouted(unit)).length;
+  return line.length > 0 && lost >= ARMY.breakRoutedShare * line.length ? 'formations' : null;
+}
+
+/** The formations the player may name in a pending pursuit: its eligible cavalry when it won, its possible rear guard when it lost. */
+export function pursuitCandidates(state: V03TacticalBattleState): TacticalBattleUnit[] {
+  const pending = state.pending;
+  if (!pending) return [];
+  return pending.winner === state.playerSide
+    ? eligiblePursuers(state, pending.winner)
+    : livingLine(state, pending.loser).filter((unit) => unit.morale >= PURSUIT.minMorale);
+}
+
+/** Cavalry of the winner that may pursue: living, with enough morale. */
+function eligiblePursuers(state: V03TacticalBattleState, winner: BattleSide): TacticalBattleUnit[] {
+  return livingLine(state, winner).filter(
+    (unit) => unit.troopType === 'cavalry' && unit.morale >= PURSUIT.minMorale,
+  );
+}
+
+/** AI winner: a fierce or cunning commander pursues with every eligible cavalry formation, any other with at most one. */
+function aiPursuers(state: V03TacticalBattleState, winner: BattleSide): string[] {
+  const eligible = eligiblePursuers(state, winner).sort(
+    (a, b) => b.troops - a.troops || a.id.localeCompare(b.id),
+  );
+  const commander = battleCommander(state, winner);
+  const aggressive = Boolean(commander && (commander.fierce || commander.cunning));
+  return (aggressive ? eligible : eligible.slice(0, 1)).map((unit) => unit.id);
+}
+
+/** AI loser: its highest-morale line formation with enough morale covers the rout, if any. */
+function aiRearGuard(state: V03TacticalBattleState, loser: BattleSide): string | null {
+  return (
+    livingLine(state, loser)
+      .filter((unit) => unit.morale >= PURSUIT.minMorale)
+      .sort((a, b) => b.morale - a.morale || b.troops - a.troops || a.id.localeCompare(b.id))[0]
+      ?.id ?? null
+  );
+}
+
+/**
+ * Fills the halves of a pending pursuit nobody has decided: `ai` the halves the AI owns, `auto`
+ * every half by AI temperament (AI-vs-AI battles), `default` the AI's halves and then the player's
+ * with "every eligible cavalry pursues" and "no rear guard".
+ */
+function fillPursuit(state: V03TacticalBattleState, mode: 'ai' | 'auto' | 'default'): void {
+  const pending = state.pending;
+  if (!pending) return;
+  const ai = (side: BattleSide) => mode === 'auto' || side !== state.playerSide;
+  if (pending.pursuers === undefined && ai(pending.winner))
+    pending.pursuers = aiPursuers(state, pending.winner);
+  if (pending.rearGuard === undefined && ai(pending.loser))
+    pending.rearGuard = aiRearGuard(state, pending.loser);
+  if (mode === 'default') {
+    pending.pursuers ??= eligiblePursuers(state, pending.winner).map((unit) => unit.id);
+    pending.rearGuard ??= null;
+  }
+}
+
+/** Resolves a pending pursuit whose halves are both decided: free hits on the rear guard, then the outcome. */
+function resolvePursuit(state: V03TacticalBattleState): void {
+  const pending = state.pending;
+  if (!pending || pending.pursuers === undefined || pending.rearGuard === undefined) return;
+  const eligible = new Set(eligiblePursuers(state, pending.winner).map((unit) => unit.id));
+  const pursuers = [...new Set(pending.pursuers)].filter((id) => eligible.has(id));
+  const guard = pending.rearGuard
+    ? livingLine(state, pending.loser).find(
+        (unit) => unit.id === pending.rearGuard && unit.morale >= PURSUIT.minMorale,
+      )
+    : undefined;
+  if (guard)
+    for (const id of pursuers) {
+      const pursuer = unitById(state, id);
+      if (!pursuer || guard.troops <= 0) break;
+      attackOneWay(state, pursuer, guard);
+    }
+  state.pending = null;
+  state.outcome = {
+    winner: pending.winner,
+    reason: 'rout',
+    ...(pending.cause ? { cause: pending.cause } : {}),
+    pursuit: { pursuers, rearGuard: guard?.id ?? null },
+  };
+  append(
+    state,
+    `${pending.winner} pursues the broken ${pending.loser} army with ${pursuers.length} cavalry formation(s)${guard ? `; ${guard.name} covers the retreat` : ''}.`,
+    'log.pursuit',
+    {
+      winner: pending.winner,
+      loser: pending.loser,
+      pursuers: pursuers.length,
+      rearGuard: guard?.id ?? null,
+    },
+  );
+}
+
+/** Both halves by AI temperament, then the outcome: for AI-vs-AI battles, the pacing tool and forecasts. */
+function autoSettlePursuit(state: V03TacticalBattleState): void {
+  fillPursuit(state, 'auto');
+  resolvePursuit(state);
+}
+
+function performPursuit(
+  state: V03TacticalBattleState,
+  action: Extract<BattleAction, { type: 'pursuit' }>,
+): string | null {
+  const pending = state.pending;
+  if (!pending) return 'There is no pursuit to decide.';
+  if (state.outcome) return 'This battle has ended.';
+  if (pending.winner === state.playerSide) {
+    const eligible = new Set(eligiblePursuers(state, pending.winner).map((unit) => unit.id));
+    const ids = action.pursuers ?? [];
+    if (ids.some((id) => !eligible.has(id)))
+      return 'Only your cavalry formations with enough morale can pursue.';
+    pending.pursuers = [...new Set(ids)];
+  } else {
+    const id = action.rearGuard ?? null;
+    if (
+      id !== null &&
+      !livingLine(state, pending.loser).some(
+        (unit) => unit.id === id && unit.morale >= PURSUIT.minMorale,
+      )
+    )
+      return 'Only a formation with enough morale can cover the retreat.';
+    pending.rearGuard = id;
+  }
+  fillPursuit(state, 'auto');
+  resolvePursuit(state);
+  return null;
+}
+
+/** The end of an activation in a battle with army morale: count routs and destructions, then test for a break. */
+function settleActivation(state: V03TacticalBattleState): void {
+  if (!state.armyMorale || state.outcome) return;
+  syncArmyMorale(state);
+  if (!state.pending) resolveRout(state);
 }
 
 function baseDamage(
@@ -682,6 +1108,8 @@ export interface BattleAttackForecast {
   braced: boolean;
   /** The target is archers hit in melee (B-03). */
   melee: boolean;
+  /** The attack captures an unscreened baggage train outright (B-04). */
+  captures: boolean;
   /** Target morale after the hit, and what the hit does to it (for the on-map forecast). */
   targetMoraleAfter: number | null;
   targetResult: 'destroyed' | 'routs' | null;
@@ -706,7 +1134,23 @@ export function predictBattleAttack(
   const source = unitById(state, sourceId);
   const target = unitById(state, targetId);
   if (!source || !target || source.side === target.side) return null;
-  return forecastAttack(state.map, source, target);
+  const forecast = forecastAttack(state.map, source, target);
+  if (
+    forecast.inRange &&
+    isBaggage(target) &&
+    !isBaggage(source) &&
+    baggageUnscreened(state, target)
+  )
+    // An unscreened train is taken whole and does not answer.
+    return {
+      ...forecast,
+      captures: true,
+      estimatedCasualties: target.troops,
+      targetMoraleAfter: MIN_MORALE,
+      targetResult: 'destroyed',
+      counterattack: { ...forecast.counterattack, possible: false, estimatedCasualties: null },
+    };
+  return forecast;
 }
 
 function forecastAttack(
@@ -741,6 +1185,7 @@ function forecastAttack(
     target.morale - targetMoraleLoss >= ROUTED_MORALE &&
     profile.counter > 0 &&
     source.troops > 0 &&
+    !isBaggage(target) &&
     isBattleAttackInRange(map, target, source, target.attackRange),
   );
   const counterSource = counterattackPossible
@@ -782,6 +1227,7 @@ function forecastAttack(
     charge: profile.charge,
     braced: profile.braced,
     melee: profile.melee,
+    captures: false,
     targetMoraleAfter,
     targetResult:
       estimatedCasualties === null
@@ -824,6 +1270,7 @@ function tacticReason(
   moved = unit.moved,
 ): string | null {
   const cost = tacticCost(unit, tactic);
+  if (isBaggage(unit)) return 'A baggage train has no tactics.';
   if (unit.isMilitia) return 'Militia cannot use tactics.';
   if (isRouted(unit)) return 'Routed units cannot use tactics.';
   if (isWavering(unit)) return 'Wavering units cannot use tactics.';
@@ -907,6 +1354,7 @@ export function getBattleTacticTargets(
       (target) =>
         (tactic === 'rally' ? target.side === unit.side : target.side !== unit.side) &&
         manhattanDistance(unit, target) <= range &&
+        !isBaggage(target) &&
         !(tactic === 'rockfall' && battleTerrainAt(state.map, target) === 'hill'),
     )
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -1180,19 +1628,37 @@ function performAttack(
   if (source.status === 'confused')
     return `${source.name} is confused and will lose its next action.`;
   if (isRouted(source)) return 'Routed units can only move or hold.';
+  if (isBaggage(source)) return 'A baggage train cannot attack.';
   if (source.side === target.side || target.troops <= 0) return 'Choose a living enemy unit.';
   if (!isBattleAttackInRange(state.map, source, target, source.attackRange))
     return `${target.name} is outside the normal attack range.`;
   source.acted = true;
   faceToward(source, target);
+  if (isBaggage(target) && baggageUnscreened(state, target)) {
+    // No friendly formation stands beside the train: the attack takes it whole.
+    state.engaged = true;
+    target.troops = 0;
+    target.moved = true;
+    target.acted = true;
+    if (source.facing !== undefined) {
+      source.charging = false;
+      source.braced = false;
+    }
+    baggageFell(state, target, source, true);
+    checkImmediateOutcome(state);
+    settleActivation(state);
+    return null;
+  }
   const profile = attackOneWay(state, source, target);
   if (source.facing !== undefined) {
     source.charging = false;
     source.braced = false;
   }
+  if (isBaggage(target) && target.troops <= 0) baggageFell(state, target, source, false);
   checkImmediateOutcome(state);
   if (
     !state.outcome &&
+    !isBaggage(target) &&
     target.troops > 0 &&
     source.troops > 0 &&
     target.status !== 'confused' &&
@@ -1203,6 +1669,7 @@ function performAttack(
     attackOneWay(state, target, source, profile);
     checkImmediateOutcome(state);
   }
+  settleActivation(state);
   return null;
 }
 
@@ -1336,6 +1803,7 @@ function performTactic(
     chance: forecast.chance,
   });
   checkImmediateOutcome(state);
+  settleActivation(state);
   return null;
 }
 
@@ -1460,6 +1928,8 @@ function performSetOrder(
 }
 
 function performAction(draft: V03TacticalBattleState, action: BattleAction): string | null {
+  if (action.type === 'pursuit') return performPursuit(draft, action);
+  if (draft.pending) return 'The enemy army has broken: decide the pursuit first.';
   if (action.type === 'retreat') {
     const side = action.side ?? (action.unitId ? unitById(draft, action.unitId)?.side : undefined);
     if (!side) return 'Select a living unit.';
@@ -1548,7 +2018,7 @@ function finishingValue(target: TacticalBattleUnit, casualties: number, moraleCh
 }
 
 function potentialDamage(state: V03TacticalBattleState, unit: TacticalBattleUnit): number {
-  if (isRouted(unit) || unit.status === 'confused') return 0;
+  if (isRouted(unit) || unit.status === 'confused' || isBaggage(unit)) return 0;
   let present = 0,
     future = 0;
   for (const enemy of livingUnits(state, otherSide(unit.side))) {
@@ -1654,10 +2124,12 @@ function battleActionCandidates(
     pointCost: 0,
   });
   const choices = [candidate('hold')];
-  const enemies = livingUnits(state, otherSide(unit.side));
   const finishing = (target: TacticalBattleUnit, casualties: number, moraleChange = 0) => {
     const value = finishingValue(target, casualties, moraleChange);
-    const endsBattle = casualties >= target.troops && enemies.length === 1;
+    const endsBattle =
+      casualties >= target.troops &&
+      !isBaggage(target) &&
+      livingLine(state, otherSide(unit.side)).length === 1;
     return (
       value +
       (endsBattle
@@ -1679,6 +2151,8 @@ function battleActionCandidates(
     action.outgoing = forecast.estimatedCasualties ?? 0;
     action.retaliation = forecast.counterattack.estimatedCasualties ?? 0;
     action.finishValue = finishing(target, action.outgoing);
+    if (isBaggage(target) && (forecast.captures || action.outgoing >= target.troops))
+      action.finishValue += baggageFallValue(state, target);
     if (action.retaliation >= unit.troops)
       action.finishValue -= TACTICAL_VALUE.formation + unit.wounded * TACTICAL_VALUE.woundedWeight;
     action.score = action.outgoing - action.retaliation * preserve + action.finishValue;
@@ -1828,6 +2302,7 @@ function enemyAttackField(
   const field = new Map<number, BattlePosition>();
   if (
     isRouted(enemy) ||
+    isBaggage(enemy) ||
     enemy.status === 'confused' ||
     (enemy.acted && state.day >= state.dayLimit)
   )
@@ -1835,7 +2310,7 @@ function enemyAttackField(
   // Occupancy and ZOC outside the movement radius cannot affect this field.
   // Damage, points and remote moves also leave it intact; reuse it by geometry
   // across formation commits, including the views that vacate one formation.
-  const radius = movementBudget(enemy.troopType) + 1;
+  const radius = unitMovementBudget(enemy) + 1;
   const key =
     `${enemy.id}:${enemy.x}:${enemy.y}:${enemy.troopType}:${enemy.attackRange}|` +
     state.units
@@ -2351,10 +2826,42 @@ function assignOrdersInPlace(state: V03TacticalBattleState, side: BattleSide): v
   const enemies = livingUnits(state, otherSide(side));
   const own = livingUnits(state, side);
   const { chargeMinLane, skirmishInfantryRange } = ORDERS.ai;
+  const idle = (unit: TacticalBattleUnit) => isRouted(unit) || unit.status === 'confused';
+  // Baggage (B-04): the owner keeps its nearest line formation screening the train while an enemy
+  // line formation is close; the enemy sends its nearest cavalry after an unscreened train in reach.
+  const train = own.find(isBaggage);
+  const near = (cell: BattlePosition) => (a: TacticalBattleUnit, b: TacticalBattleUnit) =>
+    manhattanDistance(a, cell) - manhattanDistance(b, cell) || a.id.localeCompare(b.id);
+  let screenerId: string | undefined;
+  if (
+    train &&
+    !withdraw &&
+    enemies.some(
+      (enemy) => !isBaggage(enemy) && manhattanDistance(enemy, train) <= BAGGAGE.screenEnemyRange,
+    )
+  ) {
+    const line = own.filter((unit) => !isBaggage(unit) && !idle(unit));
+    screenerId = (
+      line.find((unit) => unit.order?.kind === 'screen' && unit.order.friendId === train.id) ??
+      line.sort(near(train))[0]
+    )?.id;
+  }
+  const enemyTrain = enemies.find(isBaggage);
+  const sortie =
+    enemyTrain && !withdraw && baggageUnscreened(state, enemyTrain)
+      ? own
+          .filter((unit) => unit.troopType === 'cavalry' && !isBaggage(unit) && !idle(unit))
+          .sort(near(enemyTrain))[0]
+      : undefined;
+  const sortieId =
+    sortie && manhattanDistance(sortie, enemyTrain!) <= BAGGAGE.sortieRange ? sortie.id : undefined;
   for (const unit of own) {
     let order: BattleOrder = FREE_ORDER;
-    if (withdraw) order = { kind: 'withdraw' };
+    if (isBaggage(unit)) order = withdraw ? { kind: 'withdraw' } : FREE_ORDER;
+    else if (withdraw) order = { kind: 'withdraw' };
     else if (unit.acted || isRouted(unit) || unit.status === 'confused') order = FREE_ORDER;
+    else if (unit.id === screenerId) order = { kind: 'screen', friendId: train!.id };
+    else if (unit.id === sortieId) order = { kind: 'advance', target: { unitId: enemyTrain!.id } };
     else if (unit.troopType === 'cavalry' && unit.fierce) {
       let best: TacticalBattleUnit | undefined;
       let bestLane = Infinity;
@@ -2363,7 +2870,7 @@ function assignOrdersInPlace(state: V03TacticalBattleState, side: BattleSide): v
         const lane = chargeLane(state, unit, enemy);
         if (
           lane >= chargeMinLane &&
-          lane <= movementBudget(unit.troopType) &&
+          lane <= unitMovementBudget(unit) &&
           (lane < bestLane || (lane === bestLane && enemy.id < best!.id))
         ) {
           best = enemy;
@@ -2441,7 +2948,7 @@ export function evaluateBattleTurn(
       ? 0
       : Math.max(
           BATTLE_AI.approach.floor,
-          (approachHit * BATTLE_AI.approach.hitFraction) / movementBudget(unit.troopType),
+          (approachHit * BATTLE_AI.approach.hitFraction) / unitMovementBudget(unit),
         ) *
         (1 + BATTLE_AI.approach.temperamentSwing * temperament) *
         (!behind && remainingDays <= BATTLE_AI.approach.finalDays
@@ -2476,7 +2983,7 @@ export function evaluateBattleTurn(
     // can restrict enemy movement further, but cannot create an unseen attack.
     if (movingThreat) return movingThreat;
     const affected = turn.enemies.filter(
-      (enemy) => manhattanDistance(enemy, unit) <= movementBudget(enemy.troopType) + 1,
+      (enemy) => manhattanDistance(enemy, unit) <= unitMovementBudget(enemy) + 1,
     );
     if (!affected.length) return (movingThreat = turn);
     const view = { ...state, units: state.units.filter((entry) => entry.id !== unit.id) };
@@ -2770,7 +3277,7 @@ function traceTacticalChoices(
 function withdrawalThresholdReached(state: V03TacticalBattleState, side: BattleSide): boolean {
   const current = totalTroops(state, side);
   const opening = state.units
-    .filter((unit) => unit.side === side)
+    .filter((unit) => unit.side === side && !isBaggage(unit))
     .reduce((sum, unit) => sum + unit.initialTroops, 0);
   return (
     current * 100 <= opening * PERSONNEL_RULES.aiRetreatOpeningPercent &&
@@ -2828,6 +3335,8 @@ export function runBattleAiTurn(
     useOrders?: boolean;
     /** With `useOrders`, the AI order layer sets this side's orders first (default true). */
     assignOrders?: boolean;
+    /** Decide both halves of a pursuit by AI temperament instead of waiting for the player (B-05). */
+    autoPursuit?: boolean;
   } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
@@ -2856,7 +3365,11 @@ export function runBattleAiTurn(
       x: unit?.x,
       y: unit?.y,
     });
-  if (checkImmediateOutcome(draft) || resolveRout(draft)) return draft;
+  if (draft.pending && options.autoPursuit) autoSettlePursuit(draft);
+  if (checkImmediateOutcome(draft) || resolveRout(draft)) {
+    if (draft.pending && options.autoPursuit) autoSettlePursuit(draft);
+    return draft;
+  }
   const withdrawalThreshold =
     options.allowWithdrawal !== false && withdrawalThresholdReached(draft, side);
   if (withdrawalThreshold) {
@@ -2924,8 +3437,15 @@ export function runBattleAiTurn(
   if (useOrders && options.assignOrders !== false) assignOrdersInPlace(draft, side);
   // Reconsider all unspent formations after each committed move/action. A cheap
   // finisher with no useful alternative can act before an otherwise stronger unit.
-  for (let activation = 0; activation < MAX_UNITS_PER_SIDE && !draft.outcome; activation++) {
-    const remaining = livingUnits(draft, side).filter((unit) => !unit.acted);
+  for (
+    let activation = 0;
+    activation <= MAX_UNITS_PER_SIDE && !draft.outcome && !draft.pending;
+    activation++
+  ) {
+    // A baggage train acts only on a withdraw order; otherwise it stays where it stands.
+    const remaining = livingUnits(draft, side).filter(
+      (unit) => !unit.acted && (!isBaggage(unit) || (useOrders && unit.order?.kind === 'withdraw')),
+    );
     const available = remaining.filter((unit) => unit.status !== 'confused');
     if (!available.length) {
       for (const unit of remaining) if (consumeConfusedActivation(draft, unit)) trace('skip', unit);
@@ -2988,7 +3508,8 @@ export function runBattleAiTurn(
       trace('hold', unit);
     }
   }
-  if (options.announcePosture && !draft.outcome)
+  if (draft.pending && options.autoPursuit) autoSettlePursuit(draft);
+  if (options.announcePosture && !draft.outcome && !draft.pending)
     announcePosture(
       draft,
       side,
@@ -3004,12 +3525,12 @@ export function runBattleAiTurn(
 }
 
 function totalTroops(state: V03TacticalBattleState, side: BattleSide): number {
-  return livingUnits(state, side).reduce((sum, unit) => sum + unit.troops, 0);
+  return livingLine(state, side).reduce((sum, unit) => sum + unit.troops, 0);
 }
 
 function fieldControlScore(state: V03TacticalBattleState, side: BattleSide): number {
-  const own = livingUnits(state, side);
-  const enemy = livingUnits(state, otherSide(side));
+  const own = livingLine(state, side);
+  const enemy = livingLine(state, otherSide(side));
   if (!own.length) return 0;
   if (!enemy.length) return state.map.terrain.length;
   let score = 0;
@@ -3054,22 +3575,44 @@ export function getBattleTimeoutOutcome(
 
 export function getForcedBattleOutcome(state: V03TacticalBattleState): BattleOutcome | null {
   const draft = structuredClone(state);
-  return checkImmediateOutcome(draft) ?? (resolveRout(draft) ? draft.outcome : null);
+  syncArmyMorale(draft);
+  const immediate = checkImmediateOutcome(draft);
+  if (immediate) return immediate;
+  if (!resolveRout(draft)) return null;
+  autoSettlePursuit(draft);
+  return draft.outcome;
 }
 
+/**
+ * A side breaks when every living line formation is routed, and, with army morale, when its army
+ * morale is at the floor or 60% of its line formations are routed or destroyed. The winner's
+ * cavalry may then pursue: the outcome waits in `pending` for the pursuit decision (B-05).
+ * Returns whether the battle ended or now waits for the pursuit.
+ */
 function resolveRout(state: V03TacticalBattleState): boolean {
-  const broken = (side: BattleSide) => {
-    const units = livingUnits(state, side);
-    return units.length > 0 && units.every(isRouted);
-  };
-  if (!broken('attacker') && !broken('defender')) return false;
-  const loser: BattleSide = broken('attacker') ? 'attacker' : 'defender';
+  if (state.pending) return true;
+  let loser: BattleSide | undefined;
+  let cause: BattleOutcomeCause | null = null;
+  for (const side of ['attacker', 'defender'] as const) {
+    cause = breakCause(state, side);
+    if (cause) {
+      loser = side;
+      break;
+    }
+  }
+  if (!loser || !cause) return false;
   const winner = otherSide(loser);
-  state.outcome = { winner, reason: 'rout' };
+  const tracked = state.armyMorale !== undefined;
   append(state, `${loser} army breaks and retreats; ${winner} holds the battlefield.`, 'log.rout', {
     side: loser,
     winner,
+    ...(tracked ? { cause } : {}),
   });
+  if (tracked && eligiblePursuers(state, winner).length > 0) {
+    state.pending = { kind: 'pursuit', winner, loser, cause };
+    fillPursuit(state, 'ai');
+    resolvePursuit(state);
+  } else state.outcome = { winner, reason: 'rout', ...(tracked ? { cause } : {}) };
   return true;
 }
 
@@ -3077,11 +3620,18 @@ function resolveRout(state: V03TacticalBattleState): boolean {
 export function advanceBattleDay(
   state: V03TacticalBattleState,
   rationRemainders: BattleRationRemainders = {},
-  options: { useOrders?: boolean } = {},
+  options: { useOrders?: boolean; autoPursuit?: boolean } = {},
 ): V03TacticalBattleState {
   if (state.outcome) return state;
   let draft = structuredClone(state);
+  if (draft.pending) {
+    // Committing the day answers the pursuit with the default half: all eligible pursue, no rear guard.
+    fillPursuit(draft, options.autoPursuit ? 'auto' : 'default');
+    resolvePursuit(draft);
+    return draft;
+  }
   for (const unit of livingUnits(draft, draft.playerSide)) {
+    if (isBaggage(unit)) continue;
     if (!unit.acted && !consumeConfusedActivation(draft, unit)) {
       holdPosition(unit);
       append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
@@ -3090,9 +3640,13 @@ export function advanceBattleDay(
   draft = runBattleAiTurn(draft, otherSide(draft.playerSide), rationRemainders, {
     announcePosture: true,
     useOrders: options.useOrders,
+    autoPursuit: options.autoPursuit,
   });
   if (draft.outcome) return draft;
-  if (resolveRout(draft)) return draft;
+  if (resolveRout(draft)) {
+    if (draft.pending && options.autoPursuit) autoSettlePursuit(draft);
+    return draft;
+  }
   if (draft.day >= draft.dayLimit) {
     draft.outcome = getBattleTimeoutOutcome(draft);
     append(
@@ -3137,6 +3691,8 @@ export function advanceBattleDay(
     }
   }
   append(draft, `Battle day ${draft.day} begins.`, 'log.day', { day: draft.day });
+  if (draft.armyMorale && draft.day > ARMY.lateAfterDay)
+    adjustArmyMorale(draft, 'attacker', ARMY.attackerLateDay, 'lateDay');
   for (const side of ['attacker', 'defender'] as const)
     if (recovered[side])
       append(
@@ -3150,6 +3706,10 @@ export function advanceBattleDay(
           cap: BATTLE_MORALE_RECOVERY_CAP,
         },
       );
+  if (draft.armyMorale) {
+    syncArmyMorale(draft);
+    if (resolveRout(draft) && draft.pending && options.autoPursuit) autoSettlePursuit(draft);
+  }
   return draft;
 }
 

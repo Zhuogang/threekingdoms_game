@@ -128,7 +128,9 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
     if (command.type === 'advance') context.setMarchNotice(null);
     if (command.type === 'battleAction') {
       const battle = result.state.battles.find((entry) => entry.id === command.battleId);
-      const acted = battle?.battleData.units.find((unit) => unit.id === command.action.unitId);
+      const acted = battle?.battleData.units.find(
+        (unit) => unit.id === ('unitId' in command.action ? command.action.unitId : null),
+      );
       context.setAttackMode(false);
       context.setBattleActionMenu(
         command.action.type === 'move' &&

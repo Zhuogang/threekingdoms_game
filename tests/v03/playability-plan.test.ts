@@ -51,9 +51,9 @@ describe('playability plan contracts', () => {
     const battle = state.battles[0]!;
     const officers = state.journeys.find((journey) => journey.id === battle.attackerJourneyId)!
       .manifest.officerIds;
-    expect(battle.battleData.units.filter((unit) => unit.side === 'attacker')).toHaveLength(
-      officers.length,
-    );
+    expect(
+      battle.battleData.units.filter((unit) => unit.side === 'attacker' && unit.role !== 'baggage'),
+    ).toHaveLength(officers.length);
     expect(
       Object.values(battle.attackerFormationOfficerIds).every((members) => members.length === 1),
     ).toBe(true);
@@ -246,7 +246,7 @@ describe('playability plan contracts', () => {
       const report = next.events.find((event) => event.kind === 'battleResolved')!;
       expect(report.battleOutcome?.attacker.startingTroops).toBe(
         battle.battleData.units
-          .filter((unit) => unit.side === 'attacker')
+          .filter((unit) => unit.side === 'attacker' && unit.role !== 'baggage')
           .reduce((sum, unit) => sum + unit.initialTroops, 0),
       );
       expect(report.battleOutcome?.winner).toBe(winner);

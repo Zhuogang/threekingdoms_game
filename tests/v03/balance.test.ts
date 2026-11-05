@@ -23,6 +23,7 @@ describe('balance tables', () => {
   it('exports one table per domain', () => {
     expect(tables.map(([name]) => name).sort()).toEqual(
       [
+        'ARMY_MORALE',
         'BATTLE',
         'BATTLE_AI',
         'CAMPAIGN_AI',

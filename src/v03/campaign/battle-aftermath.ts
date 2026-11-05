@@ -1,6 +1,6 @@
-import { ECONOMY as ECONOMY_TABLE } from '../balance';
+import { ARMY_MORALE as ARMY_MORALE_TABLE, ECONOMY as ECONOMY_TABLE } from '../balance';
 import type { V03BattleState, V03GameState, V03Officer } from '../types';
-import type { BattleSide } from '../battle';
+import type { BattleOutcome, BattleSide } from '../battle';
 import { createV03OrderServices } from '../governance/services';
 import { PERSONNEL_RULES, personnelCount } from './personnel';
 import { beginJourneyReturn } from '../calendar';
@@ -9,6 +9,25 @@ import { getForcedBattleOutcome } from '../battle/engine';
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const ECONOMY = ECONOMY_TABLE;
+const PURSUIT = ARMY_MORALE_TABLE.pursuit;
+
+/**
+ * What a pursuit adds to the loser's fate (B-05), in percentage points: each pursuing formation
+ * adds 5 points to the capture chance and 10 to the share of its men left wounded, at most 30 each,
+ * halved when the loser named a rear guard. Formations of the rear guard itself take none.
+ */
+export function pursuitEffects(pursuit: BattleOutcome['pursuit'] | undefined): {
+  capturePoints: number;
+  woundedPoints: number;
+} {
+  if (!pursuit) return { capturePoints: 0, woundedPoints: 0 };
+  const count = pursuit.pursuers.length;
+  const factor = pursuit.rearGuard ? PURSUIT.rearGuardFactor : 1;
+  return {
+    capturePoints: Math.min(PURSUIT.cap, count * PURSUIT.capturePerPursuer) * factor,
+    woundedPoints: Math.min(PURSUIT.cap, count * PURSUIT.woundedPerPursuer) * factor,
+  };
+}
 
 /** Largest remainder with each source's original headcount as its hard upper bound. */
 export function allocatePersonnel(total: number, capacities: readonly number[]): number[] {
@@ -46,7 +65,11 @@ export function retreatDestination(state: V03GameState, battle: V03BattleState, 
   const factionId = side === 'attacker' ? battle.attackerFactionId : battle.defenderFactionId;
   if (!original || !from || !factionId) return null;
   const units = battle.battleData.units.filter(
-    (unit) => unit.side === side && !unit.isMilitia && unit.troops + unit.wounded > 0,
+    (unit) =>
+      unit.side === side &&
+      !unit.isMilitia &&
+      unit.role !== 'baggage' &&
+      unit.troops + unit.wounded > 0,
   );
   const troopCount = units.reduce((sum, unit) => sum + unit.troops + unit.wounded, 0);
   const composition = {
@@ -93,10 +116,16 @@ export function retreatDestination(state: V03GameState, battle: V03BattleState, 
   return choices[0] ?? null;
 }
 
-export function retreatRisk(battle: V03BattleState, hasRoute: boolean): number {
+/** Capture chance in percent of a retreating formation; a pursuit adds to it unless the formation was the rear guard. */
+export function retreatRisk(battle: V03BattleState, hasRoute: boolean, rearGuard = false): number {
   if (!hasRoute) return 100;
-  const reason = getForcedBattleOutcome(battle.battleData)?.reason;
-  if (reason === 'elimination' || reason === 'rout') return PERSONNEL_RULES.forcedCapturePercent;
+  const forced = getForcedBattleOutcome(battle.battleData);
+  const reason = forced?.reason;
+  if (reason === 'elimination' || reason === 'rout')
+    return (
+      PERSONNEL_RULES.forcedCapturePercent +
+      (reason === 'rout' && !rearGuard ? pursuitEffects(forced?.pursuit).capturePoints : 0)
+    );
   return battle.battleData.engaged ? PERSONNEL_RULES.orderlyCapturePercent : 0;
 }
 
@@ -122,7 +151,7 @@ export function previewRetreat(state: V03GameState, battle: V03BattleState, side
     officers,
     atLeastOnePercent: 100 * (1 - (1 - risk / 100) ** officers.length),
     personnel: battle.battleData.units
-      .filter((unit) => unit.side === side && !unit.isMilitia)
+      .filter((unit) => unit.side === side && !unit.isMilitia && unit.role !== 'baggage')
       .reduce((sum, unit) => sum + unit.troops + unit.wounded, 0),
   };
 }
@@ -267,20 +296,38 @@ export function settleBattlePersonnel(
       outcome.winner !== null &&
       outcome.winner !== side &&
       !(side === 'defender' && battle.intent === 'raid');
-    const risk = lost ? retreatRisk(battle, retreatDestination(state, battle, side) !== null) : 0;
+    const hasRoute = retreatDestination(state, battle, side) !== null;
+    const risk = lost ? retreatRisk(battle, hasRoute) : 0;
+    // A pursuit presses the loser's formations except the rear guard that covered them (B-05).
+    const pursuit = lost ? outcome.pursuit : undefined;
+    const rearGuardIds = new Set(
+      pursuit?.rearGuard
+        ? ((side === 'attacker'
+            ? battle.attackerFormationOfficerIds
+            : battle.defenderFormationOfficerIds)[pursuit.rearGuard] ?? [])
+        : [],
+    );
+    const guardedRisk = pursuit ? retreatRisk(battle, hasRoute, true) : risk;
     const escaped: V03Officer[] = [],
       captured: V03Officer[] = [];
     for (const officer of members) {
-      let caught = risk === 100;
-      if (risk > 0 && risk < 100) {
+      const officerRisk = rearGuardIds.has(officer.id) ? guardedRisk : risk;
+      let caught = officerRisk === 100;
+      if (officerRisk > 0 && officerRisk < 100) {
         state.rng = (Math.imul(state.rng, 1664525) + 1013904223) >>> 0;
-        caught = state.rng % 100 < risk;
+        caught = state.rng % 100 < officerRisk;
       }
       if (caught) {
         officer.location = { kind: 'captured', cityId: city.id };
         captured.push(officer);
       } else {
         if (lost && forced) officer.wounded = Math.floor((officer.wounded * 2) / 3);
+        if (pursuit && !rearGuardIds.has(officer.id)) {
+          // The pursuit leaves more of the survivors too hurt to march.
+          const hurt = Math.floor((officer.troops * pursuitEffects(pursuit).woundedPoints) / 100);
+          officer.troops -= hurt;
+          officer.wounded += hurt;
+        }
         if (personnelCount(officer) === 0) officer.troopExperience = 0;
         escaped.push(officer);
       }

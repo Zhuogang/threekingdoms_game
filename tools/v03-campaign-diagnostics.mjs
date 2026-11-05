@@ -335,12 +335,41 @@ async function main() {
             }
             if (battleIds.length > 0) {
               for (const battleId of battleIds) {
+                // An earlier battle of this day may have closed (a break ends a battle in a day or two),
+                // leaving its result report to acknowledge before the next battle day can complete.
+                const current = state.battles.find((entry) => entry.id === battleId);
+                if (!current?.active || current.playerDayComplete) continue;
+                for (const event of state.events.filter(
+                  (entry) => !entry.acknowledged && entry.absoluteDay <= state.absoluteDay,
+                )) {
+                  const acknowledged = observedCommand(state, {
+                    type: 'acknowledgeEvent',
+                    eventId: event.id,
+                  });
+                  if (!acknowledged.ok)
+                    throw new Error(
+                      `${scenarioId}/${factionId}: failed to acknowledge event ${event.id}.`,
+                    );
+                  state = acknowledged.state;
+                }
                 const completed = observedCommand(state, { type: 'completeBattleDay', battleId });
                 if (!completed.ok)
                   throw new Error(
                     `${scenarioId}/${factionId}: battle day completion failed: ${completed.error}`,
                   );
                 state = completed.state;
+              }
+              // A battle that closed while its sibling was already waiting leaves the world to the bot.
+              const live = state.battles.filter(
+                (battle) =>
+                  battle.active &&
+                  (battle.attackerFactionId === factionId ||
+                    battle.defenderFactionId === factionId),
+              );
+              if (live.length > 0 && live.every((battle) => battle.playerDayComplete)) {
+                const advanced = observedCommand(state, { type: 'advance', days: 1 });
+                if (!advanced.ok) throw new Error(`${scenarioId}/${factionId}: ${advanced.error}`);
+                state = advanced.state;
               }
             } else {
               const advanced = observedCommand(state, { type: 'advance', days: 1 });

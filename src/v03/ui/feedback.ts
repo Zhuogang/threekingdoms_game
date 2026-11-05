@@ -137,6 +137,7 @@ export function localizeV03PersonOrFormationName(
   const formationType = (value: string) => {
     const key = value.toLowerCase();
     if (key === 'militia') return '民兵';
+    if (key === 'baggage') return '辎重';
     if (key === 'archers') return troopName('archer', 'zh');
     return troopName(key, 'zh') === key ? value : troopName(key, 'zh');
   };

@@ -112,6 +112,16 @@ const ENGLISH: readonly V03WikiArticle[] = [
           'Captured officers retain their field army; old rear wounded do not follow their change of house. Successful recruitment requires ten supplied city days of army reorganization before fighting or troop requisition, with healing alongside it. Ordinary relocation preserves the remaining reorganization days and pauses them in transit. Release and exchange use real return journeys and available holding-city grain. With no reachable home, release frees the officer and disbands the contingent. Recruitment/exchange attempts are monthly, including both sides of a refused exchange; release or execution remain available afterward. Execution disbands the army. Captured rulers are succeeded immediately; successful recruitment then lowers the former house’s remaining living officers and owned cities by 10 loyalty, floored at zero. Refusal or execution causes no loyalty loss. Surviving houses display their current ruler’s name. Rear stock disperses when its city falls.',
         ],
       },
+      {
+        heading: 'Baggage, army morale and pursuit',
+        body: [
+          'The attacking army brings a baggage train: porters equal to 5% of its line troops (at least 100), Force, Intellect and Leadership 30, moving 2 cells a day. It stands in the rear column of the deployment band and carries the field food. It cannot attack or counterattack, uses no tactics and takes only Hold or Withdraw orders. Its porters do not count for the day-limit survivor count, the rout rule or the troop return after the battle. A defending city has no baggage.',
+          'An enemy attack on the baggage train captures it outright when no living, unrouted friendly formation stands next to it: its troops go to zero, the army’s field food is lost, the army loses 25 army morale and every one of its formations loses 10 morale, once. If a friendly formation stands beside it, the attack deals ordinary damage; reaching zero troops has the same consequences. Keep a formation next to the train, and sortie with cavalry for an unguarded one.',
+          'Each side has an army morale from 0 to 100, shown in the battle conditions. It opens at 50 + the commander’s Leadership ÷ 2 (the commander is the formation with the most Leadership). A friendly formation routed costs 8, destroyed 12; an enemy formation routed gives 5, destroyed 6; the commander’s own formation routing costs a further 20; losing the baggage costs 25; after day 20 the attacker loses 2 more at every dawn. Changes of 5 or more appear in the log.',
+          'At army morale 30 or less the army is shaken, once: every living formation loses 15 morale. An army breaks, and its enemy wins on the spot, when its army morale reaches 10, or when 60% of its line formations are routed or destroyed, or when every living formation is routed. The result names the cause.',
+          'When an army breaks and the winner has cavalry with morale 40 or more, a pursuit step runs before the result. The winner chooses which of those cavalry formations pursue; the loser may name one formation with morale 40 or more as its rear guard. Each pursuer adds 5% to the capture chance of the loser’s officers and moves 10% of their survivors into the wounded, up to 30% for each. A rear guard halves both effects (and is itself spared them) but takes one free hit from every pursuer. Fierce or cunning commanders pursue with every cavalry formation, others with one; the rival fills its own half at once. Committing the day without answering sends every eligible cavalry formation and names no rear guard.',
+        ],
+      },
     ],
   },
   {
@@ -299,6 +309,16 @@ const CHINESE: readonly V03WikiArticle[] = [
           '“整军撤退”无需选中棋子，确认后整场认输。有退路时，未接战被俘率为 0%，接战后每将 5%，击溃或士气溃败的被迫溃退每将 25%；各将独立判定，确认页也显示至少一将被俘的概率。无路明确投降，取消不改变状态或随机结果。有序逃脱保留全部随军生还者，被迫逃脱只带走三分之二随军伤兵。守方失城同样判定，逃脱后真实行军。',
           '返程队伍困在敌对城池，且本势力已无城池、在途出征或未结束的战斗时，队伍投降。友方、盟友及独立城池不触发此规则；目的地正在交战时，等待战斗结束再处理。武将保留健卒、伤兵及其经验，转为俘虏。接收城池取得剩余货物，仓库装不下的部分仍在城外等待空间。仍有城池或出征部队的势力可以继续寻找安置地点。',
           '武将被俘时随军所部一起被俘，后方旧伤兵不连带改投。招降成功后所部需 10 个有粮驻城日整编，期间不能作战或征调，可同时恢复伤兵。释放、交换真实返乡，由看押城在现有粮内拨付返程预算；无可达归属城则释放武将并遣散所部。招降、交换每月一次，交换失败双方也计次，之后仍可释放或处决。处决所部遣散。君主被俘时立即继位；招降成功后，原势力其余在世武将忠诚及所属城池民心各降 10 点，最低为 0；失败或处决均不降低这两项。存续势力显示现任君主姓名。失城后方库存散编，不直接变成占领军。',
+        ],
+      },
+      {
+        heading: '辎重、军心与追击',
+        body: [
+          '进攻方随军带辎重队：民夫数为前线兵力的 5%（至少 100），武力、智力、统率均为 30，每日移动 2 格。辎重队驻在部署区最后一列，携带战场粮草；不能攻击或反击，不能用计策，只接受“坚守”或“撤退”阵令。民夫不计入限期兵力比较、溃败判定和战后归队。守城一方没有辎重。',
+          '敌军攻击辎重队时，若旁边没有存活且未溃散的己方部队，辎重队被整个夺取：兵力归零，全军战场粮草尽失，军心 −25，全军各部士气各 −10（仅一次）。若旁边有己方部队，则按普通战斗受伤害；兵力归零时后果相同。请让一支部队贴身护卫辎重，也可派骑兵奇袭无人护卫的辎重。',
+          '双方各有 0–100 的军心，显示在战场条件栏。开局为 50 + 主将统率 ÷ 2（主将是统率最高的部队）。己方一部溃散 −8，覆没 −12；敌方一部溃散 +5，覆没 +6；主将所部溃散另 −20；失去辎重 −25；第 20 日后进攻方每日拂晓再 −2。变化达 5 以上时记入战报。',
+          '军心降到 30 以下时全军动摇（仅一次）：每个存活部队士气 −15。军心降到 10，或前线部队有 60% 溃散或覆没，或存活部队全部溃散，则该军崩溃，对手当场获胜；结果会写明原因。',
+          '一军崩溃而胜方有士气不低于 40 的骑兵时，先进行追击：胜方选择哪些骑兵追击；败方可指定一支士气不低于 40 的部队断后。每支追兵使败方将领的被俘几率 +5%，并使其 10% 的幸存兵力转为伤兵，各至多 +30%。断后使两项效果减半（断后部队本身不受影响），但要先挨每支追兵一击。勇猛或多谋的主将派出全部骑兵，其余只派一支；敌方立即决定自己的一半。结束战斗日而未作答时，所有符合条件的骑兵出击，不设断后。',
         ],
       },
     ],

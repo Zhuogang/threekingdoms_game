@@ -106,13 +106,17 @@ export function formatEvent(
         ? message(locale, 'outcome.reason.dayLimit')
         : message(locale, `outcome.reason.${outcome.reason}.${won ? 'won' : 'lost'}`)
       : null;
+    const cause = outcome?.cause
+      ? message(locale, `outcome.cause.${outcome.cause}.${won ? 'won' : 'lost'}`)
+      : null;
     const days = battle
       ? message(locale, 'outcome.duration', { days: battle.battleData.day })
       : null;
     return {
       title,
       detail:
-        [reason, days].filter(Boolean).join(locale === 'zh' ? '，' : ' · ') || `${city} · ${held}`,
+        [reason, cause, days].filter(Boolean).join(locale === 'zh' ? '，' : ' · ') ||
+        `${city} · ${held}`,
     };
   }
   if (event.code === 'threat.approach') {

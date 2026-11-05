@@ -1,7 +1,7 @@
 import { Button } from '../kit';
 import { formatGrain } from '../../i18n/units';
 import { message } from '../../i18n';
-import { movementBudget } from '../../battle';
+import { unitMovementBudget } from '../../battle';
 
 import type { GameplayContext } from '../hooks/gameplayView';
 import { BattleReadout } from './BattleReadout';
@@ -35,10 +35,21 @@ export function BattleConditions({
             enemy: formatGrain(battleState.supplies[enemySide], locale),
           })}
         </span>
+        {battleState.armyMorale ? (
+          <span>
+            {message(locale, 'battle.armyMorale', {
+              own: battleState.armyMorale[battleState.playerSide],
+              enemy: battleState.armyMorale[enemySide],
+            })}
+            {battleState.shaken?.[battleState.playerSide]
+              ? ` (${message(locale, 'battle.armyShaken')})`
+              : ''}
+          </span>
+        ) : null}
         {currentUnit ? (
           <span>
             {message(locale, 'battleMoveRange', {
-              move: movementBudget(currentUnit.troopType),
+              move: unitMovementBudget(currentUnit),
               range: currentUnit.attackRange,
             })}
           </span>
