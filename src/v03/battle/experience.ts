@@ -1,7 +1,10 @@
 import { troopLevel } from '../campaign/troop-experience';
 import type { BattleOutcome, TacticalBattleUnit } from './types';
 import { PERSONNEL_RULES } from '../campaign/personnel';
-import { BATTLE } from '../balance';
+import { BATTLE as BATTLE_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
 
 /** Combat loss means unavailable, not all dead. Keep fractional wounded across attacks. */
 export function applyCombatDamage(unit: TacticalBattleUnit, damage: number): number {

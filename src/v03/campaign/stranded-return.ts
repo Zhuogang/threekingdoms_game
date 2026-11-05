@@ -1,9 +1,12 @@
-import { ECONOMY } from '../balance';
+import { ECONOMY as ECONOMY_TABLE } from '../balance';
 import type { V03City, V03GameState, V03Journey } from '../types';
 import { isCityCommitted } from '../governance/commitments';
 import { getV03AttackAllianceBlock } from './monthly-systems';
 import { availableTroops } from './personnel';
 import { recordEvent } from './reports';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
 
 const RESOURCE_CAP = ECONOMY.resourceCap;
 

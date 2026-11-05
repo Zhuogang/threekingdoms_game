@@ -1,6 +1,9 @@
 import { traitsOf, type Trait } from '../content/traits';
 import type { V03GameState } from '../types';
-import { CAMPAIGN_AI } from '../balance';
+import { CAMPAIGN_AI as CAMPAIGN_AI_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
 
 /** Neutral campaign policy; trait effects below are applied on top of it. */
 export const NEUTRAL_ADMISSION_RATIO = CAMPAIGN_AI.temperament.neutralAdmissionRatio;

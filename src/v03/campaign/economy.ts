@@ -9,7 +9,10 @@ import { committedCityStock } from '../governance/city-actions';
 import { isCityCommitted } from '../governance/commitments';
 import { availableTroops, cityPersonnelSummary, cityRationCredits } from './personnel';
 import type { V03City, V03GameState } from '../types';
-import { ECONOMY } from '../balance';
+import { ECONOMY as ECONOMY_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
 
 const RESOURCE_CAP = ECONOMY.resourceCap;
 

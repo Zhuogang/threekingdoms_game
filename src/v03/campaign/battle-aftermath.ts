@@ -1,4 +1,4 @@
-import { ECONOMY } from '../balance';
+import { ECONOMY as ECONOMY_TABLE } from '../balance';
 import type { V03BattleState, V03GameState, V03Officer } from '../types';
 import type { BattleSide } from '../battle';
 import { createV03OrderServices } from '../governance/services';
@@ -6,6 +6,9 @@ import { PERSONNEL_RULES, personnelCount } from './personnel';
 import { beginJourneyReturn } from '../calendar';
 import { createReservePools } from './troop-experience';
 import { getForcedBattleOutcome } from '../battle/engine';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
 
 /** Largest remainder with each source's original headcount as its hard upper bound. */
 export function allocatePersonnel(total: number, capacities: readonly number[]): number[] {

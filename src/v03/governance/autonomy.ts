@@ -7,7 +7,11 @@ import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
 import type { V03City, V03GameState } from '../types';
-import { CAMPAIGN_AI, CITY_WORK, PERSONNEL } from '../balance';
+import {
+  CAMPAIGN_AI as CAMPAIGN_AI_TABLE,
+  CITY_WORK as CITY_WORK_TABLE,
+  PERSONNEL as PERSONNEL_TABLE,
+} from '../balance';
 import type { TroopType } from '../content/types';
 import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
 import {
@@ -30,6 +34,11 @@ import {
   cityWorkAvailable,
   cityWorkUsedThisPeriod,
 } from './city-actions';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
+const CITY_WORK = CITY_WORK_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 export type GovernorWorkAction =
   | 'restore-loyalty'

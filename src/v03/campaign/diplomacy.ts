@@ -1,4 +1,4 @@
-import { CAMPAIGN_AI } from '../balance';
+import { CAMPAIGN_AI as CAMPAIGN_AI_TABLE } from '../balance';
 import {
   acceptV03CoalitionInvitation,
   createV03Alliance,
@@ -7,6 +7,9 @@ import {
 import { ROUTE_DEFINITIONS } from '../geography';
 import { rulerTemperament } from '../ai/temperament';
 import type { V03GameState } from '../types';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
 
 const clone = (state: V03GameState): V03GameState => structuredClone(state);
 

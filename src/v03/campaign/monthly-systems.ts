@@ -9,13 +9,22 @@
 
 import { availableTroops } from './personnel';
 import { OFFICER_MATURITY_GAIN } from '../content/officer-timeline';
-import { CAMPAIGN_AI, ECONOMY, EVENTS } from '../balance';
+import {
+  CAMPAIGN_AI as CAMPAIGN_AI_TABLE,
+  ECONOMY as ECONOMY_TABLE,
+  EVENTS as EVENTS_TABLE,
+} from '../balance';
 import {
   mergeTroopPools,
   setReservePool,
   TROOP_TYPES,
   type ReservePools,
 } from './troop-experience';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
+const ECONOMY = ECONOMY_TABLE;
+const EVENTS = EVENTS_TABLE;
 
 export const V03_ALLIANCE_DURATION_MONTHS = CAMPAIGN_AI.allianceDurationMonths;
 export const V03_HEGEMON_CITIES = CAMPAIGN_AI.hegemon.cities;

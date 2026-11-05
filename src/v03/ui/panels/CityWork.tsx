@@ -1,4 +1,4 @@
-import { PERSONNEL } from '../../balance';
+import { PERSONNEL as PERSONNEL_TABLE } from '../../balance';
 import type { TroopType } from '../../types';
 import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
@@ -18,6 +18,9 @@ import type { GameplayContext } from '../hooks/gameplayView';
 import { Button, Field, Input, StatGrid, Select } from '../kit';
 import { absoluteDateLabel, displayName } from '../shared/app-copy-3';
 import { ReinforcementPreview, TroopProgress } from './TroopProgress';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const PERSONNEL = PERSONNEL_TABLE;
 
 export const cityWorkActions = [
   'develop-farming',

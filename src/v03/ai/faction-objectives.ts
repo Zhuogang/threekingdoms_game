@@ -1,4 +1,4 @@
-import { ECONOMY, PERSONNEL } from '../balance';
+import { ECONOMY as ECONOMY_TABLE, PERSONNEL as PERSONNEL_TABLE } from '../balance';
 import { PILOT_LOGISTICS_RATES } from '../calendar';
 import { forecastCityEconomy } from '../campaign/economy';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
@@ -16,6 +16,10 @@ import { isRivalCampaignOfficerAvailable } from './campaign-legality';
 import { incomingCampaignThreats } from './campaign-threats';
 import { estimateCampaignMatchup } from './campaign-strength';
 import { recordAiDecision } from './decision-trace';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 const services = createV03OrderServices();
 const bounded = (value: number) => Math.min(ECONOMY.resourceCap, Math.max(0, Math.ceil(value)));

@@ -1,4 +1,4 @@
-import { BATTLE } from '../balance';
+import { BATTLE as BATTLE_TABLE } from '../balance';
 import {
   BATTLE_HEIGHT,
   BATTLE_MAP_SIZES,
@@ -16,6 +16,9 @@ import {
   type BattleUnitPosition,
 } from './types';
 import { battlePositionIndex } from './rules';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
 
 const makePosition = (x: number, y: number): BattlePosition => ({ x, y });
 /** Grid of the legacy regional templates built in this file. */

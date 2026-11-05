@@ -1,5 +1,8 @@
 /** Logical battlefield contracts for the independent v0.3 ruleset. */
-import { BATTLE } from '../balance';
+import { BATTLE as BATTLE_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
 /** Size of the four legacy regional templates. */
 export const BATTLE_WIDTH = 24;
 export const BATTLE_HEIGHT = 20;

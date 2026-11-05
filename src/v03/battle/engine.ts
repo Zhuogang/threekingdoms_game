@@ -2,7 +2,13 @@ import { forecastBattleRations, type BattleRationRemainders } from './supply';
 import { recordAiDecision, type AiDecisionEvent } from '../ai/decision-trace';
 import { applyCombatDamage } from './experience';
 import { PERSONNEL_RULES } from '../campaign/personnel';
-import { BATTLE, BATTLE_AI, MORALE, PERSONNEL, TACTICS } from '../balance';
+import {
+  BATTLE as BATTLE_TABLE,
+  BATTLE_AI as BATTLE_AI_TABLE,
+  MORALE as MORALE_TABLE,
+  PERSONNEL as PERSONNEL_TABLE,
+  TACTICS as TACTICS_TABLE,
+} from '../balance';
 import {
   battleTerrainAt,
   fireTerrainMultiplier,
@@ -43,6 +49,13 @@ import {
 } from './types';
 import { battlefieldName } from './battlefields/selection';
 import { recordCombatCasualties, troopDamageMultiplier } from './experience';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
+const BATTLE_AI = BATTLE_AI_TABLE;
+const MORALE = MORALE_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
+const TACTICS = TACTICS_TABLE;
 
 const DEFAULT_BATTLE_DAY_LIMIT = BATTLE.dayLimit.conquest;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';

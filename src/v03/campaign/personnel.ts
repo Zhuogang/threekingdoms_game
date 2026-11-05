@@ -12,7 +12,16 @@ import {
   TROOP_TYPES,
 } from './troop-experience';
 import { isCityCommitted } from '../governance/commitments';
-import { BATTLE_AI, ECONOMY, PERSONNEL } from '../balance';
+import {
+  BATTLE_AI as BATTLE_AI_TABLE,
+  ECONOMY as ECONOMY_TABLE,
+  PERSONNEL as PERSONNEL_TABLE,
+} from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE_AI = BATTLE_AI_TABLE;
+const ECONOMY = ECONOMY_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 export const PERSONNEL_RULES = Object.freeze({
   capacity: PERSONNEL.capacity,

@@ -1,5 +1,8 @@
-import { ECONOMY } from '../balance';
+import { ECONOMY as ECONOMY_TABLE } from '../balance';
 import type { RouteDefinition } from '../geography';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
 
 export const DAYS_PER_MONTH = 30;
 export const MONTHS_PER_YEAR = 12;

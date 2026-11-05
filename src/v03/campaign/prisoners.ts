@@ -1,4 +1,4 @@
-import { ECONOMY, PERSONNEL } from '../balance';
+import { ECONOMY as ECONOMY_TABLE, PERSONNEL as PERSONNEL_TABLE } from '../balance';
 import { DAYS_PER_MONTH } from '../calendar';
 import {
   custodyHolder,
@@ -11,6 +11,10 @@ import type { V03GameState, V03Officer } from '../types';
 import { recordEvent } from './reports';
 import { cancelPendingGovernorAppointment } from '../governance/appointments';
 import { rulerTemperament } from '../ai/temperament';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 export type PrisonerAction = 'release' | 'recruit' | 'exchange' | 'execute';
 export const RULER_DEFECTION_LOYALTY_LOSS = PERSONNEL.prisoner.rulerDefectionLoyaltyLoss;

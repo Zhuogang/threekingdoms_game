@@ -2,7 +2,10 @@ import { availableReserveTroops } from '../campaign/personnel';
 import { applyV03CityAction } from './city-actions';
 import { isOfficerReservedForOrder } from './commitments';
 import type { V03GameState } from '../types';
-import { PERSONNEL } from '../balance';
+import { PERSONNEL as PERSONNEL_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const PERSONNEL = PERSONNEL_TABLE;
 
 const OFFICER_CAPACITY = PERSONNEL.capacity;
 

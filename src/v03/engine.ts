@@ -1,4 +1,9 @@
-import { BATTLE, CAMPAIGN_AI, ECONOMY, PERSONNEL } from './balance';
+import {
+  BATTLE as BATTLE_TABLE,
+  CAMPAIGN_AI as CAMPAIGN_AI_TABLE,
+  ECONOMY as ECONOMY_TABLE,
+  PERSONNEL as PERSONNEL_TABLE,
+} from './balance';
 import {
   rivalCampaignSourceBlock,
   rivalCampaignTargetBlock,
@@ -111,6 +116,12 @@ import type {
   V03Journey,
   V03Officer,
 } from './types';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
+const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
+const ECONOMY = ECONOMY_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 const RESOURCE_CAP = ECONOMY.resourceCap;
 /** A conquered city's loyalty starts no higher than this (PF-RL-06). */

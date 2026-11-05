@@ -8,7 +8,11 @@ import {
   type WaterCombatModifiers,
 } from './types';
 import { battleTerrainAt } from './maps';
-import { BATTLE, TACTICS } from '../balance';
+import { BATTLE as BATTLE_TABLE, TACTICS as TACTICS_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const BATTLE = BATTLE_TABLE;
+const TACTICS = TACTICS_TABLE;
 
 export const WATER_ATTACK_MULTIPLIER = BATTLE.water.attack;
 export const WATER_INCOMING_DAMAGE_MULTIPLIER = BATTLE.water.incomingDamage;

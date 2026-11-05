@@ -8,8 +8,17 @@ import {
   transferRationRecord,
 } from '../campaign/personnel';
 import type { TroopType } from '../content/types';
-import { CITY_WORK, ECONOMY, PERSONNEL } from '../balance';
+import {
+  CITY_WORK as CITY_WORK_TABLE,
+  ECONOMY as ECONOMY_TABLE,
+  PERSONNEL as PERSONNEL_TABLE,
+} from '../balance';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const CITY_WORK = CITY_WORK_TABLE;
+const ECONOMY = ECONOMY_TABLE;
+const PERSONNEL = PERSONNEL_TABLE;
 
 export interface V03CityActionInput {
   cityId: string;

@@ -1,5 +1,8 @@
 import type { TroopType } from '../content/types';
-import { RECRUITMENT } from '../balance';
+import { RECRUITMENT as RECRUITMENT_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const RECRUITMENT = RECRUITMENT_TABLE;
 
 /** Initial game balance, not historical population/currency estimates. */
 export const RECRUITMENT_REGIONS = RECRUITMENT.regions;

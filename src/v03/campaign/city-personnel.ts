@@ -1,4 +1,4 @@
-import { ECONOMY } from '../balance';
+import { ECONOMY as ECONOMY_TABLE } from '../balance';
 import type { V03Command, V03GameState } from '../types';
 import { isCityCommitted } from '../governance/commitments';
 import {
@@ -10,6 +10,9 @@ import {
   transferRationRecord,
 } from './personnel';
 import { applyTroopLoss, mergeTroopPools, setReservePool, TROOP_TYPES } from './troop-experience';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const ECONOMY = ECONOMY_TABLE;
 
 export function applyCityPersonnelCommand(
   state: V03GameState,

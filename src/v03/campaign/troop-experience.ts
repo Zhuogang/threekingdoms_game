@@ -1,5 +1,8 @@
 import type { TroopType } from '../content/types';
-import { PERSONNEL } from '../balance';
+import { PERSONNEL as PERSONNEL_TABLE } from '../balance';
+
+// Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const PERSONNEL = PERSONNEL_TABLE;
 
 /** Soldier experience is independent of the commanding officer's own experience. */
 export const MAX_TROOP_EXPERIENCE = PERSONNEL.troopExperience.max;
