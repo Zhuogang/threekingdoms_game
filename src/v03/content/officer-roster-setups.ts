@@ -20,6 +20,8 @@ export interface OfficerOpening {
   age: number | null;
   force: number;
   intellect: number;
+  leadership: number;
+  politics: number;
   loyalty: number;
   troopType: TroopType;
   troops: number;
@@ -192,7 +194,12 @@ export function createOfficerRosterSetup(scenarioId: OfficerRosterScenarioId): O
     const cityId = life === 'pending' ? officer.timeline.debutCityId : placement[index + 1]!;
     const ageYear = life === 'deceased' ? officer.timeline.deathYear! : year;
     const stats = officerBaseStatsAtYear(
-      { force: officer.adultForce, intellect: officer.adultIntellect },
+      {
+        force: officer.adultForce,
+        intellect: officer.adultIntellect,
+        leadership: officer.adultLeadership,
+        politics: officer.adultPolitics,
+      },
       officer.timeline.birthYear,
       ageYear,
     );

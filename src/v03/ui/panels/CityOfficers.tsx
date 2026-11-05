@@ -88,7 +88,9 @@ export function OfficerRoster({
                     <small>
                       {officer.troops.toLocaleString()} {t.troops} ·{' '}
                       {message(locale, 'ui.force.53')} {officer.force} ·{' '}
-                      {message(locale, 'ui.intellect.54')} {officer.intellect}
+                      {message(locale, 'ui.intellect.54')} {officer.intellect} ·{' '}
+                      {message(locale, 'stat.leadership')} {officer.leadership} ·{' '}
+                      {message(locale, 'stat.politics')} {officer.politics}
                     </small>
                   </span>
                   <span aria-hidden>→</span>

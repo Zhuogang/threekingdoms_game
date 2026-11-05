@@ -35,6 +35,8 @@ export function createOpeningOfficer(opening: OfficerOpening): V03Officer {
     location: { kind: 'city', cityId: opening.cityId },
     force: opening.force,
     intellect: opening.intellect,
+    leadership: opening.leadership,
+    politics: opening.politics,
     loyalty: opening.loyalty,
     age: opening.age,
     troops: opening.troops,
@@ -112,7 +114,12 @@ export function planOfficerDebuts(
         throw new Error('Missing officer appearance city: ' + entry.cityId);
       const definition = OFFICER_CATALOG_BY_ID.get(entry.id)!;
       const base = officerBaseStatsAtYear(
-        { force: definition.adultForce, intellect: definition.adultIntellect },
+        {
+          force: definition.adultForce,
+          intellect: definition.adultIntellect,
+          leadership: definition.adultLeadership,
+          politics: definition.adultPolitics,
+        },
         definition.timeline.birthYear,
         year,
       );

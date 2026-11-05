@@ -238,6 +238,8 @@ const officer = z
     location,
     force: nonnegative,
     intellect: nonnegative,
+    leadership: safeInt.min(1).max(120),
+    politics: safeInt.min(1).max(120),
     loyalty: nonnegative,
     age: nonnegative.nullable(),
     troops: nonnegative,

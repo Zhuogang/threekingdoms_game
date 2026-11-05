@@ -1793,6 +1793,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
               : { kind: 'journey' as const },
       force: officer.force,
       intellect: officer.intellect,
+      leadership: officer.leadership,
+      politics: officer.politics,
       loyalty: officer.loyalty,
       age: officer.age,
       equipment: officer.equipment,
@@ -1835,6 +1837,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     const officer = governed.officers.find((entry) => entry.id === updated.id)!;
     officer.force = updated.force;
     officer.intellect = updated.intellect;
+    officer.leadership = updated.leadership;
+    officer.politics = updated.politics;
     officer.loyalty = updated.loyalty;
     officer.age = updated.age;
     officer.troops = updated.troops;

@@ -45,7 +45,12 @@ function yearEnd(scenarioId = 'divided-realm-190', year = 190, player = 'yan'): 
       Object.assign(
         officer,
         officerBaseStatsAtYear(
-          { force: definition.adultForce, intellect: definition.adultIntellect },
+          {
+            force: definition.adultForce,
+            intellect: definition.adultIntellect,
+            leadership: definition.adultLeadership,
+            politics: definition.adultPolitics,
+          },
           definition.timeline.birthYear,
           year,
         ),

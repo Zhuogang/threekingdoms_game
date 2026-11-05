@@ -23,6 +23,9 @@ import {
   type OfficerTimeline,
 } from '../../src/v03/content/officer-timeline';
 import { SCENARIOS } from '../../src/v03/content/scenario';
+import { OFFICER_STATS } from '../../src/v03/content/officer-stats';
+import { createV03Game } from '../../src/v03/initial-state';
+import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
 
 const scenarios: OfficerRosterScenarioId[] = ['divided-realm-190', 'guandu-200'];
 const get = (id: string) => OFFICER_CATALOG_BY_ID.get(id)!;
@@ -205,9 +208,13 @@ describe('R1 chronology boundaries and basic growth', () => {
     expect(officerAgeAtYear(207, 200)).toBe(null);
     expect(officerOpeningLifeStatus(unknown, 209)).toBe('pending');
     expect(officerOpeningLifeStatus(unknown, 210)).toBe('available');
-    expect(officerBaseStatsAtYear({ force: 60, intellect: 70 }, null, 210)).toEqual({
+    expect(
+      officerBaseStatsAtYear({ force: 60, intellect: 70, leadership: 80, politics: 60 }, null, 210),
+    ).toEqual({
       force: 60,
       intellect: 70,
+      leadership: 80,
+      politics: 60,
     });
   });
 
@@ -216,17 +223,29 @@ describe('R1 chronology boundaries and basic growth', () => {
     const adult = opening('guandu-200', 'sunce');
     expect(before).toMatchObject({ age: 16, force: 92, intellect: 74 });
     expect(adult).toMatchObject({ age: 26, force: 95, intellect: 76 });
-    expect(officerBaseStatsAtYear({ force: 95, intellect: 76 }, 175, 191)).toEqual({
+    expect(
+      officerBaseStatsAtYear({ force: 95, intellect: 76, leadership: 80, politics: 60 }, 175, 191),
+    ).toEqual({
       force: 92,
       intellect: 74,
+      leadership: 77,
+      politics: 58,
     });
-    expect(officerBaseStatsAtYear({ force: 95, intellect: 76 }, 175, 192)).toEqual({
+    expect(
+      officerBaseStatsAtYear({ force: 95, intellect: 76, leadership: 80, politics: 60 }, 175, 192),
+    ).toEqual({
       force: 95,
       intellect: 76,
+      leadership: 80,
+      politics: 60,
     });
-    expect(officerBaseStatsAtYear({ force: 95, intellect: 76 }, 175, 200)).toEqual({
+    expect(
+      officerBaseStatsAtYear({ force: 95, intellect: 76, leadership: 80, politics: 60 }, 175, 200),
+    ).toEqual({
       force: 95,
       intellect: 76,
+      leadership: 80,
+      politics: 60,
     });
     expect(opening('divided-realm-190', 'zhouyu')).toMatchObject({ force: 71, intellect: 96 });
   });
@@ -397,5 +416,38 @@ describe('R1 historical affiliations and later appearances', () => {
         cityId: 'luoyang',
       });
     }
+  });
+});
+
+describe('O-01 leadership and politics', () => {
+  for (const scenarioId of scenarios) {
+    it(`gives every opening officer in ${scenarioId} its catalogue leadership and politics, and saves keep them`, () => {
+      const state = createV03Game('cao', 19, scenarioId);
+      const year = SCENARIOS.find((scenario) => scenario.id === scenarioId)!.year;
+      expect(state.officers.length).toBeGreaterThan(0);
+      for (const officer of state.officers) {
+        const stats = OFFICER_STATS[officer.id]!;
+        const timeline = get(officer.id).timeline;
+        const ageYear = officer.alive ? year : (timeline.deathYear ?? year);
+        const expected = officerBaseStatsAtYear(
+          { force: 0, intellect: 0, leadership: stats.leadership, politics: stats.politics },
+          timeline.birthYear,
+          ageYear,
+        );
+        expect(officer.leadership, officer.id).toBe(expected.leadership);
+        expect(officer.politics, officer.id).toBe(expected.politics);
+      }
+      const restored = decodeV03Save(encodeV03Save(state));
+      for (const officer of state.officers) {
+        const kept = restored.officers.find((entry) => entry.id === officer.id)!;
+        expect([kept.leadership, kept.politics]).toEqual([officer.leadership, officer.politics]);
+      }
+    });
+  }
+
+  it('lowers leadership by 3 and politics by 2 for officers under 18', () => {
+    expect(
+      officerBaseStatsAtYear({ force: 60, intellect: 70, leadership: 80, politics: 60 }, 175, 191),
+    ).toMatchObject({ leadership: 77, politics: 58 });
   });
 });

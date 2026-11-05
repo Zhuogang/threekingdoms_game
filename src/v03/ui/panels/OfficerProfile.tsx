@@ -96,6 +96,8 @@ export function OfficerProfile({
         values={[
           { label: t.force, value: runtime?.force ?? person.adultForce },
           { label: t.intellect, value: runtime?.intellect ?? person.adultIntellect },
+          { label: t.leadership, value: runtime?.leadership ?? person.adultLeadership },
+          { label: t.politics, value: runtime?.politics ?? person.adultPolitics },
           ...(runtime
             ? [
                 {

@@ -47,6 +47,10 @@ export const EVENTS = deepFreeze({
     forceCap: 100,
     /** Intellect limit. */
     intellectCap: 100,
+    /** Leadership limit. */
+    leadershipCap: 100,
+    /** Politics limit. */
+    politicsCap: 100,
   },
   festival: {
     /** Chance in percent in the first two months of the year. */

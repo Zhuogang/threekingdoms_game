@@ -265,6 +265,8 @@ export const en = {
   'ui.loyalty.52': 'Loyalty',
   'ui.force.53': 'Force',
   'ui.intellect.54': 'Intellect',
+  'stat.leadership': 'Leadership',
+  'stat.politics': 'Politics',
   'ui.experience.55': 'Experience',
   'ui.level.56': 'Level',
   'ui.action.limits.57': '{p1} action limits',

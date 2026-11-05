@@ -210,6 +210,11 @@ export default function OfficerDirectory({
                         {troopName(person.troopType, locale)}
                       </small>
                       <small>
+                        {t.force} {person.adultForce} · {t.intellect} {person.adultIntellect} ·{' '}
+                        {t.leadership} {person.adultLeadership} · {t.politics}{' '}
+                        {person.adultPolitics}
+                      </small>
+                      <small>
                         {placeOf(person.id) ?? `${t.debut}: ${person.timeline.debutYear}`}
                       </small>
                     </span>

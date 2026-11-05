@@ -20,7 +20,12 @@ export type OpeningLifeStatus = 'available' | 'pending' | 'deceased';
 
 export const OFFICER_MINIMUM_AGE = 16;
 export const OFFICER_ADULT_AGE = 18;
-export const OFFICER_MATURITY_GAIN = { force: 3, intellect: 2 } as const;
+export const OFFICER_MATURITY_GAIN = {
+  force: 3,
+  intellect: 2,
+  leadership: 3,
+  politics: 2,
+} as const;
 
 /** Virtual age. Unborn people have no displayed age, rather than a negative age. */
 export function officerAgeAtYear(birthYear: number | null, year: number): number | null {
@@ -44,14 +49,16 @@ export function officerOpeningLifeStatus(
 
 /** No historical-death check here: fate after campaign creation belongs to gameplay. */
 export function officerBaseStatsAtYear(
-  adult: { force: number; intellect: number },
+  adult: { force: number; intellect: number; leadership: number; politics: number },
   birthYear: number | null,
   year: number,
-): { force: number; intellect: number } {
+): { force: number; intellect: number; leadership: number; politics: number } {
   const age = officerAgeAtYear(birthYear, year);
   const immature = age !== null && age < OFFICER_ADULT_AGE;
   return {
     force: adult.force - (immature ? OFFICER_MATURITY_GAIN.force : 0),
     intellect: adult.intellect - (immature ? OFFICER_MATURITY_GAIN.intellect : 0),
+    leadership: adult.leadership - (immature ? OFFICER_MATURITY_GAIN.leadership : 0),
+    politics: adult.politics - (immature ? OFFICER_MATURITY_GAIN.politics : 0),
   };
 }

@@ -2,6 +2,7 @@ import type { TroopType } from './types';
 import type { OfficerIdentity } from './officerIdentity';
 import { OFFICER_HISTORY } from './officer-history';
 import type { OfficerTimeline } from './officer-timeline';
+import { OFFICER_STATS } from './officer-stats';
 
 export interface OfficerDefinition extends OfficerIdentity {
   id: string;
@@ -9,6 +10,8 @@ export interface OfficerDefinition extends OfficerIdentity {
   portraitId: string;
   adultForce: number;
   adultIntellect: number;
+  adultLeadership: number;
+  adultPolitics: number;
   troopType: TroopType;
   isNew: boolean;
   timeline: OfficerTimeline;
@@ -144,6 +147,8 @@ export const OFFICER_CATALOG: readonly OfficerDefinition[] = SEEDS.map(
   ]) => {
     const timeline = OFFICER_HISTORY[id];
     if (!timeline) throw new Error('Missing officer history: ' + id);
+    const stats = OFFICER_STATS[id];
+    if (!stats) throw new Error('Missing officer stats: ' + id);
     return {
       id,
       name,
@@ -154,6 +159,8 @@ export const OFFICER_CATALOG: readonly OfficerDefinition[] = SEEDS.map(
       portraitId,
       adultForce,
       adultIntellect,
+      adultLeadership: stats.leadership,
+      adultPolitics: stats.politics,
       troopType,
       isNew,
       timeline,

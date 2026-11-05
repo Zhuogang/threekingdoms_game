@@ -143,6 +143,8 @@ export interface V03Officer {
   location: V03OfficerLocation;
   force: number;
   intellect: number;
+  leadership: number;
+  politics: number;
   loyalty: number;
   age: number | null;
   troops: number;

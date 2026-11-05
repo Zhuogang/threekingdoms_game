@@ -258,6 +258,8 @@ export const zh: Record<MessageKey, string> = {
   'ui.loyalty.52': '忠诚',
   'ui.force.53': '武力',
   'ui.intellect.54': '智力',
+  'stat.leadership': '统率',
+  'stat.politics': '政治',
   'ui.experience.55': '经验',
   'ui.level.56': '等级',
   'ui.action.limits.57': '{p0}的行动限制',

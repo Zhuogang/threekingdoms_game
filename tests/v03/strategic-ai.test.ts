@@ -46,6 +46,8 @@ function officer(
     location: { kind: 'city', cityId },
     force,
     intellect: 70,
+    leadership: 50,
+    politics: 50,
     loyalty: 80,
     age: 35,
     troops,

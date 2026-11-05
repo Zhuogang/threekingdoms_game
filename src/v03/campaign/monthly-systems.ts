@@ -188,6 +188,8 @@ export interface V03MonthlyEventOfficer {
   location: V03MonthlyEventOfficerLocation;
   force: number;
   intellect: number;
+  leadership: number;
+  politics: number;
   loyalty: number;
   age: number | null;
   equipment?: 'Fine arms' | null;
@@ -581,6 +583,8 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
       // Add to current values; training/levels and persistent equipment are never replaced.
       const previousForce = officer.force;
       const previousIntellect = officer.intellect;
+      const previousLeadership = officer.leadership;
+      const previousPolitics = officer.politics;
       officer.force = Math.max(
         officer.force,
         Math.min(
@@ -597,10 +601,23 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
           officer.intellect + OFFICER_MATURITY_GAIN.intellect,
         ),
       );
+      officer.leadership = Math.max(
+        officer.leadership,
+        Math.min(
+          EVENTS.comeOfAge.leadershipCap,
+          officer.leadership + OFFICER_MATURITY_GAIN.leadership,
+        ),
+      );
+      officer.politics = Math.max(
+        officer.politics,
+        Math.min(EVENTS.comeOfAge.politicsCap, officer.politics + OFFICER_MATURITY_GAIN.politics),
+      );
       events.push(
         makeEvent(monthIndex, 'come-of-age', [officer.id], {
           forceGain: officer.force - previousForce,
           intellectGain: officer.intellect - previousIntellect,
+          leadershipGain: officer.leadership - previousLeadership,
+          politicsGain: officer.politics - previousPolitics,
         }),
       );
     }

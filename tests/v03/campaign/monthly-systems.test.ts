@@ -41,6 +41,8 @@ function officer(overrides: Partial<V03MonthlyEventOfficer> = {}): V03MonthlyEve
     location: { kind: 'city', cityId: 'city' },
     force: 50,
     intellect: 50,
+    leadership: 50,
+    politics: 50,
     loyalty: 70,
     age: 30,
     troops: 500,
@@ -217,6 +219,8 @@ describe('v0.3 monthly event resolver', () => {
       location: { kind: 'city', cityId: 'luoyang' },
       force: 70,
       intellect: 80,
+      leadership: 50,
+      politics: 50,
     });
     const input = monthlyInput({
       startYear: 192,
@@ -352,12 +356,16 @@ describe('v0.3 monthly event resolver', () => {
       age: 18,
       force: 104,
       intellect: 99,
+      leadership: 53,
+      politics: 52,
       equipment: 'Fine arms',
     });
     expect(result.officers.find((officer) => officer.id === 'capped')).toMatchObject({
       age: 18,
       force: 105,
       intellect: 100,
+      leadership: 53,
+      politics: 52,
       equipment: 'Fine arms',
     });
   });
