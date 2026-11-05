@@ -14,8 +14,8 @@ import type { V03GameState } from '../../../src/v03/types';
 
 function fixture(): V03GameState {
   return {
-    version: 3,
-    ruleset: 'hegemony-3',
+    version: 4,
+    ruleset: 'hegemony-4',
     personnelSchema: 1,
     officerRosterVersion: 1,
     lastOfficerDebutYear: 190,

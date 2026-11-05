@@ -115,8 +115,8 @@ export function createV03Game(
   if (!playerCapitalCityId) throw new Error(`Faction ${playerFactionId} has no capital city.`);
 
   const state: V03GameState = {
-    version: 3,
-    ruleset: 'hegemony-3',
+    version: 4,
+    ruleset: 'hegemony-4',
     personnelSchema: 1,
     officerRosterVersion: OFFICER_ROSTER_VERSION,
     lastOfficerDebutYear: scenario.year,

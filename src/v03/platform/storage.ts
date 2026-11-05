@@ -591,8 +591,8 @@ const factionObjective = z
 
 const stateSchema = z
   .object({
-    version: z.literal(3),
-    ruleset: z.literal('hegemony-3'),
+    version: z.literal(4),
+    ruleset: z.literal('hegemony-4'),
     personnelSchema: z.literal(1),
     officerRosterVersion: z.literal(OFFICER_ROSTER_VERSION),
     lastOfficerDebutYear: safeInt.min(100).max(3000),
@@ -634,8 +634,8 @@ const stateSchema = z
 const envelopeSchema = z
   .object({
     format: z.literal('hegemony.save'),
-    version: z.literal(3),
-    ruleset: z.literal('hegemony-3'),
+    version: z.literal(4),
+    ruleset: z.literal('hegemony-4'),
     state: stateSchema,
   })
   .strict();
@@ -1233,8 +1233,8 @@ export function encodeV03Save(state: V03GameState): string {
     throw new Error('The v0.3 campaign state is not valid and cannot be saved.');
   const payload = JSON.stringify({
     format: V03_SAVE_FORMAT,
-    version: 3,
-    ruleset: 'hegemony-3',
+    version: 4,
+    ruleset: 'hegemony-4',
     state: snapshot,
   });
   assertSaveSize(payload);
@@ -1288,7 +1288,9 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       candidate.state.ruleset === `baye-atlas-${candidate.formatVersion}`;
     if (
       oldBayeEnvelope ||
-      (recognizedEnvelope && (candidate.version === 1 || candidate.version === 2))
+      (recognizedEnvelope &&
+        Number.isSafeInteger(candidate.version) &&
+        (candidate.version as number) <= 3)
     ) {
       throw new Error(
         'This save belongs to an older version. Start a new v0.3 campaign; existing data was left unchanged.',
@@ -1298,7 +1300,7 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
       recognizedEnvelope &&
       candidate.format === 'hegemony.save' &&
       Number.isSafeInteger(candidate.version) &&
-      (candidate.version as number) > 3
+      (candidate.version as number) > 4
     )
       throw new Error(
         'This save uses an unsupported newer version. Open it with a compatible game version; existing data was left unchanged.',
@@ -1306,12 +1308,12 @@ export function decodeV03Save(payload: string | unknown): V03GameState {
     if (
       recognizedEnvelope &&
       candidate.format === 'hegemony.save' &&
-      candidate.version === 3 &&
-      candidate.ruleset === 'hegemony-3' &&
+      candidate.version === 4 &&
+      candidate.ruleset === 'hegemony-4' &&
       candidate.state &&
       typeof candidate.state === 'object' &&
-      candidate.state.version === 3 &&
-      candidate.state.ruleset === 'hegemony-3'
+      candidate.state.version === 4 &&
+      candidate.state.ruleset === 'hegemony-4'
     ) {
       if (candidate.state.personnelSchema === undefined)
         throw new Error(

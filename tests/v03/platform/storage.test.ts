@@ -124,7 +124,7 @@ describe('v0.3 save format and namespace', () => {
     const restored = decodeV03Save(encodeV03Save(original));
     expect(restored).toEqual(original);
     expect(restored.absoluteDay).toBe(30);
-    expect(restored.ruleset).toBe('hegemony-3');
+    expect(restored.ruleset).toBe('hegemony-4');
   });
 
   it('round-trips fine arms and still accepts earlier v3 officers without equipment', () => {
@@ -158,14 +158,14 @@ describe('v0.3 save format and namespace', () => {
   it.each([
     {},
     { version: 2 },
-    { format: 'hegemony.save', version: '4', ruleset: 'hegemony-4' },
+    { format: 'hegemony.save', version: '3', ruleset: 'hegemony-3' },
     null,
   ])('classifies malformed imports as invalid rather than older saves: %j', (payload) => {
     expect(() => decodeV03Save(payload)).toThrow('not a valid hegemony.save');
   });
 
   it('distinguishes an unsupported future save and leaves the stored payload intact', () => {
-    const payload = JSON.stringify({ format: 'hegemony.save', version: 4, ruleset: 'hegemony-4' });
+    const payload = JSON.stringify({ format: 'hegemony.save', version: 5, ruleset: 'hegemony-5' });
     const storage = { getItem: () => payload };
     expect(() => loadV03Autosave(storage)).toThrow('unsupported newer version');
     expect(storage.getItem()).toBe(payload);
@@ -396,6 +396,6 @@ describe('v0.3 save format and namespace', () => {
     expect(() => loadV03Autosave(storage)).toThrow('older version');
     expect(values.get(V03_AUTOSAVE_KEY)).toBe(oldRecord);
     saveV03Autosave(sampleState(), storage);
-    expect(values.get(V03_AUTOSAVE_KEY)).toContain('hegemony-3');
+    expect(values.get(V03_AUTOSAVE_KEY)).toContain('hegemony-4');
   });
 });

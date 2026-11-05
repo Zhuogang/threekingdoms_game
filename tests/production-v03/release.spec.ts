@@ -60,7 +60,7 @@ test('production release serves v0.3 under a subpath and restores its campaign s
     .poll(() => page.evaluate((key) => localStorage.getItem(key), AUTOSAVE_KEY))
     .not.toBeNull();
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)!), AUTOSAVE_KEY);
-  expect(stored).toMatchObject({ format: 'hegemony.save', version: 3, ruleset: 'hegemony-3' });
+  expect(stored).toMatchObject({ format: 'hegemony.save', version: 4, ruleset: 'hegemony-4' });
 
   await page.reload();
   await expect(page.getByRole('button', { name: 'Advance 1 day', exact: true })).toBeVisible();

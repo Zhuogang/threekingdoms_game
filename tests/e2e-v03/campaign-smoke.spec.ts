@@ -262,8 +262,8 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
   await openMenu(page);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   const saved = await storedSave(page);
-  expect(saved).toMatchObject({ format: 'hegemony.save', version: 3, ruleset: 'hegemony-3' });
-  expect(saved?.state).toMatchObject({ version: 3, absoluteDay: 11 });
+  expect(saved).toMatchObject({ format: 'hegemony.save', version: 4, ruleset: 'hegemony-4' });
+  expect(saved?.state).toMatchObject({ version: 4, absoluteDay: 11 });
 
   await page.reload();
   await expect(page.getByRole('button', { name: 'Advance 1 day', exact: true })).toBeVisible();
@@ -275,11 +275,11 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
     JSON.stringify({ format: 'hegemony.save', version: 2, ruleset: 'hegemony-2', state: {} }),
   );
   await expect(page.getByRole('status')).toContainText('older version');
-  expect(await storedSave(page)).toMatchObject({ version: 3, state: { absoluteDay: 11 } });
+  expect(await storedSave(page)).toMatchObject({ version: 4, state: { absoluteDay: 11 } });
 
   await importFile(page, 'not-a-save.json', '{ definitely not json');
   await expect(page.getByRole('status')).toContainText('not valid JSON');
-  expect(await storedSave(page)).toMatchObject({ version: 3, state: { absoluteDay: 11 } });
+  expect(await storedSave(page)).toMatchObject({ version: 4, state: { absoluteDay: 11 } });
 });
 
 test('charges work only for relief while preserving reward and equipment costs', async ({

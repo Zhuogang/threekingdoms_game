@@ -337,8 +337,8 @@ export interface V03BattleState {
 export type V03DayResolution = CalendarDayResolution;
 
 export interface V03GameState {
-  version: 3;
-  ruleset: 'hegemony-3';
+  version: 4;
+  ruleset: 'hegemony-4';
   /** Personnel/save contract; independent of the public game version. */
   personnelSchema: 1;
   /** Binds both roster data and chronology; older rosters require a new campaign. */
