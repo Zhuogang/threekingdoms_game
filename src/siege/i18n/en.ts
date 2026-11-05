@@ -172,7 +172,7 @@ export const en = {
     '{name} holds the wall above. Once that unit moves along the wall, the next one goes straight up.',
   climbAllyAbove: '{name} holds the top of the ladder. Move that unit along the wall, then climb.',
   climbAllyAboveFoot: '{name} holds the wall above. Move that unit along the wall, then climb.',
-  climbRaiseAtBase: 'The ladder is not raised. Select it, press Raise ladder, then Climb.',
+  climbRaiseAtBase: 'The ladder is not raised. Press Raise ladder, then Climb.',
   climbRaiseThenWalk:
     'The ladder is not raised. Select it, press Raise ladder, then move to the gold frame.',
   climbWalkLadder: "Stand on the gold frame, the ladder's own cell, to climb: {n} to go.",
@@ -186,6 +186,7 @@ export const en = {
   climbWallFootLabel: 'Wall foot',
   climbUnraisedLabel: 'Not raised',
   contextRaiseLadder: 'Infantry can climb from this cell once it is raised.',
+  contextWallBlocked: 'Blocked on both sides. Attack an adjacent enemy first.',
   contextGeneral: '{place} · {level}',
   actionReady: 'Choose an action. Point at a greyed one to see why.',
   unitGroup: 'Troops',

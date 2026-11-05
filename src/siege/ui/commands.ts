@@ -42,6 +42,17 @@ export interface SiegeCommand {
   action?: SiegeAction;
   reason: string | null;
 }
+function unraisedLadderUnder(state: SiegeState, id: string) {
+  const unit = state.units.find(
+    (u) => u.id === id && u.side === 'shu' && u.troopType === 'infantry' && u.level === 'ground',
+  );
+  return (
+    unit &&
+    state.engines.find(
+      (e) => e.kind === 'ladder' && usableEngine(e) && !e.raisedAt && sameCell(e, unit),
+    )
+  );
+}
 export function actorCommandKinds(
   state: SiegeState,
   id: string,
@@ -66,7 +77,17 @@ export function actorCommandKinds(
       ];
     return unit.troopType === 'archer'
       ? ['move', 'attack', 'suppress', 'order', 'standby']
-      : ['move', 'attack', 'coverEngine', 'pileEarth', 'climb', 'fillTrench', 'order', 'standby'];
+      : [
+          'move',
+          'attack',
+          'coverEngine',
+          'pileEarth',
+          ...(unraisedLadderUnder(state, id) ? ['raiseLadder' as const] : []),
+          'climb',
+          'fillTrench',
+          'order',
+          'standby',
+        ];
   }
   if (playerSide !== 'shu') return [];
   const engine = state.engines.find((e) => e.id === id);
@@ -102,6 +123,13 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
   const unit = state.units.find((u) => u.id === id);
   const actor = unit ?? state.engines.find((e) => e.id === id);
   if (!actor) return '';
+  if (
+    unit?.level === 'wall' &&
+    activeUnit(unit) &&
+    !unit.moved &&
+    !reachableCells(state, id).length
+  )
+    return siegeText(locale, 'contextWallBlocked');
   const guide = climbGuide(state, id);
   if (guide) {
     const sentence = climbGuideText(guide, locale, (unitId) => {
@@ -116,7 +144,7 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
   }
   if (!unit && siegeCommands(state, id, 'shu').some((c) => c.kind === 'raiseLadder' && !c.reason))
     return siegeText(locale, 'contextRaiseLadder');
-  if (unit && unit.troopType !== 'archer') {
+  if (unit && unit.troopType !== 'archer' && unit.y >= 17) {
     if (
       state.units.some(
         (u) => u.side !== unit.side && activeUnit(u) && climbingPosition(state, unit, u),
@@ -273,7 +301,9 @@ function computeSiegeCommands(
           : { x: -1, y: -1, level: 'wall' as const }),
       },
     ]),
-    choose('raiseLadder', [{ type: 'raiseLadder', engineId: id }]),
+    choose('raiseLadder', [
+      { type: 'raiseLadder', engineId: unraisedLadderUnder(state, id)?.id ?? id },
+    ]),
     choose(
       'fillTrench',
       SOUTH_TRENCH.map((c) =>

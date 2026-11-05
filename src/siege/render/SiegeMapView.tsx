@@ -25,6 +25,12 @@ import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { fireRangeCells } from '../ui/fireRange';
+import {
+  resolveMapClick,
+  mapClickColor,
+  type MapClickContext,
+  type MapClickResult,
+} from '../ui/mapClick';
 import { noticeCorner } from '../ui/cardQueue';
 import {
   ART,
@@ -55,6 +61,7 @@ import {
 import {
   climbableCells,
   engineSprite,
+  engineFootprint,
   statePatches,
   unitVisual,
   type EngineSprite,
@@ -75,7 +82,6 @@ const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
 const NO_CELLS: SiegePosition[] = [];
 const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
-const DOUBLE_CLICK_MS = 500;
 export const SILHOUETTE_OPACITY = 0.35;
 export const SILHOUETTE_TINTS = { shu: '#58865b', wei: '#365778' };
 interface Layer {
@@ -92,7 +98,9 @@ interface Props {
   state: SiegeState;
   locale: SiegeLocale;
   selected?: string | null;
-  preferCells?: boolean;
+  clickMode?: MapClickContext['mode'];
+  clickBlocked?: boolean;
+  onTarget?: (id: string) => void;
   reachable?: SiegePosition[];
   targets?: SiegePosition[];
   tutorialCells?: SiegePosition[];
@@ -112,6 +120,7 @@ interface Props {
   repulsedUnits?: readonly string[];
   onSelect?: (id: string) => void;
   onCell?: (cell: SiegePosition) => void;
+  onMove?: (cell: SiegePosition) => void;
   onZoom?: (scale: number) => void;
   notice?: ReactNode;
 }
@@ -121,7 +130,9 @@ export const SiegeMapView = memo(
       state,
       locale,
       selected,
-      preferCells = false,
+      clickMode,
+      clickBlocked,
+      onTarget,
       reachable = NO_CELLS,
       targets = NO_CELLS,
       tutorialCells = NO_CELLS,
@@ -141,6 +152,7 @@ export const SiegeMapView = memo(
       repulsedUnits = NO_IDS,
       onSelect,
       onCell,
+      onMove,
       onZoom,
       notice,
     },
@@ -150,10 +162,6 @@ export const SiegeMapView = memo(
     const prefix = useId().replace(/:/g, '');
     const frame = useRef<HTMLDivElement>(null);
     const svg = useRef<SVGSVGElement>(null);
-    const selectedAt = useRef(performance.now());
-    useEffect(() => {
-      selectedAt.current = performance.now();
-    }, [selected]);
     const drag = useRef<{ x: number; y: number; view: BattlefieldViewBox; moved: boolean } | null>(
       null,
     );
@@ -322,7 +330,35 @@ export const SiegeMapView = memo(
       signature,
       painting,
     });
+    const clickContext: MapClickContext = {
+      state,
+      selected,
+      playerSide,
+      mode: clickMode,
+      reachable,
+      blocked: clickBlocked ?? Boolean(night),
+      deploy,
+    };
+    const dispatchClick = (result: MapClickResult) => {
+      if (result.type === 'select') onSelect?.(result.id);
+      else if (result.type === 'target') (onTarget ?? onSelect)?.(result.id);
+      else if (result.type === 'move') (onMove ?? onCell)?.(result.cell);
+      else if ('cell' in result) onCell?.(result.cell);
+    };
     const { units, engines, decorations } = scene;
+    const hitAt = (clientX: number, clientY: number) => {
+      const point = pointAt(clientX, clientY);
+      const unitAtPoint = [...units]
+        .sort(
+          (a, b) =>
+            compareDepth(b.visual.depth, a.visual.depth) || units.indexOf(b) - units.indexOf(a),
+        )
+        .find(
+          ({ visual: { rect } }) =>
+            point.x >= rect[0] && point.x <= rect[2] && point.y >= rect[1] && point.y <= rect[3],
+        )?.unit.id;
+      return { cell: pickAt(clientX, clientY), unitAtPoint };
+    };
     const overlay = useRef<OverlayHandle>(null);
     const { silhouetteCount } = selectionSilhouettes(scene, selected);
     const spriteCount = scene.budget.used + silhouetteCount;
@@ -331,6 +367,7 @@ export const SiegeMapView = memo(
         <svg
           ref={svg}
           data-testid="siege-map"
+          data-selected={selected ?? ''}
           data-sprite-cap={SPRITE_CAP}
           data-sprite-count={spriteCount}
           data-mandatory-sprite-count={scene.budget.used}
@@ -373,7 +410,7 @@ export const SiegeMapView = memo(
               }
               return;
             }
-            overlay.current?.hover(pickAt(event.clientX, event.clientY));
+            overlay.current?.hover(hitAt(event.clientX, event.clientY));
           }}
           onPointerUp={(event) => {
             const d = drag.current;
@@ -382,67 +419,10 @@ export const SiegeMapView = memo(
               setView(viewRef.current);
               return;
             }
-            const stack = document.elementsFromPoint(event.clientX, event.clientY);
-            const element = stack[0];
-            const topSelect = element?.closest('[data-select]')?.getAttribute('data-select');
-            const green = stack.find((el) => el.getAttribute('data-overlay') === 'reachable');
-            const framed =
-              green &&
-              tutorialCells.some(
-                (c) => `${c.x},${c.y},${c.level}` === green.getAttribute('data-cell'),
-              );
-            const ownBody =
-              topSelect === selected && performance.now() - selectedAt.current >= DOUBLE_CLICK_MS;
-            if (green && (preferCells || !topSelect || framed || ownBody)) {
-              const [x, y, level] = green.getAttribute('data-cell')!.split(',');
-              onCell?.({ x: Number(x), y: Number(y), level: level === 'wall' ? 'wall' : 'ground' });
-              return;
-            }
-            const marker = element?.closest('[data-cell]');
-            if (
-              marker &&
-              ['deploy', 'reachable'].includes(marker.getAttribute('data-overlay') ?? '')
-            ) {
-              const [x, y, level] = marker.getAttribute('data-cell')!.split(',');
-              onCell?.({ x: Number(x), y: Number(y), level: level === 'wall' ? 'wall' : 'ground' });
-              return;
-            }
-            const selection = element?.closest('[data-select]')?.getAttribute('data-select');
-            if (selection) {
-              onSelect?.(selection);
-              return;
-            }
-            // Pointer capture retargets events: hit-test the scene coordinates as well
-            // as DOM tokens, including silhouettes above occluding walls.
-            const point = pointAt(event.clientX, event.clientY);
-            const hit = [...units]
-              .sort((a, b) => compareDepth(b.visual.depth, a.visual.depth))
-              .find(
-                (u) =>
-                  point.x >= u.visual.rect[0] &&
-                  point.x <= u.visual.rect[2] &&
-                  point.y >= u.visual.rect[1] &&
-                  point.y <= u.visual.rect[3],
-              );
-            if (hit) {
-              onSelect?.(hit.unit.id);
-              return;
-            }
-            const engine = [...engines]
-              .reverse()
-              .find(
-                (e) =>
-                  point.x >= e.rect[0] &&
-                  point.x <= e.rect[2] &&
-                  point.y >= e.rect[1] &&
-                  point.y <= e.rect[3],
-              );
-            if (engine) {
-              onSelect?.(engine.id);
-              return;
-            }
-            const cell = pickAt(event.clientX, event.clientY);
-            if (cell) onCell?.(cell);
+            const hit = hitAt(event.clientX, event.clientY);
+            dispatchClick(
+              resolveMapClick({ ...clickContext, unitAtPoint: hit.unitAtPoint }, hit.cell),
+            );
           }}
           onPointerCancel={() => {
             if (drag.current?.moved) setView(viewRef.current);
@@ -454,6 +434,7 @@ export const SiegeMapView = memo(
           <MapOverlays
             ref={overlay}
             scene={scene}
+            clickContext={clickContext}
             state={state}
             selected={selected}
             reachable={reachable}
@@ -469,8 +450,7 @@ export const SiegeMapView = memo(
             xray={xray}
           />
           {scene.effects}
-          {/* Hit targets stay above every wall/tower slice and silhouette. Keep
-              their scene bounds independent of camera zoom and artwork masks. */}
+          {/* Invisible geometry for specs only; input uses the pure resolver. */}
           <g data-testid="unit-hit-targets">
             {[...units]
               .sort((a, b) => compareDepth(a.visual.depth, b.visual.depth))
@@ -478,7 +458,6 @@ export const SiegeMapView = memo(
                 <rect
                   key={unit.id}
                   data-testid={`map-unit-${unit.id}`}
-                  data-select={unit.id}
                   data-x={unit.x}
                   data-y={unit.y}
                   x={visual.rect[0]}
@@ -486,8 +465,7 @@ export const SiegeMapView = memo(
                   width={visual.rect[2] - visual.rect[0]}
                   height={visual.rect[3] - visual.rect[1]}
                   fill="transparent"
-                  pointerEvents="all"
-                  style={{ cursor: 'pointer' }}
+                  pointerEvents="none"
                 >
                   <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
                 </rect>
@@ -722,17 +700,43 @@ function useScene({
   const items = useMemo(
     () =>
       [
-        ...layers.map((layer) => ({ kind: 'layer' as const, layer, depth: layer.slice })),
+        ...layers.map((layer) => {
+          const engine = engines.find((e) => e.id === layer.sprite?.id);
+          const front =
+            engine &&
+            units
+              .filter(({ unit }) =>
+                engineFootprint(engine.engine).some(
+                  (c) => c.x === unit.x && c.y === unit.y && c.level === unit.level,
+                ),
+              )
+              .map((u) => u.visual.depth)
+              .sort(compareDepth)[0];
+          return {
+            kind: 'layer' as const,
+            layer,
+            depth:
+              front && compareDepth(layer.slice, front) >= 0
+                ? { row: front.row, height: front.height - STANDING_EPSILON / 2 }
+                : layer.slice,
+          };
+        }),
         ...units.map((u) => ({ kind: 'unit' as const, ...u, depth: u.visual.depth })),
         ...preparations
           .filter((sprite) => sprite.depth)
           .map((sprite) => ({ kind: 'millstone' as const, sprite, depth: sprite.depth! })),
       ].sort((a, b) => compareDepth(a.depth, b.depth)),
-    [layers, units, preparations],
+    [layers, units, preparations, engines],
   );
   const occluders = (visual: ReturnType<typeof unitVisual>) =>
     layers.filter(
       (l) =>
+        !(
+          l.sprite?.kind === 'engine' &&
+          engineFootprint((l.sprite as EngineSprite).engine).some(
+            (c) => c.x === visual.cell.x && c.y === visual.cell.y && c.level === visual.cell.level,
+          )
+        ) &&
         l.slice.kind !== 'parapet' &&
         l.slice.kind !== 'tree' &&
         compareDepth(l.slice, visual.depth) > 0 &&
@@ -759,7 +763,6 @@ function useScene({
     return (
       <g
         id={silhouette ? undefined : `${prefix}-${unit.id}-motion`}
-        data-select={unit.id}
         data-unit={unit.id}
         data-gate-top={visual.gateTop}
         data-x={unit.x}
@@ -769,7 +772,6 @@ function useScene({
         className="siege-unit-motion"
         style={{
           transition: activity?.id === unit.id ? 'transform 130ms linear' : 'none',
-          cursor: 'pointer',
         }}
       >
         <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
@@ -987,9 +989,8 @@ function useScene({
               data-piece={layer.sprite?.id}
               data-object={layer.slice.objectId}
               data-selection-layer={key}
-              data-fadeable={layer.slice.kind !== 'engine'}
+              data-fadeable={true}
               data-sheet={layer.sprite?.sheet}
-              data-select={layer.sprite?.kind === 'engine' ? layer.sprite.id : undefined}
             >
               {layer.sprite ? (
                 <g>
@@ -1149,7 +1150,7 @@ const StaticArt = memo(function StaticArt({
         data-piece={layer.sprite?.id}
         data-object={layer.slice.objectId}
         data-selection-layer={key}
-        data-fadeable={layer.slice.kind !== 'engine'}
+        data-fadeable={true}
         data-sheet={layer.sprite?.sheet}
       >
         {layer.sprite ? (
@@ -1221,12 +1222,13 @@ function selectionSilhouettes({ units, occluders, budget }: Scene, selected?: st
   return { silhouetteUnits, silhouetteCount };
 }
 interface OverlayHandle {
-  hover: (cell: SiegePosition | null) => void;
+  hover: (hit: { cell: SiegePosition | null; unitAtPoint?: string } | null) => void;
 }
 const MapOverlays = forwardRef<
   OverlayHandle,
   Pick<Props, 'state' | 'selected' | 'climbBase' | 'night' | 'forecastCell' | 'xray'> & {
     scene: Scene;
+    clickContext: MapClickContext;
     reachable: SiegePosition[];
     targets: SiegePosition[];
     tutorialCells: SiegePosition[];
@@ -1238,6 +1240,7 @@ const MapOverlays = forwardRef<
 >(function MapOverlays(
   {
     scene,
+    clickContext,
     state,
     selected,
     reachable,
@@ -1255,17 +1258,23 @@ const MapOverlays = forwardRef<
   ref,
 ) {
   countRender('overlays');
-  const [hover, setHover] = useState<SiegePosition | null>(null);
-  const hoverRef = useRef<SiegePosition | null>(null);
+  const [hit, setHit] = useState<Parameters<OverlayHandle['hover']>[0]>(null);
+  const hover = hit?.cell;
+  const hoverRef = useRef(hit);
   useImperativeHandle(
     ref,
     () => ({
-      hover(cell) {
+      hover(next) {
         const previous = hoverRef.current;
-        if (previous?.x === cell?.x && previous?.y === cell?.y && previous?.level === cell?.level)
+        if (
+          previous?.cell?.x === next?.cell?.x &&
+          previous?.cell?.y === next?.cell?.y &&
+          previous?.cell?.level === next?.cell?.level &&
+          previous?.unitAtPoint === next?.unitAtPoint
+        )
           return;
-        hoverRef.current = cell;
-        setHover(cell);
+        hoverRef.current = next;
+        setHit(next);
       },
     }),
     [],
@@ -1283,17 +1292,64 @@ const MapOverlays = forwardRef<
   useLayoutEffect(() => {
     const svg = anchor.current?.ownerSVGElement;
     if (!svg) return;
-    const visual = units.find((u) => u.unit.id === selected)?.visual;
+    const selectedUnit = units.find((u) => u.unit.id === selected);
+    const selectedEngine = engines.find((e) => e.id === selected);
+    const visual = selectedUnit?.visual;
+    // Only a tower is big enough to hide what the player is working on. Ladders and
+    // carts stay solid: their sprite rectangles overlap neighbours without covering them.
+    const fadesEngine = (kind: EngineSprite['engine']['kind']) => kind === 'tower';
     const faded = new Set(
-      visual ? occluders(visual).map((l) => `${prefix}-${l.slice.objectId}-${l.slice.row}`) : [],
+      visual
+        ? occluders(visual)
+            .filter(
+              (l) =>
+                l.sprite?.kind !== 'engine' || fadesEngine((l.sprite as EngineSprite).engine.kind),
+            )
+            .map((l) => `${prefix}-${l.slice.objectId}-${l.slice.row}`)
+        : [],
     );
+    const actorRect = visual?.rect ?? selectedEngine?.rect;
+    const actorCell =
+      selectedUnit?.unit ??
+      (selectedEngine && { ...selectedEngine.engine, level: 'ground' as const });
+    const frames = tutorialCells.map((c) => {
+      const [x, y] = project(FRAME, c.x, c.y, cellHeight(state, c.x, c.y, c.level));
+      return { cell: c, rect: [x, y, x + FRAME.cw, y + FRAME.cd] as ScreenRect };
+    });
+    for (const engine of engines) {
+      if (engine.id === selected || !fadesEngine(engine.engine.kind)) continue;
+      const footprint = engineFootprint(engine.engine);
+      const contains = (cell: SiegePosition) =>
+        footprint.some((c) => c.x === cell.x && c.y === cell.y && c.level === cell.level);
+      if (
+        (actorRect && actorCell && !contains(actorCell) && rectsOverlap(engine.rect, actorRect)) ||
+        frames.some(({ cell, rect }) => !contains(cell) && rectsOverlap(engine.rect, rect))
+      )
+        for (const layer of scene.layers.filter((l) => l.sprite?.id === engine.id))
+          faded.add(`${prefix}-${layer.slice.objectId}-${layer.slice.row}`);
+    }
     // Fading is selection presentation. Keep it in the overlay so art children
     // never receive selection, and preserve every existing depth/mask relationship.
     for (const element of svg.querySelectorAll<SVGGElement>(
       '[data-selection-layer][data-fadeable="true"]',
     ))
-      element.style.opacity = xray || faded.has(element.dataset.selectionLayer!) ? '0.4' : '1';
-  }, [scene, selected, xray]);
+      element.style.opacity =
+        element.dataset.piece === selected
+          ? '1'
+          : (xray && !engines.some((e) => e.id === element.dataset.piece)) ||
+              faded.has(element.dataset.selectionLayer!)
+            ? '0.4'
+            : '1';
+  }, [scene, selected, xray, tutorialCells, state]);
+  const hoverResult = resolveMapClick(
+    { ...clickContext, unitAtPoint: hit?.unitAtPoint },
+    hover ?? null,
+  );
+  const hoverColor = mapClickColor(hoverResult);
+  useLayoutEffect(() => {
+    const svg = anchor.current?.ownerSVGElement;
+    if (svg) svg.style.cursor = hoverColor ? 'pointer' : '';
+  }, [hoverColor]);
   const selectedUnit = units.find((u) => u.unit.id === selected);
   const selectedEngine = engines.find((e) => e.id === selected);
   return (
@@ -1404,11 +1460,7 @@ const MapOverlays = forwardRef<
             : null)
         }
       />
-      {hover &&
-        [...targets, ...reachable, ...(deploy ? deployCells : [])].some(
-          (c) => c.x === hover.x && c.y === hover.y && c.level === hover.level,
-        ) &&
-        cellOutline(hover, '#e0ad3d', 'hover', 0.04, 1)}
+      {hover && hoverColor && cellOutline(hover, hoverColor, 'hover', 0.04, 1)}
     </>
   );
 });

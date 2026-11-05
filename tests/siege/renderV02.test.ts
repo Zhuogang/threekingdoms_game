@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { CAMP, FRAME, MAP, POSE_SETS, sheet } from '../../src/siege/render/assets';
 import { placeCrop, placePiece, spriteObject } from '../../src/siege/render/mapPieces';
 import { compareDepth, project, sliceObject } from '../../src/siege/render/scene';
-import { engineSprite, unitVisual } from '../../src/siege/render/stateArt';
+import { engineSprite, unitVisual, UNIT_FOOT } from '../../src/siege/render/stateArt';
 import { boundSprites } from '../../src/siege/render/spriteBudget';
 import {
   climberPoses,
@@ -49,7 +49,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
     const state = createRenderScene('footholds').state;
     state.footholds['19,16'] = progress;
     const visual = unitVisual(state, state.units[2]!);
-    if (progress) expect(visual.figures.map((f) => f.name)).toEqual(names);
+    if (progress === 1 || progress === 2) expect(visual.figures.map((f) => f.name)).toEqual(names);
     else expect(visual.figures.every((f) => !f.name.includes('climb'))).toBe(true);
   });
   it.each([
@@ -253,7 +253,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
       }
     }
   });
-  it('draws gate-top units at the front parapet, after all tower slices, without a tower silhouette', () => {
+  it('draws gate-top units inside their own wall cell, after all tower slices, without a tower silhouette', () => {
     const fixture = createRenderScene('preparations');
     const unit = fixture.state.units.find((u) => u.side === 'wei')!;
     for (const gate of MAP.objects.filter((o) => o.kind === 'gate-tower')) {
@@ -263,7 +263,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
         level: 'wall',
       });
       const visual = unitVisual(fixture.state, unit);
-      expect(visual.foot).toEqual(project(FRAME, unit.x + 0.5, gate.cells[3] + 1, 3));
+      expect(visual.foot).toEqual(project(FRAME, unit.x + 0.5, unit.y + UNIT_FOOT, 3));
       for (const slice of sliceObject(FRAME, gate))
         expect(compareDepth(slice, visual.depth)).toBeLessThan(0);
       const markup = markupFor(fixture);
@@ -304,7 +304,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
         expect(markup).toContain(`flood-color="${tint}"`);
     }
   });
-  it('keeps every living unit hit target above occluding artwork, including the wall silhouette regression at every zoom', () => {
+  it('keeps every living unit invisible geometry rect findable without input semantics at every zoom', () => {
     const state = createSiegeState(228);
     const unit = state.units.find((u) => u.id === 'wei-captain-1')!;
     Object.assign(unit, { x: 18, y: 16, level: 'wall' });
@@ -325,7 +325,8 @@ describe('v0.2 pure sprite mapping and registration', () => {
       expect(hit).toContain(`x="${visual.rect[0]}" y="${visual.rect[1]}"`);
       expect(hit).toContain(`width="${visual.rect[2] - visual.rect[0]}"`);
       expect(hit).toContain(`height="${visual.rect[3] - visual.rect[1]}"`);
-      expect(hit).toContain('pointer-events="all"');
+      expect(hit).toContain('pointer-events="none"');
+      expect(markup).not.toContain('data-select=');
     }
   });
   it('fits preparations uniformly to their game widths, with measured feet on the walkway centre and bundles beside bowls', () => {

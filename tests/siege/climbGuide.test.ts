@@ -406,8 +406,8 @@ const sentences: [ClimbGuide, string, string][] = [
   ],
   [
     { kind: 'ladderNotRaised', ladderId: 'ladder', base, atBase: true, steps: 0 },
-    '云梯还没架起：选中云梯点「架梯」，再点「登城」。',
-    'The ladder is not raised. Select it, press Raise ladder, then Climb.',
+    '云梯还没架起：点「架梯」，再点「登城」。',
+    'The ladder is not raised. Press Raise ladder, then Climb.',
   ],
   [
     { kind: 'ladderNotRaised', ladderId: 'ladder', base, atBase: false, steps: 2 },

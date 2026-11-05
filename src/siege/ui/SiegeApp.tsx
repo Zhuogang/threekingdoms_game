@@ -629,27 +629,6 @@ export default function SiegeApp({
     setTab('commands');
     setFeedback({});
   };
-  const mapSelect = (id: string) => {
-    if (playing || opening || banner || reportVisible || howTo) return;
-    const clicked = state.units.find((u) => u.id === id);
-    if (deploy && clicked?.side === playerSide && selected && id !== selected) {
-      setGame((g) => ({ ...g, state: deployUnit(g.state, selected, clicked, playerSide) }));
-      return;
-    }
-    if (
-      !deploy &&
-      clicked?.side !== playerSide &&
-      clicked &&
-      actor &&
-      (!unit || unit.side === playerSide)
-    ) {
-      setTarget(id);
-      setTab('commands');
-      setMode('attack');
-      return;
-    }
-    select(id);
-  };
   const cell = (to: SiegePosition) => {
     if (deploy && !selected) {
       const at = state.units.find(
@@ -1115,7 +1094,17 @@ export default function SiegeApp({
               state={state}
               locale={locale}
               selected={selected}
-              preferCells={mode === 'move' || mode === 'fillTrench'}
+              clickMode={
+                mode === 'attack' || mode === 'move' || mode === 'fillTrench' ? mode : null
+              }
+              clickBlocked={
+                playing || opening || Boolean(banner) || reportVisible || howTo || ended
+              }
+              onTarget={(id) => {
+                setTarget(id);
+                setTab('commands');
+                setMode('attack');
+              }}
               deploy={deploy}
               playerSide={playerSide}
               reachable={!deploy ? rangedReachable : []}
@@ -1143,8 +1132,16 @@ export default function SiegeApp({
               }
               xray={xray}
               showRange={showRange}
-              onSelect={mapSelect}
+              onSelect={select}
               onCell={cell}
+              onMove={(to) => {
+                if (!selected) return;
+                act(
+                  unit
+                    ? { type: 'move', unitId: selected, ...to }
+                    : { type: 'moveEngine', engineId: selected, x: to.x, y: to.y },
+                );
+              }}
               onZoom={setZoom}
             />
             <aside className="siege-sidebar" aria-label={text('commands')}>

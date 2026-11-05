@@ -47,7 +47,8 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     !activeUnit(unit) ||
     unit.side !== 'shu' ||
     unit.troopType !== 'infantry' ||
-    unit.level !== 'ground'
+    unit.level !== 'ground' ||
+    unit.y < 17
   )
     return null;
   if (unit.acted) return { kind: 'acted' };

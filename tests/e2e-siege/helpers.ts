@@ -9,7 +9,8 @@ export async function snapshot(page: Page) {
 export async function selectActor(page: Page, id: string) {
   const side = await page.locator('.siege-app').getAttribute('data-player-side');
   if ((side === 'wei' && !id.startsWith('wei-')) || (side !== 'wei' && id.startsWith('wei-'))) {
-    await page.getByTestId(`map-unit-${id}`).click();
+    const box = (await page.getByTestId(`map-unit-${id}`).boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     return;
   }
   const picker = page.getByTestId('unit-list');

@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { afterAll, describe, expect, it } from 'vitest';
-import { GATES, SOUTH_TRENCH } from '../../src/siege/content/chencang';
+import { GATES, SOUTH_TRENCH, sameCell } from '../../src/siege/content/chencang';
 import { applySiegeAction, validateSiegeAction } from '../../src/siege/rules/actions';
 import { cloneSiegeState } from '../../src/siege/rules/clone';
 import { activeUnit, usableEngine } from '../../src/siege/rules/combat';
@@ -143,7 +143,18 @@ function exhaustiveCommands(
           : { x: -1, y: -1, level: 'wall' as const }),
       },
     ]),
-    choose('raiseLadder', [{ type: 'raiseLadder', engineId: id }]),
+    // R adds the unit-panel entry point; keep the exhaustive reference aligned.
+    choose('raiseLadder', [
+      {
+        type: 'raiseLadder',
+        engineId:
+          unit?.side === 'shu' && unit.troopType === 'infantry' && unit.level === 'ground'
+            ? (state.engines.find(
+                (e) => e.kind === 'ladder' && usableEngine(e) && !e.raisedAt && sameCell(e, unit),
+              )?.id ?? id)
+            : id,
+      },
+    ]),
     choose(
       'fillTrench',
       SOUTH_TRENCH.map((c) =>

@@ -119,6 +119,7 @@ export default function RenderScenePreview({ name }: { name: RenderSceneName }) 
           state={state}
           locale="en"
           selected={selected}
+          clickBlocked={playing}
           onSelect={setSelected}
           facings={fixture.facings}
           night={frame?.night ?? fixture.night}

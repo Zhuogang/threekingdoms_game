@@ -963,9 +963,13 @@
 .siege-map-notice {
   position: absolute;
   z-index: 5;
-  width: min(380px, 44%);
+  width: min(300px, 44%);
+  pointer-events: none;
   max-height: 44%;
   overflow: auto;
+}
+.siege-map-notice button {
+  pointer-events: auto;
 }
 .siege-map-notice .siege-hint {
   position: static;

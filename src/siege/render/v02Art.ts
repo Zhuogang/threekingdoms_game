@@ -13,8 +13,7 @@ export const NIGHT_OPACITY = 0.45;
 export const formationCount = (troops: number): 1 | 3 | 5 =>
   troops <= 800 ? 1 : troops <= 2000 ? 3 : 5;
 
-/** ink-04's rear pair (.34,.38) and fixed front (.5,.62), extended with
- * a second rear pair. Keep person size and the front person's foot fixed. */
+/** Compact ranks fit the scaled figures inside one cell. */
 export function formationOffsets(troops: number): Array<[number, number]> {
   const count = formationCount(troops);
   const w = FRAME.cw,
@@ -22,14 +21,14 @@ export function formationOffsets(troops: number): Array<[number, number]> {
   return [
     ...(count === 5
       ? ([
-          [-0.32 * w, -0.48 * d],
-          [0.32 * w, -0.48 * d],
+          [-0.17 * w, -0.2 * d],
+          [0.17 * w, -0.2 * d],
         ] as Array<[number, number]>)
       : []),
     ...(count >= 3
       ? ([
-          [-0.16 * w, -0.24 * d],
-          [0.16 * w, -0.24 * d],
+          [-0.085 * w, -0.1 * d],
+          [0.085 * w, -0.1 * d],
         ] as Array<[number, number]>)
       : []),
     [0, 0] as [number, number],

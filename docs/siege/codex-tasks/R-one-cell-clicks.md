@@ -34,21 +34,21 @@ A unit standing at a ladder's base counts as an occupant of every cell of that l
 
 **The rule, first match wins:**
 
-| Situation | Result |
-| --- | --- |
-| Modal open, replay, opening | nothing |
-| Deployment | today's behaviour, moved here unchanged |
-| Attack mode, enemy or gate in the cell | target it |
-| 移动 or 填堑 pressed, cell is green | do it |
-| Enemy unit in the cell, own actor selected | target it (opens the forecast, as today) |
-| Enemy unit in the cell, nothing of ours selected | select it |
-| Own unit in the cell, not selected | select it |
-| Own unit in the cell, already selected | select the next occupant if there is one, otherwise nothing |
-| Cell is green, an **unraised** ladder is its logical cell | select the ladder |
-| Cell is green | move there |
-| Engine in the cell, not selected | select it (several: the frontmost) |
-| Engine in the cell, already selected | select the next occupant if there is one, otherwise nothing |
-| Otherwise | `onCell`, as today (terrain cards) |
+| Situation                                                 | Result                                                      |
+| --------------------------------------------------------- | ----------------------------------------------------------- |
+| Modal open, replay, opening                               | nothing                                                     |
+| Deployment                                                | today's behaviour, moved here unchanged                     |
+| Attack mode, enemy or gate in the cell                    | target it                                                   |
+| 移动 or 填堑 pressed, cell is green                       | do it                                                       |
+| Enemy unit in the cell, own actor selected                | target it (opens the forecast, as today)                    |
+| Enemy unit in the cell, nothing of ours selected          | select it                                                   |
+| Own unit in the cell, not selected                        | select it                                                   |
+| Own unit in the cell, already selected                    | select the next occupant if there is one, otherwise nothing |
+| Cell is green, an **unraised** ladder is its logical cell | select the ladder                                           |
+| Cell is green                                             | move there                                                  |
+| Engine in the cell, not selected                          | select it (several: the frontmost)                          |
+| Engine in the cell, already selected                      | select the next occupant if there is one, otherwise nothing |
+| Otherwise                                                 | `onCell`, as today (terrain cards)                          |
 
 Selecting an engine under a selected unit is therefore one more click. A double-click on a unit cannot move it, because both clicks land on occupied cells.
 

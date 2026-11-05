@@ -222,7 +222,7 @@ for (const locale of ['zh', 'en'] as const) {
     await selectActor(page, 'shu-weiyan');
     await expect(page.getByTestId('end-day')).not.toHaveClass(/siege-pulse/);
     await page.getByTestId('command-move').click();
-    // The unit's own head covers this northern cell's centre.
+    // The northern cell stays reachable with compact cell-aligned artwork.
     await clickCell(page, 'reachable', '18,19,ground');
     const morning = await snapshot(page);
     expect(morning.state.day).toBe(2);
@@ -325,7 +325,7 @@ for (const locale of ['zh', 'en'] as const) {
   }
 
   for (const unitId of ['shu-liaohua', 'shu-wangping']) {
-    test(`${locale}: the gold frame moves ${unitId} through Wang Ping's body without Move`, async ({
+    test(`${locale}: the empty raised-ladder gold frame moves ${unitId} without Move`, async ({
       page,
     }) => {
       const state = createSiegeState(228);
@@ -350,7 +350,6 @@ for (const locale of ['zh', 'en'] as const) {
       await selectActor(page, unitId);
       await expectGuide(page, locale, 'allyAbove');
       await expectLabel(page, '18,19,ground', siegeText(locale, 'climbBaseLabel'));
-      if (unitId === 'shu-wangping') await page.waitForTimeout(600);
       await clickCell(page, 'reachable', '18,19,ground');
       const after = await snapshot(page);
       expect(after.state.units.find((u) => u.id === unitId)).toMatchObject({
@@ -386,7 +385,6 @@ for (const locale of ['zh', 'en'] as const) {
       await loadSkippedBattle(page, createSiegeState(228), locale);
       await selectActor(page, 'shu-weiyan');
       if (pressMove) await page.getByTestId('command-move').click();
-      else await page.waitForTimeout(600);
       await clickCell(page, 'reachable', '20,20,ground');
       const after = await snapshot(page);
       expect(after.state.units.find((u) => u.id === 'shu-weiyan')).toMatchObject({
@@ -402,21 +400,13 @@ for (const locale of ['zh', 'en'] as const) {
     });
   }
 
-  test(`${locale}: double-clicking Wei Yan's upper body selects him without spending a move`, async ({
+  test(`${locale}: double-clicking Wei Yan's rect centre selects him without spending a move`, async ({
     page,
   }) => {
     await loadSkippedBattle(page, createSiegeState(228), locale);
     await selectActor(page, 'shu-weiyan');
-    const point = await page
-      .locator('[data-overlay="reachable"][data-cell="20,20,ground"]')
-      .evaluate((element) => {
-        const rect = element as SVGRectElement;
-        const p = new DOMPoint(
-          rect.x.baseVal.value + rect.width.baseVal.value / 2,
-          rect.y.baseVal.value + rect.height.baseVal.value / 2,
-        ).matrixTransform(rect.getScreenCTM()!);
-        return { x: p.x, y: p.y };
-      });
+    const box = (await page.getByTestId('map-unit-shu-weiyan').boundingBox())!;
+    const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     await selectActor(page, 'shu-jiangwei');
     await expect(page.locator('[data-overlay="reachable"][data-cell="20,20,ground"]')).toHaveCount(
       0,
@@ -431,15 +421,16 @@ for (const locale of ['zh', 'en'] as const) {
     await expectNoPanelScroll(page, 'action-panel');
   });
 
-  test(`${locale}: another infantry's upper body selects through a green cell without Move`, async ({
+  test(`${locale}: another infantry's rect centre selects its occupied cell without Move`, async ({
     page,
   }) => {
     await start(page, locale);
     await begin(page, locale);
     await selectActor(page, 'shu-wangping');
     const before = await snapshot(page);
-    // Wu Yi stands at (23,22); his upper body overlaps this cell Wang Ping could walk to.
-    await clickCell(page, 'reachable', '23,21,ground');
+    // Wu Yi's formation is inside his occupied (23,22) cell.
+    const box = (await page.getByTestId('map-unit-shu-wuyi').boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     const unit = before.state.units.find((u) => u.id === 'shu-wuyi')!;
     await expect(page.getByTestId('selected-actor').locator('h3')).toHaveText(
       locale === 'zh' ? unit.officer.chinese : unit.officer.name,
@@ -448,9 +439,7 @@ for (const locale of ['zh', 'en'] as const) {
     await expectNoPanelScroll(page, 'action-panel');
   });
 
-  test(`${locale}: Fill trench reaches the northern green cell through the unit's upper body`, async ({
-    page,
-  }) => {
+  test(`${locale}: Fill trench reaches the northern green cell`, async ({ page }) => {
     const state = createSiegeState(228);
     state.engines = [];
     Object.assign(
