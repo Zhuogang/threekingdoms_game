@@ -21,6 +21,7 @@
     "tests",
     "vite.config.ts",
     "playwright.v03.config.ts",
+    "playwright.probe-v05.config.ts",
     "playwright.production-v03.config.ts"
   ],
   "exclude": ["baye-fmj-app-main", "node_modules", "dist"]
