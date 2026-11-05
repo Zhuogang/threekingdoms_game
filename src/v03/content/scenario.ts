@@ -1,6 +1,7 @@
 import type { BattlefieldProfile, City, Faction, Officer, TroopType } from './types';
 import { buildGuandu } from './guandu';
 
+import { CITY_RECORDS } from './cities';
 const DIVIDED_REALM_META = {
   id: 'divided-realm-190',
   title: 'A divided realm',
@@ -235,7 +236,7 @@ const citySeeds: CitySeed[] = [
   ],
 ];
 const DIVIDED_CITIES: City[] = citySeeds.map(
-  ([id, name, chinese, region, x, y, factionId, neighbors], index) => ({
+  ([id, name, chinese, region, x, y, factionId, neighbors]) => ({
     id,
     name,
     chinese,
@@ -244,11 +245,10 @@ const DIVIDED_CITIES: City[] = citySeeds.map(
     y,
     factionId,
     neighbors,
-    population: 65000 + (index % 6) * 13500,
-    farming: 240 + (index % 5) * 35,
-    commerce: 220 + (index % 4) * 45,
-    defense: factionId ? 30 + (index % 3) * 5 : 15,
-    loyalty: factionId === 'dong' ? 55 : 72,
+    population: CITY_RECORDS[id]!.population,
+    farming: CITY_RECORDS[id]!.farming,
+    commerce: CITY_RECORDS[id]!.commerce,
+    loyalty: factionId === 'dong' ? 55 : CITY_RECORDS[id]!.loyalty,
     gold: factionId ? 1600 : 650,
     food: factionId ? 14000 : 6000,
     reserve: factionId ? 1200 : 600,

@@ -1,4 +1,5 @@
 import type { City, Faction, Officer } from './types';
+import { CITY_RECORDS } from './cities';
 
 /**
  * 200 CE, the eve of Guandu: Cao Cao holds the emperor and the central plains, Yuan Shao the
@@ -178,8 +179,10 @@ export function buildGuandu(base: GuanduBase) {
       ...city,
       neighbors: [...city.neighbors],
       factionId,
-      defense: factionId ? city.defense + 5 : 15,
-      loyalty: 72,
+      population: CITY_RECORDS[city.id]!.population,
+      farming: CITY_RECORDS[city.id]!.farming,
+      commerce: CITY_RECORDS[city.id]!.commerce,
+      loyalty: CITY_RECORDS[city.id]!.loyalty,
       gold: factionId ? 1600 : 650,
       food: factionId ? 14000 : 6000,
       reserve: factionId ? 1200 : 600,

@@ -23,7 +23,6 @@ export interface City {
   population: number;
   farming: number;
   commerce: number;
-  defense: number;
   loyalty: number;
   gold: number;
   food: number;
