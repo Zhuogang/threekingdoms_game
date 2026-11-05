@@ -719,5 +719,8 @@ export const en = {
   'officer.busy': 'Busy: {task} · {days} days left',
   'work.busyFor':
     '{name} will be busy for {days} days (until {date}) and cannot take other capital tasks; defending, marching and troop changes are unaffected.',
+  'unit.infantry': 'Infantry',
+  'unit.cavalry': 'Cavalry',
+  'unit.archer': 'Archer',
 };
 export type MessageKey = keyof typeof en;

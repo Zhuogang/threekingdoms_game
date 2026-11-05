@@ -68,6 +68,20 @@ export const BATTLE = deepFreeze({
     /** Least cost of any step that touches water. */
     waterStepMinimum: 2,
   },
+  /**
+   * Per-arm numbers added by F-02. Unused until ticket B-03 (charge, brace and archer melee);
+   * referenced from content/units.ts only.
+   */
+  arms: {
+    /** Multiplier on melee damage taken: infantry, cavalry, archer. */
+    meleeIncomingInfantry: 1,
+    meleeIncomingCavalry: 1,
+    meleeIncomingArcher: 1.3,
+    /** Cavalry charge damage multiplier. */
+    chargeCavalry: 1.3,
+    /** Infantry brace counterattack multiplier. */
+    braceInfantry: 1.2,
+  },
   troopExperience: {
     /** Attack bonus per soldier level above the first. */
     attackPerLevel: 0.02,

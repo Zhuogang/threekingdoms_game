@@ -11,6 +11,10 @@ import type { V03GameState, V03Officer } from '../types';
 import { recordEvent } from './reports';
 import { cancelPendingGovernorAppointment } from '../governance/appointments';
 import { rulerTemperament } from '../ai/temperament';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const ECONOMY = ECONOMY_TABLE;
@@ -447,7 +451,7 @@ export function resolveAiPrisoners(state: V03GameState): V03GameState {
     );
     const burden =
       (officer.troops + officer.wounded) *
-      (officer.troopType === 'cavalry' ? 2 : 1) *
+      UNITS[officer.troopType].foodWeight *
       ECONOMY.logistics.cityFoodPerTroopDay *
       DAYS_PER_MONTH;
     // Houses hold captives and ask again each month while they can feed them (PF-RL-05);

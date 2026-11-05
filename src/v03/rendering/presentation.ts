@@ -2,6 +2,10 @@ import { message } from '../i18n';
 import { troopLevel } from '../campaign/troop-experience';
 import type { GridPoint } from './geometry';
 import { officerPortraitPath } from './officer-portraits';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 export type TroopVisualKind = string;
 export type FactionVisualKind = 'player' | 'opponent' | string;
@@ -97,16 +101,13 @@ export function troopName(troopType: string, locale: 'en' | 'zh'): string {
 }
 
 /** Display stage only: the three base troop types and naval eligibility never change. */
+function isUnitArm(value: string): value is keyof typeof UNITS {
+  return Object.hasOwn(UNITS, value);
+}
+
 export function troopDisplayType(troopType: string, experience = 0): string {
   if (troopLevel(experience) < 11) return troopType;
-  return (
-    (
-      { infantry: 'heavy-infantry', cavalry: 'elite-cavalry', archer: 'strong-archer' } as Record<
-        string,
-        string
-      >
-    )[troopType] ?? troopType
-  );
+  return isUnitArm(troopType) ? UNITS[troopType].eliteKey : troopType;
 }
 
 export function formatTroopExperience(experience: number, locale: 'en' | 'zh'): string {

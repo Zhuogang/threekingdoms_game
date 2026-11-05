@@ -2,6 +2,10 @@ import { mergeTroopPools } from './troop-experience';
 import { hasTrait } from '../content/traits';
 import type { BattleRosterEntry } from '../battle/types';
 import type { TroopType, V03GameState, V03Officer } from '../types';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 interface FormationGroup {
   type: TroopType;
@@ -86,7 +90,7 @@ export function rosterFromGroups(
       isMilitia: Boolean(group.militia),
       cunning: group.officers.some((officer) => hasTrait(officer.id, 'cunning')),
       ...(group.officers.some((officer) => hasTrait(officer.id, 'fierce')) ? { fierce: true } : {}),
-      attackRange: group.type === 'archer' ? 3 : undefined,
+      attackRange: UNITS[group.type].attackRange > 1 ? UNITS[group.type].attackRange : undefined,
     } satisfies BattleRosterEntry;
   });
   return { roster, membership };

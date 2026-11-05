@@ -1,5 +1,9 @@
 import type { TroopType } from '../content/types';
 import { RECRUITMENT as RECRUITMENT_TABLE } from '../balance';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const RECRUITMENT = RECRUITMENT_TABLE;
@@ -20,28 +24,8 @@ export function recruitmentQuote(
   // Cavalry stays a premium everywhere, but the south is no longer a trap (PF-RL-04): at
   // force 70 a soldier costs about 1.0 / 1.5 / 2.3 gold north / centre / south (was
   // 1.0 / 2.6 / 6.2), against 0.3 for infantry.
-  const multipliers = RECRUITMENT.multiplier;
-  const multiplier =
-    type === 'infantry'
-      ? multipliers.infantry
-      : type === 'archer'
-        ? multipliers.archer
-        : region === 'north'
-          ? multipliers.cavalryNorth
-          : region === 'central'
-            ? multipliers.cavalryCentral
-            : multipliers.cavalrySouth;
-  const prices = RECRUITMENT.gold;
-  const gold =
-    type === 'infantry'
-      ? prices.infantry
-      : type === 'archer'
-        ? prices.archer
-        : region === 'north'
-          ? prices.cavalryNorth
-          : region === 'central'
-            ? prices.cavalryCentral
-            : prices.cavalrySouth;
+  const multiplier = UNITS[type].recruit.multiplier[region];
+  const gold = UNITS[type].recruit.gold[region];
   const troops = Math.max(
     0,
     Math.min(

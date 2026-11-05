@@ -34,6 +34,10 @@ import {
   cityWorkAvailable,
   cityWorkUsedThisPeriod,
 } from './city-actions';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const CAMPAIGN_AI = CAMPAIGN_AI_TABLE;
@@ -368,7 +372,7 @@ export function planGovernorMonthlyWork(
     }
     if (action === 'recruit') {
       const gain = recruitmentQuote(city!, manager!.force, troopType).troops;
-      const extraUpkeep = Math.ceil(gain * (troopType === 'cavalry' ? 2 : 1) * MONTHLY_FOOD_RATE);
+      const extraUpkeep = Math.ceil(gain * UNITS[troopType].foodWeight * MONTHLY_FOOD_RATE);
       if (
         city!.food - reserves.food <
         Math.max(

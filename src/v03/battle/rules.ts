@@ -9,6 +9,10 @@ import {
 } from './types';
 import { battleTerrainAt } from './maps';
 import { BATTLE as BATTLE_TABLE, TACTICS as TACTICS_TABLE } from '../balance';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const BATTLE = BATTLE_TABLE;
@@ -25,12 +29,6 @@ export function fireWeatherMultiplier(weather: BattleWeather): number {
       ? TACTICS.fire.windMultiplier
       : 1;
 }
-
-const MOVE_BUDGET: Readonly<Record<BattleTroopType, number>> = {
-  infantry: BATTLE.movement.budgetInfantry,
-  cavalry: BATTLE.movement.budgetCavalry,
-  archer: BATTLE.movement.budgetArcher,
-};
 
 /** The board size a position helper needs; every battle map carries its own. */
 export type BattleGrid = Pick<BattleMap, 'width' | 'height'>;
@@ -55,17 +53,12 @@ export function manhattanDistance(a: BattlePosition, b: BattlePosition): number 
 }
 
 export function movementBudget(troopType: BattleTroopType): number {
-  return MOVE_BUDGET[troopType];
+  return UNITS[troopType].move;
 }
 
 /** Existing land costs are retained; a water-edge step costs at least two for every troop. */
 export function terrainMovementCost(troopType: BattleTroopType, terrain: BattleTerrain): number {
-  if (terrain === 'cliff') return Number.POSITIVE_INFINITY;
-  if (terrain === 'forest' || terrain === 'hill') {
-    if (troopType === 'cavalry') return BATTLE.movement.roughCostCavalry;
-    return BATTLE.movement.roughCostOther;
-  }
-  return 1;
+  return UNITS[troopType].terrainMoveCost[terrain] ?? Number.POSITIVE_INFINITY;
 }
 
 export function battleStepCost(

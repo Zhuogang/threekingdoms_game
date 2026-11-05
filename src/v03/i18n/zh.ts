@@ -681,4 +681,7 @@ export const zh: Record<MessageKey, string> = {
   'officer.busy': '办事中：{task} · 还需 {days} 日',
   'work.busyFor':
     '执行后{name}将忙碌 {days} 日（至 {date}），期间不能接其他城务；守城、出征和配兵不受影响。',
+  'unit.infantry': '步兵',
+  'unit.cavalry': '骑兵',
+  'unit.archer': '弓兵',
 };

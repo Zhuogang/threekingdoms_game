@@ -116,6 +116,10 @@ import type {
   V03Journey,
   V03Officer,
 } from './types';
+import { UNITS as UNITS_TABLE } from './content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const BATTLE = BATTLE_TABLE;
@@ -749,7 +753,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
   const id = `battle-${state.nextId}`;
   const battleDays = campaignBattleDays(journey.intent);
   const fieldFoodCount = defenders.reduce(
-    (sum, officer) => sum + officer.troops * (officer.troopType === 'cavalry' ? 2 : 1),
+    (sum, officer) => sum + officer.troops * UNITS[officer.troopType].foodWeight,
     militia,
   );
   const rearFoodCount = Math.max(

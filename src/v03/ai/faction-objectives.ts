@@ -16,6 +16,10 @@ import { isRivalCampaignOfficerAvailable } from './campaign-legality';
 import { incomingCampaignThreats } from './campaign-threats';
 import { estimateCampaignMatchup } from './campaign-strength';
 import { recordAiDecision } from './decision-trace';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const ECONOMY = ECONOMY_TABLE;
@@ -181,7 +185,7 @@ function defensiveObjective(
       : 0;
   const economy = forecastCityEconomy(state, city.id);
   const fieldFood =
-    roster.reduce((sum, unit) => sum + unit.troops * (unit.troopType === 'cavalry' ? 2 : 1), 0) *
+    roster.reduce((sum, unit) => sum + unit.troops * UNITS[unit.troopType].foodWeight, 0) *
     PILOT_LOGISTICS_RATES.battleFoodPerTroopDay *
     30;
   const approachFood =

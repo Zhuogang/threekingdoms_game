@@ -17,6 +17,10 @@ import {
   ECONOMY as ECONOMY_TABLE,
   PERSONNEL as PERSONNEL_TABLE,
 } from '../balance';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const BATTLE_AI = BATTLE_AI_TABLE;
@@ -129,7 +133,7 @@ export function retainPersonnel(pool: PersonnelPool, troops: number, wounded: nu
 }
 
 export function foodHeadcount(pool: Pick<PersonnelPool, 'troops' | 'wounded'>, type: TroopType) {
-  return personnelCount(pool) * (type === 'cavalry' ? 2 : 1);
+  return personnelCount(pool) * UNITS[type].foodWeight;
 }
 
 export function availableReserveSources(
@@ -405,7 +409,7 @@ export function cityPersonnelSummary(state: V03GameState, cityId: string) {
   for (const officer of stationed) add(officer, officer.troopType);
   for (const [type, pool] of Object.entries(city.reservePools)) {
     summary.troops += pool.troops;
-    summary.foodHeadcount += pool.troops * (type === 'cavalry' ? 2 : 1);
+    summary.foodHeadcount += pool.troops * UNITS[type as TroopType].foodWeight;
   }
   for (const source of state.troopSources.filter((entry) => entry.cityId === cityId)) {
     summary.troops += source.troops;

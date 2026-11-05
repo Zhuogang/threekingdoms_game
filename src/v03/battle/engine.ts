@@ -49,6 +49,10 @@ import {
 } from './types';
 import { battlefieldName } from './battlefields/selection';
 import { recordCombatCasualties, troopDamageMultiplier } from './experience';
+import { UNITS as UNITS_TABLE } from '../content/units';
+
+// Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
+const UNITS = UNITS_TABLE;
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const BATTLE = BATTLE_TABLE;
@@ -156,8 +160,7 @@ function makeUnits(
       isMilitia: entry.isMilitia ?? entry.id.includes('militia'),
       cunning: entry.cunning ?? false,
       ...(entry.fierce ? { fierce: true } : {}),
-      attackRange:
-        entry.attackRange ?? (entry.troopType === 'archer' ? BATTLE.roster.archerRange : 1),
+      attackRange: entry.attackRange ?? UNITS[entry.troopType].attackRange,
       x: position.x,
       y: position.y,
       morale: MORALE.opening,
@@ -414,14 +417,7 @@ function baseDamage(
     (source.force + BATTLE.damage.forceOffsetSource) /
     (target.force + BATTLE.damage.forceOffsetTarget);
   const morale = BATTLE.damage.moraleBase + source.morale / BATTLE.damage.moraleDivisor;
-  const matchup =
-    source.troopType === 'cavalry' && target.troopType === 'archer'
-      ? BATTLE.damage.cavalryVsArcher
-      : source.troopType === 'infantry' && target.troopType === 'cavalry'
-        ? BATTLE.damage.infantryVsCavalry
-        : source.troopType === 'archer' && target.troopType === 'infantry'
-          ? BATTLE.damage.archerVsInfantry
-          : 1;
+  const matchup = UNITS[source.troopType].matchup[target.troopType];
   const wavering = isWavering(source) ? BATTLE.damage.wavering : 1;
   const routedTarget = isRouted(target) ? BATTLE.damage.routedTarget : 1;
   const inspiration = source.status === 'inspired' ? INSPIRED_DAMAGE_MULTIPLIER : 1;
