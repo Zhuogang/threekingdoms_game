@@ -18,6 +18,7 @@ import {
 import { battlefieldBounds, V03_BATTLEFIELD_PADDING } from '../../src/v03/rendering/geometry';
 import { executeV03Command } from '../../src/v03/commands';
 import { createV03Game } from '../../src/v03/initial-state';
+import { reliefPopulation } from '../../src/v03/governance/city-actions';
 import { decodeV03Save, encodeV03Save } from '../../src/v03/platform/storage';
 import type { V03GameState } from '../../src/v03/types';
 import { preparePuyangArmy } from '../v03/helpers/army-fixture';
@@ -336,8 +337,17 @@ test('charges work only for relief while preserving reward and equipment costs',
       entry.location.kind === 'city' &&
       entry.location.cityId === saved.state.playerCapitalCityId,
   );
-  // Relief settles 1,500 people (PF-RL-02).
-  expect(city).toMatchObject({ gold: 640, food: 1400, loyalty: 65, population: 101_500 });
+  // Relief settles about 1,500 people (PF-RL-02), scaled by the executor's Politics (O-03).
+  const reliever = saved.state.officers.find(
+    (entry: { cityWork?: { action: string } }) => entry.cityWork?.action === 'relieve',
+  );
+  expect(reliever).toBeDefined();
+  expect(city).toMatchObject({
+    gold: 640,
+    food: 1400,
+    loyalty: 65,
+    population: 100_000 + reliefPopulation(reliever),
+  });
   expect(officer).toMatchObject({ loyalty: 65, force: 95, equipment: 'Fine arms' });
 });
 

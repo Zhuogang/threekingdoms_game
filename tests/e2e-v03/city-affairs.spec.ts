@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { createV03Game } from '../../src/v03/initial-state';
 import { createReservePools, setReservePool } from '../../src/v03/campaign/troop-experience';
-import { applyV03CityAction } from '../../src/v03/governance/city-actions';
+import { applyV03CityAction, developmentGain } from '../../src/v03/governance/city-actions';
 import type { V03GameState, V03CityAction } from '../../src/v03/types';
 import { asSave } from './playability-fixtures';
 import {
@@ -97,9 +97,12 @@ for (const width of [390, 1366, 1920])
       await expect(page.locator('.v03-city-section-affairs')).toBeVisible();
       await expect(page.locator('.v03-window-feedback')).toBeVisible();
       const farmed = await current(page);
+      // The gain follows the recommended executor's Politics (O-03); that officer now carries the task.
+      const farmer = farmed.officers.find((entry) => entry.cityWork?.action === 'develop-farming');
+      expect(farmer).toBeDefined();
       expect(farmed.cities.find((entry) => entry.id === city.id)).toMatchObject({
         gold: 4920,
-        farming: city.farming + 20,
+        farming: city.farming + developmentGain('develop-farming', farmer!),
         workPointsUsed: 1,
       });
       await showAssignment(page, lang === 'en' ? officer.name : officer.chinese);
