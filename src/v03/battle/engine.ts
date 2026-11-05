@@ -20,8 +20,10 @@ import {
 } from './maps';
 import {
   applyWaterDamageModifiers,
+  attackAspect,
   battlePositionIndex,
   casualtyCountAfterWater,
+  facingOfVector,
   fireWeatherMultiplier,
   getBattleRouteDistanceField,
   getReachableBattleTiles,
@@ -29,6 +31,7 @@ import {
   isOnWater,
   manhattanDistance,
   movementBudget,
+  pathFromParents,
   waterCombatModifiers,
   type PathBlocker,
 } from './rules';
@@ -36,6 +39,8 @@ import {
   MAX_UNITS_PER_SIDE,
   type BattleAction,
   type BattleActionResult,
+  type BattleAspect,
+  type BattleFacing,
   type BattleOrder,
   type BattleOrderKind,
   type BattleOutcome,
@@ -66,6 +71,7 @@ const MORALE = MORALE_TABLE;
 const LEADERSHIP = LEADERSHIP_TABLE;
 const PERSONNEL = PERSONNEL_TABLE;
 const TACTICS = TACTICS_TABLE;
+const FACING = BATTLE.facing;
 
 const DEFAULT_BATTLE_DAY_LIMIT = BATTLE.dayLimit.conquest;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
@@ -188,6 +194,7 @@ function makeUnits(
   roster: readonly BattleRosterEntry[],
   side: BattleSide,
   deployment: readonly BattlePosition[],
+  facing?: BattleFacing,
 ): TacticalBattleUnit[] {
   return roster.map((entry, index) => {
     const position = deployment[index]!;
@@ -219,6 +226,7 @@ function makeUnits(
       status: 'normal',
       moved: false,
       acted: false,
+      ...(facing ? { facing, charging: false, braced: false } : {}),
     };
   });
 }
@@ -289,8 +297,18 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
       throw new Error(`${side} supplies must be a non-negative finite value.`);
 
   const units = [
-    ...makeUnits(options.attackerUnits, 'attacker', options.map.attackerDeployment),
-    ...makeUnits(options.defenderUnits, 'defender', options.map.defenderDeployment),
+    ...makeUnits(
+      options.attackerUnits,
+      'attacker',
+      options.map.attackerDeployment,
+      options.facing ? 'e' : undefined,
+    ),
+    ...makeUnits(
+      options.defenderUnits,
+      'defender',
+      options.map.defenderDeployment,
+      options.facing ? 'w' : undefined,
+    ),
   ];
   let rngState = tacticalSeed(options.id, options.seed ?? options.map.seed);
   const rollWeather = (): BattleWeather => {
@@ -357,6 +375,7 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
 export function getUnitReachableTiles(
   state: V03TacticalBattleState,
   unitId: string,
+  parents?: Map<number, number>,
 ): ReturnType<typeof getReachableBattleTiles> {
   const unit = unitById(state, unitId);
   if (!unit || unit.status === 'confused' || unit.moved || unit.acted || state.outcome) return [];
@@ -372,6 +391,7 @@ export function getUnitReachableTiles(
       movementBudget(unit.troopType),
       otherUnitsAsBlockers(state, unit),
       enemyZone,
+      parents,
     ).filter((tile) => manhattanDistance(tile, unit) === 1);
   }
   return getReachableBattleTiles(
@@ -381,6 +401,7 @@ export function getUnitReachableTiles(
     movementBudget(unit.troopType),
     otherUnitsAsBlockers(state, unit),
     enemyZone,
+    parents,
   );
 }
 
@@ -524,19 +545,124 @@ function rockfallBaseDamage(source: TacticalBattleUnit, target: TacticalBattleUn
   );
 }
 
+/** What facing, charge, brace and archer melee do to one ordinary hit (B-02, B-03). */
+export interface HitProfile {
+  /** Product of the aspect, charge and melee multipliers. */
+  multiplier: number;
+  aspect: BattleAspect;
+  /** The charge bonus applied. */
+  charge: boolean;
+  /** The target's brace cancelled a charge (and will counterattack harder). */
+  braced: boolean;
+  /** The archer-melee penalty applied. */
+  melee: boolean;
+  /** Multiplier on the target's counterattack; 0 means none. */
+  counter: number;
+}
+
+/** A hit between formations without facing: every rule is skipped. */
+const NEUTRAL_HIT: HitProfile = Object.freeze({
+  multiplier: 1,
+  aspect: 'front',
+  charge: false,
+  braced: false,
+  melee: false,
+  counter: 1,
+});
+
+/** The shared profile of a hit with an aspect and nothing else: most hits, so none is allocated. */
+const PLAIN_HIT: Readonly<Record<BattleAspect, HitProfile>> = Object.freeze({
+  front: Object.freeze({
+    multiplier: 1,
+    aspect: 'front',
+    charge: false,
+    braced: false,
+    melee: false,
+    counter: 1,
+  }),
+  flank: Object.freeze({
+    multiplier: FACING.flank,
+    aspect: 'flank',
+    charge: false,
+    braced: false,
+    melee: false,
+    counter: FACING.counterFlank,
+  }),
+  rear: Object.freeze({
+    multiplier: FACING.rear,
+    aspect: 'rear',
+    charge: false,
+    braced: false,
+    melee: false,
+    counter: FACING.counterRear,
+  }),
+});
+
+/** The ordinary hit of `source` on `target` as it stands (the attacker is taken to face its target). */
+function hitProfile(source: TacticalBattleUnit, target: TacticalBattleUnit): HitProfile {
+  if (source.facing === undefined || target.facing === undefined) return NEUTRAL_HIT;
+  const aspect = attackAspect(source, target as BattlePosition & { facing: BattleFacing });
+  let multiplier = aspect === 'front' ? 1 : aspect === 'flank' ? FACING.flank : FACING.rear;
+  let counter =
+    aspect === 'front' ? 1 : aspect === 'flank' ? FACING.counterFlank : FACING.counterRear;
+  let charge = false;
+  let braced = false;
+  const chargeBonus = source.charging ? UNITS[source.troopType].charge : null;
+  if (chargeBonus) {
+    const brace = UNITS[target.troopType].brace;
+    if (target.braced && brace && aspect === 'front' && !isWavering(target)) {
+      braced = true;
+      counter = brace;
+    } else {
+      charge = true;
+      multiplier *= chargeBonus;
+    }
+  }
+  const incoming = UNITS[target.troopType].meleeIncoming;
+  const melee = incoming > 1 && manhattanDistance(source, target) === 1;
+  if (melee) multiplier *= incoming;
+  if (!charge && !braced && !melee) return PLAIN_HIT[aspect];
+  return { multiplier, aspect, charge, braced, melee, counter };
+}
+
+/** The counterattack of `source` (the struck formation) against `target` (the attacker) after `original`. */
+function counterProfile(
+  original: HitProfile,
+  source: TacticalBattleUnit,
+  target: TacticalBattleUnit,
+): HitProfile {
+  if (original === NEUTRAL_HIT) return NEUTRAL_HIT;
+  const incoming = UNITS[target.troopType].meleeIncoming;
+  const melee = incoming > 1 && manhattanDistance(source, target) === 1;
+  return {
+    multiplier: original.counter * (melee ? incoming : 1),
+    aspect: 'front',
+    charge: false,
+    braced: original.braced,
+    melee,
+    counter: 1,
+  };
+}
+
 function estimateDamage(
   source: TacticalBattleUnit,
   target: TacticalBattleUnit,
   map: V03TacticalBattleState['map'],
-): { casualties: number; modifiers: ReturnType<typeof waterCombatModifiers> } {
+  profile: HitProfile = hitProfile(source, target),
+): {
+  casualties: number;
+  modifiers: ReturnType<typeof waterCombatModifiers>;
+  profile: HitProfile;
+} {
   const modifiers = waterCombatModifiers(map, source, target);
   const damage =
     applyWaterDamageModifiers(
       baseDamage(source, target, map) *
-        troopDamageMultiplier(source.troopExperience, target.troopExperience),
+        troopDamageMultiplier(source.troopExperience, target.troopExperience) *
+        profile.multiplier,
       modifiers,
     ) * unmanagedLosses(target);
-  return { casualties: casualtyCountAfterWater(target.troops, damage), modifiers };
+  return { casualties: casualtyCountAfterWater(target.troops, damage), modifiers, profile };
 }
 
 export interface BattleAttackForecast {
@@ -548,6 +674,14 @@ export interface BattleAttackForecast {
   attackMultiplier: number;
   incomingDamageMultiplier: number;
   estimatedCasualties: number | null;
+  /** Where the hit lands relative to the target's facing (B-02); always `front` without facing. */
+  aspect: BattleAspect;
+  /** The cavalry charge bonus applies (B-03). */
+  charge: boolean;
+  /** The target's brace cancels a charge and counterattacks harder (B-03). */
+  braced: boolean;
+  /** The target is archers hit in melee (B-03). */
+  melee: boolean;
   /** Target morale after the hit, and what the hit does to it (for the on-map forecast). */
   targetMoraleAfter: number | null;
   targetResult: 'destroyed' | 'routs' | null;
@@ -582,7 +716,10 @@ function forecastAttack(
 ): BattleAttackForecast {
   const inRange = isBattleAttackInRange(map, source, target, source.attackRange);
   const initial = waterCombatModifiers(map, source, target);
-  const estimatedCasualties = inRange ? estimateDamage(source, target, map).casualties : null;
+  const profile = hitProfile(source, target);
+  const estimatedCasualties = inRange
+    ? estimateDamage(source, target, map, profile).casualties
+    : null;
   const survivingTarget = estimatedCasualties === null ? null : target.troops - estimatedCasualties;
   const targetMoraleLoss = estimatedCasualties
     ? Math.min(
@@ -602,6 +739,7 @@ function forecastAttack(
     survivingTarget > 0 &&
     target.status !== 'confused' &&
     target.morale - targetMoraleLoss >= ROUTED_MORALE &&
+    profile.counter > 0 &&
     source.troops > 0 &&
     isBattleAttackInRange(map, target, source, target.attackRange),
   );
@@ -614,7 +752,8 @@ function forecastAttack(
     : target;
   const counter = waterCombatModifiers(map, counterSource, source);
   const counterCasualties = counterattackPossible
-    ? estimateDamage(counterSource, source, map).casualties
+    ? estimateDamage(counterSource, source, map, counterProfile(profile, counterSource, source))
+        .casualties
     : null;
   const targetMoraleAfter =
     estimatedCasualties === null ? null : Math.max(MIN_MORALE, target.morale - targetMoraleLoss);
@@ -639,6 +778,10 @@ function forecastAttack(
     attackMultiplier: initial.attackMultiplier,
     incomingDamageMultiplier: initial.incomingDamageMultiplier,
     estimatedCasualties,
+    aspect: profile.aspect,
+    charge: profile.charge,
+    braced: profile.braced,
+    melee: profile.melee,
     targetMoraleAfter,
     targetResult:
       estimatedCasualties === null
@@ -875,9 +1018,15 @@ function attackOneWay(
   state: V03TacticalBattleState,
   source: TacticalBattleUnit,
   target: TacticalBattleUnit,
-  counter = false,
-): number {
-  const { casualties, modifiers } = estimateDamage(source, target, state.map);
+  counterOf?: HitProfile,
+): HitProfile {
+  const counter = counterOf !== undefined;
+  const { casualties, modifiers, profile } = estimateDamage(
+    source,
+    target,
+    state.map,
+    counterOf ? counterProfile(counterOf, source, target) : undefined,
+  );
   state.engaged = true;
   recordCombatCasualties(source, target, casualties);
   applyCombatDamage(target, casualties);
@@ -914,9 +1063,67 @@ function attackOneWay(
       attackMultiplier: modifiers.attackMultiplier,
       incomingMultiplier: modifiers.incomingDamageMultiplier,
       ...(counter ? { counter: true } : {}),
+      ...(profile.aspect !== 'front' ? { aspect: profile.aspect } : {}),
+      ...(profile.charge ? { charge: true } : {}),
+      ...(profile.braced ? { braced: true } : {}),
+      ...(profile.melee ? { melee: true } : {}),
     },
   );
-  return casualties;
+  return profile;
+}
+
+/** Turns a formation (one that has a facing) toward a cell; a diagonal tie keeps its facing. */
+function faceToward(unit: TacticalBattleUnit, to: BattlePosition): void {
+  if (unit.facing !== undefined)
+    unit.facing = facingOfVector(to.x - unit.x, to.y - unit.y, unit.facing);
+}
+
+/** Ending an activation by holding, unmoved, braces a formation that can brace (B-03). */
+function holdPosition(unit: TacticalBattleUnit): void {
+  if (!unit.moved && unit.facing !== undefined && UNITS[unit.troopType].brace) unit.braced = true;
+  unit.moved = true;
+  unit.acted = true;
+}
+
+/**
+ * Whether the straight line from `from` to `to` is a charge run: at least `minRun` cells along
+ * one axis, none along the other, every cell plain (and, with `occupied`, free of other units).
+ */
+function chargeRunReady(
+  map: V03TacticalBattleState['map'],
+  occupied: ReadonlyMap<number, TacticalBattleUnit> | undefined,
+  from: BattlePosition,
+  to: BattlePosition,
+): boolean {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if ((dx !== 0 && dy !== 0) || Math.abs(dx) + Math.abs(dy) < BATTLE.charge.minRun) return false;
+  const length = Math.abs(dx) + Math.abs(dy);
+  const stepX = Math.sign(dx);
+  const stepY = Math.sign(dy);
+  for (let i = 0; i <= length; i++) {
+    const x = from.x + stepX * i;
+    const y = from.y + stepY * i;
+    const index = battlePositionIndex(map, x, y);
+    if (map.terrain[index] !== 'plain') return false;
+    if (i > 0 && occupied?.has(index)) return false;
+  }
+  return true;
+}
+
+/** The cells a formation would cross to reach (x, y) today, start included, or null when it cannot (B-02). */
+export function reachablePath(
+  state: V03TacticalBattleState,
+  unitId: string,
+  x: number,
+  y: number,
+): BattlePosition[] | null {
+  const unit = unitById(state, unitId);
+  if (!unit) return null;
+  const parents = new Map<number, number>();
+  const reachable = getUnitReachableTiles(state, unitId, parents);
+  if (!reachable.some((tile) => tile.x === x && tile.y === y)) return null;
+  return pathFromParents(state.map, parents, unit, { x, y });
 }
 
 function performMove(
@@ -926,10 +1133,28 @@ function performMove(
 ): string | null {
   if (unit.acted) return `${unit.name} has already acted today.`;
   if (unit.moved) return `${unit.name} has already moved today.`;
-  const reachable = getUnitReachableTiles(state, unit.id);
+  const parents = unit.facing !== undefined ? new Map<number, number>() : undefined;
+  const reachable = getUnitReachableTiles(state, unit.id, parents);
   if (!reachable.some((tile) => tile.x === destination.x && tile.y === destination.y))
     return 'That cell is blocked, impassable, or beyond movement range.';
   const startWater = isOnWater(state.map, unit);
+  if (parents) {
+    const from = { x: unit.x, y: unit.y };
+    const path = pathFromParents(state.map, parents, from, destination);
+    const last = path && path.length >= 2 ? path[path.length - 2]! : from;
+    unit.facing = facingOfVector(destination.x - last.x, destination.y - last.y, unit.facing!);
+    // A move ends any brace; a straight run over plain ground, begun outside contact
+    // (a formation in contact cannot move at all), makes a cavalry formation charge.
+    unit.braced = false;
+    unit.charging = false;
+    if (
+      UNITS[unit.troopType].charge &&
+      path &&
+      path.length - 1 === manhattanDistance(from, destination) &&
+      chargeRunReady(state.map, undefined, from, destination)
+    )
+      unit.charging = true;
+  }
   unit.x = destination.x;
   unit.y = destination.y;
   unit.moved = true;
@@ -959,7 +1184,12 @@ function performAttack(
   if (!isBattleAttackInRange(state.map, source, target, source.attackRange))
     return `${target.name} is outside the normal attack range.`;
   source.acted = true;
-  attackOneWay(state, source, target);
+  faceToward(source, target);
+  const profile = attackOneWay(state, source, target);
+  if (source.facing !== undefined) {
+    source.charging = false;
+    source.braced = false;
+  }
   checkImmediateOutcome(state);
   if (
     !state.outcome &&
@@ -967,9 +1197,10 @@ function performAttack(
     source.troops > 0 &&
     target.status !== 'confused' &&
     !isRouted(target) &&
+    profile.counter > 0 &&
     isBattleAttackInRange(state.map, target, source, target.attackRange)
   ) {
-    attackOneWay(state, target, source, true);
+    attackOneWay(state, target, source, profile);
     checkImmediateOutcome(state);
   }
   return null;
@@ -1033,6 +1264,11 @@ function performTactic(
   if (tactic !== 'rally') state.engaged = true;
   source.acted = true;
   source.moved = true;
+  if (target.side !== source.side) faceToward(source, target);
+  if (source.facing !== undefined) {
+    source.charging = false;
+    source.braced = false;
+  }
   const troopsBefore = target.troops,
     moraleBefore = target.morale,
     suppliesBefore = state.supplies[target.side];
@@ -1253,8 +1489,7 @@ function performAction(draft: V03TacticalBattleState, action: BattleAction): str
   if (action.type === 'move') return performMove(draft, unit, { x: action.x, y: action.y });
   if (action.type === 'wait') {
     if (unit.acted) return `${unit.name} has already acted today.`;
-    unit.moved = true;
-    unit.acted = true;
+    holdPosition(unit);
     append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     return null;
   }
@@ -1684,7 +1919,26 @@ function nextEnemyDamage(
   const position = context.attackFields
     .get(enemy.id)
     ?.get(battlePositionIndex(state.map, target.x, target.y));
-  return position ? estimateDamage({ ...enemy, ...position }, target, state.map).casualties : 0;
+  return position
+    ? estimateDamage(enemyAtFiringCell(state, enemy, position, context), target, state.map)
+        .casualties
+    : 0;
+}
+
+/** The enemy as it would stand at a firing cell, carrying the charge its run there would give. */
+function enemyAtFiringCell(
+  state: V03TacticalBattleState,
+  enemy: TacticalBattleUnit,
+  position: BattlePosition,
+  context: Pick<TacticalTurnContext, 'occupied'>,
+): TacticalBattleUnit {
+  if (
+    enemy.facing === undefined ||
+    UNITS[enemy.troopType].charge === null ||
+    !chargeRunReady(state.map, context.occupied, enemy, position)
+  )
+    return { ...enemy, ...position };
+  return { ...enemy, ...position, charging: true };
 }
 
 /**
@@ -2253,6 +2507,16 @@ export function evaluateBattleTurn(
             : 0),
       ),
     };
+    if (own.facing !== undefined && action) {
+      // The formation turns toward the enemy it strikes; holding unmoved braces it.
+      const struck = action.targetId ? unitById(state, action.targetId) : undefined;
+      if (action.action === 'hold') {
+        if (!own.moved && UNITS[own.troopType].brace) own.braced = true;
+      } else {
+        own.braced = false;
+        if (struck && struck.side !== own.side) faceToward(own, struck);
+      }
+    }
     if (action?.action === 'attack' || action?.action === 'ambush')
       if (own.status === 'inspired') own.status = 'normal';
     if (action?.action === 'rally' && action.targetId === unit.id) {
@@ -2264,7 +2528,7 @@ export function evaluateBattleTurn(
       );
       own.status = 'inspired';
     }
-    const key = `${candidate.x}:${candidate.y}:${own.troops}:${own.morale}:${own.status}`;
+    const key = `${candidate.x}:${candidate.y}:${own.troops}:${own.morale}:${own.status}:${own.facing ?? ''}:${own.braced ? 1 : 0}`;
     const replies = replyContext(candidate);
     const exchange = (enemy: TacticalBattleUnit, hit: number) => {
       const firing = replies.attackFields
@@ -2272,8 +2536,7 @@ export function evaluateBattleTurn(
         ?.get(battlePositionIndex(state.map, candidate.x, candidate.y));
       if (!firing || hit >= enemy.troops) return { damage: 0, returned: 0 };
       const next = {
-        ...enemy,
-        ...firing,
+        ...enemyAtFiringCell(state, enemy, firing, turn),
         troops: enemy.troops - hit,
         morale: Math.max(
           MIN_MORALE,
@@ -2325,12 +2588,32 @@ export function evaluateBattleTurn(
         : 0)
     );
   };
+  // With facing, each destination carries the direction of its last step and a possible charge.
+  const parents = unit.facing !== undefined ? new Map<number, number>() : undefined;
   const positions = [
     { x: unit.x, y: unit.y, cost: 0 },
-    ...getUnitReachableTiles(state, unit.id),
+    ...getUnitReachableTiles(state, unit.id, parents),
   ].map((position) => {
     const moved = position.cost > 0;
-    const candidate = { ...unit, x: position.x, y: position.y, moved: unit.moved || moved };
+    const candidate: TacticalBattleUnit = {
+      ...unit,
+      x: position.x,
+      y: position.y,
+      moved: unit.moved || moved,
+    };
+    if (parents && moved) {
+      const parent = parents.get(battlePositionIndex(state.map, position.x, position.y));
+      if (parent !== undefined)
+        candidate.facing = facingOfVector(
+          position.x - (parent % state.map.width),
+          position.y - Math.floor(parent / state.map.width),
+          unit.facing!,
+        );
+      candidate.braced = false;
+      candidate.charging =
+        UNITS[unit.troopType].charge !== null &&
+        chargeRunReady(state.map, turn.occupied, unit, position);
+    }
     const distance = progressField?.[battlePositionIndex(state.map, position.x, position.y)] ?? 0;
     const progress =
       Number.isFinite(currentRoute) && Number.isFinite(distance)
@@ -2700,8 +2983,7 @@ export function runBattleAiTurn(
       trace(choice.action, unit, target, error);
       if (!error && target.side !== side && choice.action !== 'raidSupply') posture.strikes++;
     } else {
-      unit.moved = true;
-      unit.acted = true;
+      holdPosition(unit);
       append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
       trace('hold', unit);
     }
@@ -2801,8 +3083,7 @@ export function advanceBattleDay(
   let draft = structuredClone(state);
   for (const unit of livingUnits(draft, draft.playerSide)) {
     if (!unit.acted && !consumeConfusedActivation(draft, unit)) {
-      unit.moved = true;
-      unit.acted = true;
+      holdPosition(unit);
       append(draft, `${unit.name} holds position.`, 'log.wait', { unitId: unit.id });
     }
   }
@@ -2842,6 +3123,8 @@ export function advanceBattleDay(
   for (const unit of draft.units) {
     unit.moved = false;
     unit.acted = false;
+    // A charge lasts the day; a brace holds until the formation next moves or acts.
+    if (unit.charging) unit.charging = false;
     // Effects survive rollover until their promised activation or hit is consumed.
     if (
       unit.troops > 0 &&

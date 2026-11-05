@@ -19,11 +19,11 @@ export interface UnitDefinition {
   attackRange: number;
   /** Row: this arm attacking that arm. */
   matchup: Record<UnitArm, number>;
-  /** Unused until B-03. */
+  /** Multiplier on ordinary hits taken at distance 1 (B-03). */
   meleeIncoming: number;
-  /** Unused until B-03. */
+  /** Casualty multiplier of this arm's charge; null cannot charge (B-03). */
   charge: number | null;
-  /** Unused until B-03. */
+  /** Counterattack multiplier of this arm when braced against a charge from the front; null cannot brace (B-03). */
   brace: number | null;
   /** Food headcount weight; cavalry eats double. */
   foodWeight: number;

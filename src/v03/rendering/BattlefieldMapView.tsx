@@ -242,6 +242,18 @@ function MoraleIcon({ state }: { state: 'wavering' | 'routed' }) {
   );
 }
 
+/** An arrowhead just outside the token face, pointing the way the formation faces. */
+function facingWedge(facing: 'n' | 'e' | 's' | 'w'): string {
+  const dx = facing === 'e' ? 1 : facing === 'w' ? -1 : 0;
+  const dy = facing === 's' ? 1 : facing === 'n' ? -1 : 0;
+  const base = TOKEN_FACE_RADIUS - 1;
+  const tip = TOKEN_FACE_RADIUS + 9;
+  const half = 8;
+  const point = (along: number, across: number) =>
+    `${(dx * along - dy * across).toFixed(1)} ${(TOKEN_FACE_Y + dy * along + dx * across).toFixed(1)}`;
+  return `M ${point(tip, 0)} L ${point(base, half)} L ${point(base, -half)} Z`;
+}
+
 function UnitSprite({
   unit,
   map,
@@ -357,7 +369,11 @@ function UnitSprite({
           strokeWidth={4}
         />
       ) : null}
-      <g style={stateStyle}>
+      <g style={stateStyle} data-facing={unit.facing}>
+        {unit.facing ? (
+          // Facing wedge until facing artwork exists: a small arrowhead on the facing side.
+          <path d={facingWedge(unit.facing)} fill={factionStroke} fillOpacity={0.85} />
+        ) : null}
         <circle
           cx={0}
           cy={TOKEN_FACE_Y}
@@ -376,6 +392,8 @@ function UnitSprite({
             height={TOKEN_SILHOUETTE}
             preserveAspectRatio="xMidYMid meet"
             visibility={artReady ? 'visible' : 'hidden'}
+            // The squad art faces east; mirror it for a formation facing west.
+            transform={unit.facing === 'w' ? 'scale(-1 1)' : undefined}
             aria-hidden="true"
           />
         ) : null}

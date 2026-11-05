@@ -37,6 +37,8 @@ export interface BattleUnitVisual {
   routed?: boolean;
   /** Wavering or routed morale, shown with a badge as well as in the status text. */
   moraleState?: 'wavering' | 'routed';
+  /** Direction the formation faces (B-02); absent when the battle has no facing. */
+  facing?: 'n' | 'e' | 's' | 'w';
 }
 
 /** A forecast label drawn beside a target token while the player is choosing an attack. */

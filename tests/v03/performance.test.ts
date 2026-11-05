@@ -26,7 +26,12 @@ const troopTypes: BattleTroopType[] = [
   'infantry',
 ];
 
-function runBattleDay(seed: number, canvas?: string, midBattle?: 'engaged' | 'congested') {
+function runBattleDay(
+  seed: number,
+  canvas?: string,
+  midBattle?: 'engaged' | 'congested',
+  facing = false,
+) {
   const map = canvas
     ? createCanvasBattleMap(canvas, { seed })
     : createBattleMap({
@@ -48,6 +53,7 @@ function runBattleDay(seed: number, canvas?: string, midBattle?: 'engaged' | 'co
     attackerUnits: roster('attacker'),
     defenderUnits: roster('defender'),
     playerSide: 'attacker',
+    ...(facing ? { facing: true } : {}),
   });
 
   if (midBattle) {
@@ -134,6 +140,37 @@ describe('V04-05 representative mid-battle workload', () => {
       console.info(
         JSON.stringify({
           benchmark: `v04-10v10-${fixture}`,
+          samples: times.length,
+          p50Ms: times[Math.ceil(times.length * 0.5) - 1],
+          p95Ms,
+          maxMs: times.at(-1),
+          node: process.version,
+          cpu: cpus()[0]?.model,
+          platform: `${platform()} ${release()}`,
+        }),
+      );
+      expect(
+        samples.every((sample) => sample.completedDay.day === 13 || sample.completedDay.outcome),
+      ).toBe(true);
+      expect(p95Ms).toBeLessThan(50);
+    },
+  );
+});
+
+describe('V05 facing-on mid-battle workload (B-02, B-03)', () => {
+  it.each(['engaged', 'congested'] as const)(
+    'keeps mixed 10v10 %s 48×32 battle days with facing below 50 ms p95',
+    (fixture) => {
+      const canvas = canvasBattlefieldIds()[0]!;
+      for (let seed = 1; seed <= 3; seed++) runBattleDay(seed, canvas, fixture, true);
+      const samples = Array.from({ length: 30 }, (_, index) =>
+        runBattleDay(index + 101, canvas, fixture, true),
+      );
+      const times = samples.map((sample) => sample.elapsedMs).sort((a, b) => a - b);
+      const p95Ms = times[Math.ceil(times.length * 0.95) - 1]!;
+      console.info(
+        JSON.stringify({
+          benchmark: `v05-10v10-${fixture}-facing`,
           samples: times.length,
           p50Ms: times[Math.ceil(times.length * 0.5) - 1],
           p95Ms,

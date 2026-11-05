@@ -14,9 +14,13 @@ const args = process.argv.slice(2),
   compact = args.includes('--compact'),
   // --orders=on lets the battle AI assign and execute standing orders (B-01); off is the default.
   ordersMode = args.find((arg) => arg.startsWith('--orders='))?.slice('--orders='.length) ?? 'off',
+  // --facing=on gives every formation a facing and enables flank, rear, charge and brace (B-02, B-03); off is the default.
+  facingMode = args.find((arg) => arg.startsWith('--facing='))?.slice('--facing='.length) ?? 'off',
   positional = args.filter((arg) => !arg.startsWith('--'));
 if (!['on', 'off'].includes(ordersMode)) throw new Error('--orders must be on or off.');
 const useOrders = ordersMode === 'on';
+if (!['on', 'off'].includes(facingMode)) throw new Error('--facing must be on or off.');
+const useFacing = facingMode === 'on';
 if (!['3v3', '8v8'].includes(rosterKind)) throw new Error('--roster must be 3v3 or 8v8.');
 const output =
   positional[0] ??
@@ -109,6 +113,8 @@ function extras(runs) {
   if (Object.keys(cards).length) out.cards = cards;
   const orders = runs.reduce((t, r) => mergeCounts(t, r.orders), {});
   if (Object.keys(orders).length) out.orders = orders;
+  const hits = runs.reduce((t, r) => mergeCounts(t, r.hits), {});
+  if (Object.keys(hits).length) out.hits = hits;
   return out;
 }
 try {
@@ -143,6 +149,7 @@ try {
         defenderUnits: buildRoster('d', seed),
         supplies: { attacker: 100000, defender: 100000 },
         dayLimit,
+        ...(useFacing ? { facing: true } : {}),
       });
       let firstContact = null;
       const sideTurns = [],
@@ -178,11 +185,21 @@ try {
           tactics[entry.params.tactic] = (tactics[entry.params.tactic] ?? 0) + 1;
       // Feature-detected extras: only reported when the engine's state carries them.
       const cards = {},
-        orders = {};
+        orders = {},
+        hits = {};
       let baggageCaptures = 0,
         duels = 0;
       for (const entry of battle.logEntries ?? []) {
-        if (entry.code === 'log.baggageCaptured') baggageCaptures++;
+        if (entry.code === 'log.attack' && useFacing) {
+          // Hits that dealt casualties, ordinary and counter, by what made them special.
+          if (Number(entry.params.casualties) > 0) {
+            bump(hits, 'total');
+            bump(hits, entry.params.counter ? 'counter' : 'primary');
+            for (const key of ['aspect', 'charge', 'braced', 'melee'])
+              if (entry.params[key])
+                bump(hits, key === 'aspect' ? String(entry.params.aspect) : key);
+          }
+        } else if (entry.code === 'log.baggageCaptured') baggageCaptures++;
         else if (entry.code === 'log.duelResult') duels++;
         else if (entry.code === 'log.card') bump(cards, String(entry.params?.card));
         else if (entry.code === 'log.order' || entry.code === 'log.orderExecuted')
@@ -214,6 +231,7 @@ try {
         ...(duels ? { duels } : {}),
         ...(Object.keys(cards).length ? { cards } : {}),
         ...(Object.keys(orders).length ? { orders } : {}),
+        ...(Object.keys(hits).length ? { hits } : {}),
         seed,
         firstContact,
         days: battle.day,
@@ -324,6 +342,7 @@ try {
         countPerTemplate: count,
         roster: rosterKind,
         ...(useOrders ? { orders: 'on' } : {}),
+        ...(useFacing ? { facing: 'on' } : {}),
         dayLimit,
         summary,
         source: {

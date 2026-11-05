@@ -120,6 +120,9 @@ const tacticalUnit = z
     moved: z.boolean(),
     acted: z.boolean(),
     order: battleOrder.optional(),
+    facing: z.enum(['n', 'e', 's', 'w']).optional(),
+    charging: z.boolean().optional(),
+    braced: z.boolean().optional(),
   })
   .strict();
 const tacticalBattle = z

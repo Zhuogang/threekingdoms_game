@@ -68,8 +68,20 @@ export const BATTLE = deepFreeze({
     /** Least cost of any step that touches water. */
     waterStepMinimum: 2,
   },
+  /** Facing (B-02): damage multipliers by the aspect of a hit, and the counterattack that survives it. */
+  facing: {
+    flank: 1.25,
+    rear: 1.5,
+    counterFlank: 0.5,
+    counterRear: 0,
+  },
+  /** Charge (B-03). */
+  charge: {
+    /** Plain cells in a straight line a cavalry formation must cross before its attack counts as a charge. */
+    minRun: 3,
+  },
   /**
-   * Per-arm numbers added by F-02. Unused until ticket B-03 (charge, brace and archer melee);
+   * Per-arm numbers added by F-02. Used by B-03 (charge, brace and archer melee);
    * referenced from content/units.ts only.
    */
   arms: {

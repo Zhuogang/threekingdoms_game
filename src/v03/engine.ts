@@ -796,6 +796,7 @@ function openBattle(state: V03GameState, journey: V03Journey): void {
     timeoutPolicy: 'survivor-count',
     supplies: { attacker: journey.manifest.carriedFood, defender: defenderFood },
     seed: state.rng + state.nextId,
+    facing: true,
   });
   const battle: V03BattleState = {
     id,

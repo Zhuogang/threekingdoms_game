@@ -145,7 +145,17 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   acted: boolean;
   /** Standing order (B-01); absent means free. */
   order?: BattleOrder;
+  /** Direction the formation faces (B-02). Absent in battles created without `facing`: every facing, charge and brace rule is then skipped. */
+  facing?: BattleFacing;
+  /** A cavalry formation that made a straight run of at least `BATTLE.charge.minRun` plain cells today and has not yet attacked (B-03). */
+  charging?: boolean;
+  /** An infantry formation that ended its last activation by holding without moving (B-03). */
+  braced?: boolean;
 }
+
+export type BattleFacing = 'n' | 'e' | 's' | 'w';
+/** Which side of the target a hit lands on, relative to the target's facing. */
+export type BattleAspect = 'front' | 'flank' | 'rear';
 
 /** A per-formation policy the tactical evaluator executes with a filter and a weight preset. */
 export type BattleOrder =
@@ -232,6 +242,8 @@ export interface CreateBattleStateOptions {
   timeoutPolicy?: BattleTimeoutPolicy;
   supplies?: Partial<Record<BattleSide, number>>;
   seed?: number;
+  /** Give every formation a facing (attacker east, defender west) and enable facing, charge and brace rules (B-02, B-03). */
+  facing?: boolean;
 }
 
 export type BattleAction =

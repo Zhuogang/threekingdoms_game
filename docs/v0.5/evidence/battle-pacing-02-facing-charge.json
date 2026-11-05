@@ -1,0 +1,565 @@
+{
+  "countPerTemplate": 200,
+  "roster": "8v8",
+  "orders": "on",
+  "facing": "on",
+  "dayLimit": 30,
+  "summary": {
+    "battles": 3000,
+    "dayLimit": 30,
+    "firstContactMedian": 2,
+    "lengthMedian": 11,
+    "timeoutShare": 0.017,
+    "outcomes": {
+      "elimination": 2289,
+      "rout": 660,
+      "retreat": 0,
+      "dayLimit": 51
+    },
+    "tactics": {
+      "fire": 11642,
+      "rally": 50429,
+      "confuse": 6204,
+      "ambush": 256,
+      "rockfall": 85,
+      "raidSupply": 132
+    },
+    "rallyShare": 0.7335340664455693,
+    "roster": "8v8",
+    "attackerWinRate": 0.412,
+    "routShare": 0.22,
+    "distinctOutcomesMedian": 153,
+    "orders": {
+      "skirmish": 89218
+    },
+    "hits": {
+      "total": 147726,
+      "primary": 108984,
+      "flank": 45053,
+      "counter": 38742,
+      "rear": 5614,
+      "melee": 20826,
+      "charge": 2387
+    },
+    "rallyAllShare": 0.7335340664455693
+  },
+  "source": {
+    "ref": "working-tree",
+    "enginePath": "src/v03/battle/engine.ts",
+    "sha256": "52d063795c96bbca41170fdf2573f7f44b8af6fb1a2e27e0b919b748ec98888a"
+  },
+  "measurement": "Separate exchange samples count primary hits, counterattacks and damaging tactics. Side-turn totals are retained separately.",
+  "distributions": {
+    "bf01-north-plain": {
+      "firstContactMedian": 2,
+      "lengthMedian": 12,
+      "lengthP90": 18,
+      "casualtiesPerExchangeMedian": 251,
+      "timeouts": 5,
+      "outcomes": {
+        "elimination": 158,
+        "rout": 37,
+        "retreat": 0,
+        "dayLimit": 5
+      },
+      "tactics": {
+        "fire": 908,
+        "rally": 3707,
+        "confuse": 439,
+        "ambush": 18
+      },
+      "attackerWinRate": 0.45,
+      "routShare": 0.185,
+      "distinctOutcomes": 167,
+      "orders": {
+        "skirmish": 6544
+      },
+      "hits": {
+        "total": 10445,
+        "primary": 7891,
+        "flank": 2459,
+        "counter": 2554,
+        "rear": 281,
+        "melee": 1254,
+        "charge": 65
+      }
+    },
+    "bf02-central-farmland": {
+      "firstContactMedian": 3,
+      "lengthMedian": 18,
+      "lengthP90": 29,
+      "casualtiesPerExchangeMedian": 200,
+      "timeouts": 17,
+      "outcomes": {
+        "elimination": 119,
+        "rout": 64,
+        "retreat": 0,
+        "dayLimit": 17
+      },
+      "tactics": {
+        "rally": 2096,
+        "fire": 843,
+        "confuse": 643,
+        "rockfall": 81,
+        "raidSupply": 1
+      },
+      "attackerWinRate": 0.475,
+      "routShare": 0.32,
+      "distinctOutcomes": 186,
+      "orders": {
+        "skirmish": 6259
+      },
+      "hits": {
+        "total": 9866,
+        "primary": 7364,
+        "counter": 2502,
+        "melee": 553,
+        "flank": 1813,
+        "rear": 132,
+        "charge": 3
+      }
+    },
+    "bf03-yellow-river-ford": {
+      "firstContactMedian": 3,
+      "lengthMedian": 17,
+      "lengthP90": 23,
+      "casualtiesPerExchangeMedian": 196,
+      "timeouts": 4,
+      "outcomes": {
+        "elimination": 128,
+        "rout": 68,
+        "retreat": 0,
+        "dayLimit": 4
+      },
+      "tactics": {
+        "rally": 2273,
+        "confuse": 693,
+        "fire": 857,
+        "raidSupply": 2,
+        "ambush": 2,
+        "rockfall": 1
+      },
+      "attackerWinRate": 0.72,
+      "routShare": 0.34,
+      "distinctOutcomes": 182,
+      "orders": {
+        "skirmish": 5450
+      },
+      "hits": {
+        "total": 10990,
+        "primary": 7828,
+        "counter": 3162,
+        "flank": 2299,
+        "melee": 960,
+        "rear": 191,
+        "charge": 13
+      }
+    },
+    "bf04-wetland-north": {
+      "firstContactMedian": 2,
+      "lengthMedian": 11,
+      "lengthP90": 13,
+      "casualtiesPerExchangeMedian": 276,
+      "timeouts": 0,
+      "outcomes": {
+        "elimination": 159,
+        "rout": 41,
+        "retreat": 0,
+        "dayLimit": 0
+      },
+      "tactics": {
+        "rally": 3777,
+        "fire": 784,
+        "confuse": 286,
+        "ambush": 63
+      },
+      "attackerWinRate": 0.33,
+      "routShare": 0.205,
+      "distinctOutcomes": 153,
+      "orders": {
+        "skirmish": 7139
+      },
+      "hits": {
+        "total": 9763,
+        "primary": 7186,
+        "flank": 3429,
+        "counter": 2577,
+        "charge": 134,
+        "rear": 343,
+        "melee": 1551
+      }
+    },
+    "bf04-wetland-south": {
+      "firstContactMedian": 2,
+      "lengthMedian": 11,
+      "lengthP90": 13,
+      "casualtiesPerExchangeMedian": 276,
+      "timeouts": 0,
+      "outcomes": {
+        "elimination": 159,
+        "rout": 41,
+        "retreat": 0,
+        "dayLimit": 0
+      },
+      "tactics": {
+        "rally": 3777,
+        "fire": 784,
+        "confuse": 286,
+        "ambush": 63
+      },
+      "attackerWinRate": 0.33,
+      "routShare": 0.205,
+      "distinctOutcomes": 153,
+      "orders": {
+        "skirmish": 7139
+      },
+      "hits": {
+        "total": 9763,
+        "primary": 7186,
+        "flank": 3429,
+        "counter": 2577,
+        "charge": 134,
+        "rear": 343,
+        "melee": 1551
+      }
+    },
+    "bf05-yangtze-bank": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 12,
+      "casualtiesPerExchangeMedian": 280,
+      "timeouts": 0,
+      "outcomes": {
+        "elimination": 173,
+        "rout": 27,
+        "retreat": 0,
+        "dayLimit": 0
+      },
+      "tactics": {
+        "fire": 657,
+        "rally": 3851,
+        "confuse": 368,
+        "ambush": 16
+      },
+      "attackerWinRate": 0.255,
+      "routShare": 0.135,
+      "distinctOutcomes": 138,
+      "orders": {
+        "skirmish": 5591
+      },
+      "hits": {
+        "total": 9458,
+        "primary": 7047,
+        "flank": 3441,
+        "counter": 2411,
+        "rear": 531,
+        "melee": 1399,
+        "charge": 232
+      }
+    },
+    "bf05-yangtze-crossing": {
+      "firstContactMedian": 4,
+      "lengthMedian": 15,
+      "lengthP90": 19,
+      "casualtiesPerExchangeMedian": 224,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 149,
+        "rout": 50,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "fire": 908,
+        "rally": 2458,
+        "confuse": 546,
+        "ambush": 61
+      },
+      "attackerWinRate": 0.87,
+      "routShare": 0.25,
+      "distinctOutcomes": 161,
+      "orders": {
+        "skirmish": 5726
+      },
+      "hits": {
+        "total": 9788,
+        "primary": 7189,
+        "counter": 2599,
+        "flank": 2135,
+        "melee": 1193,
+        "rear": 181,
+        "charge": 32
+      }
+    },
+    "bf06-valley-north": {
+      "firstContactMedian": 3,
+      "lengthMedian": 10,
+      "lengthP90": 15,
+      "casualtiesPerExchangeMedian": 245,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 161,
+        "rout": 38,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "rally": 3118,
+        "fire": 622,
+        "confuse": 380,
+        "raidSupply": 63
+      },
+      "attackerWinRate": 0.15,
+      "routShare": 0.19,
+      "distinctOutcomes": 143,
+      "orders": {
+        "skirmish": 5968
+      },
+      "hits": {
+        "total": 9708,
+        "primary": 7054,
+        "flank": 3749,
+        "counter": 2654,
+        "melee": 1596,
+        "rear": 661,
+        "charge": 200
+      }
+    },
+    "bf06-valley-south": {
+      "firstContactMedian": 3,
+      "lengthMedian": 10,
+      "lengthP90": 15,
+      "casualtiesPerExchangeMedian": 245,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 161,
+        "rout": 38,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "rally": 3118,
+        "fire": 622,
+        "confuse": 380,
+        "raidSupply": 63
+      },
+      "attackerWinRate": 0.15,
+      "routShare": 0.19,
+      "distinctOutcomes": 143,
+      "orders": {
+        "skirmish": 5968
+      },
+      "hits": {
+        "total": 9708,
+        "primary": 7054,
+        "flank": 3749,
+        "counter": 2654,
+        "melee": 1596,
+        "rear": 661,
+        "charge": 200
+      }
+    },
+    "bf07-taihang": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 12,
+      "casualtiesPerExchangeMedian": 298,
+      "timeouts": 0,
+      "outcomes": {
+        "elimination": 158,
+        "rout": 42,
+        "retreat": 0,
+        "dayLimit": 0
+      },
+      "tactics": {
+        "rally": 3762,
+        "fire": 746,
+        "confuse": 235,
+        "rockfall": 1
+      },
+      "attackerWinRate": 0.4,
+      "routShare": 0.21,
+      "distinctOutcomes": 133,
+      "orders": {
+        "skirmish": 5505
+      },
+      "hits": {
+        "total": 9070,
+        "primary": 6883,
+        "charge": 256,
+        "counter": 2187,
+        "melee": 1557,
+        "flank": 3225,
+        "rear": 430
+      }
+    },
+    "bf07-rolling-hills": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 11,
+      "casualtiesPerExchangeMedian": 284,
+      "timeouts": 1,
+      "outcomes": {
+        "elimination": 154,
+        "rout": 45,
+        "retreat": 0,
+        "dayLimit": 1
+      },
+      "tactics": {
+        "rally": 3807,
+        "fire": 673,
+        "confuse": 353,
+        "raidSupply": 3,
+        "rockfall": 2
+      },
+      "attackerWinRate": 0.355,
+      "routShare": 0.225,
+      "distinctOutcomes": 140,
+      "orders": {
+        "skirmish": 5568
+      },
+      "hits": {
+        "total": 9554,
+        "primary": 7210,
+        "flank": 3375,
+        "counter": 2344,
+        "melee": 1391,
+        "rear": 425,
+        "charge": 248
+      }
+    },
+    "bf08-south-hills": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 13,
+      "casualtiesPerExchangeMedian": 274,
+      "timeouts": 3,
+      "outcomes": {
+        "elimination": 163,
+        "rout": 34,
+        "retreat": 0,
+        "dayLimit": 3
+      },
+      "tactics": {
+        "rally": 4205,
+        "fire": 628,
+        "confuse": 327,
+        "ambush": 33
+      },
+      "attackerWinRate": 0.19,
+      "routShare": 0.17,
+      "distinctOutcomes": 126,
+      "orders": {
+        "skirmish": 6339
+      },
+      "hits": {
+        "total": 9840,
+        "primary": 7314,
+        "rear": 302,
+        "counter": 2526,
+        "melee": 1430,
+        "flank": 3215,
+        "charge": 167
+      }
+    },
+    "bf09-gorge": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 14,
+      "casualtiesPerExchangeMedian": 238,
+      "timeouts": 2,
+      "outcomes": {
+        "elimination": 157,
+        "rout": 41,
+        "retreat": 0,
+        "dayLimit": 2
+      },
+      "tactics": {
+        "rally": 3546,
+        "fire": 908,
+        "confuse": 429
+      },
+      "attackerWinRate": 0.58,
+      "routShare": 0.205,
+      "distinctOutcomes": 153,
+      "orders": {
+        "skirmish": 5268
+      },
+      "hits": {
+        "total": 10052,
+        "primary": 7274,
+        "counter": 2778,
+        "flank": 2718,
+        "charge": 309,
+        "melee": 1751,
+        "rear": 395
+      }
+    },
+    "bf09-three-gorges": {
+      "firstContactMedian": 2,
+      "lengthMedian": 15,
+      "lengthP90": 26,
+      "casualtiesPerExchangeMedian": 222,
+      "timeouts": 13,
+      "outcomes": {
+        "elimination": 124,
+        "rout": 63,
+        "retreat": 0,
+        "dayLimit": 13
+      },
+      "tactics": {
+        "rally": 3037,
+        "fire": 1101,
+        "confuse": 525
+      },
+      "attackerWinRate": 0.67,
+      "routShare": 0.315,
+      "distinctOutcomes": 178,
+      "orders": {
+        "skirmish": 5309
+      },
+      "hits": {
+        "total": 10475,
+        "primary": 7605,
+        "melee": 1438,
+        "flank": 2643,
+        "counter": 2870,
+        "rear": 390,
+        "charge": 99
+      }
+    },
+    "bf10-mountain-pass": {
+      "firstContactMedian": 2,
+      "lengthMedian": 9,
+      "lengthP90": 13,
+      "casualtiesPerExchangeMedian": 281,
+      "timeouts": 3,
+      "outcomes": {
+        "elimination": 166,
+        "rout": 31,
+        "retreat": 0,
+        "dayLimit": 3
+      },
+      "tactics": {
+        "rally": 3897,
+        "fire": 601,
+        "confuse": 314
+      },
+      "attackerWinRate": 0.255,
+      "routShare": 0.155,
+      "distinctOutcomes": 131,
+      "orders": {
+        "skirmish": 5445
+      },
+      "hits": {
+        "total": 9246,
+        "primary": 6899,
+        "flank": 3374,
+        "counter": 2347,
+        "rear": 348,
+        "melee": 1606,
+        "charge": 295
+      }
+    }
+  }
+}

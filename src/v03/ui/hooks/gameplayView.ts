@@ -218,6 +218,7 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
         condition: unit.status === 'normal' ? undefined : unit.status,
         routed: isBattleUnitRouted(unit),
         moraleState: unitMoraleState(unit),
+        facing: unit.facing,
         id: unit.id,
         troopType: unit.troopType,
         troopExperience: unit.troopExperience,
@@ -297,6 +298,15 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
                     after: forecast.targetMoraleAfter,
                   }),
                   result,
+                  // Why the numbers differ from a plain hit (B-02, B-03).
+                  forecast.aspect === 'flank'
+                    ? message(locale, 'forecastFlank')
+                    : forecast.aspect === 'rear'
+                      ? message(locale, 'forecastRear')
+                      : null,
+                  forecast.charge ? message(locale, 'forecastCharge') : null,
+                  forecast.braced ? message(locale, 'forecastBraced') : null,
+                  forecast.melee ? message(locale, 'forecastMelee') : null,
                 ]
                   .filter(Boolean)
                   .join(' · '),

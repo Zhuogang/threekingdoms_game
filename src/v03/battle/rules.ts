@@ -1,4 +1,6 @@
 import {
+  type BattleAspect,
+  type BattleFacing,
   type BattleMap,
   type BattlePosition,
   type BattleTerrain,
@@ -321,6 +323,8 @@ export function getReachableBattleTiles(
   budget = movementBudget(unit.troopType),
   blockers: readonly PathBlocker[] = [],
   stopAfter: readonly BattlePosition[] = [],
+  /** When given, filled with each reached cell's predecessor index (for `reachablePath`). */
+  parents?: Map<number, number>,
 ): ReachableBattleTile[] {
   if (!isBattlePosition(map, start) || battleTerrainAt(map, start) === 'cliff' || budget < 0)
     return [];
@@ -371,6 +375,7 @@ export function getReachableBattleTiles(
       if (candidate > budget || candidate >= (costs.get(nextIndex) ?? Number.POSITIVE_INFINITY))
         continue;
       costs.set(nextIndex, candidate);
+      parents?.set(nextIndex, currentIndex);
       open.add(nextIndex);
     }
   }
@@ -383,6 +388,62 @@ export function getReachableBattleTiles(
       cost,
     }))
     .sort((a, b) => a.cost - b.cost || a.y - b.y || a.x - b.x);
+}
+
+/** The cells from `start` to `index` along the parent links of a reachable search, start included. */
+export function pathFromParents(
+  map: BattleGrid,
+  parents: ReadonlyMap<number, number>,
+  start: BattlePosition,
+  destination: BattlePosition,
+): BattlePosition[] | null {
+  const startIndex = battlePositionIndex(map, start.x, start.y);
+  let cursor = battlePositionIndex(map, destination.x, destination.y);
+  const path: BattlePosition[] = [];
+  while (cursor !== startIndex) {
+    path.push({ x: cursor % map.width, y: Math.floor(cursor / map.width) });
+    const parent = parents.get(cursor);
+    if (parent === undefined) return null;
+    cursor = parent;
+  }
+  path.push({ x: start.x, y: start.y });
+  return path.reverse();
+}
+
+/** The facing of a step or displacement along one axis; a diagonal tie returns `fallback`. */
+export function facingOfVector(dx: number, dy: number, fallback: BattleFacing): BattleFacing {
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  if (ax === ay) return fallback;
+  return ax > ay ? (dx > 0 ? 'e' : 'w') : dy > 0 ? 's' : 'n';
+}
+
+/** Unit vector of each facing; y grows southward. */
+const FACING_VECTOR: Readonly<Record<BattleFacing, readonly [number, number]>> = {
+  n: [0, -1],
+  e: [1, 0],
+  s: [0, 1],
+  w: [-1, 0],
+};
+
+/**
+ * Where a hit lands relative to the target's facing, by the angle between the target's
+ * facing and the direction to the source: within 45 degrees (including the front diagonal)
+ * is the front, strictly behind the 135-degree lines is the rear, and the rest (including
+ * the rear diagonal) is a flank.
+ */
+export function attackAspect(
+  source: BattlePosition,
+  target: BattlePosition & { facing: BattleFacing },
+): BattleAspect {
+  const [fx, fy] = FACING_VECTOR[target.facing];
+  const dx = source.x - target.x;
+  const dy = source.y - target.y;
+  const along = dx * fx + dy * fy;
+  const across = Math.abs(dx * fy - dy * fx);
+  if (along > 0 && along >= across) return 'front';
+  if (-along > across) return 'rear';
+  return 'flank';
 }
 
 export function isBattleAttackInRange(

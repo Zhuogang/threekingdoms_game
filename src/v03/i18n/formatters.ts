@@ -70,7 +70,19 @@ export function formatBattleLog(
         : entry.code) as MessageKey,
       params,
     ) +
-    (entry.code === 'log.attack' && entry.params.water ? message(locale, 'log.water', params) : '')
+    (entry.code === 'log.attack' && entry.params.water
+      ? message(locale, 'log.water', params)
+      : '') +
+    (entry.code === 'log.attack'
+      ? (entry.params.aspect === 'flank'
+          ? message(locale, 'log.fromFlank')
+          : entry.params.aspect === 'rear'
+            ? message(locale, 'log.fromRear')
+            : '') +
+        (entry.params.charge ? message(locale, 'log.chargeNote') : '') +
+        (entry.params.braced ? message(locale, 'log.bracedNote') : '') +
+        (entry.params.melee ? message(locale, 'log.meleeNote') : '')
+      : '')
   );
 }
 
