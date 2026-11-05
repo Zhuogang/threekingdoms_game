@@ -1,3 +1,4 @@
+import { ECONOMY } from '../balance';
 import type { V03Command, V03GameState } from '../types';
 import { isCityCommitted } from '../governance/commitments';
 import {
@@ -163,7 +164,7 @@ export function applyCityPersonnelCommand(
       (entry) => entry.troops + entry.wounded > 0,
     );
   }
-  const added = Math.min(9_999_999 - targetCity.population, troops + wounded);
+  const added = Math.min(ECONOMY.resourceCap - targetCity.population, troops + wounded);
   targetCity.population += added;
   next.log.push(
     `${city.name}: disbanded ${troops + wounded}; population +${added}, population outflow ${troops + wounded - added}.`,

@@ -1,3 +1,5 @@
+import { ECONOMY, PERSONNEL } from '../balance';
+import { DAYS_PER_MONTH } from '../calendar';
 import {
   custodyHolder,
   personnelCount,
@@ -11,7 +13,7 @@ import { cancelPendingGovernorAppointment } from '../governance/appointments';
 import { rulerTemperament } from '../ai/temperament';
 
 export type PrisonerAction = 'release' | 'recruit' | 'exchange' | 'execute';
-export const RULER_DEFECTION_LOYALTY_LOSS = 10;
+export const RULER_DEFECTION_LOYALTY_LOSS = PERSONNEL.prisoner.rulerDefectionLoyaltyLoss;
 
 /** Succession replaces the leader ID immediately, so retain this captivity's ruler identity. */
 export function capturedRulerFaction(state: V03GameState, officer: V03Officer): string | null {
@@ -131,7 +133,10 @@ export function resolveSuccessions(state: V03GameState): void {
 }
 
 export function prisonerRecruitChance(officer: Pick<V03Officer, 'loyalty'>): number {
-  return Math.max(5, Math.min(90, 100 - officer.loyalty));
+  return Math.max(
+    PERSONNEL.prisoner.recruitChanceMin,
+    Math.min(PERSONNEL.prisoner.recruitChanceMax, 100 - officer.loyalty),
+  );
 }
 
 export function prisonerReturnPlan(state: V03GameState, prisoner: V03Officer) {
@@ -168,7 +173,11 @@ export function prisonerReturnPlan(state: V03GameState, prisoner: V03Officer) {
       const food = route
         ? Math.min(
             stock,
-            Math.ceil((total + composition.cavalryTroops) * 0.008 * route.estimatedDays),
+            Math.ceil(
+              (total + composition.cavalryTroops) *
+                ECONOMY.logistics.travelFoodPerTroopDay *
+                route.estimatedDays,
+            ),
           )
         : 0;
       return route ? [{ city, route, composition, total, food }] : [];
@@ -182,7 +191,7 @@ export function prisonerReturnPlan(state: V03GameState, prisoner: V03Officer) {
 function disbandCaptiveArmy(state: V03GameState, cityId: string, officer: V03Officer): void {
   const city = state.cities.find((entry) => entry.id === cityId)!;
   const count = personnelCount(officer);
-  const added = Math.min(count, 9_999_999 - city.population);
+  const added = Math.min(count, ECONOMY.resourceCap - city.population);
   city.population += added;
   if (count > added)
     state.log.push(
@@ -308,11 +317,13 @@ export function decidePrisoner(
   if (action === 'release') releasePersonnel(next, officer);
   if (action === 'recruit' || action === 'exchange') {
     next.rng = (Math.imul(next.rng, 1664525) + 1013904223) >>> 0;
-    accepted = next.rng % 100 < (action === 'recruit' ? prisonerRecruitChance(officer) : 75);
+    accepted =
+      next.rng % 100 <
+      (action === 'recruit' ? prisonerRecruitChance(officer) : PERSONNEL.prisoner.exchangeChance);
     if (accepted && action === 'recruit') {
       if (rulerFactionId) officer.capturedRulerFactionId = null;
       officer.factionId = holderId;
-      officer.loyalty = 60;
+      officer.loyalty = PERSONNEL.prisoner.joinLoyalty;
       officer.location = { kind: 'city', cityId };
       officer.reorganizationDays =
         personnelCount(officer) > 0 ? PERSONNEL_RULES.reorganizationDays : 0;
@@ -363,7 +374,7 @@ export function decidePrisoner(
 }
 
 /** Captivity wears loyalty down at every month boundary (PF-RL-05). */
-export const CAPTIVITY_MONTHLY_LOYALTY_LOSS = 5;
+export const CAPTIVITY_MONTHLY_LOYALTY_LOSS = PERSONNEL.prisoner.captivityMonthlyLoyaltyLoss;
 
 export function decayCaptiveLoyalty(state: V03GameState): void {
   for (const officer of state.officers)
@@ -431,7 +442,10 @@ export function resolveAiPrisoners(state: V03GameState): V03GameState {
       (city) => officer.location.kind === 'captured' && city.id === officer.location.cityId,
     );
     const burden =
-      (officer.troops + officer.wounded) * (officer.troopType === 'cavalry' ? 2 : 1) * 0.004 * 30;
+      (officer.troops + officer.wounded) *
+      (officer.troopType === 'cavalry' ? 2 : 1) *
+      ECONOMY.logistics.cityFoodPerTroopDay *
+      DAYS_PER_MONTH;
     // Houses hold captives and ask again each month while they can feed them (PF-RL-05);
     // a benevolent ruler still lets go those too loyal to turn.
     const action: PrisonerAction =
@@ -439,7 +453,8 @@ export function resolveAiPrisoners(state: V03GameState): V03GameState {
         ? 'release'
         : exchange
           ? 'exchange'
-          : officer.loyalty >= 75 && rulerTemperament(next, holderId).traits.includes('benevolent')
+          : officer.loyalty >= PERSONNEL.prisoner.benevolentReleaseLoyalty &&
+              rulerTemperament(next, holderId).traits.includes('benevolent')
             ? 'release'
             : 'recruit';
     const result = decidePrisoner(next, holderId, officer.id, action, exchange?.id);

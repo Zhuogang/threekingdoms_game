@@ -1,10 +1,8 @@
 import type { TroopType } from '../content/types';
+import { RECRUITMENT } from '../balance';
 
 /** Initial game balance, not historical population/currency estimates. */
-export const RECRUITMENT_REGIONS = {
-  north: ['beiping', 'jinyang', 'ye', 'pingyuan', 'beihai', 'tianshui', 'changan'],
-  central: ['luoyang', 'puyang', 'chenliu', 'xuchang', 'xiapi', 'shouchun', 'wancheng', 'hanzhong'],
-} as const;
+export const RECRUITMENT_REGIONS = RECRUITMENT.regions;
 
 export function recruitmentQuote(
   city: { id: string; population: number },
@@ -19,29 +17,34 @@ export function recruitmentQuote(
   // Cavalry stays a premium everywhere, but the south is no longer a trap (PF-RL-04): at
   // force 70 a soldier costs about 1.0 / 1.5 / 2.3 gold north / centre / south (was
   // 1.0 / 2.6 / 6.2), against 0.3 for infantry.
+  const multipliers = RECRUITMENT.multiplier;
   const multiplier =
     type === 'infantry'
-      ? 100
+      ? multipliers.infantry
       : type === 'archer'
-        ? 75
+        ? multipliers.archer
         : region === 'north'
-          ? 60
+          ? multipliers.cavalryNorth
           : region === 'central'
-            ? 50
-            : 40;
+            ? multipliers.cavalryCentral
+            : multipliers.cavalrySouth;
+  const prices = RECRUITMENT.gold;
   const gold =
     type === 'infantry'
-      ? 200
+      ? prices.infantry
       : type === 'archer'
-        ? 350
+        ? prices.archer
         : region === 'north'
-          ? 400
+          ? prices.cavalryNorth
           : region === 'central'
-            ? 500
-            : 600;
+            ? prices.cavalryCentral
+            : prices.cavalrySouth;
   const troops = Math.max(
     0,
-    Math.min(city.population - 1000, Math.floor(((300 + force * 5) * multiplier) / 100)),
+    Math.min(
+      city.population - RECRUITMENT.protectedPopulation,
+      Math.floor(((RECRUITMENT.base + force * RECRUITMENT.perForce) * multiplier) / 100),
+    ),
   );
   return { troops, gold, region };
 }

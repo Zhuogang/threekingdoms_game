@@ -12,16 +12,17 @@ import {
   TROOP_TYPES,
 } from './troop-experience';
 import { isCityCommitted } from '../governance/commitments';
+import { BATTLE_AI, ECONOMY, PERSONNEL } from '../balance';
 
 export const PERSONNEL_RULES = Object.freeze({
-  capacity: 10_000,
-  woundedPercent: 60,
-  orderlyCapturePercent: 5,
-  forcedCapturePercent: 25,
-  recoveryPercent: 10,
-  reorganizationDays: 10,
-  aiRetreatOpeningPercent: 30,
-  aiRetreatEnemyPercent: 50,
+  capacity: PERSONNEL.capacity,
+  woundedPercent: PERSONNEL.woundedPercent,
+  orderlyCapturePercent: PERSONNEL.orderlyCapturePercent,
+  forcedCapturePercent: PERSONNEL.forcedCapturePercent,
+  recoveryPercent: PERSONNEL.recoveryPercent,
+  reorganizationDays: PERSONNEL.reorganizationDays,
+  aiRetreatOpeningPercent: BATTLE_AI.withdrawal.openingPercent,
+  aiRetreatEnemyPercent: BATTLE_AI.withdrawal.enemyPercent,
 });
 
 export interface PersonnelPool {
@@ -553,7 +554,7 @@ export function disbandOrphanedSources(state: V03GameState): void {
     const city = state.cities.find((entry) => entry.id === source.cityId);
     if (!city || city.factionId === source.factionId) continue;
     const count = personnelCount(source),
-      added = Math.min(count, 9_999_999 - city.population);
+      added = Math.min(count, ECONOMY.resourceCap - city.population);
     city.population += added;
     state.log.push(
       `${city.name}: ${count} rear personnel disbanded after ownership changed; population outflow ${count - added}.`,

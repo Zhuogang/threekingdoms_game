@@ -1,3 +1,4 @@
+import { BATTLE, CAMPAIGN_AI, ECONOMY, PERSONNEL } from './balance';
 import {
   rivalCampaignSourceBlock,
   rivalCampaignTargetBlock,
@@ -111,10 +112,10 @@ import type {
   V03Officer,
 } from './types';
 
-const RESOURCE_CAP = 9_999_999;
+const RESOURCE_CAP = ECONOMY.resourceCap;
 /** A conquered city's loyalty starts no higher than this (PF-RL-06). */
-export const CONQUEST_LOYALTY_CAP = 50;
-export const BENEVOLENT_CONQUEST_LOYALTY_CAP = 60;
+export const CONQUEST_LOYALTY_CAP = ECONOMY.conquest.loyaltyCap;
+export const BENEVOLENT_CONQUEST_LOYALTY_CAP = ECONOMY.conquest.benevolentLoyaltyCap;
 function cloneState(state: V03GameState): V03GameState {
   return structuredClone(state);
 }
@@ -223,13 +224,13 @@ function completeHegemonVictoryIfReady(state: V03GameState): void {
   if (
     state.phase === 'finished' ||
     !claimant ||
-    state.hegemon.months < 12 ||
+    state.hegemon.months < CAMPAIGN_AI.hegemon.holdMonths ||
     state.battles.some((battle) => battle.active)
   )
     return;
   const stillQualifies =
     state.cities.find((city) => city.id === 'luoyang')?.factionId === claimant &&
-    state.cities.filter((city) => city.factionId === claimant).length >= 16;
+    state.cities.filter((city) => city.factionId === claimant).length >= CAMPAIGN_AI.hegemon.cities;
   if (!stillQualifies) return;
   state.phase = 'finished';
   state.winnerFactionId = claimant;
@@ -348,7 +349,9 @@ function allocateSurvivors(
     officer.troops = healthy[index]!;
     officer.wounded = retained[index]! - healthy[index]!;
     officer.troopExperience =
-      retained[index]! > 0 ? Math.min(1900, officer.troopExperience + experienceGain) : 0;
+      retained[index]! > 0
+        ? Math.min(PERSONNEL.troopExperience.max, officer.troopExperience + experienceGain)
+        : 0;
   });
 }
 
@@ -377,10 +380,16 @@ export function chargeBattleRations(battle: V03BattleState, absoluteDay: number)
     if (shortage && living.length > 0) {
       battle.foodShortfallDays++;
       for (const unit of living) {
-        unit.troops = Math.max(0, unit.troops - Math.ceil(unit.troops * 0.01));
-        unit.wounded = Math.max(0, unit.wounded - Math.ceil(unit.wounded * 0.01));
+        unit.troops = Math.max(
+          0,
+          unit.troops - Math.ceil(unit.troops * BATTLE.hunger.dailyLossFraction),
+        );
+        unit.wounded = Math.max(
+          0,
+          unit.wounded - Math.ceil(unit.wounded * BATTLE.hunger.dailyLossFraction),
+        );
         if (unit.troops + unit.wounded === 0) unit.troopExperience = 0;
-        unit.morale = Math.max(0, unit.morale - 5);
+        unit.morale = Math.max(0, unit.morale - BATTLE.hunger.moraleLoss);
       }
       appendBattleLog(
         data,
@@ -454,7 +463,7 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
     }
     if (members.length) unit.troopExperience = mergePersonnel(...members).troopExperience;
     else if (unit.troops + unit.wounded > 0)
-      unit.troopExperience = Math.min(1900, unit.troopExperience + gain);
+      unit.troopExperience = Math.min(PERSONNEL.troopExperience.max, unit.troopExperience + gain);
     const participated = unit.combatCasualtiesDealt + unit.combatCasualtiesReceived > 0;
     troopGrowth[unit.side].push(
       ...(members.length
@@ -495,20 +504,28 @@ function finishBattle(state: V03GameState, battle: V03BattleState): void {
     )[0];
     if (!leader) return null;
     const power = leader.force + leader.intellect;
-    const gold = Math.floor(2 * power + Math.floor(target.commerce * 1.5));
-    const food = 5 * power + Math.floor(target.farming * 4);
+    const gold = Math.floor(
+      ECONOMY.plunder.goldPerPower * power +
+        Math.floor(target.commerce * ECONOMY.plunder.goldPerCommerce),
+    );
+    const food =
+      ECONOMY.plunder.foodPerPower * power +
+      Math.floor(target.farming * ECONOMY.plunder.foodPerFarming);
     if (recipient) {
       recipient.gold = Math.min(RESOURCE_CAP, recipient.gold + gold);
       recipient.food = Math.min(RESOURCE_CAP, recipient.food + food);
     }
-    target.loyalty = Math.floor(target.loyalty / 2);
-    target.farming = Math.floor(target.farming / 2);
-    target.commerce = Math.floor(target.commerce / 2);
+    target.loyalty = Math.floor(target.loyalty / ECONOMY.plunder.damageDivisor);
+    target.farming = Math.floor(target.farming / ECONOMY.plunder.damageDivisor);
+    target.commerce = Math.floor(target.commerce / ECONOMY.plunder.damageDivisor);
     target.population = Math.min(
       target.population,
-      Math.max(500, Math.floor(target.population * 0.92)),
+      Math.max(
+        ECONOMY.plunder.populationFloor,
+        Math.floor(target.population * ECONOMY.plunder.populationRetained),
+      ),
     );
-    target.plunderCooldownUntilDay = state.absoluteDay + 90;
+    target.plunderCooldownUntilDay = state.absoluteDay + ECONOMY.plunder.cooldownDays;
     return { gold, food };
   };
 
@@ -1408,7 +1425,10 @@ export function dispatchRivalCampaignPlan(
   )
     return reject('invalid-party');
 
-  const protectedGarrison = Math.min(1000, Math.ceil(source.garrisonTroops * 0.35));
+  const protectedGarrison = Math.min(
+    CAMPAIGN_AI.strategic.garrisonCap,
+    Math.ceil(source.garrisonTroops * CAMPAIGN_AI.strategic.garrisonFraction),
+  );
   if (
     source.garrisonTroops - committedCityStock(state, source.id).troops - plan.requestedTroops <
     protectedGarrison
@@ -1654,26 +1674,26 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     if (city.food < foodUpkeep) {
       shortages.add(city.id);
       city.food = 0;
-      city.loyalty = Math.max(0, city.loyalty - 8);
-      const survivingMilitia = Math.floor(militiaTroops * 0.85);
+      city.loyalty = Math.max(0, city.loyalty - ECONOMY.shortage.foodCityLoyaltyLoss);
+      const survivingMilitia = Math.floor(militiaTroops * ECONOMY.shortage.foodTroopsRetained);
       for (const officer of serving) {
         retainPersonnel(
           officer,
-          Math.floor(officer.troops * 0.85),
-          Math.floor(officer.wounded * 0.85),
+          Math.floor(officer.troops * ECONOMY.shortage.foodTroopsRetained),
+          Math.floor(officer.wounded * ECONOMY.shortage.foodTroopsRetained),
         );
-        officer.loyalty = Math.max(0, officer.loyalty - 4);
+        officer.loyalty = Math.max(0, officer.loyalty - ECONOMY.shortage.foodOfficerLoyaltyLoss);
       }
       city.garrisonTroops =
         serving.reduce((sum, officer) => sum + availableTroops(officer), 0) + survivingMilitia;
       for (const pool of Object.values(city.reservePools))
-        applyTroopLoss(pool, Math.floor(pool.troops * 0.85));
+        applyTroopLoss(pool, Math.floor(pool.troops * ECONOMY.shortage.foodTroopsRetained));
       city.reserve = Object.values(city.reservePools).reduce((sum, pool) => sum + pool.troops, 0);
       for (const source of next.troopSources.filter((entry) => entry.cityId === city.id))
         retainPersonnel(
           source,
-          Math.floor(source.troops * 0.85),
-          Math.floor(source.wounded * 0.85),
+          Math.floor(source.troops * ECONOMY.shortage.foodTroopsRetained),
+          Math.floor(source.wounded * ECONOMY.shortage.foodTroopsRetained),
         );
       for (const captive of next.officers.filter(
         (entry) =>
@@ -1681,8 +1701,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
       ))
         retainPersonnel(
           captive,
-          Math.floor(captive.troops * 0.85),
-          Math.floor(captive.wounded * 0.85),
+          Math.floor(captive.troops * ECONOMY.shortage.foodTroopsRetained),
+          Math.floor(captive.wounded * ECONOMY.shortage.foodTroopsRetained),
         );
       const removed = new Set(
         next.troopSources
@@ -1706,7 +1726,8 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
     if (city.gold < goldUpkeep) {
       shortages.add(city.id);
       city.gold = 0;
-      for (const officer of serving) officer.loyalty = Math.max(0, officer.loyalty - 3);
+      for (const officer of serving)
+        officer.loyalty = Math.max(0, officer.loyalty - ECONOMY.shortage.goldOfficerLoyaltyLoss);
     } else city.gold -= goldUpkeep;
   }
   // Every city bill is now paid. Governor forecasts must see the new month's

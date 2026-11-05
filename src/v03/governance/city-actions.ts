@@ -8,6 +8,7 @@ import {
   transferRationRecord,
 } from '../campaign/personnel';
 import type { TroopType } from '../content/types';
+import { CITY_WORK, ECONOMY, PERSONNEL } from '../balance';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
 
 export interface V03CityActionInput {
@@ -31,23 +32,23 @@ export interface V03CityActionAvailability {
   reason: string | null;
 }
 
-export const CITY_MONTHLY_WORK_GOLD_COST = 80;
-export const CITY_MANUAL_WORK_MAX_POINTS = 2;
-export const CITY_WORK_PERIOD_DAYS = 10;
+export const CITY_MONTHLY_WORK_GOLD_COST = CITY_WORK.workGold;
+export const CITY_MANUAL_WORK_MAX_POINTS = CITY_WORK.manualPointsPerPeriod;
+export const CITY_WORK_PERIOD_DAYS = CITY_WORK.periodDays;
 /** Unused work points carry over up to one month's worth (three periods). */
-export const CITY_WORK_BANK_MAX_POINTS = 6;
-export const GOVERNOR_REWARD_GOLD_COST = 100;
-export const GOVERNOR_EQUIPMENT_GOLD_COST = 180;
-export const GOVERNOR_RELIEF_GOLD_COST = 80;
-export const GOVERNOR_RELIEF_FOOD_COST = 600;
+export const CITY_WORK_BANK_MAX_POINTS = CITY_WORK.bankMaxPoints;
+export const GOVERNOR_REWARD_GOLD_COST = CITY_WORK.rewardGold;
+export const GOVERNOR_EQUIPMENT_GOLD_COST = CITY_WORK.equipmentGold;
+export const GOVERNOR_RELIEF_GOLD_COST = CITY_WORK.relief.gold;
+export const GOVERNOR_RELIEF_FOOD_COST = CITY_WORK.relief.food;
 /** Relief settles 1,500 people: about a year to repay its cost in tax (PF-RL-02). */
-export const GOVERNOR_RELIEF_POPULATION = 1500;
+export const GOVERNOR_RELIEF_POPULATION = CITY_WORK.relief.population;
 /** One work point of market trade moves 2,000 food at ten food per gold. */
-export const CITY_FOOD_TRADE_FOOD = 2000;
-export const CITY_FOOD_TRADE_GOLD = 200;
+export const CITY_FOOD_TRADE_FOOD = CITY_WORK.trade.food;
+export const CITY_FOOD_TRADE_GOLD = CITY_WORK.trade.gold;
 export const RESTORE_LOYALTY_RETIRED =
   'Restore loyalty has been retired: security is free and restores more.';
-const RESOURCE_CAP = 9_999_999;
+const RESOURCE_CAP = ECONOMY.resourceCap;
 
 export type OfficerGroupAction = 'feast' | 'reward' | 'equip';
 export function isOfficerGroupAction(action: V03CityAction): action is OfficerGroupAction {
@@ -62,7 +63,7 @@ export function officerGroupActionReason(
     return 'This officer is already completely loyal.';
   if (action === 'equip' && officer.equipment === 'Fine arms')
     return 'This officer already has fine arms.';
-  if (action === 'equip' && officer.force >= 105)
+  if (action === 'equip' && officer.force >= CITY_WORK.equip.forceCap)
     return 'This officer has reached the fine-arms force limit.';
   return null;
 }
@@ -94,15 +95,15 @@ export function cityActionWorkCost(action: V03CityAction): 0 | 1 {
  * free preparations have no executor to occupy.
  */
 const CITY_WORK_BUSY_DAYS: Partial<Record<V03CityAction, number>> = {
-  'develop-farming': 10,
-  'develop-commerce': 10,
-  train: 10,
-  recruit: 5,
-  security: 5,
-  relieve: 5,
-  search: 5,
-  'buy-food': 2,
-  'sell-food': 2,
+  'develop-farming': CITY_WORK.busyDays.developFarming,
+  'develop-commerce': CITY_WORK.busyDays.developCommerce,
+  train: CITY_WORK.busyDays.train,
+  recruit: CITY_WORK.busyDays.recruit,
+  security: CITY_WORK.busyDays.security,
+  relieve: CITY_WORK.busyDays.relieve,
+  search: CITY_WORK.busyDays.search,
+  'buy-food': CITY_WORK.busyDays.buyFood,
+  'sell-food': CITY_WORK.busyDays.sellFood,
 };
 
 export function cityWorkBusyDays(action: V03CityAction): number {
@@ -159,7 +160,7 @@ export function initializeCityWorkPeriods(state: V03GameState): void {
     city.workPeriodIndex =
       city.workMonthIndex === state.monthIndex
         ? cityWorkPeriodIndex(state)
-        : city.workMonthIndex * 3;
+        : city.workMonthIndex * CITY_WORK.periodsPerMonth;
   }
 }
 
@@ -204,8 +205,8 @@ export function applySharedCityWorkEffect(
     city.gold < CITY_MONTHLY_WORK_GOLD_COST
   )
     return null;
-  if (action === 'develop-farming' && city.farming >= 500) return null;
-  if (action === 'develop-commerce' && city.commerce >= 500) return null;
+  if (action === 'develop-farming' && city.farming >= CITY_WORK.develop.cap) return null;
+  if (action === 'develop-commerce' && city.commerce >= CITY_WORK.develop.cap) return null;
   if (action === 'restore-loyalty' && city.loyalty >= 100) return null;
   if (
     action === 'buy-food' &&
@@ -232,14 +233,19 @@ export function applySharedCityWorkEffect(
       troopType,
       mergeTroopPools(city.reservePools[troopType], { troops: gain, troopExperience: 0 }),
     );
-    city.loyalty = Math.max(0, city.loyalty - 2);
+    city.loyalty = Math.max(0, city.loyalty - CITY_WORK.recruitLoyaltyLoss);
   } else if (action === 'relieve') {
     city.gold -= GOVERNOR_RELIEF_GOLD_COST;
     city.food -= GOVERNOR_RELIEF_FOOD_COST;
-    city.loyalty = Math.min(100, city.loyalty + 15);
+    city.loyalty = Math.min(100, city.loyalty + CITY_WORK.relief.loyaltyGain);
     city.population = Math.min(RESOURCE_CAP, city.population + GOVERNOR_RELIEF_POPULATION);
   } else if (action === 'security')
-    city.loyalty = Math.min(100, city.loyalty + 8 + Math.floor(manager.intellect / 20));
+    city.loyalty = Math.min(
+      100,
+      city.loyalty +
+        CITY_WORK.security.loyaltyBase +
+        Math.floor(manager.intellect / CITY_WORK.security.intellectDivisor),
+    );
   else if (action === 'buy-food') {
     city.gold -= CITY_FOOD_TRADE_GOLD;
     city.food += CITY_FOOD_TRADE_FOOD;
@@ -248,9 +254,14 @@ export function applySharedCityWorkEffect(
     city.gold += CITY_FOOD_TRADE_GOLD;
   } else {
     city.gold -= CITY_MONTHLY_WORK_GOLD_COST;
-    if (action === 'develop-farming') city.farming = Math.min(500, city.farming + 20);
-    else if (action === 'develop-commerce') city.commerce = Math.min(500, city.commerce + 10);
-    else city.loyalty = Math.min(100, city.loyalty + 2);
+    if (action === 'develop-farming')
+      city.farming = Math.min(CITY_WORK.develop.cap, city.farming + CITY_WORK.develop.farmingGain);
+    else if (action === 'develop-commerce')
+      city.commerce = Math.min(
+        CITY_WORK.develop.cap,
+        city.commerce + CITY_WORK.develop.commerceGain,
+      );
+    else city.loyalty = Math.min(100, city.loyalty + CITY_WORK.develop.legacyLoyaltyGain);
   }
   return city;
 }
@@ -281,12 +292,18 @@ function nextRandom(state: V03GameState, max: number): number {
 }
 
 function levelForExperience(experience: number): number {
-  return Math.min(5, Math.floor(Math.max(0, experience) / 100));
+  return Math.min(
+    CITY_WORK.training.maxLevel,
+    Math.floor(Math.max(0, experience) / CITY_WORK.training.experiencePerLevel),
+  );
 }
 
 /** Training only adds XP now (PF-RL-03), so it helps until level 5 or 500 XP. */
 export function hasTrainingBenefit(officer: Pick<V03Officer, 'experience' | 'level'>): boolean {
-  return officer.experience < 500 && officer.level < 5;
+  return (
+    officer.experience < CITY_WORK.training.experienceCap &&
+    officer.level < CITY_WORK.training.maxLevel
+  );
 }
 
 /**
@@ -302,14 +319,25 @@ export function gainOfficerExperience(
   amount: number,
 ): void {
   // Old saves may contain more than 500 XP; stop adding without reducing it.
-  if (amount <= 0 || officer.experience >= 500 || officer.level >= 5) return;
-  officer.experience = Math.min(500, officer.experience + amount);
-  const forceLimit = officer.equipment === 'Fine arms' ? 105 : 100;
+  if (
+    amount <= 0 ||
+    officer.experience >= CITY_WORK.training.experienceCap ||
+    officer.level >= CITY_WORK.training.maxLevel
+  )
+    return;
+  officer.experience = Math.min(CITY_WORK.training.experienceCap, officer.experience + amount);
+  const forceLimit =
+    officer.equipment === 'Fine arms' ? CITY_WORK.equip.forceCap : CITY_WORK.baseForceCap;
   const targetLevel = levelForExperience(officer.experience);
   while (officer.level < targetLevel) {
     officer.level++;
-    if (officer.troopType === 'archer') officer.intellect = Math.min(100, officer.intellect + 2);
-    if (officer.force < forceLimit) officer.force = Math.min(forceLimit, officer.force + 2);
+    if (officer.troopType === 'archer')
+      officer.intellect = Math.min(
+        100,
+        officer.intellect + CITY_WORK.training.archerIntellectPerLevel,
+      );
+    if (officer.force < forceLimit)
+      officer.force = Math.min(forceLimit, officer.force + CITY_WORK.training.forcePerLevel);
   }
 }
 
@@ -483,10 +511,15 @@ function inspectCityAction(
       return fail(RESTORE_LOYALTY_RETIRED);
     case 'develop-farming':
     case 'develop-commerce':
-      if (city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= 500)
+      if (
+        city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= CITY_WORK.develop.cap
+      )
         return fail('This improvement is already at its current limit.');
-      if (city.gold < 80) return fail('The capital needs 80 unreserved gold for this work.');
-      goldCost = 80;
+      if (city.gold < CITY_MONTHLY_WORK_GOLD_COST)
+        return fail(
+          `The capital needs ${CITY_MONTHLY_WORK_GOLD_COST} unreserved gold for this work.`,
+        );
+      goldCost = CITY_MONTHLY_WORK_GOLD_COST;
       break;
     case 'search':
       if (!localSearchCandidates(state, city.id).length)
@@ -521,7 +554,7 @@ function inspectCityAction(
       if (
         !Number.isSafeInteger(input.amount) ||
         input.amount! < 0 ||
-        input.amount! + actor.wounded > 10_000
+        input.amount! + actor.wounded > PERSONNEL.capacity
       )
         return fail('An officer can command 0–10,000 soldiers.');
       const change = input.amount! - actor.troops;
@@ -666,12 +699,16 @@ function applyCityAction(
     case 'develop-farming':
     case 'develop-commerce': {
       const field = input.action === 'develop-farming' ? 'farming' : 'commerce';
-      if (city[field] >= 500) return fail('This improvement is already at its current limit.');
+      if (city[field] >= CITY_WORK.develop.cap)
+        return fail('This improvement is already at its current limit.');
       const updated = applySharedCityWorkEffect(city, input.action);
-      if (!updated) return fail('The capital needs 80 unreserved gold for this work.');
+      if (!updated)
+        return fail(
+          `The capital needs ${CITY_MONTHLY_WORK_GOLD_COST} unreserved gold for this work.`,
+        );
       const gain = updated[field] - city[field];
       Object.assign(city, updated);
-      message = `${field === 'farming' ? 'Farming' : 'Commerce'} improved by ${gain} for 80 gold.`;
+      message = `${field === 'farming' ? 'Farming' : 'Commerce'} improved by ${gain} for ${CITY_MONTHLY_WORK_GOLD_COST} gold.`;
       break;
     }
     case 'search': {
@@ -679,10 +716,16 @@ function applyCityAction(
       const foundOfficer = candidate.length
         ? candidate[nextRandom(next, candidate.length)]
         : undefined;
-      if (foundOfficer && nextRandom(next, 100) < 40 + Math.floor(actor.intellect / 2)) {
+      if (
+        foundOfficer &&
+        nextRandom(next, 100) <
+          CITY_WORK.search.baseChance +
+            Math.floor(actor.intellect / CITY_WORK.search.intellectDivisor)
+      ) {
         const officer = foundOfficer;
         officer.factionId = city.factionId;
-        officer.loyalty = 65 + nextRandom(next, 16);
+        officer.loyalty =
+          CITY_WORK.search.joinLoyaltyBase + nextRandom(next, CITY_WORK.search.joinLoyaltySpan);
         message = `${actor.name} found ${officer.name}, who joined your faction.`;
       } else message = `${actor.name} searched the countryside, but no officer joined this month.`;
       break;
@@ -721,7 +764,11 @@ function applyCityAction(
       )
         return fail('Choose a living officer stationed in the capital.');
       const amount = input.amount;
-      if (!Number.isSafeInteger(amount) || amount! < 0 || amount! + officer.wounded > 10_000)
+      if (
+        !Number.isSafeInteger(amount) ||
+        amount! < 0 ||
+        amount! + officer.wounded > PERSONNEL.capacity
+      )
         return fail('An officer can command 0–10,000 soldiers.');
       const change = amount! - officer.troops;
       if (change > availableReserveTroops(next, city.id, officer.troopType))
@@ -768,7 +815,7 @@ function applyCityAction(
         force: officer.force,
         intellect: officer.intellect,
       };
-      gainOfficerExperience(officer, 25);
+      gainOfficerExperience(officer, CITY_WORK.training.experienceGain);
       message = `${officer.name} completed training: +${officer.experience - before.experience} experience, +${officer.force - before.force} force and +${officer.intellect - before.intellect} intellect.`;
       break;
     }
@@ -786,7 +833,8 @@ function applyCityAction(
     }
     case 'feast': {
       const officers = recipients ?? localOfficers(next, city);
-      for (const officer of officers) officer.loyalty = Math.min(100, officer.loyalty + 8);
+      for (const officer of officers)
+        officer.loyalty = Math.min(100, officer.loyalty + CITY_WORK.feastLoyaltyGain);
       message = recipients
         ? `${officers.length} selected officers attended the feast and gained up to 8 loyalty each.`
         : `${actor.name} hosted a feast; local officers gained up to 8 loyalty.`;
@@ -795,7 +843,8 @@ function applyCityAction(
     case 'reward': {
       const officers = recipients ?? [actor];
       city.gold -= GOVERNOR_REWARD_GOLD_COST * officers.length;
-      for (const officer of officers) officer.loyalty = Math.min(100, officer.loyalty + 15);
+      for (const officer of officers)
+        officer.loyalty = Math.min(100, officer.loyalty + CITY_WORK.rewardLoyaltyGain);
       message = recipients
         ? `${officers.length} selected officers received rewards and gained up to 15 loyalty each.`
         : `${actor.name} received a reward and gained up to 15 loyalty.`;
@@ -813,7 +862,10 @@ function applyCityAction(
       city.gold -= GOVERNOR_EQUIPMENT_GOLD_COST * officers.length;
       for (const officer of officers) {
         officer.equipment = 'Fine arms';
-        officer.force = Math.min(105, officer.force + 5);
+        officer.force = Math.min(
+          CITY_WORK.equip.forceCap,
+          officer.force + CITY_WORK.equip.forceGain,
+        );
       }
       message = recipients
         ? `${officers.length} selected officers received fine arms and gained up to 5 force each.`

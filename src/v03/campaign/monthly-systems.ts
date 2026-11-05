@@ -9,6 +9,7 @@
 
 import { availableTroops } from './personnel';
 import { OFFICER_MATURITY_GAIN } from '../content/officer-timeline';
+import { CAMPAIGN_AI, ECONOMY, EVENTS } from '../balance';
 import {
   mergeTroopPools,
   setReservePool,
@@ -16,11 +17,11 @@ import {
   type ReservePools,
 } from './troop-experience';
 
-export const V03_ALLIANCE_DURATION_MONTHS = 6;
-export const V03_HEGEMON_CITIES = 16;
-export const V03_HEGEMON_HOLD_MONTHS = 12;
+export const V03_ALLIANCE_DURATION_MONTHS = CAMPAIGN_AI.allianceDurationMonths;
+export const V03_HEGEMON_CITIES = CAMPAIGN_AI.hegemon.cities;
+export const V03_HEGEMON_HOLD_MONTHS = CAMPAIGN_AI.hegemon.holdMonths;
 export const V03_HEGEMON_CAPITAL_CITY_ID = 'luoyang';
-export const V03_RESOURCE_CAP = 9_999_999;
+export const V03_RESOURCE_CAP = ECONOMY.resourceCap;
 
 export interface V03TimedAlliance {
   a: string;
@@ -338,11 +339,17 @@ function applyEvacuation(
     .sort((a, b) => a.id.localeCompare(b.id));
   const leader = [...evacuated].sort(
     (a, b) => b.intellect + b.force - (a.intellect + a.force) || a.id.localeCompare(b.id),
-  )[0] ?? { intellect: 60, force: 60 };
+  )[0] ?? {
+    intellect: EVENTS.evacuation.defaultLeaderStat,
+    force: EVENTS.evacuation.defaultLeaderStat,
+  };
   const lootGold = Math.floor(
-    2 * (leader.intellect + leader.force) + Math.floor(city.commerce * 1.5),
+    EVENTS.evacuation.goldPerPower * (leader.intellect + leader.force) +
+      Math.floor(city.commerce * EVENTS.evacuation.goldPerCommerce),
   );
-  const lootFood = 5 * (leader.intellect + leader.force) + Math.floor(city.farming * 4);
+  const lootFood =
+    EVENTS.evacuation.foodPerPower * (leader.intellect + leader.force) +
+    Math.floor(city.farming * EVENTS.evacuation.foodPerFarming);
   const evacuatedTroops = evacuated.reduce(
     (sum, officer) => sum + officer.troops + officer.wounded,
     0,
@@ -350,10 +357,16 @@ function applyEvacuation(
   const readyTroops = evacuated.reduce((sum, officer) => sum + availableTroops(officer), 0);
   const transferredReserve = city.reserve;
 
-  city.loyalty = Math.floor(city.loyalty / 2);
-  city.farming = Math.floor(city.farming / 2);
-  city.commerce = Math.floor(city.commerce / 2);
-  city.population = Math.min(city.population, Math.max(500, Math.floor(city.population * 0.92)));
+  city.loyalty = Math.floor(city.loyalty / EVENTS.evacuation.damageDivisor);
+  city.farming = Math.floor(city.farming / EVENTS.evacuation.damageDivisor);
+  city.commerce = Math.floor(city.commerce / EVENTS.evacuation.damageDivisor);
+  city.population = Math.min(
+    city.population,
+    Math.max(
+      EVENTS.evacuation.populationFloor,
+      Math.floor(city.population * EVENTS.evacuation.populationRetained),
+    ),
+  );
   for (const type of TROOP_TYPES) {
     const merged = mergeTroopPools(refuge.reservePools[type], city.reservePools[type]);
     merged.troops = Math.min(
@@ -424,9 +437,9 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
   );
   if (
     !firedEventIds.includes('anti-dong-coalition') &&
-    year <= 191 &&
+    year <= EVENTS.coalition.lastYear &&
     dongHoldsLuoyang &&
-    activeFactionIds.filter((id) => id !== 'dong').length >= 3
+    activeFactionIds.filter((id) => id !== 'dong').length >= EVENTS.coalition.minMembers
   ) {
     const members = activeFactionIds.filter((id) => id !== 'dong' && id !== input.playerFactionId);
     for (let i = 0; i < members.length; i++)
@@ -439,7 +452,7 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
         eventId: 'anti-dong-coalition',
         targetFactionId: 'dong',
         memberFactionIds: members,
-        expiresMonthIndex: monthIndex + 3,
+        expiresMonthIndex: monthIndex + EVENTS.coalition.invitationMonths,
       });
     }
     fireOnce('anti-dong-coalition');
@@ -470,7 +483,7 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
         )
         .map((city) => city.reserve + city.garrisonTroops),
     );
-    if (attacked || strongestNeighbor > 1.8 * ownStrength) {
+    if (attacked || strongestNeighbor > EVENTS.evacuation.neighborStrengthRatio * ownStrength) {
       const evacuation = applyEvacuation(cities, officers, monthIndex, cap);
       if (evacuation) {
         events.push(evacuation);
@@ -490,47 +503,50 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
     if (result) events.push(...(Array.isArray(result) ? result : [result]));
   };
 
-  systemic(3, true, () => {
+  systemic(EVENTS.plague.chance, true, () => {
     const city = chooseCity(owned);
     if (!city) return null;
-    const dead = Math.floor(city.population * 0.08);
-    city.population = boundedInt(city.population - dead, 500, cap);
-    city.loyalty = boundedInt(city.loyalty - 3, 0, 100);
-    return makeEvent(monthIndex, 'plague', [city.id], { deaths: dead, loyaltyLoss: 3 });
+    const dead = Math.floor(city.population * EVENTS.plague.populationLoss);
+    city.population = boundedInt(city.population - dead, EVENTS.plague.populationFloor, cap);
+    city.loyalty = boundedInt(city.loyalty - EVENTS.plague.loyaltyLoss, 0, 100);
+    return makeEvent(monthIndex, 'plague', [city.id], {
+      deaths: dead,
+      loyaltyLoss: EVENTS.plague.loyaltyLoss,
+    });
   });
-  systemic(12, month === 9 || month === 10, () => {
+  systemic(EVENTS.bumperHarvest.chance, month === 9 || month === 10, () => {
     const city = chooseCity(owned);
     if (!city) return null;
-    const gain = Math.floor(city.farming * 5);
+    const gain = Math.floor(city.farming * EVENTS.bumperHarvest.foodPerFarming);
     city.food = Math.min(cap, city.food + gain);
     return makeEvent(monthIndex, 'bumper-harvest', [city.id], { foodGain: gain });
   });
-  systemic(6, [6, 7, 8].includes(month), () => {
+  systemic(EVENTS.locusts.chance, [6, 7, 8].includes(month), () => {
     const city = chooseCity(owned);
     if (!city) return null;
-    const loss = Math.floor(city.food * 0.25);
+    const loss = Math.floor(city.food * EVENTS.locusts.foodLoss);
     city.food -= loss;
     return makeEvent(monthIndex, 'locusts', [city.id], { foodLoss: loss });
   });
-  systemic(4, true, () => {
+  systemic(EVENTS.bandits.chance, true, () => {
     const city = chooseCity(owned);
     if (!city) return null;
-    const stolen = Math.floor(city.gold * 0.12);
+    const stolen = Math.floor(city.gold * EVENTS.bandits.goldLoss);
     const reserveBefore = city.reserve;
     city.gold -= stolen;
     for (const type of TROOP_TYPES) {
       const pool = city.reservePools[type];
-      const troops = Math.floor(pool.troops * 0.94);
+      const troops = Math.floor(pool.troops * EVENTS.bandits.reserveRetained);
       setReservePool(city, type, { troops, troopExperience: troops ? pool.troopExperience : 0 });
     }
-    city.loyalty = boundedInt(city.loyalty - 2, 0, 100);
+    city.loyalty = boundedInt(city.loyalty - EVENTS.bandits.loyaltyLoss, 0, 100);
     return makeEvent(monthIndex, 'bandits', [city.id], {
       goldLost: stolen,
       reserveLost: reserveBefore - city.reserve,
-      loyaltyLoss: 2,
+      loyaltyLoss: EVENTS.bandits.loyaltyLoss,
     });
   });
-  systemic(5, true, () => {
+  systemic(EVENTS.wanderingOfficer.chance, true, () => {
     const freeOfficer = chooseStable(
       officers.filter(
         (officer) =>
@@ -550,7 +566,7 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
       if (officer.alive && officer.age !== null) officer.age++;
     }
     const matured = officers
-      .filter((officer) => officer.alive && officer.age === 18)
+      .filter((officer) => officer.alive && officer.age === EVENTS.comeOfAge.age)
       .sort((a, b) => a.id.localeCompare(b.id));
     for (const officer of matured) {
       // Add to current values; training/levels and persistent equipment are never replaced.
@@ -559,13 +575,18 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
       officer.force = Math.max(
         officer.force,
         Math.min(
-          officer.equipment === 'Fine arms' ? 105 : 100,
+          officer.equipment === 'Fine arms'
+            ? EVENTS.comeOfAge.forceCapFineArms
+            : EVENTS.comeOfAge.forceCap,
           officer.force + OFFICER_MATURITY_GAIN.force,
         ),
       );
       officer.intellect = Math.max(
         officer.intellect,
-        Math.min(100, officer.intellect + OFFICER_MATURITY_GAIN.intellect),
+        Math.min(
+          EVENTS.comeOfAge.intellectCap,
+          officer.intellect + OFFICER_MATURITY_GAIN.intellect,
+        ),
       );
       events.push(
         makeEvent(monthIndex, 'come-of-age', [officer.id], {
@@ -576,30 +597,40 @@ export function resolveV03MonthlyEvents(input: V03MonthlyEventsInput): V03Monthl
     }
     return null;
   });
-  systemic(8, month === 1 || month === 2, () => {
-    const city = chooseCity((entry) => owned(entry) && entry.gold >= 150);
+  systemic(EVENTS.festival.chance, month === 1 || month === 2, () => {
+    const city = chooseCity((entry) => owned(entry) && entry.gold >= EVENTS.festival.goldCost);
     if (!city) return null;
-    city.gold -= 150;
-    city.loyalty = boundedInt(city.loyalty + 6, 0, 100);
-    return makeEvent(monthIndex, 'festival', [city.id], { goldCost: 150, loyaltyGain: 6 });
+    city.gold -= EVENTS.festival.goldCost;
+    city.loyalty = boundedInt(city.loyalty + EVENTS.festival.loyaltyGain, 0, 100);
+    return makeEvent(monthIndex, 'festival', [city.id], {
+      goldCost: EVENTS.festival.goldCost,
+      loyaltyGain: EVENTS.festival.loyaltyGain,
+    });
   });
-  systemic(4, [6, 7, 8].includes(month), () => {
+  systemic(EVENTS.drought.chance, [6, 7, 8].includes(month), () => {
     // v0.3 farming is normally 0–100, so retain the legacy -15 effect on any
     // developed field instead of the old >100 guard that could never trigger.
     const city = chooseCity((entry) => owned(entry) && entry.farming > 0);
     if (!city) return null;
-    const loss = Math.min(15, city.farming);
+    const loss = Math.min(EVENTS.drought.farmingLoss, city.farming);
     city.farming -= loss;
     return makeEvent(monthIndex, 'drought', [city.id], { farmingLoss: loss });
   });
-  systemic(3, true, () => {
+  systemic(EVENTS.scholar.chance, true, () => {
     const officer = chooseStable(
-      officers.filter((entry) => entry.alive && entry.factionId !== null && entry.intellect < 100),
+      officers.filter(
+        (entry) =>
+          entry.alive &&
+          entry.factionId !== null &&
+          entry.intellect < EVENTS.scholar.intellectLimit,
+      ),
       state,
     );
     if (!officer) return null;
-    officer.intellect += 1;
-    return makeEvent(monthIndex, 'scholar', [officer.id], { intellectGain: 1 });
+    officer.intellect += EVENTS.scholar.intellectGain;
+    return makeEvent(monthIndex, 'scholar', [officer.id], {
+      intellectGain: EVENTS.scholar.intellectGain,
+    });
   });
 
   return {

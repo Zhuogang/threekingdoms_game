@@ -29,16 +29,21 @@ import { ROUTE_BY_ID, ROUTE_DEFINITIONS, routeIdBetween, type CityId } from './g
 import type { V03City, V03GameState, V03Officer } from './types';
 import type { RulerTemperament } from './ai/temperament';
 import { V03_HEGEMON_CAPITAL_CITY_ID } from './campaign/monthly-systems';
+import { CAMPAIGN_AI } from './balance';
 
-const MAX_OFFICERS_PER_PARTY = 10;
+const MAX_OFFICERS_PER_PARTY = CAMPAIGN_AI.strategic.maxOfficersPerParty;
 /** A raid takes no city: it scores half of an equivalent conquest. */
-const RAID_SCORE_FACTOR = 0.5;
+const RAID_SCORE_FACTOR = CAMPAIGN_AI.strategic.raidScoreFactor;
 /** A city lost by conquest stays a priority for its former owner this long. */
-export const RECENT_LOSS_DAYS = 360;
-const MAX_TARGET_VALUE = 0.5;
+export const RECENT_LOSS_DAYS = CAMPAIGN_AI.strategic.recentLossDays;
+const MAX_TARGET_VALUE = CAMPAIGN_AI.strategic.maxTargetValue;
 
 function cityWealth(city: V03City): number {
-  return city.population / 1000 + city.commerce + city.farming / 2;
+  return (
+    city.population / CAMPAIGN_AI.strategic.wealthPopulationDivisor +
+    city.commerce +
+    city.farming / CAMPAIGN_AI.strategic.wealthFarmingDivisor
+  );
 }
 
 /** The house holding strictly more cities than any other, if one does. */
@@ -67,18 +72,21 @@ export function campaignTargetValue(
   const target = state.cities.find((city) => city.id === targetCityId);
   if (!target) return 0;
   let value = 0;
-  if (target.id === V03_HEGEMON_CAPITAL_CITY_ID) value += 0.25;
+  if (target.id === V03_HEGEMON_CAPITAL_CITY_ID) value += CAMPAIGN_AI.strategic.capitalBonus;
   if (
     target.lostBy?.factionId === factionId &&
     state.absoluteDay - target.lostBy.absoluteDay <= RECENT_LOSS_DAYS
   )
-    value += 0.25;
+    value += CAMPAIGN_AI.strategic.recentLossBonus;
   const leader = leadingFactionId(state);
-  if (leader && leader !== factionId && target.factionId === leader) value += 0.2;
+  if (leader && leader !== factionId && target.factionId === leader)
+    value += CAMPAIGN_AI.strategic.leaderBonus;
   if (temperament.valuesWealth && state.cities.length) {
     const mean =
       state.cities.reduce((sum, city) => sum + cityWealth(city), 0) / state.cities.length;
-    value += 0.25 * Math.max(0, Math.min(1, (cityWealth(target) / mean - 1) * 4));
+    value +=
+      CAMPAIGN_AI.strategic.wealthBonus *
+      Math.max(0, Math.min(1, (cityWealth(target) / mean - 1) * CAMPAIGN_AI.strategic.wealthSlope));
   }
   if (temperament.valuesIsolation && target.factionId) {
     const supported = ROUTE_DEFINITIONS.some((route) => {
@@ -93,7 +101,7 @@ export function campaignTargetValue(
         state.cities.find((city) => city.id === other)?.factionId === target.factionId
       );
     });
-    if (!supported) value += 0.15;
+    if (!supported) value += CAMPAIGN_AI.strategic.isolationBonus;
   }
   return Math.min(MAX_TARGET_VALUE, value);
 }
@@ -169,7 +177,10 @@ function compareIds(a: string, b: string): number {
 
 function protectedMinimumGarrison(troops: number): number {
   // Keep the authority layer's established minimum: 35% of the garrison, capped at 1,000.
-  return Math.min(1000, Math.ceil(troops * 0.35));
+  return Math.min(
+    CAMPAIGN_AI.strategic.garrisonCap,
+    Math.ceil(troops * CAMPAIGN_AI.strategic.garrisonFraction),
+  );
 }
 
 function availableOfficers(
@@ -203,9 +214,12 @@ function partyAlternatives(
   for (const mode of ['small', 'balanced', 'maximum'] as const) {
     const desired =
       mode === 'small'
-        ? Math.max(1, Math.ceil(defenderTroops * 1.2))
+        ? Math.max(1, Math.ceil(defenderTroops * CAMPAIGN_AI.strategic.smallPartyRatio))
         : mode === 'balanced'
-          ? Math.max(smallest * 2, Math.ceil(defenderTroops * 1.6))
+          ? Math.max(
+              smallest * 2,
+              Math.ceil(defenderTroops * CAMPAIGN_AI.strategic.balancedPartyRatio),
+            )
           : maxTroops;
     const pool = officers.slice();
     if (mode === 'small')
@@ -352,14 +366,15 @@ function makeCandidate(
   // A raid takes no city, so it is worth half a conquest.
   const score =
     ((intent === 'raid' ? RAID_SCORE_FACTOR : 1) *
-      1000 *
+      CAMPAIGN_AI.strategic.score.cityValue *
       (1 + campaignTargetValue(state, factionId, targetCityId, assessment.temperament))) /
     (1 +
-      (assessment.matchup.expectedLosses / 1000) * assessment.temperament.lossWeight +
-      supply.totalFood / 10000 +
-      party.troopCount / 10000 +
-      route.estimatedDays / 30 +
-      assessment.homeRisk * 0.5);
+      (assessment.matchup.expectedLosses / CAMPAIGN_AI.strategic.score.lossDivisor) *
+        assessment.temperament.lossWeight +
+      supply.totalFood / CAMPAIGN_AI.strategic.score.foodDivisor +
+      party.troopCount / CAMPAIGN_AI.strategic.score.troopDivisor +
+      route.estimatedDays / CAMPAIGN_AI.strategic.score.dayDivisor +
+      assessment.homeRisk * CAMPAIGN_AI.strategic.score.homeRiskWeight);
   const reason = availableFood < supply.totalFood ? 'unaffordable' : assessment.reason;
   const foodDeficit = Math.max(0, supply.totalFood - availableFood, assessment.foodDeficit);
   const plan: StrategicRivalCampaignPlan = {
@@ -576,7 +591,7 @@ export function reviewStrategicRivalCampaigns(
         compareIds(a.sourceCityId, b.sourceCityId) ||
         compareIds(a.targetCityId, b.targetCityId),
     );
-    for (const option of optionsToRank.slice(0, 3)) {
+    for (const option of optionsToRank.slice(0, CAMPAIGN_AI.strategic.optionsExamined)) {
       const target = state.cities.find((city) => city.id === option.targetCityId)!;
       // Fierce and greedy rulers raid another house's city when a conquest is out of reach.
       const raidable =
@@ -639,7 +654,7 @@ export function reviewStrategicRivalCampaigns(
       });
     candidates.sort(compareCandidates);
     const retained = candidates.find(preferred);
-    if (retained && retained.score >= candidates[0]!.score * 0.8)
+    if (retained && retained.score >= candidates[0]!.score * CAMPAIGN_AI.strategic.retainShare)
       candidates.unshift(...candidates.splice(candidates.indexOf(retained), 1));
     const plannedSources = new Set<string>();
     let factionPlans = 0;

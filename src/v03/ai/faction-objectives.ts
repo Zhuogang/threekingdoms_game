@@ -1,3 +1,4 @@
+import { ECONOMY, PERSONNEL } from '../balance';
 import { PILOT_LOGISTICS_RATES } from '../calendar';
 import { forecastCityEconomy } from '../campaign/economy';
 import { getV03AttackAllianceBlock } from '../campaign/monthly-systems';
@@ -17,7 +18,7 @@ import { estimateCampaignMatchup } from './campaign-strength';
 import { recordAiDecision } from './decision-trace';
 
 const services = createV03OrderServices();
-const bounded = (value: number) => Math.min(9_999_999, Math.max(0, Math.ceil(value)));
+const bounded = (value: number) => Math.min(ECONOMY.resourceCap, Math.max(0, Math.ceil(value)));
 const ownedCities = (state: Readonly<V03GameState>, factionId: string) =>
   state.cities
     .filter((city) => city.factionId === factionId)
@@ -228,7 +229,7 @@ function canPrepare(state: Readonly<V03GameState>, opportunity: StrategicCampaig
   const city = state.cities.find((entry) => entry.id === opportunity.plan.sourceCityId)!;
   const local = army(state, city);
   const commandRoom = local.reduce(
-    (sum, officer) => sum + Math.max(0, 10_000 - officer.troops - officer.wounded),
+    (sum, officer) => sum + Math.max(0, PERSONNEL.capacity - officer.troops - officer.wounded),
     0,
   );
   const maxRecruitment =

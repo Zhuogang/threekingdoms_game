@@ -1,6 +1,7 @@
 import { troopLevel } from '../campaign/troop-experience';
 import type { BattleOutcome, TacticalBattleUnit } from './types';
 import { PERSONNEL_RULES } from '../campaign/personnel';
+import { BATTLE } from '../balance';
 
 /** Combat loss means unavailable, not all dead. Keep fractional wounded across attacks. */
 export function applyCombatDamage(unit: TacticalBattleUnit, damage: number): number {
@@ -17,8 +18,8 @@ export function applyCombatDamage(unit: TacticalBattleUnit, damage: number): num
 /** Normal attacks and counterattacks only; tactics keep their officer-derived damage. */
 export function troopDamageMultiplier(sourceExperience: number, targetExperience: number): number {
   return (
-    (1 + (troopLevel(sourceExperience) - 1) * 0.02) *
-    (1 - (troopLevel(targetExperience) - 1) * 0.01)
+    (1 + (troopLevel(sourceExperience) - 1) * BATTLE.troopExperience.attackPerLevel) *
+    (1 - (troopLevel(targetExperience) - 1) * BATTLE.troopExperience.defensePerLevel)
   );
 }
 
@@ -41,8 +42,9 @@ export function battleExperienceGain(unit: TacticalBattleUnit, outcome: BattleOu
   )
     return 0;
   return (
-    40 +
-    80 * Math.min(1, unit.combatCasualtiesDealt / unit.initialTroops) +
-    (outcome.winner === unit.side ? 20 : 0)
+    BATTLE.experienceGain.base +
+    BATTLE.experienceGain.perCasualtyShare *
+      Math.min(1, unit.combatCasualtiesDealt / unit.initialTroops) +
+    (outcome.winner === unit.side ? BATTLE.experienceGain.victory : 0)
   );
 }

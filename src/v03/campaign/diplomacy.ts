@@ -1,3 +1,4 @@
+import { CAMPAIGN_AI } from '../balance';
 import {
   acceptV03CoalitionInvitation,
   createV03Alliance,
@@ -59,9 +60,9 @@ function strongestFaction(state: V03GameState): string | null {
 }
 
 /** A broken treaty weighs on every later proposal for this many months. */
-export const V03_TREATY_BREAK_MONTHS = 24;
+export const V03_TREATY_BREAK_MONTHS = CAMPAIGN_AI.diplomacy.treatyBreakMonths;
 /** Armies this close to their target when a treaty is signed press on and fight. */
-export const V03_ALLIANCE_RECALL_MIN_DAYS = 5;
+export const V03_ALLIANCE_RECALL_MIN_DAYS = CAMPAIGN_AI.diplomacy.recallMinDays;
 
 export type V03AllianceFactorCode =
   | 'base'
@@ -85,7 +86,12 @@ export function getV03AllianceFactors(
       state.factions.find((faction) => faction.id === state.playerFactionId)?.leaderOfficerId,
   );
   const factors: { code: V03AllianceFactorCode; points: number }[] = [
-    { code: 'base', points: 40 + Math.floor((leader?.intellect ?? 0) / 2) },
+    {
+      code: 'base',
+      points:
+        CAMPAIGN_AI.diplomacy.baseChance +
+        Math.floor((leader?.intellect ?? 0) / CAMPAIGN_AI.diplomacy.intellectDivisor),
+    },
   ];
   const strongest = strongestFaction(state);
   if (
@@ -95,8 +101,9 @@ export function getV03AllianceFactors(
     borders(state, state.playerFactionId, strongest) &&
     borders(state, targetFactionId, strongest)
   )
-    factors.push({ code: 'common-enemy', points: 20 });
-  if (targetFactionId === strongest) factors.push({ code: 'target-strongest', points: -30 });
+    factors.push({ code: 'common-enemy', points: CAMPAIGN_AI.diplomacy.commonEnemy });
+  if (targetFactionId === strongest)
+    factors.push({ code: 'target-strongest', points: CAMPAIGN_AI.diplomacy.targetStrongest });
   const cities = (factionId: string) =>
     state.cities.filter((city) => city.factionId === factionId).length;
   const playerCities = cities(state.playerFactionId);
@@ -108,7 +115,7 @@ export function getV03AllianceFactors(
         cities(faction.id) < playerCities,
     )
   )
-    factors.push({ code: 'player-strongest', points: -30 });
+    factors.push({ code: 'player-strongest', points: CAMPAIGN_AI.diplomacy.playerStrongest });
   if (
     state.journeys.some(
       (journey) =>
@@ -120,15 +127,17 @@ export function getV03AllianceFactors(
           state.playerFactionId,
     )
   )
-    factors.push({ code: 'army-marching', points: -30 });
+    factors.push({ code: 'army-marching', points: CAMPAIGN_AI.diplomacy.armyMarching });
   const brokeMonth = state.lastAllianceBreakMonthByFaction[state.playerFactionId];
   if (brokeMonth !== undefined && state.monthIndex - brokeMonth < V03_TREATY_BREAK_MONTHS)
-    factors.push({ code: 'treaty-broken', points: -30 });
+    factors.push({ code: 'treaty-broken', points: CAMPAIGN_AI.diplomacy.treatyBroken });
   const temperament = rulerTemperament(state, targetFactionId);
   if (temperament.traits.includes('benevolent'))
-    factors.push({ code: 'benevolent-ruler', points: 10 });
-  if (temperament.traits.includes('fierce')) factors.push({ code: 'fierce-ruler', points: -10 });
-  if (playerCities <= 2) factors.push({ code: 'small-house', points: 15 });
+    factors.push({ code: 'benevolent-ruler', points: CAMPAIGN_AI.diplomacy.benevolentRuler });
+  if (temperament.traits.includes('fierce'))
+    factors.push({ code: 'fierce-ruler', points: CAMPAIGN_AI.diplomacy.fierceRuler });
+  if (playerCities <= CAMPAIGN_AI.diplomacy.smallHouseCities)
+    factors.push({ code: 'small-house', points: CAMPAIGN_AI.diplomacy.smallHouse });
   return factors;
 }
 
@@ -137,7 +146,10 @@ export function getV03AllianceChance(state: V03GameState, targetFactionId: strin
     (sum, factor) => sum + factor.points,
     0,
   );
-  return Math.max(5, Math.min(90, chance));
+  return Math.max(
+    CAMPAIGN_AI.diplomacy.minChance,
+    Math.min(CAMPAIGN_AI.diplomacy.maxChance, chance),
+  );
 }
 
 /**

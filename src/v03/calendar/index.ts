@@ -1,3 +1,4 @@
+import { ECONOMY } from '../balance';
 import type { RouteDefinition } from '../geography';
 
 export const DAYS_PER_MONTH = 30;
@@ -435,9 +436,9 @@ export function advanceJourneyOneDay(journey: Journey): JourneyStepResult {
 
 /** Pilot rates are visible and adjustable; they are not historical claims. */
 export const PILOT_LOGISTICS_RATES = {
-  cityFoodPerTroopDay: 0.004,
-  travelFoodPerTroopDay: 0.008,
-  battleFoodPerTroopDay: 0.04,
+  cityFoodPerTroopDay: ECONOMY.logistics.cityFoodPerTroopDay,
+  travelFoodPerTroopDay: ECONOMY.logistics.travelFoodPerTroopDay,
+  battleFoodPerTroopDay: ECONOMY.logistics.battleFoodPerTroopDay,
   source: 'Prototype rates only; compare against paired v0.3 campaign simulations.',
 } as const;
 

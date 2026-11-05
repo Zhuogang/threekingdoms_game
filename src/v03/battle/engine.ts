@@ -2,6 +2,7 @@ import { forecastBattleRations, type BattleRationRemainders } from './supply';
 import { recordAiDecision, type AiDecisionEvent } from '../ai/decision-trace';
 import { applyCombatDamage } from './experience';
 import { PERSONNEL_RULES } from '../campaign/personnel';
+import { BATTLE, BATTLE_AI, MORALE, PERSONNEL, TACTICS } from '../balance';
 import {
   battleTerrainAt,
   fireTerrainMultiplier,
@@ -43,33 +44,25 @@ import {
 import { battlefieldName } from './battlefields/selection';
 import { recordCombatCasualties, troopDamageMultiplier } from './experience';
 
-const DEFAULT_BATTLE_DAY_LIMIT = 30;
+const DEFAULT_BATTLE_DAY_LIMIT = BATTLE.dayLimit.conquest;
 const DEFAULT_TIMEOUT_POLICY: BattleTimeoutPolicy = 'survivor-count';
-export const BATTLE_TACTIC_POINT_CAP = 30;
-export const BATTLE_TACTIC_POINT_REGEN = 2;
-export const BATTLE_TACTIC_COST: Readonly<Record<BattleTactic, number>> = {
-  fire: 4,
-  confuse: 3,
-  // 2 until PF-RL-12: at the daily regeneration of 2 it was free upkeep.
-  rally: 3,
-  raidSupply: 4,
-  ambush: 3,
-  rockfall: 4,
-};
-const WAVERING_MORALE = 40;
-const ROUTED_MORALE = 20;
-const MIN_MORALE = 5;
-/** A fed formation that lost no troops during a day regains this much morale at rollover, up to the opening 80 (PF-RL-11). */
-export const BATTLE_MORALE_RECOVERY = 5;
-export const BATTLE_MORALE_RECOVERY_CAP = 80;
-const AMBUSH_DAMAGE_MULTIPLIER = 1.4;
-// PF-RL-12: Fire (0.1584) and Rockfall (0.1296) lost to an ordinary 0.3 hit almost everywhere.
+export const BATTLE_TACTIC_POINT_CAP = TACTICS.points.cap;
+export const BATTLE_TACTIC_POINT_REGEN = TACTICS.points.regen;
+export const BATTLE_TACTIC_COST: Readonly<Record<BattleTactic, number>> = TACTICS.cost;
+const WAVERING_MORALE = MORALE.wavering;
+const ROUTED_MORALE = MORALE.routed;
+const MIN_MORALE = MORALE.floor;
+/** A fed formation that lost no troops during a day regains this much morale at rollover, up to the opening morale (PF-RL-11). */
+export const BATTLE_MORALE_RECOVERY = MORALE.recovery;
+export const BATTLE_MORALE_RECOVERY_CAP = MORALE.recoveryCap;
+const AMBUSH_DAMAGE_MULTIPLIER = TACTICS.ambush.multiplier;
+// PF-RL-12: Fire and Rockfall lost to an ordinary hit almost everywhere.
 // Fire now beats one in Wind or forest; Rockfall keeps its morale blow on top.
-const FIRE_DAMAGE_COEFFICIENT = 0.21;
-const ROCKFALL_DAMAGE_COEFFICIENT = 0.18;
-const ROCKFALL_MORALE_LOSS = 10;
-const RAID_SUPPLY_MINIMUM = 100;
-const INSPIRED_DAMAGE_MULTIPLIER = 1.2;
+const FIRE_DAMAGE_COEFFICIENT = TACTICS.fire.coefficient;
+const ROCKFALL_DAMAGE_COEFFICIENT = TACTICS.rockfall.coefficient;
+const ROCKFALL_MORALE_LOSS = TACTICS.rockfall.moraleLoss;
+const RAID_SUPPLY_MINIMUM = TACTICS.raidSupply.minimum;
+const INSPIRED_DAMAGE_MULTIPLIER = BATTLE.damage.inspired;
 const TACTIC_ORDER: readonly BattleTactic[] = [
   'fire',
   'rally',
@@ -145,15 +138,16 @@ function makeUnits(
       combatCasualtiesDealt: 0,
       combatCasualtiesReceived: 0,
       force: entry.force,
-      intellect: entry.intellect ?? 40,
+      intellect: entry.intellect ?? BATTLE.roster.defaultIntellect,
       level: entry.level ?? 0,
       isMilitia: entry.isMilitia ?? entry.id.includes('militia'),
       cunning: entry.cunning ?? false,
       ...(entry.fierce ? { fierce: true } : {}),
-      attackRange: entry.attackRange ?? (entry.troopType === 'archer' ? 3 : 1),
+      attackRange:
+        entry.attackRange ?? (entry.troopType === 'archer' ? BATTLE.roster.archerRange : 1),
       x: position.x,
       y: position.y,
-      morale: 80,
+      morale: MORALE.opening,
       status: 'normal',
       moved: false,
       acted: false,
@@ -174,19 +168,21 @@ function rosterError(roster: readonly BattleRosterEntry[], side: BattleSide): st
       unit.troopExperience !== undefined &&
       (!Number.isFinite(unit.troopExperience) ||
         unit.troopExperience < 0 ||
-        unit.troopExperience > 1900)
+        unit.troopExperience > BATTLE.roster.experienceLimit)
     )
       return `${unit.name} has invalid soldier experience.`;
-    if (!Number.isFinite(unit.force) || unit.force < 0 || unit.force > 120)
+    if (!Number.isFinite(unit.force) || unit.force < 0 || unit.force > BATTLE.roster.forceLimit)
       return `${unit.name} has an invalid force value.`;
     if (
       unit.intellect !== undefined &&
-      (!Number.isFinite(unit.intellect) || unit.intellect < 0 || unit.intellect > 120)
+      (!Number.isFinite(unit.intellect) ||
+        unit.intellect < 0 ||
+        unit.intellect > BATTLE.roster.intellectLimit)
     )
       return `${unit.name} has an invalid intellect value.`;
     if (
       unit.level !== undefined &&
-      (!Number.isInteger(unit.level) || unit.level < 0 || unit.level > 5)
+      (!Number.isInteger(unit.level) || unit.level < 0 || unit.level > BATTLE.roster.levelLimit)
     )
       return `${unit.name} has an invalid level.`;
     if (
@@ -250,13 +246,21 @@ export function createTacticalBattle(options: CreateBattleStateOptions): V03Tact
         BATTLE_TACTIC_POINT_CAP,
         units
           .filter((unit) => unit.side === 'attacker' && !unit.isMilitia)
-          .reduce((total, unit) => total + Math.floor(unit.intellect / 10), 0),
+          .reduce(
+            (total, unit) =>
+              total + Math.floor(unit.intellect / TACTICS.points.openingIntellectDivisor),
+            0,
+          ),
       ),
       defender: Math.min(
         BATTLE_TACTIC_POINT_CAP,
         units
           .filter((unit) => unit.side === 'defender' && !unit.isMilitia)
-          .reduce((total, unit) => total + Math.floor(unit.intellect / 10), 0),
+          .reduce(
+            (total, unit) =>
+              total + Math.floor(unit.intellect / TACTICS.points.openingIntellectDivisor),
+            0,
+          ),
       ),
     },
     supplies: {
@@ -360,8 +364,8 @@ export function appendBattleLog(
   state.logEntries ??= [];
   state.logEntries.push({ day: state.day, index: state.log.length, code, params });
   state.log.push(message);
-  if (state.log.length > 250) {
-    const removed = state.log.length - 250;
+  if (state.log.length > BATTLE.logCap) {
+    const removed = state.log.length - BATTLE.logCap;
     state.log.splice(0, removed);
     state.logEntries = state.logEntries
       .filter((entry) => entry.index >= removed)
@@ -393,27 +397,29 @@ function baseDamage(
   target: TacticalBattleUnit,
   map: V03TacticalBattleState['map'],
 ): number {
-  const forceRatio = (source.force + 55) / (target.force + 65);
-  const morale = 0.65 + source.morale / 170;
+  const forceRatio =
+    (source.force + BATTLE.damage.forceOffsetSource) /
+    (target.force + BATTLE.damage.forceOffsetTarget);
+  const morale = BATTLE.damage.moraleBase + source.morale / BATTLE.damage.moraleDivisor;
   const matchup =
     source.troopType === 'cavalry' && target.troopType === 'archer'
-      ? 1.3
+      ? BATTLE.damage.cavalryVsArcher
       : source.troopType === 'infantry' && target.troopType === 'cavalry'
-        ? 1.2
+        ? BATTLE.damage.infantryVsCavalry
         : source.troopType === 'archer' && target.troopType === 'infantry'
-          ? 1.15
+          ? BATTLE.damage.archerVsInfantry
           : 1;
-  const wavering = isWavering(source) ? 0.85 : 1;
-  const routedTarget = isRouted(target) ? 1.2 : 1;
+  const wavering = isWavering(source) ? BATTLE.damage.wavering : 1;
+  const routedTarget = isRouted(target) ? BATTLE.damage.routedTarget : 1;
   const inspiration = source.status === 'inspired' ? INSPIRED_DAMAGE_MULTIPLIER : 1;
   const terrain = battleTerrainAt(map, target);
   const terrainDefense = terrainDefenseMultiplier(terrain);
   // The existing 20-person normal-hit floor remains part of the base damage;
   // water modifiers are applied after it, then casualties are rounded once.
   return Math.max(
-    20,
+    BATTLE.damage.floor,
     source.troops *
-      0.3 *
+      BATTLE.damage.coefficient *
       forceRatio *
       morale *
       matchup *
@@ -434,9 +440,13 @@ function fireBaseDamage(
   const ground = battleTerrainAt(state.map, target);
   // Water's legacy fire immunity is removed: water uses the shared attack/defense modifiers.
   const forest = fireTerrainMultiplier(ground);
-  const intellect = Math.max(0.35, (source.intellect + 30) / (target.intellect + 55));
+  const intellect = Math.max(
+    TACTICS.fire.ratioFloor,
+    (source.intellect + TACTICS.fire.intellectOffsetSource) /
+      (target.intellect + TACTICS.fire.intellectOffsetTarget),
+  );
   return Math.max(
-    12,
+    TACTICS.fire.floor,
     source.troops * FIRE_DAMAGE_COEFFICIENT * intellect * weather * forest * variation,
   );
 }
@@ -445,7 +455,11 @@ function rockfallBaseDamage(source: TacticalBattleUnit, target: TacticalBattleUn
   return Math.floor(
     source.troops *
       ROCKFALL_DAMAGE_COEFFICIENT *
-      Math.max(0.35, (source.intellect + 30) / (target.intellect + 55)),
+      Math.max(
+        TACTICS.fire.ratioFloor,
+        (source.intellect + TACTICS.fire.intellectOffsetSource) /
+          (target.intellect + TACTICS.fire.intellectOffsetTarget),
+      ),
   );
 }
 
@@ -509,7 +523,16 @@ function forecastAttack(
   const estimatedCasualties = inRange ? estimateDamage(source, target, map).casualties : null;
   const survivingTarget = estimatedCasualties === null ? null : target.troops - estimatedCasualties;
   const targetMoraleLoss = estimatedCasualties
-    ? Math.min(45, Math.max(1, Math.ceil((estimatedCasualties / Math.max(1, target.troops)) * 55)))
+    ? Math.min(
+        BATTLE.moraleLoss.cap,
+        Math.max(
+          1,
+          Math.ceil(
+            (estimatedCasualties / Math.max(1, target.troops)) *
+              BATTLE.moraleLoss.perCasualtyFraction,
+          ),
+        ),
+      )
     : 0;
   const counterattackPossible = Boolean(
     inRange &&
@@ -534,7 +557,16 @@ function forecastAttack(
   const targetMoraleAfter =
     estimatedCasualties === null ? null : Math.max(MIN_MORALE, target.morale - targetMoraleLoss);
   const sourceMoraleLoss = counterCasualties
-    ? Math.min(45, Math.max(1, Math.ceil((counterCasualties / Math.max(1, source.troops)) * 55)))
+    ? Math.min(
+        BATTLE.moraleLoss.cap,
+        Math.max(
+          1,
+          Math.ceil(
+            (counterCasualties / Math.max(1, source.troops)) *
+              BATTLE.moraleLoss.perCasualtyFraction,
+          ),
+        ),
+      )
     : 0;
   return {
     sourceId: source.id,
@@ -571,8 +603,13 @@ function tacticCost(unit: TacticalBattleUnit, tactic: BattleTactic): number {
 }
 
 function tacticRange(unit: TacticalBattleUnit, tactic: BattleTactic): number {
-  const generalRange = unit.troopType === 'archer' || unit.intellect >= 80 ? 3 : 2;
-  return tactic === 'ambush' || tactic === 'rockfall' ? Math.min(2, generalRange) : generalRange;
+  const generalRange =
+    unit.troopType === 'archer' || unit.intellect >= TACTICS.range.longIntellect
+      ? TACTICS.range.long
+      : TACTICS.range.base;
+  return tactic === 'ambush' || tactic === 'rockfall'
+    ? Math.min(TACTICS.range.groundTacticMax, generalRange)
+    : generalRange;
 }
 
 function tacticReason(
@@ -585,23 +622,33 @@ function tacticReason(
   if (unit.isMilitia) return 'Militia cannot use tactics.';
   if (isRouted(unit)) return 'Routed units cannot use tactics.';
   if (isWavering(unit)) return 'Wavering units cannot use tactics.';
-  const needed = (base: number) => (unit.level >= 3 ? base - 10 : base);
-  if (tactic === 'fire' && unit.intellect < needed(60))
-    return `Fire requires intellect ${needed(60)}.`;
-  if (tactic === 'confuse' && unit.intellect < needed(70))
-    return `Confuse requires intellect ${needed(70)}.`;
-  if (tactic === 'rally' && unit.intellect < needed(50) && unit.force < 85)
-    return `Rally requires intellect ${needed(50)} or force 85.`;
-  if (tactic === 'raidSupply' && unit.intellect < needed(60) && unit.troopType !== 'cavalry')
-    return `Raid supplies requires intellect ${needed(60)} or cavalry.`;
+  const needed = (base: number) =>
+    unit.level >= TACTICS.requirement.veteranLevel
+      ? base - TACTICS.requirement.veteranReduction
+      : base;
+  const need = TACTICS.requirement;
+  if (tactic === 'fire' && unit.intellect < needed(need.fire))
+    return `Fire requires intellect ${needed(need.fire)}.`;
+  if (tactic === 'confuse' && unit.intellect < needed(need.confuse))
+    return `Confuse requires intellect ${needed(need.confuse)}.`;
+  if (tactic === 'rally' && unit.intellect < needed(need.rally) && unit.force < need.rallyForce)
+    return `Rally requires intellect ${needed(need.rally)} or force ${need.rallyForce}.`;
+  if (
+    tactic === 'raidSupply' &&
+    unit.intellect < needed(need.raidSupply) &&
+    unit.troopType !== 'cavalry'
+  )
+    return `Raid supplies requires intellect ${needed(need.raidSupply)} or cavalry.`;
   if (tactic === 'ambush') {
-    if (unit.intellect < needed(60)) return `Ambush requires intellect ${needed(60)}.`;
+    if (unit.intellect < needed(need.ambush))
+      return `Ambush requires intellect ${needed(need.ambush)}.`;
     if (battleTerrainAt(state.map, unit) !== 'forest')
       return 'Ambush requires standing in a forest.';
     if (moved) return 'Ambush requires a unit that has not moved today.';
   }
   if (tactic === 'rockfall') {
-    if (unit.intellect < needed(65)) return `Rockfall requires intellect ${needed(65)}.`;
+    if (unit.intellect < needed(need.rockfall))
+      return `Rockfall requires intellect ${needed(need.rockfall)}.`;
     if (battleTerrainAt(state.map, unit) !== 'hill') return 'Rockfall requires standing on a hill.';
   }
   if (state.tacticPoints[unit.side] < cost) return `Requires ${cost} tactic points.`;
@@ -691,28 +738,36 @@ export function predictBattleTactic(
   let endsConfusion = false;
   let suppliesTransferred = 0;
   if (tactic === 'fire') {
-    minCasualties = casualties(fireBaseDamage(state, source, target, 0.9));
-    maxCasualties = casualties(fireBaseDamage(state, source, target, 1.1));
+    minCasualties = casualties(fireBaseDamage(state, source, target, TACTICS.fire.variationMin));
+    maxCasualties = casualties(fireBaseDamage(state, source, target, TACTICS.fire.variationMax));
   } else if (tactic === 'ambush') {
     minCasualties = casualties(
-      baseDamage(source, target, state.map) * 0.88 * AMBUSH_DAMAGE_MULTIPLIER,
+      baseDamage(source, target, state.map) *
+        TACTICS.ambush.variationMin *
+        AMBUSH_DAMAGE_MULTIPLIER,
     );
     maxCasualties = casualties(
-      baseDamage(source, target, state.map) * 1.12 * AMBUSH_DAMAGE_MULTIPLIER,
+      baseDamage(source, target, state.map) *
+        TACTICS.ambush.variationMax *
+        AMBUSH_DAMAGE_MULTIPLIER,
     );
   } else if (tactic === 'rockfall') {
     minCasualties = maxCasualties = casualties(rockfallBaseDamage(source, target));
     moraleChange = -ROCKFALL_MORALE_LOSS;
   } else if (tactic === 'confuse') {
-    chance = Math.min(90, Math.max(20, 55 + source.intellect - target.intellect));
+    chance = Math.min(
+      TACTICS.confuse.max,
+      Math.max(TACTICS.confuse.min, TACTICS.confuse.base + source.intellect - target.intellect),
+    );
   } else if (tactic === 'rally') {
-    const rallyGain = 15 + Math.floor(source.intellect / 5);
+    const rallyGain =
+      TACTICS.rally.base + Math.floor(source.intellect / TACTICS.rally.intellectDivisor);
     moraleChange = Math.min(100, target.morale + rallyGain) - target.morale;
     endsConfusion = target.status === 'confused';
   } else {
     suppliesTransferred = Math.min(
       state.supplies[target.side],
-      Math.max(RAID_SUPPLY_MINIMUM, Math.floor(target.troops * 0.5)),
+      Math.max(RAID_SUPPLY_MINIMUM, Math.floor(target.troops * TACTICS.raidSupply.troopFraction)),
     );
   }
   return {
@@ -764,8 +819,14 @@ function attackOneWay(
   consumeInspiredHit(source, casualties);
   if (casualties > 0) {
     const moraleLoss = Math.min(
-      45,
-      Math.max(1, Math.ceil((casualties / Math.max(1, target.troops + casualties)) * 55)),
+      BATTLE.moraleLoss.cap,
+      Math.max(
+        1,
+        Math.ceil(
+          (casualties / Math.max(1, target.troops + casualties)) *
+            BATTLE.moraleLoss.perCasualtyFraction,
+        ),
+      ),
     );
     target.morale = Math.max(MIN_MORALE, target.morale - moraleLoss);
   }
@@ -867,8 +928,14 @@ function applyTacticDamage(
       MIN_MORALE,
       target.morale -
         Math.min(
-          45,
-          Math.max(1, Math.ceil((casualties / Math.max(1, target.troops + casualties)) * 55)),
+          BATTLE.moraleLoss.cap,
+          Math.max(
+            1,
+            Math.ceil(
+              (casualties / Math.max(1, target.troops + casualties)) *
+                BATTLE.moraleLoss.perCasualtyFraction,
+            ),
+          ),
         ),
     );
   if (target.troops === 0) {
@@ -906,7 +973,7 @@ function performTactic(
     suppliesBefore = state.supplies[target.side];
   let message: string;
   if (tactic === 'fire') {
-    const variation = (90 + nextRandomInt(state, 21)) / 100;
+    const variation = (TACTICS.fire.rollBase + nextRandomInt(state, TACTICS.fire.rollSpan)) / 100;
     const casualties = applyTacticDamage(
       state,
       source,
@@ -915,7 +982,8 @@ function performTactic(
     );
     message = `${source.name}'s fire tactic strikes ${target.name}: ${casualties} casualties`;
   } else if (tactic === 'ambush') {
-    const variation = (88 + nextRandomInt(state, 25)) / 100;
+    const variation =
+      (TACTICS.ambush.rollBase + nextRandomInt(state, TACTICS.ambush.rollSpan)) / 100;
     const casualties = applyTacticDamage(
       state,
       source,
@@ -929,14 +997,17 @@ function performTactic(
     target.morale = Math.max(MIN_MORALE, target.morale - ROCKFALL_MORALE_LOSS);
     message = `${source.name} drops rocks on ${target.name}: ${casualties} casualties; morale −${ROCKFALL_MORALE_LOSS}`;
   } else if (tactic === 'confuse') {
-    const chance = Math.min(90, Math.max(20, 55 + source.intellect - target.intellect));
+    const chance = Math.min(
+      TACTICS.confuse.max,
+      Math.max(TACTICS.confuse.min, TACTICS.confuse.base + source.intellect - target.intellect),
+    );
     const succeeded = nextRandomInt(state, 100) < chance;
     if (succeeded) target.status = 'confused';
     message = succeeded
       ? `${source.name} confuses ${target.name}; the unit will lose its next turn (${chance}% chance)`
       : `${target.name} resists ${source.name}'s confusion tactic (${chance}% chance)`;
   } else if (tactic === 'rally') {
-    const gain = 15 + Math.floor(source.intellect / 5);
+    const gain = TACTICS.rally.base + Math.floor(source.intellect / TACTICS.rally.intellectDivisor);
     const priorStatus = target.status;
     const priorMorale = target.morale;
     target.morale = Math.min(100, target.morale + gain);
@@ -945,7 +1016,7 @@ function performTactic(
   } else {
     const taken = forecast.suppliesTransferred;
     state.supplies[target.side] -= taken;
-    state.supplies[source.side] += Math.floor(taken / 2);
+    state.supplies[source.side] += Math.floor(taken / TACTICS.raidSupply.keptDivisor);
     message = `${source.name} raids ${target.name}'s supplies: ${taken} food seized`;
   }
   if (
@@ -1032,19 +1103,24 @@ export interface TacticalActionCandidate {
 
 // Casualty-equivalent policy values, not win probabilities. Mechanical forecasts
 // supply the outcomes; these bounded preferences value preservation and scarce points.
-const TACTICAL_VALUE = {
-  retaliation: 1.1,
-  formation: 80,
-  wounded: 0.15,
-  rout: 50,
-  pointRecoveryDay: 24,
-} as const;
+const TACTICAL_VALUE = BATTLE_AI.value;
 
 function finishingValue(target: TacticalBattleUnit, casualties: number, moraleChange = 0): number {
   if (casualties >= target.troops)
-    return TACTICAL_VALUE.formation + Math.min(200, target.wounded * TACTICAL_VALUE.wounded);
+    return (
+      TACTICAL_VALUE.formation +
+      Math.min(TACTICAL_VALUE.woundedFinishCap, target.wounded * TACTICAL_VALUE.wounded)
+    );
   const loss =
-    casualties > 0 ? Math.min(45, Math.max(1, Math.ceil((casualties / target.troops) * 55))) : 0;
+    casualties > 0
+      ? Math.min(
+          BATTLE.moraleLoss.cap,
+          Math.max(
+            1,
+            Math.ceil((casualties / target.troops) * BATTLE.moraleLoss.perCasualtyFraction),
+          ),
+        )
+      : 0;
   return !isRouted(target) && target.morale - loss + moraleChange < ROUTED_MORALE
     ? TACTICAL_VALUE.rout
     : 0;
@@ -1063,13 +1139,13 @@ function potentialDamage(state: V03TacticalBattleState, unit: TacticalBattleUnit
   }
   // When no shot exists yet, discount a possible later exchange instead of
   // presenting an unreachable attack as a currently legal action.
-  return present || future * 0.35;
+  return present || future * TACTICAL_VALUE.noShotDiscount;
 }
 
 function tacticOpportunityCost(points: number, cost: number): number {
   const remaining = points - cost;
   const regenerationDays = cost / BATTLE_TACTIC_POINT_REGEN;
-  const scarcity = remaining < BATTLE_TACTIC_POINT_REGEN ? 1.5 : 1;
+  const scarcity = remaining < BATTLE_TACTIC_POINT_REGEN ? TACTICAL_VALUE.pointScarcity : 1;
   return TACTICAL_VALUE.pointRecoveryDay * regenerationDays * scarcity;
 }
 
@@ -1081,17 +1157,35 @@ function tacticOpportunityCost(points: number, cost: number): number {
 export function battleTemperament(
   unit: Pick<TacticalBattleUnit, 'force' | 'intellect' | 'fierce'>,
 ): number {
-  return Math.max(-1, Math.min(1, (unit.force - unit.intellect) / 60 + (unit.fierce ? 0.35 : 0)));
+  return Math.max(
+    -1,
+    Math.min(
+      1,
+      (unit.force - unit.intellect) / BATTLE_AI.temperament.forceIntellectDivisor +
+        (unit.fierce ? BATTLE_AI.temperament.fierceBonus : 0),
+    ),
+  );
 }
 
 /** Appetite for spending tactic points, from -1 to 1: intellect, plus the cunning trait. */
 function tacticAppetite(unit: Pick<TacticalBattleUnit, 'intellect' | 'cunning'>): number {
-  return Math.max(-1, Math.min(1, (unit.intellect - 60) / 40 + (unit.cunning ? 0.25 : 0)));
+  return Math.max(
+    -1,
+    Math.min(
+      1,
+      (unit.intellect - BATTLE_AI.temperament.appetiteIntellectBase) /
+        BATTLE_AI.temperament.appetiteIntellectDivisor +
+        (unit.cunning ? BATTLE_AI.temperament.cunningBonus : 0),
+    ),
+  );
 }
 
 /** Weight of next-exchange exposure: 0.65 for a balanced leader, 0.42–0.88 by temperament. */
 function exposureWeight(unit: TacticalBattleUnit): number {
-  return isRouted(unit) ? 1 : 0.65 * (1 - 0.35 * battleTemperament(unit));
+  return isRouted(unit)
+    ? 1
+    : BATTLE_AI.temperament.exposureBase *
+        (1 - BATTLE_AI.temperament.exposureSwing * battleTemperament(unit));
 }
 
 /** Pure legal alternatives in the unit's current position. Stable ties prefer
@@ -1146,15 +1240,18 @@ function battleActionCandidates(
     return (
       value +
       (endsBattle
-        ? 500 +
+        ? TACTICAL_VALUE.battleEndBonus +
           livingUnits(state, unit.side).reduce(
-            (sum, entry) => sum + entry.troops * 0.5 + entry.wounded,
+            (sum, entry) =>
+              sum + entry.troops * TACTICAL_VALUE.battleEndTroopWeight + entry.wounded,
             0,
           )
         : 0)
     );
   };
-  const preserve = TACTICAL_VALUE.retaliation + (unit.troopExperience / 1900) * 0.2;
+  const preserve =
+    TACTICAL_VALUE.retaliation +
+    (unit.troopExperience / PERSONNEL.troopExperience.max) * BATTLE_AI.preserve.experience;
   for (const target of getUnitAttackTargets(state, unitId)) {
     const forecast = predictBattleAttack(state, unitId, target.id)!;
     const action = candidate('attack', target.id);
@@ -1162,7 +1259,7 @@ function battleActionCandidates(
     action.retaliation = forecast.counterattack.estimatedCasualties ?? 0;
     action.finishValue = finishing(target, action.outgoing);
     if (action.retaliation >= unit.troops)
-      action.finishValue -= TACTICAL_VALUE.formation + unit.wounded * 0.6;
+      action.finishValue -= TACTICAL_VALUE.formation + unit.wounded * TACTICAL_VALUE.woundedWeight;
     action.score = action.outgoing - action.retaliation * preserve + action.finishValue;
     choices.push(action);
   }
@@ -1174,7 +1271,7 @@ function battleActionCandidates(
       const action = candidate(entry.tactic, target.id);
       action.pointCost =
         tacticOpportunityCost(state.tacticPoints[unit.side], entry.cost) *
-        (1 - 0.3 * tacticAppetite(unit));
+        (1 - BATTLE_AI.temperament.appetiteCostSwing * tacticAppetite(unit));
       if (entry.tactic === 'rally') {
         const restored = {
           ...target,
@@ -1182,7 +1279,11 @@ function battleActionCandidates(
           status: 'inspired' as const,
         };
         const opportunity =
-          target.acted || target.id === unit.id ? (state.day < state.dayLimit ? 0.45 : 0) : 1;
+          target.acted || target.id === unit.id
+            ? state.day < state.dayLimit
+              ? BATTLE_AI.rally.spentTargetOpportunity
+              : 0
+            : 1;
         // Rested formations recover to 80 on their own, so only morale restored below
         // that protects against wavering and rout; extra damage is in the capability term.
         const restoredMorale =
@@ -1190,8 +1291,11 @@ function battleActionCandidates(
           Math.min(BATTLE_MORALE_RECOVERY_CAP, target.morale);
         action.supportValue =
           opportunity * Math.max(0, capability(restored) - capability(target)) +
-          (restoredMorale / 100) * (target.troops + target.wounded * 0.3) * 0.3;
-        if (isRouted(target) && !isRouted(restored)) action.supportValue += target.troops * 0.08;
+          (restoredMorale / 100) *
+            (target.troops + target.wounded * BATTLE_AI.rally.woundedWeight) *
+            BATTLE_AI.rally.moraleScale;
+        if (isRouted(target) && !isRouted(restored))
+          action.supportValue += target.troops * BATTLE_AI.rally.routRecovery;
       } else if (entry.tactic === 'confuse') {
         if (
           !capabilities &&
@@ -1200,7 +1304,7 @@ function battleActionCandidates(
         )
           action.supportValue = (forecast.chance / 100) * potentialDamage(state, target);
       } else if (entry.tactic === 'raidSupply') {
-        const horizon = Math.min(10, state.dayLimit - state.day + 1);
+        const horizon = Math.min(BATTLE_AI.raidSupply.horizonDays, state.dayLimit - state.day + 1);
         const enemy = forecastBattleRations(state, target.side, rationRemainders[target.side]);
         const own = forecastBattleRations(state, unit.side, rationRemainders[unit.side]);
         const food = forecast.suppliesTransferred;
@@ -1213,14 +1317,20 @@ function battleActionCandidates(
         const relieved =
           own.dailyFood > 0
             ? hungerDays(own.supplyDays) -
-              hungerDays(own.supplyDays + Math.floor(food / 2) / own.dailyFood)
+              hungerDays(
+                own.supplyDays + Math.floor(food / TACTICS.raidSupply.keptDivisor) / own.dailyFood,
+              )
             : 0;
         const personnel = (side: BattleSide) =>
           state.units
             .filter((entry) => entry.side === side)
-            .reduce((sum, entry) => sum + entry.troops + entry.wounded * 0.6, 0);
+            .reduce(
+              (sum, entry) => sum + entry.troops + entry.wounded * TACTICAL_VALUE.woundedWeight,
+              0,
+            );
         action.supplyValue =
-          (denied * personnel(target.side) + relieved * personnel(unit.side)) * 0.012;
+          (denied * personnel(target.side) + relieved * personnel(unit.side)) *
+          BATTLE_AI.raidSupply.personDayValue;
       } else {
         action.outgoing = (forecast.minCasualties + forecast.maxCasualties) / 2;
         action.finishValue = finishing(target, action.outgoing, forecast.moraleChange);
@@ -1437,8 +1547,8 @@ function blockingPenalty(
       const occupant = context.occupied.get(index);
       if (!occupant || occupant.id === unit.id) exits++;
     }
-    if (exits <= 1) penalty += 80;
-    else if (exits === 2) penalty += 15;
+    if (exits <= 1) penalty += BATTLE_AI.blocking.boxedIn;
+    else if (exits === 2) penalty += BATTLE_AI.blocking.narrowExit;
   }
   return penalty;
 }
@@ -1461,7 +1571,13 @@ export function evaluateBattleTurn(
   const behind = turn.timeoutWinner !== unit.side;
   // A side behind on the timeout count starts pressing in the last ~30% of the
   // limit (PF-BA-02; it was the last 3 days), so river standoffs and raids resolve.
-  const urgent = behind && remainingDays <= Math.max(3, Math.ceil(state.dayLimit * 0.3));
+  const urgent =
+    behind &&
+    remainingDays <=
+      Math.max(
+        BATTLE_AI.urgency.minDays,
+        Math.ceil(state.dayLimit * BATTLE_AI.urgency.limitFraction),
+      );
   const temperament = battleTemperament(unit);
   const exposureFactor = exposureWeight(unit);
   // A full move toward contact is worth at most roughly one normal hit. Scaling
@@ -1475,9 +1591,14 @@ export function evaluateBattleTurn(
   const approachValue =
     remainingDays === 1
       ? 0
-      : Math.max(40, (approachHit * 0.9) / movementBudget(unit.troopType)) *
-        (1 + 0.3 * temperament) *
-        (!behind && remainingDays <= 3 ? 0.5 : 1);
+      : Math.max(
+          BATTLE_AI.approach.floor,
+          (approachHit * BATTLE_AI.approach.hitFraction) / movementBudget(unit.troopType),
+        ) *
+        (1 + BATTLE_AI.approach.temperamentSwing * temperament) *
+        (!behind && remainingDays <= BATTLE_AI.approach.finalDays
+          ? BATTLE_AI.approach.finalDaysFactor
+          : 1);
   const currentRoute = route?.[battlePositionIndex(state.map, unit.x, unit.y)] ?? 0;
   const rescuers = routed
     ? livingUnits(state, unit.side).filter(
@@ -1524,14 +1645,27 @@ export function evaluateBattleTurn(
         MIN_MORALE,
         candidate.morale -
           (retaliation > 0
-            ? Math.min(45, Math.max(1, Math.ceil((retaliation / candidate.troops) * 55)))
+            ? Math.min(
+                BATTLE.moraleLoss.cap,
+                Math.max(
+                  1,
+                  Math.ceil(
+                    (retaliation / candidate.troops) * BATTLE.moraleLoss.perCasualtyFraction,
+                  ),
+                ),
+              )
             : 0),
       ),
     };
     if (action?.action === 'attack' || action?.action === 'ambush')
       if (own.status === 'inspired') own.status = 'normal';
     if (action?.action === 'rally' && action.targetId === unit.id) {
-      own.morale = Math.min(100, own.morale + 15 + Math.floor(unit.intellect / 5));
+      own.morale = Math.min(
+        100,
+        own.morale +
+          TACTICS.rally.base +
+          Math.floor(unit.intellect / TACTICS.rally.intellectDivisor),
+      );
       own.status = 'inspired';
     }
     const key = `${candidate.x}:${candidate.y}:${own.troops}:${own.morale}:${own.status}`;
@@ -1548,7 +1682,15 @@ export function evaluateBattleTurn(
         morale: Math.max(
           MIN_MORALE,
           enemy.morale -
-            (hit > 0 ? Math.min(45, Math.max(1, Math.ceil((hit / enemy.troops) * 55))) : 0),
+            (hit > 0
+              ? Math.min(
+                  BATTLE.moraleLoss.cap,
+                  Math.max(
+                    1,
+                    Math.ceil((hit / enemy.troops) * BATTLE.moraleLoss.perCasualtyFraction),
+                  ),
+                )
+              : 0),
         ),
       };
       if (isRouted(next)) return { damage: 0, returned: 0 };
@@ -1582,7 +1724,9 @@ export function evaluateBattleTurn(
     );
     return (
       Math.max(0, Math.min(own.troops, damage) - returned) +
-      (own.troops > 0 && damage >= own.troops ? 80 + candidate.wounded * 0.6 : 0)
+      (own.troops > 0 && damage >= own.troops
+        ? TACTICAL_VALUE.formationLossExposure + candidate.wounded * TACTICAL_VALUE.woundedWeight
+        : 0)
     );
   };
   const positions = [
@@ -1596,7 +1740,9 @@ export function evaluateBattleTurn(
       Number.isFinite(currentRoute) && Number.isFinite(distance)
         ? (currentRoute - distance) * approachValue
         : 0;
-    const progressValue = routed ? (currentRescue - rescueDistance(position)) * 35 : progress;
+    const progressValue = routed
+      ? (currentRescue - rescueDistance(position)) * BATTLE_AI.rescueStep
+      : progress;
     // The destination shortlist only needs a cheap incoming-damage bound.
     // Full damage/counterattack exchanges are evaluated at the six retained cells.
     const threat = replyContext(candidate);
@@ -1607,7 +1753,10 @@ export function evaluateBattleTurn(
       })),
     );
     const exposure =
-      Math.min(unit.troops, incoming) + (incoming >= unit.troops ? 80 + unit.wounded * 0.6 : 0);
+      Math.min(unit.troops, incoming) +
+      (incoming >= unit.troops
+        ? TACTICAL_VALUE.formationLossExposure + unit.wounded * TACTICAL_VALUE.woundedWeight
+        : 0);
     const blocking = blockingPenalty(state, unit, position, turn);
     let shot = 0;
     if (!routed)
@@ -1630,7 +1779,8 @@ export function evaluateBattleTurn(
   moves.sort((a, b) => b.cheap - a.cheap || a.cost - b.cost || a.y - b.y || a.x - b.x);
   const selected = [current!];
   const keep = (position: typeof current) => {
-    if (position && !selected.includes(position) && selected.length < 6) selected.push(position);
+    if (position && !selected.includes(position) && selected.length < BATTLE_AI.shortlist)
+      selected.push(position);
   };
   keep(moves[0]);
   keep(moves.slice().sort((a, b) => b.shot - a.shot || b.cheap - a.cheap)[0]);
@@ -1677,12 +1827,12 @@ export function evaluateBattleTurn(
         // Credit only additional protection of another ally, once per enemy reply.
         const ownDamage = nextEnemyDamage(view, target, position.candidate, replies);
         const ownRisk = ownDamage + (ownDamage > 0 ? finishingValue(unit, ownDamage) : 0);
-        const support = Math.max(0, denied - ownRisk) * chance * 0.65;
+        const support = Math.max(0, denied - ownRisk) * chance * BATTLE_AI.confuse.allyProtection;
         action.score += support - action.supportValue;
         action.supportValue = support;
       }
       const exposure = risk(position.candidate, action);
-      const urgency = urgent ? (action.outgoing + action.finishValue) * 0.15 : 0;
+      const urgency = urgent ? (action.outgoing + action.finishValue) * BATTLE_AI.urgency.bonus : 0;
       choices.push({
         ...action,
         x: position.x,
@@ -1697,7 +1847,7 @@ export function evaluateBattleTurn(
           position.progressValue -
           exposure * exposureFactor -
           position.blocking -
-          position.cost * 0.1,
+          position.cost * BATTLE_AI.moveCost,
       });
     }
   }
@@ -1833,7 +1983,13 @@ export function runBattleAiTurn(
           0,
           ...own.map((target) => {
             const damage = nextEnemyDamage(draft, attacker, target, context);
-            return damage + (damage >= target.troops ? 80 + target.wounded * 0.6 : 0);
+            return (
+              damage +
+              (damage >= target.troops
+                ? TACTICAL_VALUE.formationLossExposure +
+                  target.wounded * TACTICAL_VALUE.woundedWeight
+                : 0)
+            );
           }),
         ),
       0,
@@ -1842,7 +1998,9 @@ export function runBattleAiTurn(
     const captureRisk = !allowed ? 100 : draft.engaged ? PERSONNEL_RULES.orderlyCapturePercent : 0;
     const withdrawalCost = own.reduce(
       (sum, unit) =>
-        sum + (unit.troops + unit.wounded * 0.6) * (unit.isMilitia ? 1 : captureRisk / 100),
+        sum +
+        (unit.troops + unit.wounded * TACTICAL_VALUE.woundedWeight) *
+          (unit.isMilitia ? 1 : captureRisk / 100),
       0,
     );
     for (const action of ['hold', 'retreat'] as const)
@@ -1890,7 +2048,12 @@ export function runBattleAiTurn(
         const choice = choices[0]!;
         const alternative = choices.find((entry) => entry.targetId !== choice.targetId);
         const regret = alternative ? Math.max(0, choice.score - alternative.score) : 0;
-        return { unit, choices, choice, priority: choice.score + Math.min(200, regret) * 0.5 };
+        return {
+          unit,
+          choices,
+          choice,
+          priority: choice.score + Math.min(BATTLE_AI.regret.cap, regret) * BATTLE_AI.regret.weight,
+        };
       })
       .sort(
         (a, b) =>

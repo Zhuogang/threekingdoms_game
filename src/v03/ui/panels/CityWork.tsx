@@ -1,3 +1,4 @@
+import { PERSONNEL } from '../../balance';
 import type { TroopType } from '../../types';
 import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
@@ -101,8 +102,10 @@ export function CityWork({
         )
       : [];
   const openCapacity = (type: TroopType) =>
-    absorbers(type).reduce((sum, entry) => sum + 10_000 - entry.troops - entry.wounded, 0) -
-    (city ? availableReserveTroops(state, city.id, type) : 0);
+    absorbers(type).reduce(
+      (sum, entry) => sum + PERSONNEL.capacity - entry.troops - entry.wounded,
+      0,
+    ) - (city ? availableReserveTroops(state, city.id, type) : 0);
   // Among types a local officer can still absorb, suggest the cheapest per soldier.
   const [troopType, setTroopType] = useState<TroopType>(() => {
     const absorbable = TROOP_TYPES.filter((type) => openCapacity(type) > 0);
@@ -120,7 +123,7 @@ export function CityWork({
     ? (context.troopAssignments[officer.id] ??
       (action === 'assign-troops' && city
         ? Math.min(
-            10_000 - officer.wounded,
+            PERSONNEL.capacity - officer.wounded,
             officer.troops + availableReserveTroops(state, city.id, officer.troopType),
           )
         : officer.troops))
@@ -286,7 +289,7 @@ export function CityWork({
             <Input
               type="number"
               min={0}
-              max={10000 - officer.wounded}
+              max={PERSONNEL.capacity - officer.wounded}
               step={100}
               aria-label={`${t.assignmentAmount}: ${displayName(officer, locale)}`}
               value={amount}

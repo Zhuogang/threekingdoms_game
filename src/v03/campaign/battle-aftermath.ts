@@ -1,3 +1,4 @@
+import { ECONOMY } from '../balance';
 import type { V03BattleState, V03GameState, V03Officer } from '../types';
 import type { BattleSide } from '../battle';
 import { createV03OrderServices } from '../governance/services';
@@ -135,13 +136,14 @@ export function settleBattlePersonnel(
   const occupied = outcome.winner === 'attacker' && battle.intent !== 'raid';
   const forced = ['elimination', 'rout'].includes(outcome.reason);
   const putFood = (food: number) => {
-    battle.foodOverflow = (battle.foodOverflow ?? 0) + Math.max(0, city.food + food - 9_999_999);
-    city.food = Math.min(9_999_999, city.food + food);
+    battle.foodOverflow =
+      (battle.foodOverflow ?? 0) + Math.max(0, city.food + food - ECONOMY.resourceCap);
+    city.food = Math.min(ECONOMY.resourceCap, city.food + food);
   };
   const putPopulation = (people: number) => {
     battle.populationOutflow =
-      (battle.populationOutflow ?? 0) + Math.max(0, city.population + people - 9_999_999);
-    city.population = Math.min(9_999_999, city.population + people);
+      (battle.populationOutflow ?? 0) + Math.max(0, city.population + people - ECONOMY.resourceCap);
+    city.population = Math.min(ECONOMY.resourceCap, city.population + people);
   };
   const membersFor = (side: BattleSide) =>
     state.officers

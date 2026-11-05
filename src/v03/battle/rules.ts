@@ -8,19 +8,24 @@ import {
   type WaterCombatModifiers,
 } from './types';
 import { battleTerrainAt } from './maps';
+import { BATTLE, TACTICS } from '../balance';
 
-export const WATER_ATTACK_MULTIPLIER = 0.75;
-export const WATER_INCOMING_DAMAGE_MULTIPLIER = 1.25;
+export const WATER_ATTACK_MULTIPLIER = BATTLE.water.attack;
+export const WATER_INCOMING_DAMAGE_MULTIPLIER = BATTLE.water.incomingDamage;
 
 /** Existing weather modifier used by fire forecasts and resolution. */
 export function fireWeatherMultiplier(weather: BattleWeather): number {
-  return weather === 'rain' ? 0.4 : weather === 'wind' ? 1.25 : 1;
+  return weather === 'rain'
+    ? TACTICS.fire.rainMultiplier
+    : weather === 'wind'
+      ? TACTICS.fire.windMultiplier
+      : 1;
 }
 
 const MOVE_BUDGET: Readonly<Record<BattleTroopType, number>> = {
-  infantry: 3,
-  cavalry: 5,
-  archer: 3,
+  infantry: BATTLE.movement.budgetInfantry,
+  cavalry: BATTLE.movement.budgetCavalry,
+  archer: BATTLE.movement.budgetArcher,
 };
 
 /** The board size a position helper needs; every battle map carries its own. */
@@ -53,8 +58,8 @@ export function movementBudget(troopType: BattleTroopType): number {
 export function terrainMovementCost(troopType: BattleTroopType, terrain: BattleTerrain): number {
   if (terrain === 'cliff') return Number.POSITIVE_INFINITY;
   if (terrain === 'forest' || terrain === 'hill') {
-    if (troopType === 'cavalry') return 3;
-    return 2;
+    if (troopType === 'cavalry') return BATTLE.movement.roughCostCavalry;
+    return BATTLE.movement.roughCostOther;
   }
   return 1;
 }
@@ -75,7 +80,8 @@ export function battleStepCost(
   const toTerrain = battleTerrainAt(map, to);
   if (!fromTerrain || !toTerrain || toTerrain === 'cliff') return Number.POSITIVE_INFINITY;
   const ordinaryCost = terrainMovementCost(unit.troopType, toTerrain);
-  if (fromTerrain === 'water' || toTerrain === 'water') return Math.max(2, ordinaryCost);
+  if (fromTerrain === 'water' || toTerrain === 'water')
+    return Math.max(BATTLE.movement.waterStepMinimum, ordinaryCost);
   return ordinaryCost;
 }
 
@@ -299,7 +305,9 @@ export function getBattleRouteDistanceField(
       const predecessorIndex = py * width + px;
       if (blocked.has(predecessorIndex)) continue;
       const forwardCost =
-        intoWater || terrain[predecessorIndex] === 'water' ? Math.max(2, enter) : enter;
+        intoWater || terrain[predecessorIndex] === 'water'
+          ? Math.max(BATTLE.movement.waterStepMinimum, enter)
+          : enter;
       const candidate = currentCost + forwardCost;
       if (candidate >= distances[predecessorIndex]!) continue;
       distances[predecessorIndex] = candidate;

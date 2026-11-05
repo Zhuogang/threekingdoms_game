@@ -2,8 +2,9 @@ import { availableReserveTroops } from '../campaign/personnel';
 import { applyV03CityAction } from './city-actions';
 import { isOfficerReservedForOrder } from './commitments';
 import type { V03GameState } from '../types';
+import { PERSONNEL } from '../balance';
 
-const OFFICER_CAPACITY = 10_000;
+const OFFICER_CAPACITY = PERSONNEL.capacity;
 
 /**
  * Free convenience over the ordinary assignment rule: move matching reserve soldiers to the

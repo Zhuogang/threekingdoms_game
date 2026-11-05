@@ -1,3 +1,4 @@
+import { BATTLE } from '../balance';
 import {
   BATTLE_HEIGHT,
   BATTLE_MAP_SIZES,
@@ -234,12 +235,16 @@ export function battleTerrainDefenseMultiplier(map: BattleMap, position: BattleP
 
 /** Existing normal-attack terrain modifier, also exposed to tactical inspection. */
 export function terrainDefenseMultiplier(terrain: BattleTerrain | null): number {
-  return terrain === 'hill' ? 0.8 : terrain === 'forest' ? 0.82 : 1;
+  return terrain === 'hill'
+    ? BATTLE.terrain.hillDefense
+    : terrain === 'forest'
+      ? BATTLE.terrain.forestDefense
+      : 1;
 }
 
 /** Existing fire damage multiplier for the target tile. */
 export function fireTerrainMultiplier(terrain: BattleTerrain | null): number {
-  return terrain === 'forest' ? 1.4 : 1;
+  return terrain === 'forest' ? BATTLE.terrain.forestFire : 1;
 }
 
 export function validateBattleMap(map: BattleMap): string[] {

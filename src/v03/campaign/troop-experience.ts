@@ -1,7 +1,8 @@
 import type { TroopType } from '../content/types';
+import { PERSONNEL } from '../balance';
 
 /** Soldier experience is independent of the commanding officer's own experience. */
-export const MAX_TROOP_EXPERIENCE = 1900;
+export const MAX_TROOP_EXPERIENCE = PERSONNEL.troopExperience.max;
 
 export interface TroopPool {
   troops: number;
@@ -33,12 +34,15 @@ export function setReservePool(
 
 export function troopLevel(experience: number): number {
   checkExperience(experience);
-  return Math.min(20, 1 + Math.floor(experience / 100));
+  return Math.min(
+    PERSONNEL.troopExperience.maxLevel,
+    1 + Math.floor(experience / PERSONNEL.troopExperience.perLevel),
+  );
 }
 
 function checkExperience(experience: number): void {
   if (!Number.isFinite(experience) || experience < 0 || experience > MAX_TROOP_EXPERIENCE)
-    throw new RangeError('Soldier experience must be between 0 and 1900.');
+    throw new RangeError(`Soldier experience must be between 0 and ${MAX_TROOP_EXPERIENCE}.`);
 }
 
 function checkPool(pool: TroopPool): void {

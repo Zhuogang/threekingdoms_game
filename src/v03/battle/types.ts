@@ -1,4 +1,5 @@
 /** Logical battlefield contracts for the independent v0.3 ruleset. */
+import { BATTLE } from '../balance';
 /** Size of the four legacy regional templates. */
 export const BATTLE_WIDTH = 24;
 export const BATTLE_HEIGHT = 20;
@@ -13,8 +14,8 @@ export const BATTLE_MAP_SIZES: readonly (readonly [width: number, height: number
 ];
 export const MAX_UNITS_PER_SIDE = 10;
 /** Campaign battle day limits; raids were 10 days until play-feel PF-RL-10. */
-export const CONQUEST_BATTLE_DAYS = 30;
-export const RAID_BATTLE_DAYS = 14;
+export const CONQUEST_BATTLE_DAYS = BATTLE.dayLimit.conquest;
+export const RAID_BATTLE_DAYS = BATTLE.dayLimit.raid;
 /** Day limit (and provisioned battle days) for a campaign battle of this intent. */
 export const campaignBattleDays = (intent: 'conquer' | 'raid' | 'sack' | undefined): number =>
   intent === 'raid' ? RAID_BATTLE_DAYS : CONQUEST_BATTLE_DAYS;

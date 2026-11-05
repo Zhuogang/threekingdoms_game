@@ -7,6 +7,7 @@ import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
 import type { V03City, V03GameState } from '../types';
+import { CAMPAIGN_AI, CITY_WORK, PERSONNEL } from '../balance';
 import type { TroopType } from '../content/types';
 import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
 import {
@@ -180,7 +181,12 @@ export function planGovernorMonthlyWork(
           .reduce((sum, officer) => sum + officer.troops, 0);
   const forceNeeded = Math.max(0, (objective?.forceTarget ?? 0) - organized);
   const upkeep = Math.ceil(cityPersonnelSummary(state, city.id).foodHeadcount * MONTHLY_FOOD_RATE);
-  const protectedFood = Math.max(500, upkeep * 2, objective?.foodTarget ?? 0) + reserves.food;
+  const protectedFood =
+    Math.max(
+      CAMPAIGN_AI.autonomy.protectedFoodFloor,
+      upkeep * CAMPAIGN_AI.autonomy.protectedUpkeepMonths,
+      objective?.foodTarget ?? 0,
+    ) + reserves.food;
   const economy = forecastCityEconomy(state, cityId);
   const projectedNextMonthFood = economy.projectedFood;
   const threats = incomingCampaignThreats(state, cityId);
@@ -354,7 +360,13 @@ export function planGovernorMonthlyWork(
     if (action === 'recruit') {
       const gain = recruitmentQuote(city!, manager!.force, troopType).troops;
       const extraUpkeep = Math.ceil(gain * (troopType === 'cavalry' ? 2 : 1) * MONTHLY_FOOD_RATE);
-      if (city!.food - reserves.food < Math.max(500, (upkeep + extraUpkeep) * 2)) {
+      if (
+        city!.food - reserves.food <
+        Math.max(
+          CAMPAIGN_AI.autonomy.protectedFoodFloor,
+          (upkeep + extraUpkeep) * CAMPAIGN_AI.autonomy.protectedUpkeepMonths,
+        )
+      ) {
         failure =
           'The city cannot support the additional recruited soldiers above its protected food reserve.';
         return false;
@@ -466,7 +478,7 @@ export function planGovernorMonthlyWork(
         return plan;
     // Unaffordable food work must not suppress free loyalty or reserve organization.
   }
-  if (!workSpent && city.loyalty < 60) {
+  if (!workSpent && city.loyalty < CAMPAIGN_AI.autonomy.reliefLoyaltyBelow) {
     if (
       offer(
         'relieve',
@@ -482,12 +494,12 @@ export function planGovernorMonthlyWork(
     return none();
   }
   if (
-    city.loyalty < 70 &&
+    city.loyalty < CAMPAIGN_AI.autonomy.securityLoyaltyBelow &&
     offer('security', 'public-order', 'Restore public order before optional work.')
   )
     return plan;
   const reward = local
-    .filter((officer) => officer.loyalty < 55)
+    .filter((officer) => officer.loyalty < CAMPAIGN_AI.autonomy.rewardLoyaltyBelow)
     .sort((a, b) => a.loyalty - b.loyalty || a.id.localeCompare(b.id))[0];
   if (reward) {
     if (
@@ -514,9 +526,9 @@ export function planGovernorMonthlyWork(
       const ready =
         availableReserveTroops(state, cityId, officer.troopType) -
         reserves.troops -
-        (threats.length || forceNeeded > 0 ? 0 : 1000);
+        (threats.length || forceNeeded > 0 ? 0 : CAMPAIGN_AI.autonomy.reserveKeep);
       const amount = Math.min(
-        10_000 - officer.wounded,
+        PERSONNEL.capacity - officer.wounded,
         officer.troops +
           (forceNeeded > 0 && !threats.length ? Math.min(ready, forceNeeded) : ready),
       );
@@ -574,19 +586,19 @@ export function planGovernorMonthlyWork(
       availableReserveTroops(state, city.id, newcomer.troopType) - reserves.troops,
     );
     if (
-      ready >= 100 &&
+      ready >= CAMPAIGN_AI.autonomy.newcomerMinReady &&
       offer(
         'assign-troops',
         'troop-organization',
         'Organize the strongest eligible zero-army officer with 100–500 same-type soldiers.',
         newcomer.id,
-        Math.min(500, ready),
+        Math.min(CAMPAIGN_AI.autonomy.newcomerMaxTroops, ready),
         newcomer.troopType,
       )
     )
       return plan;
     if (
-      ready < 100 &&
+      ready < CAMPAIGN_AI.autonomy.newcomerMinReady &&
       offer(
         'recruit',
         'reserve-recruitment',
@@ -614,13 +626,14 @@ export function planGovernorMonthlyWork(
     return plan;
   if (
     manager.troops > 0 &&
-    availableReserveTroops(state, city.id, manager.troopType) - reserves.troops < 500 &&
+    availableReserveTroops(state, city.id, manager.troopType) - reserves.troops <
+      CAMPAIGN_AI.autonomy.replenishBelow &&
     offer('recruit', 'reserve-recruitment', 'Replenish the manager’s same-type reserve.')
   )
     return plan;
   if (
     city.food >= protectedFood + CITY_FOOD_TRADE_FOOD &&
-    city.gold < reserves.gold + 80 &&
+    city.gold < reserves.gold + CAMPAIGN_AI.autonomy.sellFoodGoldMargin &&
     offer('sell-food', 'market-balance', 'Sell surplus food to fund city work.')
   )
     return plan;
@@ -639,12 +652,12 @@ export function planGovernorMonthlyWork(
       const after = afterWork(action, CITY_MONTHLY_WORK_GOLD_COST, 0);
       if (!after) return [];
       let value = 0;
-      for (let offset = 0; offset < 3; offset++) {
+      for (let offset = 0; offset < CAMPAIGN_AI.autonomy.developHorizonMonths; offset++) {
         const month = ((economy.boundary.harvestMonth - 1 + offset) % 12) + 1;
         const beforeProduction = cityProduction(city, month),
           afterProduction = cityProduction(after.city, month);
         value +=
-          (afterProduction.food - beforeProduction.food) / 10 +
+          (afterProduction.food - beforeProduction.food) / CAMPAIGN_AI.autonomy.foodPerGold +
           afterProduction.gold -
           beforeProduction.gold;
       }
@@ -662,7 +675,9 @@ export function planGovernorMonthlyWork(
     )
       return plan;
   const equipmentTarget = local
-    .filter((officer) => officer.equipment !== 'Fine arms' && officer.force < 105)
+    .filter(
+      (officer) => officer.equipment !== 'Fine arms' && officer.force < CITY_WORK.equip.forceCap,
+    )
     .sort((a, b) => b.troops - a.troops || b.force - a.force || a.id.localeCompare(b.id))[0];
   if (
     equipmentTarget &&
@@ -670,7 +685,7 @@ export function planGovernorMonthlyWork(
   )
     return plan;
   // Development below its cap that the city cannot fund is a budget limit, not a cap.
-  if (!failure && (city.farming < 500 || city.commerce < 500))
+  if (!failure && (city.farming < CITY_WORK.develop.cap || city.commerce < CITY_WORK.develop.cap))
     failure = 'Development remains below its cap, but the city cannot fund it this period.';
   return none();
 }

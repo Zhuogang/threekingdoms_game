@@ -1,9 +1,10 @@
 import { traitsOf, type Trait } from '../content/traits';
 import type { V03GameState } from '../types';
+import { CAMPAIGN_AI } from '../balance';
 
 /** Neutral campaign policy; trait effects below are applied on top of it. */
-export const NEUTRAL_ADMISSION_RATIO = 0.8;
-export const NEUTRAL_HOME_RISK_LIMIT = 0.9;
+export const NEUTRAL_ADMISSION_RATIO = CAMPAIGN_AI.temperament.neutralAdmissionRatio;
+export const NEUTRAL_HOME_RISK_LIMIT = CAMPAIGN_AI.temperament.neutralHomeRiskLimit;
 
 /**
  * A house's campaign policy, derived from its current ruler's content traits.
@@ -33,11 +34,17 @@ export function temperamentFromTraits(traits: readonly Trait[]): RulerTemperamen
   const greedy = traits.includes('greedy');
   return {
     traits,
-    admissionRatio: fierce ? 0.7 : benevolent ? 0.95 : NEUTRAL_ADMISSION_RATIO,
-    homeRiskLimit: fierce ? 1.1 : NEUTRAL_HOME_RISK_LIMIT,
-    lossWeight: traits.includes('cunning') ? 2 : 1,
+    admissionRatio: fierce
+      ? CAMPAIGN_AI.temperament.fierceAdmissionRatio
+      : benevolent
+        ? CAMPAIGN_AI.temperament.benevolentAdmissionRatio
+        : NEUTRAL_ADMISSION_RATIO,
+    homeRiskLimit: fierce ? CAMPAIGN_AI.temperament.fierceHomeRiskLimit : NEUTRAL_HOME_RISK_LIMIT,
+    lossWeight: traits.includes('cunning')
+      ? CAMPAIGN_AI.temperament.cunningLossWeight
+      : CAMPAIGN_AI.temperament.defaultLossWeight,
     rulerStaysHome: benevolent,
-    raidRatio: fierce || greedy ? 0.5 : null,
+    raidRatio: fierce || greedy ? CAMPAIGN_AI.temperament.raidRatio : null,
     valuesWealth: greedy,
     valuesIsolation: traits.includes('cunning'),
   };

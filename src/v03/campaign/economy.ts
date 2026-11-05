@@ -9,8 +9,9 @@ import { committedCityStock } from '../governance/city-actions';
 import { isCityCommitted } from '../governance/commitments';
 import { availableTroops, cityPersonnelSummary, cityRationCredits } from './personnel';
 import type { V03City, V03GameState } from '../types';
+import { ECONOMY } from '../balance';
 
-const RESOURCE_CAP = 9_999_999;
+const RESOURCE_CAP = ECONOMY.resourceCap;
 
 /** The pending cursor identifies an unpaid boundary even after the date increments. */
 export function nextEconomicBoundary(state: Readonly<V03GameState>) {
@@ -31,13 +32,24 @@ export function nextEconomicBoundary(state: Readonly<V03GameState>) {
 }
 
 export function cityProduction(city: V03City, month: number) {
+  const production = ECONOMY.production;
   return {
     food: city.factionId
-      ? Math.floor(city.farming * (month === 9 ? 4 : 2.2) + city.population / 80)
+      ? Math.floor(
+          city.farming *
+            (month === production.harvestMonth
+              ? production.foodPerFarmingHarvest
+              : production.foodPerFarming) +
+            city.population / production.foodPopulationDivisor,
+        )
       : 0,
     gold: city.factionId
       ? Math.floor(
-          Math.floor(city.population / 150 + city.commerce * 0.55) * (0.8 + city.loyalty / 500),
+          Math.floor(
+            city.population / production.goldPopulationDivisor +
+              city.commerce * production.goldPerCommerce,
+          ) *
+            (production.goldLoyaltyBase + city.loyalty / production.goldLoyaltyDivisor),
         )
       : 0,
   };
@@ -85,7 +97,7 @@ function serviceCost(service: Service, owned: boolean) {
       (service.own + service.cavalry + service.prisoners + service.prisonerCavalry) *
         PILOT_LOGISTICS_RATES.cityFoodPerTroopDay,
     ),
-    gold: owned ? Math.ceil((service.own * 0.025) / DAYS_PER_MONTH) : 0,
+    gold: owned ? Math.ceil((service.own * ECONOMY.goldUpkeepPerTroopMonth) / DAYS_PER_MONTH) : 0,
   };
 }
 

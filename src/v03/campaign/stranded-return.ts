@@ -1,10 +1,11 @@
+import { ECONOMY } from '../balance';
 import type { V03City, V03GameState, V03Journey } from '../types';
 import { isCityCommitted } from '../governance/commitments';
 import { getV03AttackAllianceBlock } from './monthly-systems';
 import { availableTroops } from './personnel';
 import { recordEvent } from './reports';
 
-const RESOURCE_CAP = 9_999_999;
+const RESOURCE_CAP = ECONOMY.resourceCap;
 
 /** A return has no remaining recovery prospect only after every city and campaign is gone. */
 export function surrenderStrandedReturn(
