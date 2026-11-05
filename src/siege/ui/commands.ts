@@ -1,6 +1,15 @@
+import { cloneSiegeState } from '../rules/clone';
+import { SIEGE_TUNING as T } from '../rules/tuning';
 import { DEPLOY_SHU, DEPLOY_WEI, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
-import { applySiegeAction } from '../rules/actions';
-import { activeUnit, usableEngine, predictSiegeClimb, climbingPosition } from '../rules/combat';
+import { validateSiegeAction } from '../rules/actions';
+import {
+  activeUnit,
+  usableEngine,
+  predictSiegeClimb,
+  climbingPosition,
+  distance,
+  predictSiegeAttack,
+} from '../rules/combat';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { placeName } from './places';
 import { climbGuide, climbGuideText } from './climbGuide';
@@ -71,7 +80,25 @@ export function actorCommandKinds(
   return ['move', ...own[engine.kind], 'standby'];
 }
 
-export function actionContext(state: SiegeState, id: string, locale: SiegeLocale) {
+const commandCache = new WeakMap<SiegeState, Map<string, SiegeCommand[]>>();
+const contextCache = new WeakMap<SiegeState, Map<string, string>>();
+export function siegeCommands(state: SiegeState, id: string, side: SiegeSide = 'shu') {
+  let cache = commandCache.get(state);
+  if (!cache) commandCache.set(state, (cache = new Map()));
+  const key = JSON.stringify([id, side]);
+  let commands = cache.get(key);
+  if (!commands) cache.set(key, (commands = computeSiegeCommands(state, id, side)));
+  return commands;
+}
+export function actionContext(state: SiegeState, id: string, locale: SiegeLocale): string {
+  let cache = contextCache.get(state);
+  if (!cache) contextCache.set(state, (cache = new Map()));
+  const key = JSON.stringify([id, locale]);
+  if (!cache.has(key)) cache.set(key, computeActionContext(state, id, locale));
+  return cache.get(key)!;
+}
+
+function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale) {
   const unit = state.units.find((u) => u.id === id);
   const actor = unit ?? state.engines.find((e) => e.id === id);
   if (!actor) return '';
@@ -118,25 +145,55 @@ export function actionContext(state: SiegeState, id: string, locale: SiegeLocale
   });
 }
 export function actionReason(state: SiegeState, action: SiegeAction): string | null {
-  const result = applySiegeAction(state, action);
-  return result.ok ? null : result.reason;
+  return validateSiegeAction(state, action);
 }
 /** Every action entry uses the same validator as its eventual execution. */
-export function siegeCommands(
+function computeSiegeCommands(
   state: SiegeState,
   id: string,
   playerSide: SiegeSide = 'shu',
 ): SiegeCommand[] {
   const unit = state.units.find((u) => u.id === id),
     engine = state.engines.find((e) => e.id === id);
-  const move = unit ? reachableCells(state, id) : engineReachable(state, id);
+  const kinds = actorCommandKinds(state, id, playerSide);
+  const move = kinds.includes('move')
+    ? unit
+      ? reachableCells(state, id)
+      : engineReachable(state, id)
+    : [];
   const moveAction = (p: SiegePosition): SiegeAction =>
     unit
       ? { type: 'move', unitId: id, ...p }
       : { type: 'moveEngine', engineId: id, x: p.x, y: p.y };
+  const actor = unit ?? engine;
+  // Necessary conditions only, retaining the exhaustive candidate order. No legal
+  // candidate can be skipped, so the first legal action and fallback stay identical.
+  const plausible = (action: SiegeAction): boolean => {
+    if (action.type === 'fillTrench' || action.type === 'pileEarth')
+      return Boolean(actor && distance(actor, action) === 1);
+    if (action.type === 'coverEngine') {
+      const target = state.engines.find((e) => e.id === action.engineId);
+      return Boolean(unit && target && distance(unit, target) <= 1);
+    }
+    if (action.type === 'suppress') {
+      const target = state.units.find((u) => u.id === action.targetId);
+      return Boolean(
+        actor && target && distance(actor, target) <= (unit ? T.suppressRange : T.towerRange),
+      );
+    }
+    if (action.type === 'attack') {
+      const target = 'gateId' in action ? action.gateId : action.targetId;
+      return Boolean(actor && predictSiegeAttack(state, id, target)?.inRange);
+    }
+    if (action.type === 'ram')
+      return Boolean(engine && GATES[action.gateId].approaches.some((c) => sameCell(c, engine)));
+    return true;
+  };
   const choose = (kind: CommandKind, actions: SiegeAction[]): SiegeCommand => {
+    if (!kinds.includes(kind)) return { kind, reason: null };
     for (const action of actions)
-      if (actionReason(state, action) === null) return { kind, action, reason: null };
+      if (plausible(action) && actionReason(state, action) === null)
+        return { kind, action, reason: null };
     const action = actions[0] ?? { type: 'suppress', unitId: id, targetId: '' };
     return { kind, action, reason: actionReason(state, action) };
   };
@@ -246,7 +303,6 @@ export function siegeCommands(
           : 'This attacker cannot act today.',
     },
   ];
-  const kinds = actorCommandKinds(state, id, playerSide);
   return commands
     .filter((c) => kinds.includes(c.kind))
     .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)));
@@ -261,7 +317,7 @@ export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = '
       : playerSide !== 'shu' || !engine || !usableEngine(engine) || engine.acted)
   )
     return state;
-  const next = structuredClone(state);
+  const next = cloneSiegeState(state);
   const actor = next.units.find((u) => u.id === id) ?? next.engines.find((e) => e.id === id)!;
   actor.moved = true;
   actor.acted = true;
@@ -281,7 +337,7 @@ export function deployUnit(
   const unit = state.units.find((u) => u.id === id && u.side === playerSide);
   const cells = playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
   if (!unit || !cells.some((c) => sameCell(c, to) && to.level === c.level)) return state;
-  const next = structuredClone(state),
+  const next = cloneSiegeState(state),
     actor = next.units.find((u) => u.id === id)!;
   const other = next.units.find((u) => u.id !== id && u.level === to.level && sameCell(u, to));
   if (other && other.side !== playerSide) return state;
@@ -314,14 +370,14 @@ export function standByAll(state: SiegeState, playerSide: SiegeSide) {
   )) {
     // An actor that already acted may still have a move; standby finishes that move too.
     if (unit.acted) {
-      if (next === state) next = structuredClone(state);
+      if (next === state) next = cloneSiegeState(state);
       next.units.find((u) => u.id === unit.id)!.moved = true;
     } else next = standBy(next, unit.id, playerSide);
   }
   if (playerSide === 'shu')
     for (const engine of state.engines.filter((e) => usableEngine(e) && (!e.acted || !e.moved))) {
       if (engine.acted) {
-        if (next === state) next = structuredClone(state);
+        if (next === state) next = cloneSiegeState(state);
         next.engines.find((e) => e.id === engine.id)!.moved = true;
       } else next = standBy(next, engine.id, playerSide);
     }

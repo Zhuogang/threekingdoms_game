@@ -35,8 +35,11 @@ describe('Shu v0.2 controls and scoring', () => {
     const state = createSiegeState(228);
     Object.assign(state.units[8]!, { x: 17, y: 19 });
     Object.assign(state.units[1]!, { x: 18, y: 20 });
+    // Each mutable fixture stage represents a new immutable UI snapshot.
     const enabled = (id: string, kind: string) =>
-      expect(siegeCommands(state, id).find((c) => c.kind === kind)?.reason).toBeNull();
+      expect(
+        siegeCommands(structuredClone(state), id).find((c) => c.kind === kind)?.reason,
+      ).toBeNull();
     enabled('shu-captain-3', 'suppress');
     enabled('shu-weiyan', 'coverEngine');
     const tower = { ...state.engines[0]!, id: 'ui-tower', kind: 'tower' as const, x: 17, y: 19 };

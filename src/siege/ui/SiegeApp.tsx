@@ -36,7 +36,7 @@ import type {
 } from '../rules/types';
 import { hasSiegeSave, loadSiege, saveSiege, presentationFor, type SiegeSave } from '../save';
 import { rejectionText, siegeText, type SiegeLocale, type SiegeTextKey } from '../i18n';
-import { SiegeMapView, type SiegeMapHandle } from '../render/SiegeMapView';
+import { SiegeMapView, siegeRenderCounts, type SiegeMapHandle } from '../render/SiegeMapView';
 import {
   actionReason,
   actionContext,
@@ -49,7 +49,7 @@ import {
   type CommandKind,
   type ExtraCommandKind,
 } from './commands';
-import { resolveSiegeDay, resolveAttackerPhase, type PlaybackFrame } from './playback';
+import { resolveSiegeDayAsync, resolveAttackerPhaseAsync, type PlaybackFrame } from './playback';
 import { REPLAY_STEP_MS, type NightPresentation } from '../render/nightReplay';
 import { OPENING, encounteredHints, engineKey } from './story';
 import { SiegeActBanner, SiegeEnding, SiegeHint, SiegeOpening, paperStyle } from './SiegeStory';
@@ -149,6 +149,7 @@ export default function SiegeApp({
     [xray, setXray] = useState(false),
     [showRange, setShowRange] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [night, setNight] = useState<NightPresentation | null>(null);
   const [forecastHovered, setForecastHovered] = useState(false);
   const [activity, setActivity] = useState<{ id: string; type: string } | null>(null);
@@ -157,6 +158,10 @@ export default function SiegeApp({
     to: SiegePosition;
     type: string;
   } | null>(null);
+  const resolvingRef = useRef(false);
+  const resolutionVersion = useRef(0);
+  const resolutionRun = useRef<Promise<void> | null>(null);
+  const skipAfterResolution = useRef(false);
   const pendingReport = useRef<SiegeLogEntry[]>([]);
   const pending = useRef<SiegeState | null>(null),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -171,6 +176,14 @@ export default function SiegeApp({
     () => (selected ? siegeCommands(state, selected, playerSide) : []),
     [state, selected, playerSide],
   );
+  const renderActionReason = useMemo(() => {
+    const reasons = new Map<string, string | null>();
+    return (action: SiegeAction) => {
+      const key = JSON.stringify(action);
+      if (!reasons.has(key)) reasons.set(key, actionReason(state, action));
+      return reasons.get(key)!;
+    };
+  }, [state]);
   const reachable = useMemo(
     () =>
       !selected || playing
@@ -385,6 +398,10 @@ export default function SiegeApp({
     }
   };
   const finishPlayback = () => {
+    if (resolvingRef.current) {
+      skipAfterResolution.current = true;
+      return;
+    }
     clearTimer();
     if (pending.current) {
       const next = pending.current;
@@ -418,6 +435,11 @@ export default function SiegeApp({
         return;
       }
       clearTimer();
+      resolutionVersion.current++;
+      resolvingRef.current = false;
+      resolutionRun.current = null;
+      skipAfterResolution.current = false;
+      setResolving(false);
       pending.current = null;
       setPlaying(false);
       setNight(null);
@@ -443,9 +465,16 @@ export default function SiegeApp({
   };
   useEffect(() => {
     if (initialLoad) load(true);
-    return clearTimer;
+    return () => {
+      clearTimer();
+      resolutionVersion.current++;
+      resolvingRef.current = false;
+    };
   }, []);
-  const save = () => {
+  const save = async () => {
+    const version = resolutionVersion.current;
+    if (resolutionRun.current) await resolutionRun.current;
+    if (version !== resolutionVersion.current) return;
     const snapshot = {
       ...game,
       state: pending.current ?? state,
@@ -507,7 +536,44 @@ export default function SiegeApp({
   };
   const end = () => {
     if (playing || opening || banner || reportVisible || howTo || deploy || state.outcome) return;
-    playResolution(resolveSiegeDay(state, playerSide));
+    void startResolution(() => resolveSiegeDayAsync(state, playerSide));
+  };
+  const startResolution = (
+    resolve: () =>
+      | { frames: PlaybackFrame[]; final: SiegeState }
+      | Promise<{ frames: PlaybackFrame[]; final: SiegeState }>,
+  ) => {
+    if (resolvingRef.current) return;
+    const version = ++resolutionVersion.current;
+    resolvingRef.current = true;
+    skipAfterResolution.current = false;
+    setPlaying(true);
+    setResolving(true);
+    const run = async () => {
+      try {
+        // Give React and the browser a painted frame before computing the opponent's turn.
+        await new Promise<void>((done) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => done())),
+        );
+        if (version !== resolutionVersion.current) return;
+        const result = await resolve();
+        if (version !== resolutionVersion.current) return;
+        resolvingRef.current = false;
+        playResolution(result);
+        if (skipAfterResolution.current) finishPlayback();
+      } catch (error) {
+        if (version === resolutionVersion.current) setPlaying(false);
+        throw error;
+      } finally {
+        if (version === resolutionVersion.current) {
+          resolvingRef.current = false;
+          resolutionRun.current = null;
+          setResolving(false);
+        }
+      }
+    };
+    resolutionRun.current = run();
+    return resolutionRun.current;
   };
   const playResolution = (resolution: { frames: PlaybackFrame[]; final: SiegeState }) => {
     pending.current = resolution.final;
@@ -551,7 +617,7 @@ export default function SiegeApp({
     timer.current = setTimeout(advance, 90);
   };
   useEffect(() => {
-    if (needsAttacker && !playing) playResolution(resolveAttackerPhase(state));
+    if (needsAttacker && !playing) void startResolution(() => resolveAttackerPhaseAsync(state));
   }, [needsAttacker, playing]);
   const select = (id: string) => {
     setSelected(id);
@@ -752,6 +818,7 @@ export default function SiegeApp({
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const hook: SiegeDev = {
+      renderCounts: siegeRenderCounts,
       snapshot: () => structuredClone(game),
       playScript: async (strategy, days = T.days) => {
         if (game.phase !== 'battle' || playing)
@@ -794,8 +861,7 @@ export default function SiegeApp({
   };
   const forecastReason =
     selected && target
-      ? actionReason(
-          state,
+      ? renderActionReason(
           unit
             ? target in GATES
               ? { type: 'attack', unitId: selected, gateId: target as GateId }
@@ -960,7 +1026,11 @@ export default function SiegeApp({
       </header>
       {(feedback.key || feedback.reason || (!opening && !ended)) && (
         <div className="siege-status" role="status">
-          {playing ? (
+          {resolving ? (
+            <strong data-testid="siege-resolving">
+              {text(playerSide === 'shu' ? 'resolving' : 'resolvingWei')}
+            </strong>
+          ) : playing ? (
             <>
               <strong>{text(playerSide === 'wei' ? 'playbackWei' : 'playback')}</strong>
               <Button size="sm" data-testid="replay-skip" onClick={finishPlayback}>
@@ -1220,7 +1290,7 @@ export default function SiegeApp({
                               checked={assault}
                               toggle={setAssault}
                               disabled={playing}
-                              reason={actionReason(state, {
+                              reason={renderActionReason({
                                 type: 'climb',
                                 unitId: selected!,
                                 assault,
@@ -1238,7 +1308,7 @@ export default function SiegeApp({
                               .map((action, i) => ({
                                 action,
                                 i,
-                                reason: actionReason(state, action),
+                                reason: renderActionReason(action),
                               }))
                               .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)))
                               .map(({ action, i, reason }) => {
@@ -1370,7 +1440,7 @@ export default function SiegeApp({
                                     disabled={
                                       playing ||
                                       Boolean(
-                                        actionReason(state, {
+                                        renderActionReason({
                                           type: 'order',
                                           side: playerSide,
                                           kind: 'nightAssault',
@@ -1422,8 +1492,7 @@ export default function SiegeApp({
                                             .filter((u) => u.side === playerSide && u.troops > 0)
                                             .map((u) => ({ id: u.id, label: name(u.id) }))
                                       ).map((option) => {
-                                        const reason = actionReason(
-                                          state,
+                                        const reason = renderActionReason(
                                           orderAction(kind, option.id),
                                         );
                                         return (
@@ -1558,7 +1627,7 @@ export default function SiegeApp({
                             kind: 'supervise',
                             target: w.id,
                           };
-                          const reason = actionReason(state, action);
+                          const reason = renderActionReason(action);
                           return (
                             <div className="siege-supervise">
                               <Button
@@ -1582,7 +1651,7 @@ export default function SiegeApp({
                             workshopId: w.id,
                             kind,
                           };
-                          const reason = actionReason(state, action);
+                          const reason = renderActionReason(action);
                           return (
                             <div key={kind} className="siege-build">
                               <Button

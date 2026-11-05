@@ -390,6 +390,8 @@ export const en = {
   snow: 'Snow',
   wind: 'Wind',
   endDay: 'End day [E]',
+  resolving: 'Wei is acting…',
+  resolvingWei: 'Shu is acting…',
   playback: 'Wei turn · Esc to skip',
   skip: 'Skip playback',
   save: 'Save',

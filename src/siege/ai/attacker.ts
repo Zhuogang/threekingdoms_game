@@ -150,10 +150,13 @@ function engineGoals(state: SiegeState, engine: SiegeEngine): SiegePosition[] {
 }
 
 /** Plans on evolving rule results only. Reservations and assignments exist for this turn only. */
-function attackerTurn(
+export function* attackerTurnSteps(
   state: SiegeState,
   method: AttackerMethod,
-): { actions: SiegeAction[]; state: SiegeState } {
+): Generator<
+  { action: SiegeAction; state: SiegeState },
+  { actions: SiegeAction[]; state: SiegeState }
+> {
   if (state.outcome) return { actions: [], state };
   let draft = state;
   const actions: SiegeAction[] = [];
@@ -161,12 +164,13 @@ function attackerTurn(
   const lastNight = state.log.filter((e) => e.day === state.day - 1);
   const torches = lastNight.some((e) => e.code === 'torches');
   const sortie = lastNight.some((e) => ['sortieHit', 'sortieRepelled'].includes(e.code));
-  const act = (action: SiegeAction) => {
+  const act = function* (action: SiegeAction) {
     const result = applySiegeAction(draft, action);
     if (!result.ok)
       throw new Error(`Illegal attacker plan ${JSON.stringify(action)}: ${result.reason}`);
     draft = result.state;
     actions.push(action);
+    yield { action, state: draft };
   };
   const unitNow = (id: string) => draft.units.find((u) => u.id === id)!;
   const dailyAssault = (u: SiegeUnit) =>
@@ -183,7 +187,7 @@ function attackerTurn(
         u.level === 'ground' &&
         u.troopType === 'infantry',
     );
-  const move = (actor: SiegeUnit | SiegeEngine, goals: SiegePosition[]) => {
+  const move = function* (actor: SiegeUnit | SiegeEngine, goals: SiegePosition[]) {
     if (goals.some((p) => sameCell(p, actor) && (!('level' in actor) || p.level === actor.level)))
       return;
     let route = routeSiegeActor(draft, actor, goals);
@@ -209,13 +213,14 @@ function attackerTurn(
           const parking = engineReachable(draft, actor.id)
             .filter((p) => !goals.some((g) => g.x === p.x))
             .sort((a, b) => a.cost - b.cost || a.y - b.y)[0];
-          if (parking) act({ type: 'moveEngine', engineId: actor.id, x: parking.x, y: parking.y });
+          if (parking)
+            yield* act({ type: 'moveEngine', engineId: actor.id, x: parking.x, y: parking.y });
           exits = reachableCells(draft, crew.id).filter(
             (p) => p.level === 'ground' && !goals.some((g) => g.x === p.x && p.y <= 19),
           );
         }
         const exit = exits.sort((a, b) => a.cost - b.cost || a.y - b.y || a.x - b.x)[0];
-        if (exit) act({ type: 'move', unitId: crew.id, ...ground(exit) });
+        if (exit) yield* act({ type: 'move', unitId: crew.id, ...ground(exit) });
         const current = draft.engines.find((e) => e.id === actor.id)!;
         route = routeSiegeActor(draft, current, goals);
       }
@@ -238,7 +243,7 @@ function attackerTurn(
         );
         if (!escorted) return;
       }
-      act(route.action);
+      yield* act(route.action);
     }
   };
   const safeCommand = (p: Cell) =>
@@ -249,7 +254,7 @@ function attackerTurn(
     const to = reachableCells(draft, main.id)
       .filter((p) => p.level === 'ground' && safeCommand(p))
       .sort((a, b) => b.y - a.y || a.cost - b.cost)[0];
-    if (to) act({ type: 'move', unitId: main.id, ...ground(to) });
+    if (to) yield* act({ type: 'move', unitId: main.id, ...ground(to) });
   }
 
   if (method !== 'brute') {
@@ -271,7 +276,7 @@ function attackerTurn(
       else if (needsMound && count('earthCart') < 2) kind = 'earthCart';
       else if (count('ladder') < (method === 'anyPrice' ? plan.columns.length : 2)) kind = 'ladder';
       else if (draft.act === 2 && count('tower') < 2) kind = 'tower';
-      if (kind) act({ type: 'queueEngine', workshopId: workshop.id, kind });
+      if (kind) yield* act({ type: 'queueEngine', workshopId: workshop.id, kind });
     }
   }
 
@@ -281,7 +286,7 @@ function attackerTurn(
     .sort((a, b) => (a.kind === 'earthCart' ? 0 : 1) - (b.kind === 'earthCart' ? 0 : 1))) {
     let engine = draft.engines.find((e) => e.id === initial.id)!;
     if (engine.acted) continue;
-    if (!engine.raisedAt) move(engine, engineGoals(draft, engine));
+    if (!engine.raisedAt) yield* move(engine, engineGoals(draft, engine));
     engine = draft.engines.find((e) => e.id === initial.id)!;
     if (
       engine.kind === 'ladder' &&
@@ -290,7 +295,7 @@ function attackerTurn(
       layoutSymbol(engine.x, 16) === 'W' &&
       [0, T.trenchCapacity].includes(draft.trenchFill[`${engine.x},18`]!)
     )
-      act({ type: 'raiseLadder', engineId: engine.id });
+      yield* act({ type: 'raiseLadder', engineId: engine.id });
     if (engine.kind === 'earthCart') {
       const x = plan.moundColumn;
       const pile = { x, y: 17 };
@@ -300,7 +305,7 @@ function attackerTurn(
         (draft.mounds[`${x},17`] ?? 0) < T.moundComplete &&
         distance(engine, pile) === 1
       )
-        act({ type: 'pileEarth', engineId: engine.id, ...pile });
+        yield* act({ type: 'pileEarth', engineId: engine.id, ...pile });
       else {
         const fill = SOUTH_TRENCH.filter(
           (c) =>
@@ -309,7 +314,7 @@ function attackerTurn(
             draft.trenchFill[cellKey(c)] !== T.trenchCapacity &&
             (c.y === 18 || draft.trenchFill[`${c.x},18`] === T.trenchCapacity),
         ).sort((a, b) => (a.x === x ? 0 : 1) - (b.x === x ? 0 : 1))[0];
-        if (fill) act({ type: 'fillTrench', engineId: engine.id, ...fill });
+        if (fill) yield* act({ type: 'fillTrench', engineId: engine.id, ...fill });
       }
     }
   }
@@ -353,7 +358,7 @@ function attackerTurn(
       )[0];
     if (climber) climbingCrew.add(climber.id);
   }
-  const cover = (id: string) => {
+  const cover = function* (id: string) {
     const engine = draft.engines.find((e) => e.id === id)!;
     if (engine.covered || !usableEngine(engine)) return;
     const eligible = availableInfantry().filter(
@@ -375,10 +380,10 @@ function attackerTurn(
         distance(a, engine) - distance(b, engine),
     );
     for (const initial of troops) {
-      move(initial, adjacent(engine).map(ground));
+      yield* move(initial, adjacent(engine).map(ground));
       const u = unitNow(initial.id);
       if (distance(u, engine) <= 1) {
-        act({ type: 'coverEngine', unitId: u.id, engineId: engine.id });
+        yield* act({ type: 'coverEngine', unitId: u.id, engineId: engine.id });
         return;
       }
       // Only the closest formation is assigned; other infantry remains available to climb.
@@ -388,12 +393,12 @@ function attackerTurn(
   };
   if (method !== 'brute') {
     for (const engine of draft.engines.filter(usableEngine)) {
-      if (engine.raisedAt && brazierNear(draft, engine.raisedAt, 2)) cover(engine.id);
+      if (engine.raisedAt && brazierNear(draft, engine.raisedAt, 2)) yield* cover(engine.id);
       if (
         engine.kind === 'ram' &&
         Object.values(draft.preparations.millstones).some((p) => p.hoisted)
       )
-        cover(engine.id);
+        yield* cover(engine.id);
     }
   }
 
@@ -421,14 +426,14 @@ function attackerTurn(
         const goals = adjacent(task)
           .filter((p) => cellTerrain(draft, p.x, p.y) === 'plain')
           .map(ground);
-        move(unitNow(initial.id), goals);
+        yield* move(unitNow(initial.id), goals);
         const u = unitNow(initial.id);
         reserved.add(u.id);
         if (distance(u, task) === 1 && !draft.engines.some((e) => sameCell(e, u))) {
           if (fill && draft.trenchFill[cellKey(fill)] !== T.trenchCapacity)
-            act({ type: 'fillTrench', unitId: u.id, ...fill });
+            yield* act({ type: 'fillTrench', unitId: u.id, ...fill });
           else if (!fill && (draft.mounds[cellKey(pile)] ?? 0) < T.moundComplete)
-            act({ type: 'pileEarth', unitId: u.id, ...pile });
+            yield* act({ type: 'pileEarth', unitId: u.id, ...pile });
         }
       }
     }
@@ -459,7 +464,7 @@ function attackerTurn(
         .filter((u) => !reserved.has(u.id) && !dailyAssault(u))
         .sort((a, b) => distance(a, engine) - distance(b, engine))[0];
       if (u) {
-        move(u, adjacent(engine).map(ground));
+        yield* move(u, adjacent(engine).map(ground));
         reserved.add(u.id);
       }
     }
@@ -543,7 +548,7 @@ function attackerTurn(
               )
             )
               goals.push(ground({ x, y }));
-        move(unitNow(shooter.id), goals);
+        yield* move(unitNow(shooter.id), goals);
       }
       const current =
         'side' in shooter ? unitNow(shooter.id) : draft.engines.find((e) => e.id === shooter.id)!;
@@ -556,7 +561,7 @@ function attackerTurn(
           distance(current, t) <= ('side' in current ? T.suppressRange : T.towerRange),
       );
       if (inRange)
-        act(
+        yield* act(
           'side' in current
             ? { type: 'suppress', unitId: current.id, targetId: inRange.id }
             : { type: 'suppress', engineId: current.id, targetId: inRange.id },
@@ -582,7 +587,7 @@ function attackerTurn(
       draft.day >= plan.ramDay &&
       (!dangerous || method !== 'careful')
     )
-      act({ type: 'ram', engineId: engine.id, gateId: 'south' });
+      yield* act({ type: 'ram', engineId: engine.id, gateId: 'south' });
   }
 
   const allowAssault = method === 'brute' || (method === 'anyPrice' && draft.day >= 2);
@@ -597,12 +602,12 @@ function attackerTurn(
           freshness(u) < plan.rotation,
       )
       .sort((a, b) => b.wounded - a.wounded)[0];
-    if (exhausted) act({ type: 'order', side: 'shu', kind: 'rotate', target: exhausted.id });
+    if (exhausted) yield* act({ type: 'order', side: 'shu', kind: 'rotate', target: exhausted.id });
     else {
       const shaken = availableInfantry()
         .filter((u) => dailyAssault(u) && u.morale < WAVERING_MORALE)
         .sort((a, b) => a.morale - b.morale)[0];
-      if (shaken) act({ type: 'order', side: 'shu', kind: 'rally', target: shaken.id });
+      if (shaken) yield* act({ type: 'order', side: 'shu', kind: 'rally', target: shaken.id });
     }
   }
   const troops = draft.units
@@ -623,7 +628,7 @@ function attackerTurn(
       !reinforcingClimb &&
       (u.level === 'wall' || u.y < 16 || draft.gates.south.broken)
     ) {
-      move(u, COURTYARD.map(ground));
+      yield* move(u, COURTYARD.map(ground));
       u = unitNow(u.id);
       if (!u.moved && !u.acted) {
         // A defender can seal a one-cell corridor. Advance to fight the blocker.
@@ -631,7 +636,7 @@ function attackerTurn(
         const goals = enemies.flatMap((enemy) =>
           adjacent(enemy).map((cell) => ({ ...cell, level: enemy.level })),
         );
-        move(u, goals);
+        yield* move(u, goals);
       }
     } else if (u.troopType === 'infantry') {
       const allSites = climbSites(draft);
@@ -651,7 +656,7 @@ function attackerTurn(
       // Keep working a held base, otherwise fill the closest available climbing position.
       const held = sites.find((s) => u.level === 'ground' && sameCell(u, s.base));
       if (!held)
-        move(
+        yield* move(
           u,
           preferred.map((s) =>
             draft.mounds[cellKey(s.base)] === T.moundComplete && empty.includes(s) ? s.top : s.base,
@@ -668,7 +673,7 @@ function attackerTurn(
         ),
     );
     if (emptyTop) {
-      act({
+      yield* act({
         type: 'climb',
         unitId: u.id,
         ...(allowAssault && wallFoothold(draft, emptyTop.top) < T.footholdComplete
@@ -692,14 +697,14 @@ function attackerTurn(
           b.forecast!.casualties - a.forecast!.casualties,
       );
     if (enemies[0])
-      act({
+      yield* act({
         type: 'attack',
         unitId: u.id,
         targetId: enemies[0].target.id,
         ...(enemies[0].assault ? { assault: true } : {}),
       });
     else if (method === 'brute' && predictSiegeAttack(draft, u, 'south')?.inRange)
-      act({ type: 'attack', unitId: u.id, gateId: 'south' });
+      yield* act({ type: 'attack', unitId: u.id, gateId: 'south' });
   }
 
   if (!draft.ordersUsed.shu[draft.day] && draft.units.some((u) => mainBody(u) && activeUnit(u))) {
@@ -729,7 +734,7 @@ function attackerTurn(
       )
       .sort((a, b) => a.morale - b.morale)[0];
     if (method !== 'brute' && precarious)
-      act({ type: 'order', side: 'shu', kind: 'rally', target: precarious.id });
+      yield* act({ type: 'order', side: 'shu', kind: 'rally', target: precarious.id });
     else if (
       draft.engines.filter((e) => usableEngine(e) && e.y >= 19 && e.y <= 21).length >= 2 &&
       draft.engines.some(
@@ -742,14 +747,22 @@ function attackerTurn(
       ) &&
       !torches
     )
-      act({ type: 'order', side: 'shu', kind: 'nightAssault' });
+      yield* act({ type: 'order', side: 'shu', kind: 'nightAssault' });
     else if (method !== 'brute' && wounded)
-      act({ type: 'order', side: 'shu', kind: 'rotate', target: wounded.id });
+      yield* act({ type: 'order', side: 'shu', kind: 'rotate', target: wounded.id });
     else if (method !== 'brute' && queued)
-      act({ type: 'order', side: 'shu', kind: 'supervise', target: queued.id });
-    else if (lowest) act({ type: 'order', side: 'shu', kind: 'rally', target: lowest.id });
+      yield* act({ type: 'order', side: 'shu', kind: 'supervise', target: queued.id });
+    else if (lowest) yield* act({ type: 'order', side: 'shu', kind: 'rally', target: lowest.id });
   }
   return { actions, state: draft };
+}
+
+// Synchronous callers and the yielding UI exhaust the same action sequence.
+function attackerTurn(state: SiegeState, method: AttackerMethod) {
+  const steps = attackerTurnSteps(state, method);
+  let step = steps.next();
+  while (!step.done) step = steps.next();
+  return step.value;
 }
 
 export function planAttackerTurn(state: SiegeState, method: AttackerMethod): SiegeAction[] {

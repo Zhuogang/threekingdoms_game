@@ -1,3 +1,4 @@
+import { cloneSiegeState, silenceSiegeLog } from './clone';
 import { SIEGE_TUNING as T, ENGINE_RULES } from './tuning';
 import {
   cancelOccupiedPreparations,
@@ -471,21 +472,17 @@ function performAction(
           forecast.frontage,
           forecast.counterattack.casualties,
         );
-      state.log.push({
-        day: state.day,
-        code: 'combat',
-        params: {
-          sourceId: source.id,
-          targetId: target.id,
-          casualties: forecast.casualties,
-          counterCasualties: forecast.counterattack.casualties,
-          cell: cellKey(wallCell),
-          targetBefore,
-          targetAfter: target.troops,
-          sourceBefore,
-          sourceAfter: 'troops' in source ? source.troops : 0,
-          frontage: forecast.frontage,
-        },
+      logEvent(state, 'combat', {
+        sourceId: source.id,
+        targetId: target.id,
+        casualties: forecast.casualties,
+        counterCasualties: forecast.counterattack.casualties,
+        cell: cellKey(wallCell),
+        targetBefore,
+        targetAfter: target.troops,
+        sourceBefore,
+        sourceAfter: 'troops' in source ? source.troops : 0,
+        frontage: forecast.frontage,
       });
     }
     source.acted = true;
@@ -635,6 +632,15 @@ function performAction(
   return null;
 }
 
+/** Run the execution path on a disposable draft, without daily resolution or bookkeeping. */
+export function validateSiegeAction(state: SiegeState, action: SiegeAction): string | null {
+  if (state.outcome) return 'The siege has ended.';
+  if (action.type === 'endDay' || action.type === 'withdraw') return null;
+  const draft = cloneSiegeState({ ...state, log: [] });
+  silenceSiegeLog(draft.log);
+  return performAction(draft, action);
+}
+
 /** Validates on an isolated JSON draft. A rejected action never changes the caller's state. */
 export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeActionResult {
   if (state.outcome) return { ok: false, reason: 'The siege has ended.' };
@@ -642,7 +648,7 @@ export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeA
     const next = endDay(state);
     return { ok: true, state: next, events: next.log.slice(state.log.length) };
   }
-  const next = structuredClone(state);
+  const next = cloneSiegeState(state);
   updateMainBodyThreat(next);
   if (action.type === 'withdraw') {
     next.outcome = 'historical';

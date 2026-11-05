@@ -31,6 +31,7 @@ export function playScriptDays(
   return next;
 }
 export interface SiegeDev {
+  renderCounts: { static: number; units: number; overlays: number };
   playScript: (strategy: AttackerMethod, days?: number) => Promise<SiegeState['outcome']>;
   snapshot: () => SiegeSave;
 }

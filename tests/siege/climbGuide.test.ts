@@ -349,22 +349,23 @@ describe('climb guide rule observations', () => {
   );
   it('is pure, prepends fill guidance, and explains raising a selected ladder', () => {
     const { state, unit, ladder } = fixture();
+    // Fixture edits below become new immutable snapshots at the UI boundary.
+    const context = (id: string, locale: 'en' | 'zh') =>
+      actionContext(structuredClone(state), id, locale);
     const before = structuredClone(state);
     const guide = climbGuide(state, unit.id)!;
-    expect(actionContext(state, unit.id, 'zh')).toBe(climbGuideText(guide, 'zh', () => ''));
-    expect(actionContext(state, ladder.id, 'en')).toBe(
-      'Infantry can climb from this cell once it is raised.',
-    );
+    expect(context(unit.id, 'zh')).toBe(climbGuideText(guide, 'zh', () => ''));
+    expect(context(ladder.id, 'en')).toBe('Infantry can climb from this cell once it is raised.');
     expect(state).toEqual(before);
     Object.assign(unit, { x: 17, y: 19 });
-    expect(actionContext(state, unit.id, 'zh')).toBe(
+    expect(context(unit.id, 'zh')).toBe(
       `此处可填城堑。 ${climbGuideText(climbGuide(state, unit.id)!, 'zh', () => '')}`,
     );
     Object.assign(unit, base);
     ladder.raisedAt = top;
-    expect(actionContext(state, unit.id, 'zh')).toBe(siegeText('zh', 'contextLadder', { gain: 1 }));
+    expect(context(unit.id, 'zh')).toBe(siegeText('zh', 'contextLadder', { gain: 1 }));
     state.units.push({ ...unit, id: 'enemy', side: 'wei', ...top, level: 'wall' });
-    expect(actionContext(state, unit.id, 'zh')).toBe(
+    expect(context(unit.id, 'zh')).toBe(
       climbGuideText(climbGuide(state, unit.id)!, 'zh', () => unit.officer.chinese),
     );
   });

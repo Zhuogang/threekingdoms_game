@@ -1,3 +1,4 @@
+import { cloneSiegeState } from '../rules/clone';
 import { GATES, cellKey, layoutSymbol } from '../content/chencang';
 import { isMapCell } from '../rules/map';
 import type { Cell, SiegeEngine, SiegeLogEntry, SiegeState } from '../rules/types';
@@ -67,10 +68,10 @@ export function sortieRoute(target: Cell): Cell[] {
  * pictures of resolved facts, never an alternate night resolver. */
 export function nightReplay(before: SiegeState, final: SiegeState): NightFrame[] {
   const events = final.log.slice(before.log.length);
-  const picture = structuredClone(before);
+  const picture = cloneSiegeState(before);
   const frames: NightFrame[] = [];
   const push = (night: NightPresentation) =>
-    frames.push({ state: structuredClone(picture), night });
+    frames.push({ state: cloneSiegeState(picture), night });
   push({ kind: 'settle', duration: REPLAY_STEP_MS });
   for (const event of events) {
     const p = event.params;

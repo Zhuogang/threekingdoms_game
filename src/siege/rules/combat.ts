@@ -1,3 +1,4 @@
+import { cloneSiegeState } from './clone';
 import { SIEGE_TUNING as T } from './tuning';
 import { logEvent } from './events';
 import { applyCombatDamage, troopDamageMultiplier } from '../../v03/battle/experience';
@@ -704,8 +705,7 @@ export function damageEngine(state: SiegeState, target: SiegeEngine, amount: num
   const result = {
     ...state,
     engines: state.engines.map((entry) => (entry.id === engine.id ? engine : entry)),
-    stats: { ...state.stats },
-    log: [...state.log],
+    ...cloneSiegeState({ stats: state.stats, log: state.log }),
   };
   if (engine.durability > 0) return result;
   result.stats.enginesLost++;

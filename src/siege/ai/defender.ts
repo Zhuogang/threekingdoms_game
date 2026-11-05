@@ -526,7 +526,12 @@ function movementCandidate(
 }
 
 /** Plans against an isolated evolving state, reserving destinations and spent actions. */
-function defenderTurn(state: SiegeState): { actions: SiegeAction[]; state: SiegeState } {
+export function* defenderTurnSteps(
+  state: SiegeState,
+): Generator<
+  { action: SiegeAction; state: SiegeState },
+  { actions: SiegeAction[]; state: SiegeState }
+> {
   let draft = state;
   const actions: SiegeAction[] = [];
   const accept = (action: SiegeAction): boolean => {
@@ -585,13 +590,25 @@ function defenderTurn(state: SiegeState): { actions: SiegeAction[]; state: Siege
       if (!best) break;
       if (!accept(best.action))
         throw new Error(`Illegal defender plan: ${JSON.stringify(best.action)}`);
+      yield { action: best.action, state: draft };
     }
   }
   const order = dailyOrder(draft, wallThreats(draft));
   const commander = draft.units.find((u) => u.officer.id === 'haozhao' && activeUnit(u));
-  if (order && commander && !draft.outcome && !accept(order))
-    throw new Error(`Illegal defender order: ${JSON.stringify(order)}`);
+  if (order && commander && !draft.outcome) {
+    if (!accept(order)) throw new Error(`Illegal defender order: ${JSON.stringify(order)}`);
+    yield { action: order, state: draft };
+  }
   return { actions, state: draft };
+}
+
+// Both interfaces exhaust the very same decision sequence. Only the UI yields
+// browser tasks between steps; simulations and existing rule callers remain synchronous.
+function defenderTurn(state: SiegeState) {
+  const steps = defenderTurnSteps(state);
+  let step = steps.next();
+  while (!step.done) step = steps.next();
+  return step.value;
 }
 
 export function planDefenderTurn(state: SiegeState): SiegeAction[] {

@@ -1,3 +1,4 @@
+import { cloneSiegeState } from './clone';
 import { MIN_MORALE } from './constants';
 import { ENGINE_RULES, SIEGE_TUNING as T } from './tuning';
 import {
@@ -273,7 +274,7 @@ function resolveNightOrders(state: SiegeState): boolean {
 
 /** Pure night resolution only. The caller drives the two armies' phases first. */
 export function endDay(state: SiegeState): SiegeState {
-  const next = structuredClone(state);
+  const next = cloneSiegeState(state);
   if (next.outcome) return next;
   updateMainBodyThreat(next);
   cancelOccupiedPreparations(next);

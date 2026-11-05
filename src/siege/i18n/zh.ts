@@ -345,6 +345,8 @@ export const zh = {
   snow: '雪',
   wind: '风',
   endDay: '结束本日 [E]',
+  resolving: '魏军行动中……',
+  resolvingWei: '蜀军行动中……',
   playback: '魏军行动中 · Esc 跳过',
   skip: '跳过回放',
   save: '保存',

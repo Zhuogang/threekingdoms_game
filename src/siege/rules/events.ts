@@ -1,9 +1,11 @@
+import { isSilentSiegeLog } from './clone';
 import { scoreSiege } from './score';
 import { SIEGE_TUNING as T } from './tuning';
 import { SHU_ROSTER, WEI_ROSTER } from '../content/chencang';
 import type { SiegeLogEntry, SiegeState } from './types';
 
 export function logEvent(state: SiegeState, code: string, params: SiegeLogEntry['params']): void {
+  if (isSilentSiegeLog(state.log)) return;
   state.log.push({ day: state.day, code, params });
   if (
     [

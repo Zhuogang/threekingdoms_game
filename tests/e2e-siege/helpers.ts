@@ -86,6 +86,7 @@ export async function begin(page: Page, locale: 'en' | 'zh' = 'en') {
 }
 export async function endDay(page: Page) {
   await page.getByTestId('end-day').click();
+  await expect(page.getByTestId('siege-resolving')).toHaveCount(0);
   const skip = page.getByTestId('replay-skip');
   // Presence and click happen in one browser task: a short replay can finish
   // between locator actionability checks. An already finished replay is fine.
