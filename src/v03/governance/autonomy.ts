@@ -3,6 +3,7 @@ import { incomingCampaignThreats } from '../ai/campaign-threats';
 import { reconcileFactionObjectives } from '../ai/faction-objectives';
 import { isRivalCampaignOfficerAvailable } from '../ai/campaign-legality';
 import { cityBattleRoster } from '../campaign/roster';
+import { managedCapacity } from '../campaign/leadership';
 import { recruitmentQuote } from '../campaign/recruitment';
 import { DAYS_PER_MONTH, PILOT_LOGISTICS_RATES } from '../calendar';
 import { availableReserveTroops, cityPersonnelSummary } from '../campaign/personnel';
@@ -540,8 +541,10 @@ export function planGovernorMonthlyWork(
         availableReserveTroops(state, cityId, officer.troopType) -
         reserves.troops -
         (threats.length || forceNeeded > 0 ? 0 : CAMPAIGN_AI.autonomy.reserveKeep);
+      // Managed capacity first; the hard limit only under threat or a stated force need.
       const amount = Math.min(
         PERSONNEL.capacity - officer.wounded,
+        threats.length || forceNeeded > 0 ? PERSONNEL.capacity : managedCapacity(officer),
         officer.troops +
           (forceNeeded > 0 && !threats.length ? Math.min(ready, forceNeeded) : ready),
       );

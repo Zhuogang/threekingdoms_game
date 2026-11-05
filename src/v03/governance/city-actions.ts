@@ -11,6 +11,7 @@ import type { TroopType } from '../content/types';
 import {
   CITY_WORK as CITY_WORK_TABLE,
   ECONOMY as ECONOMY_TABLE,
+  LEADERSHIP as LEADERSHIP_TABLE,
   PERSONNEL as PERSONNEL_TABLE,
 } from '../balance';
 import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types';
@@ -18,6 +19,7 @@ import type { V03City, V03CityAction, V03GameState, V03Officer } from '../types'
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const CITY_WORK = CITY_WORK_TABLE;
 const ECONOMY = ECONOMY_TABLE;
+const LEADERSHIP = LEADERSHIP_TABLE;
 const PERSONNEL = PERSONNEL_TABLE;
 
 export interface V03CityActionInput {
@@ -323,7 +325,7 @@ export function hasTrainingBenefit(officer: Pick<V03Officer, 'experience' | 'lev
 export function gainOfficerExperience(
   officer: Pick<
     V03Officer,
-    'experience' | 'level' | 'force' | 'intellect' | 'equipment' | 'troopType'
+    'experience' | 'level' | 'force' | 'intellect' | 'leadership' | 'equipment' | 'troopType'
   >,
   amount: number,
 ): void {
@@ -340,6 +342,7 @@ export function gainOfficerExperience(
   const targetLevel = levelForExperience(officer.experience);
   while (officer.level < targetLevel) {
     officer.level++;
+    officer.leadership = Math.min(LEADERSHIP.max, officer.leadership + 1);
     if (officer.troopType === 'archer')
       officer.intellect = Math.min(
         100,

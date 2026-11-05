@@ -578,6 +578,8 @@ export const en = {
   'flow.groupHint.equip':
     'Select officers to receive fine arms. Each costs 180 gold and gains up to 5 force, capped at 105, with no work point cost.',
   'flow.reviewWork': 'Review this order before confirming.',
+  'ui.controls.n.of.m': 'Controls {managed} of {troops}',
+  'ui.unmanaged.warning': '{excess} unmanaged: 5% desert each month, +{pct}% losses in battle',
   'flow.assignmentHint':
     'Set the total commanded troops, from 0 to 10,000. Added troops come from the reserve; removed troops return to it.',
   'flow.workCost':

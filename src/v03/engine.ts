@@ -63,6 +63,7 @@ import {
   type TacticalBattleUnit,
   type V03TacticalBattleState,
 } from './battle';
+import { settleDesertion } from './campaign/leadership';
 import { cityBattleRoster, groupOfficers, rosterFromGroups } from './campaign/roster';
 import {
   advanceV03Hegemon,
@@ -1668,6 +1669,20 @@ function settleMonth(state: V03GameState, year: number, month: number): V03GameS
   const next = cloneState(state);
   const beforeCities = structuredClone(state.cities);
   const shortages = new Set<string>();
+  for (const deserted of settleDesertion(next)) {
+    if (deserted.factionId !== next.playerFactionId) continue;
+    addEvent(
+      next,
+      'monthBoundary',
+      'Men slipped away',
+      `${deserted.count} men slipped away from an officer's camp.`,
+      null,
+    );
+    const event = next.events.at(-1)!;
+    event.code = 'report.desertion';
+    event.params = { officerId: deserted.officerId, count: deserted.count };
+    event.tier = 'notice';
+  }
   for (const city of next.cities) {
     const serving = next.officers.filter(
       (officer) =>

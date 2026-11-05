@@ -91,6 +91,8 @@ const tacticalUnit = z
     isMilitia: z.boolean(),
     cunning: z.boolean(),
     fierce: z.boolean().optional(),
+    leadership: z.number().finite().min(0).max(100).optional(),
+    excessShare: z.number().finite().min(0).max(1).optional(),
     attackRange: safeInt.min(1).max(24),
     morale: nonnegative.max(100),
     // Existing enum encodes a pending activation/hit; old v3 saves retain their effect.

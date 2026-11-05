@@ -27,6 +27,17 @@ export function formatEvent(
           ? `${name(p.cityId, 'cities')}：${p.choice === 'self' ? '君主亲治，已切换君主本城。' : `已选择${name(p.officerId, 'officers')}任太守；跨城调任以到达和任职时间为准。`}`
           : `${name(p.cityId, 'cities')}: ${p.choice === 'self' ? 'the ruler now governs personally; the ruler’s capital has moved.' : `${name(p.officerId, 'officers')} was chosen as governor; transfers take effect after arrival and the appointment date.`}`,
     };
+  if (event.code === 'report.desertion') {
+    const count = Number(p.count).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US');
+    const officer = name(p.officerId, 'officers');
+    return {
+      title: locale === 'zh' ? '士兵逃散' : 'Men slipped away',
+      detail:
+        locale === 'zh'
+          ? `${officer}营中逃散${count}人。`
+          : `${count} men slipped away from ${officer}'s camp.`,
+    };
+  }
   if (event.code === 'officer.debut') {
     const names = String(p.officerIds ?? '')
       .split(',')

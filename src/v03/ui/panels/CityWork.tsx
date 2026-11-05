@@ -4,6 +4,8 @@ import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
 import { recruitmentQuote } from '../../campaign/recruitment';
 import { availableReserveTroops } from '../../campaign/personnel';
+import { excessShare, managedCapacity } from '../../campaign/leadership';
+import { LEADERSHIP as LEADERSHIP_TABLE } from '../../balance';
 import { cityProduction, monthlyCityUpkeep, nextEconomicBoundary } from '../../campaign/economy';
 import { useMemo, useRef, useState } from 'react';
 import {
@@ -21,6 +23,7 @@ import { ReinforcementPreview, TroopProgress } from './TroopProgress';
 
 // Module-local bindings: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const PERSONNEL = PERSONNEL_TABLE;
+const LEADERSHIP = LEADERSHIP_TABLE;
 
 export const cityWorkActions = [
   'develop-farming',
@@ -288,6 +291,33 @@ export function CityWork({
               },
             ]}
           />
+          {(() => {
+            const planned = afterOfficer?.troops ?? officer.troops;
+            const managed = Math.min(planned, managedCapacity(officer));
+            const unmanaged = planned - managed;
+            return (
+              <>
+                <p>
+                  {message(locale, 'ui.controls.n.of.m', {
+                    managed: managed.toLocaleString(),
+                    troops: planned.toLocaleString(),
+                  })}
+                </p>
+                {unmanaged > 0 ? (
+                  <p role="status">
+                    {message(locale, 'ui.unmanaged.warning', {
+                      excess: unmanaged.toLocaleString(),
+                      pct: Math.round(
+                        LEADERSHIP.unmanagedIncoming *
+                          100 *
+                          excessShare({ leadership: officer.leadership, troops: planned }),
+                      ),
+                    })}
+                  </p>
+                ) : null}
+              </>
+            );
+          })()}
           <Field label={t.assignmentAmount} hint={message(locale, 'flow.assignmentHint')}>
             <Input
               type="number"

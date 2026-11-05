@@ -29,6 +29,7 @@ describe('balance tables', () => {
         'CITY_WORK',
         'ECONOMY',
         'EVENTS',
+        'LEADERSHIP',
         'MORALE',
         'PERSONNEL',
         'RECRUITMENT',

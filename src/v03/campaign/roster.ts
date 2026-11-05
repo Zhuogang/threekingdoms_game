@@ -3,6 +3,7 @@ import { hasTrait } from '../content/traits';
 import type { BattleRosterEntry } from '../battle/types';
 import type { TroopType, V03GameState, V03Officer } from '../types';
 import { UNITS as UNITS_TABLE } from '../content/units';
+import { excessTroops } from './leadership';
 
 // Module-local binding: reading an imported table through the module namespace costs a getter call per access in hot loops.
 const UNITS = UNITS_TABLE;
@@ -84,6 +85,19 @@ export function rosterFromGroups(
               Math.max(1, group.troops),
           )
         : 40,
+      leadership: group.officers.length
+        ? Math.round(
+            group.officers.reduce((sum, officer) => sum + officer.leadership * officer.troops, 0) /
+              Math.max(1, group.troops),
+          )
+        : 0,
+      ...(group.officers.length
+        ? {
+            excessShare:
+              group.officers.reduce((sum, officer) => sum + excessTroops(officer), 0) /
+              Math.max(1, group.troops),
+          }
+        : {}),
       level: group.officers.length
         ? Math.max(...group.officers.map((officer) => officer.level))
         : 0,

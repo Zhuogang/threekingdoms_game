@@ -555,6 +555,8 @@ export const zh: Record<MessageKey, string> = {
   'flow.groupHint.reward': '勾选赏赐对象，每人 100 金、忠诚最多 +15，不消耗工作点。',
   'flow.groupHint.equip': '勾选赐予兵器的武将，每人 180 金、武力最多 +5，上限 105，不消耗工作点。',
   'flow.reviewWork': '确认前查看本次命令。',
+  'ui.controls.n.of.m': '可统御 {managed} / {troops} 人',
+  'ui.unmanaged.warning': '{excess}人失控：每月逃散5%，战斗中多损失{pct}%',
   'flow.assignmentHint':
     '填写调整后的总兵力，范围为 0–10,000。增兵从预备兵中调拨，减兵则退回预备兵。',
   'flow.workCost': '消耗 1 点本旬工作点，执行后自动返回上一层。',

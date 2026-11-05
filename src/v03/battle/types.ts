@@ -107,6 +107,10 @@ export interface BattleRosterEntry {
   cunning?: boolean;
   /** A fierce leader's formation leans aggressive under AI command (PF-BA-01). */
   fierce?: boolean;
+  /** Troop-weighted officer leadership; 0 marks militia. Absent keeps the flat opening morale and force-only hit quality. */
+  leadership?: number;
+  /** Share of the formation's men above its officers' managed capacity (0 to 1). */
+  excessShare?: number;
   /** Defaults to one tile, except archers (three tiles). */
   attackRange?: number;
 }
@@ -130,6 +134,9 @@ export interface TacticalBattleUnit extends Omit<BattleUnitPosition, 'troops'> {
   cunning: boolean;
   /** Optional so battles saved before play-feel Phase 2 still load; absent means not fierce. */
   fierce?: boolean;
+  /** Present only for campaign formations; see BattleRosterEntry. */
+  leadership?: number;
+  excessShare?: number;
   attackRange: number;
   morale: number;
   /** Confused skips one next activation; Inspired boosts one normal/counterattack/Ambush hit. Neither expires at day rollover. */

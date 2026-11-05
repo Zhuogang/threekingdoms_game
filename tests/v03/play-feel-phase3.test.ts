@@ -546,11 +546,18 @@ describe('PF-RL-02 retire or repair dead actions', () => {
 describe('PF-RL-03 officers grow through deeds', () => {
   // The exact half-of-troop-XP settlement is covered in campaign/troop-flow.integration.
   it('levels officers from battle XP with the training level-up gains', () => {
-    const officer = { experience: 90, level: 0, force: 98, intellect: 60, equipment: null };
+    const officer = {
+      experience: 90,
+      level: 0,
+      force: 98,
+      intellect: 60,
+      leadership: 70,
+      equipment: null,
+    };
     gainOfficerExperience({ ...officer, troopType: 'infantry' }, 0);
     const infantry = { ...officer, troopType: 'infantry' as const };
     gainOfficerExperience(infantry, 70);
-    expect(infantry).toMatchObject({ experience: 160, level: 1, force: 100 });
+    expect(infantry).toMatchObject({ experience: 160, level: 1, force: 100, leadership: 71 });
     // Archers gain intellect on top of the force every officer gains (owner's choice,
     // October 30, 2026), since their normal attacks also use force.
     const archer = { ...officer, troopType: 'archer' as const };

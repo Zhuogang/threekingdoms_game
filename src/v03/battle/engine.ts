@@ -6,6 +6,7 @@ import {
   BATTLE as BATTLE_TABLE,
   BATTLE_AI as BATTLE_AI_TABLE,
   MORALE as MORALE_TABLE,
+  LEADERSHIP as LEADERSHIP_TABLE,
   PERSONNEL as PERSONNEL_TABLE,
   TACTICS as TACTICS_TABLE,
 } from '../balance';
@@ -58,6 +59,7 @@ const UNITS = UNITS_TABLE;
 const BATTLE = BATTLE_TABLE;
 const BATTLE_AI = BATTLE_AI_TABLE;
 const MORALE = MORALE_TABLE;
+const LEADERSHIP = LEADERSHIP_TABLE;
 const PERSONNEL = PERSONNEL_TABLE;
 const TACTICS = TACTICS_TABLE;
 
@@ -90,6 +92,26 @@ const TACTIC_ORDER: readonly BattleTactic[] = [
 ];
 const WEATHER_OPTIONS: readonly BattleWeather[] = ['clear', 'rain', 'wind'];
 const otherSide = (side: BattleSide): BattleSide => (side === 'attacker' ? 'defender' : 'attacker');
+
+/** The side's commander: the living, non-militia unit with the most leadership (force if none), then force, then id. */
+export function battleCommander(
+  state: V03TacticalBattleState,
+  side: BattleSide,
+): TacticalBattleUnit | null {
+  let best: TacticalBattleUnit | null = null;
+  const lead = (unit: TacticalBattleUnit) => unit.leadership ?? unit.force;
+  for (const unit of state.units) {
+    if (unit.side !== side || unit.troops <= 0 || unit.isMilitia) continue;
+    if (
+      !best ||
+      lead(unit) > lead(best) ||
+      (lead(unit) === lead(best) &&
+        (unit.force > best.force || (unit.force === best.force && unit.id < best.id)))
+    )
+      best = unit;
+  }
+  return best;
+}
 
 function livingUnits(state: V03TacticalBattleState, side?: BattleSide): TacticalBattleUnit[] {
   return state.units.filter((unit) => unit.troops > 0 && (!side || unit.side === side));
@@ -134,6 +156,30 @@ function otherUnitsAsBlockers(
     .map((candidate) => ({ id: candidate.id, x: candidate.x, y: candidate.y }));
 }
 
+/** Opening morale: flat for rosters without leadership; militia start low; otherwise leadership raises it and unmanaged men lower it. */
+function openingMorale(entry: Pick<BattleRosterEntry, 'leadership' | 'excessShare'>): number {
+  if (entry.leadership === undefined) return MORALE.opening;
+  if (entry.leadership === 0) return LEADERSHIP.militiaMorale;
+  return Math.round(
+    LEADERSHIP.openingMoraleBase +
+      entry.leadership * LEADERSHIP.openingMoralePerLeadership -
+      LEADERSHIP.unmanagedMorale * (entry.excessShare ?? 0),
+  );
+}
+
+/** Force term of the ordinary-hit ratio: leadership-weighted for officers, plain force for militia and bare rosters. */
+function hitQuality(unit: Pick<TacticalBattleUnit, 'force' | 'leadership'>): number {
+  return unit.leadership === undefined || unit.leadership === 0
+    ? unit.force
+    : LEADERSHIP.hitLeadershipWeight * unit.leadership +
+        (1 - LEADERSHIP.hitLeadershipWeight) * unit.force;
+}
+
+/** Incoming-casualty multiplier for the unmanaged share of a formation. */
+function unmanagedLosses(target: Pick<TacticalBattleUnit, 'excessShare'>): number {
+  return 1 + LEADERSHIP.unmanagedIncoming * (target.excessShare ?? 0);
+}
+
 function makeUnits(
   roster: readonly BattleRosterEntry[],
   side: BattleSide,
@@ -160,10 +206,12 @@ function makeUnits(
       isMilitia: entry.isMilitia ?? entry.id.includes('militia'),
       cunning: entry.cunning ?? false,
       ...(entry.fierce ? { fierce: true } : {}),
+      ...(entry.leadership !== undefined ? { leadership: entry.leadership } : {}),
+      ...(entry.excessShare !== undefined ? { excessShare: entry.excessShare } : {}),
       attackRange: entry.attackRange ?? UNITS[entry.troopType].attackRange,
       x: position.x,
       y: position.y,
-      morale: MORALE.opening,
+      morale: openingMorale(entry),
       status: 'normal',
       moved: false,
       acted: false,
@@ -414,8 +462,8 @@ function baseDamage(
   map: V03TacticalBattleState['map'],
 ): number {
   const forceRatio =
-    (source.force + BATTLE.damage.forceOffsetSource) /
-    (target.force + BATTLE.damage.forceOffsetTarget);
+    (hitQuality(source) + BATTLE.damage.forceOffsetSource) /
+    (hitQuality(target) + BATTLE.damage.forceOffsetTarget);
   const morale = BATTLE.damage.moraleBase + source.morale / BATTLE.damage.moraleDivisor;
   const matchup = UNITS[source.troopType].matchup[target.troopType];
   const wavering = isWavering(source) ? BATTLE.damage.wavering : 1;
@@ -478,11 +526,12 @@ function estimateDamage(
   map: V03TacticalBattleState['map'],
 ): { casualties: number; modifiers: ReturnType<typeof waterCombatModifiers> } {
   const modifiers = waterCombatModifiers(map, source, target);
-  const damage = applyWaterDamageModifiers(
-    baseDamage(source, target, map) *
-      troopDamageMultiplier(source.troopExperience, target.troopExperience),
-    modifiers,
-  );
+  const damage =
+    applyWaterDamageModifiers(
+      baseDamage(source, target, map) *
+        troopDamageMultiplier(source.troopExperience, target.troopExperience),
+      modifiers,
+    ) * unmanagedLosses(target);
   return { casualties: casualtyCountAfterWater(target.troops, damage), modifiers };
 }
 
@@ -739,7 +788,10 @@ export function predictBattleTactic(
   const inRange = manhattanDistance(source, target) <= tacticRange(source, tactic);
   const modifiers = waterCombatModifiers(state.map, source, target);
   const casualties = (rawDamage: number) =>
-    casualtyCountAfterWater(target.troops, applyWaterDamageModifiers(rawDamage, modifiers));
+    casualtyCountAfterWater(
+      target.troops,
+      applyWaterDamageModifiers(rawDamage, modifiers) * unmanagedLosses(target),
+    );
   let minCasualties = 0;
   let maxCasualties = 0;
   let chance = 100;
@@ -928,7 +980,7 @@ function applyTacticDamage(
   const modifiers = waterCombatModifiers(state.map, source, target);
   const casualties = casualtyCountAfterWater(
     target.troops,
-    applyWaterDamageModifiers(rawDamage, modifiers),
+    applyWaterDamageModifiers(rawDamage, modifiers) * unmanagedLosses(target),
   );
   recordCombatCasualties(source, target, casualties);
   applyCombatDamage(target, casualties);

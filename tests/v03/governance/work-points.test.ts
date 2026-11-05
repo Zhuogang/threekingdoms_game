@@ -38,6 +38,7 @@ function fixture(mode: 'player' | 'governor' | 'ai' = 'player') {
     )
       Object.assign(local, {
         troops: 10_000,
+        leadership: 100,
         wounded: 0,
         reorganizationDays: 0,
         loyalty: 100,
@@ -49,6 +50,7 @@ function fixture(mode: 'player' | 'governor' | 'ai' = 'player') {
   }
   Object.assign(officer, {
     troops: 1000,
+    leadership: 100,
     wounded: 20,
     troopExperience: 1200,
     loyalty: 30,
@@ -332,6 +334,7 @@ describe('fixed city work points and free preparations', () => {
     officer.experience = 500;
     officer.level = 5;
     officer.force = 70;
+    officer.leadership = 100;
     state.personnelDay = createPersonnelDay(state);
     const result = advanceV03(state, 1);
     expect(result.error).toBeUndefined();

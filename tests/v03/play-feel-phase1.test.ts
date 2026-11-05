@@ -78,10 +78,10 @@ describe('play-feel phase 1', () => {
     for (const type of ['infantry', 'cavalry'] as const)
       if (stationed(state).some((officer) => officer.troopType === type))
         expect(availableReserveTroops(after, city.id, type)).toBeLessThan(before[type]);
-    // The strongest cavalry commander is served before weaker ones.
+    // The strongest-leadership cavalry commander is served before weaker ones.
     const cavalry = stationed(state)
       .filter((officer) => officer.troopType === 'cavalry')
-      .sort((a, b) => b.force - a.force);
+      .sort((a, b) => b.leadership - a.leadership || b.force - a.force);
     const strongest = after.officers.find((officer) => officer.id === cavalry[0]!.id)!;
     expect(strongest.troops).toBeGreaterThan(cavalry[0]!.troops);
     const capital = after.cities.find((entry) => entry.id === city.id)!;

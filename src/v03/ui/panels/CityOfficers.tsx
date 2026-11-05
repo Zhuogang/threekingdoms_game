@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { excessTroops, managedCapacity } from '../../campaign/leadership';
 import { officerBusyDays } from '../../governance/city-actions';
 import type { V03Officer } from '../../types';
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -86,8 +87,11 @@ export function OfficerRoster({
                       <TroopProgress unit={officer} locale={locale} compact />
                     ) : null}
                     <small>
-                      {officer.troops.toLocaleString()} {t.troops} ·{' '}
-                      {message(locale, 'ui.force.53')} {officer.force} ·{' '}
+                      {officer.troops.toLocaleString()} {t.troops}
+                      {excessTroops(officer) > 0
+                        ? ` (${managedCapacity(officer).toLocaleString()}/${officer.troops.toLocaleString()})`
+                        : ''}{' '}
+                      · {message(locale, 'ui.force.53')} {officer.force} ·{' '}
                       {message(locale, 'ui.intellect.54')} {officer.intellect} ·{' '}
                       {message(locale, 'stat.leadership')} {officer.leadership} ·{' '}
                       {message(locale, 'stat.politics')} {officer.politics}

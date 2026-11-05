@@ -5,6 +5,7 @@ export { BATTLE_AI } from './battleAi';
 export { ECONOMY } from './economy';
 export { CITY_WORK } from './cityWork';
 export { RECRUITMENT } from './recruitment';
+export { LEADERSHIP } from './leadership';
 export { PERSONNEL } from './personnel';
 export { CAMPAIGN_AI } from './campaignAi';
 export { EVENTS } from './events';
