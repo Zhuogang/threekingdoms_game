@@ -8,8 +8,15 @@ const args = process.argv.slice(2),
   // Canvas battlefields only (the campaign no longer creates legacy 24×20 battles).
   canvasOnly = args.includes('--canvas-only'),
   dayLimitArg = args.find((arg) => arg.startsWith('--day-limit='))?.slice('--day-limit='.length),
+  rosterKind = args.find((arg) => arg.startsWith('--roster='))?.slice('--roster='.length) ?? '3v3',
+  label = args.find((arg) => arg.startsWith('--label='))?.slice('--label='.length),
   positional = args.filter((arg) => !arg.startsWith('--'));
-const output = positional[0] ?? 'docs/v0.3/evidence/battle-pacing.json';
+if (!['3v3', '8v8'].includes(rosterKind)) throw new Error('--roster must be 3v3 or 8v8.');
+const output =
+  positional[0] ??
+  (label
+    ? `docs/v0.5/evidence/battle-pacing-${label}.json`
+    : 'docs/v0.3/evidence/battle-pacing.json');
 const count = Number(positional[1] ?? 200);
 if (!Number.isSafeInteger(count) || count < 1)
   throw new Error('Battle count must be a positive integer.');
@@ -42,6 +49,39 @@ const server = await createServer({
   optimizeDeps: { noDiscovery: true, include: [] },
   server: { middlewareMode: true, hmr: false },
 });
+// Fixed 8v8 table: infantry 0-2, cavalry 3-4, archers 5-7; Fire needs intellect 60, Confuse 70.
+const ROSTER_8V8 = {
+  types: ['infantry', 'infantry', 'infantry', 'cavalry', 'cavalry', 'archer', 'archer', 'archer'],
+  force: [85, 70, 62, 80, 74, 55, 66, 60],
+  intellect: [45, 60, 72, 50, 65, 80, 70, 62],
+};
+const buildRoster = (prefix, seed) =>
+  rosterKind === '8v8'
+    ? ROSTER_8V8.types.map((troopType, index) => ({
+        id: `${prefix}-${index}`,
+        name: `${prefix} ${index}`,
+        troopType,
+        troops: 800 + ((seed * 37 + index * 211) % 9) * 100,
+        force: ROSTER_8V8.force[index],
+        intellect: ROSTER_8V8.intellect[index],
+        ...(index === 0 ? { fierce: true } : {}),
+        ...(index === 5 ? { cunning: true } : {}),
+      }))
+    : Array.from({ length: 3 }, (_, index) => ({
+        id: `${prefix}-${index}`,
+        name: `${prefix} ${index}`,
+        troopType: ['infantry', 'cavalry', 'archer'][index],
+        troops: 1200 + (seed % 5) * 100,
+        force: 70,
+        intellect: 65,
+      }));
+const bump = (record, key, by = 1) => {
+  record[key] = (record[key] ?? 0) + by;
+};
+const mergeCounts = (into, from) => {
+  for (const [key, value] of Object.entries(from ?? {})) bump(into, key, value);
+  return into;
+};
 const percentile = (values, p) =>
   values.slice().sort((a, b) => a - b)[Math.floor((values.length - 1) * p)] ?? null;
 function appended(before, after) {
@@ -50,6 +90,20 @@ function appended(before, after) {
       return after.slice(overlap);
   }
   return after;
+}
+function extras(runs) {
+  const out = {};
+  const causes = runs.reduce((t, r) => (r.cause === undefined ? t : (bump(t, r.cause), t)), {});
+  if (Object.keys(causes).length) out.causes = causes;
+  const baggage = runs.reduce((sum, run) => sum + (run.baggageCaptures ?? 0), 0);
+  if (baggage) out.baggageCaptures = baggage;
+  const duels = runs.reduce((sum, run) => sum + (run.duels ?? 0), 0);
+  if (duels) out.duels = duels;
+  const cards = runs.reduce((t, r) => mergeCounts(t, r.cards), {});
+  if (Object.keys(cards).length) out.cards = cards;
+  const orders = runs.reduce((t, r) => mergeCounts(t, r.orders), {});
+  if (Object.keys(orders).length) out.orders = orders;
+  return out;
 }
 try {
   const {
@@ -75,21 +129,12 @@ try {
   for (const { id: regionId, map: templateMap } of templates) {
     const runs = [];
     for (let seed = 0; seed < count; seed++) {
-      const roster = (prefix) =>
-        Array.from({ length: 3 }, (_, index) => ({
-          id: `${prefix}-${index}`,
-          name: `${prefix} ${index}`,
-          troopType: ['infantry', 'cavalry', 'archer'][index],
-          troops: 1200 + (seed % 5) * 100,
-          force: 70,
-          intellect: 65,
-        }));
       let battle = createTacticalBattle({
         id: `pacing-${seed}`,
         seed,
         map: templateMap(seed),
-        attackerUnits: roster('a'),
-        defenderUnits: roster('d'),
+        attackerUnits: buildRoster('a', seed),
+        defenderUnits: buildRoster('d', seed),
         supplies: { attacker: 100000, defender: 100000 },
         dayLimit,
       });
@@ -120,7 +165,44 @@ try {
       for (const entry of battle.logEntries ?? [])
         if (entry.code === 'log.tactic')
           tactics[entry.params.tactic] = (tactics[entry.params.tactic] ?? 0) + 1;
+      // Feature-detected extras: only reported when the engine's state carries them.
+      const cards = {},
+        orders = {};
+      let baggageCaptures = 0,
+        duels = 0;
+      for (const entry of battle.logEntries ?? []) {
+        if (entry.code === 'log.baggageCaptured') baggageCaptures++;
+        else if (entry.code === 'log.duelResult') duels++;
+        else if (entry.code === 'log.card') bump(cards, String(entry.params?.card));
+        else if (entry.code === 'log.order' || entry.code === 'log.orderExecuted')
+          bump(orders, String(entry.params?.order ?? entry.params?.kind ?? 'unknown'));
+      }
+      const living = battle.units.filter((unit) => unit.troops > 0);
+      const healthy = (side) =>
+        Math.round(
+          living.filter((unit) => unit.side === side).reduce((sum, unit) => sum + unit.troops, 0) /
+            100,
+        ) * 100;
+      const routedLiving = living.filter((unit) => unit.morale < 20).length;
+      const cause = battle.outcome?.cause;
       runs.push({
+        outcomeKey: JSON.stringify([
+          battle.outcome?.winner ?? null,
+          battle.outcome?.reason ?? null,
+          battle.day,
+          healthy('attacker'),
+          healthy('defender'),
+          routedLiving,
+        ]),
+        attackerWon: battle.outcome?.winner === 'attacker',
+        routed: battle.outcome?.reason === 'rout',
+        ...(cause === undefined
+          ? {}
+          : { cause: typeof cause === 'string' ? cause : JSON.stringify(cause) }),
+        ...(baggageCaptures ? { baggageCaptures } : {}),
+        ...(duels ? { duels } : {}),
+        ...(Object.keys(cards).length ? { cards } : {}),
+        ...(Object.keys(orders).length ? { orders } : {}),
         seed,
         firstContact,
         days: battle.day,
@@ -161,6 +243,10 @@ try {
           total[tactic] = (total[tactic] ?? 0) + casts;
         return total;
       }, {}),
+      attackerWinRate: runs.filter((run) => run.attackerWon).length / runs.length,
+      routShare: runs.filter((run) => run.routed).length / runs.length,
+      distinctOutcomes: new Set(runs.map((run) => run.outcomeKey)).size,
+      ...extras(runs),
     };
     console.log(
       regionId,
@@ -201,7 +287,20 @@ try {
     ),
     tactics,
     rallyShare: casts ? (tactics.rally ?? 0) / casts : null,
+    roster: rosterKind,
+    attackerWinRate: allRuns.filter((run) => run.attackerWon).length / allRuns.length,
+    routShare: allRuns.filter((run) => run.routed).length / allRuns.length,
+    distinctOutcomesMedian: percentile(
+      Object.values(distributions).map((distribution) => distribution.distinctOutcomes),
+      0.5,
+    ),
+    ...extras(allRuns),
   };
+  const cardPlays = Object.values(summary.cards ?? {}).reduce((sum, value) => sum + value, 0);
+  summary.rallyAllShare =
+    casts + cardPlays
+      ? ((tactics.rally ?? 0) + (summary.cards?.rallyAll ?? 0)) / (casts + cardPlays)
+      : null;
   console.log('summary', JSON.stringify(summary));
   await mkdir(dirname(output), { recursive: true });
   const sha256 = createHash('sha256')
@@ -212,6 +311,7 @@ try {
     JSON.stringify(
       {
         countPerTemplate: count,
+        roster: rosterKind,
         dayLimit,
         summary,
         source: {
