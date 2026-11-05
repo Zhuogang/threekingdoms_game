@@ -53,15 +53,31 @@ Nothing below is implemented yet. A row changes to **done** only with the commit
 
 | ID   | Group                      | Count | Priority | Status    | Needed by  |
 | ---- | -------------------------- | ----- | -------- | --------- | ---------- |
-| A-01 | Facing views               | 12    | P0       | requested | P-02       |
-| A-02 | Action poses               | 6     | P1       | requested | P-02       |
-| A-03 | Baggage train              | 4     | P0 / P1  | requested | B-04, P-02 |
-| A-04 | Fleeing poses              | 3     | P1       | requested | P-02       |
-| A-05 | Effects                    | 9     | P0 / P1  | requested | P-02       |
-| A-06 | Duel scene                 | 5     | P1       | requested | P-03       |
-| A-07 | Card and arrangement seals | 12    | P1       | requested | P-01       |
-| A-08 | Paper texture              | 1     | P2       | requested | P-01       |
-| A-09 | Banner scroll              | 1     | P2       | requested | P-05       |
+| A-01 | Facing views               | 12    | P0       | postponed | P-02       |
+| A-02 | Action poses               | 6     | P1       | postponed | P-02       |
+| A-03 | Baggage train              | 4     | P0 / P1  | postponed | B-04, P-02 |
+| A-04 | Fleeing poses              | 3     | P1       | postponed | P-02       |
+| A-05 | Effects                    | 9     | P0 / P1  | postponed | P-02       |
+| A-06 | Duel scene                 | 5     | P1       | postponed | P-03       |
+| A-07 | Card and arrangement seals | 12    | P1       | postponed | P-01       |
+| A-08 | Paper texture              | 1     | P2       | postponed | P-01       |
+| A-09 | Banner scroll              | 1     | P2       | postponed | P-05       |
+
+## Validation baseline (November 5, 2026, `2bb3b77`)
+
+Recorded in the cloud container (Intel Xeon 2.1 GHz, 4 cores, Node 22.23) before any v0.5 code change:
+
+| Check                                               | Result                                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `npm test`                                          | 1,082 of 1,085 pass; the 3 failures are the performance gate only                                                   |
+| Performance gate, 10v10 48×32 engaged / congested   | p95 76.7 ms / 69.2 ms against the 50 ms target; this machine is slower than the ARM container where the gate passed |
+| `npm run build`, `npm run lint:ui`                  | pass                                                                                                                |
+| `npm run format:check`                              | source passes; 40 older files under `docs/assets` and `docs/v0.3` fail and are left alone                           |
+| `tools/battle-pacing.mjs` (20 per map, canvas only) | median contact day 2, length 11, timeouts 3.3%, Rally 58%                                                           |
+
+Until the gate is re-run on the owner's hardware, battle tickets are held to a relative gate: the performance test's p95 must stay within 15% of the numbers above on this machine. Refactor tickets (F-01, F-02) must leave `tools/battle-pacing.mjs` and a 12-month `tools/v03-campaign-diagnostics.mjs` run identical apart from timestamps and hashes.
+
+Art is postponed, not dropped. Code that will show new art keeps the existing sprites and glyph fallbacks, so each image can be dropped in later.
 
 ## Owner checkpoints
 

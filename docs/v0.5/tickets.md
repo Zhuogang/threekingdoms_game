@@ -394,14 +394,7 @@ Hold additionally marks the unit `braced` for B-03 if it did not move.
 
 ```ts
 export type BattleCard =
-  | 'rallyAll'
-  | 'standFirm'
-  | 'ambush'
-  | 'feint'
-  | 'fire'
-  | 'nightRaid'
-  | 'vigilance'
-  | 'challenge';
+  'rallyAll' | 'standFirm' | 'ambush' | 'feint' | 'fire' | 'nightRaid' | 'vigilance' | 'challenge';
 export interface CardPlay {
   card: BattleCard;
   unitId?: string;
@@ -543,13 +536,7 @@ P tickets live under `src/v03/ui` and `src/v03/rendering`; they add no rules. Ne
 
 ```ts
 export type LineMoment =
-  | 'charge'
-  | 'rout'
-  | 'duelStart'
-  | 'duelWin'
-  | 'duelLose'
-  | 'captured'
-  | 'victory';
+  'charge' | 'rout' | 'duelStart' | 'duelWin' | 'duelLose' | 'captured' | 'victory';
 export const OFFICER_LINES: Readonly<
   Record<string, Partial<Record<LineMoment, { en: string; zh: string }>>>
 >;
