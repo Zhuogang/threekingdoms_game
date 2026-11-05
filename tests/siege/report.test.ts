@@ -8,6 +8,7 @@ import { serializeSiegeSave, deserializeSiegeSave } from '../../src/siege/save';
 import type { SiegeLogEntry } from '../../src/siege/rules/types';
 
 const keys: Record<(typeof REPORT_CODES)[number], [SiegeTextKey, SiegeTextKey]> = {
+  gateOpened: ['reportGateOpened', 'counterWeiMounted'],
   brazierPrepared: ['reportBrazier', 'counterFire'],
   millstonePrepared: ['reportMillstone', 'counterMillstone'],
   bouldersPrepared: ['reportBoulders', 'counterBoulders'],

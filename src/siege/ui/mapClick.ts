@@ -1,4 +1,5 @@
 import { DEPLOY_SHU, DEPLOY_WEI, sameCell } from '../content/chencang';
+import { swapTargets } from '../rules/movement';
 import { gateAt } from '../rules/map';
 import type { SiegePosition, SiegeSide, SiegeState } from '../rules/types';
 import { engineFootprint, engineSprite } from '../render/stateArt';
@@ -16,7 +17,7 @@ export interface MapClickContext {
   unitAtPoint?: string | null;
 }
 export type MapClickResult =
-  | { type: 'select' | 'target'; id: string }
+  | { type: 'select' | 'target' | 'swap'; id: string }
   | { type: 'move' | 'fillTrench' | 'deploy' | 'cell'; cell: SiegePosition }
   | { type: 'none' };
 
@@ -35,7 +36,20 @@ export function resolveMapClick(
   cell: SiegePosition | null,
 ): MapClickResult {
   const none: MapClickResult = { type: 'none' };
-  if (blocked || !cell) return none;
+  if (blocked) return none;
+  if (!cell) {
+    // A figure in an open gate passage can lie below every picked terrain plane.
+    const figure = state.units.find((u) => u.id === unitAtPoint && u.troops > 0);
+    if (!figure) return none;
+    const ownSelected =
+      state.units.some((u) => u.id === selected && u.side === playerSide && u.troops > 0) ||
+      (playerSide === 'shu' && state.engines.some((e) => e.id === selected));
+    return figure.side !== playerSide
+      ? { type: ownSelected ? 'target' : 'select', id: figure.id }
+      : figure.id === selected
+        ? none
+        : { type: 'select', id: figure.id };
+  }
   const at = (p: SiegePosition) => sameCell(p, cell) && p.level === cell.level;
   const standing = state.units.filter((u) => u.troops > 0 && at(u));
   if (deploy) {
@@ -78,6 +92,8 @@ export function resolveMapClick(
   const gate = gateAt(cell.x, cell.y);
   if (mode === 'attack' && ownActor && (enemy || (gate && playerSide === 'shu')))
     return { type: 'target', id: enemy?.id ?? gate! };
+  const swap = mode === 'move' && selected ? swapTargets(state, selected).find(at) : undefined;
+  if (ownActor && swap) return { type: 'swap', id: swap.id };
   const green = ownActor && reachable.some(at);
   if (green && (mode === 'move' || mode === 'fillTrench')) return { type: mode, cell };
   if (enemy) return { type: ownActor ? 'target' : 'select', id: enemy.id };
@@ -127,6 +143,8 @@ export function mapClickColor(result: MapClickResult): string | null {
       return '#609d80';
     case 'target':
       return '#b74e3c';
+    case 'swap':
+      return '#518bc4';
     case 'select':
       return '#e7b84e';
     default:

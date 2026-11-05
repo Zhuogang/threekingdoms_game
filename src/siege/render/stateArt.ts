@@ -94,7 +94,7 @@ export function engineFootprint(engine: SiegeEngine): SiegePosition[] {
   return cells;
 }
 
-export const UNIT_FIGURE_SCALE = 0.54;
+export const UNIT_FIGURE_SCALE = 0.6;
 export const UNIT_FOOT = 0.92;
 const scaledPose = (
   pose: (typeof POSE_SETS)[string]['poses'] extends Map<string, infer P> ? P : never,
@@ -222,7 +222,9 @@ export function unitVisual(
         FRAME,
         unit.x + 0.5,
         unit.y +
-          (moundHeight !== undefined || cellTerrain(state, unit.x, unit.y) === 'ramp'
+          ((unit.level === 'wall' && !gateTop) ||
+          moundHeight !== undefined ||
+          cellTerrain(state, unit.x, unit.y) === 'ramp'
             ? 0.5
             : UNIT_FOOT),
         h,
@@ -265,8 +267,12 @@ export function unitVisual(
     depth: {
       row: gateTop?.cells[3] ?? (climbing || storming ? wall!.y + 1 : unit.y),
       height:
-        (gateTop?.height ?? (climbing || storming || moundHeight !== undefined ? 3 : h)) +
-        STANDING_EPSILON,
+        (gateTop?.height ??
+          (unit.level === 'wall'
+            ? 3.5
+            : climbing || storming || moundHeight !== undefined
+              ? 3
+              : h)) + STANDING_EPSILON,
     },
   };
 }

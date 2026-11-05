@@ -15,6 +15,7 @@ export const RENDER_SCENES = [
   'sortie',
   'formations',
   'worst',
+  'visible',
 ] as const;
 export type RenderSceneName = (typeof RENDER_SCENES)[number];
 export interface RenderScene {
@@ -62,7 +63,28 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     state.footholds[`${x},16`] = progress;
     Object.assign(state.units[unitIndex]!, { x, y: 19 });
   };
-  if (name === 'footholds') {
+  if (name === 'visible') {
+    // The planner's look-probe fixture, before any unit is selected.
+    const original = createSiegeState(228);
+    state.units = original.units;
+    state.engines = original.engines;
+    const set = (id: string, x: number, y: number, level: 'wall' | 'ground') =>
+      Object.assign(
+        state.units.find((u) => u.id === id)!,
+        { x, y, level, moved: false, acted: false },
+      );
+    set('shu-weiyan', 18, 16, 'wall');
+    set('shu-wangping', 19, 16, 'wall');
+    set('shu-liaohua', 17, 15, 'ground');
+    set('shu-jiangwei', 18, 15, 'ground');
+    set('shu-wuyi', 21, 15, 'ground');
+    set('shu-captain-1', 23, 15, 'ground');
+    set('wei-wangsheng', 16, 15, 'ground');
+    state.footholds['18,16'] = 3;
+    state.engines[0]!.raisedAt = { x: 18, y: 16 };
+    result.legend =
+      'Walkway, inside wall, ramp, gate approach and Wei behind the wall; raised ladder at 18,16.';
+  } else if (name === 'footholds') {
     [16, 19, 28, 31].forEach((x, i) => ladder(x, i as 0 | 1 | 2 | 3, i + 1));
     const defender = state.units.find((u) => u.side === 'wei')!;
     Object.assign(defender, { x: 32, y: 16, morale: 60 });

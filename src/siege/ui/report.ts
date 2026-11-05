@@ -89,6 +89,7 @@ function engineChains(entries: SiegeLogEntry[]): SiegeLogEntry[] {
 }
 
 export const REPORT_CODES = [
+  'gateOpened',
   'brazierPrepared',
   'millstonePrepared',
   'bouldersPrepared',
@@ -109,6 +110,7 @@ export const REPORT_CODES = [
   'footholdChanged',
 ] as const;
 const copy: Record<string, [SiegeTextKey, SiegeTextKey, SiegeTextKey]> = {
+  gateOpened: ['gates', 'reportGateOpened', 'counterWeiMounted'],
   brazierPrepared: ['brazier', 'reportBrazier', 'counterFire'],
   millstonePrepared: ['millstone', 'reportMillstone', 'counterMillstone'],
   bouldersPrepared: ['boulders', 'reportBoulders', 'counterBoulders'],
@@ -158,6 +160,7 @@ export function morningReport(
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
   const weiCopy: Record<string, [SiegeTextKey, SiegeTextKey, SiegeTextKey]> = {
+    gateOpened: ['gates', 'reportGateOpened', 'counterWeiMounted'],
     brazierDoused: ['snow', 'reportWeiSnow', 'counterWeiSnow'],
     raiseLadder: ['ladder', 'reportWeiLadder', 'counterWeiLadder'],
     trenchFilled: ['filled', 'reportWeiFill', 'counterWeiFill'],
@@ -385,7 +388,9 @@ export function morningReport(
         (entry.code === 'torches' && p.assault !== true);
       const priority =
         playerSide === 'wei'
-          ? ['wallGained', 'suppressed', 'assault', 'ramAtBridge'].includes(entry.code)
+          ? ['gateOpened', 'wallGained', 'suppressed', 'assault', 'ramAtBridge'].includes(
+              entry.code,
+            )
             ? 0
             : 1
           : notice?.startsWith('blocked:')

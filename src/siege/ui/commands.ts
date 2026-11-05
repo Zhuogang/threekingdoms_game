@@ -12,6 +12,7 @@ import {
 } from '../rules/combat';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { placeName } from './places';
+import { nextGoalGuide, nextGoalGuideText } from './nextGoalGuide';
 import { climbGuide, climbGuideText } from './climbGuide';
 import { engineReachable, reachableCells } from '../rules/movement';
 import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
@@ -19,6 +20,7 @@ import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules
 export type ExtraCommandKind =
   'suppress' | 'coverEngine' | 'pileEarth' | 'fireArrows' | 'dropMillstone' | 'dropBoulders';
 export type CommandKind =
+  | 'openGate'
   | 'lightBrazier'
   | 'fireArrows'
   | 'hoistMillstone'
@@ -75,9 +77,13 @@ export function actorCommandKinds(
         'order',
         'standby',
       ];
+    const canOpen = Object.values(GATES).some(
+      (gate) => !validateSiegeAction(state, { type: 'openGate', unitId: id, gateId: gate.id }),
+    );
     return unit.troopType === 'archer'
       ? ['move', 'attack', 'suppress', 'order', 'standby']
       : [
+          ...(canOpen ? ['openGate' as const] : []),
           'move',
           'attack',
           'coverEngine',
@@ -123,6 +129,12 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
   const unit = state.units.find((u) => u.id === id);
   const actor = unit ?? state.engines.find((e) => e.id === id);
   if (!actor) return '';
+  const nextGoal = nextGoalGuide(state, id);
+  if (nextGoal)
+    return nextGoalGuideText(nextGoal, locale, (unitId) => {
+      const other = state.units.find((u) => u.id === unitId)!;
+      return locale === 'zh' ? other.officer.chinese : other.officer.name;
+    });
   if (
     unit?.level === 'wall' &&
     activeUnit(unit) &&
@@ -245,6 +257,10 @@ function computeSiegeCommands(
       ? unit.id
       : (state.units.find((u) => u.side === playerSide && u.troops > 0)?.id ?? '');
   const commands: SiegeCommand[] = [
+    choose(
+      'openGate',
+      Object.values(GATES).map((gate) => ({ type: 'openGate', unitId: id, gateId: gate.id })),
+    ),
     ...(['lightBrazier', 'hoistMillstone', 'stackBoulders'] as const).map((kind) =>
       choose(kind, [{ type: kind, unitId: id }]),
     ),

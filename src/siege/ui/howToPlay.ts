@@ -201,6 +201,7 @@ export function howToSections(
     {
       title: 'howFoothold',
       lines: [
+        t('howMovementBody'),
         t('howFootholdBody', {
           climb: rules.tuning.climbFoothold,
           assault: rules.tuning.assaultClimbFoothold,

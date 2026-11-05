@@ -53,7 +53,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
       const before = next.units.map(({ troops, wounded, morale }) => ({ troops, wounded, morale }));
       const logStart = next.log.length;
       next = act(next, { type: 'climb', unitId: second.id });
-      expect(next.units[1]).toMatchObject({ ...top, moved: true, acted: true });
+      expect(next.units[1]).toMatchObject({ ...top, moved: true, acted: false });
       expect(
         next.units.map(({ troops, wounded, morale }) => ({ troops, wounded, morale })),
       ).toEqual(before);

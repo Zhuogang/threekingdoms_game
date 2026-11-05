@@ -230,7 +230,7 @@ for (const locale of ['zh', 'en'] as const) {
   }) => {
     const state = crowd();
     state.footholds['18,16'] = 3;
-    // An ally at the top keeps the gold base frame visible.
+    // An ally at the top can make way when the follower reaches the base.
     Object.assign(
       state.units.find((u) => u.id === 'shu-wuyi')!,
       { x: 18, y: 16, level: 'wall' },
@@ -239,7 +239,7 @@ for (const locale of ['zh', 'en'] as const) {
     await selectActor(page, 'shu-jiangwei');
     await clickCell(page, 'tutorial', '18,19,ground');
     await expectSelected(page, state, 'shu-weiyan', locale);
-    await clickCell(page, 'tutorial', '18,19,ground');
+    await clickLogicalCell(page, { x: 18, y: 19, level: 'ground' });
     // A selected base unit cycles to the ladder; the next click returns to the follower.
     await expectSelected(page, state, 'starting-ladder-1', locale);
     await clickLogicalCell(page, { x: 18, y: 19, level: 'ground' });
@@ -277,7 +277,7 @@ for (const fixture of ['formations', 'nightTorches', 'sortie', 'worst'] as const
     let figureClicks = 0;
     for (const zoom of [1, 0.75]) {
       for (const unit of state.units.filter((u) => u.troops > 0 && isMapCell(u.x, u.y))) {
-        const figures = map.locator(`[data-unit="${unit.id}"] [data-sprite="figure"]`);
+        const figures = map.locator(`[data-unit="${unit.id}"] image[data-sprite]`);
         const count = await figures.count();
         expect(count).toBeGreaterThan(0);
         for (let i = 0; i < count; i++) {

@@ -358,6 +358,8 @@ it('chooses sortie, torches, repair, hold fast, then rally in cascade order', ()
     engine('ram', 24, 19, { id: 'sortie-target' }),
     engine('ladder', 18, 19, { id: 'other' }),
   ];
+  // Keep the order issuer on the tower: new ramp routes can otherwise move him away.
+  state.units.find((u) => u.id === 'wei-haozhao')!.moved = true;
   state.gates.south.durability = 100;
   expect(planDefenderTurn(state).at(-1)).toMatchObject({ kind: 'sortie', target: 'sortie-target' });
   state.day = 3;

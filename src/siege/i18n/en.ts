@@ -1,4 +1,15 @@
 export const en = {
+  courtyard: 'Courtyard',
+  openGate: 'Open gate',
+  nextGate: 'Next: open the gate from its tower or just inside. {n} to go.',
+  nextOpenNow: 'You can open the gate: press Open gate.',
+  nextGateGuarded: '{name} holds the gate tower. Defeat that unit to open the gate.',
+  nextCourtyard: 'The gate is open. Take the courtyard: {n} to go.',
+  climbMakeWay: 'Climb to go up; {name} will move along the wall.',
+  climbAllyMoved: '{name} only just got there and can make way tomorrow.',
+  climbAllyBoxed: '{name} is boxed in above. Defeat the defenders next to it first.',
+  reportGateOpened: '{unit} opened {gate} from inside.',
+
   reportEngineDestroyedGroup:
     '{count} {engine} engines destroyed after being {cause} (each {before} → {after}).',
   reportEngineDamagedGroup:
@@ -93,7 +104,7 @@ export const en = {
   counterWeiNight:
     'Shu attacked at night. For the next night, torches stop the advance and let ready archers fire; a sortie can be repelled by a night assault. Choose one order.',
   counterWeiMounted:
-    'Shu has mounted the wall. Stand on that breach cell to seal it, or more Shu will go straight up. Attack the foothold with nearby defenders, move reserves onto the run, or fall back to the inner wall and keep the courtyard defended. Boulders target climbers below, not troops already on top.',
+    'Shu has mounted the wall. Shu can step down inside and open the gate: hold the gate tower. Stand on that breach cell to seal it, or more Shu will go straight up. Attack the foothold with nearby defenders, move reserves onto the run, or fall back to the inner wall and keep the courtyard defended. Boulders target climbers below, not troops already on top.',
   reportWeiLadder: 'Shu raised a ladder at {cell}.',
   reportWeiFill: 'The trench at {cell} is filled.',
   reportWeiMound: 'Shu’s mound at {cell}: {after}/{max}.',
@@ -295,7 +306,9 @@ export const en = {
     'Night raids burn engines: guard them nearby or withdraw beyond {range} cells of the south-gate approach; mounds cannot burn. Snow nights extinguish braziers.',
   howFoothold: 'Climbing and footholds',
   howFootholdBody:
-    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: once the first unit moves away, the next goes straight up, at most one unit per ladder each day. The breach closes only when Wei stands on that cell, throws the unit off the wall, or destroys the ladder.',
+    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: an unmoved ally on top makes way and the follower goes straight up with its action left, at most one unit per ladder each day. The breach closes only when Wei stands on that cell, throws the unit off the wall, or destroys the ladder.',
+  howMovementBody:
+    'Pass through allies, but stop on a free cell. With Move pressed, click an ally that has neither moved nor acted to swap. Step down directly inside from any wall cell; open an unguarded gate from its tower or just inside.',
   howCourtyardClear:
     'The courtyard must be clear of active Wei units at day’s end to count as captured.',
   howKeys: 'Keyboard',
@@ -595,6 +608,11 @@ export const en = {
   keys: 'Tab next unit · A attack · W stand by · Q all stand by · E end day · H guide',
 } as const;
 export const enReasons = {
+  'Use Shu infantry on an unguarded gate top or directly inside an unbroken gate.':
+    'Use Shu infantry on an unguarded gate top or directly inside an unbroken gate.',
+  'Choose a reachable ally that has neither moved nor acted.':
+    'Choose a reachable ally that has neither moved nor acted.',
+
   'The engine limit has been reached.': 'There are already {max} usable engines on the map.',
   'Choose a usable engine within sortie range of the south gate approach.':
     'Choose a usable engine within sortie range of the south gate approach.',

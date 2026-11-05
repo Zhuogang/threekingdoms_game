@@ -88,6 +88,7 @@ export interface SiegeGate {
   max: number;
   broken: boolean;
   damaged?: boolean;
+  opened?: boolean;
 }
 
 export interface SiegeWorkshop {
@@ -166,6 +167,8 @@ export interface SiegeState {
 
 export type SiegeAction =
   | ({ type: 'move'; unitId: string } & SiegePosition)
+  | { type: 'openGate'; unitId: string; gateId: GateId }
+  | { type: 'swap'; unitId: string; withUnitId: string }
   | { type: 'climb'; unitId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; targetId: string; assault?: boolean }
   | { type: 'attack'; unitId: string; gateId: GateId }

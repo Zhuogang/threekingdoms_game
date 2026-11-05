@@ -1,3 +1,4 @@
+import { swapTargets } from '../rules/movement';
 import {
   forwardRef,
   memo,
@@ -19,7 +20,7 @@ import {
   type BattlefieldViewBox,
 } from '../../v03/rendering/battlefield-viewport';
 import { DEPLOY_SHU, DEPLOY_WEI, cellKey } from '../content/chencang';
-import { cellHeight, cellTerrain, isMapCell } from '../rules/map';
+import { cellHeight, isMapCell } from '../rules/map';
 import { activeUnit } from '../rules/combat';
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
@@ -47,10 +48,10 @@ import {
   sheet,
   sheetImage,
 } from './assets';
+import { pickMapPosition } from './picking';
 import { spriteObject, type Sprite } from './mapPieces';
 import {
   compareDepth,
-  pickCell,
   project,
   rectsOverlap,
   sliceObject,
@@ -82,8 +83,7 @@ const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
 const NO_CELLS: SiegePosition[] = [];
 const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
-export const SILHOUETTE_OPACITY = 0.35;
-export const SILHOUETTE_TINTS = { shu: '#58865b', wei: '#365778' };
+export const SILHOUETTE_OPACITY = 0.85;
 interface Layer {
   slice: SceneSlice;
   sprite?: Sprite;
@@ -101,6 +101,7 @@ interface Props {
   clickMode?: MapClickContext['mode'];
   clickBlocked?: boolean;
   onTarget?: (id: string) => void;
+  onSwap?: (id: string) => void;
   reachable?: SiegePosition[];
   targets?: SiegePosition[];
   tutorialCells?: SiegePosition[];
@@ -133,6 +134,7 @@ export const SiegeMapView = memo(
       clickMode,
       clickBlocked,
       onTarget,
+      onSwap,
       reachable = NO_CELLS,
       targets = NO_CELLS,
       tutorialCells = NO_CELLS,
@@ -285,22 +287,15 @@ export const SiegeMapView = memo(
     };
     const pickAt = (clientX: number, clientY: number): SiegePosition | null => {
       const p = pointAt(clientX, clientY);
-      const cell = pickCell(FRAME, p.x, p.y, [0, 1, 2, 3], (x, y, h) => {
-        if (!isMapCell(x, y)) return false;
-        const wall = ['wall', 'gate'].includes(cellTerrain(state, x, y));
-        return wall
-          ? h === cellHeight(state, x, y, 'wall')
-          : h === cellHeight(state, x, y, 'ground');
-      });
-      return cell
-        ? {
-            x: cell.x,
-            y: cell.y,
-            level: ['wall', 'gate'].includes(cellTerrain(state, cell.x, cell.y))
-              ? 'wall'
-              : 'ground',
-          }
-        : null;
+      return pickMapPosition(
+        state,
+        p.x,
+        p.y,
+        selected,
+        reachable,
+        playerSide,
+        clickMode === 'move' || clickMode === 'fillTrench',
+      );
     };
     useEffect(() => {
       const element = frame.current!;
@@ -341,6 +336,7 @@ export const SiegeMapView = memo(
     };
     const dispatchClick = (result: MapClickResult) => {
       if (result.type === 'select') onSelect?.(result.id);
+      else if (result.type === 'swap') onSwap?.(result.id);
       else if (result.type === 'target') (onTarget ?? onSelect)?.(result.id);
       else if (result.type === 'move') (onMove ?? onCell)?.(result.cell);
       else if ('cell' in result) onCell?.(result.cell);
@@ -360,8 +356,7 @@ export const SiegeMapView = memo(
       return { cell: pickAt(clientX, clientY), unitAtPoint };
     };
     const overlay = useRef<OverlayHandle>(null);
-    const { silhouetteCount } = selectionSilhouettes(scene, selected);
-    const spriteCount = scene.budget.used + silhouetteCount;
+    const spriteCount = scene.budget.used;
     return (
       <div className="siege-map-frame" ref={frame}>
         <svg
@@ -596,8 +591,8 @@ function useScene({
     ],
     [state, preparations, Boolean(night), repulsedUnits],
   );
-  // All scenery and gameplay images are mandatory. Only silhouettes use
-  // the remaining allowance; row slices each count as a visible image.
+  // Every living formation is mandatory. Covered figures move to the overlay
+  // rather than consuming a second set of image instances.
   const staticLayers = useMemo(
     () =>
       MAP.objects.flatMap((object) =>
@@ -737,7 +732,6 @@ function useScene({
             (c) => c.x === visual.cell.x && c.y === visual.cell.y && c.level === visual.cell.level,
           )
         ) &&
-        l.slice.kind !== 'parapet' &&
         l.slice.kind !== 'tree' &&
         compareDepth(l.slice, visual.depth) > 0 &&
         rectsOverlap(l.slice.rect, visual.rect),
@@ -762,7 +756,7 @@ function useScene({
     const max = unit.troops + unit.wounded;
     return (
       <g
-        id={silhouette ? undefined : `${prefix}-${unit.id}-motion`}
+        id={`${prefix}-${unit.id}-motion`}
         data-unit={unit.id}
         data-gate-top={visual.gateTop}
         data-x={unit.x}
@@ -775,16 +769,14 @@ function useScene({
         }}
       >
         <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
-        {!silhouette && (
-          <ellipse
-            rx={19}
-            ry={7}
-            fill={unit.side === 'shu' ? '#58865b' : '#365778'}
-            fillOpacity={0.65}
-            stroke="#ece4d2"
-            strokeWidth={1}
-          />
-        )}
+        <ellipse
+          rx={19}
+          ry={7}
+          fill={unit.side === 'shu' ? '#58865b' : '#365778'}
+          fillOpacity={0.65}
+          stroke="#ece4d2"
+          strokeWidth={1}
+        />
         {visual.figures.map((figure, index) => (
           <image
             key={index}
@@ -796,21 +788,18 @@ function useScene({
             width={figure.pose.size[0]}
             height={figure.pose.size[1]}
             transform={visual.flip ? 'scale(-1 1)' : undefined}
-            filter={silhouette ? `url(#${prefix}-silhouette-${unit.side})` : undefined}
           />
         ))}
-        {!silhouette && (
-          <g pointerEvents="none">
-            <rect x={-18} y={9} width={36} height={4} fill="#453d33" />
-            <rect
-              x={-18}
-              y={9}
-              width={(36 * unit.troops) / Math.max(1, max)}
-              height={4}
-              fill={unit.side === 'shu' ? '#8fb27a' : '#829fbf'}
-            />
-          </g>
-        )}
+        <g pointerEvents="none">
+          <rect x={-18} y={9} width={36} height={4} fill="#453d33" />
+          <rect
+            x={-18}
+            y={9}
+            width={(36 * unit.troops) / Math.max(1, max)}
+            height={4}
+            fill={unit.side === 'shu' ? '#8fb27a' : '#829fbf'}
+          />
+        </g>
       </g>
     );
   };
@@ -850,13 +839,6 @@ function useScene({
           <filter id={`${prefix}-white`}>
             <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
           </filter>
-          {Object.entries(SILHOUETTE_TINTS).map(([side, tint]) => (
-            <filter key={side} id={`${prefix}-silhouette-${side}`}>
-              <feFlood floodColor={tint} />
-              <feComposite in2="SourceAlpha" operator="in" />
-              <feMorphology operator="dilate" radius="0.6" />
-            </filter>
-          ))}
           {layers
             .filter((layer) => !scenery.includes(layer))
             .map((layer) => {
@@ -932,7 +914,9 @@ function useScene({
             );
           }
           if (item.kind === 'unit')
-            return <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>;
+            return occluders(item.visual).length ? null : (
+              <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>
+            );
           const layer = item.layer,
             key = layerKey(layer);
           if (
@@ -1205,22 +1189,35 @@ const StaticGround = memo(function StaticGround({
   );
 });
 type Scene = ReturnType<typeof useScene>;
-function selectionSilhouettes({ units, occluders, budget }: Scene, selected?: string | null) {
-  const silhouetteUnits = new Set<string>();
-  let silhouetteCount = 0;
-  for (const entry of [...units].sort(
-    (a, b) => Number(b.unit.id === selected) - Number(a.unit.id === selected),
-  )) {
-    if (
-      !occluders(entry.visual).length ||
-      silhouetteCount + entry.visual.figures.length > budget.remaining
-    )
-      continue;
-    silhouetteUnits.add(entry.unit.id);
-    silhouetteCount += entry.visual.figures.length;
-  }
-  return { silhouetteUnits, silhouetteCount };
+function selectionSilhouettes({ units, occluders }: Scene) {
+  // These replace the obscured figures, so no on-screen unit can lose its
+  // visibility to an optional-image budget or selection priority.
+  return new Set(units.filter(({ visual }) => occluders(visual).length).map(({ unit }) => unit.id));
 }
+
+// Full covered formations are still unit art. Keep their nodes stable when
+// selection or hover changes the overlay around them.
+const CoveredUnits = memo(function CoveredUnits({ scene }: { scene: Scene }) {
+  countRender('units');
+  const silhouetteUnits = selectionSilhouettes(scene);
+  return (
+    <>
+      {scene.units.map(({ unit, visual }) =>
+        silhouetteUnits.has(unit.id) ? (
+          <g
+            key={unit.id}
+            data-silhouette={unit.side}
+            opacity={SILHOUETTE_OPACITY}
+            pointerEvents="none"
+          >
+            {scene.drawUnit(unit, visual, true)}
+          </g>
+        ) : null,
+      )}
+    </>
+  );
+});
+
 interface OverlayHandle {
   hover: (hit: { cell: SiegePosition | null; unitAtPoint?: string } | null) => void;
 }
@@ -1279,7 +1276,7 @@ const MapOverlays = forwardRef<
     }),
     [],
   );
-  const { units, engines, drawUnit, prefix, occluders } = scene;
+  const { units, engines, prefix, occluders } = scene;
   const cellOutline = (
     cell: SiegePosition,
     color: string,
@@ -1287,7 +1284,7 @@ const MapOverlays = forwardRef<
     fill?: number,
     stroke?: number,
   ) => scene.cellOutline(cell, color, kind, fill, stroke, tutorialFill && kind === 'reachable');
-  const { silhouetteUnits } = selectionSilhouettes(scene, selected);
+  const silhouetteUnits = selectionSilhouettes(scene);
   const anchor = useRef<SVGGElement>(null);
   useLayoutEffect(() => {
     const svg = anchor.current?.ownerSVGElement;
@@ -1355,19 +1352,7 @@ const MapOverlays = forwardRef<
   return (
     <>
       <g ref={anchor} pointerEvents="none" />
-      {units.map(({ unit, visual }) =>
-        silhouetteUnits.has(unit.id) ? (
-          <g
-            key={unit.id}
-            data-silhouette={unit.side}
-            mask={`url(#${prefix}-cover-${unit.id})`}
-            opacity={SILHOUETTE_OPACITY}
-            pointerEvents="none"
-          >
-            {drawUnit(unit, visual, true)}
-          </g>
-        ) : null,
-      )}
+      <CoveredUnits scene={scene} />
 
       {selectedUnit && (
         <>
@@ -1384,7 +1369,10 @@ const MapOverlays = forwardRef<
               <rect width={W} height={H} fill="black" mask={`url(#${prefix}-cover-${selected})`} />
             </mask>
           </defs>
-          <g mask={`url(#${prefix}-selection-visible)`} pointerEvents="none">
+          <g
+            mask={silhouetteUnits.has(selected!) ? undefined : `url(#${prefix}-selection-visible)`}
+            pointerEvents="none"
+          >
             <ellipse
               cx={selectedUnit.visual.foot[0]}
               cy={selectedUnit.visual.foot[1]}
@@ -1414,6 +1402,9 @@ const MapOverlays = forwardRef<
         {climbableCells(state)
           .filter((c) => targets.some((t) => t.x === c.x && t.y === c.y && t.level === c.level))
           .map((c) => cellOutline(c, '#dfb347', 'climb', 0.04, 1))}
+        {clickContext.mode === 'move' &&
+          selected &&
+          swapTargets(state, selected).map((c) => cellOutline(c, '#518bc4', 'swap'))}
         {reachable.map((c) => cellOutline(c, '#609d80', 'reachable'))}
         {targets
           .filter(
@@ -1427,12 +1418,17 @@ const MapOverlays = forwardRef<
         !deploy &&
         !night &&
         (() => {
-          const [x, y] = project(FRAME, climbBase.base.x + 0.5, climbBase.base.y + 0.5, 0);
+          const [x, y] = project(
+            FRAME,
+            climbBase.base.x + 0.5,
+            climbBase.base.y + 0.5,
+            climbBase.base.level === 'wall' ? 3 : 0,
+          );
           return (
             <g
               pointerEvents="none"
               data-testid="climb-base-label"
-              data-cell={`${climbBase.base.x},${climbBase.base.y},ground`}
+              data-cell={`${climbBase.base.x},${climbBase.base.y},${climbBase.base.level}`}
               transform={`translate(${x} ${y}) scale(${scale})`}
             >
               <text

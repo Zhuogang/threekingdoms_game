@@ -1,3 +1,5 @@
+import { insideCity, makeWayDestination } from './movement';
+import type { SiegePosition } from './types';
 import { cloneSiegeState } from './clone';
 import { SIEGE_TUNING as T } from './tuning';
 import { logEvent } from './events';
@@ -79,7 +81,7 @@ export function changeFoothold(
 }
 
 /** Living defenders seal completed breaches; partial footholds remain contested. */
-export function sealBreaches(state: SiegeState): void {
+export function updateBreaches(state: SiegeState): void {
   for (const unit of state.units) {
     if (
       unit.side === 'wei' &&
@@ -88,6 +90,16 @@ export function sealBreaches(state: SiegeState): void {
       wallFoothold(state, unit) === T.footholdComplete
     )
       changeFoothold(state, unit, 0, 'sealed', unit.id);
+    if (
+      unit.side === 'shu' &&
+      unit.troops > 0 &&
+      unit.level === 'wall' &&
+      (isWallFoot(state, unit.x, unit.y + 1) ||
+        state.engines.some(
+          (e) => e.kind === 'ladder' && usableEngine(e) && e.raisedAt && sameCell(e.raisedAt, unit),
+        ))
+    )
+      changeFoothold(state, unit, T.footholdComplete, 'occupied', unit.id);
   }
 }
 
@@ -113,7 +125,7 @@ export function siegeAttackInRange(
           : T.groundArcherRange)
     );
   }
-  return source.side === 'wei' && source.level === 'wall' && distance(source, target) === 1;
+  return distance(source, target) === 1 && (source.level === 'wall' || insideCity(source));
 }
 
 export interface SiegeDamageModifiers {
@@ -215,9 +227,19 @@ function engagement(
   ) {
     kind = 'city';
     frontage = T.cityFrontage;
-  } else if (source.side === 'wei' && source.level === 'wall' && target.level === 'ground') {
+  } else if (
+    (source.side === 'wei' && source.level === 'wall' && target.level === 'ground') ||
+    (source.troopType === 'infantry' && source.level !== target.level)
+  ) {
     kind = 'height';
-    modifiers.height = 1.3;
+    // Inner-edge melee uses the existing walkway frontage in either direction.
+    if (
+      source.troopType === 'infantry' &&
+      distance(source, target) === 1 &&
+      insideCity(source.level === 'ground' ? source : target)
+    )
+      frontage = T.wallFrontage;
+    if (source.level === 'wall') modifiers.height = 1.3;
   }
   const counterPosition = climbingPosition(state, target, source);
   if (counter && counterPosition)
@@ -329,6 +351,7 @@ export interface SiegeClimbForecast {
   wouldMount: boolean;
   sourceMoraleAfter: number;
   neighbourMoraleLoss: number;
+  makeWay?: { unitId: string; to: SiegePosition };
 }
 
 /** Pure empty-cell ascent forecast for the UI; normal climb has no personnel or morale cost. */
@@ -344,6 +367,7 @@ export function predictSiegeClimb(
     !source ||
     !activeUnit(source) ||
     source.side !== 'shu' ||
+    source.acted ||
     source.level !== 'ground' ||
     !isMapCell(source.x, source.y)
   )
@@ -356,9 +380,19 @@ export function predictSiegeClimb(
   ].find(
     (cell) =>
       climbingPosition(state, source, cell) !== null &&
-      !state.units.some((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, cell)),
+      !state.units.some(
+        (u) =>
+          u.troops > 0 &&
+          u.level === 'wall' &&
+          sameCell(u, cell) &&
+          (u.side !== source.side ||
+            wallFoothold(state, cell) < T.footholdComplete ||
+            !makeWayDestination(state, u)),
+      ),
   );
   if (!top) return null;
+  const ally = state.units.find((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, top));
+  const makeWay = ally ? { unitId: ally.id, to: makeWayDestination(state, ally)! } : undefined;
   const position = climbingPosition(state, source, top)!;
   const assault = options.assault === true;
   const frontage = assault ? T.climbing[position].assaultFrontage : T.climbing[position].frontage;
@@ -376,6 +410,7 @@ export function predictSiegeClimb(
   const moraleAfter = Math.max(MIN_MORALE, morale - (assault ? T.assaultMoraleLoss : 0));
   return {
     sourceId: source.id,
+    ...(makeWay ? { makeWay } : {}),
     top: { x: top.x, y: top.y },
     position,
     assault,

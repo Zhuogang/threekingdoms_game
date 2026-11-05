@@ -26,7 +26,7 @@ import {
 } from '../rules/combat';
 import { WAVERING_MORALE } from '../rules/constants';
 import { cellTerrain, gateAt, isMapCell, isWallFoot } from '../rules/map';
-import { engineReachable, reachableCells } from '../rules/movement';
+import { engineReachable, reachableCells, unitNeighbors } from '../rules/movement';
 import type {
   Cell,
   GateId,
@@ -53,7 +53,6 @@ const adjacent = ({ x, y }: Cell): Cell[] => [
   { x, y: y + 1 },
   { x: x - 1, y },
 ];
-const rampCells = new Map(RAMPS.flatMap((r) => r.cells.map((c) => [cellKey(c), r] as const)));
 
 /** Shared strategic routing for both AIs. The rules still validate every actual move.
  * Search beyond today's budget so detours to ramps, bridges and workshop exits make progress.
@@ -66,7 +65,17 @@ export function routeSiegeActor(
   if (actor.moved || actor.acted || !isMapCell(actor.x, actor.y) || !goals.length) return null;
   const unit = 'side' in actor ? actor : undefined;
   const start = unit ? indexOf(unit) : indexOf(ground(actor));
-  const targets = new Set(goals.filter((p) => isMapCell(p.x, p.y)).map(indexOf));
+  const targets = new Set(
+    goals
+      .filter(
+        (p) =>
+          isMapCell(p.x, p.y) &&
+          !state.units.some(
+            (u) => u.id !== actor.id && u.troops > 0 && u.level === p.level && sameCell(u, p),
+          ),
+      )
+      .map(indexOf),
+  );
   if (targets.has(start)) return null;
   const reachable = unit ? reachableCells(state, actor.id) : engineReachable(state, actor.id);
   if (!reachable.length) return null;
@@ -79,7 +88,9 @@ export function routeSiegeActor(
     (e) => e.kind === 'ladder' && usableEngine(e) && e.raisedAt && walkable(e.raisedAt),
   );
   const blocked = new Set(
-    state.units.filter((u) => u.id !== actor.id && u.troops > 0).map(indexOf),
+    state.units
+      .filter((u) => u.id !== actor.id && u.troops > 0 && (!unit || u.side !== unit.side))
+      .map(indexOf),
   );
   for (const engine of state.engines) {
     if (engine.id !== actor.id && (!unit || !ladders.includes(engine)))
@@ -101,36 +112,7 @@ export function routeSiegeActor(
   };
   const neighbors = (from: SiegePosition): SiegePosition[] => {
     if (!unit) return adjacent(from).filter(groundPassable).map(ground);
-    if (from.level === 'wall') {
-      return [
-        ...adjacent(from).filter(walkable).map(wall),
-        ...RAMPS.filter((r) => sameCell(r.wall, from)).map((r) => ground(r.cells.at(-1)!)),
-      ];
-    }
-    const ramp = rampCells.get(cellKey(from));
-    if (ramp) {
-      const i = ramp.cells.findIndex((c) => sameCell(c, from));
-      const next: SiegePosition[] = [];
-      if (i > 0) next.push(ground(ramp.cells[i - 1]!));
-      if (i < ramp.cells.length - 1) next.push(ground(ramp.cells[i + 1]!));
-      if (i === 0 && groundPassable(ramp.ground)) next.push(ground(ramp.ground));
-      if (i === ramp.cells.length - 1) next.push(wall(ramp.wall));
-      return next;
-    }
-    const next = adjacent(from)
-      .filter((p) => {
-        const r = rampCells.get(cellKey(p));
-        return groundPassable(p) && (!r || (sameCell(from, r.ground) && sameCell(p, r.cells[0]!)));
-      })
-      .map(ground);
-    if (unit.side === 'shu') {
-      if (
-        isWallFoot(state, from.x, from.y) &&
-        state.mounds[cellKey(from)] === SIEGE_TUNING.moundComplete
-      )
-        next.push(wall({ x: from.x, y: from.y - 1 }));
-    }
-    return next;
+    return unitNeighbors(state, unit, from);
   };
   // Integer movement costs allow a bucketed Dijkstra without sorting the frontier.
   const costs = new Float64Array(area * 2).fill(Infinity);

@@ -1,6 +1,15 @@
 import { ENGINE_RULES, SIEGE_TUNING as T } from './tuning';
 import { movementBudget } from '../../v03/battle/rules';
-import { MAP_WIDTH, MAP_HEIGHT, RAMPS, cellKey, layoutSymbol, sameCell } from '../content/chencang';
+import {
+  CITY_BOUNDS,
+  GATES,
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  RAMPS,
+  cellKey,
+  layoutSymbol,
+  sameCell,
+} from '../content/chencang';
 import { cellTerrain, gateAt, isMapCell, isWallFoot } from './map';
 import type {
   Cell,
@@ -24,16 +33,12 @@ const cardinal = ({ x, y, level }: SiegePosition): SiegePosition[] => [
   { x: x - 1, y, level },
 ];
 
-const rampByCell = new Map(
-  RAMPS.flatMap((ramp) => ramp.cells.map((c) => [cellKey(c), ramp] as const)),
-);
-
-function isWalkway(state: SiegeState, { x, y }: Cell): boolean {
+export function isWalkway(state: SiegeState, { x, y }: Cell): boolean {
   const terrain = cellTerrain(state, x, y);
   return isMapCell(x, y) && (terrain === 'wall' || terrain === 'gate');
 }
 
-function groundPassable(state: SiegeState, side: SiegeSide, { x, y }: Cell): boolean {
+export function groundPassable(state: SiegeState, side: SiegeSide, { x, y }: Cell): boolean {
   if (!isMapCell(x, y)) return false;
   const terrain = cellTerrain(state, x, y);
   if (terrain === 'water' || terrain === 'trench' || terrain === 'building' || terrain === 'wall')
@@ -45,33 +50,25 @@ function groundPassable(state: SiegeState, side: SiegeSide, { x, y }: Cell): boo
   return true;
 }
 
-function unitNeighbors(state: SiegeState, unit: SiegeUnit, from: SiegePosition): SiegePosition[] {
+export function unitNeighbors(
+  state: SiegeState,
+  unit: SiegeUnit,
+  from: SiegePosition,
+): SiegePosition[] {
   if (from.level === 'wall') {
     return [
       ...cardinal(from).filter((next) => isWalkway(state, next)),
+      ...cardinal(from)
+        .filter((next) => insideCity(next) && groundPassable(state, unit.side, next))
+        .map(ground),
       ...RAMPS.filter((ramp) => sameCell(ramp.wall, from)).map((ramp) =>
         ground(ramp.cells.at(-1)!),
       ),
     ];
   }
 
-  const ramp = rampByCell.get(cellKey(from));
-  if (ramp) {
-    const index = ramp.cells.findIndex((cell) => sameCell(cell, from));
-    const next: SiegePosition[] = [];
-    if (index > 0) next.push(ground(ramp.cells[index - 1]!));
-    if (index < ramp.cells.length - 1) next.push(ground(ramp.cells[index + 1]!));
-    if (index === 0 && groundPassable(state, unit.side, ramp.ground))
-      next.push(ground(ramp.ground));
-    if (index === ramp.cells.length - 1) next.push(wall(ramp.wall));
-    return next;
-  }
-
-  const next = cardinal(from).filter((to) => {
-    if (!groundPassable(state, unit.side, to)) return false;
-    const targetRamp = rampByCell.get(cellKey(to));
-    return !targetRamp || (sameCell(from, targetRamp.ground) && sameCell(to, targetRamp.cells[0]!));
-  });
+  const next = cardinal(from).filter((to) => groundPassable(state, unit.side, to));
+  for (const ramp of RAMPS) if (sameCell(ramp.cells.at(-1)!, from)) next.push(wall(ramp.wall));
   if (unit.side === 'shu') {
     if (isWallFoot(state, from.x, from.y) && state.mounds[cellKey(from)] === T.moundComplete)
       next.push(wall({ x: from.x, y: from.y - 1 }));
@@ -118,21 +115,22 @@ function search(
   return nodes;
 }
 
-function unitSearch(state: SiegeState, unitId: string): Map<string, SearchNode> {
+function unitSearch(state: SiegeState, unitId: string, budget?: number): Map<string, SearchNode> {
   const unit = state.units.find((entry) => entry.id === unitId);
   if (
     !unit ||
     unit.troops <= 0 ||
     unit.routed ||
-    unit.moved ||
-    unit.acted ||
+    (budget === undefined && (unit.moved || unit.acted)) ||
     !isMapCell(unit.x, unit.y)
   )
     return new Map();
   if (unit.level === 'wall' ? !isWalkway(state, unit) : !groundPassable(state, unit.side, unit))
     return new Map();
   const occupied = new Set(
-    state.units.filter((other) => other.id !== unitId && other.troops > 0).map(positionKey),
+    state.units
+      .filter((other) => other.id !== unitId && other.troops > 0 && other.side !== unit.side)
+      .map(positionKey),
   );
   for (const engine of state.engines) {
     // A usable ladder admits troops before or after raising, in either action order.
@@ -142,11 +140,11 @@ function unitSearch(state: SiegeState, unitId: string): Map<string, SearchNode> 
   }
   return search(
     { x: unit.x, y: unit.y, level: unit.level },
-    movementBudget(unit.troopType),
+    budget ?? movementBudget(unit.troopType),
     (from) => unitNeighbors(state, unit, from),
     (to) => {
       const terrain = cellTerrain(state, to.x, to.y);
-      return terrain === 'hill' || terrain === 'wood' ? 2 : 1;
+      return to.level === 'ground' && (terrain === 'hill' || terrain === 'wood') ? 2 : 1;
     },
     (to) => occupied.has(positionKey(to)),
   );
@@ -161,7 +159,7 @@ function destinations(nodes: Map<string, SearchNode>): ReachableCell[] {
 
 /** Excludes the origin; costs include terrain and ascent steps. Does not mutate state. */
 export function reachableCells(state: SiegeState, unitId: string): ReachableCell[] {
-  return destinations(unitSearch(state, unitId));
+  return destinations(unitSearch(state, unitId)).filter((p) => canStop(state, unitId, p));
 }
 
 /** Includes both endpoints. Returns null if the destination cannot be reached this move. */
@@ -172,6 +170,7 @@ export function pathTo(
   y: number,
   level: SiegeLevel,
 ): SiegePosition[] | null {
+  if (!canStop(state, unitId, { x, y, level })) return null;
   const nodes = unitSearch(state, unitId);
   let node = nodes.get(positionKey({ x, y, level }));
   if (!node) return null;
@@ -220,4 +219,64 @@ export function engineReachable(state: SiegeState, engineId: string): ReachableC
       (to) => occupied.has(positionKey(to)),
     ),
   );
+}
+
+/** Strict interior: boundary cells belong to the wall, not the city floor. */
+export function insideCity({ x, y }: Cell): boolean {
+  return (
+    x > CITY_BOUNDS.west && x < CITY_BOUNDS.east && y > CITY_BOUNDS.north && y < CITY_BOUNDS.south
+  );
+}
+
+function canStop(state: SiegeState, unitId: string, p: SiegePosition): boolean {
+  return !state.units.some(
+    (u) => u.id !== unitId && u.troops > 0 && u.level === p.level && sameCell(u, p),
+  );
+}
+
+/** Unlimited walking distances for guidance, including after today's move/action. */
+export function walkingDistances(state: SiegeState, unitId: string): ReachableCell[] {
+  return [...unitSearch(state, unitId, Infinity).values()]
+    .filter(({ position }) => canStop(state, unitId, position))
+    .map(({ position, cost }) => ({ ...position, cost }))
+    .sort((a, b) => a.cost - b.cost || positionIndex(a) - positionIndex(b));
+}
+
+/** Occupied allied cells are separate from ordinary move destinations. */
+export function swapTargets(state: SiegeState, unitId: string): SiegeUnit[] {
+  const unit = state.units.find((u) => u.id === unitId);
+  if (!unit) return [];
+  const nodes = unitSearch(state, unitId);
+  return state.units.filter(
+    (other) =>
+      other.id !== unitId &&
+      other.side === unit.side &&
+      other.troops > 0 &&
+      !other.moved &&
+      !other.acted &&
+      nodes.has(positionKey(other)),
+  );
+}
+
+/** Make way stays on the walkway; spent actions do not prevent giving way. */
+export function makeWayDestination(state: SiegeState, ally: SiegeUnit): SiegePosition | null {
+  if (ally.moved || ally.level !== 'wall' || ally.troops <= 0) return null;
+  const occupied = state.units.filter((u) => u.id !== ally.id && u.troops > 0);
+  const nodes = search(
+    wall(ally),
+    movementBudget(ally.troopType),
+    (from) => cardinal(from).filter((p) => isWalkway(state, p)),
+    () => 1,
+    (p) => occupied.some((u) => u.side !== ally.side && u.level === p.level && sameCell(u, p)),
+  );
+  const gates = Object.values(GATES).flatMap((gate) => gate.cells);
+  const gateDistance = (p: Cell) =>
+    Math.min(...gates.map((g) => Math.abs(g.x - p.x) + Math.abs(g.y - p.y)));
+  const to = destinations(nodes)
+    .filter((p) => canStop(state, ally.id, p))
+    .sort(
+      (a, b) =>
+        a.cost - b.cost || gateDistance(a) - gateDistance(b) || positionIndex(a) - positionIndex(b),
+    )[0];
+  return to ? { x: to.x, y: to.y, level: to.level } : null;
 }

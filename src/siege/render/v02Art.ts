@@ -6,7 +6,7 @@ import { FRAME, MAP, sheet, WALL_HEIGHT } from './assets';
 import { placeAnchoredPiece, type Sprite } from './mapPieces';
 import { project, STANDING_EPSILON, type DepthKey, type ScreenRect } from './scene';
 
-// Includes the full worst-case review fixture; only silhouettes are optional.
+// Includes the full worst-case review fixture and every living formation.
 export const SPRITE_CAP = 512;
 export const NIGHT_COLOR = '#1b2233';
 export const NIGHT_OPACITY = 0.45;

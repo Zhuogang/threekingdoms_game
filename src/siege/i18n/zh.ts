@@ -1,5 +1,16 @@
 import type { en, enReasons } from './en';
 export const zh = {
+  courtyard: '前庭',
+  openGate: '开门',
+  nextGate: '下一步：到门楼或门内开门，还差 {n} 格。',
+  nextOpenNow: '可以开门：点「开门」。',
+  nextGateGuarded: '门楼上有守军（{name}），打下来才能开门。',
+  nextCourtyard: '城门已开：进前庭，还差 {n} 格。',
+  climbMakeWay: '点「登城」上墙，{name}会沿城墙让开。',
+  climbAllyMoved: '上方的{name}今天刚到位，明天才能让开。',
+  climbAllyBoxed: '上方的{name}被夹住了：先打掉旁边的守军。',
+  reportGateOpened: '{unit}从里面打开了{gate}。',
+
   reportEngineDestroyedGroup: '{count}件{engine}{cause}毁（各{before} → {after}）。',
   reportEngineDamagedGroup: '{count}件{engine}{cause}伤（各{before} → {after}）。',
   reportEngineLostGroup: '{count}件{engine}已被毁，必须改用其他进攻路线。',
@@ -81,7 +92,7 @@ export const zh = {
   counterWeiNight:
     '蜀军发动夜攻。下次可举火阻止推进，并让备好火的弓手射击；夜袭可能被夜攻挡回。每夜择一军令。',
   counterWeiMounted:
-    '蜀军已登城。站回缺口那一格就能封住，否则后面的蜀军会一步上墙。用邻近守军攻击立足点，调预备队增援本段，或退守重墙、守住前庭。礌石只能打城下攀爬者，不能打已上墙的部队。',
+    '蜀军已登城。蜀军能直接下城，从里面开门：守住门楼。站回缺口那一格就能封住，否则后面的蜀军会一步上墙。用邻近守军攻击立足点，调预备队增援本段，或退守重墙、守住前庭。礌石只能打城下攀爬者，不能打已上墙的部队。',
   reportWeiLadder: '蜀军在{cell}架起云梯。',
   reportWeiFill: '{cell}的城堑已填平。',
   reportWeiMound: '蜀军在{cell}堆土山：{after}/{max}。',
@@ -258,7 +269,9 @@ export const zh = {
     '夜袭烧车：邻近驻军护车，或退到距南门接近格 {range} 格外；土山烧不掉。雪夜火盆熄灭。',
   howFoothold: '攀爬与立足',
   howFootholdBody:
-    '梯底就是云梯所在的格子，选步兵时以金框标出；云梯须先架起，再从梯底或填平的墙脚攀爬。空墙也要攀爬，普通 +{climb} 且无伤亡，强攻 +{assault}、自损正面的 ×{loss}。有守军时攻击积累立足，满 {max} 登城并挤开守军；仰攻 ×{uphill}。土山普通攻击立足 +{mound}。墙上士气过低会被打下城，恢复后再上。登城后缺口保持打开：前一支走开，下一支一步上墙，一架云梯每天最多上一支；魏军站回这一格、把部队打下城，或云梯被毁，缺口才关上。',
+    '梯底就是云梯所在的格子，选步兵时以金框标出；云梯须先架起，再从梯底或填平的墙脚攀爬。空墙也要攀爬，普通 +{climb} 且无伤亡，强攻 +{assault}、自损正面的 ×{loss}。有守军时攻击积累立足，满 {max} 登城并挤开守军；仰攻 ×{uphill}。土山普通攻击立足 +{mound}。墙上士气过低会被打下城，恢复后再上。登城后缺口保持打开：上方未移动的友军会让开，下一支一步上墙后还能攻击，一架云梯每天最多上一支；魏军站回这一格、把部队打下城，或云梯被毁，缺口才关上。',
+  howMovementBody:
+    '能穿过友军，停在空格；点「移动」再点未移动、未行动的友军可换位。从城墙直接下到城内；门楼无守军时，在门楼或门内点「开门」。',
   howCourtyardClear: '日终前庭必须没有可行动的魏军，才算占领。',
   howKeys: '键盘',
   howKeysBody:
@@ -536,6 +549,11 @@ export const zh = {
   keys: 'Tab 下一队 · A 攻击 · W 待命 · Q 全军待命 · E 结束本日 · H 玩法',
 } satisfies Record<keyof typeof en, string>;
 export const zhReasons = {
+  'Use Shu infantry on an unguarded gate top or directly inside an unbroken gate.':
+    '步兵须在门楼或紧邻门内，且门楼没有守军，城门尚未打开。',
+  'Choose a reachable ally that has neither moved nor acted.':
+    '选择可到达、尚未移动或行动的友军换位。',
+
   'The engine limit has been reached.': '场上已有 {max} 件可用器械。',
   'Choose a usable engine within sortie range of the south gate approach.':
     '请选择南门接近格夜袭范围内的可用器械。',

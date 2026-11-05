@@ -123,12 +123,12 @@ for (const locale of ['zh', 'en'] as const) {
           state.trenchFill['18,18'] = T.trenchCapacity;
         }
         Object.assign(wangping, base);
-        if (occupied) Object.assign(weiyan, { x: 18, y: 16, level: 'wall' });
+        if (occupied) Object.assign(weiyan, { x: 18, y: 16, level: 'wall', moved: true });
         await loadSkippedBattle(page, state, locale);
         await selectActor(page, wangping.id);
         await expectGuide(page, locale, occupied ? 'allyAbove' : 'ready');
         await expect(page.getByTestId('action-context')).toHaveText(
-          siegeText(locale, occupied ? 'climbAllyAboveBreach' : 'climbBreachOpen', {
+          siegeText(locale, occupied ? 'climbAllyMoved' : 'climbBreachOpen', {
             name: locale === 'zh' ? weiyan.officer.chinese : weiyan.officer.name,
           }),
         );
@@ -152,7 +152,7 @@ for (const locale of ['zh', 'en'] as const) {
             y: 16,
             level: 'wall',
             moved: true,
-            acted: true,
+            acted: false,
             troops: wangping.troops,
             wounded: wangping.wounded,
             morale: wangping.morale,
@@ -365,15 +365,16 @@ for (const locale of ['zh', 'en'] as const) {
       await expect(page.getByTestId('selected-actor').locator('h3')).toHaveText(
         locale === 'zh' ? climber.officer.chinese : climber.officer.name,
       );
-      await expectGuide(page, locale, 'allyAbove');
+      await expectGuide(page, locale, 'ready');
       const ally = state.units.find((u) => u.id === 'shu-weiyan')!;
       await expect(page.getByTestId('action-context')).toContainText(
-        siegeText(locale, 'climbAllyAbove', {
+        siegeText(locale, 'climbMakeWay', {
           name: locale === 'zh' ? ally.officer.chinese : ally.officer.name,
         }),
       );
       await expect(page.getByTestId('action-context')).not.toContainText('0');
-      await expectLabel(page, '18,19,ground', siegeText(locale, 'climbBaseLabel'));
+      expect(climbGuide(after.state, unitId)).toMatchObject({ kind: 'ready', makeWayId: ally.id });
+      await expect(page.getByTestId('climb-base-label')).toHaveCount(0);
       await expectNoPanelScroll(page, 'action-panel');
     });
   }
@@ -408,9 +409,6 @@ for (const locale of ['zh', 'en'] as const) {
     const box = (await page.getByTestId('map-unit-shu-weiyan').boundingBox())!;
     const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     await selectActor(page, 'shu-jiangwei');
-    await expect(page.locator('[data-overlay="reachable"][data-cell="20,20,ground"]')).toHaveCount(
-      0,
-    );
     const before = await snapshot(page);
     await page.mouse.dblclick(point.x, point.y);
     const unit = before.state.units.find((u) => u.id === 'shu-weiyan')!;

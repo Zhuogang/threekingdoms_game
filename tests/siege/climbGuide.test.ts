@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEPLOY_SHU, DEPLOY_WEI, SHU_ROSTER, sameCell } from '../../src/siege/content/chencang';
+import {
+  COURTYARD,
+  DEPLOY_SHU,
+  DEPLOY_WEI,
+  SHU_ROSTER,
+  sameCell,
+} from '../../src/siege/content/chencang';
 import { SIEGE_COPY, siegeText } from '../../src/siege/i18n';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { cellTerrain } from '../../src/siege/rules/map';
@@ -7,6 +13,7 @@ import { reachableCells } from '../../src/siege/rules/movement';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import type { SiegeUnit } from '../../src/siege/rules/types';
 import { actionContext, deployUnit, siegeCommands } from '../../src/siege/ui/commands';
+import { nextGoalGuide, nextGoalGuideText } from '../../src/siege/ui/nextGoalGuide';
 import { climbGuide, climbGuideText, type ClimbGuide } from '../../src/siege/ui/climbGuide';
 import {
   settleWalkthrough,
@@ -45,7 +52,7 @@ describe('climb guide rule observations', () => {
       const before = structuredClone(state);
       expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ready', breach: true, top });
       expect(state).toEqual(before);
-      state.units.push({ ...unit, id: 'ally', ...top, level: 'wall' });
+      state.units.push({ ...unit, id: 'ally', ...top, level: 'wall', moved: true });
       for (const atBase of [true, false]) {
         Object.assign(unit, { y: routeBase.y + (atBase ? 0 : 1) });
         const beforeAlly = structuredClone(state);
@@ -464,11 +471,9 @@ describe('bilingual climb guide sentences', () => {
       expect(climbGuideText(ready, 'en', () => '')).toBe(
         'The breach is open. Climb to go straight onto the wall.',
       );
-      expect(climbGuideText(ally, 'zh', () => '魏延')).toBe(
-        '上方被魏延占着：魏延沿城墙走开后，下一支一步上墙。',
-      );
+      expect(climbGuideText(ally, 'zh', () => '魏延')).toBe('点「登城」上墙，魏延会沿城墙让开。');
       expect(climbGuideText(ally, 'en', () => 'Wei Yan')).toBe(
-        'Wei Yan holds the wall above. Once that unit moves along the wall, the next one goes straight up.',
+        'Climb to go up; Wei Yan will move along the wall.',
       );
     },
   );
@@ -516,7 +521,7 @@ describe('bilingual climb guide sentences', () => {
         'climbAllyAbove',
         'climbAllyAboveFoot',
         'climbBreachOpen',
-        'climbAllyAboveBreach',
+        'climbMakeWay',
         'climbRaiseAtBase',
         'climbRaiseThenWalk',
         'climbWalkLadder',
@@ -683,4 +688,116 @@ describe('walkthrough step three day rhythm', () => {
     state.engines[0]!.wrecked = true;
     expect(walkthroughNeedsEndDay(progress, state, 'shu')).toBe(false);
   });
+});
+
+describe('S guidance after mounting and ally make-way', () => {
+  it.each(['zh', 'en'] as const)(
+    '%s describes all next goals with actual walking distances and a free target',
+    (locale) => {
+      const { state, unit } = fixture();
+      Object.assign(unit, { x: 18, y: 16, level: 'wall' });
+      state.engines = [];
+      let guide = nextGoalGuide(state, unit.id)!;
+      expect(guide).toMatchObject({
+        kind: 'gate',
+        steps: 5,
+        target: { x: 23, y: 16, level: 'wall' },
+      });
+      expect(nextGoalGuideText(guide, locale, () => '')).toBe(
+        siegeText(locale, 'nextGate', { n: 5 }),
+      );
+      expect(actionContext(state, unit.id, locale)).toBe(
+        nextGoalGuideText(guide, locale, () => ''),
+      );
+      // A blocked inner approach forces a longer actual walking route.
+      Object.assign(unit, { x: 18, y: 15, level: 'ground' });
+      state.units.push({ ...unit, id: 'blocker', side: 'wei', x: 20 });
+      guide = nextGoalGuide(state, unit.id)!;
+      expect(guide.kind).toBe('gate');
+      if ('target' in guide) {
+        expect(guide.steps).toBeGreaterThan(
+          Math.abs(unit.x - guide.target.x) + Math.abs(unit.y - guide.target.y),
+        );
+      }
+      state.units.pop();
+      Object.assign(unit, { x: 23, y: 15 });
+      expect(nextGoalGuide(state, unit.id)).toEqual({ kind: 'openNow' });
+      expect(nextGoalGuideText({ kind: 'openNow' }, locale, () => '')).toBe(
+        siegeText(locale, 'nextOpenNow'),
+      );
+      const commands = siegeCommands(state, unit.id, 'shu');
+      expect(commands[0]).toMatchObject({ kind: 'openGate', reason: null });
+      const enemy = {
+        ...unit,
+        id: 'guard',
+        side: 'wei' as const,
+        x: 24,
+        y: 16,
+        level: 'wall' as const,
+      };
+      state.units.push(enemy);
+      guide = nextGoalGuide(state, unit.id)!;
+      expect(guide).toEqual({ kind: 'guarded', defenderId: 'guard' });
+      expect(nextGoalGuideText(guide, locale, () => '守将')).toBe(
+        siegeText(locale, 'nextGateGuarded', { name: '守将' }),
+      );
+      state.units.pop();
+      state.gates.south.broken = true;
+      guide = nextGoalGuide(state, unit.id)!;
+      expect(guide.kind).toBe('courtyard');
+      if ('target' in guide) {
+        expect(guide.steps).toBeGreaterThan(0);
+        expect(COURTYARD.some((c) => sameCell(c, guide.target))).toBe(true);
+        expect(nextGoalGuideText(guide, locale, () => '')).toBe(
+          siegeText(locale, 'nextCourtyard', { n: guide.steps }),
+        );
+        state.units.push({ ...unit, id: 'occupant', ...guide.target });
+        const other = nextGoalGuide(state, unit.id)!;
+        expect(other).not.toEqual(guide);
+        expect(other.kind).toBe('courtyard');
+      }
+    },
+  );
+  it.each(['ladder', 'wallFoot'] as const)(
+    '%s gives all three ally sentences in both locales',
+    (route) => {
+      const { state, unit, ladder } = fixture();
+      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      Object.assign(unit, routeBase);
+      if (route === 'ladder') ladder.raisedAt = top;
+      else {
+        state.engines = [];
+        state.trenchFill['18,17'] = 3;
+        state.trenchFill['18,18'] = 3;
+      }
+      state.footholds['18,16'] = 3;
+      const ally = { ...unit, id: 'ally', ...top, level: 'wall' as const };
+      state.units.push(ally);
+      for (const status of ['ready', 'moved', 'boxed'] as const) {
+        ally.moved = status === 'moved';
+        state.units = [unit, ally];
+        if (status === 'boxed')
+          state.units.push(
+            { ...ally, id: 'left', side: 'wei', x: 17 },
+            { ...ally, id: 'right', side: 'wei', x: 19 },
+          );
+        const guide = climbGuide(state, unit.id)!;
+        expect(guide.kind).toBe(status === 'ready' ? 'ready' : 'allyAbove');
+        if (status === 'ready') expect(guide).toMatchObject({ makeWayId: ally.id });
+        else expect(guide).toMatchObject({ blocked: status });
+        for (const locale of ['zh', 'en'] as const)
+          expect(climbGuideText(guide, locale, () => '魏延')).toBe(
+            siegeText(
+              locale,
+              status === 'ready'
+                ? 'climbMakeWay'
+                : status === 'moved'
+                  ? 'climbAllyMoved'
+                  : 'climbAllyBoxed',
+              { name: '魏延' },
+            ),
+          );
+      }
+    },
+  );
 });

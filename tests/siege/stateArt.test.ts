@@ -12,6 +12,7 @@ import { createSiegeState } from '../../src/siege/rules/state';
 import { resolveMapClick } from '../../src/siege/ui/mapClick';
 import { playScriptDays } from '../../src/siege/ui/devPlaythrough';
 import { siegeCommands, actionContext } from '../../src/siege/ui/commands';
+import { nextGoalGuide, nextGoalGuideText } from '../../src/siege/ui/nextGoalGuide';
 import { climbGuide } from '../../src/siege/ui/climbGuide';
 import { siegeText } from '../../src/siege/i18n';
 import { act, engine } from './rulesFixtures';
@@ -78,7 +79,7 @@ describe('R engine footprints, figure registration and layer order', () => {
       if (progress === 3) expect(visual.foot[1]).toBeCloseTo(19.92 * FRAME.cd);
     },
   );
-  it('every normal formation fits 66×50 and its rect centre picks its own ground/walkway/gate cell', () => {
+  it('every normal formation fits 72×50 and its rect centre picks its own ground/walkway/gate cell', () => {
     const state = createSiegeState(228);
     const places = [
       { x: 20, y: 21, level: 'ground' as const },
@@ -105,7 +106,7 @@ describe('R engine footprints, figure registration and layer order', () => {
               const { rect } = unitVisual(state, unit, facing, activity);
               maxWidth = Math.max(maxWidth, rect[2] - rect[0]);
               maxHeight = Math.max(maxHeight, rect[3] - rect[1]);
-              expect(rect[2] - rect[0]).toBeLessThanOrEqual(66);
+              expect(rect[2] - rect[0]).toBeLessThanOrEqual(72);
               expect(rect[3] - rect[1]).toBeLessThanOrEqual(50);
               const picked = pickCell(
                 FRAME,
@@ -186,7 +187,7 @@ describe('R engine footprints, figure registration and layer order', () => {
           (u) => u.side === 'shu' && u.id !== unit.id && u.troops > 0,
         )!.id;
         expect(
-          resolveMapClick({ state, selected }, cell),
+          resolveMapClick({ state, selected, unitAtPoint: unit.id }, cell),
           JSON.stringify({ day: state.day, unit: unit.id, rect, cell }),
         ).toEqual({ type: unit.side === 'shu' ? 'select' : 'target', id: unit.id });
       }
@@ -248,21 +249,43 @@ describe('R engine footprints, figure registration and layer order', () => {
     expect(siegeCommands(state, id).some((c) => c.kind === 'raiseLadder')).toBe(false);
     expect(siegeCommands(state, id).find((c) => c.kind === 'climb')?.reason).toBeNull();
   });
-  it('city infantry get a place line, and boxed-in unmoved wall units get the blocked sentence on both sides', () => {
+  it('Shu inside or on the wall gets next-goal guidance; boxed-in Wei keeps its context', () => {
     const state = createSiegeState(228);
     const shu = state.units[1]!,
       wei = state.units.find((u) => u.side === 'wei')!;
     Object.assign(shu, { x: 20, y: 15 });
     expect(climbGuide(state, shu.id)).toBeNull();
     for (const locale of ['zh', 'en'] as const)
-      expect(actionContext(state, shu.id, locale)).toContain(' · ');
+      expect(actionContext(state, shu.id, locale)).toBe(
+        nextGoalGuideText(nextGoalGuide(state, shu.id)!, locale, (id) => {
+          const other = state.units.find((u) => u.id === id)!;
+          return locale === 'zh' ? other.officer.chinese : other.officer.name;
+        }),
+      );
     for (const unit of [shu, wei]) {
       const s = structuredClone(state);
       const wallUnit = s.units.find((u) => u.id === unit.id)!;
       Object.assign(wallUnit, { x: 18, y: 16, level: 'wall', moved: false });
+      s.units.push({
+        ...wallUnit,
+        id: 'inside-blocker',
+        side: unit.side === 'shu' ? 'wei' : 'shu',
+        y: 15,
+        level: 'ground',
+      });
       const others = s.units.filter((u) => u.id !== unit.id);
-      Object.assign(others[0]!, { x: 17, y: 16, level: 'wall' });
-      Object.assign(others[1]!, { x: 19, y: 16, level: 'wall' });
+      Object.assign(others[0]!, {
+        x: 17,
+        y: 16,
+        level: 'wall',
+        side: unit.side === 'shu' ? 'wei' : 'shu',
+      });
+      Object.assign(others[1]!, {
+        x: 19,
+        y: 16,
+        level: 'wall',
+        side: unit.side === 'shu' ? 'wei' : 'shu',
+      });
       for (const locale of ['zh', 'en'] as const)
         expect(actionContext(s, unit.id, locale)).toBe(siegeText(locale, 'contextWallBlocked'));
     }

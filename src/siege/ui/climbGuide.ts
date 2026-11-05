@@ -10,13 +10,20 @@ import {
 } from '../rules/combat';
 import { isWallFoot } from '../rules/map';
 import { SIEGE_TUNING as T } from '../rules/tuning';
-import { reachableCells } from '../rules/movement';
+import { makeWayDestination, reachableCells } from '../rules/movement';
 import type { Cell, SiegeState } from '../rules/types';
 import { siegeText, type SiegeLocale } from '../i18n';
 
 export type ClimbGuide =
   | { kind: 'acted' }
-  | { kind: 'ready'; position: ClimbingPosition; gain: number; top: Cell; breach: boolean }
+  | {
+      kind: 'ready';
+      position: ClimbingPosition;
+      gain: number;
+      top: Cell;
+      breach: boolean;
+      makeWayId?: string;
+    }
   | { kind: 'defenderAbove'; defenderId: string; top: Cell; base: Cell }
   | {
       kind: 'allyAbove';
@@ -26,6 +33,7 @@ export type ClimbGuide =
       base: Cell;
       atBase: boolean;
       breach: boolean;
+      blocked?: 'moved' | 'boxed';
     }
   | { kind: 'ladderNotRaised'; ladderId: string; base: Cell; atBase: boolean; steps: number }
   | {
@@ -57,6 +65,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     return {
       kind: 'ready',
       position: forecast.position,
+      ...(forecast.makeWay ? { makeWayId: forecast.makeWay.unitId } : {}),
       gain: forecast.footholdGain,
       top: forecast.top,
       breach: wallFoothold(state, forecast.top) === T.footholdComplete,
@@ -78,6 +87,9 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     return {
       kind: 'allyAbove',
       allyId: ally.id,
+      ...(wallFoothold(state, ally) === T.footholdComplete
+        ? { blocked: ally.moved ? ('moved' as const) : ('boxed' as const) }
+        : {}),
       route: climbingPosition(state, unit, ally) === 'ladder' ? 'ladder' : 'wallFoot',
       top: { x: ally.x, y: ally.y },
       base: { x: unit.x, y: unit.y },
@@ -135,6 +147,10 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     return {
       kind: 'allyAbove',
       allyId: allyAbove.id,
+      ...(wallFoothold(state, allyAbove) === T.footholdComplete &&
+      !makeWayDestination(state, allyAbove)
+        ? { blocked: allyAbove.moved ? ('moved' as const) : ('boxed' as const) }
+        : {}),
       route: route.route,
       top: route.top,
       base,
@@ -161,6 +177,8 @@ export function climbGuideText(
     case 'acted':
       return siegeText(locale, 'climbActed');
     case 'ready':
+      if (guide.makeWayId)
+        return siegeText(locale, 'climbMakeWay', { name: nameOf(guide.makeWayId) });
       if (guide.breach) return siegeText(locale, 'climbBreachOpen');
       return siegeText(
         locale,
@@ -174,10 +192,14 @@ export function climbGuideText(
     case 'defenderAbove':
       return siegeText(locale, 'climbDefenderAbove', { name: nameOf(guide.defenderId) });
     case 'allyAbove':
+      if (guide.breach && guide.blocked)
+        return siegeText(locale, guide.blocked === 'moved' ? 'climbAllyMoved' : 'climbAllyBoxed', {
+          name: nameOf(guide.allyId),
+        });
       return siegeText(
         locale,
         guide.breach
-          ? 'climbAllyAboveBreach'
+          ? 'climbMakeWay'
           : guide.route === 'ladder'
             ? 'climbAllyAbove'
             : 'climbAllyAboveFoot',

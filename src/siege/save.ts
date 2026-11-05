@@ -138,6 +138,7 @@ const stateSchema = z.strictObject({
           durability: z.number().nonnegative(),
           max: z.number().positive(),
           broken: z.boolean(),
+          opened: z.boolean().optional(),
           damaged: z.boolean().optional(),
         }),
       ]),

@@ -63,6 +63,7 @@ const iconNames: Partial<Record<SiegeTextKey, string>> = {
   supervise: 'supervise',
   rotate: 'rotate',
   gates: 'gate',
+  openGate: 'gate',
   wallRuns: 'troops',
   innerWall: 'inner-wall',
   raised: 'ladder',

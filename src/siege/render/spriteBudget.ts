@@ -4,7 +4,7 @@ import { sliceObject } from './scene';
 import { SPRITE_CAP } from './v02Art';
 
 /** Count mandatory image instances, including row slices. Never cull scenery
- * or gameplay art: only silhouettes may spend the remaining allowance.
+ * or gameplay art. Covered units move to the overlay without duplicate images.
  * An oversized future state still draws in full, even if it exceeds the cap. */
 export function boundSprites(candidates: Sprite[], reserved: number) {
   const used = candidates.reduce(

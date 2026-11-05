@@ -44,12 +44,12 @@ describe('siege scene geometry', () => {
     ]);
   });
 
-  it('puts a wall-top unit between the wall body and its parapet', () => {
+  it('puts a walkway unit after its wall body and parapet', () => {
     const [wall] = sliceObject(frame, object('wall-south-w'));
     const [parapet] = sliceObject(frame, object('wall-south-w-parapet'));
-    const unit = { row: 16, height: 3 + STANDING_EPSILON };
+    const unit = { row: 16, height: 3.5 + STANDING_EPSILON };
     expect(compareDepth(wall!, unit)).toBeLessThan(0);
-    expect(compareDepth(parapet!, unit)).toBeGreaterThan(0);
+    expect(compareDepth(parapet!, unit)).toBeLessThan(0);
     // A unit on the ring road behind the south wall is covered by it.
     expect(compareDepth({ row: 15, height: STANDING_EPSILON }, wall!)).toBeLessThan(0);
   });

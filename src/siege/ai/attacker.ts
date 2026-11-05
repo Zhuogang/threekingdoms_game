@@ -8,12 +8,13 @@ import {
   sameCell,
   layoutSymbol,
 } from '../content/chencang';
-import { applySiegeAction } from '../rules/actions';
+import { validateSiegeAction, applySiegeAction } from '../rules/actions';
 import {
   activeUnit,
   climbingPosition,
   distance,
   predictSiegeAttack,
+  predictSiegeClimb,
   usableEngine,
   wallFoothold,
 } from '../rules/combat';
@@ -246,6 +247,11 @@ export function* attackerTurnSteps(
       yield* act(route.action);
     }
   };
+  // Opening from inside takes priority over every work/combat assignment.
+  for (const unit of draft.units) {
+    const action = { type: 'openGate' as const, unitId: unit.id, gateId: 'south' as const };
+    if (!validateSiegeAction(draft, action)) yield* act(action);
+  }
   const safeCommand = (p: Cell) =>
     p.y >= CITY_BOUNDS.south + 5 &&
     draft.units.every((u) => u.side !== 'wei' || u.troops <= 0 || distance(p, u) >= 5);
@@ -621,6 +627,11 @@ export function* attackerTurnSteps(
     );
   for (const initial of troops) {
     let u = unitNow(initial.id);
+    const openGate = { type: 'openGate' as const, unitId: u.id, gateId: 'south' as const };
+    if (!validateSiegeAction(draft, openGate)) {
+      yield* act(openGate);
+      continue;
+    }
     const reinforcingClimb =
       method === 'anyPrice' && climbingCrew.has(u.id) && u.level === 'ground' && u.y > 16;
     if (
@@ -664,14 +675,12 @@ export function* attackerTurnSteps(
         );
     }
     u = unitNow(u.id);
+    if (!validateSiegeAction(draft, openGate)) {
+      yield* act(openGate);
+      continue;
+    }
     if (u.acted) continue;
-    const emptyTop = climbSites(draft).find(
-      (s) =>
-        climbingPosition(draft, u, s.top) !== null &&
-        !draft.units.some(
-          (other) => other.troops > 0 && other.level === 'wall' && sameCell(other, s.top),
-        ),
-    );
+    const emptyTop = predictSiegeClimb(draft, u);
     if (emptyTop) {
       yield* act({
         type: 'climb',

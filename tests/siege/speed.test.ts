@@ -87,6 +87,10 @@ function exhaustiveCommands(
       ? unit.id
       : (state.units.find((u) => u.side === playerSide && u.troops > 0)?.id ?? '');
   const commands: SiegeCommand[] = [
+    choose(
+      'openGate',
+      Object.values(GATES).map((gate) => ({ type: 'openGate', unitId: id, gateId: gate.id })),
+    ),
     ...(['lightBrazier', 'hoistMillstone', 'stackBoulders'] as const).map((kind) =>
       choose(kind, [{ type: kind, unitId: id }]),
     ),

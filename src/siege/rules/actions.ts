@@ -24,7 +24,7 @@ import {
   climbingPosition,
   changeFoothold,
   gainWall,
-  sealBreaches,
+  updateBreaches,
   wallFoothold,
   settleUnitRout,
   damageEngine,
@@ -39,7 +39,7 @@ import {
 } from './combat';
 import { endDay } from './day';
 import { cellTerrain, isMapCell } from './map';
-import { engineReachable, pathTo } from './movement';
+import { engineReachable, pathTo, swapTargets, insideCity } from './movement';
 import { siegeOutcome } from './outcome';
 import type {
   GateId,
@@ -208,6 +208,42 @@ function performAction(
     workshop.daysRemaining = ENGINE_RULES[action.kind].days;
     return null;
   }
+  if (action.type === 'openGate') {
+    const unit = availableUnit(state, action.unitId);
+    const gate = GATES[action.gateId];
+    if (
+      !unit ||
+      unit.side !== 'shu' ||
+      unit.troopType !== 'infantry' ||
+      !gate ||
+      state.gates[action.gateId].broken ||
+      state.units.some(
+        (u) =>
+          u.side === 'wei' &&
+          u.troops > 0 &&
+          u.level === 'wall' &&
+          gate.cells.some((c) => sameCell(c, u)),
+      ) ||
+      !(unit.level === 'wall'
+        ? gate.cells.some((c) => sameCell(c, unit))
+        : insideCity(unit) && gate.cells.some((c) => distance(c, unit) === 1))
+    )
+      return 'Use Shu infantry on an unguarded gate top or directly inside an unbroken gate.';
+    Object.assign(state.gates[action.gateId], { broken: true, durability: 0, opened: true });
+    state.stats.gateEverBroken = true;
+    unit.acted = true;
+    logEvent(state, 'gateOpened', { unitId: unit.id, gateId: action.gateId });
+    return null;
+  }
+  if (action.type === 'swap') {
+    const unit = availableUnit(state, action.unitId);
+    const other = swapTargets(state, action.unitId).find((u) => u.id === action.withUnitId);
+    if (!unit || !other) return 'Choose a reachable ally that has neither moved nor acted.';
+    const from = { x: unit.x, y: unit.y, level: unit.level };
+    Object.assign(unit, { x: other.x, y: other.y, level: other.level, moved: true });
+    Object.assign(other, from, { moved: true });
+    return null;
+  }
   if (action.type === 'move') {
     const unit = availableUnit(state, action.unitId);
     if (!unit || unit.moved) return 'This unit cannot move today.';
@@ -368,12 +404,25 @@ function performAction(
     const unit = availableUnit(state, action.unitId);
     const forecast = unit && predictSiegeClimb(state, unit, { assault: action.assault });
     if (!unit || !forecast) return 'Climb from a ladder base or wall foot to an empty wall cell.';
+    const openBreach = wallFoothold(state, forecast.top) === T.footholdComplete;
+    if (forecast.makeWay) {
+      const ally = state.units.find((u) => u.id === forecast.makeWay!.unitId)!;
+      const from = cellKey(ally);
+      Object.assign(ally, forecast.makeWay.to, { moved: true });
+      logEvent(state, 'allyMadeWay', {
+        unitId: ally.id,
+        from,
+        cell: cellKey(ally),
+        climberId: unit.id,
+      });
+    }
     unit.acted = true;
     unit.climbing = true;
     if (forecast.casualties > 0)
       Object.assign(unit, inflictCasualties(state, unit, forecast.casualties));
     const mounted =
       activeUnit(unit) && gainWall(state, unit, forecast.top, forecast.footholdGain, 'climb');
+    if (mounted && openBreach) unit.acted = false;
     if (action.assault)
       assaultCosts(
         state,
@@ -663,7 +712,7 @@ export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeA
     )
       next.stats.lastActiveDay = next.day;
     cancelOccupiedPreparations(next);
-    sealBreaches(next);
+    updateBreaches(next);
     next.outcome = siegeOutcome(next);
   }
   updatePersonnelStats(next);

@@ -16,11 +16,7 @@ import {
   stormingSprite,
   SPRITE_CAP,
 } from '../../src/siege/render/v02Art';
-import {
-  SiegeMapView,
-  SILHOUETTE_OPACITY,
-  SILHOUETTE_TINTS,
-} from '../../src/siege/render/SiegeMapView';
+import { SiegeMapView, SILHOUETTE_OPACITY } from '../../src/siege/render/SiegeMapView';
 import {
   FootholdPips,
   FOOTHOLD_RADIUS,
@@ -276,8 +272,11 @@ describe('v0.2 pure sprite mapping and registration', () => {
       // A side gate's feet can still sit behind the adjoining wall. Its own
       // tower must never be the occluder; the south gate is fully unobscured.
       expect(cover).not.toContain(`-${gate.id}-`);
-      if (gate.id === 'gate-south')
-        expect(markup).not.toContain(`cover-${unit.id})" opacity="0.35"`);
+      if (gate.id === 'gate-south') {
+        const node = markup.match(new RegExp(`<g[^>]*data-unit="${unit.id}"[\\s\\S]*?</g>`))![0];
+        expect(node).toContain('data-sprite="figure"');
+        expect(node).not.toContain('data-sprite="silhouette"');
+      }
     }
   });
   it('shows larger hollow empty pips beside the ladder with dark outlines and paper rings', () => {
@@ -293,15 +292,15 @@ describe('v0.2 pure sprite mapping and registration', () => {
       expect(markup).toContain(`cx="${project(FRAME, x + 0.98, 17, 1.5)[0]}"`);
     expect(markup.match(/stroke="#ece4d2"/g)).toHaveLength(12);
   });
-  it('keeps hidden units findable with side-tinted 35% silhouettes, including xray', () => {
+  it('keeps hidden units findable with full-colour 85% figures above occluders, including xray', () => {
     const fixture = createRenderScene('formations');
     for (const xray of [false, true]) {
       const markup = markupFor(fixture, { xray });
       const silhouettes = [...markup.matchAll(/<g[^>]+data-silhouette="(shu|wei)"[^>]+>/g)];
       expect(silhouettes.length).toBeGreaterThan(0);
       expect(silhouettes.every((m) => m[0].includes(`opacity="${SILHOUETTE_OPACITY}"`))).toBe(true);
-      for (const tint of Object.values(SILHOUETTE_TINTS))
-        expect(markup).toContain(`flood-color="${tint}"`);
+      expect(markup).not.toContain('-silhouette-shu');
+      expect(markup).not.toContain('-silhouette-wei');
     }
   });
   it('keeps every living unit invisible geometry rect findable without input semantics at every zoom', () => {
@@ -313,7 +312,9 @@ describe('v0.2 pure sprite mapping and registration', () => {
       const markup = renderToStaticMarkup(
         createElement(SiegeMapView, { state, locale: 'en', initialZoom }),
       );
-      expect(markup).toContain(`cover-${unit.id})" opacity="0.35" pointer-events="none"`);
+      expect(markup).toContain(
+        `data-silhouette="wei" opacity="${SILHOUETTE_OPACITY}" pointer-events="none"`,
+      );
       const targetLayer = markup.indexOf('data-testid="unit-hit-targets"');
       expect(targetLayer).toBeGreaterThan(markup.lastIndexOf('data-object='));
       expect(targetLayer).toBeGreaterThan(markup.lastIndexOf('data-silhouette='));
@@ -409,9 +410,9 @@ describe('v0.2 pure sprite mapping and registration', () => {
     expect(bounded.used).toBe(1120);
     expect(bounded.omitted).toBe(0);
     expect(bounded.remaining).toBe(0);
-    expect(counts.worst).toBe(448);
+    expect(counts.worst).toBe(388);
   });
-  it('counts replay replacements and effects exactly, and keeps scenery when every optional silhouette is exhausted', () => {
+  it('counts replay replacements and effects exactly, and keeps scenery and covered units even in an oversized future scene', () => {
     const fixture = createRenderScene('worst');
     for (const extra of [
       { night: { ...fixture.night!, previousEngine: { ...fixture.state.engines[0]!, y: 22 } } },
@@ -432,7 +433,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
     }));
     const markup = markupFor(fixture);
     expect(visibleImages(markup)).toBeGreaterThan(SPRITE_CAP);
-    expect(markup).not.toContain('data-silhouette=');
+    expect(markup).toContain('data-silhouette=');
     for (const sprite of CAMP) expect(markup).toContain(`data-piece="${sprite.id}"`);
   });
   it('retains processed art metadata verbatim', () => {

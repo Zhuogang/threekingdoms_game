@@ -61,6 +61,7 @@ import { morningReport, reportObservations, rememberReport } from './report';
 import { counterCards } from './counters';
 import { enqueueCards, visibleCard, type QueuedCard } from './cardQueue';
 import { placeName } from './places';
+import { nextGoalGuide } from './nextGoalGuide';
 import { climbGuide, climbGuideText } from './climbGuide';
 import { unitVisual } from '../render/stateArt';
 import {
@@ -172,6 +173,10 @@ export default function SiegeApp({
     engine = state.engines.find((e) => e.id === selected);
   const actor = unit ?? engine;
   const guide = useMemo(() => (selected ? climbGuide(state, selected) : null), [state, selected]);
+  const nextGoal = useMemo(
+    () => (selected ? nextGoalGuide(state, selected) : null),
+    [state, selected],
+  );
   const commands = useMemo(
     () => (selected ? siegeCommands(state, selected, playerSide) : []),
     [state, selected, playerSide],
@@ -377,19 +382,25 @@ export default function SiegeApp({
     setExplanationKind(kind);
   };
   const guideBase =
-    !deploy && !playing && guide && 'base' in guide
-      ? { ...guide.base, level: 'ground' as const }
-      : null;
+    !deploy && !playing && nextGoal && 'target' in nextGoal
+      ? nextGoal.target
+      : !deploy && !playing && guide && 'base' in guide
+        ? { ...guide.base, level: 'ground' as const }
+        : null;
   const guideLabel = text(
-    guide?.kind === 'ladderNotRaised'
-      ? 'climbUnraisedLabel'
-      : ((guide?.kind === 'walkToBase' || guide?.kind === 'allyAbove') &&
-            guide.route === 'wallFoot') ||
-          (guide?.kind === 'defenderAbove' &&
-            unit &&
-            climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')
-        ? 'climbWallFootLabel'
-        : 'climbBaseLabel',
+    nextGoal && 'target' in nextGoal
+      ? nextGoal.kind === 'gate'
+        ? 'openGate'
+        : 'courtyard'
+      : guide?.kind === 'ladderNotRaised'
+        ? 'climbUnraisedLabel'
+        : ((guide?.kind === 'walkToBase' || guide?.kind === 'allyAbove') &&
+              guide.route === 'wallFoot') ||
+            (guide?.kind === 'defenderAbove' &&
+              unit &&
+              climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')
+          ? 'climbWallFootLabel'
+          : 'climbBaseLabel',
   );
   const clearTimer = () => {
     if (timer.current !== null) {
@@ -1100,6 +1111,7 @@ export default function SiegeApp({
               clickBlocked={
                 playing || opening || Boolean(banner) || reportVisible || howTo || ended
               }
+              onSwap={(id) => selected && act({ type: 'swap', unitId: selected, withUnitId: id })}
               onTarget={(id) => {
                 setTarget(id);
                 setTab('commands');
@@ -1117,7 +1129,7 @@ export default function SiegeApp({
                 (c, i, cells) =>
                   cells.findIndex((other) => sameCell(c, other) && c.level === other.level) === i,
               )}
-              climbBase={guideBase && guide ? { base: guideBase, label: guideLabel } : undefined}
+              climbBase={guideBase ? { base: guideBase, label: guideLabel } : undefined}
               notice={activeCard ? notice : null}
               facings={game.facings}
               activity={activity}
@@ -1781,6 +1793,8 @@ function logKey(code: string): SiegeTextKey {
     attack: 'attack',
     fillTrench: 'fillTrench',
     raiseLadder: 'raiseLadder',
+    openGate: 'openGate',
+    gateOpened: 'openGate',
     ram: 'ram',
     buildWall: 'buildWall',
     order: 'order',

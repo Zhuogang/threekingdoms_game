@@ -82,11 +82,22 @@ export function rectsOverlap(a: ScreenRect, b: ScreenRect): boolean {
   return a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
 }
 
-/**
- * The cell under a screen point, trying the given standing heights from the
- * highest down: a point on a wall top picks the wall cell, not the ground
- * cell the same pixel would hit at height 0.
- */
+/** Every standing cell under a screen point, highest plane first. */
+export function pickCandidates(
+  frame: SiegeFrame,
+  sx: number,
+  sy: number,
+  standingHeights: readonly number[],
+  standsAt: (x: number, y: number, h: number) => boolean,
+): Array<{ x: number; y: number; h: number }> {
+  const x = Math.floor((sx - frame.ox) / frame.cw);
+  return [...new Set(standingHeights)]
+    .sort((a, b) => b - a)
+    .map((h) => ({ x, y: Math.floor((sy - frame.oy + h * frame.lh) / frame.cd), h }))
+    .filter(({ x, y, h }) => standsAt(x, y, h));
+}
+
+/** The highest standing cell under a screen point. */
 export function pickCell(
   frame: SiegeFrame,
   sx: number,
@@ -94,10 +105,5 @@ export function pickCell(
   standingHeights: readonly number[],
   standsAt: (x: number, y: number, h: number) => boolean,
 ): { x: number; y: number; h: number } | null {
-  const x = Math.floor((sx - frame.ox) / frame.cw);
-  for (const h of [...standingHeights].sort((a, b) => b - a)) {
-    const y = Math.floor((sy - frame.oy + h * frame.lh) / frame.cd);
-    if (standsAt(x, y, h)) return { x, y, h };
-  }
-  return null;
+  return pickCandidates(frame, sx, sy, standingHeights, standsAt)[0] ?? null;
 }

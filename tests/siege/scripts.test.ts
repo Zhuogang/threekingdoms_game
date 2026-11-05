@@ -134,7 +134,21 @@ describe('v0.2 attacker and defender integration', () => {
           shu: scoreSiege(state, 'shu'),
           wei: scoreSiege(state, 'wei'),
         });
-        expect(state.stats.nightResults.length).toBeGreaterThan(0);
+        // New wall routes can end a brute game without any night order being resolved.
+        if (method !== 'brute') expect(state.stats.nightResults.length).toBeGreaterThan(0);
+        expect(state.stats.nightResults).toEqual(
+          state.log
+            .filter((e) =>
+              ['nightClash', 'nightAssault', 'torches', 'sortieHit', 'sortieRepelled'].includes(
+                e.code,
+              ),
+            )
+            .map((e) => ({
+              day: e.day,
+              kind: e.code,
+              result: String(e.params.result ?? e.params.reason ?? 'hit'),
+            })),
+        );
         expect(
           deserializeSiegeSave(serializeSiegeSave({ state, phase: 'battle', facings: {} })).state,
         ).toEqual(state);

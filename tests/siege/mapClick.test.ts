@@ -228,12 +228,13 @@ describe('R cell click priority, first match wins', () => {
       cell,
     });
   });
-  it('figure fallback yields to blocking, null picks, deployment, green cells and every cell occupant', () => {
+  it('figure fallback handles null terrain picks and yields to blocking, deployment, green cells and every cell occupant', () => {
     const { state, own, enemy } = fixture();
     const cell = ground(18, 21);
     const ctx: MapClickContext = { state, selected: own.id, unitAtPoint: enemy.id };
     expect(resolveMapClick({ ...ctx, blocked: true }, cell)).toEqual({ type: 'none' });
-    expect(resolveMapClick(ctx, null)).toEqual({ type: 'none' });
+    expect(resolveMapClick(ctx, null)).toEqual({ type: 'target', id: enemy.id });
+    expect(resolveMapClick({ ...ctx, unitAtPoint: null }, null)).toEqual({ type: 'none' });
     expect(resolveMapClick({ ...ctx, deploy: true }, ground(0, 0))).toEqual({
       type: 'cell',
       cell: ground(0, 0),
@@ -276,4 +277,23 @@ describe('R cell click priority, first match wins', () => {
       id: enemy.id,
     });
   });
+});
+
+it('Move swaps a reachable fresh ally before the ordinary move/selection rows', () => {
+  const state = createSiegeState(228);
+  const own = state.units.find((u) => u.id === 'shu-weiyan')!;
+  const ally = state.units.find((u) => u.id === 'shu-wangping')!;
+  Object.assign(own, { x: 18, y: 16, level: 'wall' });
+  Object.assign(ally, { x: 20, y: 16, level: 'wall' });
+  state.units = [own, ally];
+  state.engines = [];
+  const context = { state, selected: own.id, mode: 'move' as const };
+  expect(resolveMapClick(context, ally)).toEqual({ type: 'swap', id: ally.id });
+  expect(mapClickColor(resolveMapClick(context, ally))).toBe('#518bc4');
+  expect(resolveMapClick({ ...context, mode: null }, ally)).toEqual({
+    type: 'select',
+    id: ally.id,
+  });
+  ally.moved = true;
+  expect(resolveMapClick(context, ally)).toEqual({ type: 'select', id: ally.id });
 });

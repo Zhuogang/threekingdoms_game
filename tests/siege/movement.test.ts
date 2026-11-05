@@ -78,19 +78,19 @@ describe('wall walkways and ramp connections', () => {
     expect(seen.size).toBe(62);
   });
 
-  it('cannot step off an ordinary wall cell onto the adjacent ground or switch gate levels', () => {
+  it('steps down inside an ordinary wall cell but cannot switch gate levels in place', () => {
     const { state, unit } = fixture('wei', 18, 16, 'wall');
-    expect(pathTo(state, unit.id, 18, 15, 'ground')).toBeNull();
+    expect(pathTo(state, unit.id, 18, 15, 'ground')).toHaveLength(2);
     expect(
       reachableCells(state, unit.id)
         .filter((p) => p.cost === 1)
-        .every((p) => p.level === 'wall'),
+        .some((p) => p.level === 'ground' && p.x === 18 && p.y === 15),
     ).toBe(true);
     Object.assign(unit, { x: 23, y: 16 });
-    expect(pathTo(state, unit.id, 23, 16, 'ground')).toBeNull();
+    expect(pathTo(state, unit.id, 23, 16, 'ground')).toHaveLength(3);
   });
 
-  it.each(RAMPS)('uses only the high and low endpoint connections on $id', (ramp) => {
+  it.each(RAMPS)('keeps the ramp endpoints and admits side exits on $id', (ramp) => {
     const { state, unit } = fixture('wei', ramp.wall.x, ramp.wall.y, 'wall');
     const [low, middle, high] = ramp.cells;
     const oneStep = () =>
@@ -101,15 +101,15 @@ describe('wall walkways and ramp connections', () => {
 
     Object.assign(unit, ground(high!));
     expect(oneStep()).toEqual(expect.arrayContaining([ground(middle!), wall(ramp.wall)]));
-    expect(oneStep()).toHaveLength(2);
+    expect(oneStep().length).toBeGreaterThanOrEqual(2);
 
     Object.assign(unit, ground(middle!));
     expect(oneStep()).toEqual(expect.arrayContaining([ground(low!), ground(high!)]));
-    expect(oneStep()).toHaveLength(2);
+    expect(oneStep().length).toBeGreaterThanOrEqual(2);
 
     Object.assign(unit, ground(low!));
     expect(oneStep()).toEqual(expect.arrayContaining([ground(middle!), ground(ramp.ground)]));
-    expect(oneStep()).toHaveLength(2);
+    expect(oneStep().length).toBeGreaterThanOrEqual(2);
 
     Object.assign(unit, ground(ramp.ground));
     expect(pathTo(state, unit.id, low!.x, low!.y, 'ground')).toEqual([
@@ -120,13 +120,13 @@ describe('wall walkways and ramp connections', () => {
     expect(pathTo(state, unit.id, ramp.wall.x, ramp.wall.y, 'wall')).toBeNull();
   });
 
-  it('does not let ground units enter a ramp sideways', () => {
+  it('lets ground units enter a ramp sideways and wall units step down to it', () => {
     const { state, unit } = fixture('wei', 21, 14);
-    expect(pathTo(state, unit.id, 21, 15, 'ground')).toBeNull();
-    expect(pathTo(state, unit.id, 20, 15, 'ground')).toBeNull();
+    expect(pathTo(state, unit.id, 21, 15, 'ground')).toHaveLength(2);
+    expect(pathTo(state, unit.id, 20, 15, 'ground')).toHaveLength(3);
     Object.assign(unit, { x: 21, y: 16, level: 'wall' });
     const steps = reachableCells(state, unit.id).filter((p) => p.cost === 1);
-    expect(steps.some((p) => p.x === 21 && p.y === 15)).toBe(false);
+    expect(steps.some((p) => p.x === 21 && p.y === 15)).toBe(true);
   });
 
   it('lets Shu on the wall use the same ramp to descend into the city', () => {
@@ -284,14 +284,15 @@ describe('budgets, obstacles and deterministic paths', () => {
       wall({ x: 14, y: 14 }),
       wall({ x: 15, y: 14 }),
     ]);
-    expect(pathTo(state, unit.id, 16, 14, 'ground')).toBeNull();
+    expect(pathTo(state, unit.id, 16, 14, 'ground')).toHaveLength(3);
   });
 
   it.each(['unit', 'engine', 'wreck'] as const)(
     'cannot enter or pass through an occupied %s cell',
     (obstacle) => {
       const { state, unit } = fixture('shu', 20, 20);
-      if (obstacle === 'unit') state.units.push({ ...unit, id: 'blocker', x: 21, y: 20 });
+      if (obstacle === 'unit')
+        state.units.push({ ...unit, side: 'wei', id: 'blocker', x: 21, y: 20 });
       else state.engines.push(engine('earthCart', 21, 20, { wrecked: obstacle === 'wreck' }));
       expect(pathTo(state, unit.id, 21, 20, 'ground')).toBeNull();
       expect(pathTo(state, unit.id, 22, 20, 'ground')).toBeNull();

@@ -34,8 +34,9 @@ for (const scene of RENDER_SCENES) {
     await expect(map).toHaveAttribute('data-sprites-omitted', '0');
     await expect(map.locator('[data-overlay="climb"]')).toHaveCount(0);
     if (scene === 'worst') {
-      await expect(map).toHaveAttribute('data-sprite-count', '448');
-      await expect(map.locator('[data-sprite="figure"]')).toHaveCount(80);
+      // Covered figures replace the originals rather than duplicating the image budget.
+      await expect(map).toHaveAttribute('data-sprite-count', '388');
+      await expect(map.locator('[data-unit] image[data-sprite]')).toHaveCount(80);
     }
     await mkdir('.artifacts/siege/screens', { recursive: true });
     // Freeze SMIL at a deterministic point as well as disabling CSS animation.
@@ -108,7 +109,7 @@ for (const scene of RENDER_SCENES) {
           // Chromium's box for an SVG line includes its stroke.
           expect(ropeBox!.height).toBeGreaterThanOrEqual(12 * zoom);
           expect(ropeBox!.height).toBeLessThan(14 * zoom);
-          const figure = map.locator(`[data-unit="${unit.id}"] [data-sprite="figure"]`).last();
+          const figure = map.locator(`[data-unit="${unit.id}"] image[data-sprite]`).last();
           const box = await figure.boundingBox();
           const stoneTop = await rope.evaluate((el) => {
             const line = el as SVGLineElement;
@@ -133,7 +134,15 @@ for (const scene of RENDER_SCENES) {
       });
       // Alternate units, so a missed click cannot pass on an earlier selection.
       const id = state.units[index % 2 ? 6 : 5]!.id;
-      const figure = map.locator(`[data-unit="${id}"] [data-sprite="figure"]`).first();
+      if (scene === 'visible') {
+        const unit = state.units.find((u) => u.id === id)!;
+        const mini = (await page.locator('.siege-minimap').boundingBox())!;
+        await page.mouse.click(
+          mini.x + (((unit.x + 0.5) * 64) / 3072) * mini.width,
+          mini.y + (((unit.y + 0.5) * 48) / 1536) * mini.height,
+        );
+      }
+      const figure = map.locator(`[data-unit="${id}"] image[data-sprite]`).first();
       await expect(figure).toBeVisible();
       const box = await figure.boundingBox();
       expect(box).not.toBeNull();
@@ -173,7 +182,7 @@ test('v0.2 storming and repulse cover their ladders and gate-top figures cover t
       ),
     ),
   ).toBe(true);
-  const box = await gateUnit.locator('[data-sprite="figure"]').last().boundingBox();
+  const box = await gateUnit.locator('image[data-sprite]').last().boundingBox();
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await expect(page.getByTestId('preview-selection')).toHaveText(
     (await gateUnit.getAttribute('data-unit'))!,
