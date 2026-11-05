@@ -9,6 +9,7 @@ import {
 import { planDefenderTurn, runDefenderTurn } from '../../src/siege/ai/defender';
 import { applySiegeAction } from '../../src/siege/rules/actions';
 import { activeUnit, climbingPosition, distance } from '../../src/siege/rules/combat';
+import { isMapCell } from '../../src/siege/rules/map';
 import { endDay } from '../../src/siege/rules/day';
 import { fireArrowsReason } from '../../src/siege/rules/preparations';
 import { scoreSiege } from '../../src/siege/rules/score';
@@ -76,6 +77,8 @@ function replay(state: SiegeState, actions: SiegeAction[], wei = false) {
     expect(result, JSON.stringify(action)).toMatchObject({ ok: true });
     if (!result.ok) throw new Error(result.reason);
     next = result.state;
+    const living = next.units.filter((u) => u.troops > 0 && isMapCell(u.x, u.y));
+    expect(new Set(living.map(cellKey)).size).toBe(living.length);
   }
   return next;
 }
@@ -83,7 +86,7 @@ function replay(state: SiegeState, actions: SiegeAction[], wei = false) {
 function checkMain(state: SiegeState) {
   const main = state.units.find((u) => u.id === 'shu-zhugeliang')!;
   expect(main.level).toBe('ground');
-  expect(main.y).toBeGreaterThanOrEqual(21);
+  expect(main.y).toBeGreaterThanOrEqual(10);
   expect(main.routed).toBe(false);
   for (const wei of state.units.filter((u) => u.side === 'wei' && activeUnit(u)))
     expect(distance(main, wei)).toBeGreaterThanOrEqual(5);
@@ -125,8 +128,8 @@ describe('v0.2 attacker and defender integration', () => {
           state = replay(state, defended, true);
           checkMain(state);
           state = endDay(state);
-          for (const c of SOUTH_TRENCH.filter((c) => c.y === 17))
-            if (state.trenchFill[cellKey(c)]! > 0) expect(state.trenchFill[`${c.x},18`]).toBe(3);
+          for (const c of SOUTH_TRENCH.filter((c) => c.y === 8))
+            if (state.trenchFill[cellKey(c)]! > 0) expect(state.trenchFill[`${c.x},9`]).toBe(3);
         }
         expect(state.outcome).not.toBeNull();
         expect(state.day).toBeLessThanOrEqual(12);
@@ -169,8 +172,8 @@ describe('v0.2 attacker and defender integration', () => {
       expect(p.columns.length).toBeLessThanOrEqual(4);
       expect(new Set(p.columns).size).toBe(p.columns.length);
       for (const x of p.columns) {
-        expect(layoutSymbol(x, 16)).toBe('W');
-        expect(SOUTH_TRENCH.some((c) => c.x === x && c.y === 18)).toBe(true);
+        expect(layoutSymbol(x, 7)).toBe('W');
+        expect(SOUTH_TRENCH.some((c) => c.x === x && c.y === 9)).toBe(true);
       }
     }
   });
@@ -179,11 +182,11 @@ describe('v0.2 attacker and defender integration', () => {
     const s = createSiegeState(1);
     Object.assign(
       s.units.find((u) => u.id === 'wei-haozhao')!,
-      { x: 23, y: 22, level: 'ground' },
+      { x: 8, y: 8, level: 'ground' },
     );
     const next = runAttackerTurn(s, 'careful');
     checkMain(next);
-    expect(next.units[0]!.y).toBeGreaterThan(25);
+    expect(next.units[0]!.y).toBeGreaterThan(11);
     expect(
       next.log.some(
         (e) =>
@@ -195,7 +198,7 @@ describe('v0.2 attacker and defender integration', () => {
 
   it('opens with both tools, keeps engine movement deterministic, and dispatches new construction on Shu phases', () => {
     let s = createSiegeState(228);
-    const positions = new Map<string, CellHistory>();
+    const positions = new Map<string, CellHistory>(s.engines.map((e) => [e.id, [[e.x, e.y]]]));
     for (let i = 0; i < 6 && !s.outcome; i++) {
       const before = structuredClone(s);
       const first = runAttackerTurn(s, 'careful');
@@ -209,7 +212,18 @@ describe('v0.2 attacker and defender integration', () => {
       s = endDay(runDefenderTurn(first));
     }
     expect(s.log.filter((e) => e.code === 'queueEngine').length).toBeGreaterThanOrEqual(4);
-    expect(s.log.some((e) => e.code === 'engineCompleted' && e.params.kind === 'tower')).toBe(true);
+    expect(s.log.some((e) => e.code === 'engineCompleted')).toBe(true);
+    // Isolate the tier-two queue from the seeded mound/carts priority.
+    let towerReady = createSiegeState(228);
+    towerReady.act = 2;
+    towerReady.day = 4;
+    const lane = attackerPlan(towerReady.seed).moundColumn;
+    towerReady.mounds[`${lane},8`] = 6;
+    towerReady.engines.push(engine('earthCart', 5, 10));
+    for (let i = 0; i < 3; i++) towerReady = endDay(runAttackerTurn(towerReady, 'careful'));
+    expect(
+      towerReady.log.some((e) => e.code === 'engineCompleted' && e.params.kind === 'tower'),
+    ).toBe(true);
     expect([...positions.values()].some((xs) => new Set(xs.map(String)).size > 1)).toBe(true);
   });
 
@@ -231,14 +245,15 @@ for (const method of ['careful', 'anyPrice'] as AttackerMethod[])
     it('covers a threatened raised ladder and suppresses its brazier archer', () => {
       const s = createSiegeState(228);
       s.day = 2;
-      s.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
-      s.preparations.braziers['18,16'] = { litDay: 1 };
+      s.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
+      s.preparations.braziers['6,7'] = { litDay: 1 };
       Object.assign(
         s.units.find((u) => u.id === 'wei-captain-1')!,
-        { x: 18, y: 16 },
+        { x: 6, y: 7 },
       );
-      Object.assign(s.units[1]!, { x: 19, y: 19 });
-      Object.assign(s.units[8]!, { x: 18, y: 20 });
+      Object.assign(s.units[1]!, { x: 6, y: 10 });
+      Object.assign(s.units[8]!, { x: 7, y: 11 });
+      s.trenchFill['6,9'] = 3;
       const next = runAttackerTurn(s, method);
       expect(next.engines[0]!.covered).toBe(true);
       expect(next.units.find((u) => u.id === 'wei-captain-1')!.suppressedDay).toBe(2);
@@ -247,10 +262,10 @@ for (const method of ['careful', 'anyPrice'] as AttackerMethod[])
       const s = createSiegeState(228);
       s.day = 9;
       s.act = 2;
-      s.engines = [engine('ram', 24, 17)];
-      s.preparations.millstones['23,16'] = { hoisted: true, day: 1 };
-      Object.assign(s.units[1]!, { x: 24, y: 18 });
-      Object.assign(s.units[8]!, { x: 23, y: 19 });
+      s.engines = [engine('ram', 8, 8)];
+      s.preparations.millstones['8,7'] = { hoisted: true, day: 1 };
+      Object.assign(s.units[1]!, { x: 8, y: 9 });
+      Object.assign(s.units[8]!, { x: 8, y: 10 });
       const actions = planAttackerTurn(s, method);
       const next = replay(s, actions);
       const ramIndex = actions.findIndex((a) => a.type === 'ram');
@@ -267,17 +282,17 @@ for (const method of ['careful', 'anyPrice'] as AttackerMethod[])
       const s = createSiegeState(228);
       s.day = 9;
       s.act = 2;
-      s.engines = [engine('ram', 24, 17)];
-      s.preparations.millstones['23,16'] = { hoisted: true, day: 1 };
+      s.engines = [engine('ram', 8, 8)];
+      s.preparations.millstones['8,7'] = { hoisted: true, day: 1 };
       for (const u of s.units.filter((u) => u.side === 'shu' && u.troopType === 'archer'))
-        Object.assign(u, { x: u.x, y: 30 });
-      Object.assign(s.units[1]!, { x: 24, y: 18 });
+        Object.assign(u, { x: u.x, y: 13 });
+      Object.assign(s.units[1]!, { x: 8, y: 9 });
       expect(runAttackerTurn(s, method).engines[0]!.covered).toBe(true);
     });
     it('leaves guards beside engines after a sortie, without reading a pending enemy order', () => {
       const s = createSiegeState(228);
       s.day = 2;
-      s.engines = [engine('ram', 24, 18), engine('earthCart', 21, 19)];
+      s.engines = [engine('ram', 8, 9), engine('earthCart', 7, 10)];
       s.log.push({ day: 1, code: 'sortieHit', params: { engineId: s.engines[0]!.id } });
       const next = runAttackerTurn(s, method);
       for (const e of next.engines.filter((e) =>
@@ -301,11 +316,14 @@ for (const method of ['careful', 'anyPrice'] as AttackerMethod[])
       const s = createSiegeState(228);
       s.day = 2;
       s.engines = [
-        engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } }),
-        engine('ladder', 29, 19, { raisedAt: { x: 29, y: 16 } }),
+        engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } }),
+        engine('ladder', 10, 10, { raisedAt: { x: 10, y: 7 } }),
       ];
       s.log.push({ day: 1, code: 'torches', params: { result: 'caughtAssault' } });
-      Object.assign(s.units[8]!, { x: 17, y: 19 });
+      s.trenchFill['6,9'] = 3;
+      Object.assign(s.units[8]!, { x: 6, y: 9 });
+      for (const u of s.units.filter((u) => u.side === 'shu' && u.troopType === 'infantry'))
+        u.acted = true;
       const actions = planAttackerTurn(s, method);
       expect(actions.some((a) => a.type === 'order' && a.kind === 'nightAssault')).toBe(false);
       expect(actions.some((a) => a.type === 'suppress')).toBe(true);
@@ -313,15 +331,15 @@ for (const method of ['careful', 'anyPrice'] as AttackerMethod[])
     it('uses two infantry builders and a loaded cart on a filled mound lane', () => {
       const s = createSiegeState(228);
       const x = attackerPlan(s.seed).moundColumn;
-      s.trenchFill[`${x},17`] = 3;
-      s.trenchFill[`${x},18`] = 3;
-      s.trenchFill[`${x - 1},17`] = 3;
-      s.trenchFill[`${x + 1},17`] = 3;
-      s.engines = [engine('earthCart', x, 18, { uses: 3 })];
-      Object.assign(s.units[6]!, { x: x - 1, y: 17 });
-      Object.assign(s.units[7]!, { x: x + 1, y: 17 });
+      s.trenchFill[`${x},8`] = 3;
+      s.trenchFill[`${x},9`] = 3;
+      s.trenchFill[`${x - 1},8`] = 3;
+      s.trenchFill[`${x + 1},8`] = 3;
+      s.engines = [engine('earthCart', x, 9, { uses: 3 })];
+      Object.assign(s.units[6]!, { x: x - 1, y: 8 });
+      Object.assign(s.units[7]!, { x: x + 1, y: 8 });
       const next = runAttackerTurn(s, method);
-      expect(next.mounds[`${x},17`]).toBe(4);
+      expect(next.mounds[`${x},8`]).toBe(4);
     });
   });
 
@@ -329,21 +347,22 @@ it('both AIs run a crowded eight-engine, completed-trench state in under one sec
   const s = createSiegeState(228);
   s.day = 10;
   s.act = 2;
-  s.engines = [18, 20, 27, 29].map((x) => engine('ladder', x, 19, { raisedAt: { x, y: 16 } }));
+  s.engines = [5, 6, 10, 11].map((x) => engine('ladder', x, 10, { raisedAt: { x, y: 7 } }));
   s.engines.push(
-    engine('ram', 23, 17),
-    engine('tower', 22, 19),
-    engine('tower', 25, 19),
-    engine('earthCart', 21, 18, { uses: 3 }),
+    engine('ram', 8, 8),
+    engine('tower', 7, 10),
+    engine('tower', 9, 10),
+    engine('earthCart', 7, 9, { uses: 3 }),
   );
   for (const c of SOUTH_TRENCH) {
     s.trenchFill[cellKey(c)] = 3;
-    if (c.y === 17) s.mounds[cellKey(c)] = 6;
+    if (c.y === 8) s.mounds[cellKey(c)] = 6;
   }
-  s.preparations.braziers['17,16'] = { litDay: 1 };
-  s.preparations.boulders['22,16'] = { day: 1 };
-  s.preparations.millstones['23,16'] = { hoisted: true, day: 1 };
-  Object.assign(s.units[1]!, { x: 19, y: 16, level: 'wall' });
+  s.preparations.braziers['6,7'] = { litDay: 1 };
+  s.preparations.boulders['7,7'] = { day: 1 };
+  s.preparations.millstones['8,7'] = { hoisted: true, day: 1 };
+  s.units[12]!.x = 5;
+  Object.assign(s.units[1]!, { x: 6, y: 7, level: 'wall' });
   const before = structuredClone(s);
   const timings: Record<string, number> = {};
   for (const method of ['careful', 'anyPrice', 'brute'] as const) {
@@ -365,12 +384,13 @@ it('both AIs run a crowded eight-engine, completed-trench state in under one sec
 it('moves a mound worker aside so a loaded cart can reach the inner trench', () => {
   const state = createSiegeState(228);
   const x = attackerPlan(state.seed).moundColumn;
-  state.trenchFill[`${x},18`] = 3;
-  state.engines = [engine('earthCart', x, 20, { uses: 3 })];
-  Object.assign(state.units[1]!, { x, y: 18 });
+  state.trenchFill[`${x},9`] = 3;
+  state.engines = [engine('earthCart', x, 10, { uses: 3 })];
+  for (const c of SOUTH_TRENCH) if (c.y === 9) state.trenchFill[cellKey(c)] = 3;
+  Object.assign(state.units[1]!, { x, y: 9 });
   const next = runAttackerTurn(state, 'careful');
-  expect(next.engines[0]).toMatchObject({ x, y: 18, uses: 2 });
-  expect(next.trenchFill[`${x},17`]).toBeGreaterThanOrEqual(1.5);
+  expect(next.engines[0]).toMatchObject({ x, y: 9, uses: 2 });
+  expect(next.trenchFill[`${x},8`]).toBeGreaterThanOrEqual(1.5);
   expect(next.log.some((e) => e.code === 'move' && e.params.unitId === state.units[1]!.id)).toBe(
     true,
   );

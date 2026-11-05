@@ -16,7 +16,7 @@ import { act, duel, engine, refused } from './rulesFixtures';
 describe('siege combat frontage and modifiers', () => {
   it('counts 150 of 2,000 on a raised ladder and multiplies the counterattack by height and climbing', () => {
     const { state, shu, wei } = duel();
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     const before = structuredClone(state);
     const forecast = predictSiegeAttack(state, shu.id, wei.id)!;
     expect(forecast).toMatchObject({
@@ -38,7 +38,7 @@ describe('siege combat frontage and modifiers', () => {
   });
 
   it('caps a ground archer volley at 600 and applies the parapet after the base floor', () => {
-    const { state, shu, wei } = duel({ y: 18, troopType: 'archer' });
+    const { state, shu, wei } = duel({ y: 9, troopType: 'archer' });
     const forecast = predictSiegeAttack(state, shu, wei)!;
     expect(forecast).toMatchObject({
       inRange: true,
@@ -53,7 +53,7 @@ describe('siege combat frontage and modifiers', () => {
 
   it('lets towers shoot range four at wall or city ground, with 300 frontage and no parapet', () => {
     const { state, wei } = duel();
-    state.engines = [engine('tower', 20, 20)];
+    state.engines = [engine('tower', 7, 10)];
     const wall = predictSiegeAttack(state, 'engine', wei.id)!;
     expect(wall).toMatchObject({
       inRange: true,
@@ -65,29 +65,29 @@ describe('siege combat frontage and modifiers', () => {
     expect(
       act(state, { type: 'attack', engineId: 'engine', targetId: wei.id }).units[1]!.troops,
     ).toBe(wei.troops - wall.casualties);
-    Object.assign(wei, { x: 24, y: 20, level: 'ground' });
+    Object.assign(wei, { x: 11, y: 10, level: 'ground' });
     expect(predictSiegeAttack(state, 'engine', wei.id)!.inRange).toBe(true);
     wei.x++;
     expect(predictSiegeAttack(state, 'engine', wei.id)!.inRange).toBe(false);
   });
 
   it('uses 100 at a filled wall foot, 300 in a broken passage, and no cap on ordinary ground', () => {
-    const { state, shu, wei } = duel({ y: 17 });
-    state.trenchFill['20,17'] = 3;
+    const { state, shu, wei } = duel({ y: 8 });
+    state.trenchFill['7,8'] = 3;
     expect(predictSiegeAttack(state, shu, wei)).toMatchObject({
       inRange: true,
       kind: 'wallFoot',
       frontage: 100,
     });
-    Object.assign(shu, { x: 23, y: 17 });
-    Object.assign(wei, { x: 23, y: 16, level: 'ground' });
+    Object.assign(shu, { x: 8, y: 8 });
+    Object.assign(wei, { x: 8, y: 7, level: 'ground' });
     state.gates.south.broken = true;
     expect(predictSiegeAttack(state, shu, wei)).toMatchObject({
       kind: 'gate',
       frontage: 300,
       countedTroops: 300,
     });
-    Object.assign(wei, { y: 18 });
+    Object.assign(wei, { y: 9 });
     expect(predictSiegeAttack(state, shu, wei)).toMatchObject({
       kind: 'field',
       frontage: null,
@@ -97,8 +97,8 @@ describe('siege combat frontage and modifiers', () => {
 
   it('mirrors field force, morale, matchup, terrain, experience and wounded bookkeeping', () => {
     const { state, shu, wei } = duel(
-      { x: 5, y: 5, troopType: 'archer', morale: 35, troopExperience: 1000 },
-      { x: 4, y: 5, level: 'ground', morale: 19, troops: 2000 },
+      { x: 1, y: 2, troopType: 'archer', morale: 35, troopExperience: 1000 },
+      { x: 0, y: 2, level: 'ground', morale: 19, troops: 2000 },
     );
     const raw =
       2000 *
@@ -121,7 +121,7 @@ describe('siege combat frontage and modifiers', () => {
 
   it('keeps shared damage and retreat helpers pure', () => {
     const { state, wei } = duel({}, { morale: 20 });
-    state.engines = [engine('ladder', 20, 19)];
+    state.engines = [engine('ladder', 7, 10)];
     const before = structuredClone(state);
     expect(
       damageEngine(state, state.engines[0]!, state.engines[0]!.durability).engines[0]!.wrecked,
@@ -133,7 +133,7 @@ describe('siege combat frontage and modifiers', () => {
   });
 
   it('gives 3,000 and 300 troops identical hand damage against a gate', () => {
-    const { state, shu } = duel({ x: 23, y: 17, troops: 3000 }, { x: 23 });
+    const { state, shu } = duel({ x: 8, y: 8, troops: 3000 }, { x: 8 });
     const large = predictSiegeAttack(state, shu.id, 'south')!;
     const largeHit = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
     shu.troops = 300;
@@ -147,7 +147,7 @@ describe('siege combat frontage and modifiers', () => {
   });
 
   it('forecasts gate damage with the same experience multiplier used by the action', () => {
-    const { state, shu, wei } = duel({ x: 23, y: 17, troopExperience: 1000 }, { x: 23 });
+    const { state, shu, wei } = duel({ x: 8, y: 8, troopExperience: 1000 }, { x: 8 });
     const forecast = predictSiegeAttack(state, shu.id, 'south')!;
     expect(forecast).toMatchObject({
       inRange: true,
@@ -170,15 +170,16 @@ describe('siege combat frontage and modifiers', () => {
   });
 
   it('requires orthogonal infantry range and gives wall archers one extra range', () => {
-    const { state, shu, wei } = duel({ x: 20, y: 19 }, { troopType: 'archer' });
+    const { state, shu, wei } = duel({ x: 7, y: 10 }, { troopType: 'archer' });
     expect(predictSiegeAttack(state, wei, shu)).toMatchObject({
       inRange: true,
       modifiers: { height: 1.3 },
     });
     expect(predictSiegeAttack(state, shu, wei)!.inRange).toBe(false);
-    Object.assign(wei, { x: 21, y: 20, level: 'ground', troopType: 'infantry' });
+    Object.assign(wei, { x: 8, y: 11, level: 'ground', troopType: 'infantry' });
     expect(predictSiegeAttack(state, shu, wei)!.inRange).toBe(false);
-    wei.x = 20;
+    wei.x = 7;
+    wei.y = 11;
     expect(predictSiegeAttack(state, shu, wei)!.inRange).toBe(true);
     expect(predictSiegeAttack(state, 'missing', wei.id)).toBeNull();
     refused(state, { type: 'attack', unitId: shu.id, targetId: shu.id });
@@ -193,17 +194,17 @@ describe('vacating and climbing the wall', () => {
         {},
         { troops: condition === 'destroyed' ? 1 : 300, morale: condition === 'routed' ? 20 : 80 },
       );
-      state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+      state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
       const hit = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id });
-      expect(hit.units[1]).not.toMatchObject({ x: 20, y: 16, level: 'wall' });
+      expect(hit.units[1]).not.toMatchObject({ x: 7, y: 7, level: 'wall' });
       if (condition === 'routed')
-        expect(hit.units[1]).toMatchObject({ level: 'ground', x: 20, y: 15, routed: true });
+        expect(hit.units[1]).toMatchObject({ level: 'ground', x: 7, y: 6, routed: true });
       // Keep another active defender so the next day can begin.
-      hit.units.push({ ...wei, id: 'reserve', x: 30, y: 16, morale: 80, troops: 200 });
+      hit.units.push({ ...wei, id: 'reserve', x: 10, y: 7, morale: 80, troops: 200 });
       const next = endDay(hit);
-      expect(pathTo(next, shu.id, 20, 16, 'wall')).toBeNull();
+      expect(pathTo(next, shu.id, 7, 7, 'wall')).toBeNull();
       const climbing = act(next, { type: 'climb', unitId: shu.id });
-      expect(climbing.footholds['20,16']).toBe(2);
+      expect(climbing.footholds['7,7']).toBe(2);
       expect(act(endDay(climbing), { type: 'climb', unitId: shu.id }).units[0]!.level).toBe('wall');
     },
   );

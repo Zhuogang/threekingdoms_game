@@ -1,3 +1,4 @@
+import { TRENCH_INNER_ROW } from '../content/coarseGrid';
 import { SOUTH_TRENCH, sameCell } from '../content/chencang';
 import {
   activeUnit,
@@ -56,7 +57,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     unit.side !== 'shu' ||
     unit.troopType !== 'infantry' ||
     unit.level !== 'ground' ||
-    unit.y < 17
+    unit.y < TRENCH_INNER_ROW
   )
     return null;
   if (unit.acted) return { kind: 'acted' };

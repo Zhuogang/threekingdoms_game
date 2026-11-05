@@ -82,7 +82,7 @@ describe('how to play', () => {
     expect(HOW_TO_RULES.infantryFill).toBe(manual.trenchFill[`${target.x},${target.y}`]);
     expect(HOW_TO_RULES.fillRatio).toBe(HOW_TO_RULES.cartFill / HOW_TO_RULES.infantryFill);
     state.engines = Array.from({ length: HOW_TO_RULES.engineCap }, (_, i) =>
-      engine('earthCart', i, 20),
+      engine('earthCart', i, 10),
     );
     expect(
       actionReason(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'ladder' }),
@@ -108,8 +108,9 @@ describe('walkthrough observations', () => {
   it('advances nine steps on selection, ladder, move, foothold, suppression, night, report and cover', () => {
     let state = createSiegeState(228);
     const ladder = state.engines[0]!;
-    Object.assign(state.units[1]!, { x: 18, y: 20 });
-    Object.assign(state.units[8]!, { x: 17, y: 19 });
+    state.units[12]!.x = 5;
+    Object.assign(state.units[1]!, { x: 5, y: 10 });
+    Object.assign(state.units[8]!, { x: 5, y: 10 });
     let progress = startWalkthrough(state);
     const observe = (selected: string | null = null, reportReadDay?: number) => {
       const before = structuredClone(state);
@@ -122,7 +123,7 @@ describe('walkthrough observations', () => {
     expect(observe()).toBe(2);
     state = act(state, { type: 'raiseLadder', engineId: ladder.id });
     expect(observe()).toBe(3);
-    state = act(state, { type: 'move', unitId: 'shu-weiyan', x: 18, y: 19, level: 'ground' });
+    state = act(state, { type: 'move', unitId: 'shu-weiyan', x: 6, y: 10, level: 'ground' });
     expect(observe()).toBe(4);
     state = act(state, { type: 'climb', unitId: 'shu-weiyan' });
     expect(observe()).toBe(5);
@@ -157,11 +158,11 @@ describe('walkthrough observations', () => {
   it('does not count an end day or cover that happened before the current step', () => {
     const state = createSiegeState(228),
       ladder = state.engines[0]!;
-    ladder.raisedAt = { x: 18, y: 16 };
+    ladder.raisedAt = { x: 6, y: 7 };
     state.log = [
       { day: 1, code: 'daySupplies', params: {} },
       { day: 1, code: 'covered', params: { engineId: ladder.id } },
-      { day: 1, code: 'suppressed', params: { sourceId: 'shu-captain-3', cell: '17,16' } },
+      { day: 1, code: 'suppressed', params: { sourceId: 'shu-captain-3', cell: '6,7' } },
     ];
     const progress = {
       status: 'active' as const,

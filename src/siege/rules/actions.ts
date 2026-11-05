@@ -1,3 +1,9 @@
+import {
+  SOUTH_WALL_ROW,
+  TRENCH_INNER_ROW,
+  TRENCH_OUTER_ROW,
+  APPROACH_ROW,
+} from '../content/coarseGrid';
 import { cloneSiegeState, silenceSiegeLog } from './clone';
 import { SIEGE_TUNING as T, ENGINE_RULES } from './tuning';
 import {
@@ -275,15 +281,15 @@ function performAction(
       !engine ||
       engine.kind !== 'ladder' ||
       engine.raisedAt ||
-      engine.y !== 19 ||
-      !SOUTH_TRENCH.some((cell) => cell.x === engine.x && cell.y === 18) ||
-      cellTerrain(state, engine.x, 16) !== 'wall'
+      engine.y !== APPROACH_ROW ||
+      !SOUTH_TRENCH.some((cell) => cell.x === engine.x && cell.y === TRENCH_OUTER_ROW) ||
+      cellTerrain(state, engine.x, SOUTH_WALL_ROW) !== 'wall'
     )
       return 'Place an unraised ladder south of the south trench.';
-    const progress = state.trenchFill[`${engine.x},18`];
+    const progress = state.trenchFill[`${engine.x},${TRENCH_OUTER_ROW}`];
     if (progress !== 0 && progress !== T.trenchCapacity)
       return 'The outer trench cell must be empty or full.';
-    engine.raisedAt = { x: engine.x, y: 16 };
+    engine.raisedAt = { x: engine.x, y: SOUTH_WALL_ROW };
     engine.acted = true;
     return null;
   }
@@ -320,7 +326,10 @@ function performAction(
       state.trenchFill[key] === T.trenchCapacity
     )
       return 'Choose an adjacent, unfilled south trench cell.';
-    if (action.y === 17 && state.trenchFill[`${action.x},18`] !== T.trenchCapacity)
+    if (
+      action.y === TRENCH_INNER_ROW &&
+      state.trenchFill[`${action.x},${TRENCH_OUTER_ROW}`] !== T.trenchCapacity
+    )
       return 'Fill the outer trench cell first.';
     // Fill rates and cart loads follow the v0.2 tuning table.
     const fill = unit ? T.infantryFill : T.cartFill;
@@ -375,10 +384,10 @@ function performAction(
     const actor = unit ?? engine!;
     const key = cellKey(action);
     if (
-      action.y !== 17 ||
+      action.y !== TRENCH_INNER_ROW ||
       !SOUTH_TRENCH.some((cell) => sameCell(cell, action)) ||
       state.trenchFill[key] !== T.trenchCapacity ||
-      state.trenchFill[`${action.x},18`] !== T.trenchCapacity ||
+      state.trenchFill[`${action.x},${TRENCH_OUTER_ROW}`] !== T.trenchCapacity ||
       distance(actor, action) !== 1 ||
       cellTerrain(state, actor.x, actor.y) !== 'plain' ||
       (state.mounds[key] ?? 0) >= T.moundComplete

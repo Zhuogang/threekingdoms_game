@@ -1,3 +1,4 @@
+import { TRENCH_INNER_ROW } from '../content/coarseGrid';
 import { cloneSiegeState } from '../rules/clone';
 import { SIEGE_TUNING as T } from '../rules/tuning';
 import { DEPLOY_SHU, DEPLOY_WEI, GATES, SOUTH_TRENCH, sameCell } from '../content/chencang';
@@ -156,7 +157,7 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
   }
   if (!unit && siegeCommands(state, id, 'shu').some((c) => c.kind === 'raiseLadder' && !c.reason))
     return siegeText(locale, 'contextRaiseLadder');
-  if (unit && unit.troopType !== 'archer' && unit.y >= 17) {
+  if (unit && unit.troopType !== 'archer' && unit.y >= TRENCH_INNER_ROW) {
     if (
       state.units.some(
         (u) => u.side !== unit.side && activeUnit(u) && climbingPosition(state, unit, u),
@@ -383,9 +384,15 @@ export function deployUnit(
   const unit = state.units.find((u) => u.id === id && u.side === playerSide);
   const cells = playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
   if (!unit || !cells.some((c) => sameCell(c, to) && to.level === c.level)) return state;
+  if (
+    state.engines.some(
+      (engine) => sameCell(engine, to) && !(engine.kind === 'ladder' && usableEngine(engine)),
+    )
+  )
+    return state;
   const next = cloneSiegeState(state),
     actor = next.units.find((u) => u.id === id)!;
-  const other = next.units.find((u) => u.id !== id && u.level === to.level && sameCell(u, to));
+  const other = next.units.find((u) => u.id !== id && u.troops > 0 && sameCell(u, to));
   if (other && other.side !== playerSide) return state;
   if (other) Object.assign(other, { x: actor.x, y: actor.y, level: actor.level });
   Object.assign(actor, { x: to.x, y: to.y, level: to.level });

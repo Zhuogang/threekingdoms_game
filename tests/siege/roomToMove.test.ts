@@ -3,6 +3,7 @@ import { CITY_BOUNDS, RAMPS } from '../../src/siege/content/chencang';
 import { applySiegeAction } from '../../src/siege/rules/actions';
 import { predictSiegeAttack, predictSiegeClimb } from '../../src/siege/rules/combat';
 import { endDay } from '../../src/siege/rules/day';
+import { groundPassable } from '../../src/siege/rules/movement';
 import { cellTerrain } from '../../src/siege/rules/map';
 import { pathTo, reachableCells, swapTargets } from '../../src/siege/rules/movement';
 import { createSiegeState } from '../../src/siege/rules/state';
@@ -27,7 +28,7 @@ function fixture(position: SiegePosition, side: SiegeSide = 'shu') {
   state.engines = [];
   return { state, unit, ally, enemy };
 }
-const wall = (x: number, y = 16): SiegePosition => ({ x, y, level: 'wall' });
+const wall = (x: number, y = 7): SiegePosition => ({ x, y, level: 'wall' });
 const ground = (x: number, y: number): SiegePosition => ({ x, y, level: 'ground' });
 const has = (state: ReturnType<typeof createSiegeState>, id: string, p: SiegePosition) =>
   reachableCells(state, id).some((c) => c.x === p.x && c.y === p.y && c.level === p.level);
@@ -38,11 +39,11 @@ describe('room to move', () => {
       `${side} passes through allies on %s without stopping on them; enemies block`,
       (place) => {
         const from =
-          place === 'walkway' ? wall(18) : place === 'ramp' ? ground(19, 15) : ground(18, 20);
+          place === 'walkway' ? wall(6) : place === 'ramp' ? ground(5, 3) : ground(6, 10);
         const { state, unit, ally, enemy } = fixture(from, side);
-        Object.assign(ally, from, { x: 20 });
+        Object.assign(ally, from, { x: place === 'ramp' ? 6 : 7 });
         state.units.push(ally);
-        const to = { ...from, x: 21 };
+        const to = { ...from, x: place === 'ramp' ? 7 : 8 };
         expect(has(state, unit.id, to)).toBe(true);
         expect(pathTo(state, unit.id, ally.x, ally.y, ally.level)).toBeNull();
         expect(has(state, unit.id, ally)).toBe(false);
@@ -58,31 +59,32 @@ describe('room to move', () => {
     it(`${side} steps down inside from every passable south-wall edge and never outside`, () => {
       for (let x = CITY_BOUNDS.west; x <= CITY_BOUNDS.east; x++) {
         const { state, unit } = fixture(wall(x), side);
-        if (!['wall', 'gate'].includes(cellTerrain(state, x, 16))) continue;
+        if (!['wall', 'gate'].includes(cellTerrain(state, x, 7))) continue;
         const inside = reachableCells(state, unit.id).find(
-          (p) => p.x === x && p.y === 15 && p.level === 'ground',
+          (p) => p.x === x && p.y === 6 && p.level === 'ground',
         );
-        const passable = x > CITY_BOUNDS.west && x < CITY_BOUNDS.east;
+        const passable =
+          x > CITY_BOUNDS.west && x < CITY_BOUNDS.east && groundPassable(state, side, { x, y: 6 });
         expect(Boolean(inside)).toBe(passable);
         if (inside) expect(inside.cost).toBe(1);
         expect(
           reachableCells(state, unit.id).some(
-            (p) => p.x === x && p.y === 17 && p.level === 'ground' && p.cost === 1,
+            (p) => p.x === x && p.y === 8 && p.level === 'ground' && p.cost === 1,
           ),
         ).toBe(false);
       }
     });
     it(`${side} cannot step down into buildings or climb up an ordinary edge`, () => {
-      const { state, unit } = fixture(wall(18, 14), side);
+      const { state, unit } = fixture(wall(6, 6), side);
       state.innerWall[1] = 4;
-      expect(has(state, unit.id, ground(18, 13))).toBe(false);
-      Object.assign(unit, ground(18, 15));
-      expect(has(state, unit.id, wall(18))).toBe(false);
+      expect(has(state, unit.id, ground(6, 6))).toBe(false);
+      Object.assign(unit, ground(6, 6));
+      expect(has(state, unit.id, wall(6))).toBe(false);
     });
     it(`${side} enters a ramp from its side and reaches its wall connection`, () => {
-      const ramp = RAMPS.find((r) => r.wall.y === 16)!;
+      const ramp = RAMPS.find((r) => r.wall.y === 7)!;
       const high = ramp.cells.at(-1)!;
-      const { state, unit } = fixture(ground(high.x, high.y - 1), side);
+      const { state, unit } = fixture(ground(high.x + 1, high.y), side);
       const to = { ...high, level: 'ground' as const };
       expect(reachableCells(state, unit.id)).toContainEqual({ ...to, cost: 1 });
       expect(has(state, unit.id, { ...ramp.wall, level: 'wall' })).toBe(true);
@@ -90,11 +92,8 @@ describe('room to move', () => {
     it.each(['down', 'up'] as const)(
       `${side} infantry attacks %s across the inner wall edge`,
       (direction) => {
-        const { state, unit, enemy } = fixture(
-          direction === 'down' ? wall(18) : ground(18, 15),
-          side,
-        );
-        Object.assign(enemy, direction === 'down' ? ground(18, 15) : wall(18));
+        const { state, unit, enemy } = fixture(direction === 'down' ? wall(6) : ground(6, 6), side);
+        Object.assign(enemy, direction === 'down' ? ground(6, 6) : wall(6));
         state.units.push(enemy);
         const forecast = predictSiegeAttack(state, unit.id, enemy.id)!;
         expect(forecast.inRange).toBe(true);
@@ -109,7 +108,7 @@ describe('room to move', () => {
   it.each(['top', 'inside'] as const)(
     'opens a gate from %s, clears the road, records loss and survives repair',
     (place) => {
-      const { state, unit } = fixture(place === 'top' ? wall(23) : ground(23, 15));
+      const { state, unit } = fixture(place === 'top' ? wall(8) : ground(8, 6));
       const before = scoreSiege({ ...state, outcome: 'historical' }, 'wei');
       const next = act(state, { type: 'openGate', unitId: unit.id, gateId: 'south' });
       expect(next.gates.south).toMatchObject({ broken: true, durability: 0, opened: true });
@@ -120,11 +119,12 @@ describe('room to move', () => {
       expect(scoreSiege({ ...next, outcome: 'historical' }, 'wei').parts.gate).toBeLessThan(
         before.parts.gate!,
       );
-      const outsider = { ...unit, ...ground(24, 17), id: 'outside' };
+      next.units[0]!.x = 7; // Vacate the shared gate/passage cell before checking passage travel.
+      const outsider = { ...unit, ...ground(8, 8), id: 'outside' };
       next.units.push(outsider);
-      expect(has(next, outsider.id, ground(24, 15))).toBe(true);
-      const through = act(next, { type: 'move', unitId: outsider.id, ...ground(24, 15) });
-      expect(through.units[1]).toMatchObject(ground(24, 15));
+      expect(has(next, outsider.id, ground(8, 6))).toBe(true);
+      const through = act(next, { type: 'move', unitId: outsider.id, ...ground(8, 6) });
+      expect(through.units[1]).toMatchObject(ground(8, 6));
       refused(next, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' });
       expect(endDay(next).gates.south.opened).toBe(true);
       for (const locale of ['zh', 'en'] as const) {
@@ -150,22 +150,22 @@ describe('room to move', () => {
   it.each(['guarded', 'archer', 'acted', 'broken', 'wei', 'outside'] as const)(
     'rejects gate opening when %s',
     (condition) => {
-      const { state, unit, enemy } = fixture(ground(23, 15));
+      const { state, unit, enemy } = fixture(ground(8, 6));
       if (condition === 'guarded') {
-        Object.assign(enemy, wall(24), { routed: true });
+        Object.assign(enemy, wall(8), { routed: true });
         state.units.push(enemy);
       }
       if (condition === 'archer') unit.troopType = 'archer';
       if (condition === 'acted') unit.acted = true;
       if (condition === 'broken') state.gates.south.broken = true;
       if (condition === 'wei') unit.side = 'wei';
-      if (condition === 'outside') unit.y = 17;
+      if (condition === 'outside') unit.y = 8;
       refused(state, { type: 'openGate', unitId: unit.id, gateId: 'south' });
     },
   );
 
   it('attacker opens the south gate before moving or attacking', () => {
-    const { state, unit } = fixture(ground(23, 15));
+    const { state, unit } = fixture(ground(8, 6));
     for (const method of ['careful', 'anyPrice', 'brute'] as const) {
       const plan = planAttackerTurn(state, method);
       expect(plan.filter((a) => 'unitId' in a && a.unitId === unit.id)[0]).toEqual({
@@ -178,25 +178,25 @@ describe('room to move', () => {
 
   for (const route of ['ladder', 'wallFoot'] as const) {
     function breach() {
-      const f = fixture(ground(20, route === 'ladder' ? 19 : 17));
-      if (route === 'ladder') f.state.engines = [engine('ladder', 20, 19, { raisedAt: wall(20) })];
+      const f = fixture(ground(7, route === 'ladder' ? 10 : 8));
+      if (route === 'ladder') f.state.engines = [engine('ladder', 7, 10, { raisedAt: wall(7) })];
       else {
-        f.state.trenchFill['20,17'] = 3;
-        f.state.trenchFill['20,18'] = 3;
+        f.state.trenchFill['7,8'] = 3;
+        f.state.trenchFill['7,9'] = 3;
       }
-      f.state.footholds['20,16'] = 3;
+      f.state.footholds['7,7'] = 3;
       return f;
     }
     it(`${route}: breach arrival leaves an attack, first mount spends it`, () => {
       const { state, unit, enemy } = breach();
-      Object.assign(enemy, ground(20, 15));
+      Object.assign(enemy, ground(7, 6));
       state.units.push(enemy);
       const arrived = act(state, { type: 'climb', unitId: unit.id });
-      expect(arrived.units[0]).toMatchObject({ ...wall(20), moved: true, acted: false });
+      expect(arrived.units[0]).toMatchObject({ ...wall(7), moved: true, acted: false });
       expect(
         applySiegeAction(arrived, { type: 'attack', unitId: unit.id, targetId: enemy.id }).ok,
       ).toBe(true);
-      state.footholds['20,16'] = 2;
+      state.footholds['7,7'] = 2;
       expect(act(state, { type: 'climb', unitId: unit.id }).units[0]).toMatchObject({
         moved: true,
         acted: true,
@@ -204,54 +204,54 @@ describe('room to move', () => {
     });
     it(`${route}: make-way passes allies, chooses nearest free cell toward the gate, and permits one follower`, () => {
       const { state, unit, ally } = breach();
-      Object.assign(ally, wall(20), { acted: true });
+      Object.assign(ally, wall(7), { acted: true });
       state.units.push(
         ally,
-        { ...ally, ...wall(19), id: 'left' },
-        { ...ally, ...wall(21), id: 'right' },
+        { ...ally, ...wall(6), id: 'left' },
+        { ...ally, ...wall(8), id: 'right' },
       );
       const forecast = predictSiegeClimb(state, unit.id)!;
-      expect(forecast.makeWay).toEqual({ unitId: ally.id, to: wall(22) });
+      expect(forecast.makeWay).toEqual({ unitId: ally.id, to: wall(9) });
       const next = act(state, { type: 'climb', unitId: unit.id });
-      expect(next.units[1]).toMatchObject({ ...wall(22), moved: true, acted: true });
+      expect(next.units[1]).toMatchObject({ ...wall(9), moved: true, acted: true });
       expect(next.log.some((e) => e.code === 'allyMadeWay')).toBe(true);
       const follower = { ...unit, id: 'follower' };
       next.units.push(follower);
       refused(next, { type: 'climb', unitId: follower.id });
-      expect(next.units[0]).toMatchObject({ ...wall(20), acted: false });
+      expect(next.units[0]).toMatchObject({ ...wall(7), acted: false });
     });
     it.each(['moved', 'boxed'] as const)(`${route}: make-way is illegal when %s`, (condition) => {
       const { state, unit, ally, enemy } = breach();
-      Object.assign(ally, wall(20));
+      Object.assign(ally, wall(7));
       state.units.push(ally);
       if (condition === 'moved') ally.moved = true;
       else
         state.units.push(
-          { ...enemy, ...wall(19), id: 'left' },
-          { ...enemy, ...wall(21), id: 'right' },
+          { ...enemy, ...wall(6), id: 'left' },
+          { ...enemy, ...wall(8), id: 'right' },
         );
       expect(predictSiegeClimb(state, unit.id)).toBeNull();
       refused(state, { type: 'climb', unitId: unit.id });
     });
     it(`${route}: any Shu walking onto the top opens it; Wei seals it`, () => {
       const { state, unit, enemy } = breach();
-      state.footholds['20,16'] = 0;
-      Object.assign(unit, wall(18));
-      let next = act(state, { type: 'move', unitId: unit.id, ...wall(20) });
-      expect(next.footholds['20,16']).toBe(3);
-      next.units[0]!.x = 18;
-      Object.assign(enemy, wall(21));
+      state.footholds['7,7'] = 0;
+      Object.assign(unit, wall(6));
+      let next = act(state, { type: 'move', unitId: unit.id, ...wall(7) });
+      expect(next.footholds['7,7']).toBe(3);
+      next.units[0]!.x = 6;
+      Object.assign(enemy, wall(8));
       next.units.push(enemy);
-      next = act(next, { type: 'move', unitId: enemy.id, ...wall(20) });
-      expect(next.footholds['20,16']).toBe(0);
+      next = act(next, { type: 'move', unitId: enemy.id, ...wall(7) });
+      expect(next.footholds['7,7']).toBe(0);
     });
   }
 
   it.each(['ground', 'acrossLevels'] as const)(
     'swaps %s positions and flags without adding occupied reachable cells',
     (kind) => {
-      const { state, unit, ally } = fixture(kind === 'ground' ? ground(18, 20) : wall(18));
-      Object.assign(ally, kind === 'ground' ? ground(20, 20) : ground(18, 15));
+      const { state, unit, ally } = fixture(kind === 'ground' ? ground(6, 10) : wall(7));
+      Object.assign(ally, kind === 'ground' ? ground(7, 10) : ground(7, 6));
       state.units.push(ally);
       const original = { x: unit.x, y: unit.y, level: unit.level };
       expect(swapTargets(state, unit.id).map((u) => u.id)).toEqual([ally.id]);

@@ -1,4 +1,13 @@
 import {
+  WEST_WALL_COL,
+  EAST_WALL_COL,
+  SOUTH_WALL_ROW,
+  TRENCH_INNER_ROW,
+  TRENCH_OUTER_ROW,
+  APPROACH_ROW,
+  ROAD_COL,
+} from '../content/coarseGrid';
+import {
   CITY_BOUNDS,
   COURTYARD,
   GATES,
@@ -60,8 +69,8 @@ export function attackerPlan(seed: number, method: AttackerMethod = 'careful') {
   };
   const choice = (name: string, count: number) => hash(name) % count;
   const count = 2 + choice('lanes', 3);
-  const west = [17, 18, 19, 20, 21, 22].sort((a, b) => hash(`lane-${a}`) - hash(`lane-${b}`));
-  const east = [25, 26, 27, 28, 29, 30, 31].sort((a, b) => hash(`lane-${a}`) - hash(`lane-${b}`));
+  const west = [5, 6, 7].sort((a, b) => hash(`lane-${a}`) - hash(`lane-${b}`));
+  const east = [9, 10, 11].sort((a, b) => hash(`lane-${a}`) - hash(`lane-${b}`));
   const columns = [...west.slice(0, Math.ceil(count / 2)), ...east.slice(0, Math.floor(count / 2))];
   return {
     columns,
@@ -80,10 +89,10 @@ function climbSites(state: SiegeState): Array<{ base: SiegePosition; top: SiegeP
       .map((e) => ({ base: ground(e), top: { ...e.raisedAt!, level: 'wall' as const } })),
     ...SOUTH_TRENCH.filter(
       (c) =>
-        c.y === 17 &&
+        c.y === TRENCH_INNER_ROW &&
         state.trenchFill[cellKey(c)] === T.trenchCapacity &&
-        state.trenchFill[`${c.x},18`] === T.trenchCapacity,
-    ).map((c) => ({ base: ground(c), top: { x: c.x, y: 16, level: 'wall' as const } })),
+        state.trenchFill[`${c.x},${TRENCH_OUTER_ROW}`] === T.trenchCapacity,
+    ).map((c) => ({ base: ground(c), top: { x: c.x, y: SOUTH_WALL_ROW, level: 'wall' as const } })),
   ];
 }
 
@@ -96,9 +105,9 @@ function brazierNear(state: SiegeState, cell: Cell, range: number): boolean {
 
 function supportColumns(state: SiegeState): number[] {
   return state.engines
-    .filter((e) => usableEngine(e) && e.kind === 'ladder' && e.y === 19)
-    .map((e) => (e.x < 24 ? e.x + 1 : e.x - 1))
-    .filter((x) => SOUTH_TRENCH.some((cell) => cell.x === x && cell.y === 18));
+    .filter((e) => usableEngine(e) && e.kind === 'ladder' && e.y === APPROACH_ROW)
+    .map((e) => (e.x < ROAD_COL ? e.x + 1 : e.x - 1))
+    .filter((x) => SOUTH_TRENCH.some((cell) => cell.x === x && cell.y === TRENCH_OUTER_ROW));
 }
 
 function engineGoals(state: SiegeState, engine: SiegeEngine): SiegePosition[] {
@@ -106,21 +115,25 @@ function engineGoals(state: SiegeState, engine: SiegeEngine): SiegePosition[] {
   if (engine.kind === 'ram')
     return state.gates.south.broken
       ? []
-      : GATES.south.approaches.filter((c) => c.y > 16).map(ground);
+      : GATES.south.approaches.filter((c) => c.y > SOUTH_WALL_ROW).map(ground);
   if (engine.kind === 'earthCart') {
     const west =
-      engine.id.startsWith('workshop-1') || (!engine.id.startsWith('workshop-2') && engine.x < 24);
-    const columns = plan.columns.filter((x) => x < 24 === west);
+      engine.id.startsWith('workshop-1') ||
+      (!engine.id.startsWith('workshop-2') && engine.x < ROAD_COL);
+    const columns = plan.columns.filter((x) => x < ROAD_COL === west);
     if (!columns.length) columns.push(plan.moundColumn);
-    const supports = supportColumns(state).filter((x) => x < 24 === west);
-    if (state.trenchFill[`${plan.moundColumn},17`] !== T.trenchCapacity)
+    const supports = supportColumns(state).filter((x) => x < ROAD_COL === west);
+    if (state.trenchFill[`${plan.moundColumn},${TRENCH_INNER_ROW}`] !== T.trenchCapacity)
       for (const x of supports)
-        if (state.trenchFill[`${x},18`] !== T.trenchCapacity) return [ground({ x, y: 19 })];
+        if (state.trenchFill[`${x},${TRENCH_OUTER_ROW}`] !== T.trenchCapacity)
+          return [ground({ x, y: APPROACH_ROW })];
     for (const x of columns) {
-      if (state.trenchFill[`${x},18`] !== T.trenchCapacity) return [ground({ x, y: 19 })];
-      if (state.trenchFill[`${x},17`] !== T.trenchCapacity) return [ground({ x, y: 18 })];
-      if ((state.mounds[`${x},17`] ?? 0) < T.moundComplete)
-        return adjacent({ x, y: 17 })
+      if (state.trenchFill[`${x},${TRENCH_OUTER_ROW}`] !== T.trenchCapacity)
+        return [ground({ x, y: APPROACH_ROW })];
+      if (state.trenchFill[`${x},${TRENCH_INNER_ROW}`] !== T.trenchCapacity)
+        return [ground({ x, y: TRENCH_OUTER_ROW })];
+      if ((state.mounds[`${x},${TRENCH_INNER_ROW}`] ?? 0) < T.moundComplete)
+        return adjacent({ x, y: TRENCH_INNER_ROW })
           .filter((c) => cellTerrain(state, c.x, c.y) === 'plain')
           .map(ground);
     }
@@ -128,26 +141,29 @@ function engineGoals(state: SiegeState, engine: SiegeEngine): SiegePosition[] {
   }
   if (engine.kind === 'ladder') {
     if (
-      engine.y === 19 &&
-      layoutSymbol(engine.x, 16) === 'W' &&
-      !brazierNear(state, { x: engine.x, y: 16 }, 2)
+      engine.y === APPROACH_ROW &&
+      layoutSymbol(engine.x, SOUTH_WALL_ROW) === 'W' &&
+      !brazierNear(state, { x: engine.x, y: SOUTH_WALL_ROW }, 2)
     )
       return [ground(engine)];
-    const west = engine.x < 24;
-    return Array.from({ length: 18 }, (_, i) => i + 15)
+    const west = engine.x < ROAD_COL;
+    return Array.from(
+      { length: EAST_WALL_COL - WEST_WALL_COL - 1 },
+      (_, i) => i + WEST_WALL_COL + 1,
+    )
       .filter(
         (x) =>
-          layoutSymbol(x, 16) === 'W' &&
-          x < 24 === west &&
+          layoutSymbol(x, SOUTH_WALL_ROW) === 'W' &&
+          x < ROAD_COL === west &&
           !plan.columns.includes(x) &&
-          !brazierNear(state, { x, y: 16 }, 2),
+          !brazierNear(state, { x, y: SOUTH_WALL_ROW }, 2),
       )
-      .map((x) => ground({ x, y: 19 }));
+      .map((x) => ground({ x, y: APPROACH_ROW }));
   }
   const threats = state.units.filter(
     (u) => u.side === 'wei' && activeUnit(u) && u.level === 'wall',
   );
-  return threats.flatMap((u) => [ground({ x: u.x, y: 19 }), ground({ x: u.x, y: 20 })]);
+  return threats.map((u) => ground({ x: u.x, y: APPROACH_ROW }));
 }
 
 /** Plans on evolving rule results only. Reservations and assignments exist for this turn only. */
@@ -207,7 +223,7 @@ export function* attackerTurnSteps(
       );
       if (crew) {
         let exits = reachableCells(draft, crew.id).filter(
-          (p) => p.level === 'ground' && !goals.some((g) => g.x === p.x && p.y <= 19),
+          (p) => p.level === 'ground' && !goals.some((g) => g.x === p.x && p.y <= APPROACH_ROW),
         );
         if (!exits.length) {
           // A cart directly behind a worker must first open the worker's only exit from the trench.
@@ -217,7 +233,7 @@ export function* attackerTurnSteps(
           if (parking)
             yield* act({ type: 'moveEngine', engineId: actor.id, x: parking.x, y: parking.y });
           exits = reachableCells(draft, crew.id).filter(
-            (p) => p.level === 'ground' && !goals.some((g) => g.x === p.x && p.y <= 19),
+            (p) => p.level === 'ground' && !goals.some((g) => g.x === p.x && p.y <= APPROACH_ROW),
           );
         }
         const exit = exits.sort((a, b) => a.cost - b.cost || a.y - b.y || a.x - b.x)[0];
@@ -274,7 +290,8 @@ export function* attackerTurnSteps(
       const count = (kind: EngineKind) =>
         draft.engines.filter((e) => usableEngine(e) && e.kind === kind).length +
         draft.workshops.filter((w) => w.queue === kind).length;
-      const needsMound = (draft.mounds[`${plan.moundColumn},17`] ?? 0) < T.moundComplete;
+      const needsMound =
+        (draft.mounds[`${plan.moundColumn},${TRENCH_INNER_ROW}`] ?? 0) < T.moundComplete;
       let kind: EngineKind | undefined;
       if (!draft.gates.south.broken && count('ram') < 1) kind = 'ram';
       else if (draft.day === 1)
@@ -297,28 +314,30 @@ export function* attackerTurnSteps(
     if (
       engine.kind === 'ladder' &&
       !engine.raisedAt &&
-      engine.y === 19 &&
-      layoutSymbol(engine.x, 16) === 'W' &&
-      [0, T.trenchCapacity].includes(draft.trenchFill[`${engine.x},18`]!)
+      engine.y === APPROACH_ROW &&
+      layoutSymbol(engine.x, SOUTH_WALL_ROW) === 'W' &&
+      [0, T.trenchCapacity].includes(draft.trenchFill[`${engine.x},${TRENCH_OUTER_ROW}`]!)
     )
       yield* act({ type: 'raiseLadder', engineId: engine.id });
     if (engine.kind === 'earthCart') {
       const x = plan.moundColumn;
-      const pile = { x, y: 17 };
+      const pile = { x, y: TRENCH_INNER_ROW };
       if (
-        draft.trenchFill[`${x},17`] === T.trenchCapacity &&
-        draft.trenchFill[`${x},18`] === T.trenchCapacity &&
-        (draft.mounds[`${x},17`] ?? 0) < T.moundComplete &&
+        draft.trenchFill[`${x},${TRENCH_INNER_ROW}`] === T.trenchCapacity &&
+        draft.trenchFill[`${x},${TRENCH_OUTER_ROW}`] === T.trenchCapacity &&
+        (draft.mounds[`${x},${TRENCH_INNER_ROW}`] ?? 0) < T.moundComplete &&
         distance(engine, pile) === 1
       )
         yield* act({ type: 'pileEarth', engineId: engine.id, ...pile });
       else {
         const fill = SOUTH_TRENCH.filter(
           (c) =>
-            (plan.columns.includes(c.x) || (c.y === 18 && supportColumns(draft).includes(c.x))) &&
+            (plan.columns.includes(c.x) ||
+              (c.y === TRENCH_OUTER_ROW && supportColumns(draft).includes(c.x))) &&
             distance(engine, c) === 1 &&
             draft.trenchFill[cellKey(c)] !== T.trenchCapacity &&
-            (c.y === 18 || draft.trenchFill[`${c.x},18`] === T.trenchCapacity),
+            (c.y === TRENCH_OUTER_ROW ||
+              draft.trenchFill[`${c.x},${TRENCH_OUTER_ROW}`] === T.trenchCapacity),
         ).sort((a, b) => (a.x === x ? 0 : 1) - (b.x === x ? 0 : 1))[0];
         if (fill) yield* act({ type: 'fillTrench', engineId: engine.id, ...fill });
       }
@@ -332,9 +351,9 @@ export function* attackerTurnSteps(
       .filter(
         (u) =>
           u.id.startsWith('shu-captain') &&
-          distance(u, { x: plan.moundColumn, y: 17 }) === 1 &&
-          draft.trenchFill[`${plan.moundColumn},17`] === T.trenchCapacity &&
-          (draft.mounds[`${plan.moundColumn},17`] ?? 0) < T.moundComplete,
+          distance(u, { x: plan.moundColumn, y: TRENCH_INNER_ROW }) === 1 &&
+          draft.trenchFill[`${plan.moundColumn},${TRENCH_INNER_ROW}`] === T.trenchCapacity &&
+          (draft.mounds[`${plan.moundColumn},${TRENCH_INNER_ROW}`] ?? 0) < T.moundComplete,
       )
       .slice(0, 2)
       .map((u) => u.id),
@@ -411,11 +430,11 @@ export function* attackerTurnSteps(
   // Two builders, plus loaded carts above, develop the seeded mound lane.
   if (method !== 'brute' && !draft.gates.south.broken) {
     const x = plan.moundColumn;
-    const pile = { x, y: 17 };
+    const pile = { x, y: TRENCH_INNER_ROW };
     const fill =
-      draft.trenchFill[`${x},18`] !== T.trenchCapacity
-        ? { x, y: 18 }
-        : draft.trenchFill[`${x},17`] !== T.trenchCapacity
+      draft.trenchFill[`${x},${TRENCH_OUTER_ROW}`] !== T.trenchCapacity
+        ? { x, y: TRENCH_OUTER_ROW }
+        : draft.trenchFill[`${x},${TRENCH_INNER_ROW}`] !== T.trenchCapacity
           ? pile
           : null;
     const task = fill ?? ((draft.mounds[cellKey(pile)] ?? 0) < T.moundComplete ? pile : null);
@@ -537,7 +556,7 @@ export function* attackerTurnSteps(
       if (!target) continue;
       if ('side' in shooter && !shooter.moved) {
         const goals: SiegePosition[] = [];
-        for (let y = 17; y <= target.y + T.suppressRange; y++)
+        for (let y = TRENCH_INNER_ROW; y <= target.y + T.suppressRange; y++)
           for (let x = target.x - T.suppressRange; x <= target.x + T.suppressRange; x++)
             if (
               distance({ x, y }, target) <= T.suppressRange &&
@@ -633,11 +652,14 @@ export function* attackerTurnSteps(
       continue;
     }
     const reinforcingClimb =
-      method === 'anyPrice' && climbingCrew.has(u.id) && u.level === 'ground' && u.y > 16;
+      method === 'anyPrice' &&
+      climbingCrew.has(u.id) &&
+      u.level === 'ground' &&
+      u.y > SOUTH_WALL_ROW;
     if (
       !dailyAssault(u) &&
       !reinforcingClimb &&
-      (u.level === 'wall' || u.y < 16 || draft.gates.south.broken)
+      (u.level === 'wall' || u.y < SOUTH_WALL_ROW || draft.gates.south.broken)
     ) {
       yield* move(u, COURTYARD.map(ground));
       u = unitNow(u.id);
@@ -745,14 +767,13 @@ export function* attackerTurnSteps(
     if (method !== 'brute' && precarious)
       yield* act({ type: 'order', side: 'shu', kind: 'rally', target: precarious.id });
     else if (
-      draft.engines.filter((e) => usableEngine(e) && e.y >= 19 && e.y <= 21).length >= 2 &&
+      draft.engines.filter((e) => usableEngine(e) && e.y === APPROACH_ROW).length >= 2 &&
       draft.engines.some(
         (e) =>
           usableEngine(e) &&
-          e.y >= 19 &&
-          e.y <= 21 &&
+          e.y === APPROACH_ROW &&
           !e.raisedAt &&
-          (e.y > 19 || e.kind === 'ladder'),
+          (e.y > APPROACH_ROW || e.kind === 'ladder'),
       ) &&
       !torches
     )

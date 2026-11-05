@@ -1,3 +1,4 @@
+import { SOUTH_WALL_ROW, TRENCH_OUTER_ROW } from '../content/coarseGrid';
 import { cloneSiegeState } from './clone';
 import { MIN_MORALE } from './constants';
 import { ENGINE_RULES, SIEGE_TUNING as T } from './tuning';
@@ -36,31 +37,24 @@ import { siegeOutcome } from './outcome';
 import { weatherFromRoll } from './state';
 import type { Cell, EngineKind, SiegeEngine, SiegeState } from './types';
 
-function spawnCell(state: SiegeState, exit: Cell, kind: EngineKind): Cell | undefined {
+function spawnCell(state: SiegeState, exits: readonly Cell[], kind: EngineKind): Cell | undefined {
   // Manhattan distance, then row/column order, including a blocked exit.
   const cells = Array.from({ length: MAP_WIDTH * MAP_HEIGHT }, (_, index) => ({
     x: index % MAP_WIDTH,
     y: Math.floor(index / MAP_WIDTH),
   }));
-  return cells
-    .filter(
-      (cell) =>
-        isMapCell(cell.x, cell.y) &&
-        cellTerrain(state, cell.x, cell.y) === 'plain' &&
-        (kind !== 'ram' || layoutSymbol(cell.x, cell.y) !== '-') &&
-        !state.units.some(
-          (unit) => unit.troops > 0 && unit.level === 'ground' && sameCell(unit, cell),
-        ) &&
-        !state.engines.some((engine) => sameCell(engine, cell)),
-    )
-    .sort(
-      (a, b) =>
-        Math.abs(a.x - exit.x) +
-          Math.abs(a.y - exit.y) -
-          (Math.abs(b.x - exit.x) + Math.abs(b.y - exit.y)) ||
-        a.y - b.y ||
-        a.x - b.x,
-    )[0];
+  const free = cells.filter(
+    (cell) =>
+      isMapCell(cell.x, cell.y) &&
+      cellTerrain(state, cell.x, cell.y) === 'plain' &&
+      (kind !== 'ram' || layoutSymbol(cell.x, cell.y) !== '-') &&
+      !state.units.some((unit) => unit.troops > 0 && sameCell(unit, cell)) &&
+      !state.engines.some((engine) => sameCell(engine, cell)),
+  );
+  const preferred = exits.find((exit) => free.some((cell) => sameCell(cell, exit)));
+  if (preferred) return preferred;
+  const exit = exits[0]!;
+  return free.sort((a, b) => distance(a, exit) - distance(b, exit) || a.y - b.y || a.x - b.x)[0];
 }
 
 function progressWorkshops(state: SiegeState): void {
@@ -71,7 +65,7 @@ function progressWorkshops(state: SiegeState): void {
       continue;
     const geometry = WORKSHOPS.find((candidate) => candidate.id === workshop.id);
     if (!geometry) continue;
-    const spawn = spawnCell(state, geometry.spawn, workshop.queue);
+    const spawn = spawnCell(state, geometry.spawns, workshop.queue);
     if (!spawn) continue;
     const kind = workshop.queue;
     let serial = 1;
@@ -128,22 +122,20 @@ function nightAdvance(state: SiegeState): void {
         const to = { x: engine.x, y: engine.y - 1 };
         if (
           cellTerrain(state, to.x, to.y) !== 'plain' ||
-          state.units.some(
-            (unit) => unit.troops > 0 && unit.level === 'ground' && sameCell(unit, to),
-          ) ||
+          state.units.some((unit) => unit.troops > 0 && sameCell(unit, to)) ||
           state.engines.some((other) => other.id !== engine.id && sameCell(other, to))
         )
           break;
         engine.y--;
       }
-    const progress = state.trenchFill[`${engine.x},18`];
+    const progress = state.trenchFill[`${engine.x},${TRENCH_OUTER_ROW}`];
     const raised =
       engine.kind === 'ladder' &&
       !engine.raisedAt &&
       engine.y === T.nightEngineMinY &&
       (progress === 0 || progress === T.trenchCapacity) &&
-      cellTerrain(state, engine.x, 16) === 'wall';
-    if (raised) engine.raisedAt = { x: engine.x, y: 16 };
+      cellTerrain(state, engine.x, SOUTH_WALL_ROW) === 'wall';
+    if (raised) engine.raisedAt = { x: engine.x, y: SOUTH_WALL_ROW };
     logEvent(state, 'nightAssaultAdvanced', {
       engineId: engine.id,
       before,

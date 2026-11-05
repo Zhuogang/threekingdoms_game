@@ -139,6 +139,9 @@ try {
           wins: wins.length,
           winRate: wins.length / games,
           meanWinningDay: mean(wins.map((r) => r.day)),
+          medianWinningDay: median(wins.map((r) => r.day)),
+          medianDay: median(rows.map((r) => r.day)),
+          medianLoss: median(rows.map((r) => r.shuLost)),
           medianWinningLoss: median(wins.map((r) => r.shuLost)),
           footholdBy2:
             rows.filter((r) => r.firstFootholdDay !== null && r.firstFootholdDay <= 2).length /

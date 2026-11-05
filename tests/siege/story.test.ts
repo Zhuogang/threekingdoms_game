@@ -51,10 +51,10 @@ describe('Chencang story and summary', () => {
   it('finds hints at the actual trench, ladder, limited forecast and inner-wall encounters', () => {
     const state = createSiegeState(2);
     expect(encounteredHints(state, 'shu-weiyan', null)).toEqual(['wall']);
-    Object.assign(state.units[1]!, { x: 20, y: 19 });
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    Object.assign(state.units[1]!, { x: 7, y: 10 });
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     const target = state.units.find((u) => u.id === 'wei-wangsheng')!;
-    Object.assign(target, { x: 20, y: 16 });
+    Object.assign(target, { x: 7, y: 7 });
     state.innerWall[0] = 1;
     const forecast = predictSiegeAttack(state, 'shu-weiyan', target.id)!;
     expect(forecast.frontage).toBe(150);
@@ -78,11 +78,11 @@ describe('Chencang story and summary', () => {
       params: { kind: id === 'ladder' ? 'ladder' : 'earthCart', engineId: id },
     }));
     state.engines = [
-      engine('earthCart', 20, 19, { id: 'cart-wreck', wrecked: true }),
-      engine('ladder', 21, 19, { id: 'ladder' }),
+      engine('earthCart', 7, 10, { id: 'cart-wreck', wrecked: true }),
+      engine('ladder', 7, 10, { id: 'ladder' }),
     ];
-    state.trenchFill['20,18'] = 3;
-    state.trenchFill['21,18'] = 1.5;
+    state.trenchFill['7,9'] = 3;
+    state.trenchFill['6,9'] = 1.5;
     const result = siegeSummary(state);
     expect(result.shu).toEqual({ total: 100, dead: 40, wounded: 60 });
     expect(result.engines.find((e) => e.kind === 'earthCart')).toEqual({
@@ -140,7 +140,8 @@ describe('Chencang story and summary', () => {
   );
   it.each([
     [1, 'historical', 12],
-    [8, 'victory', 12],
+    [8, 'historical', 12],
+    [228, 'victory', 8],
     [11, 'historical', 12],
   ] as const)(
     'plays seed %i to %s using the real simulation strategy',

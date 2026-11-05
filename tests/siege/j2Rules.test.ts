@@ -14,24 +14,24 @@ describe('J2 climbing', () => {
   it.each(['ladder', 'wallFoot'] as const)(
     'requires three climb actions at an empty %s',
     (position) => {
-      const { state, shu, wei } = duel({ y: position === 'ladder' ? 19 : 17 });
-      wei.x = 25;
+      const { state, shu, wei } = duel({ y: position === 'ladder' ? 10 : 8 });
+      wei.x = 9;
       if (position === 'ladder')
-        state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+        state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
       else {
-        state.trenchFill['20,17'] = 3;
-        state.trenchFill['20,18'] = 3;
+        state.trenchFill['7,8'] = 3;
+        state.trenchFill['7,9'] = 3;
       }
-      refused(state, { type: 'move', unitId: shu.id, x: 20, y: 16, level: 'wall' });
+      refused(state, { type: 'move', unitId: shu.id, x: 7, y: 7, level: 'wall' });
       let next = state;
       for (let day = 1; day <= 3; day++) {
         next = act(next, { type: 'climb', unitId: shu.id });
         expect(next.units[0]).toMatchObject({ acted: true, level: day === 3 ? 'wall' : 'ground' });
-        expect(next.footholds['20,16']).toBe(day);
+        expect(next.footholds['7,7']).toBe(day);
         expect(next.units.map((u) => u.troops)).toEqual(state.units.map((u) => u.troops));
         if (day < 3) next = endDay(next);
       }
-      expect(next.units[0]).toMatchObject({ x: 20, y: 16, moved: true, acted: true });
+      expect(next.units[0]).toMatchObject({ x: 7, y: 7, moved: true, acted: true });
       expect(next.stats.firstWallDay).toBe(3);
     },
   );
@@ -39,42 +39,39 @@ describe('J2 climbing', () => {
   it('rejects climb from a wrong position, with a defender, and from a destroyed ladder', () => {
     const { state, shu, wei } = duel();
     refused(state, { type: 'climb', unitId: shu.id });
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     refused(state, { type: 'climb', unitId: shu.id });
-    wei.x = 25;
+    wei.x = 9;
     state.engines[0]!.durability = 0;
     refused(state, { type: 'climb', unitId: shu.id });
   });
 
   it('allows a real move onto an empty wall from a completed mound', () => {
-    const { state, shu, wei } = duel({ y: 17 });
-    wei.x = 25;
-    state.trenchFill['20,17'] = 3;
-    state.trenchFill['20,18'] = 3;
-    state.mounds['20,17'] = 5;
-    refused(state, { type: 'move', unitId: shu.id, x: 20, y: 16, level: 'wall' });
-    state.mounds['20,17'] = 6;
+    const { state, shu, wei } = duel({ y: 8 });
+    wei.x = 9;
+    state.trenchFill['7,8'] = 3;
+    state.trenchFill['7,9'] = 3;
+    state.mounds['7,8'] = 5;
+    refused(state, { type: 'move', unitId: shu.id, x: 7, y: 7, level: 'wall' });
+    state.mounds['7,8'] = 6;
     expect(
-      act(state, { type: 'move', unitId: shu.id, x: 20, y: 16, level: 'wall' }).units[0]!.level,
+      act(state, { type: 'move', unitId: shu.id, x: 7, y: 7, level: 'wall' }).units[0]!.level,
     ).toBe('wall');
   });
 
   it('exposes the climb action through the existing command validator', () => {
     const { state, shu, wei } = duel();
-    wei.x = 25;
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    wei.x = 9;
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     const command = siegeCommands(state, shu.id).find((entry) => entry.kind === 'climb')!;
     expect(command).toMatchObject({ action: { type: 'climb', unitId: shu.id }, reason: null });
-    expect(act(state, command.action!).footholds['20,16']).toBe(1);
+    expect(act(state, command.action!).footholds['7,7']).toBe(1);
   });
 });
 
 describe('J2 combat and attrition', () => {
   it('caps walkway combat on both sides and shocks morale against wall frontage', () => {
-    const { state, shu, wei } = duel(
-      { y: 16, level: 'wall', troops: 2400 },
-      { x: 21, troops: 600 },
-    );
+    const { state, shu, wei } = duel({ y: 7, level: 'wall', troops: 2400 }, { x: 7, troops: 600 });
     const f = predictSiegeAttack(state, shu, wei)!;
     expect(f).toMatchObject({
       frontage: T.wallFrontage,
@@ -93,11 +90,11 @@ describe('J2 combat and attrition', () => {
   it.each([false, true])(
     'throws a low-morale Shu unit to a free ladder base or nearest southern ground (blocked=%s)',
     (blocked) => {
-      const { state, shu, wei } = duel({ y: 16, level: 'wall', morale: ROUTED_MORALE }, { x: 21 });
-      state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-      state.footholds['20,16'] = 2;
+      const { state, shu, wei } = duel({ y: 7, level: 'wall', morale: ROUTED_MORALE }, { x: 6 });
+      state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
+      state.footholds['7,7'] = 2;
       if (blocked)
-        state.units.push({ ...shu, id: 'blocker', x: 20, y: 19, level: 'ground', morale: 80 });
+        state.units.push({ ...shu, id: 'blocker', x: 7, y: 10, level: 'ground', morale: 80 });
       const next = act(state, { type: 'attack', unitId: wei.id, targetId: shu.id });
       const fallen = next.units[0]!;
       expect(fallen).toMatchObject({
@@ -107,42 +104,48 @@ describe('J2 combat and attrition', () => {
         acted: true,
         routed: false,
       });
-      expect(fallen.y).toBe(19);
-      expect(fallen.x).toBe(blocked ? 19 : 20);
-      expect(next.footholds['20,16']).toBe(0);
+      expect(fallen.y).toBe(10);
+      expect(fallen.x).toBe(blocked ? 6 : 7);
+      expect(next.footholds['7,7']).toBe(0);
       expect(next.log.filter((e) => e.code === 'thrownOffWall')).toHaveLength(1);
       expect(activeUnit(fallen)).toBe(true);
-      refused(next, { type: 'move', unitId: shu.id, x: 20, y: 20, level: 'ground' });
+      refused(next, { type: 'move', unitId: shu.id, x: 7, y: 10, level: 'ground' });
       const tomorrow = endDay(next);
-      const moved = act(tomorrow, { type: 'move', unitId: shu.id, x: 20, y: 20, level: 'ground' });
+      const moved = act(tomorrow, {
+        type: 'move',
+        unitId: shu.id,
+        x: blocked ? 5 : 7,
+        y: blocked ? 10 : 11,
+        level: 'ground',
+      });
       expect(activeUnit(moved.units[0]!)).toBe(true);
     },
   );
 
   it('returns a thrown-off unit to its filled wall foot', () => {
-    const { state, shu, wei } = duel({ y: 16, level: 'wall', morale: ROUTED_MORALE }, { x: 21 });
-    state.trenchFill['20,17'] = 3;
-    state.trenchFill['20,18'] = 3;
-    state.footholds['20,16'] = 2;
+    const { state, shu, wei } = duel({ y: 7, level: 'wall', morale: ROUTED_MORALE }, { x: 6 });
+    state.trenchFill['7,8'] = 3;
+    state.trenchFill['7,9'] = 3;
+    state.footholds['7,7'] = 2;
     const next = act(state, { type: 'attack', unitId: wei.id, targetId: shu.id });
     expect(next.units[0]).toMatchObject({
-      x: 20,
-      y: 17,
+      x: 7,
+      y: 8,
       level: 'ground',
       routed: false,
       morale: ROUTED_MORALE,
     });
-    expect(next.footholds['20,16']).toBe(0);
+    expect(next.footholds['7,7']).toBe(0);
   });
 
   it.each(['ladder', 'wallFoot', 'mound'] as const)(
     'applies uphill damage and forecasts the modifier for normal and assault %s attacks',
     (position) => {
-      const { state, shu, wei } = duel({ y: position === 'ladder' ? 19 : 17 });
+      const { state, shu, wei } = duel({ y: position === 'ladder' ? 10 : 8 });
       if (position === 'ladder')
-        state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-      else state.trenchFill['20,17'] = 3;
-      if (position === 'mound') state.mounds['20,17'] = 6;
+        state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
+      else state.trenchFill['7,8'] = 3;
+      if (position === 'mound') state.mounds['7,8'] = 6;
       for (const assault of [false, true]) {
         const f = predictSiegeAttack(state, shu, wei, { assault })!;
         expect(f.modifiers.climbingAttackMultiplier).toBe(T.climbingAttackMultiplier);
@@ -158,7 +161,7 @@ describe('J2 combat and attrition', () => {
         const next = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id, assault });
         expect(next.units[1]!.troops).toBe(wei.troops - f.casualties);
       }
-      state.engines = [engine('tower', 20, 20)];
+      state.engines = [engine('tower', 7, 10)];
       expect(predictSiegeAttack(state, 'engine', wei)!.modifiers.climbingAttackMultiplier).toBe(1);
     },
   );
@@ -173,10 +176,10 @@ describe('J2 combat and attrition', () => {
     expect(
       act(state, { type: 'suppress', unitId: shu.id, targetId: wei.id }).units[1]!.troops,
     ).toBe(wei.troops - expected);
-    shu.y = 20;
+    shu.y = 11;
     refused(state, { type: 'suppress', unitId: shu.id, targetId: wei.id });
-    state.trenchFill['20,18'] = 3;
-    shu.y = 18;
+    state.trenchFill['7,9'] = 3;
+    shu.y = 9;
     const f = predictSiegeAttack(state, shu, wei)!;
     expect(f.inRange).toBe(true);
     expect(act(state, { type: 'attack', unitId: shu.id, targetId: wei.id }).units[1]!.troops).toBe(
@@ -187,7 +190,7 @@ describe('J2 combat and attrition', () => {
   it('takes exactly ceil(gate durability / ram damage) hits without night repair', () => {
     let state = createSiegeState(228);
     const ram = state.engines.find((e) => e.kind === 'ram')!;
-    Object.assign(ram, { x: 24, y: 17 });
+    Object.assign(ram, { x: 8, y: 8 });
     const hits = Math.ceil(T.southGateDurability / T.ramDamage);
     for (let i = 1; i <= hits; i++) {
       state = act(state, { type: 'ram', engineId: ram.id, gateId: 'south' });
@@ -211,10 +214,7 @@ describe('J2 combat and attrition', () => {
   });
 
   it('uses city frontage on both sides and preserves gate precedence', () => {
-    const { state, shu, wei } = duel(
-      { x: 23, y: 12 },
-      { x: 24, y: 12, level: 'ground', troops: 700 },
-    );
+    const { state, shu, wei } = duel({ x: 8, y: 6 }, { x: 8, y: 6, level: 'ground', troops: 700 });
     const f = predictSiegeAttack(state, shu, wei)!;
     expect(f).toMatchObject({
       frontage: T.cityFrontage,
@@ -223,8 +223,8 @@ describe('J2 combat and attrition', () => {
     expect(act(state, { type: 'attack', unitId: shu.id, targetId: wei.id }).units[1]!.troops).toBe(
       wei.troops - f.casualties,
     );
-    Object.assign(shu, { x: 23, y: 15 });
-    Object.assign(wei, { x: 23, y: 16 });
+    Object.assign(shu, { x: 8, y: 6 });
+    Object.assign(wei, { x: 8, y: 7 });
     state.gates.south.broken = true;
     expect(predictSiegeAttack(state, shu, wei)!.frontage).toBe(T.gateFrontage);
   });
@@ -261,10 +261,10 @@ describe('J2 AI policies', () => {
   it('assaults with an archer already under a defended ladder instead of suppressing', () => {
     const state = createSiegeState(228);
     state.day = 2;
-    Object.assign(state.units[8]!, { x: 18, y: 19 });
-    Object.assign(state.units[11]!, { x: 18, y: 16 });
-    state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
-    state.preparations.boulders['18,16'] = { day: 1 };
+    Object.assign(state.units[8]!, { x: 6, y: 10 });
+    Object.assign(state.units[11]!, { x: 6, y: 7 });
+    state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
+    state.preparations.boulders['6,7'] = { day: 1 };
     const actions = planAttackerTurn(state, 'anyPrice');
     expect(actions).toContainEqual({
       type: 'attack',
@@ -281,10 +281,10 @@ describe('J2 AI policies', () => {
   it('rotates a wounded climber before a fresh unit assaults the freed base', () => {
     const state = createSiegeState(228);
     state.day = 2;
-    Object.assign(state.units[1]!, { x: 18, y: 19, troops: 600, wounded: 400, morale: 30 });
-    Object.assign(state.units[2]!, { x: 18, y: 20 });
-    Object.assign(state.units[11]!, { x: 18, y: 16 });
-    state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
+    Object.assign(state.units[1]!, { x: 6, y: 10, troops: 600, wounded: 400, morale: 30 });
+    Object.assign(state.units[2]!, { x: 6, y: 10 });
+    Object.assign(state.units[11]!, { x: 6, y: 7 });
+    state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
     const actions = planAttackerTurn(state, 'anyPrice');
     const rotation = actions.findIndex(
       (a) => a.type === 'order' && a.kind === 'rotate' && a.target === state.units[1]!.id,
@@ -304,13 +304,13 @@ describe('J2 AI policies', () => {
   it('assaults simultaneously from both occupied climbing positions', () => {
     const state = createSiegeState(228);
     state.day = 2;
-    Object.assign(state.units[1]!, { x: 18, y: 19 });
-    Object.assign(state.units[2]!, { x: 29, y: 19 });
-    Object.assign(state.units[11]!, { x: 18, y: 16 });
-    Object.assign(state.units[13]!, { x: 29, y: 16 });
+    Object.assign(state.units[1]!, { x: 6, y: 10 });
+    Object.assign(state.units[2]!, { x: 10, y: 10 });
+    Object.assign(state.units[11]!, { x: 6, y: 7 });
+    Object.assign(state.units[13]!, { x: 10, y: 7 });
     state.engines = [
-      engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } }),
-      engine('ladder', 29, 19, { id: 'right', raisedAt: { x: 29, y: 16 } }),
+      engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } }),
+      engine('ladder', 10, 10, { id: 'right', raisedAt: { x: 10, y: 7 } }),
     ];
     const actions = planAttackerTurn(state, 'anyPrice');
     for (const unit of state.units.slice(1, 3))
@@ -330,9 +330,10 @@ describe('J2 AI policies', () => {
     (method) => {
       const state = createSiegeState(228);
       state.day = 2;
-      Object.assign(state.units[1]!, { x: 18, y: 19 });
-      Object.assign(state.units[11]!, { x: 18, y: 16 });
-      state.engines[0]!.raisedAt = { x: 18, y: 16 };
+      Object.assign(state.units[1]!, { x: 6, y: 10 });
+      Object.assign(state.units[11]!, { x: 6, y: 7 });
+      state.units[12]!.x = 5;
+      state.engines[0]!.raisedAt = { x: 6, y: 7 };
       const attacks = planAttackerTurn(state, method).filter(
         (a) => a.type === 'attack' && 'targetId' in a && a.targetId === state.units[11]!.id,
       );

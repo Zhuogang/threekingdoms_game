@@ -10,24 +10,24 @@ import { deserializeSiegeSave, serializeSiegeSave } from '../../src/siege/save';
 import { advanceWalkthrough, startWalkthrough } from '../../src/siege/ui/walkthrough';
 import { act, engine, refused } from './rulesFixtures';
 
-const top = { x: 20, y: 16, level: 'wall' as const };
-const key = '20,16';
+const top = { x: 7, y: 7, level: 'wall' as const };
+const key = '7,7';
 function fixture(route: 'ladder' | 'wallFoot') {
   const state = createSiegeState(228);
-  const base = { x: 20, y: route === 'ladder' ? 19 : 17, level: 'ground' as const };
+  const base = { x: 7, y: route === 'ladder' ? 10 : 8, level: 'ground' as const };
   const first = state.units.find((u) => u.id === 'shu-weiyan')!;
   const second = state.units.find((u) => u.id === 'shu-wangping')!;
   const third = state.units.find((u) => u.id === 'shu-liaohua')!;
   const wei = state.units.find((u) => u.id === 'wei-wangsheng')!;
   Object.assign(first, base);
-  Object.assign(second, base, { x: 21, y: 19 });
-  Object.assign(third, base, { x: 19, y: 19 });
-  Object.assign(wei, top, { x: 25 });
+  Object.assign(second, base, { x: 7, y: 11 });
+  Object.assign(third, base, { x: 6, y: 10 });
+  Object.assign(wei, top, { x: 9 });
   state.units = [first, second, third, wei];
-  state.engines = route === 'ladder' ? [engine('ladder', 20, 19, { raisedAt: top })] : [];
+  state.engines = route === 'ladder' ? [engine('ladder', 7, 10, { raisedAt: top })] : [];
   if (route === 'wallFoot') {
-    state.trenchFill['20,17'] = T.trenchCapacity;
-    state.trenchFill['20,18'] = T.trenchCapacity;
+    state.trenchFill['7,8'] = T.trenchCapacity;
+    state.trenchFill['7,9'] = T.trenchCapacity;
   }
   return { state, base, first, second, third, wei };
 }
@@ -43,13 +43,13 @@ for (const route of ['ladder', 'wallFoot'] as const) {
       expect(mounted.log).toContainEqual({
         day: 1,
         code: 'wallGained',
-        params: { unitId: first.id, from: `20,${base.y}`, cell: key },
+        params: { unitId: first.id, from: `7,${base.y}`, cell: key },
       });
       let next = act(mounted, { type: 'move', unitId: second.id, ...base });
       refused(next, { type: 'climb', unitId: second.id });
-      refused(next, { type: 'move', unitId: first.id, ...top, x: 19 });
+      refused(next, { type: 'move', unitId: first.id, ...top, x: 6 });
       next = endDay(next);
-      next = act(next, { type: 'move', unitId: first.id, ...top, x: 19 });
+      next = act(next, { type: 'move', unitId: first.id, ...top, x: 6 });
       const before = next.units.map(({ troops, wounded, morale }) => ({ troops, wounded, morale }));
       const logStart = next.log.length;
       next = act(next, { type: 'climb', unitId: second.id });
@@ -61,13 +61,13 @@ for (const route of ['ladder', 'wallFoot'] as const) {
       expect(next.log.slice(logStart).map((e) => e.code)).toEqual(['wallGained', 'climb']);
       next = act(next, { type: 'move', unitId: third.id, ...base });
       refused(next, { type: 'climb', unitId: third.id });
-      refused(next, { type: 'move', unitId: second.id, ...top, x: 21 });
+      refused(next, { type: 'move', unitId: second.id, ...top, x: 7 });
     });
 
     it('seals when Wei walks onto the cell, then requires foothold build-up again', () => {
       const { state, first, wei } = fixture(route);
       state.footholds[key] = 3;
-      wei.x = 21;
+      wei.x = 6;
       let next = act(state, { type: 'move', unitId: wei.id, ...top });
       expect(next.footholds[key]).toBe(0);
       expect(next.log).toContainEqual({
@@ -77,7 +77,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
       });
       refused(next, { type: 'climb', unitId: first.id });
       next = endDay(next);
-      next = act(next, { type: 'move', unitId: wei.id, ...top, x: 21 });
+      next = act(next, { type: 'move', unitId: wei.id, ...top, x: 6 });
       next = act(next, { type: 'climb', unitId: first.id });
       expect(next.footholds[key]).toBe(1);
       expect(next.units[0]!.level).toBe('ground');
@@ -86,7 +86,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
     it.each([1, 2] as const)('leaves foothold %i alone when Wei stands on it', (value) => {
       const { state, wei } = fixture(route);
       state.footholds[key] = value;
-      wei.x = 21;
+      wei.x = 6;
       const next = act(state, { type: 'move', unitId: wei.id, ...top });
       expect(next.footholds[key]).toBe(value);
       expect(next.log.some((e) => e.params.reason === 'sealed')).toBe(false);
@@ -108,9 +108,9 @@ for (const route of ['ladder', 'wallFoot'] as const) {
         Object.assign(wei, top);
         if (condition === 'routed') Object.assign(wei, { routed: true, morale: 0 });
         else if (condition === 'dead') wei.troops = 0;
-        else Object.assign(wei, { y: 15, level: 'ground' });
+        else Object.assign(wei, { y: 6, level: 'ground' });
         state.footholds[key] = 3;
-        const next = act(state, { type: 'move', unitId: second.id, x: 21, y: 20, level: 'ground' });
+        const next = act(state, { type: 'move', unitId: second.id, x: 8, y: 11, level: 'ground' });
         expect(next.footholds[key]).toBe(condition === 'routed' ? 0 : 3);
         expect(next.log.some((e) => e.params.reason === 'sealed')).toBe(condition === 'routed');
       },
@@ -121,7 +121,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
       (value) => {
         const { state, first } = fixture(route);
         state.footholds[key] = value;
-        const empty = act(state, { type: 'move', unitId: first.id, x: 20, y: 20, level: 'ground' });
+        const empty = act(state, { type: 'move', unitId: first.id, x: 8, y: 8, level: 'ground' });
         const next = endDay(empty);
         expect(next.footholds[key]).toBe(value === 3 ? 3 : 0);
         if (value < 3)
@@ -142,7 +142,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
     it('clears the breach when a mounted unit is thrown off that cell', () => {
       const { state, first, wei } = fixture(route);
       Object.assign(first, top, { morale: ROUTED_MORALE, troops: 2000 });
-      Object.assign(wei, { x: 21, troops: 300 });
+      Object.assign(wei, { x: 7, troops: 300 });
       state.footholds[key] = 3;
       const next = act(state, { type: 'attack', unitId: wei.id, targetId: first.id });
       expect(next.footholds[key]).toBe(0);
@@ -172,7 +172,7 @@ for (const route of ['ladder', 'wallFoot'] as const) {
 
     it('the existing defender AI walks a free defender onto the empty breach and seals it', () => {
       const { state, wei } = fixture(route);
-      wei.x = 18;
+      wei.x = 6;
       state.stats.firstWallDay = 1;
       // The two courtyard guards are already assigned; this wall unit is free to seal.
       const guards = createSiegeState(228)
@@ -213,16 +213,16 @@ describe('breach position and persistence', () => {
   it('keeps a breach over a filled wall foot even when the ladder there is wrecked', () => {
     const { state } = fixture('wallFoot');
     state.footholds[key] = 3;
-    state.engines = [engine('ladder', 20, 19, { raisedAt: top, wrecked: true, durability: 0 })];
+    state.engines = [engine('ladder', 7, 10, { raisedAt: top, wrecked: true, durability: 0 })];
     expect(endDay(state).footholds[key]).toBe(3);
-    state.trenchFill['20,17'] = 0;
+    state.trenchFill['7,8'] = 0;
     expect(endDay(state).footholds[key]).toBe(0);
   });
 
   it('round-trips a save with a completed breach without changing the save format', () => {
     const state = createSiegeState(228);
-    state.engines[0]!.raisedAt = { x: 18, y: 16 };
-    state.footholds['18,16'] = 3;
+    state.engines[0]!.raisedAt = { x: 6, y: 7 };
+    state.footholds['6,7'] = 3;
     const save = { playerSide: 'shu' as const, state, phase: 'battle' as const, facings: {} };
     expect(deserializeSiegeSave(serializeSiegeSave(save))).toEqual(save);
   });

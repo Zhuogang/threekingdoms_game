@@ -24,12 +24,12 @@ import {
 import { deserializeSiegeSave, serializeSiegeSave } from '../../src/siege/save';
 import { act, engine } from './rulesFixtures';
 
-const base = { x: 18, y: 19 };
-const top = { x: 18, y: 16 };
+const base = { x: 6, y: 10 };
+const top = { x: 6, y: 7 };
 function fixture() {
   const state = createSiegeState(228);
   const unit = state.units.find((u) => u.id === 'shu-weiyan')!;
-  Object.assign(unit, { x: 18, y: 21 });
+  Object.assign(unit, { x: 4, y: 10 });
   state.units = [unit];
   state.engines = [engine('ladder', base.x, base.y, { id: 'ladder' })];
   return { state, unit, ladder: state.engines[0]! };
@@ -40,15 +40,15 @@ describe('climb guide rule observations', () => {
     'reports a breach on ready and allyAbove via %s, at the base and on the way',
     (route) => {
       const { state, unit, ladder } = fixture();
-      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      const routeBase = route === 'ladder' ? base : { x: 6, y: 8 };
       if (route === 'ladder') ladder.raisedAt = top;
       else {
         state.engines = [];
-        state.trenchFill['18,17'] = T.trenchCapacity;
-        state.trenchFill['18,18'] = T.trenchCapacity;
+        state.trenchFill['6,8'] = T.trenchCapacity;
+        state.trenchFill['6,9'] = T.trenchCapacity;
       }
       Object.assign(unit, routeBase);
-      state.footholds['18,16'] = T.footholdComplete;
+      state.footholds['6,7'] = T.footholdComplete;
       const before = structuredClone(state);
       expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ready', breach: true, top });
       expect(state).toEqual(before);
@@ -89,8 +89,8 @@ describe('climb guide rule observations', () => {
     ladder.raisedAt = top;
     expect(climbGuide(state, unit.id)).toEqual({ kind: 'acted' });
     unit.acted = false;
-    state.engines.push(engine('ladder', 18, 19, { id: 'second', raisedAt: { x: 19, y: 16 } }));
-    state.units.push({ ...unit, id: 'enemy', side: 'wei', x: 19, y: 16, level: 'wall' });
+    state.engines.push(engine('ladder', 7, 10, { id: 'second', raisedAt: { x: 7, y: 7 } }));
+    state.units.push({ ...unit, id: 'enemy', side: 'wei', x: 7, y: 7, level: 'wall' });
     expect(climbGuide(state, unit.id)).toEqual({
       kind: 'ready',
       position: 'ladder',
@@ -136,7 +136,7 @@ describe('climb guide rule observations', () => {
       atBase: true,
       steps: 0,
     });
-    Object.assign(unit, { y: 21 });
+    Object.assign(unit, { x: 4, y: 10 });
     ladder.raisedAt = top;
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
@@ -146,14 +146,14 @@ describe('climb guide rule observations', () => {
       canReach: true,
       moved: false,
     });
-    unit.y = 25;
+    unit.x = 0;
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
       steps: 6,
       canReach: false,
       moved: false,
     });
-    Object.assign(unit, { y: 20, moved: true });
+    Object.assign(unit, { x: 5, y: 10, moved: true });
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
       steps: 1,
@@ -165,12 +165,12 @@ describe('climb guide rule observations', () => {
     'reports an ally above a %s at the base and on the way without changing routes or state',
     (route) => {
       const { state, unit, ladder } = fixture();
-      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      const routeBase = route === 'ladder' ? base : { x: 6, y: 8 };
       if (route === 'ladder') ladder.raisedAt = top;
       else {
         state.engines = [];
-        state.trenchFill['18,17'] = T.trenchCapacity;
-        state.trenchFill['18,18'] = T.trenchCapacity;
+        state.trenchFill['6,8'] = T.trenchCapacity;
+        state.trenchFill['6,9'] = T.trenchCapacity;
       }
       const ally: SiegeUnit = { ...unit, id: 'ally', ...top, level: 'wall', routed: true };
       state.units.push(ally);
@@ -193,14 +193,15 @@ describe('climb guide rule observations', () => {
       expect(climbGuide(state, unit.id)?.kind).toBe('ready');
       ally.troops = unit.troops;
       ally.level = 'ground';
+      ally.y = 6; // Ground formations belong inside, not under an ordinary wall cell.
       expect(climbGuide(state, unit.id)?.kind).toBe('ready');
     },
   );
   it('uses raisedAt for the chosen ladder and keeps the nearest route despite an occupied top', () => {
     const { state, unit, ladder } = fixture();
-    ladder.raisedAt = { x: 19, y: 16 };
-    state.engines.push(engine('ladder', 21, 21, { id: 'far', raisedAt: { x: 21, y: 16 } }));
-    Object.assign(unit, { x: 18, y: 20 });
+    ladder.raisedAt = { x: 7, y: 7 };
+    state.engines.push(engine('ladder', 7, 10, { id: 'far', raisedAt: { x: 7, y: 7 } }));
+    Object.assign(unit, { x: 5, y: 10 });
     state.units.push({ ...unit, id: 'ally', ...ladder.raisedAt, level: 'wall' });
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'allyAbove',
@@ -210,14 +211,14 @@ describe('climb guide rule observations', () => {
     });
   });
   it('checks defenders before allies at either kind of base', () => {
-    for (const y of [19, 17]) {
+    for (const y of [10, 8]) {
       const { state, unit, ladder } = fixture();
-      Object.assign(unit, { x: 18, y });
-      ladder.x = 18;
+      Object.assign(unit, { x: 6, y });
+      ladder.x = 6;
       ladder.y = y;
-      ladder.raisedAt = { x: 19, y: 16 };
-      if (y === 17) state.trenchFill['18,17'] = T.trenchCapacity;
-      else state.engines.push(engine('ladder', 18, 19, { id: 'second', raisedAt: top }));
+      ladder.raisedAt = { x: 6, y: 7 };
+      if (y === 8) state.trenchFill['6,8'] = T.trenchCapacity;
+      else state.engines.push(engine('ladder', 7, 10, { id: 'second', raisedAt: top }));
       state.units.push(
         { ...unit, id: 'ally', ...ladder.raisedAt, level: 'wall' },
         { ...unit, id: 'enemy', side: 'wei', ...top, level: 'wall' },
@@ -231,11 +232,12 @@ describe('climb guide rule observations', () => {
   it('checks an unraised ladder before a Shu unit on the wall, at the base and on the way', () => {
     const { state, unit } = fixture();
     state.units.push({ ...unit, id: 'ally', ...top, level: 'wall' });
-    for (const y of [19, 20]) {
+    for (const y of [10, 11]) {
+      unit.x = base.x;
       unit.y = y;
       expect(climbGuide(state, unit.id)).toMatchObject({
         kind: 'ladderNotRaised',
-        atBase: y === 19,
+        atBase: y === 10,
       });
     }
   });
@@ -245,11 +247,11 @@ describe('climb guide rule observations', () => {
         for (const atBase of [false, true])
           for (const moved of [false, true]) {
             const { state, unit, ladder } = fixture();
-            const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+            const routeBase = route === 'ladder' ? base : { x: 6, y: 8 };
             ladder.raisedAt = top;
             if (route === 'wallFoot') {
               state.engines = [];
-              state.trenchFill['18,17'] = T.trenchCapacity;
+              state.trenchFill['6,8'] = T.trenchCapacity;
             }
             Object.assign(unit, { ...routeBase, y: routeBase.y + (atBase ? 0 : 1), moved });
             if (occupant !== 'none')
@@ -268,12 +270,12 @@ describe('climb guide rule observations', () => {
   });
   it('uses actual reachability rather than Manhattan distance for blocked routes', () => {
     const { state, unit, ladder } = fixture();
-    Object.assign(unit, { x: 18, y: 20 });
+    Object.assign(unit, { x: 5, y: 10 });
     ladder.raisedAt = top;
     for (const [x, y] of [
-      [18, 21],
-      [17, 20],
-      [19, 20],
+      [4, 10],
+      [5, 9],
+      [5, 11],
     ])
       state.engines.push(engine('ram', x!, y!, { id: `${x},${y}` }));
     state.units.push({ ...unit, id: 'ally', ...base });
@@ -286,13 +288,13 @@ describe('climb guide rule observations', () => {
   });
   it('chooses distance, then free bases, then ready routes, then lowest x independent of array order', () => {
     const { state, unit } = fixture();
-    Object.assign(unit, { x: 20, y: 21 });
-    const west = engine('ladder', 18, 19, { id: 'west' });
-    const east = engine('ladder', 22, 19, { id: 'east', raisedAt: { x: 22, y: 16 } });
+    Object.assign(unit, { x: 8, y: 10 });
+    const west = engine('ladder', 6, 10, { id: 'west' });
+    const east = engine('ladder', 10, 10, { id: 'east', raisedAt: { x: 10, y: 7 } });
     state.engines = [east, west];
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
-      base: { x: 22, y: 19 },
+      base: { x: 10, y: 10 },
     });
     west.raisedAt = top;
     expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'walkToBase', base });
@@ -300,7 +302,7 @@ describe('climb guide rule observations', () => {
     state.units.push(ally);
     delete east.raisedAt;
     expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ladderNotRaised', ladderId: 'east' });
-    east.x = 23;
+    east.x = 11;
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
       base,
@@ -312,33 +314,33 @@ describe('climb guide rule observations', () => {
   it('finds filled wall feet and mounds, and uses shared geometry for their defenders', () => {
     const { state, unit } = fixture();
     state.engines = [];
-    Object.assign(unit, { x: 18, y: 18 });
-    state.trenchFill['18,18'] = T.trenchCapacity;
+    Object.assign(unit, { x: 6, y: 9 });
+    state.trenchFill['6,9'] = T.trenchCapacity;
     expect(climbGuide(state, unit.id)).toEqual({ kind: 'noRoute' });
-    state.trenchFill['18,17'] = T.trenchCapacity;
+    state.trenchFill['6,8'] = T.trenchCapacity;
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
       route: 'wallFoot',
-      base: { x: 18, y: 17 },
+      base: { x: 6, y: 8 },
       steps: 1,
       canReach: true,
     });
-    unit.y = 17;
+    unit.y = 8;
     expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ready', position: 'wallFoot' });
-    state.mounds['18,17'] = T.moundComplete;
+    state.mounds['6,8'] = T.moundComplete;
     expect(climbGuide(state, unit.id)).toMatchObject({ kind: 'ready', position: 'mound' });
-    state.units.push({ ...unit, id: 'enemy', side: 'wei', y: 16, level: 'wall' });
+    state.units.push({ ...unit, id: 'enemy', side: 'wei', y: 7, level: 'wall' });
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'defenderAbove',
       defenderId: 'enemy',
-      base: { x: 18, y: 17 },
+      base: { x: 6, y: 8 },
       top,
     });
   });
   it('prefers a wall foot over an equally distant unraised ladder', () => {
     const { state, unit } = fixture();
-    Object.assign(unit, { x: 18, y: 18 });
-    state.trenchFill['18,17'] = T.trenchCapacity;
+    Object.assign(unit, { x: 6, y: 9 });
+    state.trenchFill['6,8'] = T.trenchCapacity;
     expect(climbGuide(state, unit.id)).toMatchObject({
       kind: 'walkToBase',
       route: 'wallFoot',
@@ -350,7 +352,7 @@ describe('climb guide rule observations', () => {
     (changes) => {
       const { state, unit, ladder } = fixture();
       Object.assign(ladder, changes);
-      state.engines.push(engine('tower', 18, 20));
+      state.engines.push(engine('tower', 6, 10));
       expect(climbGuide(state, unit.id)).toEqual({ kind: 'noRoute' });
     },
   );
@@ -361,10 +363,10 @@ describe('climb guide rule observations', () => {
       actionContext(structuredClone(state), id, locale);
     const before = structuredClone(state);
     const guide = climbGuide(state, unit.id)!;
-    expect(context(unit.id, 'zh')).toBe(climbGuideText(guide, 'zh', () => ''));
+    expect(context(unit.id, 'zh')).toBe(`此处可填城堑。 ${climbGuideText(guide, 'zh', () => '')}`);
     expect(context(ladder.id, 'en')).toBe('Infantry can climb from this cell once it is raised.');
     expect(state).toEqual(before);
-    Object.assign(unit, { x: 17, y: 19 });
+    Object.assign(unit, { x: 5, y: 10 });
     expect(context(unit.id, 'zh')).toBe(
       `此处可填城堑。 ${climbGuideText(climbGuide(state, unit.id)!, 'zh', () => '')}`,
     );
@@ -539,7 +541,7 @@ describe('bilingual climb guide sentences', () => {
 });
 
 describe('day-one access and save compatibility', () => {
-  it('keeps the original starts on unique, passable, unoccupied deployment cells', () => {
+  it('keeps the required coarse starts on unique, passable, unoccupied deployment cells', () => {
     const state = createSiegeState(228);
     for (const unit of state.units) {
       const deployment = unit.side === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
@@ -554,43 +556,55 @@ describe('day-one access and save compatibility', () => {
       );
       expect(state.engines.some((e) => unit.level === 'ground' && sameCell(e, unit))).toBe(false);
     }
+    const starts = [
+      [8, 12],
+      [7, 11],
+      [8, 11],
+      [9, 11],
+      [4, 11],
+      [12, 11],
+      [3, 11],
+      [13, 11],
+      [2, 11],
+      [14, 11],
+    ];
     SHU_ROSTER.forEach((entry, index) => {
-      const expected =
-        index === 0 ? { x: 23, y: 25 } : { x: 19 + index, y: 21 + Math.floor((index - 1) / 3) };
-      expect(state.units.find((u) => u.id === entry.id)).toMatchObject(expected);
+      const [x, y] = starts[index]!;
+      expect(state.units.find((u) => u.id === entry.id)).toMatchObject({ x, y });
     });
   });
-  it('cannot reach either ladder from default deployment on day one and explains the wait', () => {
+  it('reports the new day-one access honestly: three infantry can reach an opening ladder', () => {
     const state = createSiegeState(228);
-    const ladders = state.engines.filter((e) => e.kind === 'ladder');
-    for (const ladder of ladders) ladder.raisedAt = { x: ladder.x, y: 16 };
-    const infantry = state.units.filter((u) => u.side === 'shu' && u.troopType === 'infantry');
-    for (const unit of infantry) {
-      const reachable = reachableCells(state, unit.id);
-      for (const ladder of ladders)
-        expect(reachable.some((c) => c.level === 'ground' && sameCell(c, ladder))).toBe(false);
+    for (const ladder of state.engines.filter((e) => e.kind === 'ladder'))
+      ladder.raisedAt = { x: ladder.x, y: 7 };
+    const ready: string[] = [];
+    for (const unit of state.units.filter((u) => u.side === 'shu' && u.troopType === 'infantry')) {
       const guide = climbGuide(state, unit.id)!;
-      expect(guide).toMatchObject({ kind: 'walkToBase', canReach: false, moved: false });
-      expect(climbGuideText(guide, 'zh', () => '')).toContain('今天走不到');
-      expect(climbGuideText(guide, 'en', () => '')).toContain('too far today');
+      expect(guide.kind).toBe('walkToBase');
+      if (guide.kind === 'walkToBase' && guide.canReach) ready.push(unit.id);
+      else {
+        expect(climbGuideText(guide, 'zh', () => '')).toContain('今天走不到');
+        expect(climbGuideText(guide, 'en', () => '')).toContain('too far today');
+      }
     }
+    expect(ready).toEqual(['shu-wangping', 'shu-wuyi', 'shu-liaohua']);
   });
   it.each([
-    ['shu-weiyan', 18],
-    ['shu-captain-2', 29],
+    ['shu-weiyan', 6],
+    ['shu-captain-2', 10],
   ] as const)(
     'reaches the matching ladder and walkthrough step four on day one after redeploying %s, in either order',
     (unitId, x) => {
       for (const moveFirst of [true, false]) {
         let state = createSiegeState(228);
-        state = deployUnit(state, unitId, { x, y: 21, level: 'ground' });
-        const unit = state.units.find((u) => u.id === unitId)!;
-        const ladder = state.engines.find((e) => e.kind === 'ladder' && e.x === unit.x)!;
+        state.units = state.units.filter((u) => u.side !== 'wei' || u.x !== x);
+        state = deployUnit(state, unitId, { x: x - 1, y: 10, level: 'ground' });
+        const ladder = state.engines.find((e) => e.kind === 'ladder' && e.x === x)!;
         expect(reachableCells(state, unitId)).toContainEqual({
           x: ladder.x,
           y: ladder.y,
           level: 'ground',
-          cost: 2,
+          cost: 1,
         });
         let progress = startWalkthrough(state);
         const ui = { tab: 'commands', selected: ladder.id };
@@ -606,20 +620,20 @@ describe('day-one access and save compatibility', () => {
         expect(progress).toMatchObject({ step: 4, infantryId: unitId });
         expect(siegeCommands(state, unitId).find((c) => c.kind === 'climb')?.reason).toBeNull();
         state = act(state, { type: 'climb', unitId });
-        expect(state.footholds[`${ladder.x},16`]).toBe(1);
+        expect(state.footholds[`${ladder.x},7`]).toBe(1);
         expect(state.day).toBe(1);
       }
     },
   );
-  it('loads and continues an old-position v0.2 save without moving its units or changing its format', () => {
+  it('loads and continues a coarse v0.3 save without moving its units', () => {
     const state = createSiegeState(228);
     Object.assign(
       state.units.find((u) => u.id === 'shu-weiyan')!,
-      { x: 20, y: 21 },
+      { x: 7, y: 10 },
     );
     Object.assign(
       state.units.find((u) => u.id === 'shu-captain-2')!,
-      { x: 26, y: 23 },
+      { x: 9, y: 11 },
     );
     const save = { state, phase: 'battle' as const, playerSide: 'shu' as const, facings: {} };
     const loaded = deserializeSiegeSave(serializeSiegeSave(save));
@@ -627,29 +641,32 @@ describe('day-one access and save compatibility', () => {
     const next = act(loaded.state, {
       type: 'move',
       unitId: 'shu-weiyan',
-      x: 18,
-      y: 20,
+      x: 6,
+      y: 10,
       level: 'ground',
     });
-    expect(next.units.find((u) => u.id === 'shu-weiyan')).toMatchObject({ x: 18, y: 20 });
+    expect(next.units.find((u) => u.id === 'shu-weiyan')).toMatchObject({ x: 6, y: 10 });
     expect(loaded.state).toEqual(state);
   });
 });
 
 describe('walkthrough step three day rhythm', () => {
   it.each([
-    ['shu-weiyan', 'starting-ladder-1', 18],
-    ['shu-captain-2', 'starting-ladder-2', 29],
+    ['shu-weiyan', 'starting-ladder-1', 6],
+    ['shu-captain-2', 'starting-ladder-2', 10],
   ] as const)(
     'checks every available infantry move toward %s’s ladder without mutation',
     (unitId, ladderId, x) => {
       let state = createSiegeState(228);
+      state.units = state.units.filter(
+        (u) => u.side === 'wei' || u.troopType === 'archer' || u.id === unitId,
+      );
       const progress = { ...startWalkthrough(state), step: 3, ladderId };
       const before = structuredClone(state);
       expect(walkthroughNeedsEndDay(progress, state, 'shu')).toBe(true);
       expect(state).toEqual(before);
-      expect(walkthroughTargets(progress, state, 'shu')).toEqual([{ x, y: 19, level: 'ground' }]);
-      state = deployUnit(state, unitId, { x, y: 21, level: 'ground' });
+      expect(walkthroughTargets(progress, state, 'shu')).toEqual([{ x, y: 10, level: 'ground' }]);
+      state = deployUnit(state, unitId, { x: x - 1, y: 10, level: 'ground' });
       expect(walkthroughNeedsEndDay(progress, state, 'shu')).toBe(false);
       const unit = state.units.find((u) => u.id === unitId)!;
       for (const changes of [
@@ -670,7 +687,7 @@ describe('walkthrough step three day rhythm', () => {
       state.units = state.units.filter((u) => u.id !== unit.id);
       Object.assign(
         state.units.find((u) => u.troopType === 'archer')!,
-        { x, y: 20 },
+        { x, y: 10 },
       );
       expect(walkthroughNeedsEndDay(progress, state, 'shu')).toBe(true);
     },
@@ -695,32 +712,38 @@ describe('S guidance after mounting and ally make-way', () => {
     '%s describes all next goals with actual walking distances and a free target',
     (locale) => {
       const { state, unit } = fixture();
-      Object.assign(unit, { x: 18, y: 16, level: 'wall' });
+      Object.assign(unit, { x: 6, y: 7, level: 'wall' });
       state.engines = [];
       let guide = nextGoalGuide(state, unit.id)!;
       expect(guide).toMatchObject({
         kind: 'gate',
-        steps: 5,
-        target: { x: 23, y: 16, level: 'wall' },
+        steps: 2,
+        target: { x: 8, y: 7, level: 'wall' },
       });
       expect(nextGoalGuideText(guide, locale, () => '')).toBe(
-        siegeText(locale, 'nextGate', { n: 5 }),
+        siegeText(locale, 'nextGate', { n: 2 }),
       );
       expect(actionContext(state, unit.id, locale)).toBe(
         nextGoalGuideText(guide, locale, () => ''),
       );
-      // A blocked inner approach forces a longer actual walking route.
-      Object.assign(unit, { x: 18, y: 15, level: 'ground' });
-      state.units.push({ ...unit, id: 'blocker', side: 'wei', x: 20 });
+      // Block the short road and the side-gate inside cells: the nearest free
+      // opening position requires a real detour around the courtyard.
+      Object.assign(unit, { x: 8, y: 4, level: 'ground' });
+      for (const [x, y] of [
+        [8, 3],
+        [8, 5],
+        [5, 5],
+        [11, 5],
+      ])
+        state.units.push({ ...unit, id: `blocker-${x}-${y}`, side: 'wei', x: x!, y: y! });
       guide = nextGoalGuide(state, unit.id)!;
       expect(guide.kind).toBe('gate');
-      if ('target' in guide) {
+      if ('target' in guide)
         expect(guide.steps).toBeGreaterThan(
           Math.abs(unit.x - guide.target.x) + Math.abs(unit.y - guide.target.y),
         );
-      }
-      state.units.pop();
-      Object.assign(unit, { x: 23, y: 15 });
+      state.units.splice(1);
+      Object.assign(unit, { x: 8, y: 6 });
       expect(nextGoalGuide(state, unit.id)).toEqual({ kind: 'openNow' });
       expect(nextGoalGuideText({ kind: 'openNow' }, locale, () => '')).toBe(
         siegeText(locale, 'nextOpenNow'),
@@ -731,8 +754,8 @@ describe('S guidance after mounting and ally make-way', () => {
         ...unit,
         id: 'guard',
         side: 'wei' as const,
-        x: 24,
-        y: 16,
+        x: 8,
+        y: 7,
         level: 'wall' as const,
       };
       state.units.push(enemy);
@@ -762,15 +785,15 @@ describe('S guidance after mounting and ally make-way', () => {
     '%s gives all three ally sentences in both locales',
     (route) => {
       const { state, unit, ladder } = fixture();
-      const routeBase = route === 'ladder' ? base : { x: 18, y: 17 };
+      const routeBase = route === 'ladder' ? base : { x: 6, y: 8 };
       Object.assign(unit, routeBase);
       if (route === 'ladder') ladder.raisedAt = top;
       else {
         state.engines = [];
-        state.trenchFill['18,17'] = 3;
-        state.trenchFill['18,18'] = 3;
+        state.trenchFill['6,8'] = 3;
+        state.trenchFill['6,9'] = 3;
       }
-      state.footholds['18,16'] = 3;
+      state.footholds['6,7'] = 3;
       const ally = { ...unit, id: 'ally', ...top, level: 'wall' as const };
       state.units.push(ally);
       for (const status of ['ready', 'moved', 'boxed'] as const) {
@@ -778,8 +801,8 @@ describe('S guidance after mounting and ally make-way', () => {
         state.units = [unit, ally];
         if (status === 'boxed')
           state.units.push(
-            { ...ally, id: 'left', side: 'wei', x: 17 },
-            { ...ally, id: 'right', side: 'wei', x: 19 },
+            { ...ally, id: 'left', side: 'wei', x: 5 },
+            { ...ally, id: 'right', side: 'wei', x: 7 },
           );
         const guide = climbGuide(state, unit.id)!;
         expect(guide.kind).toBe(status === 'ready' ? 'ready' : 'allyAbove');

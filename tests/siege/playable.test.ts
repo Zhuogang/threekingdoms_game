@@ -22,8 +22,8 @@ describe('playable siege adapters', () => {
     const swapped = deployUnit(state, first.id, other);
     expect(swapped.units[1]!.x).toBe(other.x);
     expect(swapped.units[2]!.x).toBe(first.x);
-    expect(deployUnit(state, first.id, { x: 10, y: 3, level: 'ground' })).toBe(state);
-    expect(deployUnit(state, first.id, { x: 15, y: 23, level: 'ground' })).toBe(state);
+    expect(deployUnit(state, first.id, { x: 2, y: 1, level: 'ground' })).toBe(state);
+    expect(deployUnit(state, first.id, { x: 5, y: 11, level: 'ground' })).toBe(state);
     expect(state.units[1]!.x).toBe(first.x);
   });
   it('shows rule rejection reasons and spends stand by without modifying combat rules', () => {
@@ -45,7 +45,7 @@ describe('playable siege adapters', () => {
   });
   it('keeps playback final state identical to the daily resolver, including when frames are skipped', () => {
     const state = createSiegeState(48);
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     const before = structuredClone(state),
       resolution = resolveSiegeDay(state);
     expect(resolution.frames.length).toBeGreaterThan(0);
@@ -58,18 +58,18 @@ describe('state-driven artwork', () => {
     const state = createSiegeState(1);
     state.gates.south.durability = T.southGateDurability / 2 - 1;
     state.gates.north.durability = 0;
-    state.trenchFill['20,18'] = 1;
-    state.trenchFill['21,18'] = 1.5;
-    state.trenchFill['22,18'] = 3;
+    state.trenchFill['5,9'] = 1;
+    state.trenchFill['6,9'] = 1.5;
+    state.trenchFill['7,9'] = 3;
     state.innerWall[0] = 1;
     state.innerWall[1] = 4;
     const patches = statePatches(state);
     expect(patches.find((p) => p.id === 'south')?.state).toBe('gate-south-damaged');
     expect(patches.find((p) => p.id === 'north')?.state).toBe('gate-north-broken');
-    expect(patches.find((p) => p.id === 'trench-20,18')).toBeUndefined();
-    expect(patches.find((p) => p.id === 'trench-21,18')).toMatchObject({
+    expect(patches.find((p) => p.id === 'trench-16,18')).toBeUndefined();
+    expect(patches.find((p) => p.id === 'trench-18,18')).toMatchObject({
       state: 'trench-half',
-      clip: [1344, 864, 1408, 936],
+      clip: [1152, 864, 1216, 936],
     });
     expect(patches.find((p) => p.id === 'trench-22,18')?.state).toBe('trench-filled');
     expect(patches.find((p) => p.id === 'inner-0')?.occluder).toBeUndefined();
@@ -82,18 +82,18 @@ describe('state-driven artwork', () => {
     expect(INNER_WALL_SEGMENTS).toHaveLength(4);
   });
   it('uses engine kind, movement orientation, raised, burning and wreck art', () => {
-    const ladder = engine('ladder', 20, 19);
+    const ladder = engine('ladder', 7, 10);
     expect(engineSprite(ladder).sheet).toBe('s4-01-ladder-cart');
     expect(engineSprite(ladder, 'west').flip).toBe(true);
-    expect(engineSprite({ ...ladder, raisedAt: { x: 20, y: 16 }, burning: true })).toMatchObject({
+    expect(engineSprite({ ...ladder, raisedAt: { x: 7, y: 7 }, burning: true })).toMatchObject({
       sheet: 's4-02-ladder-on-wall',
       burning: true,
     });
     expect(engineSprite({ ...ladder, wrecked: true }).sheet).toBe('s4-01-ladder-cart');
-    expect(engineSprite(engine('tower', 20, 20, { burning: true })).sheet).toBe(
+    expect(engineSprite(engine('tower', 7, 10, { burning: true })).sheet).toBe(
       's4-05-siege-tower-wrecks',
     );
-    expect(engineSprite(engine('tower', 20, 20, { wrecked: true })).burning).toBe(false);
+    expect(engineSprite(engine('tower', 7, 10, { wrecked: true })).burning).toBe(false);
   });
   it('maps factions, troop types, commanders, filling and climbing to the approved pose sets', () => {
     const state = createSiegeState(1);
@@ -107,11 +107,11 @@ describe('state-driven artwork', () => {
     expect(
       unitVisual(state, { ...state.units[1]!, acted: true }, 'north', 'fillTrench').action,
     ).toBe('dump');
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-    state.trenchFill['21,17'] = 3;
-    expect(climbableCells(state)).toContainEqual({ x: 20, y: 16, level: 'wall' });
-    expect(climbableCells(state)).toContainEqual({ x: 21, y: 16, level: 'wall' });
-    state.footholds['20,16'] = 1;
-    expect(unitVisual(state, { ...state.units[1]!, x: 20, y: 19 }).action).toBe('climb-a');
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
+    state.trenchFill['7,8'] = 3;
+    expect(climbableCells(state)).toContainEqual({ x: 7, y: 7, level: 'wall' });
+    expect(climbableCells(state)).toContainEqual({ x: 7, y: 7, level: 'wall' });
+    state.footholds['7,7'] = 1;
+    expect(unitVisual(state, { ...state.units[1]!, x: 7, y: 10 }).action).toBe('climb-a');
   });
 });

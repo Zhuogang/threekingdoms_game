@@ -18,9 +18,7 @@ const southTrenchKeys = new Set(SOUTH_TRENCH.map(cellKey));
 const segmentIndexes = new Map(
   INNER_WALL_SEGMENTS.flatMap(({ cells, index }) => cells.map((c) => [cellKey(c), index] as const)),
 );
-const rampHeights = new Map(
-  RAMPS.flatMap(({ cells }) => cells.map((c, index) => [cellKey(c), index + 1] as const)),
-);
+const rampKeys = new Set(RAMPS.map(({ ground }) => cellKey(ground)));
 
 export function isMapCell(x: number, y: number): boolean {
   return (
@@ -72,7 +70,13 @@ export function cellTerrain(state: SiegeState, x: number, y: number): SiegeTerra
     case 'R': {
       const index = segmentIndexes.get(key)!;
       const progress = state.innerWall[index] ?? 0;
-      return progress === 4 ? 'wall' : progress > 0 ? 'works' : 'plain';
+      return progress === 4
+        ? 'wall'
+        : rampKeys.has(key)
+          ? 'ramp'
+          : progress > 0
+            ? 'works'
+            : 'plain';
     }
     default:
       return 'plain';
@@ -81,7 +85,7 @@ export function cellTerrain(state: SiegeState, x: number, y: number): SiegeTerra
 
 export function cellHeight(state: SiegeState, x: number, y: number, level: SiegeLevel): number {
   const terrain = cellTerrain(state, x, y);
-  if (terrain === 'ramp') return rampHeights.get(cellKey({ x, y }))!;
+  if (terrain === 'ramp') return 2;
   if (level === 'wall' && terrain === 'wall') return layoutSymbol(x, y) === 'R' ? 2 : 3;
   if (level === 'wall' && terrain === 'gate') return 3;
   return 0;

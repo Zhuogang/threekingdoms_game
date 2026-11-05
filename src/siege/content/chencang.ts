@@ -1,9 +1,10 @@
+import { APPROACH_ROW, ROAD_COL, TRENCH_INNER_ROW, TRENCH_OUTER_ROW } from './coarseGrid';
 import { SIEGE_TUNING } from '../rules/tuning';
 import { OFFICER_CATALOG_BY_ID } from '../../v03/content/officer-catalog';
 import type { Cell, GateId, SiegePosition, SiegeRosterEntry, SiegeTroopType } from '../rules/types';
 
 /** Exact copy of docs/siege/chencang/art/layout.txt, verified against it by tests. */
-export const CHENCANG_LAYOUT: readonly string[] = [
+export const CHENCANG_ART_LAYOUT: readonly string[] = [
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '................................................',
   '..............++++++++++++++++++++++++++++++++++',
@@ -38,6 +39,24 @@ export const CHENCANG_LAYOUT: readonly string[] = [
   '^^^^^^^...P............++............P..........',
 ];
 
+/** Rules board. Each cell spans the fine art coordinates in coarseGrid.ts. */
+export const CHENCANG_LAYOUT: readonly string[] = [
+  '.................',
+  '^..-----=-----...',
+  '^..-OWWWGWWWO-...',
+  '^..-W..M+M..W-...',
+  'T..-WMBB+KKMW-.T.',
+  '^..=G+++++++G=...',
+  '^..-WRBR+RBRW-..^',
+  '^..-OWWWGWWWO-..^',
+  '^..-----=-----..^',
+  '...-----=-----..^',
+  '........+.......^',
+  '.....SS.+.SS.....',
+  '^.PPPPPP+PPPPPP..',
+  '^.Ptt.t.+CC.ttPT.',
+];
+
 export const MAP_WIDTH = CHENCANG_LAYOUT[0]!.length;
 export const MAP_HEIGHT = CHENCANG_LAYOUT.length;
 export const cellKey = ({ x, y }: Cell): string => `${x},${y}`;
@@ -53,7 +72,6 @@ const adjacent = ({ x, y }: Cell): Cell[] => [
   { x, y: y + 1 },
   { x: x - 1, y },
 ];
-const distance = (a: Cell, b: Cell): number => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
 /** Connected components retain row-major order, so IDs and segment indexes stay stable. */
 function blocks(symbol: string): Cell[][] {
@@ -111,32 +129,53 @@ export const GATES: Readonly<Record<GateId, GateGeometry>> = {
 
 export interface RampGeometry {
   id: string;
-  /** Low end first, high end last. Ramp positions use the ground level tag. */
+  /** Singleton retained for the temporary render bridge. Uses the ground level tag. */
   cells: readonly Cell[];
   ground: Cell;
   wall: Cell;
 }
 
-export const RAMPS: readonly RampGeometry[] = blocks('M').map((run, index) => {
-  const gateCells = cellsWith('G');
-  const gateDistance = (cell: Cell) => Math.min(...gateCells.map((g) => distance(cell, g)));
-  const cells = [...run].sort((a, b) => gateDistance(a) - gateDistance(b));
-  const low = cells[0]!;
-  const high = cells.at(-1)!;
-  const next = cells[1]!;
-  const wall = adjacent(high).find(
-    ({ x, y }) => layoutSymbol(x, y) === 'W' || layoutSymbol(x, y) === 'O',
-  )!;
-  return {
-    id: `ramp-${index + 1}`,
-    cells,
-    ground: { x: low.x + low.x - next.x, y: low.y + low.y - next.y },
-    wall,
-  };
+/** One ground cell per painted ramp; row-six ramps double as inner-wall sites. */
+export const RAMPS: readonly RampGeometry[] = [
+  [
+    [7, 3],
+    [7, 2],
+  ],
+  [
+    [9, 3],
+    [9, 2],
+  ],
+  [
+    [5, 4],
+    [4, 4],
+  ],
+  [
+    [11, 4],
+    [12, 4],
+  ],
+  [
+    [5, 6],
+    [4, 6],
+  ],
+  [
+    [11, 6],
+    [12, 6],
+  ],
+  [
+    [7, 6],
+    [7, 7],
+  ],
+  [
+    [9, 6],
+    [9, 7],
+  ],
+].map(([low, high], index) => {
+  const ground = { x: low![0]!, y: low![1]! };
+  return { id: `ramp-${index + 1}`, cells: [ground], ground, wall: { x: high![0]!, y: high![1]! } };
 });
 
 export const SOUTH_TRENCH: readonly Cell[] = cellsWith('-').filter(
-  ({ y }) => y === CITY_BOUNDS.south + 1 || y === CITY_BOUNDS.south + 2,
+  ({ y }) => y === TRENCH_INNER_ROW || y === TRENCH_OUTER_ROW,
 );
 
 export const INNER_WALL_SEGMENTS = blocks('R').map((cells, index) => ({
@@ -145,17 +184,15 @@ export const INNER_WALL_SEGMENTS = blocks('R').map((cells, index) => ({
   buildPoints: 4 as const,
 }));
 
-const hallRow = Math.min(...cellsWith('K').map((cell) => cell.y));
-export const COURTYARD: readonly Cell[] = cellsWith('K').filter(({ y }) => y > hallRow);
+export const COURTYARD: readonly Cell[] = cellsWith('K');
 
 export const WORKSHOPS = blocks('S').map((cells, index) => ({
   id: `workshop-${index + 1}`,
   cells: cells as readonly Cell[],
-  // Even-width fronts have two middle cells; use the western one consistently.
-  spawn: {
-    x: Math.floor((Math.min(...cells.map((c) => c.x)) + Math.max(...cells.map((c) => c.x))) / 2),
-    y: Math.max(...cells.map((c) => c.y)) + 1,
-  },
+  // Inner column first, then the other cell directly north of this workshop.
+  spawns: [...cells]
+    .sort((a, b) => Math.abs(a.x - ROAD_COL) - Math.abs(b.x - ROAD_COL))
+    .map(({ x }) => ({ x, y: APPROACH_ROW })),
 }));
 
 const palisade = cellsWith('P');
@@ -164,19 +201,18 @@ const campEast = Math.max(...palisade.map((c) => c.x));
 const campNorth = Math.min(...palisade.map((c) => c.y));
 const isOpen = ({ x, y }: Cell): boolean => '.+=XR'.includes(layoutSymbol(x, y)!);
 
+/** Open ground enclosed by the camp's palisade, in stable row-major order. */
+export const CAMP_CELLS: readonly Cell[] = allCells.filter(
+  (cell) => isOpen(cell) && cell.x > campWest && cell.x < campEast && cell.y >= campNorth,
+);
+
 export const DEPLOY_SHU: readonly SiegePosition[] = allCells
   .filter(
     (cell) =>
-      isOpen(cell) &&
-      ((cell.y >= 21 && cell.y <= 25) ||
-        (cell.x > campWest && cell.x < campEast && cell.y > campNorth)),
+      (isOpen(cell) && cell.y >= APPROACH_ROW && cell.y <= APPROACH_ROW + 1) ||
+      CAMP_CELLS.some((camp) => sameCell(camp, cell)),
   )
   .map((cell) => ({ ...cell, level: 'ground' }));
-
-/** Open ground enclosed by the camp's palisade, in stable row-major order. */
-export const CAMP_CELLS: readonly Cell[] = allCells.filter(
-  (cell) => isOpen(cell) && cell.x > campWest && cell.x < campEast && cell.y > campNorth,
-);
 
 export const DEPLOY_WEI: readonly SiegePosition[] = allCells.flatMap((cell): SiegePosition[] => {
   const symbol = layoutSymbol(cell.x, cell.y)!;

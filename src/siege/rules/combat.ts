@@ -1,3 +1,4 @@
+import { TRENCH_OUTER_ROW } from '../content/coarseGrid';
 import { insideCity, makeWayDestination } from './movement';
 import type { SiegePosition } from './types';
 import { cloneSiegeState } from './clone';
@@ -383,7 +384,6 @@ export function predictSiegeClimb(
       !state.units.some(
         (u) =>
           u.troops > 0 &&
-          u.level === 'wall' &&
           sameCell(u, cell) &&
           (u.side !== source.side ||
             wallFoothold(state, cell) < T.footholdComplete ||
@@ -391,7 +391,7 @@ export function predictSiegeClimb(
       ),
   );
   if (!top) return null;
-  const ally = state.units.find((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, top));
+  const ally = state.units.find((u) => u.troops > 0 && sameCell(u, top));
   const makeWay = ally ? { unitId: ally.id, to: makeWayDestination(state, ally)! } : undefined;
   const position = climbingPosition(state, source, top)!;
   const assault = options.assault === true;
@@ -622,11 +622,7 @@ export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUni
     const from = { x: unit.x, y: unit.y };
     const free = (cell: Cell) =>
       !state.units.some(
-        (other) =>
-          other.id !== unit.id &&
-          other.troops > 0 &&
-          other.level === 'ground' &&
-          sameCell(other, cell),
+        (other) => other.id !== unit.id && other.troops > 0 && sameCell(other, cell),
       ) &&
       !state.engines.some(
         (engine) =>
@@ -661,7 +657,7 @@ export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUni
       }))
         .filter(
           (cell) =>
-            cell.y > 18 &&
+            cell.y > TRENCH_OUTER_ROW &&
             isMapCell(cell.x, cell.y) &&
             ['plain', 'hill', 'wood', 'works'].includes(cellTerrain(state, cell.x, cell.y)) &&
             free(cell),
@@ -692,22 +688,22 @@ export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUni
   unit.acted = true;
   if (unit.side !== 'wei' || unit.level !== 'wall') return unit;
   if (unit.troops > 0) {
-    const occupied = (cell: Cell, level: 'wall' | 'ground') =>
+    const occupied = (cell: Cell) =>
       state.units.some(
-        (other) =>
-          other.id !== unit.id &&
-          other.troops > 0 &&
-          other.level === level &&
-          sameCell(other, cell),
+        (other) => other.id !== unit.id && other.troops > 0 && sameCell(other, cell),
       );
     const queue = [{ x: unit.x, y: unit.y, path: [] as Cell[] }];
     const seen = new Set([cellKey(unit)]);
     for (let index = 0; index < queue.length; index++) {
       const current = queue[index]!;
-      const ramp = RAMPS.find((entry) => sameCell(entry.wall, current));
-      if (ramp && !occupied(ramp.cells.at(-1)!, 'ground')) {
+      const ramp = RAMPS.find(
+        (entry) =>
+          sameCell(entry.wall, current) &&
+          cellTerrain(state, entry.ground.x, entry.ground.y) === 'ramp',
+      );
+      if (ramp && !occupied(ramp.ground)) {
         const path = current.path;
-        if (path.length < 3) Object.assign(unit, ramp.cells.at(-1)!, { level: 'ground' });
+        if (path.length < 3) Object.assign(unit, ramp.ground, { level: 'ground' });
         else Object.assign(unit, path[Math.min(3, path.length) - 1]!);
         return unit;
       }
@@ -720,7 +716,7 @@ export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUni
         if (
           !isMapCell(next.x, next.y) ||
           !['wall', 'gate'].includes(cellTerrain(state, next.x, next.y)) ||
-          occupied(next, 'wall') ||
+          occupied(next) ||
           seen.has(cellKey(next))
         )
           continue;
@@ -818,7 +814,13 @@ export function displaceDefender(state: SiegeState, defender: SiegeUnit): void {
   let retreat: Cell | undefined;
   for (let index = 0; index < queue.length; index++) {
     const cell = queue[index]!;
-    if (cell.first && RAMPS.some((ramp) => sameCell(ramp.wall, cell))) {
+    if (
+      cell.first &&
+      RAMPS.some(
+        (ramp) =>
+          sameCell(ramp.wall, cell) && cellTerrain(state, ramp.ground.x, ramp.ground.y) === 'ramp',
+      )
+    ) {
       retreat = cell.first;
       break;
     }
@@ -844,11 +846,7 @@ export function displaceDefender(state: SiegeState, defender: SiegeUnit): void {
   if (
     retreat &&
     !state.units.some(
-      (unit) =>
-        unit.id !== defender.id &&
-        unit.troops > 0 &&
-        unit.level === 'wall' &&
-        sameCell(unit, retreat),
+      (unit) => unit.id !== defender.id && unit.troops > 0 && sameCell(unit, retreat),
     )
   ) {
     Object.assign(defender, retreat);

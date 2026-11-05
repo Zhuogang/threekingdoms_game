@@ -1,3 +1,4 @@
+import { CHENCANG_ART_LAYOUT } from '../content/chencang';
 import { campSprites, type SheetFootprints } from './mapPieces';
 import type { SceneObject, SiegeFrame } from './scene';
 const ART = '/docs/siege/chencang/art';
@@ -25,15 +26,7 @@ const MAP_FILES = urls(
     },
   ),
 );
-const LAYOUT = only(
-  import.meta.glob<string>('/docs/siege/chencang/art/layout.txt', {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  }),
-)
-  .trimEnd()
-  .split('\n');
+const LAYOUT = CHENCANG_ART_LAYOUT;
 const SHEETS = import.meta.glob<SheetFootprints>(
   '/docs/siege/chencang/art/s[248]-*/footprints.json',
   {

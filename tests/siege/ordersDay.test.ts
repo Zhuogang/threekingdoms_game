@@ -56,7 +56,7 @@ describe('daily commander orders', () => {
       wounded: 101,
       rotateRecoveryDay: 2,
     });
-    refused(state, { type: 'move', unitId, x: 12, y: 27, level: 'ground' });
+    refused(state, { type: 'move', unitId, x: 3, y: 12, level: 'ground' });
     state = endDay(state);
     expect(state.units[1]).toMatchObject({
       troops: troops + 50,
@@ -72,10 +72,10 @@ describe('daily commander orders', () => {
     let state = createSiegeState(5);
     const shu = state.units[1]!;
     const wei = state.units[11]!;
-    Object.assign(shu, { x: 22, y: 18, troopType: 'archer' });
+    Object.assign(shu, { x: 7, y: 9, troopType: 'archer' });
     const normal = predictSiegeAttack(state, shu.id, wei.id)!;
     state = act(state, { type: 'order', side: 'wei', kind: 'holdFast', target: wei.id });
-    expect(state.holdFast!.cells.map((cell) => cell.x)).toEqual([15, 16, 17, 18, 19, 20, 21, 22]);
+    expect(state.holdFast!.cells.map((cell) => cell.x)).toEqual([5, 6, 7]);
     expect(predictSiegeAttack(state, shu.id, wei.id)!.modifiers.holdFast).toBe(1);
     state = endDay(state);
     const held = predictSiegeAttack(state, shu.id, wei.id)!;
@@ -114,7 +114,7 @@ describe('day sequence, acts and outcomes', () => {
   it('resolves only the night in burning, construction, morale, supplies and weather order', () => {
     let state = createSiegeState(7);
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'earthCart' });
-    state.engines = [engine('ladder', 20, 19, { durability: 15, burning: true })];
+    state.engines = [engine('ladder', 7, 10, { durability: 15, burning: true })];
     state.units[1]!.morale = 60;
     state.units[2]!.morale = 60;
     state.units[2]!.lostTroopsToday = 1;
@@ -156,13 +156,13 @@ describe('day sequence, acts and outcomes', () => {
 
   it('enters act 2 on day 4 without resetting persistent construction', () => {
     let state = createSiegeState(9);
-    state.trenchFill['20,18'] = 1.5;
+    state.trenchFill['7,9'] = 1.5;
     for (let day = 1; day <= 3; day++) {
       expect(state.act).toBe(1);
       state = endDay(state);
     }
     expect(state).toMatchObject({ day: 4, act: 2 });
-    expect(state.trenchFill['20,18']).toBe(1.5);
+    expect(state.trenchFill['7,9']).toBe(1.5);
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'tower' });
     expect(state.workshops[0]!.daysRemaining).toBe(3);
   });

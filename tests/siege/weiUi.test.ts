@@ -70,10 +70,10 @@ describe('Wei playable interface', () => {
     const state = createSiegeState(1);
     state.day = 2;
     const archer = state.units.find((u) => u.side === 'wei' && u.troopType === 'archer')!;
-    Object.assign(archer, { x: 18, y: 16 });
-    Object.assign(state.units[1]!, { x: 18, y: 19 });
-    state.engines[0]!.raisedAt = { x: 18, y: 16 };
-    state.preparations.boulders['18,16'] = { day: 1 };
+    Object.assign(archer, { x: 6, y: 7 });
+    Object.assign(state.units[1]!, { x: 6, y: 10 });
+    state.engines[0]!.raisedAt = { x: 6, y: 7 };
+    state.preparations.boulders['6,7'] = { day: 1 };
     const command = siegeCommands(state, archer.id, 'wei').find((c) => c.kind === 'dropBoulders');
     expect(command?.reason).toBeNull();
     expect(command?.action?.type).toBe('dropBoulders');
@@ -103,13 +103,13 @@ describe('Wei playable interface', () => {
     expect(placed.units.filter((u) => u.side === 'shu')).toEqual(
       state.units.filter((u) => u.side === 'shu'),
     );
-    expect(deployUnit(state, hao.id, { x: 18, y: 25, level: 'ground' }, 'wei')).toBe(state);
+    expect(deployUnit(state, hao.id, { x: 6, y: 11, level: 'ground' }, 'wei')).toBe(state);
     const html = renderToStaticMarkup(
       createElement(SiegeMapView, { state, locale: 'en', playerSide: 'wei', deploy: true }),
     );
     expect((html.match(/data-overlay="deploy"/g) ?? []).length).toBe(DEPLOY_WEI.length);
-    expect(html).toContain('data-cell="23,16,wall"');
-    expect(html).not.toContain('data-overlay="deploy" data-cell="18,25,ground"');
+    expect(html).toContain('data-cell="8,7,wall"');
+    expect(html).not.toContain('data-overlay="deploy" data-cell="6,11,ground"');
   });
 
   it('projects tomorrow, ready, suppressed, spent and absent-operator preparations', () => {
@@ -132,7 +132,7 @@ describe('Wei playable interface', () => {
         u.suppressedDay = state.day;
       });
     expect(preparationRows(state).every((r) => r.status === 'preparationBlocked')).toBe(true);
-    state.preparations.millstones['23,16']!.hoisted = false;
+    state.preparations.millstones['8,7']!.hoisted = false;
     expect(preparationRows(state).find((r) => r.kind === 'millstone')?.status).toBe(
       'preparationSpent',
     );
@@ -245,7 +245,7 @@ describe('Wei playable interface', () => {
         day: code === 'nightAssault' ? 1 : 2,
         code,
         params: {
-          cell: '18,16',
+          cell: '6,7',
           after: 2,
           engineId: state.engines[0]!.id,
           targetId: 'wei-captain-1',
@@ -253,10 +253,10 @@ describe('Wei playable interface', () => {
           result: 'stopped',
         },
       }));
-      state.trenchFill['18,17'] = T.trenchCapacity;
+      state.trenchFill['6,8'] = T.trenchCapacity;
       Object.assign(
         state.engines.find((e) => e.kind === 'ram')!,
-        { x: 23, y: 17 },
+        { x: 8, y: 8 },
       );
       const items = morningReport(
         state.log,
@@ -427,8 +427,8 @@ describe('Wei playable interface', () => {
       progress = advanceWalkthrough(progress, state, ui)!;
     };
     expect(walkthroughTargets(progress, state, 'wei')).toContainEqual({
-      x: 23,
-      y: 16,
+      x: 8,
+      y: 7,
       level: 'wall',
     });
     advance();
@@ -451,7 +451,7 @@ describe('Wei playable interface', () => {
     const archer = state.units.find((u) => u.id === ui.selected)!;
     state.preparations.braziers[cellKey(archer)] = { litDay: state.day - 1 };
     const ladder = state.engines.find((e) => e.kind === 'ladder')!;
-    Object.assign(ladder, { x: archer.x, y: archer.y + 3 });
+    Object.assign(ladder, { x: archer.x, y: archer.y + 1 });
     ui.reportReadDay = state.day;
     state = act(state, { type: 'fireArrows', unitId: ui.selected, engineId: ladder.id });
     advance();
@@ -461,7 +461,7 @@ describe('Wei playable interface', () => {
     const audits = [];
     for (const seed of [1, 228]) {
       let state = createSiegeState(seed);
-      state = deployUnit(state, 'wei-captain-1', { x: 18, y: 16, level: 'wall' }, 'wei');
+      state = deployUnit(state, 'wei-captain-1', { x: 6, y: 7, level: 'wall' }, 'wei');
       state = resolveAttackerPhase(state).final;
       state = act(state, { type: 'hoistMillstone', unitId: 'wei-haozhao' });
       state = act(state, { type: 'lightBrazier', unitId: 'wei-captain-1' });
@@ -469,7 +469,7 @@ describe('Wei playable interface', () => {
       const ram = state.engines.find((e) => e.kind === 'ram')!;
       if (seed === 1) {
         expect(state.weather).toBe('clear');
-        const ladder = state.engines.find((e) => e.kind === 'ladder' && e.x === 18)!;
+        const ladder = state.engines.find((e) => e.kind === 'ladder' && e.x === 6)!;
         const before = ladder.durability;
         state = act(state, { type: 'fireArrows', unitId: 'wei-captain-1', engineId: ladder.id });
         expect(state.engines.find((e) => e.id === ladder.id)!.durability).toBeLessThan(before);

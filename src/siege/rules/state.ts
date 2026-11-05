@@ -1,3 +1,4 @@
+import { APPROACH_ROW, ROAD_COL, SOUTH_WALL_ROW } from '../content/coarseGrid';
 import { ENGINE_RULES, SIEGE_TUNING } from './tuning';
 import {
   GATES,
@@ -49,19 +50,26 @@ export function createSiegeState(seed: number): SiegeState {
     };
   }
 
-  const weiColumns = [23, 22, 17, 25, 26, 30];
+  const shuPositions = [
+    [ROAD_COL, APPROACH_ROW + 2],
+    [7, APPROACH_ROW + 1],
+    [ROAD_COL, APPROACH_ROW + 1],
+    [9, APPROACH_ROW + 1],
+    [4, APPROACH_ROW + 1],
+    [12, APPROACH_ROW + 1],
+    [3, APPROACH_ROW + 1],
+    [13, APPROACH_ROW + 1],
+    [2, APPROACH_ROW + 1],
+    [14, APPROACH_ROW + 1],
+  ] as const;
+  const weiColumns = [ROAD_COL, 7, 6, 9, 10, 11];
   const units = [
-    ...SHU_ROSTER.map((entry, index) =>
-      place(
-        entry,
-        'shu',
-        index === 0
-          ? { x: 23, y: 25, level: 'ground' }
-          : { x: 19 + index, y: 21 + Math.floor((index - 1) / 3), level: 'ground' },
-      ),
-    ),
+    ...SHU_ROSTER.map((entry, index) => {
+      const [x, y] = shuPositions[index]!;
+      return place(entry, 'shu', { x, y, level: 'ground' });
+    }),
     ...WEI_ROSTER.map((entry, index) =>
-      place(entry, 'wei', { x: weiColumns[index]!, y: 16, level: 'wall' }),
+      place(entry, 'wei', { x: weiColumns[index]!, y: SOUTH_WALL_ROW, level: 'wall' }),
     ),
   ];
 
@@ -78,10 +86,10 @@ export function createSiegeState(seed: number): SiegeState {
     units,
     engines: (
       [
-        ['ladder', 18, 19],
-        ['ladder', 29, 19],
-        ['ram', 24, 21],
-        ['earthCart', 21, 20],
+        ['ladder', 6, APPROACH_ROW],
+        ['ladder', 10, APPROACH_ROW],
+        ['ram', ROAD_COL, APPROACH_ROW],
+        ['earthCart', 7, APPROACH_ROW],
       ] as const
     ).map(([kind, x, y], index) => ({
       id: `starting-${kind}-${index + 1}`,

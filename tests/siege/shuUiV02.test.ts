@@ -33,8 +33,8 @@ describe('Shu v0.2 controls and scoring', () => {
   });
   it('enables suppression for archers and towers, cover for infantry and earthwork for infantry and carts', () => {
     const state = createSiegeState(228);
-    Object.assign(state.units[8]!, { x: 17, y: 19 });
-    Object.assign(state.units[1]!, { x: 18, y: 20 });
+    Object.assign(state.units[8]!, { x: 6, y: 10 });
+    Object.assign(state.units[1]!, { x: 6, y: 10 });
     // Each mutable fixture stage represents a new immutable UI snapshot.
     const enabled = (id: string, kind: string) =>
       expect(
@@ -42,22 +42,23 @@ describe('Shu v0.2 controls and scoring', () => {
       ).toBeNull();
     enabled('shu-captain-3', 'suppress');
     enabled('shu-weiyan', 'coverEngine');
-    const tower = { ...state.engines[0]!, id: 'ui-tower', kind: 'tower' as const, x: 17, y: 19 };
+    const tower = { ...state.engines[0]!, id: 'ui-tower', kind: 'tower' as const, x: 6, y: 10 };
     state.engines.push(tower);
     enabled(tower.id, 'suppress');
-    state.trenchFill['18,17'] = T.trenchCapacity;
-    state.trenchFill['18,18'] = T.trenchCapacity;
-    Object.assign(state.units[1]!, { x: 18, y: 18 });
+    state.trenchFill['6,8'] = T.trenchCapacity;
+    state.trenchFill['6,9'] = T.trenchCapacity;
+    Object.assign(state.units[1]!, { x: 6, y: 9 });
     enabled('shu-weiyan', 'pileEarth');
     const cart = state.engines.find((e) => e.kind === 'earthCart')!;
-    Object.assign(cart, { x: 18, y: 18 });
+    Object.assign(cart, { x: 6, y: 9 });
     enabled(cart.id, 'pileEarth');
   });
 
   it('renders both empty-wall climb forecasts with losses and morale from the rules', () => {
     const state = createSiegeState(228);
-    state.engines[0]!.raisedAt = { x: 18, y: 16 };
-    Object.assign(state.units[1]!, { x: 18, y: 19 });
+    state.units[12]!.x = 5;
+    state.engines[0]!.raisedAt = { x: 6, y: 7 };
+    Object.assign(state.units[1]!, { x: 6, y: 10 });
     const normal = predictSiegeClimb(state, 'shu-weiyan')!,
       assault = predictSiegeClimb(state, 'shu-weiyan', { assault: true })!;
     expect(normal).toMatchObject({ casualties: 0, footholdGain: T.climbFoothold });
@@ -83,7 +84,7 @@ describe('Shu v0.2 controls and scoring', () => {
       String(assault.casualties),
     );
     expect(html).toContain('Morale after');
-    Object.assign(state.units[12]!, { x: 18, y: 16 });
+    Object.assign(state.units[12]!, { x: 6, y: 7 });
     const forecast = predictSiegeAttack(state, 'shu-weiyan', state.units[12]!.id)!,
       forced = predictSiegeAttack(state, 'shu-weiyan', state.units[12]!.id, { assault: true })!;
     const attack = renderToStaticMarkup(
@@ -161,17 +162,18 @@ describe('Shu v0.2 controls and scoring', () => {
   });
   it('drives the planned day-one actions through the real rules and produces multiple report items', () => {
     let state = createSiegeState(228);
-    Object.assign(state.units[1]!, { x: 18, y: 20 });
-    Object.assign(state.units[8]!, { x: 17, y: 20 });
+    state.units[12]!.x = 5;
+    Object.assign(state.units[1]!, { x: 5, y: 10 });
+    Object.assign(state.units[8]!, { x: 9, y: 11 });
     for (const e of state.engines.filter((e) => e.kind === 'ladder'))
       state = act(state, { type: 'raiseLadder', engineId: e.id });
-    state = act(state, { type: 'move', unitId: 'shu-weiyan', x: 18, y: 19, level: 'ground' });
+    state = act(state, { type: 'move', unitId: 'shu-weiyan', x: 6, y: 10, level: 'ground' });
     state = act(state, { type: 'climb', unitId: 'shu-weiyan' });
-    state = act(state, { type: 'move', unitId: 'shu-captain-3', x: 17, y: 19, level: 'ground' });
+    state = act(state, { type: 'move', unitId: 'shu-captain-3', x: 9, y: 10, level: 'ground' });
     state = act(state, {
       type: 'suppress',
       unitId: 'shu-captain-3',
-      targetId: state.units[12]!.id,
+      targetId: state.units[13]!.id,
     });
     const next = resolveSiegeDay(state).final;
     expect(next.day).toBe(2);

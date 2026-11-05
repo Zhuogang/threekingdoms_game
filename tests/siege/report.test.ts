@@ -39,16 +39,16 @@ describe('pure morning report', () => {
     (locale) => {
       const state = createSiegeState(228);
       const sealed = entry('footholdChanged', {
-        cell: '18,16',
+        cell: '6,7',
         reason: 'sealed',
         before: 3,
         after: 0,
         sourceId: 'wei-wangsheng',
       });
       const log = [
-        entry('footholdChanged', { cell: '20,16', reason: 'climb', before: 0, after: 1 }),
+        entry('footholdChanged', { cell: '7,7', reason: 'climb', before: 0, after: 1 }),
         entry('footholdChanged', {
-          cell: '21,16',
+          cell: '7,7',
           reason: 'nightPositionEmpty',
           before: 2,
           after: 0,
@@ -59,14 +59,14 @@ describe('pure morning report', () => {
       for (const side of ['shu', 'wei'] as const) {
         const items = morningReport(log, state.preparations, 2, locale, [], undefined, side);
         const item = items.find((i) => i.code === 'footholdChanged')!;
-        const cell = placeName('18,16', locale);
+        const cell = placeName('6,7', locale);
         expect(item.text).toBe(
           locale === 'zh'
             ? `魏军站回${cell}，缺口被封住。`
             : `Wei retook ${cell} and sealed the breach.`,
         );
         expect(item.text).not.toMatch(/\d/);
-        expect(item.place).toEqual({ x: 18, y: 16, level: 'wall' });
+        expect(item.place).toEqual({ x: 6, y: 7, level: 'wall' });
         expect(items.filter((i) => i.code === 'footholdChanged')).toHaveLength(1);
         if (side === 'shu') {
           expect(item.priority).toBe(0);
@@ -94,7 +94,7 @@ describe('pure morning report', () => {
       it(`${code}: ${locale} cause and counter`, () => {
         const state = createSiegeState(228);
         const params = {
-          cell: '18,16',
+          cell: '6,7',
           engineId: 'starting-ladder-1',
           targetId: 'shu-weiyan',
           unitId: 'shu-weiyan',
@@ -105,11 +105,11 @@ describe('pure morning report', () => {
           damage: 60,
           casualties: 12,
           effectiveDay: 2,
-          start: '17,16',
-          end: '22,16',
+          start: '6,7',
+          end: '7,7',
           segment: 1,
-          from: '18,16',
-          to: '18,19',
+          from: '6,7',
+          to: '6,10',
         };
         if (code === 'brazierPrepared') state.preparations.braziers[params.cell] = { litDay: 1 };
         if (code === 'millstonePrepared')
@@ -143,8 +143,8 @@ describe('pure morning report', () => {
       entry('fireArrowHit', { engineId: 'ladder', before: 90, after: 20 }),
       entry('sortieRepelled', { reason: 'guard', engineId: 'ram' }),
       entry('sortieRepelled', { reason: 'nightAssault', engineId: 'ram' }),
-      entry('footholdChanged', { cell: '18,16', reason: 'boulders', before: 1, after: 0 }),
-      entry('bouldersHit', { cell: '18,16', casualties: 10, targetId: 'shu-weiyan' }),
+      entry('footholdChanged', { cell: '6,7', reason: 'boulders', before: 1, after: 0 }),
+      entry('bouldersHit', { cell: '6,7', casualties: 10, targetId: 'shu-weiyan' }),
     ];
     const items = morningReport(log, p, 2, 'en');
     expect(items.find((i) => i.code === 'fireArrowHit')!.text).toMatch(/^Wei fire arrows/);
@@ -158,11 +158,11 @@ describe('pure morning report', () => {
   });
   it('lists surviving preparations once, ignores consumed/new preparations, stale events and hidden orders', () => {
     const state = createSiegeState(1);
-    state.preparations.braziers['18,16'] = { litDay: 1 };
-    state.preparations.millstones['23,16'] = { day: 1, hoisted: false };
-    state.preparations.boulders['20,16'] = { day: 2 };
+    state.preparations.braziers['6,7'] = { litDay: 1 };
+    state.preparations.millstones['8,7'] = { day: 1, hoisted: false };
+    state.preparations.boulders['7,7'] = { day: 2 };
     const log = [
-      entry('brazierPrepared', { cell: '18,16' }),
+      entry('brazierPrepared', { cell: '6,7' }),
       entry('order', { side: 'wei' }),
       { day: 0, code: 'engineLost', params: {} },
     ];

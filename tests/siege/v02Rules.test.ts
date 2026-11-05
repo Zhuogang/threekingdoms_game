@@ -17,14 +17,14 @@ import type { SiegeAction, SiegeState } from '../../src/siege/rules/types';
 import { act, duel, engine, refused } from './rulesFixtures';
 
 function climb(position: 'ladder' | 'wallFoot' | 'mound' = 'ladder') {
-  const fixture = duel({ y: position === 'ladder' ? 19 : 17 });
+  const fixture = duel({ y: position === 'ladder' ? 10 : 8 });
   fixture.state.engines =
-    position === 'ladder' ? [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })] : [];
+    position === 'ladder' ? [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })] : [];
   if (position !== 'ladder') {
-    fixture.state.trenchFill['20,17'] = 3;
-    fixture.state.trenchFill['20,18'] = 3;
+    fixture.state.trenchFill['7,8'] = 3;
+    fixture.state.trenchFill['7,9'] = 3;
   }
-  if (position === 'mound') fixture.state.mounds['20,17'] = T.moundComplete;
+  if (position === 'mound') fixture.state.mounds['7,8'] = T.moundComplete;
   return fixture;
 }
 function clearTomorrow(state: SiegeState): SiegeState {
@@ -38,44 +38,46 @@ describe('v0.2 day-one feasibility from the actual opening', () => {
     for (const ladder of state.engines.filter((entry) => entry.kind === 'ladder'))
       state = act(state, { type: 'raiseLadder', engineId: ladder.id });
     const unit = state.units[1]!;
-    Object.assign(unit, { x: 18, y: 21 }); // Legal deployment directly behind this ladder.
-    state = act(state, { type: 'move', unitId: unit.id, x: 18, y: 19, level: 'ground' });
+    state.units[12]!.x = 5;
+    Object.assign(unit, { x: 5, y: 10 }); // Legal deployment directly behind this ladder.
+    state = act(state, { type: 'move', unitId: unit.id, x: 6, y: 10, level: 'ground' });
     // Empty cells require climb; the defended path is still feasible from this deployment.
     state = act(state, { type: 'climb', unitId: unit.id });
     const defended = createSiegeState(228);
-    Object.assign(defended.units[1]!, { x: 18, y: 21 });
-    Object.assign(defended.units[11]!, { x: 18, y: 16 });
+    defended.units[12]!.x = 5;
+    Object.assign(defended.units[1]!, { x: 5, y: 10 });
+    Object.assign(defended.units[11]!, { x: 6, y: 7 });
     const raised = act(defended, { type: 'raiseLadder', engineId: defended.engines[0]!.id });
-    const moved = act(raised, { type: 'move', unitId: unit.id, x: 18, y: 19, level: 'ground' });
+    const moved = act(raised, { type: 'move', unitId: unit.id, x: 6, y: 10, level: 'ground' });
     expect(
       act(moved, { type: 'attack', unitId: unit.id, targetId: defended.units[11]!.id }).footholds[
-        '18,16'
+        '6,7'
       ],
     ).toBe(1);
     expect(state.day).toBe(1);
-    expect(wallFoothold(state, '18,16')).toBe(1);
+    expect(wallFoothold(state, '6,7')).toBe(1);
   });
-  it('moves the ram three cells to (24,18) in one move and fills from the starting cart', () => {
+  it('moves the ram two cells to the bridge head and fills from the starting cart', () => {
     let state = createSiegeState(228);
     const ram = state.engines.find((entry) => entry.kind === 'ram')!;
     const cart = state.engines.find((entry) => entry.kind === 'earthCart')!;
-    state = act(state, { type: 'moveEngine', engineId: ram.id, x: 24, y: 18 });
-    state = act(state, { type: 'moveEngine', engineId: cart.id, x: 21, y: 19 });
-    state = act(state, { type: 'fillTrench', engineId: cart.id, x: 21, y: 18 });
-    expect(state.trenchFill['21,18']).toBe(1.5);
+    state = act(state, { type: 'moveEngine', engineId: ram.id, x: 8, y: 9 });
+    expect(state.engines.find((e) => e.id === cart.id)).toMatchObject({ x: 7, y: 10 });
+    state = act(state, { type: 'fillTrench', engineId: cart.id, x: 7, y: 9 });
+    expect(state.trenchFill['7,9']).toBe(1.5);
     expect(state.day).toBe(1);
   });
   it('moves a deployed archer to y19 and suppresses a wall defender three away', () => {
     let state = createSiegeState(228);
     const archer = state.units[8]!;
     expect(archer.troopType).toBe('archer');
-    Object.assign(archer, { x: 26, y: 21 }); // Legal DEPLOY_SHU cell.
-    state = act(state, { type: 'move', unitId: archer.id, x: 26, y: 19, level: 'ground' });
-    const target = state.units[14]!;
+    Object.assign(archer, { x: 9, y: 11 }); // Legal DEPLOY_SHU cell.
+    state = act(state, { type: 'move', unitId: archer.id, x: 9, y: 10, level: 'ground' });
+    const target = state.units[13]!;
     expect(predictSiegeAttack(state, archer.id, target.id)?.inRange).toBe(false);
     refused(state, { type: 'attack', unitId: archer.id, targetId: target.id });
     state = act(state, { type: 'suppress', unitId: archer.id, targetId: target.id });
-    expect(state.units[14]!.suppressedDay).toBe(1);
+    expect(state.units[13]!.suppressedDay).toBe(1);
     expect(state.day).toBe(1);
   });
 });
@@ -87,9 +89,9 @@ describe('Wei preparations and suppression', () => {
       const { state, shu, wei } = climb();
       Object.assign(
         wei,
-        type === 'fireArrows' ? { troopType: 'archer' } : type === 'dropMillstone' ? { x: 23 } : {},
+        type === 'fireArrows' ? { troopType: 'archer' } : type === 'dropMillstone' ? { x: 8 } : {},
       );
-      if (type === 'dropMillstone') state.engines = [engine('ram', 23, 17)];
+      if (type === 'dropMillstone') state.engines = [engine('ram', 8, 8)];
       const strike: SiegeAction =
         type === 'dropBoulders'
           ? { type, unitId: wei.id, targetId: shu.id }
@@ -112,8 +114,8 @@ describe('Wei preparations and suppression', () => {
       next = act(next, strike);
       expect(next.units[1]!.acted).toBe(true);
       if (type === 'dropMillstone')
-        expect(next.preparations.millstones['23,16']!.hoisted).toBe(false);
-      if (type === 'dropBoulders') expect(next.preparations.boulders['20,16']).toBeUndefined();
+        expect(next.preparations.millstones['8,7']!.hoisted).toBe(false);
+      if (type === 'dropBoulders') expect(next.preparations.boulders['7,7']).toBeUndefined();
     },
   );
   it.each([
@@ -136,7 +138,7 @@ describe('Wei preparations and suppression', () => {
   });
   it('quarters a volley and reduces a suppressed defender counterattack to 70%, then clears at night', () => {
     const { state, shu, wei } = climb();
-    state.units.push({ ...shu, id: 'archer', troopType: 'archer', x: 21, y: 18 });
+    state.units.push({ ...shu, id: 'archer', troopType: 'archer', x: 7, y: 9 });
     const normalDamage = Math.floor(
       siegeBaseDamage(state, state.units[2]!, wei, T.volleyFrontage) * T.parapetMultiplier,
     );
@@ -152,26 +154,28 @@ describe('Wei preparations and suppression', () => {
     let state = createSiegeState(228);
     const wei = state.units[10]!;
     wei.suppressedDay = 1;
-    state.engines = [engine('ram', 24, 20)];
+    wei.x = 7;
+    state.units[11]!.x = 5;
+    state.engines = [engine('ram', 8, 10)];
     refused(
       state,
       { type: 'order', side: 'wei', kind: 'sortie', target: 'engine' },
       /unsuppressed/,
     );
-    Object.assign(state.units[1]!, { x: 24, y: 17 });
-    state = act(state, { type: 'move', unitId: wei.id, x: 24, y: 16, level: 'wall' });
+    Object.assign(state.units[1]!, { x: 8, y: 8 });
+    state = act(state, { type: 'move', unitId: wei.id, x: 8, y: 7, level: 'wall' });
     state = act(state, { type: 'attack', unitId: wei.id, targetId: state.units[1]!.id });
     expect(state.units[10]!.acted).toBe(true);
   });
   it('never allows ground archers to use a wall brazier', () => {
     const { state, wei } = climb();
-    Object.assign(wei, { troopType: 'archer', level: 'ground', y: 19 });
-    state.preparations.braziers['20,16'] = { litDay: 0 };
+    Object.assign(wei, { troopType: 'archer', level: 'ground', y: 10 });
+    state.preparations.braziers['7,7'] = { litDay: 0 };
     refused(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }, /wall archer/);
   });
   it('douses every brazier when the next day is snow, with events', () => {
     const state = createSiegeState(228);
-    state.preparations.braziers = { '17,16': { litDay: 1 }, '30,16': { litDay: 1 } };
+    state.preparations.braziers = { '6,7': { litDay: 1 }, '10,7': { litDay: 1 } };
     state.weatherByDay[2] = 'snow';
     const next = endDay(state);
     expect(next.preparations.braziers).toEqual({});
@@ -222,12 +226,12 @@ describe('footholds, displacement and assaults', () => {
     'mounts at three, displacing the defender (blocked=%s) with minus ten morale',
     (blocked) => {
       const { state, shu, wei } = climb();
-      state.footholds['20,16'] = 2;
-      if (blocked) for (const x of [19, 21]) state.units.push({ ...wei, id: `blocker-${x}`, x });
+      state.footholds['7,7'] = 2;
+      if (blocked) for (const x of [6, 8]) state.units.push({ ...wei, id: `blocker-${x}`, x });
       const next = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id });
       expect(next.units[0]).toMatchObject({
-        x: 20,
-        y: 16,
+        x: 7,
+        y: 7,
         level: 'wall',
         moved: true,
         acted: true,
@@ -242,9 +246,9 @@ describe('footholds, displacement and assaults', () => {
   );
   it.each([0, 1, 2, 3])('boulders reduce foothold %i by two with a floor of zero', (foothold) => {
     const { state, shu, wei } = climb();
-    state.footholds['20,16'] = foothold as 0 | 1 | 2 | 3;
+    state.footholds['7,7'] = foothold as 0 | 1 | 2 | 3;
     state.day = 2;
-    state.preparations.boulders['20,16'] = { day: 1 };
+    state.preparations.boulders['7,7'] = { day: 1 };
     const next = act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
     expect(wallFoothold(next, wei)).toBe(Math.max(0, foothold - 2));
   });
@@ -252,17 +256,17 @@ describe('footholds, displacement and assaults', () => {
     'clears footholds at night when the climbing position is %s',
     (condition) => {
       const { state, shu } = climb();
-      state.footholds['20,16'] = 2;
+      state.footholds['7,7'] = 2;
       if (condition === 'empty') shu.x++;
       else if (condition === 'destroyed')
         Object.assign(state, damageEngine(state, state.engines[0]!, 200));
       else shu.routed = true;
-      expect(wallFoothold(endDay(state), '20,16')).toBe(0);
+      expect(wallFoothold(endDay(state), '7,7')).toBe(0);
     },
   );
   it('retains occupied live footholds at night and gives no gain if the counter routs the source', () => {
     const { state, shu, wei } = climb();
-    state.footholds['20,16'] = 1;
+    state.footholds['7,7'] = 1;
     expect(wallFoothold(endDay(state), wei)).toBe(1);
     shu.morale = 20;
     const forecast = predictSiegeAttack(state, shu, wei)!;
@@ -275,8 +279,8 @@ describe('footholds, displacement and assaults', () => {
     'assault costs ten morale and affects neighbours only if not mounted (mount=%s)',
     (mount) => {
       const { state, shu, wei } = climb();
-      state.units.push({ ...shu, id: 'neighbour', x: 21 });
-      if (mount) state.footholds['20,16'] = 1;
+      state.units.push({ ...shu, id: 'neighbour', x: 7 });
+      if (mount) state.footholds['7,7'] = 1;
       const next = act(state, { type: 'attack', unitId: shu.id, targetId: wei.id, assault: true });
       expect(next.units[2]!.morale).toBe(80 - (mount ? 0 : 5));
       expect(next.units[0]!.assaultedDay).toBe(1);
@@ -286,7 +290,7 @@ describe('footholds, displacement and assaults', () => {
   it('doubles boulder damage after an assault today', () => {
     const { state, shu, wei } = climb();
     state.day = 2;
-    state.preparations.boulders['20,16'] = { day: 1 };
+    state.preparations.boulders['7,7'] = { day: 1 };
     shu.assaultedDay = 2;
     shu.attackedFromBelowDay = 2;
     const next = act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
@@ -301,13 +305,13 @@ describe('footholds, displacement and assaults', () => {
   });
   it('cancels all preparations when Shu finishes climbing onto an empty wall cell', () => {
     const { state, shu, wei } = climb();
-    wei.x = 22;
+    wei.x = 6;
     state.preparations = {
-      braziers: { '20,16': { litDay: 1 } },
-      millstones: { '20,16': { hoisted: true, day: 1 } },
-      boulders: { '20,16': { day: 1 } },
+      braziers: { '7,7': { litDay: 1 } },
+      millstones: { '7,7': { hoisted: true, day: 1 } },
+      boulders: { '7,7': { day: 1 } },
     };
-    state.footholds['20,16'] = 2;
+    state.footholds['7,7'] = 2;
     const next = act(state, { type: 'climb', unitId: shu.id });
     expect(next.preparations).toEqual({ braziers: {}, millstones: {}, boulders: {} });
     expect(next.stats.firstWallDay).toBe(1);
@@ -320,7 +324,7 @@ describe('cover and permanent mounds', () => {
     state.day = 2;
     wei.troopType = 'archer';
     state.engines[0]!.burning = true;
-    state.preparations.braziers['20,16'] = { litDay: 1 };
+    state.preparations.braziers['7,7'] = { litDay: 1 };
     let next = act(state, { type: 'coverEngine', unitId: shu.id, engineId: 'engine' });
     next = act(next, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' });
     expect(next.engines[0]).toMatchObject({
@@ -335,10 +339,10 @@ describe('cover and permanent mounds', () => {
     refused(state, { type: 'coverEngine', unitId: shu.id, engineId: 'engine' });
   });
   it('drops only 100 damage on a covered ram', () => {
-    const { state, wei } = duel({}, { x: 23 });
+    const { state, wei } = duel({}, { x: 8 });
     state.day = 2;
-    state.engines = [engine('ram', 23, 17, { covered: true })];
-    state.preparations.millstones['23,16'] = { day: 1, hoisted: true };
+    state.engines = [engine('ram', 8, 8, { covered: true })];
+    state.preparations.millstones['8,7'] = { day: 1, hoisted: true };
     expect(
       act(state, { type: 'dropMillstone', unitId: wei.id, engineId: 'engine' }).engines[0]!
         .durability,
@@ -346,52 +350,53 @@ describe('cover and permanent mounds', () => {
   });
   it('adds infantry and cart earth, completes at six, and gives the finished slope its combat benefits', () => {
     const { state, shu, wei } = climb('wallFoot');
-    shu.y = 18;
-    let next = act(state, { type: 'pileEarth', unitId: shu.id, x: 20, y: 17 });
-    expect(next.mounds['20,17']).toBe(1);
+    shu.y = 9;
+    let next = act(state, { type: 'pileEarth', unitId: shu.id, x: 7, y: 8 });
+    expect(next.mounds['7,8']).toBe(1);
     next = clearTomorrow(next);
-    next = act(next, { type: 'pileEarth', unitId: shu.id, x: 20, y: 17 });
-    next.engines = [engine('earthCart', 21, 17, { uses: 2 })];
-    next.trenchFill['21,17'] = 3;
+    next = act(next, { type: 'pileEarth', unitId: shu.id, x: 7, y: 8 });
+    next.units[0]!.x = 8;
+    next.engines = [engine('earthCart', 7, 9, { uses: 2 })];
+    next.trenchFill['7,8'] = 3;
     for (let count = 0; count < 2; count++) {
       next = clearTomorrow(next);
-      next = act(next, { type: 'pileEarth', engineId: 'engine', x: 20, y: 17 });
+      next = act(next, { type: 'pileEarth', engineId: 'engine', x: 7, y: 8 });
     }
-    expect(next.mounds['20,17']).toBe(6);
+    expect(next.mounds['7,8']).toBe(6);
     expect(next.stats.moundsBuilt).toBe(1);
     expect(next.engines).toEqual([]);
-    next = act(next, { type: 'move', unitId: shu.id, x: 20, y: 17, level: 'ground' });
+    next = act(next, { type: 'move', unitId: shu.id, x: 7, y: 8, level: 'ground' });
     expect(climbingPosition(next, next.units[0]!, wei)).toBe('mound');
     expect(predictSiegeAttack(next, shu.id, wei.id)).toMatchObject({
       frontage: 300,
       footholdGain: 2,
     });
-    next.preparations.boulders['20,16'] = { day: 1 };
+    next.preparations.boulders['7,7'] = { day: 1 };
     const hit = act(next, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
     expect(next.units[0]!.troops - hit.units[0]!.troops).toBe(
       Math.floor(wei.troops * T.boulderCoefficient * T.moundBoulderMultiplier),
     );
-    refused(next, { type: 'fireArrows', unitId: wei.id, engineId: '20,17' });
-    refused(next, { type: 'order', side: 'wei', kind: 'sortie', target: '20,17' });
-    expect(endDay(hit).mounds['20,17']).toBe(6);
+    refused(next, { type: 'fireArrows', unitId: wei.id, engineId: '7,8' });
+    refused(next, { type: 'order', side: 'wei', kind: 'sortie', target: '7,8' });
+    expect(endDay(hit).mounds['7,8']).toBe(6);
   });
   it('requires both filled trench rows and an adjacent ground worker', () => {
     const { state, shu } = climb('wallFoot');
-    shu.y = 18;
-    state.trenchFill['20,18'] = 1.5;
-    refused(state, { type: 'pileEarth', unitId: shu.id, x: 20, y: 17 });
-    state.trenchFill['20,18'] = 3;
+    shu.y = 9;
+    state.trenchFill['7,9'] = 1.5;
+    refused(state, { type: 'pileEarth', unitId: shu.id, x: 7, y: 8 });
+    state.trenchFill['7,9'] = 3;
     shu.level = 'wall';
-    refused(state, { type: 'pileEarth', unitId: shu.id, x: 20, y: 17 });
+    refused(state, { type: 'pileEarth', unitId: shu.id, x: 7, y: 8 });
   });
 });
 
 function nightFixture() {
   const state = createSiegeState(228);
   state.day = 2;
-  state.engines = [engine('ladder', 20, 21), engine('ram', 24, 20, { id: 'ram' })];
+  state.engines = [engine('ladder', 7, 10), engine('ram', 8, 10, { id: 'ram' })];
   // Keep the routes and the sortie target unescorted unless a test adds a guard.
-  for (const unit of state.units.filter((unit) => unit.side === 'shu')) unit.y = 25;
+  for (const unit of state.units.filter((unit) => unit.side === 'shu')) unit.y++;
   state.weatherByDay[3] = 'clear';
   return state;
 }
@@ -401,22 +406,22 @@ describe('night orders and clashes', () => {
     let state = nightFixture();
     state = act(state, { type: 'order', side: 'shu', kind: 'nightAssault' });
     expect(state.log.at(-1)!.params).toEqual({ side: 'shu' });
-    expect(state.engines[0]!.y).toBe(21);
+    expect(state.engines[0]!.y).toBe(10);
     refused(state, { type: 'order', side: 'shu', kind: 'rally', target: state.units[1]!.id });
     const next = endDay(state);
-    expect(next.engines[0]).toMatchObject({ y: 19, raisedAt: { x: 20, y: 16 } });
-    expect(next.engines[1]!.y).toBe(19);
+    expect(next.engines[0]).toMatchObject({ y: 10, raisedAt: { x: 7, y: 7 } });
+    expect(next.engines[1]!.y).toBe(10);
     expect(next.nightOrders).toEqual({});
   });
   it('torches stop a night assault and allow one prepared fire shot per wall archer', () => {
     let state = nightFixture();
-    state.engines[0]!.y = 19;
-    Object.assign(state.units[12]!, { x: 20, y: 16 });
-    state.preparations.braziers['20,16'] = { litDay: 1 };
+    state.engines[0]!.y = 10;
+    Object.assign(state.units[12]!, { x: 7, y: 7 });
+    state.preparations.braziers['7,7'] = { litDay: 1 };
     state = act(state, { type: 'order', side: 'shu', kind: 'nightAssault' });
     state = act(state, { type: 'order', side: 'wei', kind: 'torches' });
     const next = endDay(state);
-    expect(next.engines[1]!.y).toBe(20);
+    expect(next.engines[1]!.y).toBe(10);
     expect(next.engines[0]!.durability).toBeLessThan(200);
     expect(next.log.filter((entry) => entry.code === 'fireArrowHit')).toHaveLength(1);
     expect(next.stats.nightClashes).toBe(1);
@@ -449,8 +454,8 @@ describe('night orders and clashes', () => {
     'repels a sortie with an adjacent active %s guard, hurting the strongest gate-top defender by ten percent',
     (level) => {
       let state = nightFixture();
-      Object.assign(state.units[1]!, { x: 24, y: level === 'wall' ? 16 : 21, level });
-      if (level === 'wall') state.engines[1]!.y = 17;
+      Object.assign(state.units[1]!, { x: 8, y: level === 'wall' ? 7 : 10, level });
+      if (level === 'wall') state.engines[1]!.y = 8;
       state = act(state, { type: 'order', side: 'wei', kind: 'sortie', target: 'ram' });
       const next = endDay(state);
       expect(next.engines[1]!.durability).toBe(300);
@@ -472,7 +477,7 @@ describe('night orders and clashes', () => {
   it('hold fast is effective only on the next day and clears the following night', () => {
     let state = createSiegeState(228);
     const shu = state.units[8]!;
-    Object.assign(shu, { x: 22, y: 19 });
+    Object.assign(shu, { x: 7, y: 10 });
     const wei = state.units[11]!;
     state = act(state, { type: 'order', side: 'wei', kind: 'holdFast', target: wei.id });
     expect(predictSiegeAttack(state, shu.id, wei.id)!.modifiers.holdFast).toBe(1);
@@ -482,8 +487,8 @@ describe('night orders and clashes', () => {
   });
   it('records main-body threat and the wall held at night permanently', () => {
     const state = createSiegeState(228);
-    Object.assign(state.units[10]!, { x: 23, y: 22, level: 'ground' });
-    Object.assign(state.units[1]!, { x: 20, y: 16, level: 'wall' });
+    Object.assign(state.units[10]!, { x: 8, y: 11, level: 'ground' });
+    Object.assign(state.units[1]!, { x: 7, y: 7, level: 'wall' });
     const next = endDay(state);
     expect(next.mainBodyThreatened).toBe(true);
     expect(next.stats.wallEverHeldAtNight).toBe(true);
@@ -575,7 +580,7 @@ describe('scores and v0.2 persistence', () => {
 describe('v0.2 boundary cases and accounting', () => {
   it('suppresses from a tower at range four, ignoring the parapet and spending its action', () => {
     const { state, wei } = duel();
-    state.engines = [engine('tower', 20, 20)];
+    state.engines = [engine('tower', 7, 10)];
     const normal = predictSiegeAttack(state, 'engine', wei.id)!;
     expect(normal.inRange).toBe(true);
     expect(normal.modifiers.parapet).toBe(1);
@@ -584,7 +589,7 @@ describe('v0.2 boundary cases and accounting', () => {
       wei.troops - Math.floor(normal.casualties * T.suppressionDamageMultiplier),
     );
     refused(next, { type: 'suppress', engineId: 'engine', targetId: wei.id });
-    state.engines[0]!.y++;
+    state.engines[0]!.y += 2;
     refused(state, { type: 'suppress', engineId: 'engine', targetId: wei.id });
   });
   it('suppression remains a quarter volley when a ground archer stands on a ladder base', () => {
@@ -609,23 +614,24 @@ describe('v0.2 boundary cases and accounting', () => {
     const { state, wei } = climb();
     state.day = 2;
     wei.troopType = 'archer';
-    state.preparations.braziers['21,16'] = { litDay: 1 };
+    state.preparations.braziers['7,7'] = { litDay: 1 };
     state.engines[0]!.durability = 300;
     state.engines[0]!.max = 300;
     expect(
       act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }).engines[0]!.burning,
     ).toBe(true);
-    state.preparations.braziers = { '22,16': { litDay: 1 } };
+    state.preparations.braziers = { '5,7': { litDay: 1 } };
     refused(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }, /brazier/);
   });
-  it('keeps night advancement on a clear northward route and leaves engines beyond y22 alone', () => {
+  it('keeps night advancement on a clear northward route and leaves engines beyond the night band alone', () => {
     let state = nightFixture();
-    Object.assign(state.units[1]!, { x: 20, y: 20 });
-    state.engines.push(engine('earthCart', 27, 23, { id: 'outside' }));
+    Object.assign(state.units[1]!, { x: 7, y: 10 });
+    state.engines[0]!.y = 11;
+    state.engines.push(engine('earthCart', 9, 12, { id: 'outside' }));
     state = act(state, { type: 'order', side: 'shu', kind: 'nightAssault' });
     const next = endDay(state);
-    expect(next.engines[0]!.y).toBe(21);
-    expect(next.engines[2]!.y).toBe(23);
+    expect(next.engines[0]!.y).toBe(11);
+    expect(next.engines[2]!.y).toBe(12);
     expect(
       next.log.find(
         (entry) => entry.code === 'nightMorale' && entry.params.unitId === state.units[1]!.id,
@@ -634,10 +640,10 @@ describe('v0.2 boundary cases and accounting', () => {
   });
   it('torches apply minus five morale near the trench and cannot use a brazier prepared that day', () => {
     let state = nightFixture();
-    Object.assign(state.units[1]!, { x: 20, y: 20 });
-    Object.assign(state.units[12]!, { x: 20, y: 16 });
-    state.engines[0]!.y = 19;
-    state.preparations.braziers['20,16'] = { litDay: state.day };
+    Object.assign(state.units[1]!, { x: 7, y: 10 });
+    Object.assign(state.units[12]!, { x: 7, y: 7 });
+    state.engines[0]!.y = 10;
+    state.preparations.braziers['7,7'] = { litDay: state.day };
     state = act(state, { type: 'order', side: 'shu', kind: 'nightAssault' });
     state = act(state, { type: 'order', side: 'wei', kind: 'torches' });
     const next = endDay(state);
@@ -671,8 +677,8 @@ describe('v0.2 boundary cases and accounting', () => {
     expect(state.log.filter((entry) => entry.code === 'engineLost')).toHaveLength(1);
     const cart = state.engines.find((entry) => entry.kind === 'earthCart')!;
     cart.uses = 1;
-    cart.y = 19;
-    state = act(state, { type: 'fillTrench', engineId: cart.id, x: 21, y: 18 });
+    cart.y = 10;
+    state = act(state, { type: 'fillTrench', engineId: cart.id, x: 7, y: 9 });
     expect(state.stats.enginesLost).toBe(1);
     expect(state.engines.find((entry) => entry.id === cart.id)).toBeUndefined();
   });
@@ -689,7 +695,7 @@ describe('v0.2 boundary cases and accounting', () => {
   });
   it('records a broken gate forever and awards no gate repair after it has fallen', () => {
     let state = createSiegeState(228);
-    state.engines = [engine('ram', 23, 17)];
+    state.engines = [engine('ram', 8, 8)];
     state.gates.south.durability = T.ramDamage;
     state = act(state, { type: 'order', side: 'wei', kind: 'nightRepair', target: 'south' });
     state = act(state, { type: 'ram', engineId: 'engine', gateId: 'south' });
@@ -700,8 +706,10 @@ describe('v0.2 boundary cases and accounting', () => {
   it('records a transient threat even if that Wei unit later moves away', () => {
     let state = createSiegeState(228);
     const wei = state.units[10]!;
-    Object.assign(wei, { x: 23, y: 22, level: 'ground' });
-    state = act(state, { type: 'move', unitId: wei.id, x: 23, y: 20, level: 'ground' });
+    state.engines = [];
+    state.units[2]!.x = 7;
+    Object.assign(wei, { x: 8, y: 11, level: 'ground' });
+    state = act(state, { type: 'move', unitId: wei.id, x: 8, y: 10, level: 'ground' });
     expect(state.mainBodyThreatened).toBe(true);
     expect(endDay(state).mainBodyThreatened).toBe(true);
   });
@@ -714,7 +722,7 @@ it.each([false, true])(
     state.day = 2;
     state.weather = 'snow';
     Object.assign(wei, { troopType: 'archer', troops: 201 });
-    state.preparations.braziers['20,16'] = { litDay: 1 };
+    state.preparations.braziers['7,7'] = { litDay: 1 };
     state.engines[0]!.covered = covered;
     const before = state.engines[0]!.durability;
     const next = act(state, { type: 'fireArrows', unitId: wei.id, engineId: state.engines[0]!.id });
@@ -729,8 +737,8 @@ it.each([false, true])(
 
 it('counts a guarded night sortie as combat when computing idle days', () => {
   const state = createSiegeState(228);
-  state.engines = [engine('ram', 24, 18)];
-  Object.assign(state.units[1]!, { x: 24, y: 19 });
+  state.engines = [engine('ram', 8, 9)];
+  Object.assign(state.units[1]!, { x: 8, y: 10 });
   const ordered = act(state, { type: 'order', side: 'wei', kind: 'sortie', target: 'engine' });
   const next = endDay(ordered);
   expect(next.stats.weiLost).toBe(26);

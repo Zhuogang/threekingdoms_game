@@ -1,5 +1,12 @@
+import { boardToFine } from './coarseBridge';
+import { fineCellsOf, fineSpanOf } from '../content/coarseGrid';
 import trenchJob from '../../../docs/siege/chencang/art/s3-01-trench-fill/job.json';
-import { INNER_WALL_SEGMENTS, SOUTH_TRENCH, cellKey } from '../content/chencang';
+import {
+  CHENCANG_ART_LAYOUT,
+  INNER_WALL_SEGMENTS,
+  SOUTH_TRENCH,
+  cellKey,
+} from '../content/chencang';
 import { isWallFoot, cellHeight, cellTerrain } from '../rules/map';
 import { usableEngine } from '../rules/combat';
 import type { SiegeEngine, SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
@@ -23,6 +30,12 @@ export interface StatePatch {
   occluder?: SceneObject;
   opacity?: number;
 }
+// State indexes still identify the original four painted inner-wall runs.
+const innerArtRow = CHENCANG_ART_LAYOUT.findIndex((row) => row.includes('R'));
+const innerArtRuns = [...CHENCANG_ART_LAYOUT[innerArtRow]!.matchAll(/R+/g)].map((run) => [
+  run.index!,
+  run.index! + run[0].length - 1,
+]);
 export function statePatches(state: SiegeState): StatePatch[] {
   const patches: StatePatch[] = [{ id: 'ramp-south', state: 'ramp-south' }];
   for (const [id, gate] of Object.entries(state.gates)) {
@@ -41,17 +54,20 @@ export function statePatches(state: SiegeState): StatePatch[] {
     const fill = state.trenchFill[cellKey(cell)] ?? 0;
     if (fill < 1.5) continue;
     const variant = fill === 3 ? 'trench-filled' : 'trench-half';
-    const box = trenchJob.states
-      .find((s) => s.id === variant)!
-      .cells.find((c) => c.cell[0] === cell.x && c.cell[1] === cell.y)!.box as ScreenRect;
-    patches.push({ id: `trench-${cellKey(cell)}`, state: variant, clip: box });
+    for (const fine of fineCellsOf(cell)) {
+      const box = trenchJob.states
+        .find((s) => s.id === variant)!
+        .cells.find((c) => c.cell[0] === fine.x && c.cell[1] === fine.y)?.box as
+        ScreenRect | undefined;
+      if (box) patches.push({ id: `trench-${cellKey(fine)}`, state: variant, clip: box });
+    }
   }
   for (const segment of INNER_WALL_SEGMENTS) {
     const progress = state.innerWall[segment.index] ?? 0;
     if (!progress) continue;
     const variant = progress === 4 ? 'inner-wall-built' : 'inner-wall-works';
     const object = INNER_WALL_JOB.states.find((s) => s.id === variant)!.object!;
-    const xs = segment.cells.map((c) => c.x);
+    const xs = innerArtRuns[segment.index]!;
     const patch = patchOf(variant);
     const clip: ScreenRect = [
       Math.min(...xs) * FRAME.cw,
@@ -68,7 +84,7 @@ export function statePatches(state: SiegeState): StatePatch[] {
             occluder: {
               ...object,
               id: `inner-${segment.index}`,
-              cells: [Math.min(...xs), 14, Math.max(...xs), 14],
+              cells: [Math.min(...xs), innerArtRow, Math.max(...xs), innerArtRow],
               bbox: clip,
             } as SceneObject,
           }
@@ -132,8 +148,11 @@ export function engineSprite(engine: SiegeEngine, facing: Facing = 'north'): Eng
         engine.durability < engine.max / 2 ? 2 : facing === 'east' || facing === 'west' ? 1 : 0;
     }
   }
+  const fine = boardToFine(engine);
   const at: [number, number] =
-    engine.raisedAt && !engine.wrecked ? [engine.raisedAt.x, 17] : [engine.x, engine.y];
+    engine.raisedAt && !engine.wrecked
+      ? [boardToFine(engine.raisedAt).x, fineSpanOf(engine.raisedAt).south + 1]
+      : [fine.x, fine.y];
   return {
     ...placePiece(sheet(asset), piece, at, FRAME, { id: engine.id, kind: 'engine' }),
     flip: facing === 'west' && !engine.raisedAt && !engine.wrecked,
@@ -205,23 +224,25 @@ export function unitVisual(
     unit.level === 'wall'
       ? cellHeight(state, unit.x, unit.y, unit.level)
       : (moundHeight ?? cellHeight(state, unit.x, unit.y, unit.level));
+  const fine = boardToFine(unit);
+  const fineWall = wall ? boardToFine(wall) : undefined;
   const gateTop =
     unit.level === 'wall'
       ? MAP.objects.find(
           (object) =>
             object.kind === 'gate-tower' &&
-            unit.x >= object.cells[0] &&
-            unit.x <= object.cells[2] &&
-            unit.y >= object.cells[1] &&
-            unit.y <= object.cells[3],
+            fine.x >= object.cells[0] &&
+            fine.x <= object.cells[2] &&
+            fine.y >= object.cells[1] &&
+            fine.y <= object.cells[3],
         )
       : undefined;
   const foot = storming
-    ? project(FRAME, wall!.x + 0.5, wall!.y + 1, 0)
+    ? project(FRAME, fineWall!.x + 0.5, fineWall!.y + 1, 0)
     : project(
         FRAME,
-        unit.x + 0.5,
-        unit.y +
+        fine.x + 0.5,
+        fine.y +
           ((unit.level === 'wall' && !gateTop) ||
           moundHeight !== undefined ||
           cellTerrain(state, unit.x, unit.y) === 'ramp'
@@ -245,7 +266,7 @@ export function unitVisual(
       : formationOffsets(unit.troops).map((offset) => ({ name, pose, offset }));
   // Storming remains a separate, unchanged painting. Its locator represents
   // the actor's base cell, so it never borrows the defender's wall-top click.
-  const base = project(FRAME, unit.x, unit.y, 0);
+  const base = project(FRAME, fine.x, fine.y, 0);
   const bounds: ScreenRect = storming
     ? [base[0] + 8, base[1] + 4, base[0] + FRAME.cw - 8, base[1] + FRAME.cd - 4]
     : figureBounds(figures, foot);
@@ -265,7 +286,7 @@ export function unitVisual(
     rect,
     gateTop: gateTop?.id,
     depth: {
-      row: gateTop?.cells[3] ?? (climbing || storming ? wall!.y + 1 : unit.y),
+      row: gateTop?.cells[3] ?? (climbing || storming ? fineWall!.y + 1 : fine.y),
       height:
         (gateTop?.height ??
           (unit.level === 'wall'

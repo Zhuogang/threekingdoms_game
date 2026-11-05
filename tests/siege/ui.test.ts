@@ -26,18 +26,18 @@ describe('siege screen integration without browser APIs', () => {
   it('resolves all map art with ten Shu, six Wei and six engines, including mixed fortifications', () => {
     const state = createSiegeState(228);
     state.engines = [
-      engine('ladder', 20, 19, { id: 'ladder', raisedAt: { x: 20, y: 16 } }),
-      engine('ram', 23, 17, { id: 'ram', wrecked: true }),
-      engine('tower', 28, 20, { id: 'burning', burning: true }),
-      engine('earthCart', 16, 19, { id: 'cart' }),
-      engine('tower', 33, 20, { id: 'tower' }),
-      engine('ladder', 26, 20, { id: 'moving' }),
+      engine('ladder', 7, 10, { id: 'ladder', raisedAt: { x: 7, y: 7 } }),
+      engine('ram', 8, 8, { id: 'ram', wrecked: true }),
+      engine('tower', 10, 10, { id: 'burning', burning: true }),
+      engine('earthCart', 5, 10, { id: 'cart' }),
+      engine('tower', 12, 10, { id: 'tower' }),
+      engine('ladder', 9, 10, { id: 'moving' }),
     ];
     state.gates.south.durability = 300;
     state.innerWall[0] = 4;
     state.innerWall[1] = 2;
-    state.trenchFill['20,18'] = 1.5;
-    state.trenchFill['21,18'] = 3;
+    state.trenchFill['7,9'] = 1.5;
+    state.trenchFill['7,9'] = 3;
     const markup = renderToStaticMarkup(
       createElement(SiegeMapView, {
         state,
@@ -57,8 +57,10 @@ describe('siege screen integration without browser APIs', () => {
   });
   it('executes the browser playthrough deployment, wall forecast, cart queue and next day through real rules', () => {
     let state = createSiegeState(228);
-    state = deployUnit(state, 'shu-captain-3', { x: 23, y: 21, level: 'ground' });
-    state = act(state, { type: 'move', unitId: 'shu-captain-3', x: 23, y: 18, level: 'ground' });
+    state = deployUnit(state, 'shu-captain-3', { x: 9, y: 10, level: 'ground' });
+    const ram = state.engines.find((e) => e.kind === 'ram')!;
+    state = act(state, { type: 'moveEngine', engineId: ram.id, x: 8, y: 8 });
+    state = act(state, { type: 'move', unitId: 'shu-captain-3', x: 8, y: 9, level: 'ground' });
     const forecast = predictSiegeAttack(state, 'shu-captain-3', 'wei-haozhao');
     expect(forecast).toMatchObject({ inRange: true, frontage: 600, modifiers: { parapet: 0.3 } });
     state = act(state, { type: 'attack', unitId: 'shu-captain-3', targetId: 'wei-haozhao' });

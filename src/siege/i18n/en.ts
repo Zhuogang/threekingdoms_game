@@ -308,7 +308,7 @@ export const en = {
   howFootholdBody:
     'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: an unmoved ally on top makes way and the follower goes straight up with its action left, at most one unit per ladder each day. The breach closes only when Wei stands on that cell, throws the unit off the wall, or destroys the ladder.',
   howMovementBody:
-    'Pass through allies, but stop on a free cell. With Move pressed, click an ally that has neither moved nor acted to swap. Step down directly inside from any wall cell; open an unguarded gate from its tower or just inside.',
+    'Each cell holds one living unit; gate top and passage share occupancy. Pass through allies, but stop on a free cell. With Move pressed, click an ally that has neither moved nor acted to swap. Step down directly inside from any wall cell; open an unguarded gate from its tower or just inside.',
   howCourtyardClear:
     'The courtyard must be clear of active Wei units at day’s end to count as captured.',
   howKeys: 'Keyboard',
@@ -372,7 +372,7 @@ export const en = {
   howBuildDays: '{kind}: {days} days.',
   howTowerDays: '{kind}: {days} days, available from Act II.',
   howBuildDoor:
-    'A finished engine appears at its workshop door at day’s end (in the nearest free cell if blocked). At the engine limit, it waits in the workshop.',
+    'A finished engine appears north of its workshop at day’s end, using the inner column first, then the other north cell (the nearest free cell if both are blocked). At the engine limit, it waits in the workshop.',
   howSuperviseBody:
     'Supervise advances a workshop by {days} day; Rally, Supervise, Rotate and Night assault share the daily order.',
   howUse: 'Use engines',

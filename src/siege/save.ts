@@ -1,3 +1,4 @@
+import { TRENCH_INNER_ROW } from './content/coarseGrid';
 import { SIEGE_TUNING as T } from './rules/tuning';
 import { z } from 'zod';
 import { COUNTER_KINDS, type CounterKind } from './ui/counters';
@@ -71,7 +72,7 @@ const scoreSchema = z.strictObject({
   parts: z.record(z.string(), z.number()),
 });
 const stateSchema = z.strictObject({
-  version: z.literal('siege_v0.2'),
+  version: z.literal('siege_v0.3'),
   seed: integer.nonnegative(),
   rngState: integer.nonnegative(),
   day: integer.min(1).max(T.days),
@@ -154,7 +155,10 @@ const stateSchema = z.strictObject({
     }),
   ),
   footholds: z.record(z.string().regex(/^\d+,\d+$/), integer.min(0).max(T.footholdComplete)),
-  mounds: z.record(z.string().regex(/^\d+,17$/), integer.min(0).max(T.moundComplete)),
+  mounds: z.record(
+    z.string().regex(new RegExp(`^\\d+,${TRENCH_INNER_ROW}$`)),
+    integer.min(0).max(T.moundComplete),
+  ),
   preparations: z.strictObject({
     braziers: z.record(
       z.string().regex(/^\d+,\d+$/),

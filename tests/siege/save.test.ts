@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  hasSiegeSave,
   deserializeSiegeSave,
   loadSiege,
   saveSiege,
@@ -41,8 +42,8 @@ describe('independent Chencang saves', () => {
     ).toThrow();
   });
   it('preserves every state field and replays the same actions and AI to the identical outcome', () => {
-    const { state, shu } = duel({ x: 20, y: 19 });
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    const { state, shu } = duel({ x: 7, y: 10 });
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     state.weather = 'wind';
     state.rngState = 0xabcdef;
     shu.casualtyRemainder = 0.65;
@@ -115,13 +116,14 @@ describe('independent Chencang saves', () => {
     expect(() => deserializeSiegeSave(JSON.stringify(save))).toThrow();
   });
   it.each([
-    ['footholds', { '20,16': 4 }],
-    ['mounds', { '20,17': 7 }],
-    ['preparations', { braziers: {}, millstones: {}, boulders: { '20,16': true } }],
+    ['footholds', { '7,7': 4 }],
+    ['mounds', { '7,8': 7 }],
+    ['preparations', { braziers: {}, millstones: {}, boulders: { '7,7': true } }],
     ['nightOrders', { wei: { kind: 'sortie', target: 'missing' } }],
     ['units', [{ ...createSiegeState(1).units[0], suppressedDay: 'today' }]],
     ['engines', [{ ...createSiegeState(1).engines[0], covered: 'yes' }]],
     ['version', 'siege_v0.1'],
+    ['version', 'siege_v0.2'],
     ['unexpectedField', true],
   ])('rejects invalid v0.2 field %s', (key, value) => {
     const save = { playerSide: 'wei', state: createSiegeState(1), phase: 'battle', facings: {} };
@@ -141,4 +143,23 @@ describe('independent Chencang saves', () => {
     invalid.state.units[0]!.troops = -2;
     expect(() => deserializeSiegeSave(JSON.stringify(invalid))).toThrow();
   });
+});
+
+it('quietly hides Continue for a v0.2 save and leaves the rejected payload intact', () => {
+  const payload = JSON.stringify({
+    playerSide: 'shu',
+    state: { ...createSiegeState(42), version: 'siege_v0.2' },
+    phase: 'battle',
+    facings: {},
+  });
+  const storage = { getItem: (key: string) => (key === siegeSaveKey('shu') ? payload : null) };
+  vi.stubGlobal('localStorage', storage);
+  try {
+    expect(() => hasSiegeSave()).not.toThrow();
+    expect(hasSiegeSave()).toBe(false);
+    expect(() => loadSiege(storage)).toThrow();
+    expect(storage.getItem(siegeSaveKey('shu'))).toBe(payload);
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

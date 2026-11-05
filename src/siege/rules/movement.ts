@@ -61,14 +61,17 @@ export function unitNeighbors(
       ...cardinal(from)
         .filter((next) => insideCity(next) && groundPassable(state, unit.side, next))
         .map(ground),
-      ...RAMPS.filter((ramp) => sameCell(ramp.wall, from)).map((ramp) =>
-        ground(ramp.cells.at(-1)!),
-      ),
+      ...RAMPS.filter(
+        (ramp) =>
+          sameCell(ramp.wall, from) && cellTerrain(state, ramp.ground.x, ramp.ground.y) === 'ramp',
+      ).map((ramp) => ground(ramp.ground)),
     ];
   }
 
   const next = cardinal(from).filter((to) => groundPassable(state, unit.side, to));
-  for (const ramp of RAMPS) if (sameCell(ramp.cells.at(-1)!, from)) next.push(wall(ramp.wall));
+  for (const ramp of RAMPS)
+    if (sameCell(ramp.ground, from) && cellTerrain(state, from.x, from.y) === 'ramp')
+      next.push(wall(ramp.wall));
   if (unit.side === 'shu') {
     if (isWallFoot(state, from.x, from.y) && state.mounds[cellKey(from)] === T.moundComplete)
       next.push(wall({ x: from.x, y: from.y - 1 }));
@@ -130,13 +133,13 @@ function unitSearch(state: SiegeState, unitId: string, budget?: number): Map<str
   const occupied = new Set(
     state.units
       .filter((other) => other.id !== unitId && other.troops > 0 && other.side !== unit.side)
-      .map(positionKey),
+      .map(cellKey),
   );
   for (const engine of state.engines) {
     // A usable ladder admits troops before or after raising, in either action order.
     // All other engines, including wrecks, occupy their ground cell.
     if (engine.kind !== 'ladder' || engine.wrecked || engine.durability <= 0)
-      occupied.add(positionKey(ground(engine)));
+      occupied.add(cellKey(engine));
   }
   return search(
     { x: unit.x, y: unit.y, level: unit.level },
@@ -146,7 +149,7 @@ function unitSearch(state: SiegeState, unitId: string, budget?: number): Map<str
       const terrain = cellTerrain(state, to.x, to.y);
       return to.level === 'ground' && (terrain === 'hill' || terrain === 'wood') ? 2 : 1;
     },
-    (to) => occupied.has(positionKey(to)),
+    (to) => occupied.has(cellKey(to)),
   );
 }
 
@@ -205,10 +208,8 @@ export function engineReachable(state: SiegeState, engineId: string): ReachableC
     );
   };
   const occupied = new Set([
-    ...state.units.filter((unit) => unit.troops > 0).map(positionKey),
-    ...state.engines
-      .filter((other) => other.id !== engineId)
-      .map((other) => positionKey(ground(other))),
+    ...state.units.filter((unit) => unit.troops > 0).map(cellKey),
+    ...state.engines.filter((other) => other.id !== engineId).map(cellKey),
   ]);
   return destinations(
     search(
@@ -216,7 +217,7 @@ export function engineReachable(state: SiegeState, engineId: string): ReachableC
       ENGINE_RULES[engine.kind].move,
       (from) => cardinal(from).filter(passable),
       () => 1,
-      (to) => occupied.has(positionKey(to)),
+      (to) => occupied.has(cellKey(to)),
     ),
   );
 }
@@ -229,9 +230,7 @@ export function insideCity({ x, y }: Cell): boolean {
 }
 
 function canStop(state: SiegeState, unitId: string, p: SiegePosition): boolean {
-  return !state.units.some(
-    (u) => u.id !== unitId && u.troops > 0 && u.level === p.level && sameCell(u, p),
-  );
+  return !state.units.some((u) => u.id !== unitId && u.troops > 0 && sameCell(u, p));
 }
 
 /** Unlimited walking distances for guidance, including after today's move/action. */
@@ -267,7 +266,7 @@ export function makeWayDestination(state: SiegeState, ally: SiegeUnit): SiegePos
     movementBudget(ally.troopType),
     (from) => cardinal(from).filter((p) => isWalkway(state, p)),
     () => 1,
-    (p) => occupied.some((u) => u.side !== ally.side && u.level === p.level && sameCell(u, p)),
+    (p) => occupied.some((u) => u.side !== ally.side && sameCell(u, p)),
   );
   const gates = Object.values(GATES).flatMap((gate) => gate.cells);
   const gateDistance = (p: Cell) =>

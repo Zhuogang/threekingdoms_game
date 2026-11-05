@@ -11,7 +11,7 @@ import { act, duel, engine, refused } from './rulesFixtures';
 describe('gates and rams', () => {
   it('breaks the south gate after the tuned number of daily ram hits and opens the passage with a single morale shock', () => {
     let state = createSiegeState(3);
-    state.engines = [engine('ram', 23, 17)];
+    state.engines = [engine('ram', 8, 8)];
     const hits = Math.ceil(T.southGateDurability / T.ramDamage);
     for (let day = 1; day <= hits; day++) {
       state = act(state, { type: 'ram', engineId: 'engine', gateId: 'south' });
@@ -31,51 +31,53 @@ describe('gates and rams', () => {
       Array(6).fill(70),
     );
     state.engines = [];
+    // The tower and passage share occupancy; vacate the gate before testing passage movement.
+    state.units.find((u) => u.id === 'wei-haozhao')!.x = 4;
     const unit = state.units[1]!;
-    Object.assign(unit, { x: 23, y: 17 });
-    expect(pathTo(state, unit.id, 23, 15, 'ground')).not.toBeNull();
+    Object.assign(unit, { x: 8, y: 8 });
+    expect(pathTo(state, unit.id, 8, 6, 'ground')).not.toBeNull();
     refused(state, { type: 'ram', engineId: 'engine', gateId: 'south' });
   });
 
   it('deals a tenth of a 100-troop hit to a gate and rejects distant/wall attacks', () => {
-    const { state, shu, wei } = duel({ x: 23, y: 17 }, { x: 23 });
+    const { state, shu, wei } = duel({ x: 8, y: 8 }, { x: 8 });
     const normal = siegeBaseDamage(state, shu, { ...wei, level: 'ground' }, 100);
     const hit = act(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
     expect(hit.gates.south.durability).toBe(T.southGateDurability - Math.floor(normal * 0.1));
-    shu.y = 19;
+    shu.y = 10;
     refused(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
-    Object.assign(shu, { x: 22, y: 16, level: 'wall' });
+    Object.assign(shu, { x: 7, y: 7, level: 'wall' });
     refused(state, { type: 'attack', unitId: shu.id, gateId: 'south' });
   });
 });
 
 describe('trench filling and ladders', () => {
   it('refuses inner-first work and adds a quarter point from adjacent infantry', () => {
-    const { state, shu } = duel({ x: 23, y: 17 });
-    refused(state, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 }, /outer/);
-    state.trenchFill['22,18'] = 3;
-    const next = act(state, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 });
-    expect(next.trenchFill['22,17']).toBe(T.infantryFill);
-    refused(next, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 });
-    refused(state, { type: 'fillTrench', unitId: shu.id, x: 21, y: 17 });
+    const { state, shu } = duel({ x: 8, y: 8 });
+    refused(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 8 }, /outer/);
+    state.trenchFill['7,9'] = 3;
+    const next = act(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 8 });
+    expect(next.trenchFill['7,8']).toBe(T.infantryFill);
+    refused(next, { type: 'fillTrench', unitId: shu.id, x: 7, y: 8 });
+    refused(state, { type: 'fillTrench', unitId: shu.id, x: 6, y: 8 });
     shu.troopType = 'archer';
-    refused(state, { type: 'fillTrench', unitId: shu.id, x: 22, y: 17 });
+    refused(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 8 });
   });
 
   it('fills a cell in two cart loads and a second half cell with the last load, without wrecking', () => {
     let state = createSiegeState(4);
-    state.engines = [engine('earthCart', 20, 19)];
+    state.engines = [engine('earthCart', 7, 10)];
     for (let count = 1; count <= 2; count++) {
-      state = act(state, { type: 'fillTrench', engineId: 'engine', x: 20, y: 18 });
-      expect(state.trenchFill['20,18']).toBe(count * 1.5);
+      state = act(state, { type: 'fillTrench', engineId: 'engine', x: 7, y: 9 });
+      expect(state.trenchFill['7,9']).toBe(count * 1.5);
       expect(state.engines[0]!.uses).toBe(3 - count);
-      refused(state, { type: 'fillTrench', engineId: 'engine', x: 20, y: 18 });
+      refused(state, { type: 'fillTrench', engineId: 'engine', x: 7, y: 9 });
       state = endDay(state);
     }
-    expect(cellTerrain(state, 20, 18)).toBe('plain');
-    state = act(state, { type: 'moveEngine', engineId: 'engine', x: 21, y: 19 });
-    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 21, y: 18 });
-    expect(state.trenchFill['21,18']).toBe(1.5);
+    expect(cellTerrain(state, 7, 9)).toBe('plain');
+    state = act(state, { type: 'moveEngine', engineId: 'engine', x: 6, y: 10 });
+    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 6, y: 9 });
+    expect(state.trenchFill['6,9']).toBe(1.5);
     expect(state.engines).toEqual([]);
     expect(state.enginesLostAct1 ?? 0).toBe(0);
   });
@@ -83,30 +85,30 @@ describe('trench filling and ladders', () => {
   it('takes twelve infantry actions to fill a cell and clamps mixed cart/infantry work at three', () => {
     let { state, shu } = duel();
     for (let day = 1; day <= 12; day++) {
-      state = act(state, { type: 'fillTrench', unitId: shu.id, x: 20, y: 18 });
-      expect(state.trenchFill['20,18']).toBe(day * T.infantryFill);
+      state = act(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 9 });
+      expect(state.trenchFill['7,9']).toBe(day * T.infantryFill);
       if (day < 12) state = endDay(state);
     }
-    refused(state, { type: 'fillTrench', unitId: shu.id, x: 20, y: 18 });
+    refused(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 9 });
     state = createSiegeState(42);
-    state.trenchFill['21,18'] = 2.5;
-    state.engines = [engine('earthCart', 21, 19)];
-    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 21, y: 18 });
-    expect(state.trenchFill['21,18']).toBe(3);
+    state.trenchFill['7,9'] = 2.5;
+    state.engines = [engine('earthCart', 7, 10)];
+    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 7, y: 9 });
+    expect(state.trenchFill['7,9']).toBe(3);
     expect(state.engines[0]!.uses).toBe(2);
   });
 
   it.each([0, 3] as const)(
     'raises a ladder over outer trench progress %i without moving its base',
     (progress) => {
-      const { state, shu } = duel({ y: 20 });
-      state.engines = [engine('ladder', 20, 19)];
-      state.trenchFill['20,18'] = progress;
+      const { state, shu } = duel({ y: 10 });
+      state.engines = [engine('ladder', 7, 10)];
+      state.trenchFill['7,9'] = progress;
       const next = act(state, { type: 'raiseLadder', engineId: 'engine' });
-      expect(next.engines[0]).toMatchObject({ x: 20, y: 19, raisedAt: { x: 20, y: 16 } });
-      expect(pathTo(next, shu.id, 20, 19, 'ground')).not.toBeNull();
-      refused(next, { type: 'moveEngine', engineId: 'engine', x: 21, y: 19 });
-      state.trenchFill['20,18'] = 0.5;
+      expect(next.engines[0]).toMatchObject({ x: 7, y: 10, raisedAt: { x: 7, y: 7 } });
+      expect(pathTo(next, shu.id, 7, 10, 'ground')).not.toBeNull();
+      refused(next, { type: 'moveEngine', engineId: 'engine', x: 7, y: 9 });
+      state.trenchFill['7,9'] = 0.5;
       refused(state, { type: 'raiseLadder', engineId: 'engine' });
     },
   );
@@ -127,7 +129,7 @@ describe('workshops and engine movement', () => {
       }
       expect(state.engines).toHaveLength(1);
       expect(state.engines[0]).toMatchObject({
-        ...WORKSHOPS[0]!.spawn,
+        ...WORKSHOPS[0]!.spawns[0]!,
         kind,
         durability: ENGINE_RULES[kind].durability,
         max: ENGINE_RULES[kind].durability,
@@ -140,16 +142,16 @@ describe('workshops and engine movement', () => {
   it('spawns at the nearest free cell if the exit is occupied', () => {
     let state = createSiegeState(6);
     state.engines = [];
-    Object.assign(state.units[1]!, WORKSHOPS[0]!.spawn);
+    Object.assign(state.units[1]!, WORKSHOPS[0]!.spawns[0]!);
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'earthCart' });
     state = endDay(state);
-    expect(state.engines[0]).toMatchObject({ x: 15, y: 25 });
+    expect(state.engines[0]).toMatchObject(WORKSHOPS[0]!.spawns[1]!);
   });
 
   it('caps map engines at eight even when two workshops finish together; wrecks retain their cells', () => {
     let state = createSiegeState(7);
     state.engines = Array.from({ length: 7 }, (_, x) =>
-      engine('ladder', x, 25, { id: `old-${x}` }),
+      engine('ladder', x, 11, { id: `old-${x}` }),
     );
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'earthCart' });
     state = act(state, { type: 'queueEngine', workshopId: 'workshop-2', kind: 'earthCart' });
@@ -161,23 +163,25 @@ describe('workshops and engine movement', () => {
     state = endDay(state);
     expect(state.engines).toHaveLength(9);
     expect(state.engines.filter((entry) => !entry.wrecked)).toHaveLength(8);
-    expect(state.engines[0]).toMatchObject({ x: 0, y: 25, wrecked: true });
+    expect(state.engines[0]).toMatchObject({ x: 0, y: 11, wrecked: true });
   });
 
   it('unlocks towers in act 2 and enforces move-once then act, including engines', () => {
     let state = createSiegeState(8);
     refused(state, { type: 'queueEngine', workshopId: 'workshop-1', kind: 'tower' });
+    state.engines = [];
     const unitId = state.units[1]!.id;
-    state = act(state, { type: 'move', unitId, x: 20, y: 20, level: 'ground' });
-    refused(state, { type: 'move', unitId, x: 21, y: 20, level: 'ground' });
-    state.engines = [engine('earthCart', 19, 19)];
-    state = act(state, { type: 'moveEngine', engineId: 'engine', x: 20, y: 19 });
-    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 20, y: 18 });
-    refused(state, { type: 'moveEngine', engineId: 'engine', x: 21, y: 19 });
+    state = act(state, { type: 'move', unitId, x: 7, y: 10, level: 'ground' });
+    refused(state, { type: 'move', unitId, x: 7, y: 10, level: 'ground' });
+    state.engines = [engine('earthCart', 6, 10)];
+    state.trenchFill['6,9'] = 3;
+    state = act(state, { type: 'moveEngine', engineId: 'engine', x: 6, y: 9 });
+    state = act(state, { type: 'fillTrench', engineId: 'engine', x: 6, y: 8 });
+    refused(state, { type: 'moveEngine', engineId: 'engine', x: 6, y: 9 });
     state = endDay(state);
-    state = act(state, { type: 'move', unitId, x: 21, y: 19, level: 'ground' });
-    state = act(state, { type: 'fillTrench', unitId, x: 21, y: 18 });
-    refused(state, { type: 'move', unitId, x: 22, y: 19, level: 'ground' });
+    state = act(state, { type: 'move', unitId, x: 8, y: 9, level: 'ground' });
+    state = act(state, { type: 'fillTrench', unitId, x: 7, y: 9 });
+    refused(state, { type: 'move', unitId, x: 7, y: 10, level: 'ground' });
   });
 });
 
@@ -205,12 +209,12 @@ describe('Wei countermeasures', () => {
       const { state, wei } = duel({}, { troopType: 'archer', troops: 200 });
       readyCounters(state);
       state.weather = weather;
-      state.engines = [engine('tower', 20, 19)];
+      state.engines = [engine('tower', 7, 10)];
       const shot = act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' });
       expect(shot.engines[0]).toMatchObject({ durability: 250 - damage, burning: true });
       expect(endDay(shot).engines[0]!.durability).toBe(230 - damage);
       refused(shot, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' });
-      state.engines[0]!.y = 20;
+      state.engines[0]!.y = 11;
       refused(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' });
     },
   );
@@ -219,16 +223,16 @@ describe('Wei countermeasures', () => {
     const { state, wei } = duel({}, { troopType: 'archer', troops: 251 });
     readyCounters(state);
     state.weather = 'snow';
-    state.engines = [engine('tower', 20, 19)];
+    state.engines = [engine('tower', 7, 10)];
     expect(
       act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' }).engines[0]!.durability,
     ).toBe(250 - Math.floor(251 * T.fireArrowCoefficient * T.snowFireMultiplier));
   });
 
   it('recognizes boulder exposure from an attack earlier in the day, including wall-foot attacks', () => {
-    const { state, shu, wei } = duel({ y: 17, attackedFromBelowDay: 2 });
+    const { state, shu, wei } = duel({ y: 8, attackedFromBelowDay: 2 });
     readyCounters(state);
-    state.trenchFill['20,17'] = 3;
+    state.trenchFill['7,8'] = 3;
     expect(
       act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id }).units[0]!.troops,
     ).toBe(2000 - Math.floor(300 * T.boulderCoefficient * T.climbingBoulderMultiplier));
@@ -242,8 +246,8 @@ describe('Wei countermeasures', () => {
     const { state, wei } = duel({}, { troopType: 'archer', troops: 300 });
     readyCounters(state);
     state.engines = [
-      engine('ladder', 20, 19, { durability: 100 }),
-      engine('ladder', 21, 19, { id: 'second', durability: 10, burning: true }),
+      engine('ladder', 7, 10, { durability: 100 }),
+      engine('ladder', 7, 10, { id: 'second', durability: 10, burning: true }),
     ];
     const shot = act(state, { type: 'fireArrows', unitId: wei.id, engineId: 'engine' });
     expect(shot.engines[0]).toMatchObject({ durability: 0, wrecked: true, burning: false });
@@ -251,15 +255,15 @@ describe('Wei countermeasures', () => {
     expect(next.act).toBe(2);
     expect(next.day).toBe(3);
     expect(next.enginesLostAct1).toBe(2);
-    Object.assign(next.units[0]!, { x: 20, y: 20 });
-    expect(pathTo(next, next.units[0]!.id, 20, 19, 'ground')).toBeNull();
-    refused(next, { type: 'moveEngine', engineId: 'engine', x: 19, y: 19 });
+    Object.assign(next.units[0]!, { x: 6, y: 10 });
+    expect(pathTo(next, next.units[0]!.id, 7, 10, 'ground')).toBeNull();
+    refused(next, { type: 'moveEngine', engineId: 'engine', x: 6, y: 10 });
   });
 
   it('consumes a hoisted millstone and requires a fresh hoist on an intervening day', () => {
-    const { state, wei } = duel({}, { x: 23 });
+    const { state, wei } = duel({}, { x: 8 });
     readyCounters(state);
-    state.engines = [engine('ram', 23, 17)];
+    state.engines = [engine('ram', 8, 8)];
     let next = act(state, { type: 'dropMillstone', unitId: wei.id, engineId: 'engine' });
     expect(next.engines[0]!.durability).toBe(100);
     next = endDay(next);
@@ -268,7 +272,7 @@ describe('Wei countermeasures', () => {
     next = endDay(next);
     next = act(next, { type: 'dropMillstone', unitId: wei.id, engineId: 'engine' });
     expect(next.engines[0]).toMatchObject({ durability: 0, wrecked: true });
-    expect(next.preparations.millstones['23,16']!.hoisted).toBe(false);
+    expect(next.preparations.millstones['8,7']!.hoisted).toBe(false);
   });
 
   it.each([false, true])(
@@ -276,7 +280,7 @@ describe('Wei countermeasures', () => {
     (climbing) => {
       const { state, shu, wei } = duel({ climbing });
       readyCounters(state);
-      state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+      state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
       const hit = act(state, { type: 'dropBoulders', unitId: wei.id, targetId: shu.id });
       expect(hit.units[0]!.troops).toBe(
         2000 -
@@ -287,7 +291,7 @@ describe('Wei countermeasures', () => {
   );
 
   it('completes an inner-wall segment in four daily actions and lifts its builders onto the walkway', () => {
-    const { state, wei } = duel({}, { x: 17, y: 14, level: 'ground' });
+    const { state, wei } = duel({}, { x: 7, y: 6, level: 'ground' });
     refused(state, { type: 'buildWall', unitId: wei.id });
     let next = structuredClone(state);
     next.act = 2;
@@ -300,7 +304,22 @@ describe('Wei countermeasures', () => {
       INNER_WALL_SEGMENTS[1]!.cells.every((cell) => cellTerrain(next, cell.x, cell.y) === 'wall'),
     ).toBe(true);
     expect(next.units[1]!.level).toBe('wall');
-    Object.assign(next.units[0]!, { x: 17, y: 13 });
-    expect(pathTo(next, next.units[0]!.id, 18, 14, 'ground')).toBeNull();
+    Object.assign(next.units[0]!, { x: 8, y: 6 });
+    expect(pathTo(next, next.units[0]!.id, 7, 6, 'ground')).toBeNull();
   });
 });
+
+it.each(WORKSHOPS)(
+  '$id tries both north cells before the existing nearest-free fallback',
+  (workshop) => {
+    let state = createSiegeState(42);
+    state.engines = workshop.spawns.map((p, i) =>
+      engine('ram', p.x, p.y, { id: `block-${i}`, wrecked: true, durability: 0 }),
+    );
+    state = act(state, { type: 'queueEngine', workshopId: workshop.id, kind: 'earthCart' });
+    const next = endDay(state);
+    const completed = next.engines.find((e) => e.kind === 'earthCart')!;
+    expect(completed).toMatchObject({ x: workshop.id === 'workshop-1' ? 7 : 9, y: 10 });
+    expect(next.workshops.find((w) => w.id === workshop.id)!.queue).toBeNull();
+  },
+);

@@ -105,7 +105,7 @@ export interface SiegeLogEntry {
 
 /** Plain JSON; numeric record keys serialize as decimal strings. Days are 1-based. */
 export interface SiegeState {
-  version: 'siege_v0.2';
+  version: 'siege_v0.3';
   seed: number;
   rngState: number;
   day: number;

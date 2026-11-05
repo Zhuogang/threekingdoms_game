@@ -2,13 +2,15 @@ import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  CHENCANG_ART_LAYOUT,
   CHENCANG_LAYOUT,
+  CITY_BOUNDS,
+  CAMP_CELLS,
   COURTYARD,
   DEPLOY_SHU,
   DEPLOY_WEI,
   GATES,
   INNER_WALL_SEGMENTS,
-  RAMPS,
   SHU_ROSTER,
   SOUTH_TRENCH,
   WEI_ROSTER,
@@ -30,193 +32,101 @@ import type { SiegePosition } from '../../src/siege/rules/types';
 const positionKey = (p: SiegePosition) => `${cellKey(p)},${p.level}`;
 
 describe('Chencang layout and derived geometry', () => {
-  it('matches the authoritative 48 by 32 layout exactly', () => {
-    const layout = readFileSync('docs/siege/chencang/art/layout.txt', 'utf8').trimEnd().split('\n');
-    expect(CHENCANG_LAYOUT).toEqual(layout);
-    expect(CHENCANG_LAYOUT).toHaveLength(32);
-    expect(CHENCANG_LAYOUT.every((row) => row.length === 48)).toBe(true);
+  it('preserves the authoritative art and exposes the new board dimensions', () => {
+    expect(CHENCANG_ART_LAYOUT).toEqual(
+      readFileSync('docs/siege/chencang/art/layout.txt', 'utf8').trimEnd().split('\n'),
+    );
+    expect(CHENCANG_ART_LAYOUT).toHaveLength(32);
+    expect(CHENCANG_ART_LAYOUT.every((r) => r.length === 48)).toBe(true);
+    expect(CHENCANG_LAYOUT).toHaveLength(14);
+    expect(CHENCANG_LAYOUT.every((r) => r.length === 17)).toBe(true);
   });
-
-  it('derives all gate cells, durability and outside bridge approaches', () => {
+  it('derives the singleton gates, durability and external bridges', () => {
+    expect(CITY_BOUNDS).toEqual({ west: 4, east: 12, north: 2, south: 7 });
     expect(GATES).toEqual({
       south: {
         id: 'south',
         max: T.southGateDurability,
-        cells: [
-          { x: 23, y: 16 },
-          { x: 24, y: 16 },
-        ],
-        approaches: [
-          { x: 23, y: 17 },
-          { x: 24, y: 17 },
-        ],
+        cells: [{ x: 8, y: 7 }],
+        approaches: [{ x: 8, y: 8 }],
       },
       north: {
         id: 'north',
-        max: 400,
-        cells: [
-          { x: 23, y: 4 },
-          { x: 24, y: 4 },
-        ],
-        approaches: [
-          { x: 23, y: 3 },
-          { x: 24, y: 3 },
-        ],
+        max: T.otherGateDurability,
+        cells: [{ x: 8, y: 2 }],
+        approaches: [{ x: 8, y: 1 }],
       },
       west: {
         id: 'west',
-        max: 400,
-        cells: [{ x: 14, y: 10 }],
-        approaches: [{ x: 13, y: 10 }],
+        max: T.otherGateDurability,
+        cells: [{ x: 4, y: 5 }],
+        approaches: [{ x: 3, y: 5 }],
       },
       east: {
         id: 'east',
-        max: 400,
-        cells: [{ x: 33, y: 10 }],
-        approaches: [{ x: 34, y: 10 }],
+        max: T.otherGateDurability,
+        cells: [{ x: 12, y: 5 }],
+        approaches: [{ x: 13, y: 5 }],
       },
     });
   });
-
-  it('orders each of the eight ramps from its gate-side low end to its wall-side high end', () => {
-    expect(RAMPS.map(({ cells, ground, wall }) => ({ cells, ground, wall }))).toEqual([
-      {
-        cells: [
-          { x: 22, y: 5 },
-          { x: 21, y: 5 },
-          { x: 20, y: 5 },
-        ],
-        ground: { x: 23, y: 5 },
-        wall: { x: 20, y: 4 },
-      },
-      {
-        cells: [
-          { x: 25, y: 5 },
-          { x: 26, y: 5 },
-          { x: 27, y: 5 },
-        ],
-        ground: { x: 24, y: 5 },
-        wall: { x: 27, y: 4 },
-      },
-      {
-        cells: [
-          { x: 15, y: 8 },
-          { x: 15, y: 7 },
-          { x: 15, y: 6 },
-        ],
-        ground: { x: 15, y: 9 },
-        wall: { x: 14, y: 6 },
-      },
-      {
-        cells: [
-          { x: 32, y: 8 },
-          { x: 32, y: 7 },
-          { x: 32, y: 6 },
-        ],
-        ground: { x: 32, y: 9 },
-        wall: { x: 33, y: 6 },
-      },
-      {
-        cells: [
-          { x: 15, y: 11 },
-          { x: 15, y: 12 },
-          { x: 15, y: 13 },
-        ],
-        ground: { x: 15, y: 10 },
-        wall: { x: 14, y: 13 },
-      },
-      {
-        cells: [
-          { x: 32, y: 11 },
-          { x: 32, y: 12 },
-          { x: 32, y: 13 },
-        ],
-        ground: { x: 32, y: 10 },
-        wall: { x: 33, y: 13 },
-      },
-      {
-        cells: [
-          { x: 22, y: 15 },
-          { x: 21, y: 15 },
-          { x: 20, y: 15 },
-        ],
-        ground: { x: 23, y: 15 },
-        wall: { x: 20, y: 16 },
-      },
-      {
-        cells: [
-          { x: 25, y: 15 },
-          { x: 26, y: 15 },
-          { x: 27, y: 15 },
-        ],
-        ground: { x: 24, y: 15 },
-        wall: { x: 27, y: 16 },
-      },
-    ]);
-    expect(RAMPS.flatMap((ramp) => ramp.cells).every((c) => layoutSymbol(c.x, c.y) === 'M')).toBe(
-      true,
+  it('derives twenty trench cells and four row-major inner-wall indexes', () => {
+    expect(SOUTH_TRENCH).toHaveLength(20);
+    for (const y of [8, 9])
+      expect(SOUTH_TRENCH.filter((c) => c.y === y).map((c) => c.x)).toEqual([
+        3, 4, 5, 6, 7, 9, 10, 11, 12, 13,
+      ]);
+    expect(INNER_WALL_SEGMENTS).toEqual(
+      [5, 7, 9, 11].map((x, index) => ({ index, cells: [{ x, y: 6 }], buildPoints: 4 })),
     );
   });
-
-  it('derives the fillable south trench and four gapped inner-wall segments', () => {
-    expect(SOUTH_TRENCH).toHaveLength(44);
-    for (const y of [17, 18]) {
-      expect(SOUTH_TRENCH.filter((c) => c.y === y).map((c) => c.x)).toEqual(
-        Array.from({ length: 24 }, (_, i) => i + 12).filter((x) => x !== 23 && x !== 24),
-      );
-    }
-    expect(INNER_WALL_SEGMENTS.map((segment) => segment.cells.map((c) => c.x))).toEqual([
-      [15],
-      [17, 18, 19, 20, 21, 22],
-      [25, 26, 27, 28, 29, 30],
-      [32],
+  it('keeps all K cells and inner-first workshop exits', () => {
+    expect(COURTYARD).toEqual([
+      { x: 9, y: 4 },
+      { x: 10, y: 4 },
     ]);
-    expect(
-      INNER_WALL_SEGMENTS.every((s) => s.buildPoints === 4 && s.cells.every((c) => c.y === 14)),
-    ).toBe(true);
-  });
-
-  it('derives the objective courtyard and both workshop blocks and spawn cells', () => {
-    expect(COURTYARD).toHaveLength(8);
-    expect(COURTYARD.every((c) => [7, 8].includes(c.y) && layoutSymbol(c.x, c.y) === 'K')).toBe(
-      true,
-    );
-    expect(WORKSHOPS.map((w) => w.spawn)).toEqual([
-      { x: 16, y: 25 },
-      { x: 30, y: 25 },
+    expect(WORKSHOPS.map((w) => w.cells)).toEqual([
+      [
+        { x: 5, y: 11 },
+        { x: 6, y: 11 },
+      ],
+      [
+        { x: 10, y: 11 },
+        { x: 11, y: 11 },
+      ],
     ]);
-    for (const [i, workshop] of WORKSHOPS.entries()) {
-      expect(workshop.cells).toHaveLength(8);
-      expect(workshop.cells.map((c) => cellKey(c)).sort()).toEqual(
-        [23, 24]
-          .flatMap((y) => Array.from({ length: 4 }, (_, x) => `${x + (i ? 29 : 15)},${y}`))
-          .sort(),
-      );
-      expect(layoutSymbol(workshop.spawn.x, workshop.spawn.y)).toBe('.');
-    }
+    expect(WORKSHOPS.map((w) => w.spawns)).toEqual([
+      [
+        { x: 6, y: 10 },
+        { x: 5, y: 10 },
+      ],
+      [
+        { x: 10, y: 10 },
+        { x: 11, y: 10 },
+      ],
+    ]);
   });
-
-  it('defines only open deployment cells, plus Wei wall and gate tops', () => {
+  it('defines only open Shu approach/camp cells and Wei interior or tops', () => {
     expect(DEPLOY_SHU.length).toBeGreaterThan(10);
     for (const p of DEPLOY_SHU) {
       expect(p.level).toBe('ground');
-      expect('.+=X').toContain(layoutSymbol(p.x, p.y));
-      expect((p.y >= 21 && p.y <= 25) || (p.y >= 27 && p.x >= 11 && p.x <= 36)).toBe(true);
+      expect('.+=').toContain(layoutSymbol(p.x, p.y));
+      expect([10, 11].includes(p.y) || CAMP_CELLS.some((c) => cellKey(c) === cellKey(p))).toBe(
+        true,
+      );
     }
-    expect(DEPLOY_SHU).toContainEqual({ x: 20, y: 23, level: 'ground' });
-    expect(DEPLOY_SHU).toContainEqual({ x: 11, y: 31, level: 'ground' });
-    expect(DEPLOY_WEI).toContainEqual({ x: 23, y: 16, level: 'wall' });
-    expect(DEPLOY_WEI).toContainEqual({ x: 25, y: 7, level: 'ground' });
-    expect(DEPLOY_WEI).toContainEqual({ x: 17, y: 14, level: 'ground' });
+    expect(DEPLOY_SHU).toContainEqual({ x: 8, y: 12, level: 'ground' });
+    expect(DEPLOY_SHU).toContainEqual({ x: 5, y: 13, level: 'ground' });
+    expect(DEPLOY_WEI).toContainEqual({ x: 8, y: 7, level: 'wall' });
+    expect(DEPLOY_WEI).toContainEqual({ x: 9, y: 4, level: 'ground' });
     for (const p of DEPLOY_WEI) {
       if (p.level === 'wall') expect('WOG').toContain(layoutSymbol(p.x, p.y));
       else {
-        expect(p.x).toBeGreaterThan(14);
-        expect(p.x).toBeLessThan(33);
-        expect(p.y).toBeGreaterThan(4);
-        expect(p.y).toBeLessThan(16);
+        expect(p.x).toBeGreaterThan(4);
+        expect(p.x).toBeLessThan(12);
+        expect(p.y).toBeGreaterThan(2);
+        expect(p.y).toBeLessThan(7);
         expect('.+=XRK').toContain(layoutSymbol(p.x, p.y));
-        expect(!(layoutSymbol(p.x, p.y) === 'K' && p.y === 6)).toBe(true);
       }
     }
   });
@@ -264,12 +174,12 @@ describe('siege rosters and deterministic initial state', () => {
   it('uses fixed opening positions and the weighted weather schedule without deployment RNG', () => {
     const state = createSiegeState(42);
     expect(state.units.find((u) => u.officer.id === 'haozhao')).toMatchObject({
-      x: 23,
-      y: 16,
+      x: 8,
+      y: 7,
       level: 'wall',
     });
-    expect(state.units[0]).toMatchObject({ x: 23, y: 25, level: 'ground' });
-    expect(state.units.slice(1, 10).every((u) => u.y >= 21 && u.y <= 23)).toBe(true);
+    expect(state.units[0]).toMatchObject({ x: 8, y: 12, level: 'ground' });
+    expect(state.units.slice(1, 10).every((u) => u.y >= 10 && u.y <= 11)).toBe(true);
     let rng = tacticalSeed('chencang', 42);
     for (let day = 1; day <= 12; day++) {
       rng = advanceRandomState(rng);
@@ -315,7 +225,7 @@ describe('siege rosters and deterministic initial state', () => {
         const zone = unit.side === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
         expect(zone.some((p) => positionKey(p) === positionKey(unit))).toBe(true);
         if (unit.side === 'wei' && unit.troopType === 'archer') {
-          expect(unit).toMatchObject({ y: 16, level: 'wall' });
+          expect(unit).toMatchObject({ y: 7, level: 'wall' });
           expect(layoutSymbol(unit.x, unit.y)).toBe('W');
         }
       }
@@ -341,7 +251,7 @@ describe('siege rosters and deterministic initial state', () => {
     };
     expect(fixed(a)).toEqual(fixed(b));
     a.units[0]!.officer.name = 'Changed';
-    a.trenchFill['20,17'] = 3;
+    a.trenchFill['7,8'] = 3;
     expect(createSiegeState(100)).not.toEqual(a);
     expect(SHU_ROSTER[0]!.officer.name).toBe('Zhuge Liang');
   });
@@ -349,7 +259,7 @@ describe('siege rosters and deterministic initial state', () => {
   it('initializes the twelve-day siege, empty workshop queues and construction progress', () => {
     const state = createSiegeState(9);
     expect(state).toMatchObject({
-      version: 'siege_v0.2',
+      version: 'siege_v0.3',
       day: 1,
       act: 1,
       grain: 12,
@@ -359,10 +269,10 @@ describe('siege rosters and deterministic initial state', () => {
       outcome: null,
     });
     expect(state.engines.map(({ kind, x, y }) => ({ kind, x, y }))).toEqual([
-      { kind: 'ladder', x: 18, y: 19 },
-      { kind: 'ladder', x: 29, y: 19 },
-      { kind: 'ram', x: 24, y: 21 },
-      { kind: 'earthCart', x: 21, y: 20 },
+      { kind: 'ladder', x: 6, y: 10 },
+      { kind: 'ladder', x: 10, y: 10 },
+      { kind: 'ram', x: 8, y: 10 },
+      { kind: 'earthCart', x: 7, y: 10 },
     ]);
     expect(state.weather).toBe(state.weatherByDay[1]);
     expect(Object.keys(state.weatherByDay)).toHaveLength(12);
@@ -373,7 +283,7 @@ describe('siege rosters and deterministic initial state', () => {
     expect(state.workshops).toEqual(
       WORKSHOPS.map(({ id }) => ({ id, queue: null, daysRemaining: 0 })),
     );
-    expect(Object.values(state.trenchFill)).toEqual(Array(44).fill(0));
+    expect(Object.values(state.trenchFill)).toEqual(Array(20).fill(0));
     expect(state.innerWall).toEqual({ 0: 0, 1: 0, 2: 0, 3: 0 });
     for (const gate of Object.values(GATES)) {
       expect(state.gates[gate.id]).toEqual({

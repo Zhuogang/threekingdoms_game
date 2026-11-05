@@ -13,24 +13,24 @@ describe('J3 assault climb', () => {
   it.each(['ladder', 'wallFoot', 'mound'] as const)(
     'forecasts and applies empty-cell assault costs at a %s, with deterministic replay',
     (position) => {
-      const { state, shu, wei } = duel({ y: position === 'ladder' ? 19 : 17 });
-      wei.x = 25;
+      const { state, shu, wei } = duel({ y: position === 'ladder' ? 10 : 8 });
+      wei.x = 9;
       if (position === 'ladder')
-        state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+        state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
       else {
-        state.trenchFill['20,17'] = 3;
-        state.trenchFill['20,18'] = 3;
-        if (position === 'mound') state.mounds['20,17'] = 6;
+        state.trenchFill['7,8'] = 3;
+        state.trenchFill['7,9'] = 3;
+        if (position === 'mound') state.mounds['7,8'] = 6;
       }
-      const neighbour = { ...shu, id: 'neighbour', x: 21 };
-      const far = { ...shu, id: 'far', x: 23 };
+      const neighbour = { ...shu, id: 'neighbour', x: 6 };
+      const far = { ...shu, id: 'far', x: 11 };
       state.units.push(neighbour, far);
       const before = structuredClone(state);
       const forecast = predictSiegeClimb(state, shu.id, { assault: true })!;
       const loss = Math.floor(T.assaultClimbLoss * T.climbing[position].assaultFrontage);
       expect(forecast).toMatchObject({
         sourceId: shu.id,
-        top: { x: 20, y: 16 },
+        top: { x: 7, y: 7 },
         position,
         assault: true,
         frontage: T.climbing[position].assaultFrontage,
@@ -45,7 +45,7 @@ describe('J3 assault climb', () => {
       const action = { type: 'climb', unitId: shu.id, assault: true } as const;
       const next = act(state, action);
       expect(applySiegeAction(state, action)).toEqual(applySiegeAction(state, action));
-      expect(next.footholds['20,16']).toBe(2);
+      expect(next.footholds['7,7']).toBe(2);
       expect(next.units[0]).toMatchObject({
         troops: shu.troops - loss,
         morale: forecast.sourceMoraleAfter,
@@ -67,24 +67,24 @@ describe('J3 assault climb', () => {
       });
       const mounted = act(tomorrow, action);
       expect(mounted.units[0]).toMatchObject({
-        x: 20,
-        y: 16,
+        x: 7,
+        y: 7,
         level: 'wall',
         moved: true,
         acted: true,
       });
       expect(mounted.units[2]!.morale).toBe(tomorrow.units[2]!.morale);
       expect(mounted.stats.assaults).toBe(2);
-      expect(mounted.footholds['20,16']).toBe(3);
+      expect(mounted.footholds['7,7']).toBe(3);
     },
   );
 
   it('keeps normal climbing free and rejects occupied, unavailable, and destroyed connections', () => {
     const { state, shu, wei } = duel();
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     expect(predictSiegeClimb(state, shu)).toBeNull();
     refused(state, { type: 'climb', unitId: shu.id, assault: true });
-    wei.x = 25;
+    wei.x = 9;
     expect(predictSiegeClimb(state, shu)).toMatchObject({
       casualties: 0,
       sourceMoraleAfter: shu.morale,
@@ -106,9 +106,9 @@ describe('J3 assault climb', () => {
 
   it('forecasts the recoverable fall when assault morale breaks immediately after mounting', () => {
     const { state, shu, wei } = duel({ morale: 31 });
-    wei.x = 25;
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
-    state.footholds['20,16'] = 2;
+    wei.x = 9;
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
+    state.footholds['7,7'] = 2;
     const forecast = predictSiegeClimb(state, shu, { assault: true })!;
     const next = act(state, { type: 'climb', unitId: shu.id, assault: true });
     expect(forecast.wouldMount).toBe(true);
@@ -122,8 +122,8 @@ describe('J3 assault climb', () => {
 
   it('does not grant foothold when self-casualties eliminate the climber', () => {
     const { state, shu, wei } = duel({ troops: 1 });
-    wei.x = 25;
-    state.engines = [engine('ladder', 20, 19, { raisedAt: { x: 20, y: 16 } })];
+    wei.x = 9;
+    state.engines = [engine('ladder', 7, 10, { raisedAt: { x: 7, y: 7 } })];
     expect(predictSiegeClimb(state, shu, { assault: true })).toMatchObject({
       casualties: 1,
       footholdGain: 0,
@@ -162,10 +162,10 @@ describe('J3 attacker policies', () => {
     const state = createSiegeState(228);
     state.day = 2;
     state.weather = 'clear';
-    state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
+    state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
     const archer = state.units[12]!;
-    Object.assign(archer, { x: 18, y: 16, troops: 300 });
-    state.preparations.braziers['18,16'] = { litDay: 1 };
+    Object.assign(archer, { x: 6, y: 7, troops: 300 });
+    state.preparations.braziers['6,7'] = { litDay: 1 };
     const actions = planAttackerTurn(state, 'careful');
     const coverIndex = actions.findIndex(
       (a) => a.type === 'coverEngine' && a.engineId === 'engine',
@@ -189,11 +189,11 @@ describe('J3 attacker policies', () => {
   it('anyPrice rams through a hoisted millstone; careful first suppresses or waits even when covered', () => {
     const state = createSiegeState(228);
     state.day = 5;
-    state.engines = [engine('ram', 24, 17, { covered: true })];
+    state.engines = [engine('ram', 8, 8, { covered: true })];
     for (const u of state.units.filter((u) => u.side === 'shu' && u.troopType === 'archer'))
       u.acted = true;
-    Object.assign(state.units[10]!, { x: 24, y: 16 });
-    state.preparations.millstones['24,16'] = { day: 4, hoisted: true };
+    Object.assign(state.units[10]!, { x: 8, y: 7 });
+    state.preparations.millstones['8,7'] = { day: 4, hoisted: true };
     expect(planAttackerTurn(state, 'anyPrice')).toContainEqual({
       type: 'ram',
       engineId: 'engine',
@@ -207,9 +207,9 @@ describe('J3 attacker policies', () => {
     (troopType) => {
       const state = createSiegeState(228);
       state.day = 2;
-      Object.assign(state.units[1]!, { x: 18, y: 19, troopType });
-      state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
-      for (const wei of state.units.filter((u) => u.side === 'wei')) wei.x = 24;
+      Object.assign(state.units[1]!, { x: 6, y: 10, troopType });
+      state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
+      for (const wei of state.units.filter((u) => u.side === 'wei')) wei.x = 8;
       const unitId = state.units[1]!.id;
       expect(planAttackerTurn(state, 'anyPrice')).toContainEqual({
         type: 'climb',
@@ -236,8 +236,8 @@ describe('J3 wall nights and scores', () => {
     state.stats.firstWallDay = 1;
     state = endDay(state);
     expect(state.stats.wallNights).toBe(0);
-    Object.assign(state.units[1]!, { x: 20, y: 16, level: 'wall' });
-    Object.assign(state.units[2]!, { x: 21, y: 16, level: 'wall' });
+    Object.assign(state.units[1]!, { x: 7, y: 7, level: 'wall' });
+    Object.assign(state.units[2]!, { x: 7, y: 7, level: 'wall' });
     state = endDay(state);
     expect(state.stats.wallNights).toBe(1);
     state = endDay(state);
@@ -284,11 +284,11 @@ describe('J3 wall nights and scores', () => {
 
   it('saves each quarter-point infantry fill and rejects unsupported fractions', () => {
     const { state, shu } = duel();
-    const next = act(state, { type: 'fillTrench', unitId: shu.id, x: 20, y: 18 });
-    expect(next.trenchFill['20,18']).toBe(T.infantryFill);
+    const next = act(state, { type: 'fillTrench', unitId: shu.id, x: 7, y: 9 });
+    expect(next.trenchFill['7,9']).toBe(T.infantryFill);
     const save = { playerSide: 'shu' as const, state: next, phase: 'battle' as const, facings: {} };
     expect(deserializeSiegeSave(serializeSiegeSave(save))).toEqual(save);
-    Reflect.set(next.trenchFill, '20,18', 0.1);
+    Reflect.set(next.trenchFill, '7,9', 0.1);
     expect(() => deserializeSiegeSave(JSON.stringify(save))).toThrow();
   });
 

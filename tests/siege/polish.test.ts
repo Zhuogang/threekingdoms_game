@@ -18,7 +18,7 @@ describe('O morning report acceptance', () => {
     const state = createSiegeState(1);
     state.day = 2;
     state.units = state.units.filter((u) => u.side === 'shu');
-    state.preparations.boulders = { '18,16': { day: 1 }, '19,16': { day: 1 } };
+    state.preparations.boulders = { '5,7': { day: 1 }, '6,7': { day: 1 } };
     const items = morningReport([], state.preparations, 2, 'zh', [], state);
     expect(items).toHaveLength(1);
     expect(items[0]!.text).toContain('南墙西段备有2处礌石');
@@ -50,7 +50,7 @@ describe('O morning report acceptance', () => {
     );
     expect(Object.keys(state.preparations.boulders)).toHaveLength(2);
     // A newly prepared pile is a new warning, even on a previously reported cell.
-    state.preparations.boulders['18,16'] = { day: 2 };
+    state.preparations.boulders['6,7'] = { day: 2 };
     expect(
       morningReport([], state.preparations, 3, 'en', [], state, 'shu', reportSeen),
     ).toHaveLength(1);
@@ -60,9 +60,9 @@ describe('O morning report acceptance', () => {
     state.day = 8;
     Object.assign(
       state.units.find((u) => u.id === 'wei-wangsheng')!,
-      { x: 18, y: 16 },
+      { x: 6, y: 7 },
     );
-    state.preparations.boulders['18,16'] = { day: 1 };
+    state.preparations.boulders['6,7'] = { day: 1 };
     const items = morningReport([], state.preparations, 8, 'en', [], state);
     expect(items).toHaveLength(1);
     expect(items[0]!.priority).toBe(0);
@@ -91,10 +91,10 @@ describe('O morning report acceptance', () => {
       const state = createSiegeState(1);
       state.engines = [];
       const log = [
-        event('brazierPrepared', { cell: '18,16' }, litDay),
-        event('brazierPrepared', { cell: '19,16' }, litDay),
-        event('brazierDoused', { cell: '18,16' }, 3),
-        event('brazierDoused', { cell: '19,16' }, 3),
+        event('brazierPrepared', { cell: '5,7' }, litDay),
+        event('brazierPrepared', { cell: '6,7' }, litDay),
+        event('brazierDoused', { cell: '5,7' }, 3),
+        event('brazierDoused', { cell: '6,7' }, 3),
       ];
       for (const side of ['shu', 'wei'] as const) {
         const items = morningReport(log, state.preparations, 3, 'zh', [], state, side);
@@ -169,9 +169,9 @@ it('reports an archer operating an existing boulder pile as ready, matching the 
   state.units = state.units.filter((u) => u.side === 'shu' || u.id === 'wei-captain-1');
   Object.assign(
     state.units.find((u) => u.id === 'wei-captain-1')!,
-    { x: 18, y: 16 },
+    { x: 6, y: 7 },
   );
-  state.preparations.boulders['18,16'] = { day: 1 };
+  state.preparations.boulders['6,7'] = { day: 1 };
   const items = morningReport([], state.preparations, 3, 'en', [], state);
   expect(items[0]!.priority).toBe(0);
   expect(items[0]!.text).toContain('threatening climbers');
@@ -182,8 +182,8 @@ it('keeps yesterday’s daytime Shu actions out of today’s Wei report', () => 
   state.engines = [];
   const items = morningReport(
     [
-      event('raiseLadder', { cell: '18,16' }),
-      event('covered', { cell: '18,16' }),
+      event('raiseLadder', { cell: '6,7' }),
+      event('covered', { cell: '6,7' }),
       event('nightAssault', { result: 'advanced' }),
     ],
     state.preparations,

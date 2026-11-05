@@ -1,3 +1,12 @@
+import {
+  WEST_WALL_COL,
+  EAST_WALL_COL,
+  SOUTH_WALL_ROW,
+  TRENCH_INNER_ROW,
+  TRENCH_OUTER_ROW,
+  APPROACH_ROW,
+  ROAD_COL,
+} from '../content/coarseGrid';
 import { SIEGE_TUNING } from '../rules/tuning';
 import { fireArrowsReason, millstonePosition } from '../rules/preparations';
 import {
@@ -70,9 +79,7 @@ export function routeSiegeActor(
       .filter(
         (p) =>
           isMapCell(p.x, p.y) &&
-          !state.units.some(
-            (u) => u.id !== actor.id && u.troops > 0 && u.level === p.level && sameCell(u, p),
-          ),
+          !state.units.some((u) => u.id !== actor.id && u.troops > 0 && sameCell(u, p)),
       )
       .map(indexOf),
   );
@@ -82,19 +89,17 @@ export function routeSiegeActor(
   const terrain = Array.from({ length: area }, (_, i) =>
     cellTerrain(state, i % MAP_WIDTH, Math.floor(i / MAP_WIDTH)),
   );
-  const walkable = (p: Cell): boolean =>
-    isMapCell(p.x, p.y) && ['wall', 'gate'].includes(terrain[p.y * MAP_WIDTH + p.x]!);
-  const ladders = state.engines.filter(
-    (e) => e.kind === 'ladder' && usableEngine(e) && e.raisedAt && walkable(e.raisedAt),
-  );
+  const ladders = state.engines.filter((e) => e.kind === 'ladder' && usableEngine(e));
   const blocked = new Set(
     state.units
       .filter((u) => u.id !== actor.id && u.troops > 0 && (!unit || u.side !== unit.side))
-      .map(indexOf),
+      .flatMap((u) => [indexOf(ground(u)), indexOf(wall(u))]),
   );
   for (const engine of state.engines) {
-    if (engine.id !== actor.id && (!unit || !ladders.includes(engine)))
+    if (engine.id !== actor.id && (!unit || !ladders.includes(engine))) {
       blocked.add(indexOf(ground(engine)));
+      blocked.add(indexOf(wall(engine)));
+    }
   }
   const groundPassable = (p: Cell): boolean => {
     if (!isMapCell(p.x, p.y)) return false;
@@ -167,12 +172,19 @@ function wallThreats(state: SiegeState): Threat[] {
   for (const engine of state.engines) {
     if (!usableEngine(engine)) continue;
     if (engine.raisedAt) add(engine.raisedAt, 3);
-    else if (engine.kind === 'ladder' && engine.y <= 21 && engine.y >= 19)
-      add({ x: Math.max(15, Math.min(32, engine.x)), y: 16 }, 3);
+    else if (engine.kind === 'ladder' && engine.y === APPROACH_ROW)
+      add(
+        {
+          x: Math.max(WEST_WALL_COL + 1, Math.min(EAST_WALL_COL - 1, engine.x)),
+          y: SOUTH_WALL_ROW,
+        },
+        3,
+      );
   }
   for (const foot of SOUTH_TRENCH)
     if (isWallFoot(state, foot.x, foot.y)) add({ x: foot.x, y: foot.y - 1 }, 2);
-    else if (foot.y === 17 && state.trenchFill[`${foot.x},18`] === 3) add({ x: foot.x, y: 16 }, 1);
+    else if (foot.y === TRENCH_INNER_ROW && state.trenchFill[`${foot.x},${TRENCH_OUTER_ROW}`] === 3)
+      add({ x: foot.x, y: SOUTH_WALL_ROW }, 1);
   for (const unit of state.units)
     if (unit.side === 'shu' && activeUnit(unit) && unit.level === 'wall') add(unit, 6);
   return [...threats.values()];
@@ -219,7 +231,7 @@ function dailyOrder(state: SiegeState, threats: Threat[]): SiegeAction | null {
       e.day < state.day &&
       state.day - e.day <= SIEGE_TUNING.torchesCooldownNights,
   );
-  if (!wastedTorches && state.day > 2 && engines.filter((e) => e.y <= 21).length >= 2)
+  if (!wastedTorches && state.day > 2 && engines.filter((e) => e.y <= APPROACH_ROW).length >= 2)
     return { type: 'order', side: 'wei', kind: 'torches' };
   const damaged = (Object.keys(GATES) as GateId[])
     .filter((id) => !state.gates[id].broken && state.gates[id].durability < state.gates[id].max / 2)
@@ -372,11 +384,12 @@ function movementCandidate(
     }
     score = 9600;
   } else if (hurt(unit) && unit.level === 'wall' && pressed(unit)) {
-    goals = RAMPS.map((r) => ground(r.ground));
+    goals = RAMPS.filter((r) => cellTerrain(state, r.ground.x, r.ground.y) === 'ramp').map((r) =>
+      ground(r.ground),
+    );
     score = 9200;
   } else if (!hurt(unit) && threats.length) {
-    const occupied = (c: Cell) =>
-      state.units.some((u) => u.troops > 0 && u.level === 'wall' && sameCell(u, c));
+    const occupied = (c: Cell) => state.units.some((u) => u.troops > 0 && sameCell(u, c));
     // Cover the climbing cell itself before adding support beside a Shu foothold.
     const held = unit.level === 'wall' ? threats.find((t) => sameCell(t, unit)) : undefined;
     goals = threats
@@ -421,7 +434,7 @@ function movementCandidate(
   ) {
     const targets = [
       ...state.engines
-        .filter((e) => usableEngine(e) && e.y >= 18 && e.y <= 19)
+        .filter((e) => usableEngine(e) && e.y >= TRENCH_OUTER_ROW && e.y <= APPROACH_ROW)
         .map((e) => ({ ...e, priority: e.raisedAt ? 4 : e.kind === 'earthCart' ? 3 : 2 })),
       ...state.units
         .filter(
@@ -430,14 +443,14 @@ function movementCandidate(
             activeUnit(u) &&
             u.troopType === 'infantry' &&
             u.level === 'ground' &&
-            u.y >= 18 &&
-            u.y <= 19,
+            u.y >= TRENCH_OUTER_ROW &&
+            u.y <= APPROACH_ROW,
         )
         .map((u) => ({ ...u, priority: 1 })),
     ].sort((a, b) => b.priority - a.priority || distance(unit, a) - distance(unit, b));
     for (const target of targets) {
       const positions = [-1, 0, 1]
-        .map((dx) => wall({ x: target.x + dx, y: 16 }))
+        .map((dx) => wall({ x: target.x + dx, y: SOUTH_WALL_ROW }))
         .filter(
           (p) =>
             ['wall', 'gate'].includes(cellTerrain(state, p.x, p.y)) &&
@@ -487,9 +500,9 @@ function movementCandidate(
       (e) =>
         usableEngine(e) &&
         (e.kind === 'ram' || e.kind === 'earthCart') &&
-        (e.x === 23 || e.x === 24) &&
-        e.y >= 17 &&
-        e.y <= 19 &&
+        e.x === ROAD_COL &&
+        e.y >= TRENCH_INNER_ROW &&
+        e.y <= APPROACH_ROW &&
         !state.units.some((u) => u.side === 'shu' && u.troops > 0 && distance(u, e) <= 2),
     );
     const route = routeSiegeActor(

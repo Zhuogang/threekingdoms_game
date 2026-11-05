@@ -1,6 +1,6 @@
 import { SIEGE_TUNING } from './tuning';
 
-export const SIEGE_VERSION = 'siege_v0.2';
+export const SIEGE_VERSION = 'siege_v0.3';
 export const SIEGE_DAYS: number = SIEGE_TUNING.days;
 export const INITIAL_ZHANGHE_DISTANCE = SIEGE_TUNING.zhangheDistance;
 export const INITIAL_MORALE = SIEGE_TUNING.moraleRecoveryCap;
