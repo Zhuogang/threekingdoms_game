@@ -18,36 +18,36 @@ Nothing below is implemented yet. A row changes to **done** only with the commit
 
 ## Tickets
 
-| ID   | Title                                    | Effort | Status      | Commit | Evidence                                    | Notes                         |
-| ---- | ---------------------------------------- | ------ | ----------- | ------ | ------------------------------------------- | ----------------------------- |
-| F-01 | `balance/` module                        | M      | not started |        |                                             |                               |
-| F-02 | Unit table                               | S      | not started |        |                                             |                               |
-| F-03 | City data table                          | S      | not started |        | owner review of the 24 records              |                               |
-| F-04 | Save version 4                           | S      | not started |        |                                             |                               |
-| F-05 | Pacing harness v2 and baselines          | M      | not started |        | `evidence/battle-pacing-00-baseline-*.json` |                               |
-| F-06 | Wall-clock probe and v0.4 baseline       | M      | not started |        | `evidence/battle-wallclock-v04.json`        |                               |
-| O-01 | Leadership and politics data             | M      | not started |        | owner approval of the stat table            |                               |
-| O-02 | Leadership in battle and camp (soft cap) | M      | not started |        |                                             |                               |
-| O-03 | Politics in the city                     | S      | not started |        |                                             |                               |
-| B-01 | Standing orders                          | L      | not started |        | `evidence/battle-pacing-01-orders.json`     |                               |
-| B-02 | Facing                                   | M      | not started |        | `evidence/battle-pacing-02-facing.json`     |                               |
-| B-03 | Charge, brace, archer melee              | S      | not started |        | `evidence/battle-pacing-03-charge.json`     |                               |
-| B-04 | Baggage train                            | M      | not started |        | `evidence/battle-pacing-04-baggage.json`    |                               |
-| B-05 | Army morale, break, pursuit              | M      | not started |        | `evidence/battle-pacing-05-break.json`      |                               |
-| B-06 | Commander cards and signs                | L      | not started |        | `evidence/battle-pacing-06-cards.json`      |                               |
-| B-07 | Duels                                    | M      | not started |        |                                             |                               |
-| B-08 | Deployment arrangements                  | M      | not started |        |                                             |                               |
-| B-09 | Battle tiers and quick resolve           | S      | not started |        |                                             |                               |
-| P-01 | Day flow UI                              | L      | not started |        | `evidence/battle-wallclock-v05.json`        |                               |
-| P-02 | Playback v2                              | L      | not started |        | screenshots; owner check                    | needs art A-01, A-05 approved |
-| P-03 | Duel scene                               | M      | not started |        |                                             | needs art A-06                |
-| P-04 | Officer lines                            | M      | not started |        | owner review of the lines                   |                               |
-| P-05 | Highlights                               | S      | not started |        |                                             |                               |
-| P-06 | Historical units of measure              | M      | not started |        | owner review of the unit names              |                               |
-| L-01 | Per-city caps                            | S      | not started |        |                                             |                               |
-| L-02 | Population growth                        | S      | not started |        |                                             |                               |
-| L-03 | Curves output and baseline               | M      | not started |        | `evidence/curves-00-baseline.json`          |                               |
-| L-04 | Tuning pass                              | M      | not started |        | `evidence/curves-NN-*.json`                 |                               |
+| ID   | Title                                    | Effort | Status                          | Commit               | Evidence                                    | Notes                                                                                                   |
+| ---- | ---------------------------------------- | ------ | ------------------------------- | -------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| F-01 | `balance/` module                        | M      | done                            | `028df88`, `999997b` |                                             | Pacing and 12-month campaign identical; tables rebound locally for speed                                |
+| F-02 | Unit table                               | S      | not started                     |                      |                                             |                                                                                                         |
+| F-03 | City data table                          | S      | done, owner review open         | `552562d`            | owner review of the 24 records              | 24 records by census tier; no existing test needed changes                                              |
+| F-04 | Save version 4                           | S      | done                            | `c30e418`            |                                             | Version-3 saves rejected                                                                                |
+| F-05 | Pacing harness v2 and baselines          | M      | not started                     |                      | `evidence/battle-pacing-00-baseline-*.json` |                                                                                                         |
+| F-06 | Wall-clock probe and v0.4 baseline       | M      | v0.4 baseline done              | `f5536fa`            | `evidence/battle-wallclock-v04.json`        | v0.4 flow: 287 clicks, 23.9 per day, 12 days; v0.5 flow comes with P-01                                 |
+| O-01 | Leadership and politics data             | M      | data done, wiring in progress   | `decfb98`            | owner approval of the stat table            | Five values adjusted by the tech lead: Sima Yi 94; Zhao Yun 85, Wei Yan 86, Xu Huang 87, Xiahou Yuan 86 |
+| O-02 | Leadership in battle and camp (soft cap) | M      | not started                     |                      |                                             |                                                                                                         |
+| O-03 | Politics in the city                     | S      | not started                     |                      |                                             |                                                                                                         |
+| B-01 | Standing orders                          | L      | not started                     |                      | `evidence/battle-pacing-01-orders.json`     |                                                                                                         |
+| B-02 | Facing                                   | M      | not started                     |                      | `evidence/battle-pacing-02-facing.json`     |                                                                                                         |
+| B-03 | Charge, brace, archer melee              | S      | not started                     |                      | `evidence/battle-pacing-03-charge.json`     |                                                                                                         |
+| B-04 | Baggage train                            | M      | not started                     |                      | `evidence/battle-pacing-04-baggage.json`    |                                                                                                         |
+| B-05 | Army morale, break, pursuit              | M      | not started                     |                      | `evidence/battle-pacing-05-break.json`      |                                                                                                         |
+| B-06 | Commander cards and signs                | L      | not started                     |                      | `evidence/battle-pacing-06-cards.json`      |                                                                                                         |
+| B-07 | Duels                                    | M      | not started                     |                      |                                             |                                                                                                         |
+| B-08 | Deployment arrangements                  | M      | not started                     |                      |                                             |                                                                                                         |
+| B-09 | Battle tiers and quick resolve           | S      | not started                     |                      |                                             |                                                                                                         |
+| P-01 | Day flow UI                              | L      | not started                     |                      | `evidence/battle-wallclock-v05.json`        |                                                                                                         |
+| P-02 | Playback v2                              | L      | not started                     |                      | screenshots; owner check                    | needs art A-01, A-05 approved                                                                           |
+| P-03 | Duel scene                               | M      | not started                     |                      |                                             | needs art A-06                                                                                          |
+| P-04 | Officer lines                            | M      | content done, owner review open | `572171a`            | owner review of the lines                   | Rendering comes with P-02 and P-03                                                                      |
+| P-05 | Highlights                               | S      | not started                     |                      |                                             |                                                                                                         |
+| P-06 | Historical units of measure              | M      | not started                     |                      | owner review of the unit names              |                                                                                                         |
+| L-01 | Per-city caps                            | S      | not started                     |                      |                                             |                                                                                                         |
+| L-02 | Population growth                        | S      | not started                     |                      |                                             |                                                                                                         |
+| L-03 | Curves output and baseline               | M      | not started                     |                      | `evidence/curves-00-baseline.json`          |                                                                                                         |
+| L-04 | Tuning pass                              | M      | not started                     |                      | `evidence/curves-NN-*.json`                 |                                                                                                         |
 
 ## Art
 
