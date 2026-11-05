@@ -1,0 +1,10 @@
+{
+  "state": "ramp-south",
+  "chosen": "attempts/ramp-south-v3.webp",
+  "at": [1273, 643],
+  "size": [526, 68],
+  "offset": [0, 0],
+  "difference": 21.98,
+  "differenceUnshifted": 21.98,
+  "changeInside": 61.1
+}

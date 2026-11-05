@@ -24,7 +24,7 @@ export interface StatePatch {
   opacity?: number;
 }
 export function statePatches(state: SiegeState): StatePatch[] {
-  const patches: StatePatch[] = [];
+  const patches: StatePatch[] = [{ id: 'ramp-south', state: 'ramp-south' }];
   for (const [id, gate] of Object.entries(state.gates)) {
     if (gate.durability <= 0) patches.push({ id, state: `gate-${id}-broken` });
     else if (gate.durability < gate.max / 2) {

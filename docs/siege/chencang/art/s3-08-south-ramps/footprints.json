@@ -1,0 +1,28 @@
+{
+  "asset": "s3-08-south-ramps",
+  "size": [1536, 1024],
+  "cell": [128, 96],
+  "level": 48,
+  "projection": "screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level",
+  "origin": [-2304, -800],
+  "objects": [
+    {
+      "id": "ramp-south-w",
+      "kind": "ramp",
+      "layer": "L3",
+      "cells": [20, 15, 22, 15],
+      "height": 3,
+      "anchor": [256, 736],
+      "bbox": [255, 495, 512, 592]
+    },
+    {
+      "id": "ramp-south-e",
+      "kind": "ramp",
+      "layer": "L3",
+      "cells": [25, 15, 27, 15],
+      "height": 3,
+      "anchor": [896, 736],
+      "bbox": [1024, 495, 1281, 592]
+    }
+  ]
+}

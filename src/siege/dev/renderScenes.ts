@@ -16,6 +16,7 @@ export const RENDER_SCENES = [
   'formations',
   'worst',
   'visible',
+  'ramps',
 ] as const;
 export type RenderSceneName = (typeof RENDER_SCENES)[number];
 export interface RenderScene {
@@ -63,7 +64,17 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     state.footholds[`${x},16`] = progress;
     Object.assign(state.units[unitIndex]!, { x, y: 19 });
   };
-  if (name === 'visible') {
+  if (name === 'ramps') {
+    state.units.forEach((unit) => {
+      unit.y = 24;
+      unit.level = 'ground';
+    });
+    Object.assign(state.units[5]!, { x: 21, y: 15, level: 'ground', troops: 800 });
+    Object.assign(state.units[6]!, { x: 26, y: 15, level: 'ground', troops: 800 });
+    result.facings[state.units[5]!.id] = 'east';
+    result.facings[state.units[6]!.id] = 'west';
+    result.legend = 'South ramps: units at (21,15) and (26,15), descending towards the gate.';
+  } else if (name === 'visible') {
     // The planner's look-probe fixture, before any unit is selected.
     const original = createSiegeState(228);
     state.units = original.units;

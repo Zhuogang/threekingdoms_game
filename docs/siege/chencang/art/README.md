@@ -41,6 +41,7 @@ S1-02 以后的提示词按脚本里的 `CHOSEN_STYLE`（风格字母）和 `CHO
 
 | ID       | 资产                                               | 尺寸      | 出图                                                              |
 | -------- | -------------------------------------------------- | --------- | ----------------------------------------------------------------- |
+| S3-08    | [南墙马道重画](s3-08-south-ramps/README.md)        | 1536×1024 | 3 张，定稿 `ramp-south-v3.webp`                                   |
 | S3-01    | [城堑填堑](s3-01-trench-fill/README.md)            | 1536×1024 | 6 张，定稿 `trench-half-v1.webp`、`trench-filled-v3.webp`         |
 | S3-02    | [南门受损](s3-02-gate-south-damaged/README.md)     | 1536×1024 | 3 张，定稿 `gate-south-damaged-v2.webp`                           |
 | S3-03    | [南门门破](s3-03-gate-south-broken/README.md)      | 1536×1024 | 3 张，定稿 `gate-south-broken-v2.webp`                            |

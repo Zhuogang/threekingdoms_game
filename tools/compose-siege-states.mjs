@@ -2,6 +2,8 @@ import { chromium } from '@playwright/test';
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import * as prettier from 'prettier';
+import { execFileSync } from 'node:child_process';
+import { homedir } from 'node:os';
 
 // Builds the S3 state variants (docs/siege/01-chencang-art-plan.md §9.2) on
 // top of the approved S2-01 map:
@@ -26,10 +28,39 @@ async function dataUrl(path) {
 }
 
 const jobs = [];
+const assetFlag = process.argv.indexOf('--asset');
+const onlyAsset = assetFlag < 0 ? null : process.argv[assetFlag + 1];
 for (const name of (await readdir(ART)).filter((n) => n.startsWith('s3-')).sort()) {
+  if (onlyAsset && name !== onlyAsset) continue;
   const dir = join(ART, name);
   const job = JSON.parse(await readFile(join(dir, 'job.json'), 'utf8').catch(() => 'null'));
   if (!job) continue;
+  if (job.sourceSize) {
+    execFileSync(
+      join(homedir(), 'simple_ML_practices/.venv/bin/python'),
+      ['tools/compose-siege-ramps.py', join(dir, 'job.json')],
+      { stdio: 'inherit' },
+    );
+    for (const path of [
+      'generation-manifest.json',
+      ...job.states.flatMap((s) => [
+        s.patch.replace(/\.png$/, '.json'),
+        ...s.attempts.map((p) => p.replace('attempts/', 'patches/').replace(/\.webp$/, '.json')),
+      ]),
+    ]) {
+      const file = join(dir, path);
+      const contents = await readFile(file, 'utf8').catch(() => null);
+      if (contents)
+        await writeFile(
+          file,
+          await prettier.format(contents, {
+            ...(await prettier.resolveConfig(file)),
+            parser: 'json',
+          }),
+        );
+    }
+    continue;
+  }
   const states = [];
   for (const s of job.states)
     states.push({
@@ -48,10 +79,12 @@ for (const name of (await readdir(ART)).filter((n) => n.startsWith('s3-')).sort(
   });
 }
 
-const browser = await chromium.launch({ channel: process.env.CI ? undefined : 'chrome' });
+const browser = jobs.length
+  ? await chromium.launch({ channel: process.env.CI ? undefined : 'chrome' })
+  : null;
 const results = [];
 try {
-  const page = await browser.newPage();
+  const page = await browser?.newPage();
   for (const job of jobs)
     results.push(
       await page.evaluate(
@@ -208,7 +241,7 @@ try {
       ),
     );
 } finally {
-  await browser.close();
+  await browser?.close();
 }
 
 const write = async (path, content) => {

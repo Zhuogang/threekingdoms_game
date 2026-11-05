@@ -1561,6 +1561,7 @@ const sceneChecks = [
 // edit input `inputs/<state>.png` and, for each chosen state, the patch
 // `patches/<state>.png` with its place on the map.
 const STATE_PICKS = {
+  'ramp-south': 'ramp-south-v3.webp',
   'trench-half': 'trench-half-v1.webp',
   'trench-filled': 'trench-filled-v3.webp',
   'gate-south-damaged': 'gate-south-damaged-v2.webp',
@@ -1793,7 +1794,118 @@ function stateAsset({ id, zh, crop, about, states, checks }) {
   };
 }
 
+// K4 uses a 768×512 map crop displayed at 2×, unlike the older 1× S3 jobs.
+// Geometry is authored in map pixels; only the image-generation input scales.
+const SOUTH_RAMPS = {
+  crop: [1152, 400],
+  sourceSize: [768, 512],
+  wedges: [
+    [
+      [1280, 648],
+      [1408, 696],
+      [1280, 696],
+    ],
+    [
+      [1792, 648],
+      [1664, 696],
+      [1792, 696],
+    ],
+  ],
+  openings: [
+    [1278, 690, 1316, 706],
+    [1756, 690, 1794, 706],
+  ],
+};
+const SOUTH_RAMPS_PROMPT = [
+  STYLES.a.scene,
+  'Edit task: precise-object-edit. The attached image is the edit target, a 768×512 crop of the finished Chencang map displayed at 1536×1024. Output exactly 1536×1024. Two pale triangular block-outs with thin ruled step guides replace the wrong ramps. Paint these as the visible TOP SURFACES of two flights of pale stone steps behind the south wall.',
+  'The camera looks north from above. The city wall hides almost all of each ramp. Only these flat triangular wedges are visible, flush with the walkway, not floating above it. West wedge canvas vertices: (256,496), (512,592), (256,592). East wedge: (1280,496), (1024,592), (1280,592). Preserve these silhouettes exactly. The west high end is at the left (west); its steps descend RIGHT towards the gate. The east high end is at the right (east); its steps descend LEFT towards the gate. The steps run parallel to the wall. The visible surface narrows to nothing near the gate as the descending ramp sinks behind the walkway. The entire horizontal bottom edge adjoins the walkway back edge.',
+  'Paint pale stone treads seen from above, with restrained shallow riser marks across the direction of travel, a soft wash and sparse stone joints. The steps are the ONLY thing inside each wedge: NO brick side wall, NO vertical masonry facade, NO raised slab, NO floating bridge, NO railings. A LOW stone curb follows only the sloping upper (north) edge. Do not turn that curb into a wall. At the high ends open the inner walkway parapet, canvas boxes west x=252..328,y=580..612 and east x=1208..1284,y=580..612, replacing the small obstructing parapet with continuous pale walking stone, so a soldier could clearly walk directly from the walkway onto the stairs. A viewer must read: from this wall, stairs go DOWN towards the gate.',
+  `Outside the two wedges and these parapet openings nothing changes. ${EDIT_KEEP.replace('the finished area', 'everything else')}`,
+  'Paint the change with exactly the brushwork, line weight, colours and light of the painting around it, as if the same hand had painted it from the start. The flat pale shapes and ruled lines are geometry guides, not the finished art: replace them with painted stone steps, not a striped flag.',
+  PROJECTION,
+  LIGHT,
+  STYLES.a.text,
+  EXCLUDE_SCENE,
+].join('\n\n');
+const SOUTH_RAMPS_V3_PROMPT = `${SOUTH_RAMPS_PROMPT}\n\nCritical correction for this attempt: the narrow triangular area is a HORIZONTAL TOP VIEW of stairs, not an upright triangular retaining wall. Each tread is a broad north-south strip of pale walking stone. Draw each riser as a very thin paired ink line and tiny grey lip, across that strip, with only a 1–2 pixel shadow; do not draw tall vertical stone slabs, columns or masonry courses. No horizontal brick joints anywhere in the wedges. Treat the upper diagonal as a low curb seen from above, not the top of a vertical wall. At the high end the surface joins directly onto the horizontal light walkway through an obvious gap. The bottom horizontal boundary has no dark outlining, no vertical depth and no facade. Make the broad pale tread surfaces dominant, with subtle alternating light on shallow steps descending towards the central gate. Preserve the exact triangular silhouettes and every pixel outside the wedges/openings.`;
+const SOUTH_RAMPS_REVIEWS = {
+  'ramp-south-v1':
+    'Reject as provisional pick: too many transverse stone joints; the divisions still suggest tall masonry panels.',
+  'ramp-south-v2':
+    'Alternative with zero registration offset, but transverse stone joints still suggest a retaining wall.',
+  'ramp-south-v3':
+    'Provisional recommendation: broad pale tread strips, thin shallow riser marks, fewer masonry cues and a low narrow upper curb. Best of the three at map scale. The triangular silhouette remains visually ambiguous; planner should judge stair direction and walkway continuity in the browser screenshot before accepting.',
+};
+const southRampsAsset = {
+  id: 's3-08-south-ramps',
+  stage: 'S3',
+  zh: 'S3-08 南墙马道重画',
+  size: TILE,
+  final: STATE_PICKS['ramp-south'],
+  about: [
+    'K4：只重画两块马道顶面和高端的内女墙开口，不改规则、地形或高度。西马道向东下行，东马道向西下行，朝南门下降。没有砖侧墙或抬高的石板。',
+    '从 S2-01 全图裁取 (1152,400)–(1920,912)，768×512，放大到 1536×1024 作为编辑输入；补丁缩回地图原尺寸，边沿羽化 6 地图像素。',
+    '三个独立 image_gen 编辑候选全部保留，逐个合成补丁与地图尺寸预览。previews/comparison.png 左起为现状、v1、v2、v3。',
+    `暂选 attempts/${STATE_PICKS['ramp-south']}，等待 planner 按图挑选；选择理由和逐图指标见 generation-manifest.json。`,
+    SOUTH_RAMPS_REVIEWS[STATE_PICKS['ramp-south'].replace('.webp', '')],
+    '复现：node tools/build-siege-blockout.mjs --asset s3-08-south-ramps；node tools/compose-siege-states.mjs --asset s3-08-south-ramps。原图与真实工具请求记录位于仓库 attempts/s3-08/sources/。',
+  ],
+  render() {
+    const frame = { cw: 128, cd: 96, lh: 48, ox: -2304, oy: -800 };
+    const canvas = createCanvas(...TILE, C.ice);
+    const objects = mapObjects();
+    renderScene(canvas, frame, objects, { terrain: mapTerrain });
+    return { canvas, frame, objects: objects.filter((o) => o.id.startsWith('ramp-south')) };
+  },
+  async write(dir) {
+    // The Pillow backend shares this job contract and does not require Chromium.
+    await writeFile(
+      join(dir, 'job.json'),
+      await pretty(
+        JSON.stringify({
+          canvas: TILE,
+          ...SOUTH_RAMPS,
+          map: '../s2-01-full-map/composite.webp',
+          feather: 6,
+          prompt: SOUTH_RAMPS_PROMPT,
+          reviews: SOUTH_RAMPS_REVIEWS,
+          states: [
+            {
+              id: 'ramp-south',
+              name: '南墙马道',
+              paint: 'steps/ramp-south-paint.png',
+              blend: 'steps/ramp-south-blend.png',
+              overlay: 'steps/ramp-south-overlay.png',
+              input: 'inputs/ramp-south.png',
+              chosen: `attempts/${STATE_PICKS['ramp-south']}`,
+              attempts: [1, 2, 3].map((k) => `attempts/ramp-south-v${k}.webp`),
+              attemptPrompts: { 'ramp-south-v3': SOUTH_RAMPS_V3_PROMPT },
+              patch: 'patches/ramp-south.png',
+            },
+          ],
+        }),
+        'json',
+      ),
+    );
+  },
+  prompts: () => [
+    { title: '南墙马道 v1、v2（ramp-south）', text: SOUTH_RAMPS_PROMPT },
+    { title: '南墙马道 v3：纠正竖直石板感', text: SOUTH_RAMPS_V3_PROMPT },
+  ],
+  uploads: ['inputs/ramp-south.png：已贴平面石阶灰盒的唯一编辑对象。'],
+  checks: [
+    '西侧向右下降，东侧向左下降；只见顶面，没有砖侧墙、浮起石板。',
+    '高端开口与走道相通，北边只有低石缘；两块三角轮廓不变。',
+    '补丁仅限两楔形、开口及 6px 羽化；现状与三个候选在地图尺寸下并排比较。',
+    'README、job、generation-manifest 的提示词与原始工具请求日志完全相同；原图和补丁哈希可验证。',
+  ],
+  naming:
+    'ramp-south-v1.webp、ramp-south-v2.webp、ramp-south-v3.webp；原尺寸 1536×1024，无损保存。',
+};
+
 const STATE_ASSETS = [
+  southRampsAsset,
   stateAsset({
     id: 's3-01-trench-fill',
     zh: 'S3-01 城堑填堑',
@@ -4860,92 +4972,101 @@ await writeFile(join(OUT, 'layout.txt'), `${LAYOUT.join('\n')}\n`);
 
 const rows = [];
 const s8Jobs = [];
+const assetFlag = process.argv.indexOf('--asset');
+const onlyAsset = assetFlag < 0 ? null : process.argv[assetFlag + 1];
+if (assetFlag >= 0 && !ASSETS.some((asset) => asset.id === onlyAsset))
+  throw new Error('Use --asset <existing asset id>.');
 for (const asset of ASSETS) {
   const dir = join(OUT, asset.id);
-  await mkdir(join(dir, 'attempts'), { recursive: true });
-  let keys = new Set();
-  let rendered = null;
-  let resolved = null;
-  let s8Footprints = null;
-  if (asset.guide) {
-    const { cols, rows: n, figure, foot } = asset.guide;
-    await writeFile(
-      join(dir, 'guide.png'),
-      png(...asset.size, 3, guideImage(...asset.size, cols, n, figure, foot)),
-    );
-  } else if (asset.render) {
-    rendered = asset.render();
-    const { canvas, frame, masks, pieces, objects: drawn = objects } = rendered;
-    const r = resolve(canvas);
-    keys = r.keys;
-    await writeFile(join(dir, 'blockout.png'), png(canvas.w, canvas.h, 3, r.rgb));
-    await writeFile(join(dir, 'grid.png'), png(canvas.w, canvas.h, 4, gridImage(canvas, r, frame)));
-    const footprints = {
-      asset: asset.id,
-      size: asset.size,
-      cell: [frame.cw, frame.cd],
-      level: frame.lh,
-      projection: 'screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level',
-    };
-    if (pieces)
-      footprints.pieces = pieces.map((p) => ({
-        piece: p.piece,
-        name: p.zh,
-        cell: p.cell,
-        origin: [p.frame.ox, p.frame.oy],
-        objects: footprintEntries(p.objects, p.frame, r, canvas, false),
-      }));
-    else {
-      footprints.origin = [frame.ox, frame.oy];
-      footprints.objects = footprintEntries(drawn, frame, r, canvas, masks);
-    }
-    if (asset.stage === 'S8') s8Footprints = footprints;
-    else if (pieces || footprints.objects.length)
+  if (!onlyAsset || asset.id === onlyAsset) {
+    await mkdir(join(dir, 'attempts'), { recursive: true });
+    let keys = new Set();
+    let rendered = null;
+    let resolved = null;
+    let s8Footprints = null;
+    if (asset.guide) {
+      const { cols, rows: n, figure, foot } = asset.guide;
       await writeFile(
-        join(dir, 'footprints.json'),
-        await pretty(JSON.stringify(footprints), 'json'),
+        join(dir, 'guide.png'),
+        png(...asset.size, 3, guideImage(...asset.size, cols, n, figure, foot)),
       );
-    if (masks) {
-      const maskDir = join(dir, 'masks');
-      await mkdir(maskDir, { recursive: true });
-      const names = new Set();
-      for (const [index, mask] of r.masks) {
-        const name = `${canvas.objects[index]}.png`;
-        names.add(name);
-        await writeFile(join(maskDir, name), png(canvas.w, canvas.h, 1, mask));
+    } else if (asset.render) {
+      rendered = asset.render();
+      const { canvas, frame, masks, pieces, objects: drawn = objects } = rendered;
+      const r = resolve(canvas);
+      keys = r.keys;
+      await writeFile(join(dir, 'blockout.png'), png(canvas.w, canvas.h, 3, r.rgb));
+      await writeFile(
+        join(dir, 'grid.png'),
+        png(canvas.w, canvas.h, 4, gridImage(canvas, r, frame)),
+      );
+      const footprints = {
+        asset: asset.id,
+        size: asset.size,
+        cell: [frame.cw, frame.cd],
+        level: frame.lh,
+        projection: 'screen x = ox + x * cell[0]; screen y = oy + y * cell[1] - height * level',
+      };
+      if (pieces)
+        footprints.pieces = pieces.map((p) => ({
+          piece: p.piece,
+          name: p.zh,
+          cell: p.cell,
+          origin: [p.frame.ox, p.frame.oy],
+          objects: footprintEntries(p.objects, p.frame, r, canvas, false),
+        }));
+      else {
+        footprints.origin = [frame.ox, frame.oy];
+        footprints.objects = footprintEntries(drawn, frame, r, canvas, masks);
       }
-      for (const stale of await readdir(maskDir))
-        if (!names.has(stale)) await rm(join(maskDir, stale));
+      if (asset.stage === 'S8') s8Footprints = footprints;
+      else if (pieces || footprints.objects.length)
+        await writeFile(
+          join(dir, 'footprints.json'),
+          await pretty(JSON.stringify(footprints), 'json'),
+        );
+      if (masks) {
+        const maskDir = join(dir, 'masks');
+        await mkdir(maskDir, { recursive: true });
+        const names = new Set();
+        for (const [index, mask] of r.masks) {
+          const name = `${canvas.objects[index]}.png`;
+          names.add(name);
+          await writeFile(join(maskDir, name), png(canvas.w, canvas.h, 1, mask));
+        }
+        for (const stale of await readdir(maskDir))
+          if (!names.has(stale)) await rm(join(maskDir, stale));
+      }
+      await asset.write?.(dir, rendered, r);
+      resolved = r;
     }
-    await asset.write?.(dir, rendered, r);
-    resolved = r;
-  }
-  const readme = await pretty(
-    assetReadme(asset, asset.prompts(keys, rendered, resolved)),
-    'markdown',
-  );
-  await writeFile(join(dir, 'README.md'), readme);
-  if (asset.stage === 'S8') {
-    for (const reference of asset.references)
-      await readFile(reference).catch((error) => {
-        throw new Error(`${asset.id}: missing upload reference ${reference}`, { cause: error });
+    const readme = await pretty(
+      assetReadme(asset, asset.prompts(keys, rendered, resolved)),
+      'markdown',
+    );
+    await writeFile(join(dir, 'README.md'), readme);
+    if (asset.stage === 'S8') {
+      for (const reference of asset.references)
+        await readFile(reference).catch((error) => {
+          throw new Error(`${asset.id}: missing upload reference ${reference}`, { cause: error });
+        });
+      const blocks = [...readme.matchAll(/```text\n([\s\S]*?)\n```/g)];
+      const expectedBlocks = asset.promptRounds ? 2 : 1;
+      if (blocks.length !== expectedBlocks)
+        throw new Error(
+          `${asset.id}: expected ${expectedBlocks} prompt blocks (authoritative first)`,
+        );
+      if (asset.final) await processS8(asset, dir, blocks, s8Footprints);
+      s8Jobs.push({
+        id: asset.zh.split(' ')[0],
+        folder: dir,
+        type: asset.type,
+        candidates: 3,
+        references: asset.references,
+        prompt: blocks[0][1],
+        size: asset.size,
       });
-    const blocks = [...readme.matchAll(/```text\n([\s\S]*?)\n```/g)];
-    const expectedBlocks = asset.promptRounds ? 2 : 1;
-    if (blocks.length !== expectedBlocks)
-      throw new Error(
-        `${asset.id}: expected ${expectedBlocks} prompt blocks (authoritative first)`,
-      );
-    if (asset.final) await processS8(asset, dir, blocks, s8Footprints);
-    s8Jobs.push({
-      id: asset.zh.split(' ')[0],
-      folder: dir,
-      type: asset.type,
-      candidates: 3,
-      references: asset.references,
-      prompt: blocks[0][1],
-      size: asset.size,
-    });
+    }
   }
   const n = await attemptCount(dir);
   rows.push({
@@ -4956,4 +5077,5 @@ for (const asset of ASSETS) {
 }
 await writeFile(join(OUT, 'README.md'), await pretty(indexReadme(rows), 'markdown'));
 await mkdir('.artifacts/siege', { recursive: true });
-await writeFile('.artifacts/siege/s8-jobs.json', await pretty(JSON.stringify(s8Jobs), 'json'));
+if (!onlyAsset)
+  await writeFile('.artifacts/siege/s8-jobs.json', await pretty(JSON.stringify(s8Jobs), 'json'));
