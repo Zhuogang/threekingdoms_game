@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createV03Game } from '../../src/v03/initial-state';
 import { availableTroops, createPersonnelDay } from '../../src/v03/campaign/personnel';
+import { developmentGain } from '../../src/v03/governance/city-actions';
 import { asSave } from './playability-fixtures';
 import {
   openCity,
@@ -109,9 +110,12 @@ for (const locale of ['zh', 'en']) {
     await expect(page.locator('.v03-work-budget')).toContainText('2/6');
     await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
     await confirmWork(page);
-    expect((await saved(page)).cities.find((entry) => entry.id === city.id)).toMatchObject({
+    const farmed = await saved(page);
+    const farmer = farmed.officers.find((entry) => entry.cityWork?.action === 'develop-farming');
+    expect(farmer).toBeTruthy();
+    expect(farmed.cities.find((entry) => entry.id === city.id)).toMatchObject({
       workPointsUsed: 1,
-      farming: 120,
+      farming: 100 + developmentGain('develop-farming', farmer!),
       gold: 4920,
     });
     await expect(page.locator('.v03-work-budget')).toContainText('1/6');

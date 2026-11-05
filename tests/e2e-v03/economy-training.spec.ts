@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createV03Game } from '../../src/v03/initial-state';
 import type { V03GameState } from '../../src/v03/types';
+import { cityDevelopmentCaps } from '../../src/v03/governance/city-actions';
 import { asSave } from './playability-fixtures';
 import { showCityManagement, chooseWorkExecutor, showOfficer } from './ui-navigation';
 
@@ -24,19 +25,22 @@ for (const locale of ['zh', 'en']) {
   }) => {
     const state = createV03Game('cao', 1);
     const city = state.cities.find((entry) => entry.id === state.playerCapitalCityId)!;
-    Object.assign(city, { farming: 495, commerce: 480, gold: 1000 });
+    const farmingCap = cityDevelopmentCaps(city.id).farming;
+    Object.assign(city, { farming: farmingCap - 5, commerce: 480, gold: 1000 });
     await load(page, state, locale);
     await showCityManagement(page);
     await page.getByRole('button', { name: /发展农田|Improve farmland/ }).click();
     await chooseWorkExecutor(page);
-    await expect(page.locator('.v03-work-detail')).toContainText('495 → 500');
+    await expect(page.locator('.v03-work-detail')).toContainText(
+      `${farmingCap - 5} → ${farmingCap}`,
+    );
     expect(await saved(page)).toEqual(state);
     await page.getByRole('button', { name: /确认执行|Confirm order/, exact: true }).click();
     await expect(page.locator('.v03-window-feedback')).toContainText(
       locale === 'zh' ? '提高了 5' : 'improved by 5',
     );
     expect((await saved(page)).cities.find((entry) => entry.id === city.id)).toMatchObject({
-      farming: 500,
+      farming: farmingCap,
       gold: 920,
       workPointsUsed: 1,
     });

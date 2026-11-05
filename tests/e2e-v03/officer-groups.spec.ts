@@ -89,12 +89,14 @@ for (const locale of ['zh', 'en']) {
     expect(await all.evaluate((node) => (node as HTMLInputElement).indeterminate)).toBe(true);
     await all.check();
     await expect(group.locator('.v03-stat-grid > div').nth(1).locator('dd')).toHaveText(
-      String(officers.length * 100),
+      `${officers.length * 100} ${locale === 'zh' ? '钱' : 'cash'}`,
     );
     await all.uncheck();
     await group.getByRole('checkbox', { name: name(officers[0]!), exact: true }).check();
     await group.getByRole('checkbox', { name: name(officers[1]!), exact: true }).check();
-    await expect(group.locator('.v03-stat-grid > div').nth(1).locator('dd')).toHaveText('200');
+    await expect(group.locator('.v03-stat-grid > div').nth(1).locator('dd')).toHaveText(
+      `200 ${locale === 'zh' ? '钱' : 'cash'}`,
+    );
     expect(await saved(page)).toEqual(state);
     await mkdir('.artifacts/officer-groups', { recursive: true });
     await page.screenshot({ path: `.artifacts/officer-groups/reward-${locale}.png` });
@@ -131,7 +133,7 @@ for (const locale of ['zh', 'en']) {
     ).toBeDisabled();
     await group.getByRole('checkbox', { name: allName, exact: true }).check();
     await expect(group.locator('.v03-stat-grid > div').nth(1).locator('dd')).toHaveText(
-      String((officers.length - 2) * 180),
+      `${(officers.length - 2) * 180} ${locale === 'zh' ? '钱' : 'cash'}`,
     );
     await expect(
       group
