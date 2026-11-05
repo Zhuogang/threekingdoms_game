@@ -49,16 +49,18 @@ export const CITY_WORK = deepFreeze({
   security: {
     /** City loyalty gained by security work. */
     loyaltyBase: 8,
-    /** Manager intellect divided by this adds loyalty. */
-    intellectDivisor: 20,
+    /** Executor politics divided by this adds loyalty. */
+    politicsDivisor: 20,
   },
+  /** Civil work scales by `base + politics × slope` (1.0 at politics 60). */
+  politics: { base: 0.7, slope: 1 / 200 },
   develop: {
     /** Farming gained by one development action. */
     farmingGain: 20,
     /** Commerce gained by one development action. */
     commerceGain: 10,
-    /** Farming and commerce cannot be developed past this. */
-    cap: 500,
+    /** Ceiling for a city with no record (custom scenarios and test fixtures). */
+    fallbackCap: 500,
     /** City loyalty gained by the legacy restore-loyalty action. */
     legacyLoyaltyGain: 2,
   },

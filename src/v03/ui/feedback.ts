@@ -217,6 +217,15 @@ export function localizeRoutineFeedback(
   if (match) return `${name(match[1]!)}接受赏赐，忠诚提高最多 15。`;
   match = message.match(/^(.+) distributed grain: up to 15 city loyalty and (\d+) population\.$/);
   if (match) return `${name(match[1]!)}开仓赈济，民心提高最多 15，人口增加 ${match[2]}。`;
+  match = message.match(/^Merchants (delivered|bought) (\d+) food for (\d+) gold\.$/);
+  if (match)
+    return match[1] === 'delivered'
+      ? `商人以 ${match[3]} 金运来了 ${match[2]} 粮。`
+      : `商人以 ${match[3]} 金购走了 ${match[2]} 粮。`;
+  match = message.match(/^The granary has no room for another (\d+) food\.$/);
+  if (match) return `粮仓没有容纳额外 ${match[1]} 粮的空间。`;
+  match = message.match(/^The capital needs (\d+) food before it can sell this amount\.$/);
+  if (match) return `出售此数量需要至少 ${match[1]} 粮。`;
   match = message.match(/^(.+) received fine arms and gained up to 5 force\.$/);
   if (match) return `${name(match[1]!)}获配精良兵器，武力提高最多 5。`;
   match = message.match(

@@ -7,6 +7,7 @@ import {
   applyNpcCapitalCityAction,
   applyV03CityAction,
   cityWorkBusyDays,
+  developmentGain,
   getV03CityActionAvailability,
   officerBusyDays,
 } from '../../src/v03/governance/city-actions';
@@ -160,7 +161,9 @@ describe('capital tasks occupy their executor', () => {
       officerId: executor.id,
     });
     expect(done.ok, done.error).toBe(true);
-    expect(done.state.cities.find((entry) => entry.id === city.id)!.farming).toBe(120);
+    expect(done.state.cities.find((entry) => entry.id === city.id)!.farming).toBe(
+      100 + developmentGain('develop-farming', executor),
+    );
     const busy = done.state.officers.find((entry) => entry.id === executor.id)!;
     expect(busy.cityWork).toEqual({ action: 'develop-farming', untilDay: state.absoluteDay + 10 });
     expect(officerBusyDays(done.state, busy)).toBe(10);

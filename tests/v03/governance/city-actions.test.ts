@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createV03Game } from '../../../src/v03/initial-state';
 import {
   applyV03CityAction,
+  cityFoodTradeFood,
+  developmentGain,
   getV03CityActionAvailability,
+  reliefPopulation,
+  securityLoyaltyGain,
 } from '../../../src/v03/governance/city-actions';
 import type { V03GameState, V03Officer } from '../../../src/v03/types';
 
@@ -127,17 +131,22 @@ describe('v0.3 ruler city actions', () => {
     ).toBe(true);
   });
   it('uses the same 80-gold work effect and fixed ten-day quota for direct development', () => {
-    const { state, cityId } = fixture();
+    const { state, cityId, officer } = fixture();
     const city = state.cities.find((entry) => entry.id === cityId)!;
     const quota = 2;
     city.workPointsUsed = quota - 1;
+    const startFarming = city.farming;
     const before = structuredClone(state);
 
-    const result = applyV03CityAction(state, { cityId, action: 'develop-farming' });
+    const result = applyV03CityAction(state, {
+      cityId,
+      action: 'develop-farming',
+      officerId: officer.id,
+    });
 
     expect(result.ok).toBe(true);
     expect(result.state.cities.find((entry) => entry.id === cityId)).toMatchObject({
-      farming: 50,
+      farming: startFarming + developmentGain('develop-farming', officer),
       gold: 920,
       workPointsUsed: quota,
     });
@@ -204,9 +213,15 @@ describe('v0.3 ruler city actions', () => {
     const city = state.cities.find((entry) => entry.id === cityId)!;
     city.loyalty = 50;
     officer.loyalty = 50;
-    const secured = applyV03CityAction(state, { cityId, action: 'security' });
+    const secured = applyV03CityAction(state, {
+      cityId,
+      action: 'security',
+      officerId: officer.id,
+    });
     expect(secured.ok).toBe(true);
-    expect(secured.state.cities.find((entry) => entry.id === cityId)?.loyalty).toBeGreaterThan(50);
+    expect(secured.state.cities.find((entry) => entry.id === cityId)?.loyalty).toBe(
+      50 + securityLoyaltyGain(officer),
+    );
 
     nextMonth(secured.state);
     const feasted = applyV03CityAction(secured.state, { cityId, action: 'feast' });
@@ -214,14 +229,22 @@ describe('v0.3 ruler city actions', () => {
     expect(feasted.state.officers.find((entry) => entry.id === officer.id)?.loyalty).toBe(58);
 
     nextMonth(feasted.state);
-    const bought = applyV03CityAction(feasted.state, { cityId, action: 'buy-food' });
+    const bought = applyV03CityAction(feasted.state, {
+      cityId,
+      action: 'buy-food',
+      officerId: officer.id,
+    });
     expect(bought.ok).toBe(true);
     expect(bought.state.cities.find((entry) => entry.id === cityId)).toMatchObject({
-      food: city.food + 2000,
+      food: city.food + cityFoodTradeFood(officer),
       gold: city.gold - 200,
     });
     nextMonth(bought.state);
-    const sold = applyV03CityAction(bought.state, { cityId, action: 'sell-food' });
+    const sold = applyV03CityAction(bought.state, {
+      cityId,
+      action: 'sell-food',
+      officerId: officer.id,
+    });
     expect(sold.ok).toBe(true);
     expect(sold.state.cities.find((entry) => entry.id === cityId)?.food).toBe(city.food);
   });
@@ -302,7 +325,7 @@ describe('v0.3 ruler city actions', () => {
       gold: city.gold - 360,
       food: city.food - 600,
       loyalty: city.loyalty + 15,
-      population: population + 1500,
+      population: population + reliefPopulation(officer),
     });
   });
 });

@@ -4,6 +4,8 @@ import { advanceV03 } from '../../../src/v03/engine';
 import {
   applyGovernorCityAction,
   applyV03CityAction,
+  cityDevelopmentCaps,
+  developmentGain,
   getV03CityActionAvailability,
 } from '../../../src/v03/governance/city-actions';
 import {
@@ -26,19 +28,27 @@ function fixture() {
 }
 
 describe('existing economy and training adjustments', () => {
-  for (const [field, action, gain] of [
-    ['farming', 'develop-farming', 20],
-    ['commerce', 'develop-commerce', 10],
+  for (const [field, action] of [
+    ['farming', 'develop-farming'],
+    ['commerce', 'develop-commerce'],
   ] as const) {
     it.each([30, 495, 499])(
-      `${action} charges 80 gold and one point, clamping the actual gain at 500 from %s`,
+      `${action} charges 80 gold and one point, clamping the actual gain at the city cap from %s`,
       (start) => {
-        const { state, city } = fixture();
-        city[field] = start;
+        const { state, city, officer } = fixture();
+        const cap = cityDevelopmentCaps(city.id)[field];
+        // Start relative to the city's own cap rather than the old flat 500.
+        const from = start === 30 ? start : cap - (500 - start);
+        city[field] = from;
         const before = structuredClone(state);
-        const result = applyV03CityAction(state, { cityId: city.id, action });
+        const result = applyV03CityAction(state, {
+          cityId: city.id,
+          action,
+          officerId: officer.id,
+        });
         expect(result.ok, result.error).toBe(true);
-        const actual = Math.min(gain, 500 - start);
+        const actual = Math.min(developmentGain(action, officer), cap - from);
+        start = from;
         expect(result.state.cities.find((entry) => entry.id === city.id)).toMatchObject({
           [field]: start + actual,
           gold: 920,
@@ -52,10 +62,11 @@ describe('existing economy and training adjustments', () => {
       },
     );
 
-    it.each([500, 520])(
-      `${action} rejects capped or legacy over-cap development at %s without rescaling`,
-      (value) => {
+    it.each([0, 20])(
+      `${action} rejects capped or legacy over-cap development at the city cap plus %s without rescaling`,
+      (extra) => {
         const { state, city } = fixture();
+        const value = cityDevelopmentCaps(city.id)[field] + extra;
         city[field] = value;
         const restored = reload(state);
         const result = applyV03CityAction(restored, { cityId: city.id, action });
@@ -70,10 +81,19 @@ describe('existing economy and training adjustments', () => {
       const city = state.cities.find((entry) => entry.id === 'xuchang')!;
       city[field] = 100;
       city.gold = 1000;
+      const manager = state.officers
+        .filter(
+          (entry) =>
+            entry.alive &&
+            entry.factionId === city.factionId &&
+            entry.location.kind === 'city' &&
+            entry.location.cityId === city.id,
+        )
+        .sort((a, b) => b.politics - a.politics || a.id.localeCompare(b.id))[0]!;
       const result = applyGovernorCityAction(state, { cityId: city.id, action });
       expect(result.ok, result.error).toBe(true);
       expect(result.state.cities.find((entry) => entry.id === city.id)).toMatchObject({
-        [field]: 100 + gain,
+        [field]: 100 + developmentGain(action, manager),
         gold: 920,
         workPointsUsed: 1,
       });

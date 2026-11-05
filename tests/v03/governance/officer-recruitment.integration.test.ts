@@ -17,6 +17,7 @@ import {
   applyV03CityAction,
   applyNpcCapitalCityAction,
   automaticTalentWorkUsed,
+  cityDevelopmentCaps,
   getV03CityActionAvailability,
 } from '../../../src/v03/governance/city-actions';
 import { decodeV03Save, encodeV03Save, validateV03State } from '../../../src/v03/platform/storage';
@@ -87,8 +88,9 @@ function fixture(kind: Kind = 'capital', stock = 500) {
     gold: 20_000,
     food: 100_000,
     loyalty: 100,
-    farming: 500,
-    commerce: 500,
+    // At the city's own ceilings, as the flat 500 used to be, so development stays capped.
+    farming: cityDevelopmentCaps(cityId).farming,
+    commerce: cityDevelopmentCaps(cityId).commerce,
     population: 10_000,
     reserve: stock,
     reservePools: createReservePools(0, 0, stock),

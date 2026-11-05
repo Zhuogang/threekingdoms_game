@@ -23,6 +23,8 @@ describe('V04-09 diagnostic player policies', () => {
     const initial = createV03Game('cao', 17);
     const city = initial.cities.find((city) => city.id === initial.playerCapitalCityId)!;
     Object.assign(city, { food: 0, gold: 400 });
+    // Politics 60 gives a trade factor of 1.0 whichever officer the probe uses.
+    for (const officer of initial.officers) if (officer.factionId === 'cao') officer.politics = 60;
     const before = structuredClone(initial);
     const result = prepareProbeCapital(initial, api);
     expect(initial).toEqual(before);

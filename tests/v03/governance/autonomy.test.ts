@@ -33,6 +33,8 @@ function fixture(): { state: V03GameState; cityId: string } {
   city.gold = 1000;
   city.food = 0;
   officer.troops = 10_000;
+  // Politics 60 is a civil-work factor of 1.0, so the fixed amounts below stay exact.
+  officer.politics = 60;
   return { state, cityId: city.id };
 }
 
@@ -90,7 +92,8 @@ describe('v0.3 governor monthly work planning', () => {
     expect(applied.applied).toBe(true);
     expect(applied.city!.gold).toBe(1000);
     expect(applied.city!.food).toBe(600);
-    expect(applied.city!.loyalty).toBe(40 + 8 + Math.floor(plan.managerIntellectAtPlan / 20));
+    expect(applied.city!.loyalty).toBe(40 + 8 + Math.floor(60 / 20));
+    // Security follows the manager's politics (60 in this fixture), not intellect.
   });
 
   it('refills an injured non-governor after earlier monthly work, preserving experience and same-type reserves', () => {
@@ -334,7 +337,7 @@ describe('v0.3 governor monthly work planning', () => {
     expect(plan).toMatchObject({ action: 'security', goldCost: 0, reasonCode: 'public-order' });
     let result = applyGovernorMonthlyWork(state, plan);
     expect(result.applied).toBe(true);
-    expect(result.city?.loyalty).toBe(68 + Math.floor(manager.intellect / 20));
+    expect(result.city?.loyalty).toBe(68 + Math.floor(manager.politics / 20));
 
     city.loyalty = 80;
     city.reserve = 0;

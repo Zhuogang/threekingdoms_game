@@ -335,6 +335,8 @@ describe('fixed city work points and free preparations', () => {
     officer.level = 5;
     officer.force = 70;
     officer.leadership = 100;
+    // Politics 60 is a civil-work factor of 1.0, so a development step gains exactly 20 or 10.
+    officer.politics = 60;
     state.personnelDay = createPersonnelDay(state);
     const result = advanceV03(state, 1);
     expect(result.error).toBeUndefined();

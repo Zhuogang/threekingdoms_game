@@ -65,7 +65,8 @@ export function GovernorAppointment({
                 value={officer.id}
                 disabled={!canAppointGovernor(state, selectedCity.id, officer.id).ok}
               >
-                {localizedOfficerName(officer.name)} · {city ? displayName(city, locale) : ''}
+                {localizedOfficerName(officer.name)} · {city ? displayName(city, locale) : ''} ·{' '}
+                {message(locale, 'stat.politics')} {officer.politics}
                 {officer.id === rulerId ? (locale === 'zh' ? ' · 君主亲治' : ' · Ruler') : ''}
                 {!canAppointGovernor(state, selectedCity.id, officer.id).ok
                   ? ` · ${localizeAppMessage(canAppointGovernor(state, selectedCity.id, officer.id).reason ?? '', locale)}`

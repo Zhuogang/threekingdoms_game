@@ -1,6 +1,7 @@
 import { message } from '../../i18n';
 import { isCityCommitted } from '../../governance/commitments';
 import { forecastCityEconomy } from '../../campaign/economy';
+import { cityDevelopmentCaps } from '../../governance/city-actions';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { StatGrid } from '../kit';
 import { displayName } from '../shared/app-copy-3';
@@ -24,6 +25,7 @@ export function CityOverview({
 }) {
   const { state, selectedCity: city, locale, t } = context;
   if (!city) return null;
+  const caps = cityDevelopmentCaps(city.id);
   const owner = state.factions.find((entry) => entry.id === city.factionId);
   const friendly = city.factionId === state.playerFactionId;
   const direct =
@@ -152,8 +154,14 @@ export function CityOverview({
           },
           { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },
           { label: message(locale, 'flow.publicOrder'), value: `${city.loyalty}%` },
-          { label: message(locale, 'flow.farming'), value: city.farming.toLocaleString() },
-          { label: message(locale, 'flow.commerce'), value: city.commerce.toLocaleString() },
+          {
+            label: message(locale, 'flow.farming'),
+            value: `${city.farming.toLocaleString()} / ${caps.farming.toLocaleString()}`,
+          },
+          {
+            label: message(locale, 'flow.commerce'),
+            value: `${city.commerce.toLocaleString()} / ${caps.commerce.toLocaleString()}`,
+          },
           ...(economy
             ? [
                 {

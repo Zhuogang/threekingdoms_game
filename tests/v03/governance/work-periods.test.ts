@@ -208,6 +208,8 @@ describe('ten-day work point refresh', () => {
             experience: 500,
             level: 5,
             loyalty: 100,
+            // Politics 60 is a factor of 1.0, so each action gains exactly 20 or 10.
+            politics: 60,
           });
       }
       Object.assign(city, {

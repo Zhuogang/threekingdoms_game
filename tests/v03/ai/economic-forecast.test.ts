@@ -222,6 +222,9 @@ describe('V04-02 forecast and real settlement parity', () => {
     expect(preview.available.food).toBe(500);
     expect(preview.projectedAvailable.food).toBe(preview.projectedFood - 500);
     expect(requested).toEqual(before);
+    // Politics 60 makes the trade factor 1.0 for whichever local officer is chosen.
+    for (const officer of requested.officers)
+      if (officer.factionId === city.factionId) officer.politics = 60;
     const bought = command(requested, { type: 'cityAction', cityId: city.id, action: 'buy-food' });
     expect(forecastCityEconomy(bought, city.id).projectedFood).toBe(preview.projectedFood + 2000);
     expect(forecastCityEconomy(bought, city.id).projectedGold).toBe(preview.projectedGold - 200);

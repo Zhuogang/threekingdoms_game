@@ -56,6 +56,7 @@ function fixture(day = 29) {
         level: 5,
         loyalty: 100,
         equipment: 'Fine arms',
+        politics: 60,
       });
   state.personnelDay = createPersonnelDay(state);
   return { state, city, manager };
@@ -147,7 +148,11 @@ describe('V04-07 governor decisions', () => {
   it('buys enough food to cover an imminent bill when farming cannot cover it', () => {
     const { state, city } = fixture();
     const before = structuredClone(state);
-    const farm = applySharedCityWorkEffect(city, 'develop-farming')!;
+    const farm = applySharedCityWorkEffect(city, 'develop-farming', {
+      force: 0,
+      intellect: 0,
+      politics: 60,
+    })!;
     expect(
       forecastCityEconomy(
         { ...state, cities: state.cities.map((c) => (c.id === city.id ? farm : c)) },

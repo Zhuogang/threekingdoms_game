@@ -16,7 +16,8 @@ import {
 import type { TroopType } from '../content/types';
 import { isCityCommitted, isOfficerReservedForOrder } from './commitments';
 import {
-  CITY_FOOD_TRADE_FOOD,
+  cityFoodTradeFood,
+  cityDevelopmentCaps,
   CITY_FOOD_TRADE_GOLD,
   CITY_MONTHLY_WORK_GOLD_COST,
   GOVERNOR_EQUIPMENT_GOLD_COST,
@@ -167,7 +168,9 @@ export function planGovernorMonthlyWork(
         officer.location.kind === 'city' &&
         officer.location.cityId === city.id,
     )
-    .sort((a, b) => b.intellect - a.intellect || a.id.localeCompare(b.id));
+    .sort(
+      (a, b) => b.politics - a.politics || b.intellect - a.intellect || a.id.localeCompare(b.id),
+    );
   const manager =
     local.find((officer) => officer.id === city.governorId) ??
     (npcCapital ? local.find((officer) => officer.id === faction?.leaderOfficerId) : undefined) ??
@@ -364,7 +367,7 @@ export function planGovernorMonthlyWork(
       action === 'relieve'
         ? GOVERNOR_RELIEF_FOOD_COST
         : action === 'sell-food'
-          ? CITY_FOOD_TRADE_FOOD
+          ? cityFoodTradeFood(manager!)
           : 0;
     if (foodCost && city!.food - foodCost < protectedFood) {
       failure = 'Spending food would use the protected reserve or an approved order.';
@@ -648,7 +651,7 @@ export function planGovernorMonthlyWork(
   )
     return plan;
   if (
-    city.food >= protectedFood + CITY_FOOD_TRADE_FOOD &&
+    city.food >= protectedFood + cityFoodTradeFood(manager) &&
     city.gold < reserves.gold + CAMPAIGN_AI.autonomy.sellFoodGoldMargin &&
     offer('sell-food', 'market-balance', 'Sell surplus food to fund city work.')
   )
@@ -701,7 +704,8 @@ export function planGovernorMonthlyWork(
   )
     return plan;
   // Development below its cap that the city cannot fund is a budget limit, not a cap.
-  if (!failure && (city.farming < CITY_WORK.develop.cap || city.commerce < CITY_WORK.develop.cap))
+  const caps = cityDevelopmentCaps(city.id);
+  if (!failure && (city.farming < caps.farming || city.commerce < caps.commerce))
     failure = 'Development remains below its cap, but the city cannot fund it this period.';
   return none();
 }

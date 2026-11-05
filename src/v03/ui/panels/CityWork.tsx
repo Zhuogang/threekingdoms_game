@@ -12,6 +12,7 @@ import {
   applyV03CityAction,
   CITY_WORK_BANK_MAX_POINTS,
   cityActionWorkCost,
+  cityDevelopmentCaps,
   cityWorkBusyDays,
   cityWorkRefreshDays,
 } from '../../governance/city-actions';
@@ -340,6 +341,14 @@ export function CityWork({
         <ReinforcementPreview before={officer} after={afterOfficer} locale={locale} />
       ) : null}
       {changes.length ? <StatGrid values={changes} /> : null}
+      {action === 'develop-farming' || action === 'develop-commerce' ? (
+        <p className="v03-muted">
+          {locale === 'zh' ? '本城上限' : 'This city’s cap'}:{' '}
+          {cityDevelopmentCaps(city.id)[
+            action === 'develop-farming' ? 'farming' : 'commerce'
+          ].toLocaleString()}
+        </p>
+      ) : null}
       {lasting ? (
         <p className="v03-work-lasting">
           {message(locale, 'work.lasting', {

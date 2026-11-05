@@ -7,6 +7,7 @@ import {
   splitPersonnel,
   transferRationRecord,
 } from '../campaign/personnel';
+import { CITY_RECORDS } from '../content/cities';
 import type { TroopType } from '../content/types';
 import {
   CITY_WORK as CITY_WORK_TABLE,
@@ -52,14 +53,48 @@ export const GOVERNOR_REWARD_GOLD_COST = CITY_WORK.rewardGold;
 export const GOVERNOR_EQUIPMENT_GOLD_COST = CITY_WORK.equipmentGold;
 export const GOVERNOR_RELIEF_GOLD_COST = CITY_WORK.relief.gold;
 export const GOVERNOR_RELIEF_FOOD_COST = CITY_WORK.relief.food;
-/** Relief settles 1,500 people: about a year to repay its cost in tax (PF-RL-02). */
-export const GOVERNOR_RELIEF_POPULATION = CITY_WORK.relief.population;
-/** One work point of market trade moves 2,000 food at ten food per gold. */
-export const CITY_FOOD_TRADE_FOOD = CITY_WORK.trade.food;
 export const CITY_FOOD_TRADE_GOLD = CITY_WORK.trade.gold;
 export const RESTORE_LOYALTY_RETIRED =
   'Restore loyalty has been retired: security is free and restores more.';
 const RESOURCE_CAP = ECONOMY.resourceCap;
+
+/** Civil work scales with the executor's politics: 0.7 at 0, 1.0 at 60, 1.2 at 100. */
+export function politicsFactor(officer: Pick<V03Officer, 'politics'>): number {
+  // Rounded so that exact halves (for example 8.5) are not lost to floating-point error.
+  return (
+    Math.round((CITY_WORK.politics.base + officer.politics * CITY_WORK.politics.slope) * 1e9) / 1e9
+  );
+}
+/** Population settled by one relief action. */
+export function reliefPopulation(officer: Pick<V03Officer, 'politics'>): number {
+  return Math.round(CITY_WORK.relief.population * politicsFactor(officer));
+}
+/** Food moved by one market trade at ten food per gold. */
+export function cityFoodTradeFood(officer: Pick<V03Officer, 'politics'>): number {
+  return Math.round(CITY_WORK.trade.food * politicsFactor(officer));
+}
+/** Farming or commerce gained by one development action, before the cap. */
+export function developmentGain(
+  action: 'develop-farming' | 'develop-commerce',
+  officer: Pick<V03Officer, 'politics'>,
+): number {
+  const base =
+    action === 'develop-farming' ? CITY_WORK.develop.farmingGain : CITY_WORK.develop.commerceGain;
+  return Math.round(base * politicsFactor(officer));
+}
+/** City loyalty gained by one security action. */
+export function securityLoyaltyGain(officer: Pick<V03Officer, 'politics'>): number {
+  return (
+    CITY_WORK.security.loyaltyBase +
+    Math.floor(officer.politics / CITY_WORK.security.politicsDivisor)
+  );
+}
+/** Development ceilings of a city (L-01): its tier record, not a flat number. */
+export function cityDevelopmentCaps(cityId: string): { farming: number; commerce: number } {
+  const record = CITY_RECORDS[cityId];
+  const fallback = CITY_WORK.develop.fallbackCap;
+  return { farming: record?.farmingCap ?? fallback, commerce: record?.commerceCap ?? fallback };
+}
 
 export type OfficerGroupAction = 'feast' | 'reward' | 'equip';
 export function isOfficerGroupAction(action: V03CityAction): action is OfficerGroupAction {
@@ -207,7 +242,11 @@ export function applySharedCityWorkEffect(
     | 'recruit'
     | 'buy-food'
     | 'sell-food',
-  manager: Pick<V03Officer, 'force' | 'intellect'> = { force: 0, intellect: 0 },
+  manager: Pick<V03Officer, 'force' | 'intellect' | 'politics'> = {
+    force: 0,
+    intellect: 0,
+    politics: 0,
+  },
   troopType: TroopType = 'infantry',
 ): V03City | null {
   const city: V03City = { ...source };
@@ -216,17 +255,19 @@ export function applySharedCityWorkEffect(
     city.gold < CITY_MONTHLY_WORK_GOLD_COST
   )
     return null;
-  if (action === 'develop-farming' && city.farming >= CITY_WORK.develop.cap) return null;
-  if (action === 'develop-commerce' && city.commerce >= CITY_WORK.develop.cap) return null;
+  const caps = cityDevelopmentCaps(city.id);
+  const tradeFood = cityFoodTradeFood(manager);
+  if (action === 'develop-farming' && city.farming >= caps.farming) return null;
+  if (action === 'develop-commerce' && city.commerce >= caps.commerce) return null;
   if (action === 'restore-loyalty' && city.loyalty >= 100) return null;
   if (
     action === 'buy-food' &&
-    (city.gold < CITY_FOOD_TRADE_GOLD || city.food + CITY_FOOD_TRADE_FOOD > RESOURCE_CAP)
+    (city.gold < CITY_FOOD_TRADE_GOLD || city.food + tradeFood > RESOURCE_CAP)
   )
     return null;
   if (
     action === 'sell-food' &&
-    (city.food < CITY_FOOD_TRADE_FOOD || city.gold + CITY_FOOD_TRADE_GOLD > RESOURCE_CAP)
+    (city.food < tradeFood || city.gold + CITY_FOOD_TRADE_GOLD > RESOURCE_CAP)
   )
     return null;
   if (
@@ -249,45 +290,51 @@ export function applySharedCityWorkEffect(
     city.gold -= GOVERNOR_RELIEF_GOLD_COST;
     city.food -= GOVERNOR_RELIEF_FOOD_COST;
     city.loyalty = Math.min(100, city.loyalty + CITY_WORK.relief.loyaltyGain);
-    city.population = Math.min(RESOURCE_CAP, city.population + GOVERNOR_RELIEF_POPULATION);
+    city.population = Math.min(RESOURCE_CAP, city.population + reliefPopulation(manager));
   } else if (action === 'security')
-    city.loyalty = Math.min(
-      100,
-      city.loyalty +
-        CITY_WORK.security.loyaltyBase +
-        Math.floor(manager.intellect / CITY_WORK.security.intellectDivisor),
-    );
+    city.loyalty = Math.min(100, city.loyalty + securityLoyaltyGain(manager));
   else if (action === 'buy-food') {
     city.gold -= CITY_FOOD_TRADE_GOLD;
-    city.food += CITY_FOOD_TRADE_FOOD;
+    city.food += tradeFood;
   } else if (action === 'sell-food') {
-    city.food -= CITY_FOOD_TRADE_FOOD;
+    city.food -= tradeFood;
     city.gold += CITY_FOOD_TRADE_GOLD;
   } else {
     city.gold -= CITY_MONTHLY_WORK_GOLD_COST;
     if (action === 'develop-farming')
-      city.farming = Math.min(CITY_WORK.develop.cap, city.farming + CITY_WORK.develop.farmingGain);
+      city.farming = Math.min(caps.farming, city.farming + developmentGain(action, manager));
     else if (action === 'develop-commerce')
-      city.commerce = Math.min(
-        CITY_WORK.develop.cap,
-        city.commerce + CITY_WORK.develop.commerceGain,
-      );
+      city.commerce = Math.min(caps.commerce, city.commerce + developmentGain(action, manager));
     else city.loyalty = Math.min(100, city.loyalty + CITY_WORK.develop.legacyLoyaltyGain);
   }
   return city;
 }
 
+/** Stat that ranks executors for an action: force recruits, leadership trains, politics governs. */
+export function executorStat(
+  action: V03CityAction,
+): 'force' | 'leadership' | 'intellect' | 'politics' {
+  if (action === 'recruit') return 'force';
+  if (action === 'train') return 'leadership';
+  if (action === 'search') return 'intellect';
+  return 'politics';
+}
+
 function officerForAction(
   state: Readonly<V03GameState>,
   city: V03City,
-  officerId?: string,
-  busyAction?: V03CityAction,
+  officerId: string | undefined,
+  action: V03CityAction,
+  trackBusy: boolean,
 ): V03Officer | undefined {
-  const officers = localOfficers(state, city);
+  const stat = executorStat(action);
+  const officers = localOfficers(state, city).sort(
+    (a, b) => b[stat] - a[stat] || a.id.localeCompare(b.id),
+  );
   if (officerId) return officers.find((officer) => officer.id === officerId);
   // Unnamed, the task goes to the ablest officer not still occupied with another one.
   const free =
-    busyAction && cityWorkBusyDays(busyAction)
+    trackBusy && cityWorkBusyDays(action)
       ? officers.find((officer) => !officerBusyDays(state, officer))
       : undefined;
   return free ?? officers[0];
@@ -500,7 +547,8 @@ function inspectCityAction(
     state,
     city,
     input.officerId,
-    authority === 'player' ? input.action : undefined,
+    input.action,
+    authority === 'player',
   );
   if (!actor)
     return fail('A living officer must be stationed in the capital to organize this work.');
@@ -523,10 +571,12 @@ function inspectCityAction(
       return fail(RESTORE_LOYALTY_RETIRED);
     case 'develop-farming':
     case 'develop-commerce':
-      if (
-        city[input.action === 'develop-farming' ? 'farming' : 'commerce'] >= CITY_WORK.develop.cap
-      )
-        return fail('This improvement is already at its current limit.');
+      {
+        const field = input.action === 'develop-farming' ? 'farming' : 'commerce';
+        const cap = cityDevelopmentCaps(city.id)[field];
+        if (city[field] >= cap)
+          return fail(`This improvement is already at this city's limit of ${cap}.`);
+      }
       if (city.gold < CITY_MONTHLY_WORK_GOLD_COST)
         return fail(
           `The capital needs ${CITY_MONTHLY_WORK_GOLD_COST} unreserved gold for this work.`,
@@ -626,18 +676,18 @@ function inspectCityAction(
     case 'buy-food':
       if (city.gold < CITY_FOOD_TRADE_GOLD)
         return fail(`The capital needs ${CITY_FOOD_TRADE_GOLD} gold to buy food.`);
-      if (city.food + CITY_FOOD_TRADE_FOOD > RESOURCE_CAP)
-        return fail(`The granary has no room for another ${CITY_FOOD_TRADE_FOOD} food.`);
+      if (city.food + cityFoodTradeFood(actor) > RESOURCE_CAP)
+        return fail(`The granary has no room for another ${cityFoodTradeFood(actor)} food.`);
       goldCost = CITY_FOOD_TRADE_GOLD;
       break;
     case 'sell-food':
-      if (city.food < CITY_FOOD_TRADE_FOOD)
+      if (city.food < cityFoodTradeFood(actor))
         return fail(
-          `The capital needs ${CITY_FOOD_TRADE_FOOD} food before it can sell this amount.`,
+          `The capital needs ${cityFoodTradeFood(actor)} food before it can sell this amount.`,
         );
       if (city.gold + CITY_FOOD_TRADE_GOLD > RESOURCE_CAP)
         return fail('The treasury has no room for the sale proceeds.');
-      foodCost = CITY_FOOD_TRADE_FOOD;
+      foodCost = cityFoodTradeFood(actor);
       break;
     default:
       return fail('This city work action is not implemented.');
@@ -689,7 +739,8 @@ function applyCityAction(
     state,
     sourceCity,
     input.officerIds?.[0] ?? input.officerId,
-    authority === 'player' ? input.action : undefined,
+    input.action,
+    authority === 'player',
   )!;
 
   const next = structuredClone(state);
@@ -711,9 +762,10 @@ function applyCityAction(
     case 'develop-farming':
     case 'develop-commerce': {
       const field = input.action === 'develop-farming' ? 'farming' : 'commerce';
-      if (city[field] >= CITY_WORK.develop.cap)
-        return fail('This improvement is already at its current limit.');
-      const updated = applySharedCityWorkEffect(city, input.action);
+      const cap = cityDevelopmentCaps(city.id)[field];
+      if (city[field] >= cap)
+        return fail(`This improvement is already at this city's limit of ${cap}.`);
+      const updated = applySharedCityWorkEffect(city, input.action, actor);
       if (!updated)
         return fail(
           `The capital needs ${CITY_MONTHLY_WORK_GOLD_COST} unreserved gold for this work.`,
@@ -863,10 +915,10 @@ function applyCityAction(
       break;
     }
     case 'relieve': {
-      const updated = applySharedCityWorkEffect(city, input.action);
+      const updated = applySharedCityWorkEffect(city, input.action, actor);
       if (!updated) return fail('The city cannot afford or benefit from relief.');
       Object.assign(city, updated);
-      message = `${actor.name} distributed grain: up to 15 city loyalty and ${GOVERNOR_RELIEF_POPULATION} population.`;
+      message = `${actor.name} distributed grain: up to 15 city loyalty and ${reliefPopulation(actor)} population.`;
       break;
     }
     case 'equip': {
@@ -894,7 +946,7 @@ function applyCityAction(
       );
       if (!updated) return fail('The capital cannot complete this market trade.');
       Object.assign(city, updated);
-      message = `Merchants ${input.action === 'buy-food' ? 'delivered' : 'bought'} ${CITY_FOOD_TRADE_FOOD} food for ${CITY_FOOD_TRADE_GOLD} gold.`;
+      message = `Merchants ${input.action === 'buy-food' ? 'delivered' : 'bought'} ${cityFoodTradeFood(actor)} food for ${CITY_FOOD_TRADE_GOLD} gold.`;
       break;
     }
     default:

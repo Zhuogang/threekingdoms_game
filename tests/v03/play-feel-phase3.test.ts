@@ -528,13 +528,26 @@ describe('PF-RL-02 retire or repair dead actions', () => {
 
   it('settles 1,500 people with relief and trades 2,000 food per work point', () => {
     const { state, city } = capital();
-    const relieved = applyV03CityAction(state, { cityId: city.id, action: 'relieve' });
+    // Relief and trade scale with the executor's politics (factor 1.0 at politics 60).
+    const executor = state.officers.find((entry) => entry.id === 'caocao')!;
+    executor.politics = 60;
+    const relieved = applyV03CityAction(state, {
+      cityId: city.id,
+      action: 'relieve',
+      officerId: executor.id,
+    });
     expect(relieved.ok, relieved.error).toBe(true);
     const after = relieved.state.cities.find((entry) => entry.id === city.id)!;
     expect(after.population).toBe(city.population + 1500);
     expect(after.food).toBe(city.food - 600);
 
-    const bought = applyV03CityAction(relieved.state, { cityId: city.id, action: 'buy-food' });
+    // The same executor carried out relief; free them so the trade can use the same politics.
+    delete relieved.state.officers.find((entry) => entry.id === executor.id)!.cityWork;
+    const bought = applyV03CityAction(relieved.state, {
+      cityId: city.id,
+      action: 'buy-food',
+      officerId: executor.id,
+    });
     expect(bought.ok, bought.error).toBe(true);
     const stocked = bought.state.cities.find((entry) => entry.id === city.id)!;
     expect(stocked.food - after.food).toBe(2000);

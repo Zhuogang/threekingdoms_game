@@ -1,4 +1,4 @@
-import { cityWorkBusyDays, officerBusyDays } from '../../governance/city-actions';
+import { cityWorkBusyDays, executorStat, officerBusyDays } from '../../governance/city-actions';
 import { message } from '../../i18n';
 import type { V03Officer } from '../../types';
 import type { GameplayContext } from '../hooks/gameplayView';
@@ -9,18 +9,16 @@ import { WorkBudget, type CityWorkAction } from './CityWork';
 
 /**
  * Best executor first: officers still busy with another capital task go last; then force
- * drives recruitment and intellect drives the other city work.
+ * recruits, leadership trains, intellect searches and politics runs the other city work.
  */
 export function rankWorkExecutors<
-  T extends Pick<V03Officer, 'id' | 'force' | 'intellect' | 'cityWork'>,
+  T extends Pick<V03Officer, 'id' | 'force' | 'intellect' | 'leadership' | 'politics' | 'cityWork'>,
 >(officers: readonly T[], action: CityWorkAction, absoluteDay: number): T[] {
+  const stat = executorStat(action);
   const busy = (officer: T) =>
     cityWorkBusyDays(action) > 0 && officerBusyDays({ absoluteDay }, officer) > 0;
   return [...officers].sort(
-    (a, b) =>
-      Number(busy(a)) - Number(busy(b)) ||
-      (action === 'recruit' ? b.force - a.force : b.intellect - a.intellect) ||
-      a.id.localeCompare(b.id),
+    (a, b) => Number(busy(a)) - Number(busy(b)) || b[stat] - a[stat] || a.id.localeCompare(b.id),
   );
 }
 
@@ -52,10 +50,10 @@ export function CityWorkAssignment({
               <strong>{displayName(officer, locale)}</strong>
               <small>
                 {message(locale, 'ui.force.53')} {officer.force} ·{' '}
-                {message(locale, 'ui.intellect.54')} {officer.intellect}
-                {index === 0 && ['recruit', 'search', 'security'].includes(action)
-                  ? ` · ${message(locale, 'flow.recommended')}`
-                  : ''}
+                {message(locale, 'ui.intellect.54')} {officer.intellect} ·{' '}
+                {message(locale, 'stat.leadership')} {officer.leadership} ·{' '}
+                {message(locale, 'stat.politics')} {officer.politics}
+                {index === 0 ? ` · ${message(locale, 'flow.recommended')}` : ''}
               </small>
               <BusyNote context={context} officer={officer} />
             </span>
