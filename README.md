@@ -1,6 +1,6 @@
 # Hegemony of the Three Kingdoms
 
-**Development target: v0.4. Playable baseline: v0.3.** Start new work with the [v0.4 implementation plan](docs/implementation.md): coherent AI and trustworthy rules. The gameplay, saves, screenshots and validation records below describe v0.3; v0.4 implementation is not yet complete.
+**Development target: v0.5** on branch `v0.5`: start with the [v0.5 ledger](docs/v0.5/README.md#resume-here), which links the plan, the implementation briefs and the current status. v0.4 is the previous target and v0.3 the playable baseline; the gameplay, saves, screenshots and validation records below still describe v0.3 unless the ledger says otherwise.
 
 A single-player Three Kingdoms strategy game with Chinese/English UI, a daily campaign, autonomous governors, travelling armies and field battles on 15 painted 48×32 maps. The game has two scenarios (190 and 200), six playable houses per scenario, 24 cities and a 98-officer catalog with scenario-specific availability and annual appearances.
 

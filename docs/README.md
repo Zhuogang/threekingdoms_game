@@ -1,6 +1,6 @@
 # Documentation
 
-Updated October 29, 2026. **v0.4 is the active development target; v0.3 remains the playable baseline.** The [v0.4 implementation plan](implementation.md) is the source of truth for new work. The [v0.4 ticket ledger](v0.4/README.md) records implementation progress and validation; planned behavior is not a release claim.
+Updated November 5, 2026. **v0.5 is the active development target on branch `v0.5`; start at the [v0.5 ledger](v0.5/README.md#resume-here).** The v0.4 plan and ledger below record the previous target; v0.3 remains the documented gameplay baseline.
 
 ## Start v0.4 work
 
