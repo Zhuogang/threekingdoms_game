@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { formatDistance } from '../../i18n/units';
 import { Button, Input, Select } from '../kit';
 import { message } from '../../i18n';
 
@@ -172,7 +173,7 @@ export function OrderForm({
       )}
       {selectedRoute ? (
         <div className="v03-route-preview">
-          <strong>{selectedRoute.roadKmNominal} km</strong>
+          <strong>{formatDistance(selectedRoute.roadKmNominal, locale)}</strong>
           <span>
             {t.estimatedArrival}:{' '}
             {absoluteDateLabel(

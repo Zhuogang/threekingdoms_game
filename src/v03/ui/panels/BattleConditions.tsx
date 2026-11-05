@@ -1,4 +1,5 @@
 import { Button } from '../kit';
+import { formatGrain } from '../../i18n/units';
 import { message } from '../../i18n';
 import { movementBudget } from '../../battle';
 
@@ -30,8 +31,8 @@ export function BattleConditions({
         </span>
         <span>
           {message(locale, 'battleFood', {
-            own: battleState.supplies[battleState.playerSide].toLocaleString(),
-            enemy: battleState.supplies[enemySide].toLocaleString(),
+            own: formatGrain(battleState.supplies[battleState.playerSide], locale),
+            enemy: formatGrain(battleState.supplies[enemySide], locale),
           })}
         </span>
         {currentUnit ? (

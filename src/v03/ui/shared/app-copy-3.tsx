@@ -1,6 +1,6 @@
 import { OFFICER_IDENTITIES } from '../../content/officerIdentity';
 import { Button } from '../kit';
-import { message } from '../../i18n';
+import { formatDate } from '../../i18n/units';
 import { useEffect, useRef, type ReactNode } from 'react';
 
 import { projectCampaignPoint, projectJourneyPosition, type CityId } from '../../geography';
@@ -16,7 +16,7 @@ export function absoluteDateLabel(
   locale: V03Locale,
 ): string {
   const date = gameDate({ startYear, absoluteDay });
-  return message(locale, 'ui.month.day.137', { p0: date.year, p1: date.month, p2: date.day });
+  return formatDate(date, locale);
 }
 
 /** Order deadlines are entered as "within N days"; blank means no deadline. */

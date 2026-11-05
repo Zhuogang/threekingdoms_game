@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatGrain, formatMoney } from '../../i18n/units';
 import { AlertTriangle, Coins, Hammer, Swords, Users, Wheat, ScrollText } from 'lucide-react';
 import { message } from '../../i18n';
 import { forecastCityEconomy } from '../../campaign/economy';
@@ -107,14 +108,14 @@ export function CampaignStatus({
         </Button>
         <span className="v03-status-item" title={message(locale, 'status.netHint')}>
           <Coins size={14} aria-hidden="true" />
-          {summary.gold.toLocaleString()} ({signed(summary.goldNet)})
+          {formatMoney(summary.gold, locale)} ({signed(summary.goldNet)})
         </span>
         <span
           className={`v03-status-item ${summary.foodNet < 0 ? 'is-warning' : ''}`}
           title={message(locale, 'status.netHint')}
         >
           <Wheat size={14} aria-hidden="true" />
-          {summary.food.toLocaleString()} ({signed(summary.foodNet)})
+          {formatGrain(summary.food, locale)} ({signed(summary.foodNet)})
         </span>
         {summary.threats.map((threat) => (
           <Button

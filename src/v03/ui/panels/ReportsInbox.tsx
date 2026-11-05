@@ -1,4 +1,6 @@
 import { message } from '../../i18n';
+import type { V03Locale } from '../../wiki';
+import { formatGrain, formatMen, formatMoney } from '../../i18n/units';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { eventTier } from '../../campaign/reports';
 import { localizedEvent } from '../shared/app-copy-2';
@@ -9,6 +11,8 @@ import { pendingCityGovernance } from '../../governance/conquest';
 
 export function ReportsInbox({ context }: { context: GameplayContext }) {
   const { state, locale, dispatch, setShowReports } = context;
+  const delta = (value: number, format: (n: number, l: V03Locale) => string) =>
+    `${value > 0 ? '+' : value < 0 ? '−' : ''}${format(Math.abs(value), locale)}`;
   const reports = state.events
     .filter((event) => !event.acknowledged && eventTier(state, event) !== 'chronicle')
     .sort((a, b) => b.absoluteDay - a.absoluteDay);
@@ -71,9 +75,9 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
                             .join(', ')}
                         </small>
                       </th>
-                      <td>{row.gold}</td>
-                      <td>{row.food}</td>
-                      <td>{row.troops}</td>
+                      <td>{delta(row.gold, formatMoney)}</td>
+                      <td>{delta(row.food, formatGrain)}</td>
+                      <td>{delta(row.troops, formatMen)}</td>
                     </tr>
                   );
                 })}
@@ -82,7 +86,12 @@ export function ReportsInbox({ context }: { context: GameplayContext }) {
               <tr>
                 <th>{message(locale, 'inbox.total')}</th>
                 {(['gold', 'food', 'troops'] as const).map((key) => (
-                  <td key={key}>{event.monthlySummary!.reduce((sum, row) => sum + row[key], 0)}</td>
+                  <td key={key}>
+                    {delta(
+                      event.monthlySummary!.reduce((sum, row) => sum + row[key], 0),
+                      { gold: formatMoney, food: formatGrain, troops: formatMen }[key],
+                    )}
+                  </td>
                 ))}
               </tr>
             </tfoot>

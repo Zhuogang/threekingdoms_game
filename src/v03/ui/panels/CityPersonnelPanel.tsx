@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatGrain, formatMen } from '../../i18n/units';
 import { executeV03Command } from '../../commands';
 import { cityPersonnelSummary, PERSONNEL_RULES } from '../../campaign/personnel';
 import { PILOT_LOGISTICS_RATES } from '../../calendar';
@@ -100,32 +101,32 @@ export function CityPersonnelPanel({
         values={[
           {
             label: locale === 'zh' ? '可用守军' : 'Ready garrison',
-            value: summary.available.toLocaleString(),
+            value: formatMen(summary.available, locale),
           },
           {
             label: locale === 'zh' ? '己方伤兵' : 'Own wounded',
-            value: summary.wounded.toLocaleString(),
+            value: formatMen(summary.wounded, locale),
           },
           {
             label: locale === 'zh' ? '俘虏人员' : 'Captive personnel',
-            value: summary.prisoners.toLocaleString(),
+            value: formatMen(summary.prisoners, locale),
           },
           {
             label:
               locale === 'zh'
                 ? '明日预计恢复（含俘虏）'
                 : 'Expected recovery tomorrow (including captives)',
-            value: tomorrow.toLocaleString(),
+            value: formatMen(tomorrow, locale),
           },
           {
-            label: locale === 'zh' ? '每月军事粮耗估计' : 'Estimated monthly military food',
-            value: monthFood.toLocaleString(),
+            label: locale === 'zh' ? '每月军事粮耗估计' : 'Estimated monthly military grain',
+            value: formatGrain(monthFood, locale),
           },
           {
             label:
               locale === 'zh'
                 ? '现粮可供天数（未计收入）'
-                : 'Days of food at current strength (before income)',
+                : 'Days of grain at current strength (before income)',
             value: summary.foodHeadcount
               ? Math.floor(
                   city.food / (summary.foodHeadcount * PILOT_LOGISTICS_RATES.cityFoodPerTroopDay),

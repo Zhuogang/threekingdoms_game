@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { formatGrain } from '../../i18n/units';
 import { officerTransferReason, previewOfficerTransfer } from '../../governance/officer-transfer';
 import { OfficerPortrait } from '../../rendering/OfficerPortrait';
 import { message } from '../../i18n';
@@ -118,8 +119,8 @@ export function OfficerTransfer({
             value: plan?.route.estimatedDays ?? '—',
           },
           {
-            label: locale === 'zh' ? '去返路粮' : 'Travel & return food',
-            value: plan?.food.toLocaleString() ?? '—',
+            label: locale === 'zh' ? '去返路粮' : 'Travel & return grain',
+            value: plan ? formatGrain(plan.food, locale) : '—',
           },
           { label: message(locale, 'flow.workPointCost'), value: 0 },
         ]}

@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { formatGrain } from '../../i18n/units';
 
 import {
   movementBudget,
@@ -40,10 +41,11 @@ export function BattleReadout({
       <div>
         <small>{message(locale, 'ui.food.yours.enemy.80')}</small>
         <strong>
-          {battleState.supplies[battleState.playerSide].toLocaleString()} /{' '}
-          {battleState.supplies[
-            battleState.playerSide === 'attacker' ? 'defender' : 'attacker'
-          ].toLocaleString()}
+          {formatGrain(battleState.supplies[battleState.playerSide], locale)} /{' '}
+          {formatGrain(
+            battleState.supplies[battleState.playerSide === 'attacker' ? 'defender' : 'attacker'],
+            locale,
+          )}
         </strong>
       </div>
       {currentUnit ? (

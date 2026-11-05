@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { formatGrain, formatMoney } from '../../i18n/units';
 import type { V03DomainEvent, V03GameState } from '../../types';
 import type { V03Locale } from '../../wiki';
 import { Button } from '../kit';
@@ -166,8 +167,8 @@ export function BattleOutcome({
         </div>
       ))}
       <p>
-        {message(locale, 'ui.loot.44')}: {message(locale, 'ui.gold.45')} {report.loot.gold} ·{' '}
-        {message(locale, 'ui.food.46')} {report.loot.food}
+        {message(locale, 'ui.loot.44')}: {formatMoney(report.loot.gold, locale)} ·{' '}
+        {formatGrain(report.loot.food, locale)}
       </p>
       {report.returnArrivalDay !== null ? (
         <p>

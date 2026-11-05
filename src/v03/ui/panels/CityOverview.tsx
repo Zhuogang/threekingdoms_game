@@ -1,4 +1,6 @@
 import { message } from '../../i18n';
+import { formatGrain, formatMen, formatMoney, formatPopulation } from '../../i18n/units';
+import type { V03Locale } from '../../wiki';
 import { isCityCommitted } from '../../governance/commitments';
 import { forecastCityEconomy } from '../../campaign/economy';
 import { cityDevelopmentCaps } from '../../governance/city-actions';
@@ -44,15 +46,19 @@ export function CityOverview({
     : city.garrisonTroops;
   // The same next-settlement forecast governors use, shown to the player for their own cities.
   const economy = friendly && !field ? forecastCityEconomy(state, city.id) : null;
-  const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value).toLocaleString()}`;
+  const signed = (value: number, format: (n: number, l: V03Locale) => string) =>
+    `${value >= 0 ? '+' : '−'}${format(Math.abs(value), locale)}`;
   const flow = (key: 'gold' | 'food') =>
     economy ? (
       <>
-        {signed(economy.production[key] - economy.upkeep[key])}
+        {signed(
+          economy.production[key] - economy.upkeep[key],
+          key === 'gold' ? formatMoney : formatGrain,
+        )}
         <small>
           {message(locale, 'city.flowDetail', {
-            income: economy.production[key].toLocaleString(),
-            upkeep: economy.upkeep[key].toLocaleString(),
+            income: (key === 'gold' ? formatMoney : formatGrain)(economy.production[key], locale),
+            upkeep: (key === 'gold' ? formatMoney : formatGrain)(economy.upkeep[key], locale),
           })}
         </small>
       </>
@@ -139,20 +145,23 @@ export function CityOverview({
       </div>
       <StatGrid
         values={[
-          { label: t.gold, value: city.gold.toLocaleString() },
-          { label: t.food, value: (field?.defenderFood ?? city.food).toLocaleString() },
+          { label: t.gold, value: formatMoney(city.gold, locale) },
+          { label: t.food, value: formatGrain(field?.defenderFood ?? city.food, locale) },
           ...(economy
             ? [
                 { label: message(locale, 'city.monthlyGold'), value: flow('gold') },
                 { label: message(locale, 'city.monthlyFood'), value: flow('food') },
               ]
             : []),
-          { label: t.garrison, value: troops.toLocaleString() },
+          { label: t.garrison, value: formatMen(troops, locale) },
           {
             label: message(locale, 'city.reserveNotDefending'),
-            value: city.reserve.toLocaleString(),
+            value: formatMen(city.reserve, locale),
           },
-          { label: message(locale, 'ui.population.94'), value: city.population.toLocaleString() },
+          {
+            label: message(locale, 'ui.population.94'),
+            value: formatPopulation(city.population, locale),
+          },
           { label: message(locale, 'flow.publicOrder'), value: `${city.loyalty}%` },
           {
             label: message(locale, 'flow.farming'),

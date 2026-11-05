@@ -135,7 +135,7 @@ for (const locale of ['zh', 'en']) {
       group.getByRole('button', { name: /确认调动|Confirm transfer/, exact: true }),
     ).toBeDisabled();
     await expect(group.locator('.v03-action-reason')).toContainText(
-      locale === 'zh' ? '粮食' : 'food',
+      locale === 'zh' ? '粮' : /food|grain/,
     );
     await page.keyboard.press('Escape');
     expect(await saved(page)).toEqual(state);

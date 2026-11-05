@@ -1,4 +1,5 @@
 import { Button, Select } from '../kit';
+import { formatGrain } from '../../i18n/units';
 import { message } from '../../i18n';
 
 import { canAppointGovernor } from '../../governance/authority';
@@ -128,7 +129,7 @@ export function GovernorAppointment({
             : 'Contingent travels with the officer (including wounded)'}
           : {preview.transfer.party.troopCount} · {preview.transfer.route.estimatedDays}{' '}
           {locale === 'zh' ? '日；去返路粮' : 'days; outbound/return provisions'}:{' '}
-          {preview.transfer.food}
+          {formatGrain(preview.transfer.food, locale)}
         </p>
       ) : null}
       <PendingGovernor context={context} />

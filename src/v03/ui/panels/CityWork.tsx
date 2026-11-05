@@ -1,4 +1,5 @@
 import { PERSONNEL as PERSONNEL_TABLE } from '../../balance';
+import { formatGrain, formatMoney, formatPopulation } from '../../i18n/units';
 import type { TroopType } from '../../types';
 import { TROOP_TYPES } from '../../campaign/troop-experience';
 import { troopName } from '../../rendering/presentation';
@@ -163,18 +164,21 @@ export function CityWork({
     before: number | string,
     after: number | string | undefined,
     showUnchanged = false,
+    format: (value: number) => string = (value) => value.toLocaleString(),
   ) => {
     if (after !== undefined && (before !== after || showUnchanged))
       changes.push({
         label,
-        value: `${before.toLocaleString()} → ${after.toLocaleString()}`,
+        value: `${typeof before === 'number' ? format(before) : before} → ${typeof after === 'number' ? format(after) : after}`,
       });
   };
   if (afterCity) {
-    add(t.gold, city.gold, afterCity.gold);
-    add(t.food, city.food, afterCity.food);
+    add(t.gold, city.gold, afterCity.gold, false, (n) => formatMoney(n, locale));
+    add(t.food, city.food, afterCity.food, false, (n) => formatGrain(n, locale));
     add(message(locale, 'ui.reserve.soldiers.93'), city.reserve, afterCity.reserve);
-    add(message(locale, 'ui.population.94'), city.population, afterCity.population);
+    add(message(locale, 'ui.population.94'), city.population, afterCity.population, false, (n) =>
+      formatPopulation(n, locale),
+    );
     add(t.loyalty, city.loyalty, afterCity.loyalty);
     add(message(locale, 'flow.farming'), city.farming, afterCity.farming);
     add(message(locale, 'flow.commerce'), city.commerce, afterCity.commerce);
@@ -259,7 +263,7 @@ export function CityWork({
                 },
                 {
                   label: locale === 'zh' ? '招募费用' : 'Recruitment gold',
-                  value: recruitmentQuote(city, officer.force, troopType).gold.toLocaleString(),
+                  value: formatMoney(recruitmentQuote(city, officer.force, troopType).gold, locale),
                 },
               ]}
             />
@@ -352,8 +356,8 @@ export function CityWork({
       {lasting ? (
         <p className="v03-work-lasting">
           {message(locale, 'work.lasting', {
-            gold: `${lasting.gold >= 0 ? '+' : '−'}${Math.abs(lasting.gold).toLocaleString()}`,
-            food: `${lasting.food >= 0 ? '+' : '−'}${Math.abs(lasting.food).toLocaleString()}`,
+            gold: `${lasting.gold >= 0 ? '+' : '−'}${formatMoney(Math.abs(lasting.gold), locale)}`,
+            food: `${lasting.food >= 0 ? '+' : '−'}${formatGrain(Math.abs(lasting.food), locale)}`,
           })}
           {lasting.payback
             ? ` ${message(locale, 'work.payback', { months: lasting.payback })}`

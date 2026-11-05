@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { formatMoney } from '../../i18n/units';
 import {
   applyV03CityAction,
   cityActionWorkCost,
@@ -127,7 +128,7 @@ export function OfficerGroupWork({
       <StatGrid
         values={[
           { label: message(locale, 'flow.selectedOfficers'), value: selected.length },
-          { label: message(locale, 'flow.totalGold'), value: goldCost.toLocaleString() },
+          { label: message(locale, 'flow.totalGold'), value: formatMoney(goldCost, locale) },
           { label: message(locale, 'flow.workPointCost'), value: cityActionWorkCost(action) },
         ]}
       />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatGrain } from '../../i18n/units';
 import { pendingCityGovernance, personalRuleReason } from '../../governance/conquest';
 import { previewGovernorTransfer } from '../../governance/appointments';
 import { canAppointGovernor } from '../../governance/authority';
@@ -153,7 +154,7 @@ function CityGovernanceDialog({
                 <p>
                   {preview.transfer.route.estimatedDays}{' '}
                   {zh ? '日行程；另备去返路粮' : 'travel days; outbound/return provisions'}{' '}
-                  {preview.transfer.food}
+                  {formatGrain(preview.transfer.food, locale)}
                 </p>
               ) : null}
             </>

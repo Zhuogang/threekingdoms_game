@@ -1,4 +1,4 @@
-import { message } from '../../i18n';
+import { formatDate } from '../../i18n/units';
 
 import { v03CurrentDate } from '../../engine';
 
@@ -24,9 +24,5 @@ export function cityScale(cityId: string): CampaignCityVisual['scale'] {
 
 export function dateLabel(state: V03GameState, locale: V03Locale): string {
   const date = v03CurrentDate(state);
-  return message(locale, 'ui.month.day.137', {
-    p0: date.year,
-    p1: date.month,
-    p2: date.dayOfMonth,
-  });
+  return formatDate(date, locale);
 }

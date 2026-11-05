@@ -37,8 +37,8 @@ async function resources(page: Page, lang = 'en') {
     .locator('.v03-supply-targets')
     .getByRole('button', { name: lang === 'zh' ? '陈留' : 'Chenliu', exact: true })
     .click();
-  await page.getByLabel(lang === 'zh' ? '金钱' : 'Gold', { exact: true }).fill('100');
-  await page.getByLabel(lang === 'zh' ? '粮食' : 'Food', { exact: true }).fill('200');
+  await page.getByLabel(lang === 'zh' ? '钱' : 'Cash', { exact: true }).fill('100');
+  await page.getByLabel(lang === 'zh' ? '粮' : 'Grain', { exact: true }).fill('200');
 }
 for (const width of [390, 1366, 1920])
   for (const lang of ['en', 'zh']) {
@@ -172,7 +172,7 @@ for (const answer of ['reduce', 'wait', 'cancel'] as const)
     const before = ready();
     await load(page, before);
     await resources(page);
-    await page.getByLabel('Gold', { exact: true }).fill('10000');
+    await page.getByLabel('Cash', { exact: true }).fill('10000');
     await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
     await page.getByRole('button', { name: 'Submit request', exact: true }).click();
     const proposal = await current(page);
@@ -184,12 +184,12 @@ for (const answer of ['reduce', 'wait', 'cancel'] as const)
     if (answer === 'reduce') {
       await page.getByRole('button', { name: 'Accept reduced plan', exact: true }).click();
       await expect(page.locator('.v03-supply-reduce')).toBeVisible();
-      await page.getByLabel('Gold to send', { exact: true }).fill('10000');
+      await page.getByLabel('Cash to send', { exact: true }).fill('10000');
       await page.locator('.v03-supply-reduce').getByRole('button').click();
       await expect(page.locator('.v03-window-feedback')).toBeVisible();
       expect(await current(page)).toEqual(proposal);
-      await page.getByLabel('Gold to send', { exact: true }).fill('50');
-      await page.getByLabel('Food to send', { exact: true }).fill('100');
+      await page.getByLabel('Cash to send', { exact: true }).fill('50');
+      await page.getByLabel('Grain to send', { exact: true }).fill('100');
       await page.locator('.v03-supply-reduce').getByRole('button').click();
     } else
       await page

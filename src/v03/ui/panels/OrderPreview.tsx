@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { formatDistance, formatGrain, formatMen, formatMoney } from '../../i18n/units';
 
 import { ORDER_REASON_COPY } from '../shared/app-copy-1';
 
@@ -34,26 +35,26 @@ export function OrderPreview({
       {'executable' in orderPreview.preview ? (
         <>
           <span>
-            {t.requested}: {t.gold} {orderPreview.preview.requested.gold.toLocaleString()} ·{' '}
-            {t.food} {orderPreview.preview.requested.food.toLocaleString()} · {t.troops}{' '}
-            {orderPreview.preview.requested.troops.toLocaleString()}
+            {t.requested}: {formatMoney(orderPreview.preview.requested.gold, locale)} ·{' '}
+            {formatGrain(orderPreview.preview.requested.food, locale)} ·{' '}
+            {formatMen(orderPreview.preview.requested.troops, locale)}
           </span>
           <strong>
-            {t.planAvailable}: {t.gold} {orderPreview.preview.executable.gold.toLocaleString()} ·{' '}
-            {t.food} {orderPreview.preview.executable.food.toLocaleString()} · {t.troops}{' '}
-            {orderPreview.preview.executable.troops.toLocaleString()}
+            {t.planAvailable}: {formatMoney(orderPreview.preview.executable.gold, locale)} ·{' '}
+            {formatGrain(orderPreview.preview.executable.food, locale)} ·{' '}
+            {formatMen(orderPreview.preview.executable.troops, locale)}
           </strong>
           <span>
-            {t.planGap}: {t.gold} {orderPreview.preview.deficit.gold.toLocaleString()} · {t.food}{' '}
-            {orderPreview.preview.deficit.food.toLocaleString()} · {t.troops}{' '}
-            {orderPreview.preview.deficit.troops.toLocaleString()}
+            {t.planGap}: {formatMoney(orderPreview.preview.deficit.gold, locale)} ·{' '}
+            {formatGrain(orderPreview.preview.deficit.food, locale)} ·{' '}
+            {formatMen(orderPreview.preview.deficit.troops, locale)}
           </span>
           {orderPreview.preview.travelFood > 0 ? (
             <span>
               {locale === 'zh'
                 ? '另需路粮（从出发城扣除）'
                 : 'Additional travel provisions (debited at source)'}
-              : {orderPreview.preview.travelFood.toLocaleString()}
+              : {formatGrain(orderPreview.preview.travelFood, locale)}
               {orderPreview.preview.travelFoodDeficit > 0
                 ? ` · ${t.planGap}: ${orderPreview.preview.travelFoodDeficit.toLocaleString()}`
                 : ''}
@@ -63,19 +64,19 @@ export function OrderPreview({
       ) : (
         <>
           <span>
-            {t.requested}: {orderPreview.preview.requestedTroops.toLocaleString()} {t.troops} ·{' '}
-            {t.food} {orderPreview.preview.requestedFood.toLocaleString()}
+            {t.requested}: {formatMen(orderPreview.preview.requestedTroops, locale)} ·{' '}
+            {formatGrain(orderPreview.preview.requestedFood, locale)}
           </span>
           <strong>
-            {t.planAvailable}: {orderPreview.preview.executableTroops.toLocaleString()} {t.troops} ·{' '}
-            {t.food} {orderPreview.preview.executableFood.toLocaleString()}
+            {t.planAvailable}: {formatMen(orderPreview.preview.executableTroops, locale)} ·{' '}
+            {formatGrain(orderPreview.preview.executableFood, locale)}
           </strong>
           <span>
-            {t.planGap}: {orderPreview.preview.deficitTroops.toLocaleString()} {t.troops} · {t.food}{' '}
-            {Math.max(
-              0,
-              orderPreview.preview.requestedFood - orderPreview.preview.executableFood,
-            ).toLocaleString()}
+            {t.planGap}: {formatMen(orderPreview.preview.deficitTroops, locale)} ·{' '}
+            {formatGrain(
+              Math.max(0, orderPreview.preview.requestedFood - orderPreview.preview.executableFood),
+              locale,
+            )}
           </span>
         </>
       )}
@@ -96,7 +97,7 @@ export function OrderPreview({
       </small>
       {orderPreview.preview.route ? (
         <small>
-          {t.routeDistance}: {orderPreview.preview.route.roadKmNominal.toLocaleString()} km ·{' '}
+          {t.routeDistance}: {formatDistance(orderPreview.preview.route.roadKmNominal, locale)} ·{' '}
           {orderPreview.preview.route.estimatedDays} {message(locale, 'ui.days.15')}
           {orderPreview.preview.route.routeCityIds?.length ? (
             <>

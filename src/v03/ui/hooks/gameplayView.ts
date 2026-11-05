@@ -1,4 +1,5 @@
 import { troopDisplayType, troopName } from '../../rendering/presentation';
+import { formatGrain, formatMen, formatMoney } from '../../i18n/units';
 import { terrainLabel, weatherLabel } from '../../i18n/formatters';
 import { message } from '../../i18n';
 
@@ -145,9 +146,9 @@ export function gameplayView(context: ApplicationBase & { state: V03GameState })
       p1: target,
       p2: status,
       p3: eta,
-      p4: troops.toLocaleString(),
-      p5: (cargo.gold ?? 0).toLocaleString(),
-      p6: (cargo.food ?? 0).toLocaleString(),
+      p4: formatMen(troops, locale),
+      p5: formatMoney(cargo.gold ?? 0, locale),
+      p6: formatGrain(cargo.food ?? 0, locale),
     });
   };
   const journeyCandidates = state.journeys.flatMap((journey) => {

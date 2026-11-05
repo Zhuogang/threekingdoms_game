@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { formatGrain } from '../../i18n/units';
 import { useEffect, useMemo, useState } from 'react';
 import type { GameplayContext } from '../hooks/gameplayView';
 import { armyPreview, marchDestinationBlock } from '../../governance/army';
@@ -182,8 +183,8 @@ export function ArmyBuilder({ context }: { context: GameplayContext }) {
             {
               label: message(locale, 'army.provisions'),
               value: message(locale, 'army.provisionsValue', {
-                need: (Number(foodOverride) || preview.food).toLocaleString(),
-                have: availableFood.toLocaleString(),
+                need: formatGrain(Number(foodOverride) || preview.food, locale),
+                have: formatGrain(availableFood, locale),
               }),
             },
           ]}

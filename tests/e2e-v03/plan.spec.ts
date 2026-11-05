@@ -66,7 +66,7 @@ test('rival combat permits real city work and diplomacy in EN/ZH', async ({ page
     await language(page, locale);
     await showCityManagement(page);
     const farm = page.getByRole('button', {
-      name: locale === 'zh' ? '发展农田 · 80 金' : 'Improve farmland · 80 gold',
+      name: locale === 'zh' ? '发展农田 · 80 钱' : 'Improve farmland · 80 cash',
       exact: true,
     });
     await expect(farm).toBeEnabled();

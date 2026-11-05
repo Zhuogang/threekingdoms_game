@@ -1,4 +1,5 @@
 import { message } from '../../i18n';
+import { formatDistance } from '../../i18n/units';
 import { useEffect } from 'react';
 import {
   eventTier,
@@ -364,7 +365,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
             composition: { troopTypes: [] },
           });
           return route
-            ? ` · ${route.roadKmNominal} km · ${route.estimatedDays} ${message(locale, 'ui.days.15')}`
+            ? ` · ${formatDistance(route.roadKmNominal, locale)} · ${route.estimatedDays} ${message(locale, 'ui.days.15')}`
             : '';
         })()}`,
       };
@@ -410,7 +411,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
         id: route.id,
         points: geometry.points,
         label: message(locale, 'ui.est.km.baseline.days.schematic.city.link.16', {
-          p0: geometry.nominalRoadKm,
+          p0: formatDistance(geometry.nominalRoadKm, locale),
           p1: geometry.baselineDaysNominal,
         }),
         display: 'route',
@@ -428,7 +429,7 @@ export function useCommands(context: ReturnType<typeof useGameSession>) {
               id: 'selected-route',
               points: selectedGeometry.points,
               label: message(locale, 'ui.est.km.this.party.eta.days.schematic.city.link.17', {
-                p0: requestedRoutePath.roadKmNominal,
+                p0: formatDistance(requestedRoutePath.roadKmNominal, locale),
                 p1: requestedRoutePath.estimatedDays,
               }),
               display: 'selected',

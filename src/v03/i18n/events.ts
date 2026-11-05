@@ -1,4 +1,5 @@
 import { message } from './';
+import { formatDate, formatGrain, formatMoney } from './units';
 import type { V03DomainEvent, V03GameState } from '../types';
 import { gameDate } from '../types';
 import type { V03Locale } from '../wiki';
@@ -126,11 +127,7 @@ export function formatEvent(
         source: name(p.sourceCityId, 'cities'),
         city: name(p.targetCityId, 'cities'),
         troops: Number(p.troops).toLocaleString(locale === 'zh' ? 'zh-CN' : 'en-US'),
-        date: message(locale, 'ui.month.day.137', {
-          p0: arrival.year,
-          p1: arrival.month,
-          p2: arrival.day,
-        }),
+        date: formatDate(arrival, locale),
         days: Math.max(0, Number(p.arrivalDay) - event.absoluteDay),
       }),
     };
@@ -190,8 +187,8 @@ export function formatEvent(
       title: locale === 'zh' ? '归途无援，队伍投降' : 'Stranded return party surrendered',
       detail:
         locale === 'zh'
-          ? `${name(p.factionId, 'factions')}的返程队伍在${name(p.cityId, 'cities')}投降：本势力已无城池、在途出征或未结束的战斗。武将及其健卒、伤兵转为俘虏。接收方取得 ${p.gold} 金、${p.food} 粮；其中 ${p.waitingGold} 金、${p.waitingFood} 粮仍在城外等待仓储空间。`
-          : `${name(p.factionId, 'factions')}'s returning party surrendered at ${name(p.cityId, 'cities')}: its house has no cities, active campaigns or battles. Officers retain their healthy and wounded troops in captivity. The receiving city takes ${p.gold} gold and ${p.food} food; ${p.waitingGold} gold and ${p.waitingFood} food remain outside awaiting storage space.`,
+          ? `${name(p.factionId, 'factions')}的返程队伍在${name(p.cityId, 'cities')}投降：本势力已无城池、在途出征或未结束的战斗。武将及其健卒、伤兵转为俘虏。接收方取得 ${formatMoney(Number(p.gold), locale)}、${formatGrain(Number(p.food), locale)}；其中 ${formatMoney(Number(p.waitingGold), locale)}、${formatGrain(Number(p.waitingFood), locale)}仍在城外等待仓储空间。`
+          : `${name(p.factionId, 'factions')}'s returning party surrendered at ${name(p.cityId, 'cities')}: its house has no cities, active campaigns or battles. Officers retain their healthy and wounded troops in captivity. The receiving city takes ${formatMoney(Number(p.gold), locale)} and ${formatGrain(Number(p.food), locale)}; ${formatMoney(Number(p.waitingGold), locale)} and ${formatGrain(Number(p.waitingFood), locale)} remain outside awaiting storage space.`,
     };
   if (event.code === 'journey.captured')
     return {

@@ -253,11 +253,11 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
   });
 
   const date = page.locator('.v03-date strong');
-  await expect(date).toContainText('Day 1');
+  await expect(date).toContainText(/day 1$/);
   await page.getByRole('button', { name: 'Advance 1 day', exact: true }).click();
-  await expect(date).toContainText('Day 2');
+  await expect(date).toContainText(/day 2$/);
   await page.getByRole('button', { name: 'Advance 10 days', exact: true }).click();
-  await expect(date).toContainText('Day 12');
+  await expect(date).toContainText(/day 12$/);
 
   await openMenu(page);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
@@ -267,7 +267,7 @@ test('starts a campaign, loads the atlas, advances time, saves and rejects inval
 
   await page.reload();
   await expect(page.getByRole('button', { name: 'Advance 1 day', exact: true })).toBeVisible();
-  await expect(date).toContainText('Day 12');
+  await expect(date).toContainText(/day 12$/);
 
   await importFile(
     page,
@@ -289,9 +289,9 @@ test('charges work only for relief while preserving reward and equipment costs',
   await importFile(page, 'capital-actions.save', createCapitalActionsSave());
   await showOfficer(page);
 
-  const reward = page.getByRole('button', { name: /Reward officer · 100 gold/ }).first();
-  const equipment = page.getByRole('button', { name: /Issue fine arms · 180 gold/ }).first();
-  const relief = page.getByRole('button', { name: /Relieve people · 80 gold/ });
+  const reward = page.getByRole('button', { name: /Reward officer · 100 cash/ }).first();
+  const equipment = page.getByRole('button', { name: /Issue fine arms · 180 cash/ }).first();
+  const relief = page.getByRole('button', { name: /Relieve people · 80 cash/ });
   await expect(reward).toBeEnabled();
   await expect(equipment).toBeEnabled();
   await reward.click();

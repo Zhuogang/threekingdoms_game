@@ -84,7 +84,9 @@ for (const width of [390, 1366, 1920])
       await farm.click();
       await chooseWorkExecutor(page);
       await expect(page.locator('#campaign-window-title')).toBeFocused();
-      await expect(page.locator('.v03-work-detail')).toContainText('5,000 → 4,920');
+      await expect(page.locator('.v03-work-detail')).toContainText(
+        lang === 'zh' ? '5,000 钱 → 4,920 钱' : '5,000 cash → 4,920 cash',
+      );
       expect(await current(page)).toEqual(before);
       // The review opens directly with the recommended executor, so one Escape returns to the city.
       await page.keyboard.press('Escape');
@@ -151,8 +153,8 @@ test('each city task returns to affairs and retains the existing rule result', a
     ['recruit', /Recruit soldiers/],
     ['security', /Restore public order/],
     ['feast', /Host a feast/],
-    ['buy-food', /Buy 2,000 food/],
-    ['sell-food', /Sell 2,000 food/],
+    ['buy-food', /Buy 2,000 shi/],
+    ['sell-food', /Sell 2,000 shi/],
     ['relieve', /Relieve people/],
   ];
   for (const [action, name] of actions) {

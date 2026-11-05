@@ -1,4 +1,5 @@
 import { Button, Input } from '../kit';
+import { formatGrain, formatMen, formatMoney } from '../../i18n/units';
 import { orderLifecycle } from '../../governance/order-lifecycle';
 import { message } from '../../i18n';
 
@@ -121,18 +122,18 @@ export function OrdersInbox({
               <small>{localizeOrderMessage(order.message, locale)}</small>
               {resourceOrder && requestedCargo && proposedCargo ? (
                 <small>
-                  {t.requested}: {t.gold} {requestedCargo.gold.toLocaleString()} · {t.food}{' '}
-                  {requestedCargo.food.toLocaleString()} · {t.troops}{' '}
-                  {requestedCargo.troops.toLocaleString()}
+                  {t.requested}: {formatMoney(requestedCargo.gold, locale)} ·{' '}
+                  {formatGrain(requestedCargo.food, locale)} ·{' '}
+                  {formatMen(requestedCargo.troops, locale)}
                   <br />
-                  {t.planAvailable}: {t.gold} {proposedCargo.gold.toLocaleString()} · {t.food}{' '}
-                  {proposedCargo.food.toLocaleString()} · {t.troops}{' '}
-                  {proposedCargo.troops.toLocaleString()}
+                  {t.planAvailable}: {formatMoney(proposedCargo.gold, locale)} ·{' '}
+                  {formatGrain(proposedCargo.food, locale)} ·{' '}
+                  {formatMen(proposedCargo.troops, locale)}
                 </small>
               ) : !resourceOrder ? (
                 <small>
-                  {t.requested}: {requestedTroopCount.toLocaleString()} {t.troops} ·{' '}
-                  {t.planAvailable}: {proposedTroopCount.toLocaleString()} {t.troops}
+                  {t.requested}: {formatMen(requestedTroopCount, locale)} · {t.planAvailable}:{' '}
+                  {formatMen(proposedTroopCount, locale)}
                 </small>
               ) : null}
               {journey && ['outbound', 'waiting'].includes(journey.status) ? (

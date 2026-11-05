@@ -164,7 +164,7 @@ test('RV03 clears successful-import drafts and preserves them on failed import',
     .locator('.v03-supply-targets')
     .getByRole('button', { name: 'Chenliu', exact: true })
     .click();
-  await page.getByLabel('Gold', { exact: true }).fill('500000');
+  await page.getByLabel('Cash', { exact: true }).fill('500000');
   await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   const preview = page.locator('.v03-route-preview[aria-live="polite"]');
@@ -445,7 +445,7 @@ test('RV09 and RV10 expose current conditions and make withdrawal cancelable in 
       exact: true,
     });
     await expect(conditions).toContainText(language === 'en' ? /weather/i : /天气/);
-    await expect(conditions).toContainText(language === 'en' ? /suppl|food/i : /粮/);
+    await expect(conditions).toContainText(language === 'en' ? /suppl|grain/i : /粮/);
     if (language === 'zh') {
       // Your formations and the enemy's are listed separately (play-feel PF-UI-07).
       const rosters = page.locator('.v03-unit-list');
