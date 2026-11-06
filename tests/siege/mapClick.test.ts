@@ -10,8 +10,8 @@ function fixture() {
   const state = createSiegeState(228);
   const own = state.units.find((u) => u.id === 'shu-weiyan')!;
   const enemy = state.units.find((u) => u.side === 'wei')!;
-  Object.assign(own, ground(18, 20));
-  Object.assign(enemy, ground(19, 20));
+  Object.assign(own, ground(6, 10));
+  Object.assign(enemy, ground(7, 10));
   state.units = [own, enemy];
   state.engines = [];
   return { state, own, enemy };
@@ -50,16 +50,23 @@ describe('R cell click priority, first match wins', () => {
       )!;
       expect(resolveMapClick(ctx, empty)).toEqual({ type: 'deploy', cell: empty });
       expect(resolveMapClick(ctx, ground(0, 0))).toEqual({ type: 'cell', cell: ground(0, 0) });
-      expect(
-        resolveMapClick(ctx, state.engines[0]! && ground(state.engines[0]!.x, state.engines[0]!.y)),
-      ).toEqual({ type: 'select', id: state.engines[0]!.id });
+      if (playerSide === 'shu')
+        expect(resolveMapClick(ctx, ground(6, 10))).toEqual({
+          type: 'deploy',
+          cell: ground(6, 10),
+        });
+      else
+        expect(resolveMapClick(ctx, ground(6, 10))).toEqual({
+          type: 'select',
+          id: state.engines[0]!.id,
+        });
     },
   );
   it('targets an enemy or gate in attack mode before green; enemies require an own actor', () => {
     const { state, own, enemy } = fixture();
     const ctx: MapClickContext = { state, selected: own.id, mode: 'attack', reachable: [enemy] };
     expect(resolveMapClick(ctx, enemy)).toEqual({ type: 'target', id: enemy.id });
-    expect(resolveMapClick(ctx, { x: 23, y: 16, level: 'wall' })).toEqual({
+    expect(resolveMapClick(ctx, { x: 8, y: 7, level: 'wall' })).toEqual({
       type: 'target',
       id: 'south',
     });
@@ -72,8 +79,8 @@ describe('R cell click priority, first match wins', () => {
     'explicit %s on green precedes units and ladders',
     (mode) => {
       const { state, own, enemy } = fixture();
-      state.engines = [engine('ladder', 18, 19)];
-      for (const cell of [enemy, ground(18, 19), own])
+      state.engines = [engine('ladder', 6, 8)];
+      for (const cell of [enemy, ground(6, 8), own])
         expect(resolveMapClick({ state, selected: own.id, mode, reachable: [cell] }, cell)).toEqual(
           { type: mode, cell },
         );
@@ -85,7 +92,7 @@ describe('R cell click priority, first match wins', () => {
   );
   it('targets enemies with own units or engines selected; otherwise selects enemies', () => {
     const { state, own, enemy } = fixture();
-    state.engines = [engine('ram', 22, 20)];
+    state.engines = [engine('ram', 9, 10)];
     for (const selected of [own.id, 'engine'])
       expect(resolveMapClick({ state, selected }, enemy)).toEqual({ type: 'target', id: enemy.id });
     for (const selected of [null, enemy.id, 'missing'])
@@ -113,29 +120,29 @@ describe('R cell click priority, first match wins', () => {
   });
   it('does not cycle a selected unit to a cart whose rear is merely drawn over its cell', () => {
     const { state, own } = fixture();
-    state.engines = [engine('earthCart', 18, 19)];
+    state.engines = [engine('earthCart', 6, 8)];
     expect(resolveMapClick({ state, selected: own.id }, own)).toEqual({ type: 'none' });
-    expect(resolveMapClick({ state, selected: null }, ground(18, 19))).toEqual({
+    expect(resolveMapClick({ state, selected: null }, ground(6, 8))).toEqual({
       type: 'select',
       id: state.engines[0]!.id,
     });
   });
   it('selects unraised ladders on their green logical cell, moves on other green cells', () => {
     const { state, own } = fixture();
-    state.engines = [engine('ladder', 18, 19)];
-    const ctx = { state, selected: own.id, reachable: [ground(18, 19), ground(18, 21)] };
-    expect(resolveMapClick(ctx, ground(18, 19))).toEqual({ type: 'select', id: 'engine' });
-    expect(resolveMapClick(ctx, ground(18, 21))).toEqual({ type: 'move', cell: ground(18, 21) });
-    state.engines[0]!.raisedAt = { x: 18, y: 16 };
-    expect(resolveMapClick(ctx, ground(18, 19))).toEqual({ type: 'move', cell: ground(18, 19) });
+    state.engines = [engine('ladder', 6, 8)];
+    const ctx = { state, selected: own.id, reachable: [ground(6, 8), ground(6, 9)] };
+    expect(resolveMapClick(ctx, ground(6, 8))).toEqual({ type: 'select', id: 'engine' });
+    expect(resolveMapClick(ctx, ground(6, 9))).toEqual({ type: 'move', cell: ground(6, 9) });
+    state.engines[0]!.raisedAt = { x: 6, y: 7 };
+    expect(resolveMapClick(ctx, ground(6, 8))).toEqual({ type: 'move', cell: ground(6, 8) });
   });
   it('selects the frontmost engine, cycles all engines, then wraps; a lone selected engine does nothing', () => {
     const { state } = fixture();
     state.engines = [
-      engine('earthCart', 21, 21, { id: 'rear' }),
-      engine('earthCart', 21, 21, { id: 'front' }),
+      engine('earthCart', 9, 11, { id: 'rear' }),
+      engine('earthCart', 9, 11, { id: 'front' }),
     ];
-    const cell = ground(21, 21);
+    const cell = ground(9, 11);
     for (const [selected, id] of [
       [null, 'front'],
       ['front', 'rear'],
@@ -145,137 +152,108 @@ describe('R cell click priority, first match wins', () => {
     state.engines.pop();
     expect(resolveMapClick({ state, selected: 'rear' }, cell)).toEqual({ type: 'none' });
   });
-  it('a ladder-base unit occupies the entire raised footprint before its ladder', () => {
-    const { state, own } = fixture();
-    Object.assign(own, ground(18, 19));
-    state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
-    for (const y of [17, 18, 19, 20]) {
-      const cell = ground(18, y);
-      expect(resolveMapClick({ state }, cell)).toEqual({ type: 'select', id: own.id });
-      expect(resolveMapClick({ state, selected: own.id }, cell)).toEqual({
-        type: 'select',
-        id: 'engine',
-      });
-      expect(resolveMapClick({ state, selected: 'engine' }, cell)).toEqual({
-        type: 'select',
-        id: own.id,
-      });
-    }
-    own.routed = true;
-    expect(resolveMapClick({ state }, ground(18, 18))).toEqual({ type: 'select', id: own.id });
-    own.troops = 0;
-    expect(resolveMapClick({ state }, ground(18, 18))).toEqual({ type: 'select', id: 'engine' });
+  it('raised ladders expose exactly the base and wall top; the two cells retain their own occupants', () => {
+    const { state, own, enemy } = fixture();
+    Object.assign(own, ground(6, 8));
+    Object.assign(enemy, { x: 6, y: 7, level: 'wall' });
+    state.engines = [engine('ladder', 6, 8, { raisedAt: { x: 6, y: 7 } })];
+    expect(resolveMapClick({ state }, own)).toEqual({ type: 'select', id: own.id });
+    expect(resolveMapClick({ state, selected: own.id }, own)).toEqual({
+      type: 'select',
+      id: 'engine',
+    });
+    expect(resolveMapClick({ state, selected: 'engine' }, own)).toEqual({
+      type: 'select',
+      id: own.id,
+    });
+    expect(resolveMapClick({ state }, enemy)).toEqual({ type: 'select', id: enemy.id });
+    expect(resolveMapClick({ state }, ground(6, 9))).toEqual({ type: 'cell', cell: ground(6, 9) });
   });
-  it('cycles a standing unit, an aliased ladder-base unit and the engine in occupant order', () => {
+  it('an empty raised ladder top selects its engine and never aliases the base unit', () => {
     const { state, own } = fixture();
-    Object.assign(own, ground(18, 19));
-    const standing = { ...own, id: 'standing', y: 20 };
-    state.units.push(standing);
-    state.engines = [engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 } })];
-    for (const [selected, id] of [
-      [null, 'standing'],
-      ['standing', own.id],
-      [own.id, 'engine'],
-      ['engine', 'standing'],
-    ])
-      expect(resolveMapClick({ state, selected }, ground(18, 20))).toEqual({ type: 'select', id });
+    Object.assign(own, ground(6, 8));
+    state.engines = [engine('ladder', 6, 8, { raisedAt: { x: 6, y: 7 } })];
+    expect(resolveMapClick({ state }, { x: 6, y: 7, level: 'wall' })).toEqual({
+      type: 'select',
+      id: 'engine',
+    });
+  });
+  it('a raised ladder is clickable at the painted row-eight base while its logical row-ten unit still cycles it', () => {
+    const { state, own } = fixture();
+    Object.assign(own, ground(6, 10));
+    state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
+    expect(resolveMapClick({ state }, ground(6, 8))).toEqual({ type: 'select', id: 'engine' });
+    expect(resolveMapClick({ state, selected: own.id }, own)).toEqual({
+      type: 'select',
+      id: 'engine',
+    });
+    expect(resolveMapClick({ state, selected: 'engine' }, own)).toEqual({
+      type: 'select',
+      id: own.id,
+    });
+    expect(resolveMapClick({ state }, ground(6, 9))).toEqual({ type: 'cell', cell: ground(6, 9) });
   });
   it('footprints respect level; terrain falls through and hints use the same result', () => {
     const { state, own, enemy } = fixture();
-    state.engines = [engine('tower', 23, 20)];
-    expect(resolveMapClick({ state }, ground(24, 21))).toEqual({ type: 'select', id: 'engine' });
+    state.engines = [engine('tower', 8, 10)];
+    expect(resolveMapClick({ state }, ground(8, 10))).toEqual({ type: 'select', id: 'engine' });
     const cell = { x: 24, y: 21, level: 'wall' as const };
     expect(resolveMapClick({ state }, cell)).toEqual({ type: 'cell', cell });
     expect(mapClickColor(resolveMapClick({ state }, own))).toBe('#e7b84e');
     expect(mapClickColor(resolveMapClick({ state, selected: own.id }, enemy))).toBe('#b74e3c');
     expect(
       mapClickColor(
-        resolveMapClick({ state, selected: own.id, reachable: [ground(18, 21)] }, ground(18, 21)),
+        resolveMapClick({ state, selected: own.id, reachable: [ground(6, 9)] }, ground(6, 9)),
       ),
     ).toBe('#609d80');
     expect(mapClickColor({ type: 'none' })).toBeNull();
     expect(mapClickColor({ type: 'cell', cell })).toBeNull();
   });
-  it('selects living figures over empty cells, targets enemies with an own actor, and never moves on a second click', () => {
+  it('plates select their living owner over any underlying cell, including enemies', () => {
     const { state, own, enemy } = fixture();
-    const cell = ground(18, 21);
-    const before = structuredClone(state);
-    expect(resolveMapClick({ state, unitAtPoint: own.id }, cell)).toEqual({
+    const cell = ground(6, 9);
+    for (const unit of [own, enemy])
+      for (const selected of [null, own.id, enemy.id])
+        expect(resolveMapClick({ state, selected, plateUnitId: unit.id }, cell)).toEqual({
+          type: 'select',
+          id: unit.id,
+        });
+    expect(resolveMapClick({ state, plateUnitId: own.id }, null)).toEqual({
       type: 'select',
       id: own.id,
     });
-    expect(resolveMapClick({ state, unitAtPoint: own.id, selected: own.id }, cell)).toEqual({
+    expect(resolveMapClick({ state, blocked: true, plateUnitId: own.id }, cell)).toEqual({
       type: 'none',
     });
-    state.engines = [engine('ram', 22, 20)];
-    for (const selected of [own.id, 'engine']) {
-      const result = resolveMapClick({ state, selected, unitAtPoint: enemy.id }, cell);
-      expect(result).toEqual({ type: 'target', id: enemy.id });
-      expect(mapClickColor(result)).toBe('#b74e3c');
-    }
-    for (const selected of [null, enemy.id, 'missing'])
-      expect(resolveMapClick({ state, selected, unitAtPoint: enemy.id }, cell)).toEqual({
-        type: 'select',
-        id: enemy.id,
-      });
-    expect(mapClickColor(resolveMapClick({ state, unitAtPoint: own.id }, cell))).toBe('#e7b84e');
-    state.engines = [];
-    expect(state).toEqual(before);
     own.troops = 0;
-    expect(resolveMapClick({ state, unitAtPoint: own.id }, cell)).toEqual({ type: 'cell', cell });
-    expect(resolveMapClick({ state, unitAtPoint: 'missing' }, cell)).toEqual({
-      type: 'cell',
-      cell,
-    });
+    expect(resolveMapClick({ state, plateUnitId: own.id }, cell)).toEqual({ type: 'cell', cell });
+    expect(resolveMapClick({ state, plateUnitId: 'missing' }, null)).toEqual({ type: 'none' });
   });
-  it('figure fallback handles null terrain picks and yields to blocking, deployment, green cells and every cell occupant', () => {
+  it.each(['move', 'fillTrench', 'attack'] as const)(
+    'armed %s treats a plate as its owner cell',
+    (mode) => {
+      const { state, own, enemy } = fixture(),
+        under = ground(6, 9);
+      expect(
+        resolveMapClick({ state, selected: own.id, mode, plateUnitId: enemy.id }, under),
+      ).toEqual({ type: 'target', id: enemy.id });
+      if (mode !== 'attack')
+        expect(
+          resolveMapClick(
+            { state, selected: own.id, mode, reachable: [enemy], plateUnitId: enemy.id },
+            under,
+          ),
+        ).toEqual({ type: mode, cell: { x: enemy.x, y: enemy.y, level: enemy.level } });
+    },
+  );
+  it('armed plate targeting follows the player side', () => {
     const { state, own, enemy } = fixture();
-    const cell = ground(18, 21);
-    const ctx: MapClickContext = { state, selected: own.id, unitAtPoint: enemy.id };
-    expect(resolveMapClick({ ...ctx, blocked: true }, cell)).toEqual({ type: 'none' });
-    expect(resolveMapClick(ctx, null)).toEqual({ type: 'target', id: enemy.id });
-    expect(resolveMapClick({ ...ctx, unitAtPoint: null }, null)).toEqual({ type: 'none' });
-    expect(resolveMapClick({ ...ctx, deploy: true }, ground(0, 0))).toEqual({
-      type: 'cell',
-      cell: ground(0, 0),
-    });
-    for (const mode of [null, 'move', 'fillTrench'] as const)
-      expect(resolveMapClick({ ...ctx, mode, reachable: [cell] }, cell)).toEqual({
-        type: mode ?? 'move',
-        cell,
-      });
-    expect(resolveMapClick({ ...ctx, unitAtPoint: enemy.id }, own)).toEqual({ type: 'none' });
-    expect(resolveMapClick({ ...ctx, selected: null }, own)).toEqual({
-      type: 'select',
-      id: own.id,
-    });
-    expect(resolveMapClick({ ...ctx, unitAtPoint: own.id }, enemy)).toEqual({
-      type: 'target',
-      id: enemy.id,
-    });
-    state.engines = [engine('ladder', cell.x, cell.y)];
-    expect(resolveMapClick(ctx, cell)).toEqual({ type: 'select', id: 'engine' });
-    expect(resolveMapClick({ ...ctx, reachable: [cell] }, cell)).toEqual({
-      type: 'select',
-      id: 'engine',
-    });
-    expect(resolveMapClick({ ...ctx, selected: 'engine' }, cell)).toEqual({ type: 'none' });
-    Object.assign(own, { x: cell.x, y: cell.y });
-    expect(resolveMapClick({ ...ctx, selected: null }, ground(cell.x, cell.y + 1))).toEqual({
-      type: 'select',
-      id: own.id,
-    });
-  });
-  it('figure targeting follows the player side', () => {
-    const { state, own, enemy } = fixture();
-    const cell = ground(18, 21);
     expect(
-      resolveMapClick({ state, playerSide: 'wei', selected: enemy.id, unitAtPoint: own.id }, cell),
+      resolveMapClick(
+        { state, playerSide: 'wei', selected: enemy.id, mode: 'attack', plateUnitId: own.id },
+        ground(6, 9),
+      ),
     ).toEqual({ type: 'target', id: own.id });
-    expect(resolveMapClick({ state, playerSide: 'wei', unitAtPoint: enemy.id }, cell)).toEqual({
-      type: 'select',
-      id: enemy.id,
-    });
   });
 });
 
@@ -283,8 +261,8 @@ it('Move swaps a reachable fresh ally before the ordinary move/selection rows', 
   const state = createSiegeState(228);
   const own = state.units.find((u) => u.id === 'shu-weiyan')!;
   const ally = state.units.find((u) => u.id === 'shu-wangping')!;
-  Object.assign(own, { x: 18, y: 16, level: 'wall' });
-  Object.assign(ally, { x: 20, y: 16, level: 'wall' });
+  Object.assign(own, { x: 6, y: 7, level: 'wall' });
+  Object.assign(ally, { x: 7, y: 7, level: 'wall' });
   state.units = [own, ally];
   state.engines = [];
   const context = { state, selected: own.id, mode: 'move' as const };

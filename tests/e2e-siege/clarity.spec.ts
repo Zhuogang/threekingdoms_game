@@ -9,7 +9,7 @@ for (const locale of ['en', 'zh'] as const) {
     page,
   }) => {
     const state = createSiegeState(228);
-    state.engines.push({ ...state.engines[0]!, id: 'test-tower', kind: 'tower', x: 30, y: 21 });
+    state.engines.push({ ...state.engines[0]!, id: 'test-tower', kind: 'tower', x: 13, y: 10 });
     await loadFixture(
       page,
       {

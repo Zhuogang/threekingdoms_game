@@ -29,24 +29,24 @@ export default function RenderScenePreview({ name }: { name: RenderSceneName }) 
         {
           ...createRenderScene('covered').state.engines[0]!,
           covered: false,
-          x: 18,
-          y: 21,
+          x: 6,
+          y: 10,
           id: 'night-ladder',
         },
       ];
-      before.trenchFill['18,18'] = 0;
+      before.trenchFill['6,9'] = 0;
       before.nightOrders = { shu: { kind: 'nightAssault' } };
     } else if (name === 'sortie') {
       const target = before.engines[0]!;
       target.burning = false;
       target.durability = target.max;
       const raider = before.units.find((u) => u.side === 'wei')!;
-      Object.assign(raider, { x: 23, y: 16, level: 'wall' });
+      Object.assign(raider, { x: 8, y: 7, level: 'wall' });
       before.nightOrders = {
         wei: { kind: 'sortie', target: target.id, unitId: raider.id },
         ...(outcome === 'assault' ? { shu: { kind: 'nightAssault' as const } } : {}),
       };
-      for (const unit of before.units.filter((u) => u.side === 'shu')) unit.y = 24;
+      for (const unit of before.units.filter((u) => u.side === 'shu')) unit.y = 13;
       if (outcome === 'guarded') Object.assign(before.units[1]!, { x: target.x + 1, y: target.y });
     }
     const frames = nightReplay(before, endDay(before));
@@ -88,7 +88,7 @@ export default function RenderScenePreview({ name }: { name: RenderSceneName }) 
             onClick={() => {
               setSelected(null);
               map.current?.zoom(zoom);
-              map.current?.focus({ x: 24, y: 19, level: 'ground' });
+              map.current?.focus({ x: 8, y: 8, level: 'ground' });
             }}
           >
             {zoom * 100}%
@@ -124,10 +124,11 @@ export default function RenderScenePreview({ name }: { name: RenderSceneName }) 
           facings={fixture.facings}
           night={frame?.night ?? fixture.night}
           showRange={false}
-          forecastCell={blinking ? { x: 19, y: 16, level: 'wall' } : null}
+          boardReview={name === 'board'}
+          forecastCell={blinking ? { x: 6, y: 7, level: 'wall' } : null}
           repulsedUnits={playing ? undefined : fixture.repulsedUnits}
-          initialFocus={{ x: 24, y: 19, level: 'ground' }}
-          initialZoom={0.95}
+          initialFocus={{ x: 8, y: 8, level: 'ground' }}
+          initialZoom={name === 'board' ? 0.45 : 0.95}
         />
       </div>
       {name === 'sortie' && (

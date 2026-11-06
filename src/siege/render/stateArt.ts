@@ -1,5 +1,16 @@
-import { boardToFine } from './coarseBridge';
-import { fineCellsOf, fineSpanOf } from '../content/coarseGrid';
+import {
+  anchor,
+  artCell,
+  depthOf,
+  fineFootprint,
+  formationFor,
+  gateTowerAt,
+  ladderBase,
+  climbingBase,
+  moundFoot,
+  wallFaceFoot,
+} from './boardGeometry';
+import { fineCellsOf } from '../content/coarseGrid';
 import trenchJob from '../../../docs/siege/chencang/art/s3-01-trench-fill/job.json';
 import {
   CHENCANG_ART_LAYOUT,
@@ -7,19 +18,19 @@ import {
   SOUTH_TRENCH,
   cellKey,
 } from '../content/chencang';
-import { isWallFoot, cellHeight, cellTerrain } from '../rules/map';
+import { isWallFoot } from '../rules/map';
 import { usableEngine } from '../rules/combat';
 import type { SiegeEngine, SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
-import { FRAME, INNER_WALL_JOB, MAP, POSE_SETS, patchOf, sheet } from './assets';
-import { placePiece, type Sprite } from './mapPieces';
-import { project, STANDING_EPSILON, type SceneObject, type ScreenRect } from './scene';
+import { FRAME, INNER_WALL_JOB, POSE_SETS, patchOf, sheet } from './assets';
+import { placeAnchoredPiece, type Sprite } from './mapPieces';
+import { type SceneObject, type ScreenRect } from './scene';
 import {
   climberPoses,
   climbingWall,
   figureBounds,
-  formationOffsets,
   moundStandingHeight,
+  stormingSprite,
 } from './v02Art';
 
 export interface StatePatch {
@@ -96,29 +107,22 @@ export function statePatches(state: SiegeState): StatePatch[] {
 
 /** Presentation footprint only. Wrecks retain their cart footprint. */
 export function engineFootprint(engine: SiegeEngine): SiegePosition[] {
-  const { x, y } = engine;
-  const cells: SiegePosition[] = [
-    { x, y, level: 'ground' },
-    { x, y: y + 1, level: 'ground' },
+  return [
+    ladderBase(engine),
+    ...(engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked
+      ? [{ ...engine.raisedAt, level: 'wall' as const }]
+      : []),
   ];
-  if (engine.kind === 'ram') cells.push({ x, y: y + 2, level: 'ground' });
-  if (engine.kind === 'tower')
-    cells.push({ x: x + 1, y, level: 'ground' }, { x: x + 1, y: y + 1, level: 'ground' });
-  if (engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked)
-    for (let row = engine.raisedAt.y + 1; row < y; row++)
-      cells.push({ x: engine.raisedAt.x, y: row, level: 'ground' });
-  return cells;
 }
 
-export const UNIT_FIGURE_SCALE = 0.6;
-export const UNIT_FOOT = 0.92;
-const scaledPose = (
-  pose: (typeof POSE_SETS)[string]['poses'] extends Map<string, infer P> ? P : never,
-) => ({
-  ...pose,
-  size: pose.size.map((n) => n * UNIT_FIGURE_SCALE) as [number, number],
-  anchor: pose.anchor.map((n) => n * UNIT_FIGURE_SCALE) as [number, number],
-});
+/** Rules keep the ladder's operating unit at its logical base. The raised art
+ * has a separate base registration; neither may occlude its own operating unit. */
+export function sharesEngineCell(engine: SiegeEngine, p: SiegePosition): boolean {
+  return (
+    (p.level === 'ground' && engine.x === p.x && engine.y === p.y) ||
+    engineFootprint(engine).some((c) => c.x === p.x && c.y === p.y && c.level === p.level)
+  );
+}
 
 export type EngineSprite = Sprite & { flip: boolean; burning: boolean; engine: SiegeEngine };
 export function engineSprite(engine: SiegeEngine, facing: Facing = 'north'): EngineSprite {
@@ -148,18 +152,41 @@ export function engineSprite(engine: SiegeEngine, facing: Facing = 'north'): Eng
         engine.durability < engine.max / 2 ? 2 : facing === 'east' || facing === 'west' ? 1 : 0;
     }
   }
-  const fine = boardToFine(engine);
-  const at: [number, number] =
-    engine.raisedAt && !engine.wrecked
-      ? [boardToFine(engine.raisedAt).x, fineSpanOf(engine.raisedAt).south + 1]
-      : [fine.x, fine.y];
+  const source = sheet(asset),
+    object = source.pieces[piece]!.objects[0]!;
+  const ground = ladderBase(engine);
+  const base = anchor(ground);
+  const raised = engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked;
+  const top = raised ? anchor({ ...engine.raisedAt!, level: 'wall' }) : base;
+  const origin = source.pieces[piece]!.origin;
+  const registration = object.registration;
+  const basePixel: [number, number] = registration?.cartBase?.pixel ??
+    object.footCentreAnchor ?? [
+      origin[0] + ((object.cells[0] + object.cells[2] + 1) / 2) * source.cell[0],
+      object.anchor[1],
+    ];
+  const topPixel: [number, number] = registration?.wallTop?.pixel ?? [
+    basePixel[0],
+    origin[1] + object.cells[1] * source.cell[1] - object.height * source.level,
+  ];
+  // Uniform registration, never vertical stretching: old ladders span 3.5 fine
+  // rows; the coarse inner trench base is closer to the parapet.
+  const scale = raised ? (base[1] - top[1]) / (basePixel[1] - topPixel[1]) : undefined;
   return {
-    ...placePiece(sheet(asset), piece, at, FRAME, { id: engine.id, kind: 'engine' }),
+    ...placeAnchoredPiece(source, piece, artCell(engine), FRAME, {
+      id: engine.id,
+      kind: 'engine',
+      anchor: raised ? topPixel : basePixel,
+      target: top,
+      scale,
+    }),
+    cells: fineFootprint(raised ? [ground, engine.raisedAt!] : [engine]),
     flip: facing === 'west' && !engine.raisedAt && !engine.wrecked,
     burning: engine.burning && !engine.wrecked,
     engine,
   };
 }
+
 export function climbableCells(state: SiegeState) {
   const cells = SOUTH_TRENCH.filter((c) => isWallFoot(state, c.x, c.y)).map((c) => ({
     x: c.x,
@@ -220,55 +247,43 @@ export function unitVisual(
     [`${dir}-${action}`, `north-${action}`, `${dir}-idle`, 'south-idle', 'north-idle'].find((n) =>
       poses.has(n),
     ) ?? poses.keys().next().value!;
-  const h =
-    unit.level === 'wall'
-      ? cellHeight(state, unit.x, unit.y, unit.level)
-      : (moundHeight ?? cellHeight(state, unit.x, unit.y, unit.level));
-  const fine = boardToFine(unit);
-  const fineWall = wall ? boardToFine(wall) : undefined;
-  const gateTop =
-    unit.level === 'wall'
-      ? MAP.objects.find(
-          (object) =>
-            object.kind === 'gate-tower' &&
-            fine.x >= object.cells[0] &&
-            fine.x <= object.cells[2] &&
-            fine.y >= object.cells[1] &&
-            fine.y <= object.cells[3],
-        )
-      : undefined;
+  const gateTop = unit.level === 'wall' ? gateTowerAt(unit) : undefined;
   const foot = storming
-    ? project(FRAME, fineWall!.x + 0.5, fineWall!.y + 1, 0)
-    : project(
-        FRAME,
-        fine.x + 0.5,
-        fine.y +
-          ((unit.level === 'wall' && !gateTop) ||
-          moundHeight !== undefined ||
-          cellTerrain(state, unit.x, unit.y) === 'ramp'
-            ? 0.5
-            : UNIT_FOOT),
-        h,
-      );
-  const pose = scaledPose(poses.get(name)!);
+    ? wallFaceFoot(wall!)
+    : climbing
+      ? anchor(climbingBase(wall!))
+      : moundHeight !== undefined
+        ? moundFoot(unit, moundHeight)
+        : anchor(unit, state);
+  const pose = poses.get(name)!;
+  const offsets = formationFor(unit, unit.troops);
+  const followers = POSE_SETS[unit.side === 'shu' ? 's1-05' : 's5-03']!.poses;
+  const followerName = [`${dir}-${action}`, `${dir}-idle`, 'north-idle', 'south-idle'].find((n) =>
+    followers.has(n),
+  )!;
+  const hero = set === 's5-05' || set === 's5-06';
   const figures = storming
     ? []
     : climbing
       ? climberPoses(progress).map((poseName, i) => ({
           name: poseName,
-          pose: scaledPose(POSE_SETS['s5-01']!.poses.get(poseName)!),
-          // Keep both climbing poses over the ladder's clickable ground cells.
-          offset: [0, -(progress - 1) * FRAME.cd - (i === 0 ? 0.5 : 1.8) * FRAME.lh] as [
-            number,
-            number,
-          ],
+          pose: POSE_SETS['s5-01']!.poses.get(poseName)!,
+          // Follow the painted ladder. Picking still uses the logical base cell.
+          offset: [
+            0,
+            (anchor({ ...wall!, level: 'wall' })[1] - foot[1]) *
+              (progress === 1 ? 0.3 : i === 0 ? 0.45 : 0.8),
+          ] as [number, number],
         }))
-      : formationOffsets(unit.troops).map((offset) => ({ name, pose, offset }));
-  // Storming remains a separate, unchanged painting. Its locator represents
-  // the actor's base cell, so it never borrows the defender's wall-top click.
-  const base = project(FRAME, fine.x, fine.y, 0);
+      : offsets.map((offset, i) =>
+          hero && i < offsets.length - 1
+            ? { name: followerName, pose: followers.get(followerName)!, offset }
+            : { name, pose, offset },
+        );
+  // Storming keeps the approved art bounds. Its logical hit cell is handled
+  // independently by boardGeometry, including overhanging figures.
   const bounds: ScreenRect = storming
-    ? [base[0] + 8, base[1] + 4, base[0] + FRAME.cw - 8, base[1] + FRAME.cd - 4]
+    ? stormingSprite(state, unit)!.rect
     : figureBounds(figures, foot);
   const rect: ScreenRect =
     facing === 'west'
@@ -285,15 +300,6 @@ export function unitVisual(
     figures,
     rect,
     gateTop: gateTop?.id,
-    depth: {
-      row: gateTop?.cells[3] ?? (climbing || storming ? fineWall!.y + 1 : fine.y),
-      height:
-        (gateTop?.height ??
-          (unit.level === 'wall'
-            ? 3.5
-            : climbing || storming || moundHeight !== undefined
-              ? 3
-              : h)) + STANDING_EPSILON,
-    },
+    depth: depthOf(climbing || storming ? climbingBase(wall!) : unit, state),
   };
 }

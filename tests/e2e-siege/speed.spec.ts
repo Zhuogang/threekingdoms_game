@@ -106,7 +106,7 @@ test('the thinking state paints before work and night replay retains all static 
     if (unit.side === 'shu') unit.y = 25;
   }
   state.ordersUsed.wei[state.day] = true;
-  state.engines = [{ ...state.engines[0]!, id: 'replay-ladder', kind: 'ladder', x: 18, y: 21 }];
+  state.engines = [{ ...state.engines[0]!, id: 'replay-ladder', kind: 'ladder', x: 6, y: 11 }];
   state.nightOrders.shu = { kind: 'nightAssault' };
   await battle(page, state);
   const before = await counts(page);

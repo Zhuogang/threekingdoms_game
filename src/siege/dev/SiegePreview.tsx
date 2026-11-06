@@ -1,3 +1,4 @@
+// Art-only S1 crop fixture: x/y are original fine art coordinates, never board positions.
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { resolvePublicAsset } from '../../v03/rendering/assets';
 import { betaDraws, type KitObject, type KitPiece } from '../render/betaCity';

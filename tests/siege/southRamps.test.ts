@@ -80,8 +80,8 @@ describe('K4 south ramp repaint', () => {
 
   it('places the screenshot subjects on both ramp cells', () => {
     const { state } = createRenderScene('ramps');
-    for (const x of [21, 26])
-      expect(state.units.filter((unit) => unit.x === x && unit.y === 15)).toMatchObject([
+    for (const x of [7, 9])
+      expect(state.units.filter((unit) => unit.x === x && unit.y === 6)).toMatchObject([
         { level: 'ground', troops: 800 },
       ]);
   });

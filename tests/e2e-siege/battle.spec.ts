@@ -34,8 +34,8 @@ test('actual engine cap, all-standby key, corrupted save and withdrawal', async 
     ...state.engines[0]!,
     id: `cart-${i}`,
     kind: 'earthCart' as const,
-    x: 12 + i,
-    y: 20,
+    x: i,
+    y: 10,
     uses: T.cartLoads,
   }));
   await loadFixture(page, {

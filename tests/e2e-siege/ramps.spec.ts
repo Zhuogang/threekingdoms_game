@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createRenderScene } from '../../src/siege/dev/renderScenes';
-import { shot } from './helpers';
+import { shot, clickPlate, panToCell } from './helpers';
 
 test('south ramp painting with a unit on each flight', async ({ page }) => {
   const errors: string[] = [];
@@ -38,7 +38,7 @@ test('south ramp painting with a unit on each flight', async ({ page }) => {
     for (const slice of await slices.all()) await expect(slice).toHaveAttribute('href', painting!);
   }
   const state = createRenderScene('ramps').state;
-  const units = [21, 26].map((x) => state.units.find((unit) => unit.x === x && unit.y === 15)!);
+  const units = [7, 9].map((x) => state.units.find((unit) => unit.x === x && unit.y === 6)!);
   for (const unit of units) {
     await expect(map.locator(`[data-unit="${unit.id}"] image[data-sprite]`)).toHaveCount(1);
     await expect(page.getByTestId(`map-unit-${unit.id}`)).toBeVisible();
@@ -50,10 +50,10 @@ test('south ramp painting with a unit on each flight', async ({ page }) => {
   });
   await shot(page, 'ramps');
   for (const unit of units) {
-    const box = (await page.getByTestId(`map-unit-${unit.id}`).boundingBox())!;
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await panToCell(page, unit);
+    await clickPlate(page, unit.id);
     await expect(page.getByTestId('preview-selection')).toHaveText(unit.id);
   }
   expect(errors).toEqual([]);
-  console.info('south ramps: 2 units at (21,15)/(26,15), 2 selections, 0 page errors');
+  console.info('south ramps: 2 units at (7,6)/(9,6), 2 selections, 0 page errors');
 });

@@ -1,40 +1,26 @@
+import {
+  anchor,
+  artCell,
+  climbingBase,
+  depthOf,
+  fineFootprint,
+  gateTowerAt,
+  moundRegistration,
+  wallFaceFoot,
+} from './boardGeometry';
+export { formationCount } from './boardGeometry';
 import { CITY_BOUNDS, cellKey } from '../content/chencang';
 import { activeUnit, usableEngine } from '../rules/combat';
 import { isMapCell, isWallFoot } from '../rules/map';
 import type { Cell, SiegeState, SiegeUnit } from '../rules/types';
-import { FRAME, MAP, sheet, WALL_HEIGHT } from './assets';
+import { FRAME, sheet, WALL_HEIGHT } from './assets';
 import { placeAnchoredPiece, type Sprite } from './mapPieces';
-import { project, STANDING_EPSILON, type DepthKey, type ScreenRect } from './scene';
+import { STANDING_EPSILON, type DepthKey, type ScreenRect } from './scene';
 
 // Includes the full worst-case review fixture and every living formation.
 export const SPRITE_CAP = 512;
 export const NIGHT_COLOR = '#1b2233';
 export const NIGHT_OPACITY = 0.45;
-export const formationCount = (troops: number): 1 | 3 | 5 =>
-  troops <= 800 ? 1 : troops <= 2000 ? 3 : 5;
-
-/** Compact ranks fit the scaled figures inside one cell. */
-export function formationOffsets(troops: number): Array<[number, number]> {
-  const count = formationCount(troops);
-  const w = FRAME.cw,
-    d = FRAME.cd;
-  return [
-    ...(count === 5
-      ? ([
-          [-0.17 * w, -0.2 * d],
-          [0.17 * w, -0.2 * d],
-        ] as Array<[number, number]>)
-      : []),
-    ...(count >= 3
-      ? ([
-          [-0.085 * w, -0.1 * d],
-          [0.085 * w, -0.1 * d],
-        ] as Array<[number, number]>)
-      : []),
-    [0, 0] as [number, number],
-  ];
-}
-
 export const climberPoses = (foothold: number): string[] =>
   foothold === 1
     ? ['north-climb-a']
@@ -70,15 +56,19 @@ export function moundSprite(key: string, progress: number): Sprite | undefined {
   const registration = object.selectedRegistration ?? object.registration!;
   const crest = registration.rampCrest!,
     base = registration.southBase!;
-  const targetCrest = project(FRAME, x + 0.5, y, crest.world[2]);
-  const targetBase = project(FRAME, x + 0.5, y + 2, 0);
-  return placeAnchoredPiece(source, stage, [x, y], FRAME, {
+  const { crest: targetCrest, base: targetBase } = moundRegistration({ x, y }, crest.world[2]);
+  const sprite = placeAnchoredPiece(source, stage, artCell({ x, y }), FRAME, {
     id: `mound-${key}`,
     kind: 'mound',
     anchor: crest.pixel,
     target: targetCrest,
     scaleY: (targetBase[1] - targetCrest[1]) / (base.pixel[1] - crest.pixel[1]),
   });
+  sprite.cells = fineFootprint([
+    { x, y },
+    { x, y: y + 1 },
+  ]);
+  return sprite;
 }
 
 export function stormingSprite(
@@ -92,16 +82,16 @@ export function stormingSprite(
     index = repulsed ? 1 : 0;
   const object = source.pieces[index]!.objects[0]!,
     box = object.alphaBBox!;
-  const sprite = placeAnchoredPiece(source, index, [wall.x, wall.y + 1], FRAME, {
+  const sprite = placeAnchoredPiece(source, index, artCell(wall), FRAME, {
     id: `storm-${unit.id}`,
     kind: repulsed ? 'storm-repulsed' : 'storm',
     anchor: object.footCentreAnchor!,
-    target: project(FRAME, wall.x + 0.5, wall.y + 1, 0),
+    target: wallFaceFoot(wall),
     scale: (object.fitHeightLevels! * FRAME.lh) / (box[3] - box[1]),
   });
   // Fit to the actual alpha box, without transparent margin.
   const scale = (object.fitHeightLevels! * FRAME.lh) / (box[3] - box[1]);
-  const foot = project(FRAME, wall.x + 0.5, wall.y + 1, 0);
+  const foot = wallFaceFoot(wall);
   sprite.crop = box;
   sprite.rect = [
     foot[0] + (box[0] - object.footCentreAnchor![0]) * scale,
@@ -109,6 +99,7 @@ export function stormingSprite(
     foot[0] + (box[2] - object.footCentreAnchor![0]) * scale,
     foot[1] + (box[3] - object.footCentreAnchor![1]) * scale,
   ];
+  sprite.cells = fineFootprint([climbingBase(wall)]);
   return sprite;
 }
 
@@ -124,13 +115,14 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
   const prop = (key: string, index: number): PreparationSprite => {
     const { x, y } = parseCell(key),
       object = source.pieces[index]!.objects[0]!;
-    const target = project(FRAME, x + 0.5, y + 0.5, WALL_HEIGHT);
-    const sprite: PreparationSprite = placeAnchoredPiece(source, index, [x, y], FRAME, {
+    const target = anchor({ x, y, level: 'wall' });
+    const sprite: PreparationSprite = placeAnchoredPiece(source, index, artCell({ x, y }), FRAME, {
       id: `preparation-${key}-${index}`,
       kind: 'preparation',
       anchor: object.footCentreAnchor!,
       target,
     });
+    sprite.cells = fineFootprint([{ x, y }]);
     // Sort between the walkway and parapet, like wall-top units.
     sprite.height = WALL_HEIGHT + 0.01;
     if (index === 1)
@@ -159,28 +151,20 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
     if (!millstone.hoisted) continue;
     const { x, y } = parseCell(key),
       craneSheet = sheet('s4-07-millstone-crane');
-    const tower = MAP.objects.find(
-      (o) =>
-        o.kind === 'gate-tower' &&
-        x >= o.cells[0] &&
-        x <= o.cells[2] &&
-        y >= o.cells[1] &&
-        y <= o.cells[3],
-    );
-    const frontRow = tower?.cells[3] ?? y;
+    const tower = gateTowerAt({ x, y });
+    const standing = depthOf({ x, y, level: 'wall' });
     const depth = {
-      row: frontRow,
+      row: Math.max(standing.row, tower?.cells[3] ?? standing.row),
       height: (tower?.height ?? WALL_HEIGHT + 0.5) + 2 * STANDING_EPSILON,
     };
-    // Presentation offset: the arm reaches south of the front parapet and
-    // half a cell east of the unit. The stone hangs below the unit's feet.
-    const hang = project(FRAME, x + 1, frontRow + 1, WALL_HEIGHT - 0.5);
+    const foot = wallFaceFoot({ x, y });
+    const hang: [number, number] = [foot[0] + 32, foot[1] - 60];
     const stoneTop: [number, number] = [hang[0], hang[1] + FRAME.lh * 0.5];
     // Measured on selected-transparent.png: the painted pulley ends at
     // (383,602), outside the old blockout bbox; the stone starts at y=487.
     // Keep the existing sheet scale and art, registering these actual features.
     const crane: PreparationSprite = {
-      ...placeAnchoredPiece(craneSheet, 0, [x, y], FRAME, {
+      ...placeAnchoredPiece(craneSheet, 0, artCell({ x, y }), FRAME, {
         id: `crane-${key}`,
         kind: 'hoisted-millstone',
         anchor: [383, 602],
@@ -189,7 +173,7 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
       depth,
     };
     const stone: PreparationSprite = {
-      ...placeAnchoredPiece(craneSheet, 1, [x, y], FRAME, {
+      ...placeAnchoredPiece(craneSheet, 1, artCell({ x, y }), FRAME, {
         id: `millstone-${key}`,
         kind: 'hoisted-millstone',
         anchor: [1154.5, 487],
@@ -198,6 +182,7 @@ export function preparationSprites(state: SiegeState): PreparationSprite[] {
       depth,
       rope: [...hang, ...stoneTop],
     };
+    crane.cells = stone.cells = fineFootprint([{ x, y }]);
     result.push(crane, stone);
   }
   return result;

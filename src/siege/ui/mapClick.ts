@@ -13,15 +13,15 @@ export interface MapClickContext {
   reachable?: readonly SiegePosition[];
   blocked?: boolean;
   deploy?: boolean;
-  /** Frontmost living figure rectangle under the scene point, supplied by the view. */
-  unitAtPoint?: string | null;
+  /** Nameplate under the cursor, supplied by the view. Figures never intercept cells. */
+  plateUnitId?: string | null;
 }
 export type MapClickResult =
   | { type: 'select' | 'target' | 'swap'; id: string }
   | { type: 'move' | 'fillTrench' | 'deploy' | 'cell'; cell: SiegePosition }
   | { type: 'none' };
 
-/** Cell occupancy wins; a figure in an empty, non-green cell is the final fallback. */
+/** Plates select directly; armed actions resolve against the plate owner's cell. */
 export function resolveMapClick(
   {
     state,
@@ -31,25 +31,18 @@ export function resolveMapClick(
     reachable = [],
     blocked,
     deploy,
-    unitAtPoint,
+    plateUnitId,
   }: MapClickContext,
   cell: SiegePosition | null,
 ): MapClickResult {
   const none: MapClickResult = { type: 'none' };
   if (blocked) return none;
-  if (!cell) {
-    // A figure in an open gate passage can lie below every picked terrain plane.
-    const figure = state.units.find((u) => u.id === unitAtPoint && u.troops > 0);
-    if (!figure) return none;
-    const ownSelected =
-      state.units.some((u) => u.id === selected && u.side === playerSide && u.troops > 0) ||
-      (playerSide === 'shu' && state.engines.some((e) => e.id === selected));
-    return figure.side !== playerSide
-      ? { type: ownSelected ? 'target' : 'select', id: figure.id }
-      : figure.id === selected
-        ? none
-        : { type: 'select', id: figure.id };
+  const plate = state.units.find((u) => u.id === plateUnitId && u.troops > 0);
+  if (plate) {
+    if (!mode) return { type: 'select', id: plate.id };
+    cell = { x: plate.x, y: plate.y, level: plate.level };
   }
+  if (!cell) return none;
   const at = (p: SiegePosition) => sameCell(p, cell) && p.level === cell.level;
   const standing = state.units.filter((u) => u.troops > 0 && at(u));
   if (deploy) {
@@ -75,16 +68,7 @@ export function resolveMapClick(
       );
     });
   if (deploy) return engines[0] ? { type: 'select', id: engines[0].id } : { type: 'cell', cell };
-  const units = [
-    ...standing,
-    ...state.units.filter(
-      (u) =>
-        u.troops > 0 &&
-        u.level === 'ground' &&
-        !standing.includes(u) &&
-        engines.some((e) => e.kind === 'ladder' && sameCell(e, u)),
-    ),
-  ];
+  const units = standing;
   const ownActor =
     state.units.some((u) => u.id === selected && u.side === playerSide && u.troops > 0) ||
     (playerSide === 'shu' && state.engines.some((e) => e.id === selected));
@@ -111,7 +95,9 @@ export function resolveMapClick(
   if (units.some((u) => u.side === playerSide && u.id === selected))
     return cycle([
       ...unitIds,
-      ...engines.filter((e) => units.some((u) => sameCell(e, u))).map((e) => e.id),
+      ...state.engines
+        .filter((e) => units.some((u) => u.level === 'ground' && sameCell(e, u)))
+        .map((e) => e.id),
     ]);
   if (own) return { type: 'select', id: own.id };
   if (green) {
@@ -124,13 +110,6 @@ export function resolveMapClick(
       return cycle([...unitIds, ...engines.map((e) => e.id)]);
     return { type: 'select', id: engines[0]!.id };
   }
-  const figure = state.units.find((u) => u.id === unitAtPoint && u.troops > 0);
-  if (figure)
-    return figure.side !== playerSide
-      ? { type: ownActor ? 'target' : 'select', id: figure.id }
-      : figure.id === selected
-        ? none
-        : { type: 'select', id: figure.id };
   return { type: 'cell', cell };
 }
 

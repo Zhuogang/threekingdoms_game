@@ -23,10 +23,10 @@ async function chooseWei(page: Page) {
 }
 async function beginWei(page: Page) {
   await selectActor(page, 'wei-captain-1');
-  await clickCell(page, 'deploy', '18,16,wall');
+  await clickCell(page, 'deploy', '6,7,wall');
   expect((await snapshot(page)).state.units.find((u) => u.id === 'wei-captain-1')).toMatchObject({
-    x: 18,
-    y: 16,
+    x: 6,
+    y: 7,
     level: 'wall',
   });
   await page.getByRole('button', { name: 'Begin siege', exact: true }).click();
@@ -69,8 +69,8 @@ test('Wei deployment, preparation, Shu replay, day-two countermeasures, exact sa
   await prepare(page);
   await expect(page.getByTestId('walkthrough')).toHaveAttribute('data-step', '5');
   const first = await snapshot(page);
-  expect(first.state.preparations.millstones['23,16']).toEqual({ day: 1, hoisted: true });
-  expect(first.state.preparations.braziers['18,16']).toEqual({ litDay: 1 });
+  expect(first.state.preparations.millstones['8,7']).toEqual({ day: 1, hoisted: true });
+  expect(first.state.preparations.braziers['6,7']).toEqual({ litDay: 1 });
   await page.getByRole('tab', { name: 'Preparations', exact: true }).click();
   await expect(page.getByTestId('wei-defense-tab')).toContainText('tomorrow');
   await page.getByRole('tab', { name: 'Units & actions', exact: true }).click();
@@ -82,7 +82,7 @@ test('Wei deployment, preparation, Shu replay, day-two countermeasures, exact sa
   await selectActor(page, 'wei-captain-1');
   await page.getByTestId('command-fireArrows').click();
   const beforeFire = await snapshot(page);
-  const ladder = beforeFire.state.engines.find((e) => e.kind === 'ladder' && e.x === 18)!;
+  const ladder = beforeFire.state.engines.find((e) => e.kind === 'ladder' && e.x === 6)!;
   await page.getByTestId(`target-fireArrows-${ladder.id}`).click();
   const fired = await snapshot(page);
   expect(fired.state.engines.find((e) => e.id === ladder.id)!.durability).toBeLessThan(
@@ -151,7 +151,7 @@ test('Wei side choice screenshot', async ({ page }) => {
 test('Wei deployment screenshot', async ({ page }) => {
   await chooseWei(page);
   await selectActor(page, 'wei-haozhao');
-  await expect(page.locator('[data-overlay="deploy"][data-cell="23,16,wall"]')).toHaveCount(1);
+  await expect(page.locator('[data-overlay="deploy"][data-cell="8,7,wall"]')).toHaveCount(1);
   await shot(page, 'wei-deploy');
 });
 test('Wei day-two screenshot', async ({ page }) => {

@@ -12,17 +12,17 @@ function reviewFixture(): SiegeSave {
   const state = createSiegeState(228);
   state.day = 2;
   state.weather = 'clear';
-  state.engines[0]!.raisedAt = { x: 18, y: 16 };
-  Object.assign(state.units[1]!, { x: 18, y: 19 });
-  Object.assign(state.units[12]!, { x: 18, y: 16 });
-  state.footholds['18,16'] = 1;
-  state.preparations.braziers['17,16'] = { litDay: 1 };
-  state.preparations.millstones['23,16'] = { day: 1, hoisted: true };
-  state.preparations.boulders['18,16'] = { day: 1 };
+  state.engines[0]!.raisedAt = { x: 6, y: 7 };
+  Object.assign(state.units[1]!, { x: 6, y: 10 });
+  Object.assign(state.units[12]!, { x: 6, y: 7 });
+  state.footholds['6,7'] = 1;
+  state.preparations.braziers['5,7'] = { litDay: 1 };
+  state.preparations.millstones['8,7'] = { day: 1, hoisted: true };
+  state.preparations.boulders['6,7'] = { day: 1 };
   state.log = [
-    { day: 1, code: 'brazierPrepared', params: { cell: '17,16' } },
-    { day: 1, code: 'millstonePrepared', params: { cell: '23,16' } },
-    { day: 1, code: 'bouldersPrepared', params: { cell: '18,16' } },
+    { day: 1, code: 'brazierPrepared', params: { cell: '5,7' } },
+    { day: 1, code: 'millstonePrepared', params: { cell: '8,7' } },
+    { day: 1, code: 'bouldersPrepared', params: { cell: '6,7' } },
   ];
   return {
     state,

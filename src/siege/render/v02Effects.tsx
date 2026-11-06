@@ -1,9 +1,9 @@
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
-import { FRAME, H, PAPER, POSE_SETS, W, WALL_FOOT, WALL_HEIGHT, effect } from './assets';
+import { FRAME, H, PAPER, POSE_SETS, W, effect } from './assets';
 import { NIGHT_COLOR, NIGHT_OPACITY, footholdCells } from './v02Art';
 import type { PreparationSprite } from './v02Art';
 import type { NightPresentation } from './nightReplay';
-import { project } from './scene';
+import { anchor, planeRect, wallFaceFoot } from './boardGeometry';
 
 export const FOOTHOLD_RADIUS = (FRAME.lh / 8) * 1.8;
 export const FOOTHOLD_RING = 1.2;
@@ -21,7 +21,8 @@ export function FootholdPips({
         const key = `${cell.x},${cell.y}`,
           count = state.footholds[key] ?? 0;
         // A vertical column on the east side of the climbing position, mid-wall.
-        const [x, y] = project(FRAME, cell.x + 0.98, cell.y + 1, 1.5);
+        const r = planeRect({ ...cell, level: 'wall' });
+        const [x, y] = [r[2] - 8, wallFaceFoot(cell)[1] - 36];
         const blinking = forecast?.x === cell.x && forecast.y === cell.y;
         return (
           <g key={key} data-foothold={key} data-progress={count}>
@@ -110,7 +111,7 @@ export function NightOverlay({
 }) {
   const party = night.party;
   const lights = preparations.flatMap((s) => (s.flame ? [s.flame] : []));
-  if (party) lights.push(project(FRAME, party.to.x + 0.5, party.to.y + 0.5, 1));
+  if (party) lights.push(anchor({ ...party.to, level: 'ground' }));
   return (
     <g pointerEvents="none" data-testid="night-overlay">
       <defs>
@@ -138,8 +139,8 @@ export function SortieParty({ night }: { night: NightPresentation }) {
   if (!night.party) return null;
   const party = night.party,
     pose = POSE_SETS['s8-05']!.poses.get(party.pose)!;
-  const from = project(FRAME, party.from.x + 0.5, party.from.y + 0.5, 0);
-  const to = project(FRAME, party.to.x + 0.5, party.to.y + 0.5, 0);
+  const from = anchor({ ...party.from, level: 'ground' });
+  const to = anchor({ ...party.to, level: 'ground' });
   return (
     <g
       key={`${party.from.x},${party.from.y}-${party.to.x},${party.to.y}-${party.pose}`}
@@ -202,7 +203,7 @@ export function Displacement({
   const entry = state.log[index];
   if (!entry || entry.params.to !== `${unit.x},${unit.y}`) return null;
   const [x, y] = String(entry.params.from).split(',').map(Number);
-  const from = project(FRAME, x! + 0.5, y! + WALL_FOOT, WALL_HEIGHT);
+  const from = anchor({ x: x!, y: y!, level: 'wall' });
   return (
     <g key={`${entry.day}-${index}`}>
       <animateTransform

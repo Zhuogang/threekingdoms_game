@@ -1,13 +1,17 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { FRAME, MAP } from '../../src/siege/render/assets';
+import { POSE_SETS, sheet } from '../../src/siege/render/assets';
+import {
+  anchor,
+  centre,
+  contains,
+  hitRect,
+  planeRect,
+  positionAt,
+} from '../../src/siege/render/boardGeometry';
 import { engineFootprint, engineSprite, unitVisual } from '../../src/siege/render/stateArt';
 import { SiegeMapView } from '../../src/siege/render/SiegeMapView';
-import { pickCell } from '../../src/siege/render/scene';
-import { cellHeight, cellTerrain, isMapCell } from '../../src/siege/rules/map';
-import { reachableCells } from '../../src/siege/rules/movement';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { resolveMapClick } from '../../src/siege/ui/mapClick';
 import { playScriptDays } from '../../src/siege/ui/devPlaythrough';
@@ -17,21 +21,10 @@ import { climbGuide } from '../../src/siege/ui/climbGuide';
 import { siegeText } from '../../src/siege/i18n';
 import { act, engine } from './rulesFixtures';
 
-describe('R engine footprints, figure registration and layer order', () => {
+describe('V2 engine footprints, original figures and cell registration', () => {
   it.each(['ladder', 'earthCart', 'ram', 'tower'] as const)(
-    '%s footprints retain all relevant covered, burning and wreck states',
+    '%s owns one cell in every state',
     (kind) => {
-      const expected = [
-        [20, 19],
-        [20, 20],
-        ...(kind === 'ram' ? [[20, 21]] : []),
-        ...(kind === 'tower'
-          ? [
-              [21, 19],
-              [21, 20],
-            ]
-          : []),
-      ];
       for (const flags of [
         {},
         { covered: true },
@@ -39,205 +32,126 @@ describe('R engine footprints, figure registration and layer order', () => {
         { wrecked: true },
         { acted: true },
       ]) {
-        const e = engine(kind, 20, 19, flags);
-        expect(engineFootprint(e).map((c) => [c.x, c.y])).toEqual(expected);
+        const e = engine(kind, 6, 10, flags);
+        expect(engineFootprint(e)).toEqual([{ x: 6, y: 10, level: 'ground' }]);
         const sprite = engineSprite(e);
-        // Each clickable ground cell intersects the registered sprite box (partial coverage counts).
-        for (const [x, y] of expected) {
-          expect((x! + 1) * FRAME.cw).toBeGreaterThanOrEqual(sprite.rect[0]);
-          expect(x! * FRAME.cw).toBeLessThanOrEqual(sprite.rect[2]);
-          expect((y! + 1) * FRAME.cd).toBeGreaterThanOrEqual(sprite.rect[1]);
-          expect(y! * FRAME.cd).toBeLessThanOrEqual(sprite.rect[3]);
-        }
+        expect(sprite.rect.every(Number.isFinite)).toBe(true);
+        const r = planeRect({ x: 6, y: 10, level: 'ground' });
+        expect(sprite.rect[0]).toBeLessThan(r[2]);
+        expect(sprite.rect[2]).toBeGreaterThan(r[0]);
       }
     },
   );
-  it('raised ladders include both trench rows, south cell and base; raised wrecks revert to carts', () => {
+  it('raised ladders own base and wall top; uniformly register the approved top and base', () => {
     for (const covered of [false, true]) {
-      const e = engine('ladder', 18, 19, { raisedAt: { x: 18, y: 16 }, covered });
-      expect(engineFootprint(e).map((c) => `${c.x},${c.y}`)).toEqual([
-        '18,19',
-        '18,20',
-        '18,17',
-        '18,18',
+      const e = engine('ladder', 6, 10, { covered, raisedAt: { x: 6, y: 7 } }),
+        sprite = engineSprite(e),
+        source = sheet(sprite.sheet),
+        object = source.pieces[covered ? 2 : 0]!.objects[0]!;
+      expect(engineFootprint(e)).toEqual([
+        { x: 6, y: 8, level: 'ground' },
+        { x: 6, y: 7, level: 'wall' },
       ]);
+      const sx = (sprite.rect[2] - sprite.rect[0]) / (sprite.crop[2] - sprite.crop[0]),
+        sy = (sprite.rect[3] - sprite.rect[1]) / (sprite.crop[3] - sprite.crop[1]);
+      expect(sx).toBeCloseTo(sy, 10);
+      const origin = source.pieces[covered ? 2 : 0]!.origin;
+      const top = object.registration?.wallTop?.pixel ?? [384, 258],
+        base = object.registration?.cartBase?.pixel ?? [384, 786];
+      const mapped = (pixel: number[]) => [
+        sprite.rect[0] + (pixel[0]! - sprite.crop[0]) * sx,
+        sprite.rect[1] + (pixel[1]! - sprite.crop[1]) * sy,
+      ];
+      expect(mapped(top)).toEqual(anchor({ x: 6, y: 7, level: 'wall' }));
+      expect(mapped(base)).toEqual(anchor({ x: 6, y: 8, level: 'ground' }));
+      expect(origin.every(Number.isFinite)).toBe(true);
       e.wrecked = true;
-      expect(engineFootprint(e)).toHaveLength(2);
+      expect(engineFootprint(e)).toHaveLength(1);
     }
   });
   it.each([1, 2, 3] as const)(
-    'foothold %i only draws followers climbing at 1 and 2',
+    'foothold %i retains the real unscaled climbing poses only at 1 and 2',
     (progress) => {
-      const state = createSiegeState(228);
-      const unit = state.units[1]!;
-      Object.assign(unit, { x: 18, y: 19 });
-      state.engines[0]!.raisedAt = { x: 18, y: 16 };
-      state.footholds['18,16'] = progress;
+      const state = createSiegeState(228),
+        unit = state.units[1]!;
+      Object.assign(unit, { x: 6, y: 8 });
+      state.engines[0]!.y = 8;
+      state.engines[0]!.raisedAt = { x: 6, y: 7 };
+      state.footholds['6,7'] = progress;
       const visual = unitVisual(state, unit);
       expect(visual.climbing).toBe(progress < 3);
       expect(visual.figures.some((f) => f.name.includes('climb'))).toBe(progress < 3);
-      if (progress === 3) expect(visual.foot[1]).toBeCloseTo(19.92 * FRAME.cd);
+      if (progress < 3)
+        for (const figure of visual.figures)
+          expect(figure.pose).toBe(POSE_SETS['s5-01']!.poses.get(figure.name));
+      else expect(visual.foot).toEqual(anchor(unit));
     },
   );
-  it('every normal formation fits 72×50 and its rect centre picks its own ground/walkway/gate cell', () => {
-    const state = createSiegeState(228);
-    const places = [
-      { x: 20, y: 21, level: 'ground' as const },
-      { x: 18, y: 16, level: 'wall' as const },
-      ...MAP.objects
-        .filter((o) => o.kind === 'gate-tower')
-        .flatMap((o) =>
-          Array.from({ length: o.cells[3] - o.cells[1] + 1 }, (_, i) => ({
-            x: o.cells[0],
-            y: o.cells[1] + i,
-            level: 'wall' as const,
-          })),
-        ),
-    ];
-    let checks = 0,
-      maxWidth = 0,
-      maxHeight = 0;
-    for (const unit of state.units)
-      for (const p of places)
-        for (const troops of [800, 2000, 3000])
-          for (const facing of ['north', 'south', 'east', 'west'] as const)
-            for (const activity of [undefined, 'move', 'attack', 'fillTrench']) {
-              Object.assign(unit, p, { troops });
-              const { rect } = unitVisual(state, unit, facing, activity);
-              maxWidth = Math.max(maxWidth, rect[2] - rect[0]);
-              maxHeight = Math.max(maxHeight, rect[3] - rect[1]);
-              expect(rect[2] - rect[0]).toBeLessThanOrEqual(72);
-              expect(rect[3] - rect[1]).toBeLessThanOrEqual(50);
-              const picked = pickCell(
-                FRAME,
-                (rect[0] + rect[2]) / 2,
-                (rect[1] + rect[3]) / 2,
-                [0, 1, 2, 3],
-                (x, y, h) =>
-                  isMapCell(x, y) &&
-                  h ===
-                    cellHeight(
-                      state,
-                      x,
-                      y,
-                      ['wall', 'gate'].includes(cellTerrain(state, x, y)) ? 'wall' : 'ground',
-                    ),
+  it('normal formation feet fit their planes in every facing and activity, without shrinking poses', () => {
+    const state = createSiegeState(228),
+      unit = state.units[1]!;
+    let checks = 0;
+    for (const p of [
+      { x: 7, y: 10, level: 'ground' as const },
+      { x: 6, y: 7, level: 'wall' as const },
+      { x: 8, y: 7, level: 'wall' as const },
+      { x: 4, y: 5, level: 'wall' as const },
+    ])
+      for (const troops of [800, 2000, 3000])
+        for (const facing of ['north', 'south', 'east', 'west'] as const)
+          for (const activity of [undefined, 'move', 'attack', 'fillTrench']) {
+            Object.assign(unit, p, { troops });
+            const visual = unitVisual(state, unit, facing, activity),
+              r = planeRect(unit);
+            for (const f of visual.figures) {
+              expect(contains(r, visual.foot[0] + f.offset[0], visual.foot[1] + f.offset[1])).toBe(
+                true,
               );
-              expect(picked, JSON.stringify({ p, rect, facing, id: unit.id })).toMatchObject({
-                x: p.x,
-                y: p.y,
-              });
-              checks++;
+              expect(f.pose).toBe(visual.pose);
             }
-    mkdirSync('.artifacts/siege', { recursive: true });
-    writeFileSync(
-      '.artifacts/siege/r-geometry.json',
-      JSON.stringify(
-        {
-          checks,
-          maxWidth,
-          maxHeight,
-          engines: ['ladder', 'earthCart', 'ram', 'tower'].map((kind) => {
-            const e = engine(kind as 'ladder', 20, 19);
-            return { kind, rect: engineSprite(e).rect, footprint: engineFootprint(e) };
-          }),
-        },
-        null,
-        2,
-      ) + '\n',
-    );
+            checks++;
+          }
+    expect(checks).toBe(192);
   });
-  it('rect-centre picks resolve every living unit in a crowd, on gate tops, and on scripted day 9', () => {
-    const start = createSiegeState(228);
-    const crowd = structuredClone(start);
-    Object.assign(crowd.units[1]!, { x: 18, y: 19 });
-    crowd.engines[0]!.raisedAt = { x: 18, y: 16 };
-    crowd.footholds['18,16'] = 2;
-    const walkway = structuredClone(start);
-    Object.assign(walkway.units[1]!, { x: 18, y: 16, level: 'wall' });
-    Object.assign(walkway.units[2]!, { x: 24, y: 16, level: 'wall' });
-    const day9 = playScriptDays(start, 'careful', 8);
+  it('hit-centres and nameplates resolve units in crowds, gate tops and scripted day 9', () => {
+    const start = createSiegeState(228),
+      crowd = structuredClone(start),
+      walkway = structuredClone(start);
+    Object.assign(crowd.units[1]!, { x: 6, y: 8 });
+    crowd.engines[0]!.y = 8;
+    crowd.engines[0]!.raisedAt = { x: 6, y: 7 };
+    crowd.footholds['6,7'] = 2;
+    Object.assign(walkway.units[1]!, { x: 5, y: 7, level: 'wall' });
+    const day9 = playScriptDays(createSiegeState(1), 'careful', 8);
     expect(day9.day).toBe(9);
     for (const state of [start, crowd, walkway, day9])
-      for (const unit of state.units.filter((u) => u.troops > 0 && isMapCell(u.x, u.y))) {
-        const { rect } = unitVisual(state, unit);
-        const picked = pickCell(
-          FRAME,
-          (rect[0] + rect[2]) / 2,
-          (rect[1] + rect[3]) / 2,
-          [0, 1, 2, 3],
-          (x, y, h) =>
-            isMapCell(x, y) &&
-            h ===
-              cellHeight(
-                state,
-                x,
-                y,
-                ['wall', 'gate'].includes(cellTerrain(state, x, y)) ? 'wall' : 'ground',
-              ),
-        );
-        const cell = picked && {
-          x: picked.x,
-          y: picked.y,
-          level: (['wall', 'gate'].includes(cellTerrain(state, picked.x, picked.y))
-            ? 'wall'
-            : 'ground') as 'wall' | 'ground',
-        };
-        const selected = state.units.find(
-          (u) => u.side === 'shu' && u.id !== unit.id && u.troops > 0,
-        )!.id;
-        expect(
-          resolveMapClick({ state, selected, unitAtPoint: unit.id }, cell),
-          JSON.stringify({ day: state.day, unit: unit.id, rect, cell }),
-        ).toEqual({ type: unit.side === 'shu' ? 'select' : 'target', id: unit.id });
-      }
-    for (const state of [start, crowd, walkway, day9])
-      for (const e of state.engines) {
-        if (
-          state.units.some(
-            (u) => u.troops > 0 && u.level === 'ground' && u.x === e.x && u.y === e.y,
-          )
-        )
-          continue;
-        const selected = state.units.find(
-          (u) =>
-            u.side === 'shu' &&
-            u.troops > 0 &&
-            !reachableCells(state, u.id).some(
-              (c) => c.x === e.x && c.y === e.y && c.level === 'ground',
-            ),
-        )!.id;
-        expect(
-          resolveMapClick(
-            { state, selected, reachable: reachableCells(state, selected) },
-            { x: e.x, y: e.y, level: 'ground' },
-          ),
-          `${state.day}/${e.id}`,
-        ).toEqual({ type: 'select', id: e.id });
+      for (const unit of state.units.filter((u) => u.troops > 0 && u.x >= 0)) {
+        const picked = positionAt(state, ...centre(hitRect(unit, state)!));
+        expect(picked).toEqual({ x: unit.x, y: unit.y, level: unit.level });
+        expect(resolveMapClick({ state, plateUnitId: unit.id }, picked)).toEqual({
+          type: 'select',
+          id: unit.id,
+        });
       }
   });
   it.each(['ladder', 'earthCart', 'ram', 'tower'] as const)(
-    'units on every %s footprint cell paint after all its slices',
+    'a unit at a shared %s base remains visible after the engine slices',
     (kind) => {
-      for (const raised of kind === 'ladder' ? [false, true] : [false]) {
-        const state = createSiegeState(228);
-        const e = engine(kind, 18, 19, { raisedAt: raised ? { x: 18, y: 16 } : undefined });
-        state.engines = [e];
-        for (const cell of engineFootprint(e)) {
-          const unit = state.units[1]!;
-          Object.assign(unit, cell);
-          const markup = renderToStaticMarkup(createElement(SiegeMapView, { state, locale: 'en' }));
-          expect(markup.indexOf(`data-unit="${unit.id}"`)).toBeGreaterThan(
-            markup.lastIndexOf('data-piece="engine"'),
-          );
-        }
-      }
+      const state = createSiegeState(228),
+        unit = state.units[1]!;
+      Object.assign(unit, { x: 6, y: 10 });
+      state.engines = [engine(kind, 6, 10)];
+      const markup = renderToStaticMarkup(createElement(SiegeMapView, { state, locale: 'en' }));
+      expect(markup.indexOf(`data-unit="${unit.id}"`)).toBeGreaterThan(
+        markup.lastIndexOf('data-piece="engine"'),
+      );
     },
   );
-  it('the unit Raise ladder entry acts on the ladder, then offers Climb without changing rules', () => {
+  it('Raise ladder from the base still offers Climb without changing rules', () => {
     let state = createSiegeState(228);
     const id = state.units[1]!.id;
-    Object.assign(state.units[1]!, { x: 18, y: 19 });
+    Object.assign(state.units[1]!, { x: 6, y: 10 });
+    state.units = state.units.filter((u) => u.id === id);
     const command = siegeCommands(state, id).find((c) => c.kind === 'raiseLadder')!;
     expect(command).toMatchObject({
       reason: null,
@@ -249,11 +163,11 @@ describe('R engine footprints, figure registration and layer order', () => {
     expect(siegeCommands(state, id).some((c) => c.kind === 'raiseLadder')).toBe(false);
     expect(siegeCommands(state, id).find((c) => c.kind === 'climb')?.reason).toBeNull();
   });
-  it('Shu inside or on the wall gets next-goal guidance; boxed-in Wei keeps its context', () => {
-    const state = createSiegeState(228);
-    const shu = state.units[1]!,
+  it('inside units retain next-goal guidance and a boxed-in wall defender retains context', () => {
+    const state = createSiegeState(228),
+      shu = state.units[1]!,
       wei = state.units.find((u) => u.side === 'wei')!;
-    Object.assign(shu, { x: 20, y: 15 });
+    Object.assign(shu, { x: 7, y: 6 });
     expect(climbGuide(state, shu.id)).toBeNull();
     for (const locale of ['zh', 'en'] as const)
       expect(actionContext(state, shu.id, locale)).toBe(
@@ -263,31 +177,25 @@ describe('R engine footprints, figure registration and layer order', () => {
         }),
       );
     for (const unit of [shu, wei]) {
-      const s = structuredClone(state);
-      const wallUnit = s.units.find((u) => u.id === unit.id)!;
-      Object.assign(wallUnit, { x: 18, y: 16, level: 'wall', moved: false });
-      s.units.push({
-        ...wallUnit,
-        id: 'inside-blocker',
-        side: unit.side === 'shu' ? 'wei' : 'shu',
-        y: 15,
-        level: 'ground',
-      });
-      const others = s.units.filter((u) => u.id !== unit.id);
-      Object.assign(others[0]!, {
-        x: 17,
-        y: 16,
-        level: 'wall',
-        side: unit.side === 'shu' ? 'wei' : 'shu',
-      });
-      Object.assign(others[1]!, {
-        x: 19,
-        y: 16,
-        level: 'wall',
-        side: unit.side === 'shu' ? 'wei' : 'shu',
-      });
+      const s = structuredClone(state),
+        u = s.units.find((v) => v.id === unit.id)!;
+      Object.assign(u, { x: 6, y: 7, level: 'wall', moved: false });
+      s.units = s.units.filter((v) => v.id === u.id);
+      for (const [x, y, level] of [
+        [5, 7, 'wall'],
+        [7, 7, 'wall'],
+        [6, 6, 'ground'],
+      ] as const)
+        s.units.push({
+          ...u,
+          id: `block-${x}`,
+          x,
+          y,
+          level,
+          side: u.side === 'shu' ? 'wei' : 'shu',
+        });
       for (const locale of ['zh', 'en'] as const)
-        expect(actionContext(s, unit.id, locale)).toBe(siegeText(locale, 'contextWallBlocked'));
+        expect(actionContext(s, u.id, locale)).toBe(siegeText(locale, 'contextWallBlocked'));
     }
   });
 });

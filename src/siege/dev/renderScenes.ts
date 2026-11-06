@@ -1,11 +1,13 @@
 import { createSiegeState } from '../rules/state';
 import { ENGINE_RULES } from '../rules/tuning';
-import { INNER_WALL_SEGMENTS, SOUTH_TRENCH } from '../content/chencang';
+import { INNER_WALL_SEGMENTS, RAMPS, SOUTH_TRENCH } from '../content/chencang';
 import type { EngineKind, SiegeEngine, SiegeState } from '../rules/types';
 import type { Facing } from '../save';
 import type { NightPresentation } from '../render/nightReplay';
+import { standingPositions } from '../render/boardGeometry';
 
 export const RENDER_SCENES = [
+  'board',
   'footholds',
   'assault',
   'mounds',
@@ -45,169 +47,175 @@ const engine = (
   ...extra,
 });
 
-/** Fixed review fixtures: no random actions or AI, and never saved. */
+/** All coordinates are V1 board cells. Fixtures are pictures, never saves. */
 export function createRenderScene(name: RenderSceneName): RenderScene {
   const state = createSiegeState(228);
   state.day = 3;
   state.weather = 'clear';
   state.engines = [];
-  state.units.forEach((u, i) => {
-    u.x = 16 + (i % 9) * 2;
-    u.y = u.side === 'wei' ? 16 : 22;
-    u.level = u.side === 'wei' ? 'wall' : 'ground';
-  });
-  // Keep the normal roster nearby for selection, without obscuring the samples.
-  state.units[9]!.y = 24;
   const result: RenderScene = { state, facings: {}, legend: '' };
-  const ladder = (x: number, progress: 0 | 1 | 2 | 3, unitIndex: number) => {
-    state.engines.push(engine(`ladder-${x}`, 'ladder', x, 19, { raisedAt: { x, y: 16 } }));
-    state.footholds[`${x},16`] = progress;
-    Object.assign(state.units[unitIndex]!, { x, y: 19 });
+  const ladder = (x: number, progress: 0 | 1 | 2 | 3, index: number) => {
+    state.engines.push(engine(`ladder-${x}`, 'ladder', x, 10, { raisedAt: { x, y: 7 } }));
+    state.footholds[`${x},7`] = progress;
+    Object.assign(state.units[index]!, { x, y: 10, level: 'ground' });
   };
-  if (name === 'ramps') {
-    state.units.forEach((unit) => {
-      unit.y = 24;
-      unit.level = 'ground';
-    });
-    Object.assign(state.units[5]!, { x: 21, y: 15, level: 'ground', troops: 800 });
-    Object.assign(state.units[6]!, { x: 26, y: 15, level: 'ground', troops: 800 });
-    result.facings[state.units[5]!.id] = 'east';
-    result.facings[state.units[6]!.id] = 'west';
-    result.legend = 'South ramps: units at (21,15) and (26,15), descending towards the gate.';
-  } else if (name === 'visible') {
-    // The planner's look-probe fixture, before any unit is selected.
-    const original = createSiegeState(228);
-    state.units = original.units;
-    state.engines = original.engines;
-    const set = (id: string, x: number, y: number, level: 'wall' | 'ground') =>
-      Object.assign(
-        state.units.find((u) => u.id === id)!,
-        { x, y, level, moved: false, acted: false },
-      );
-    set('shu-weiyan', 18, 16, 'wall');
-    set('shu-wangping', 19, 16, 'wall');
-    set('shu-liaohua', 17, 15, 'ground');
-    set('shu-jiangwei', 18, 15, 'ground');
-    set('shu-wuyi', 21, 15, 'ground');
-    set('shu-captain-1', 23, 15, 'ground');
-    set('wei-wangsheng', 16, 15, 'ground');
-    state.footholds['18,16'] = 3;
-    state.engines[0]!.raisedAt = { x: 18, y: 16 };
+  if (name === 'board') {
+    const template = state.units[1]!;
+    state.units = standingPositions(state).map((p) => ({
+      ...template,
+      ...p,
+      id: `board-${p.x}-${p.y}-${p.level}`,
+      side: p.level === 'wall' ? 'wei' : 'shu',
+      troops: 150,
+      wounded: 0,
+      officer: {
+        ...template.officer,
+        portraitId: null,
+        chinese: `${p.x},${p.y}`,
+        name: `${p.x},${p.y}`,
+      },
+      moved: false,
+      acted: false,
+    }));
     result.legend =
-      'Walkway, inside wall, ramp, gate approach and Wei behind the wall; raised ladder at 18,16.';
+      'V2 review sheet: half-open hit rectangles; teal ground, magenta wall. One full-size figure per position, including trench fill targets and both gate planes. Gate planes are schematic, not simultaneous legal occupants.';
+  } else if (name === 'ramps') {
+    RAMPS.forEach(({ ground }, i) => {
+      Object.assign(state.units[i]!, ground, { level: 'ground', troops: 800 });
+      result.facings[state.units[i]!.id] = i % 2 ? 'west' : 'east';
+    });
+    result.legend = 'All eight ramps. Feet on the painted slopes; south ramps at (7,6), (9,6).';
+  } else if (name === 'visible') {
+    state.engines = createSiegeState(228).engines;
+    const places = [
+      [8, 12],
+      [6, 7],
+      [7, 7],
+      [5, 6],
+      [7, 6],
+      [9, 6],
+      [8, 6],
+      [3, 11],
+      [2, 11],
+      [14, 11],
+      [8, 7],
+      [9, 7],
+      [10, 7],
+      [11, 7],
+      [4, 4],
+      [12, 4],
+    ];
+    state.units.forEach((u, i) => {
+      const [x, y] = places[i]!;
+      Object.assign(u, {
+        x,
+        y,
+        level: y === 7 || (y === 4 && (x === 4 || x === 12)) ? 'wall' : 'ground',
+        moved: false,
+        acted: false,
+      });
+    });
+    state.engines[0]!.y = 10;
+    state.engines[0]!.raisedAt = { x: 6, y: 7 };
+    state.footholds['6,7'] = 3;
+    result.legend =
+      'Wall, inner yard, ramps, gate and units behind buildings. Every unit has a plate; hidden pixels are yellow.';
   } else if (name === 'footholds') {
-    [16, 19, 28, 31].forEach((x, i) => ladder(x, i as 0 | 1 | 2 | 3, i + 1));
+    [5, 6, 10, 11].forEach((x, i) => ladder(x, i as 0 | 1 | 2 | 3, i + 1));
     const defender = state.units.find((u) => u.side === 'wei')!;
-    Object.assign(defender, { x: 32, y: 16, morale: 60 });
+    Object.assign(defender, { x: 12, y: 7, morale: 60 });
     state.log.push({
       day: state.day,
       code: 'defenderDisplaced',
       params: {
         unitId: defender.id,
-        from: '31,16',
-        to: '32,16',
+        from: '11,7',
+        to: '12,7',
         level: 'wall',
         moraleBefore: 70,
         moraleAfter: 60,
       },
     });
     result.legend =
-      'West to east: 0/3, 1/3 (a), 2/3 (a + b), 3/3 (top). Hover the forecast sample to blink. Defender at (32,16): displaced, morale -10.';
+      'West to east: foothold 0/3, 1/3, 2/3, 3/3. Displaced defender at (12,7), morale -10.';
   } else if (name === 'assault') {
-    ladder(18, 2, 1);
-    ladder(29, 2, 2);
-    state.units[1]!.assaultedDay = state.day;
-    state.units[2]!.assaultedDay = state.day;
+    ladder(6, 2, 1);
+    ladder(10, 2, 2);
+    state.units[1]!.assaultedDay = state.units[2]!.assaultedDay = state.day;
     result.repulsedUnits = [state.units[2]!.id];
-    result.legend =
-      'West: storming mass at the wall foot. East: repulsed mass (static review sample). Start replay to see the failed assault fade.';
+    result.legend = 'Storming mass at (6,8), repulsed at (10,8); original uniform art size.';
   } else if (name === 'mounds') {
-    [16, 19, 27, 29, 32].forEach((x, i) => {
-      state.mounds[`${x},17`] = [1, 2, 3, 5, 6][i] as 1 | 2 | 3 | 5 | 6;
-      state.trenchFill[`${x},17`] = 3;
-      state.trenchFill[`${x},18`] = 3;
+    [5, 6, 7, 9, 10].forEach((x, i) => {
+      state.mounds[`${x},8`] = [1, 2, 3, 5, 6][i] as 1 | 2 | 3 | 5 | 6;
+      state.trenchFill[`${x},8`] = state.trenchFill[`${x},9`] = 3;
     });
-    Object.assign(state.units[1]!, { x: 32, y: 17, troops: 800 });
+    Object.assign(state.units[1]!, { x: 10, y: 8, troops: 800 });
     result.legend =
-      'West to east: progress 1, 2, 3, 5, 6. One unit stands on the finished ramp; defenders remain behind its crest.';
+      'Mound progress 1,2,3,5,6. Filled cells cover every fine cell. One unit on the finished mound.';
   } else if (name === 'covered') {
     state.engines = [
-      engine('covered-ladder-n', 'ladder', 16, 20, { covered: true }),
-      engine('covered-ladder-e', 'ladder', 18, 20, { covered: true }),
-      engine('covered-ladder-raised', 'ladder', 20, 19, {
-        covered: true,
-        raisedAt: { x: 20, y: 16 },
-      }),
-      engine('covered-ram-n', 'ram', 24, 20, { covered: true }),
-      engine('covered-ram-e', 'ram', 26, 20, { covered: true }),
-      engine('covered-ram-damaged', 'ram', 29, 20, { covered: true, durability: 149 }),
-      engine('burning-ladder', 'ladder', 31, 20, { covered: true, burning: true }),
-      engine('burning-ram', 'ram', 33, 20, { covered: true, burning: true }),
+      engine('covered-ladder-n', 'ladder', 5, 10, { covered: true }),
+      engine('covered-ladder-e', 'ladder', 6, 10, { covered: true }),
+      engine('covered-ladder-raised', 'ladder', 7, 10, { covered: true, raisedAt: { x: 7, y: 7 } }),
+      engine('covered-ram-n', 'ram', 8, 10, { covered: true }),
+      engine('covered-ram-e', 'ram', 9, 10, { covered: true }),
+      engine('covered-ram-damaged', 'ram', 10, 10, { covered: true, durability: 149 }),
+      engine('burning-ladder', 'ladder', 11, 10, { covered: true, burning: true }),
+      engine('burning-ram', 'ram', 12, 10, { covered: true, burning: true }),
     ];
     result.facings = { 'covered-ladder-e': 'east', 'covered-ram-e': 'west' };
     result.legend =
-      'All S8 covered variants: north / east / raised ladders; north / mirrored east / damaged rams. East edge: legacy burning path.';
+      'All six covered engine variants, plus burning ladder and ram. Raised ladder uniformly fitted to base and parapet.';
   } else if (name === 'preparations' || name === 'nightTorches') {
     state.preparations.braziers = {
-      '16,16': { litDay: state.day },
-      '19,16': { litDay: 1 },
-      '31,16': { litDay: 1 },
+      '5,7': { litDay: state.day },
+      '6,7': { litDay: 1 },
+      '11,7': { litDay: 1 },
     };
-    state.preparations.boulders = { '27,16': { day: 1 } };
+    state.preparations.boulders = { '9,7': { day: 1 } };
     state.preparations.millstones = {
-      '24,16': { day: 1, hoisted: true },
-      // Synthetic plain-wall sample: today's map has no plain wall directly
-      // over a gate approach. Exercise the other cell type allowed by §5.7.
-      '26,16': { day: 1, hoisted: true },
+      '8,7': { day: 1, hoisted: true },
+      '10,7': { day: 1, hoisted: true },
     };
     result.legend =
-      'Brazier prepared today + firewood; usable brazier; hoisted millstones in front of gate top (24,16) and plain wall (26,16, synthetic approach sample); boulders. Unlit brazier reference in the strip below.';
+      'Three braziers, today’s firewood, boulders, gate and plain-wall millstones. All positions use boardGeometry.';
     if (name === 'nightTorches') {
       state.weather = 'snow';
-      state.engines = [
-        engine('night-ladder', 'ladder', 18, 21),
-        engine('night-ram', 'ram', 24, 20),
-      ];
+      state.engines = [engine('night-ladder', 'ladder', 6, 10), engine('night-ram', 'ram', 8, 10)];
       result.night = { kind: 'torches', duration: 130 };
-      result.legend =
-        'Snow, flat 45% night tint, radial brazier lights and torch flare. Replay also demonstrates a northward engine slide and ladder crossfade.';
     }
   } else if (name === 'sortie') {
-    state.engines = [engine('sortie-target', 'ram', 25, 20, { burning: true, durability: 130 })];
+    state.engines = [engine('sortie-target', 'ram', 9, 10, { burning: true, durability: 130 })];
     result.night = {
       kind: 'sortie',
       duration: 130,
-      party: { from: { x: 24, y: 20 }, to: { x: 25, y: 20 }, pose: 'east-kindle', kindle: true },
+      party: { from: { x: 8, y: 10 }, to: { x: 9, y: 10 }, pose: 'east-kindle', kindle: true },
     };
     result.legend =
-      'Party at target, torch lit and engine burning. Reference strip: all six poses. Replay success, guarded failure, and night-assault failure with the controls.';
+      'Sortie at (9,10); torch lit. Replay success, guarded failure, night assault failure.';
   } else if (name === 'formations') {
     state.units.forEach((u, i) => {
       u.troops = i < 4 ? [800, 801, 2000, 2001][i]! : 3000;
     });
     state.engines = Array.from({ length: 8 }, (_, i) =>
-      engine(`stress-${i}`, i % 2 ? 'ram' : 'ladder', 16 + i * 2, 20),
+      engine(`stress-${i}`, i % 2 ? 'ram' : 'ladder', 4 + i, 10),
     );
     result.legend =
-      'First four ground units: 800 / 801 / 2000 / 2001 troops = 1 / 3 / 3 / 5 figures. Remaining units: five figures. 10 Shu, 6 Wei, 8 engines.';
+      'Troop thresholds 800/801/2000/2001: 1/3/3/5, capped by cell shape. Original figure dimensions.';
   } else {
-    // A conservative composite stress fixture, not a simulated sequence:
-    // maximum formations, tall burning engines, the entire mound front,
-    // all inner walls, six sets of preparations and a torch-bearing sortie.
     state.units.forEach((u) => {
       u.troops = 3000;
     });
     state.engines = Array.from({ length: 8 }, (_, i) =>
-      engine(`worst-tower-${i}`, 'tower', 15 + i * 2, 20, { burning: true }),
+      engine(`worst-tower-${i}`, 'tower', 4 + i, 10, { burning: true }),
     );
-    for (const cell of SOUTH_TRENCH.filter((c) => c.y === 17)) {
-      state.mounds[`${cell.x},17`] = 6;
-      state.trenchFill[`${cell.x},17`] = 3;
-      state.trenchFill[`${cell.x},18`] = 3;
+    for (const cell of SOUTH_TRENCH.filter((c) => c.y === 8)) {
+      state.mounds[`${cell.x},8`] = 6;
+      state.trenchFill[`${cell.x},8`] = state.trenchFill[`${cell.x},9`] = 3;
     }
     for (const segment of INNER_WALL_SEGMENTS) state.innerWall[segment.index] = 4;
-    for (const x of [16, 19, 22, 24, 29, 31]) {
-      const key = `${x},16`;
+    for (const x of [5, 6, 7, 8, 10, 11]) {
+      const key = `${x},7`;
       state.preparations.braziers[key] = { litDay: state.day };
       state.preparations.boulders[key] = { day: 1 };
       state.preparations.millstones[key] = { day: 1, hoisted: true };
@@ -215,10 +223,10 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     result.night = {
       kind: 'sortie',
       duration: 130,
-      party: { from: { x: 24, y: 20 }, to: { x: 25, y: 20 }, pose: 'east-kindle', kindle: true },
+      party: { from: { x: 8, y: 10 }, to: { x: 9, y: 10 }, pose: 'east-kindle', kindle: true },
     };
     result.legend =
-      'Stress composite: all 16 units have five figures; eight burning towers; full mound front and inner walls; six preparation sets; torch-bearing sortie. Static scenery must never disappear.';
+      'Stress: 16 maximum formations, eight burning towers, full mound front, all inner walls, six preparations, sortie. No art omitted.';
   }
   return result;
 }

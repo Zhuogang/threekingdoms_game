@@ -9,8 +9,10 @@ export async function snapshot(page: Page) {
 export async function selectActor(page: Page, id: string) {
   const side = await page.locator('.siege-app').getAttribute('data-player-side');
   if ((side === 'wei' && !id.startsWith('wei-')) || (side !== 'wei' && id.startsWith('wei-'))) {
-    const box = (await page.getByTestId(`map-unit-${id}`).boundingBox())!;
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    const game = await snapshot(page),
+      unit = game.state.units.find((u) => u.id === id)!;
+    await panToCell(page, unit);
+    await clickPlate(page, id);
     return;
   }
   const picker = page.getByTestId('unit-list');
@@ -47,16 +49,15 @@ export async function shot(page: Page, name: string) {
 }
 /** Click the cell's SVG geometry, avoiding artwork bounds, strokes and reordered unit layers. */
 export async function clickCell(page: Page, overlay: string, cell: string) {
-  const position = await page
-    .locator(`[data-overlay="${overlay}"][data-cell="${cell}"]`)
-    .evaluate((element) => {
-      const rect = element as SVGRectElement;
-      const point = new DOMPoint(
-        rect.x.baseVal.value + rect.width.baseVal.value / 2,
-        rect.y.baseVal.value + rect.height.baseVal.value / 2,
-      ).matrixTransform(rect.getScreenCTM()!);
-      return { x: point.x, y: point.y };
-    });
+  await expect(page.locator(`[data-overlay="${overlay}"][data-cell="${cell}"]`)).toHaveCount(1);
+  const [x, y, level] = cell.split(',');
+  const target = {
+    x: Number(x),
+    y: Number(y),
+    level: level as 'ground' | 'wall',
+  };
+  await panToCell(page, target);
+  const position = await cellPoint(page, target);
   await page.mouse.click(position.x, position.y);
 }
 export async function closeReport(page: Page) {
@@ -105,4 +106,51 @@ export async function loadFixture(page: Page, game: SiegeSave, locale: 'en' | 'z
   await expect(
     page.locator(`[data-phase="${game.state.outcome ? 'ending' : game.phase}"]`),
   ).toBeVisible();
+}
+
+/** The same disjoint geometry as pointer input, transformed through the live camera. */
+export async function cellPoint(
+  page: Page,
+  cell: import('../../src/siege/rules/types').SiegePosition,
+) {
+  await page.waitForFunction(() => Boolean(window.__siegeGeometry));
+  return page.getByTestId('siege-map').evaluate((svg, p) => {
+    const r = window.__siegeGeometry!.hitRect(p);
+    if (!r) throw new Error(`No hit rectangle for ${JSON.stringify(p)}`);
+    const point = new DOMPoint((r[0] + r[2]) / 2, (r[1] + r[3]) / 2).matrixTransform(
+      (svg as SVGSVGElement).getScreenCTM()!,
+    );
+    return { x: point.x, y: point.y };
+  }, cell);
+}
+export async function panToCell(
+  page: Page,
+  cell: import('../../src/siege/rules/types').SiegePosition,
+) {
+  await page.waitForFunction(() => Boolean(window.__siegeGeometry));
+  const at = await page.evaluate((p) => window.__siegeGeometry!.anchor(p), cell);
+  const box = (await page.locator('.siege-minimap').boundingBox())!;
+  await page.mouse.click(box.x + (at[0] / 3072) * box.width, box.y + (at[1] / 1536) * box.height);
+}
+export async function clickPlate(page: Page, id: string) {
+  const plate = page.locator(`[data-nameplate="${id}"]`);
+  const at = await plate.evaluate((el) => {
+    const group = el as SVGGElement,
+      svg = group.ownerSVGElement!;
+    const point = new DOMPoint(46, 13)
+      .matrixTransform(group.getScreenCTM()!)
+      .matrixTransform(svg.getScreenCTM()!.inverse());
+    return { x: point.x, y: point.y };
+  });
+  const mini = (await page.locator('.siege-minimap').boundingBox())!;
+  await page.mouse.click(mini.x + (at.x / 3072) * mini.width, mini.y + (at.y / 1536) * mini.height);
+  const p = await plate.evaluate((el) => {
+    const r = el.querySelector('rect')!;
+    const point = new DOMPoint(
+      r.width.baseVal.value / 2,
+      r.height.baseVal.value / 2,
+    ).matrixTransform((el as SVGGElement).getScreenCTM()!);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(p.x, p.y);
 }

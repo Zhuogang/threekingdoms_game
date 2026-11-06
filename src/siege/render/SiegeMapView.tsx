@@ -1,4 +1,14 @@
+import {
+  anchor as boardAnchor,
+  centre,
+  contains,
+  hitRect,
+  planeRect,
+  layoutNameplates,
+  standingPositions,
+} from './boardGeometry';
 import { swapTargets } from '../rules/movement';
+import { officerPortraitPath } from '../../v03/rendering/officer-portraits';
 import {
   forwardRef,
   memo,
@@ -20,7 +30,7 @@ import {
   type BattlefieldViewBox,
 } from '../../v03/rendering/battlefield-viewport';
 import { DEPLOY_SHU, DEPLOY_WEI, cellKey } from '../content/chencang';
-import { cellHeight, isMapCell } from '../rules/map';
+import { isMapCell } from '../rules/map';
 import { activeUnit } from '../rules/combat';
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
@@ -52,7 +62,6 @@ import { pickMapPosition } from './picking';
 import { spriteObject, type Sprite } from './mapPieces';
 import {
   compareDepth,
-  project,
   rectsOverlap,
   sliceObject,
   STANDING_EPSILON,
@@ -63,6 +72,7 @@ import {
   climbableCells,
   engineSprite,
   engineFootprint,
+  sharesEngineCell,
   statePatches,
   unitVisual,
   type EngineSprite,
@@ -83,7 +93,15 @@ const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
 const NO_CELLS: SiegePosition[] = [];
 const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
-export const SILHOUETTE_OPACITY = 0.85;
+export const SILHOUETTE_OPACITY = 0.7;
+const portraitFiles = import.meta.glob(
+  '/docs/siege/chencang/art/s5-0{7,8}-*/runtime/*-small.webp',
+  { query: '?url', import: 'default', eager: true },
+) as Record<string, string>;
+const portraitOf = (unit: SiegeUnit) =>
+  Object.entries(portraitFiles).find(([path]) =>
+    path.endsWith(`/${unit.officer.id}-small.webp`),
+  )?.[1] ?? (unit.officer.portraitId ? officerPortraitPath(unit.officer.portraitId) : undefined);
 interface Layer {
   slice: SceneSlice;
   sprite?: Sprite;
@@ -110,6 +128,7 @@ interface Props {
   deploy?: boolean;
   playerSide?: 'shu' | 'wei';
   xray?: boolean;
+  boardReview?: boolean;
   showRange?: boolean;
   facings?: Record<string, Facing>;
   activity?: { id: string; type: string } | null;
@@ -143,6 +162,7 @@ export const SiegeMapView = memo(
       deploy = false,
       playerSide = 'shu',
       xray = false,
+      boardReview = false,
       showRange = true,
       facings = NO_FACINGS,
       activity,
@@ -160,6 +180,18 @@ export const SiegeMapView = memo(
     },
     ref,
   ) {
+    useEffect(() => {
+      if (!import.meta.env.DEV) return;
+      const geometry = {
+        hitRect: (p: SiegePosition) => hitRect(p, state),
+        anchor: (p: SiegePosition) => boardAnchor(p, state),
+        positionAt: (x: number, y: number) => pickMapPosition(state, x, y),
+      };
+      window.__siegeGeometry = geometry;
+      return () => {
+        if (window.__siegeGeometry === geometry) delete window.__siegeGeometry;
+      };
+    }, [state]);
     const deployCells = playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI;
     const prefix = useId().replace(/:/g, '');
     const frame = useRef<HTMLDivElement>(null);
@@ -235,9 +267,7 @@ export const SiegeMapView = memo(
         setView((current) =>
           initial
             ? (() => {
-                const centre = initialFocus
-                  ? project(FRAME, initialFocus.x + 0.5, initialFocus.y + 0.5, 0)
-                  : [1536, 900];
+                const centre = initialFocus ? boardAnchor(initialFocus) : [1536, 900];
                 return {
                   left: centre[0]! - width / initialZoom / 2,
                   top: centre[1]! - height / initialZoom / 2,
@@ -255,14 +285,22 @@ export const SiegeMapView = memo(
       if (frame.current) onZoom?.(frame.current.clientWidth / view.width);
     }, [view.width, onZoom]);
     const focus = (position?: SiegePosition) => {
-      const [x, y] = position
-        ? project(
-            FRAME,
-            position.x + 0.5,
-            position.y + 0.5,
-            cellHeight(state, position.x, position.y, position.level),
-          )
-        : [1536, 840];
+      const occupant =
+        position &&
+        state.units.find(
+          (u) =>
+            u.troops > 0 && u.x === position.x && u.y === position.y && u.level === position.level,
+        );
+      const [x, y] = occupant
+        ? unitVisual(
+            state,
+            occupant,
+            facings[occupant.id],
+            activity?.id === occupant.id ? activity.type : undefined,
+          ).foot
+        : position
+          ? boardAnchor(position, state)
+          : [1536, 840];
       setView((current) => recenterBattlefieldViewport(current, BOUNDS, { x, y }));
     };
     useImperativeHandle(ref, () => ({
@@ -287,15 +325,7 @@ export const SiegeMapView = memo(
     };
     const pickAt = (clientX: number, clientY: number): SiegePosition | null => {
       const p = pointAt(clientX, clientY);
-      return pickMapPosition(
-        state,
-        p.x,
-        p.y,
-        selected,
-        reachable,
-        playerSide,
-        clickMode === 'move' || clickMode === 'fillTrench',
-      );
+      return pickMapPosition(state, p.x, p.y);
     };
     useEffect(() => {
       const element = frame.current!;
@@ -311,6 +341,7 @@ export const SiegeMapView = memo(
     }, []);
 
     const scene = useScene({
+      boardReview,
       state,
       locale,
       xray,
@@ -344,19 +375,17 @@ export const SiegeMapView = memo(
     const { units, engines, decorations } = scene;
     const hitAt = (clientX: number, clientY: number) => {
       const point = pointAt(clientX, clientY);
-      const unitAtPoint = [...units]
-        .sort(
-          (a, b) =>
-            compareDepth(b.visual.depth, a.visual.depth) || units.indexOf(b) - units.indexOf(a),
-        )
-        .find(
-          ({ visual: { rect } }) =>
-            point.x >= rect[0] && point.x <= rect[2] && point.y >= rect[1] && point.y <= rect[3],
-        )?.unit.id;
-      return { cell: pickAt(clientX, clientY), unitAtPoint };
+      const plateUnitId = [...units]
+        .reverse()
+        .find(({ unit }) => contains(scene.plates.get(unit.id)!, point.x, point.y))?.unit.id;
+      return { cell: pickAt(clientX, clientY), plateUnitId };
     };
     const overlay = useRef<OverlayHandle>(null);
     const spriteCount = scene.budget.used;
+    const silhouetteFigures = units.reduce(
+      (n, { visual }) => n + (scene.occluders(visual).length ? visual.figures.length : 0),
+      0,
+    );
     return (
       <div className="siege-map-frame" ref={frame}>
         <svg
@@ -365,6 +394,8 @@ export const SiegeMapView = memo(
           data-selected={selected ?? ''}
           data-sprite-cap={SPRITE_CAP}
           data-sprite-count={spriteCount}
+          data-silhouette-figure-count={silhouetteFigures}
+          data-draw-instance-count={spriteCount + silhouetteFigures}
           data-mandatory-sprite-count={scene.budget.used}
           data-sprites-omitted={scene.budget.omitted}
           data-ready={!patches.length || composed?.signature === signature}
@@ -416,7 +447,7 @@ export const SiegeMapView = memo(
             }
             const hit = hitAt(event.clientX, event.clientY);
             dispatchClick(
-              resolveMapClick({ ...clickContext, unitAtPoint: hit.unitAtPoint }, hit.cell),
+              resolveMapClick({ ...clickContext, plateUnitId: hit.plateUnitId }, hit.cell),
             );
           }}
           onPointerCancel={() => {
@@ -445,26 +476,31 @@ export const SiegeMapView = memo(
             xray={xray}
           />
           {scene.effects}
+          <Nameplates units={units} rects={scene.plates} locale={locale} selected={selected} />
+          {boardReview && <BoardReview state={state} />}
           {/* Invisible geometry for specs only; input uses the pure resolver. */}
           <g data-testid="unit-hit-targets">
             {[...units]
               .sort((a, b) => compareDepth(a.visual.depth, b.visual.depth))
-              .map(({ unit, visual }) => (
-                <rect
-                  key={unit.id}
-                  data-testid={`map-unit-${unit.id}`}
-                  data-x={unit.x}
-                  data-y={unit.y}
-                  x={visual.rect[0]}
-                  y={visual.rect[1]}
-                  width={visual.rect[2] - visual.rect[0]}
-                  height={visual.rect[3] - visual.rect[1]}
-                  fill="transparent"
-                  pointerEvents="none"
-                >
-                  <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
-                </rect>
-              ))}
+              .map(({ unit }) => {
+                const rect = hitRect(unit, state)!;
+                return (
+                  <rect
+                    key={unit.id}
+                    data-testid={`map-unit-${unit.id}`}
+                    data-x={unit.x}
+                    data-y={unit.y}
+                    x={rect[0]}
+                    y={rect[1]}
+                    width={rect[2] - rect[0]}
+                    height={rect[3] - rect[1]}
+                    fill="transparent"
+                    pointerEvents="none"
+                  >
+                    <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
+                  </rect>
+                );
+              })}
           </g>
         </svg>
         {notice && (
@@ -500,8 +536,8 @@ export const SiegeMapView = memo(
             .map((u) => (
               <circle
                 key={u.id}
-                cx={(u.x + 0.5) * FRAME.cw}
-                cy={(u.y + 0.5) * FRAME.cd}
+                cx={boardAnchor(u)[0]}
+                cy={boardAnchor(u)[1]}
                 r={13}
                 fill={u.side === 'shu' ? '#467344' : '#344d7c'}
               />
@@ -532,6 +568,7 @@ type SceneProps = Pick<
   | 'effectAction'
   | 'night'
   | 'repulsedUnits'
+  | 'boardReview'
 > & {
   prefix: string;
   patches: ReturnType<typeof statePatches>;
@@ -539,6 +576,7 @@ type SceneProps = Pick<
   painting: string;
 };
 function useScene({
+  boardReview = false,
   state,
   locale,
   xray,
@@ -572,6 +610,19 @@ function useScene({
         })),
     [state, facings, activity],
   );
+  const plates = useMemo(
+    () =>
+      layoutNameplates(
+        units.map(({ unit, visual }) => ({
+          id: unit.id,
+          position: unit,
+          foot: visual.foot,
+          rect: visual.rect,
+        })),
+        !boardReview,
+      ),
+    [units, boardReview],
+  );
   const preparations = useMemo(() => preparationSprites(state), [state.preparations, state.day]);
   const decorations = useMemo(
     () => [
@@ -591,8 +642,7 @@ function useScene({
     ],
     [state, preparations, Boolean(night), repulsedUnits],
   );
-  // Every living formation is mandatory. Covered figures move to the overlay
-  // rather than consuming a second set of image instances.
+  // Living figures always draw in depth. The overlay reuses their stable nodes.
   const staticLayers = useMemo(
     () =>
       MAP.objects.flatMap((object) =>
@@ -616,6 +666,7 @@ function useScene({
             0,
           ) +
           2 +
+          units.filter(({ unit }) => portraitOf(unit)).length +
           units.reduce((n, u) => n + u.visual.figures.length, 0) +
           engines.filter((e) => e.burning).length * 2 +
           (night?.party ? (night.party.kindle ? 4 : 3) : 0) +
@@ -672,8 +723,8 @@ function useScene({
       const ladder = sprite.kind.startsWith('storm')
         ? engines.find(
             (e) =>
-              e.engine.raisedAt?.x === sprite.cells[0] &&
-              e.engine.raisedAt.y === sprite.cells[1] - 1,
+              `storm-${state.units.find((u) => u.x === e.engine.x && u.y === e.engine.y)?.id}` ===
+              sprite.id,
           )
         : undefined;
       for (const slice of sliceObject(FRAME, spriteObject(sprite)))
@@ -700,11 +751,7 @@ function useScene({
           const front =
             engine &&
             units
-              .filter(({ unit }) =>
-                engineFootprint(engine.engine).some(
-                  (c) => c.x === unit.x && c.y === unit.y && c.level === unit.level,
-                ),
-              )
+              .filter(({ unit }) => sharesEngineCell(engine.engine, unit))
               .map((u) => u.visual.depth)
               .sort(compareDepth)[0];
           return {
@@ -723,19 +770,25 @@ function useScene({
       ].sort((a, b) => compareDepth(a.depth, b.depth)),
     [layers, units, preparations, engines],
   );
-  const occluders = (visual: ReturnType<typeof unitVisual>) =>
-    layers.filter(
-      (l) =>
-        !(
-          l.sprite?.kind === 'engine' &&
-          engineFootprint((l.sprite as EngineSprite).engine).some(
-            (c) => c.x === visual.cell.x && c.y === visual.cell.y && c.level === visual.cell.level,
-          )
-        ) &&
-        l.slice.kind !== 'tree' &&
-        compareDepth(l.slice, visual.depth) > 0 &&
-        rectsOverlap(l.slice.rect, visual.rect),
-    );
+  const coverage = useMemo(
+    () =>
+      new Map(
+        units.map(({ visual }) => [
+          visual,
+          layers.filter(
+            (l) =>
+              !(
+                l.sprite?.kind === 'engine' &&
+                sharesEngineCell((l.sprite as EngineSprite).engine, visual.cell)
+              ) &&
+              compareDepth(l.slice, visual.depth) > 0 &&
+              rectsOverlap(l.slice.rect, visual.rect),
+          ),
+        ]),
+      ),
+    [units, layers],
+  );
+  const occluders = (visual: ReturnType<typeof unitVisual>) => coverage.get(visual) ?? [];
   const layerKey = (l: Layer) => `${prefix}-${l.slice.objectId}-${l.slice.row}`;
   const spriteImage = (sprite: Sprite) => (
     <SpriteImage sprite={sprite} flip={'flip' in sprite && Boolean(sprite.flip)} />
@@ -752,8 +805,7 @@ function useScene({
     ) : (
       <g filter={`url(#${prefix}-white)`}>{spriteImage(layer.sprite!)}</g>
     );
-  const drawUnit = (unit: SiegeUnit, visual: ReturnType<typeof unitVisual>, silhouette = false) => {
-    const max = unit.troops + unit.wounded;
+  const drawUnit = (unit: SiegeUnit, visual: ReturnType<typeof unitVisual>) => {
     return (
       <g
         id={`${prefix}-${unit.id}-motion`}
@@ -777,28 +829,20 @@ function useScene({
           stroke="#ece4d2"
           strokeWidth={1}
         />
-        {visual.figures.map((figure, index) => (
-          <image
-            key={index}
-            data-sprite={silhouette ? 'silhouette' : 'figure'}
-            data-pose={figure.name}
-            href={figure.pose.href}
-            x={figure.offset[0] - figure.pose.anchor[0]}
-            y={figure.offset[1] - figure.pose.anchor[1]}
-            width={figure.pose.size[0]}
-            height={figure.pose.size[1]}
-            transform={visual.flip ? 'scale(-1 1)' : undefined}
-          />
-        ))}
-        <g pointerEvents="none">
-          <rect x={-18} y={9} width={36} height={4} fill="#453d33" />
-          <rect
-            x={-18}
-            y={9}
-            width={(36 * unit.troops) / Math.max(1, max)}
-            height={4}
-            fill={unit.side === 'shu' ? '#8fb27a' : '#829fbf'}
-          />
+        <g id={`${prefix}-${unit.id}-figures`}>
+          {visual.figures.map((figure, index) => (
+            <image
+              key={index}
+              data-sprite="figure"
+              data-pose={figure.name}
+              href={figure.pose.href}
+              x={figure.offset[0] - figure.pose.anchor[0]}
+              y={figure.offset[1] - figure.pose.anchor[1]}
+              width={figure.pose.size[0]}
+              height={figure.pose.size[1]}
+              transform={visual.flip ? 'scale(-1 1)' : undefined}
+            />
+          ))}
         </g>
       </g>
     );
@@ -811,7 +855,9 @@ function useScene({
     strokeWidth = 2,
     walk = false,
   ): ReactNode => {
-    const [x, y] = project(FRAME, cell.x, cell.y, cellHeight(state, cell.x, cell.y, cell.level));
+    const r = kind === 'hover' ? hitRect(cell, state) : planeRect(cell);
+    if (!r) return null;
+    const [x, y, right, bottom] = r;
     return (
       <rect
         key={`${kind}-${cellKey(cell)}-${cell.level}`}
@@ -821,8 +867,8 @@ function useScene({
         pointerEvents={['hover', 'climb', 'tutorial'].includes(kind) ? 'none' : undefined}
         x={x + 1}
         y={y + 1}
-        width={FRAME.cw - 2}
-        height={FRAME.cd - 2}
+        width={right - x - 2}
+        height={bottom - y - 2}
         fill={color}
         fillOpacity={fill}
         stroke={color}
@@ -836,6 +882,17 @@ function useScene({
     () => (
       <>
         <defs>
+          <filter
+            id={`${prefix}-silhouette`}
+            colorInterpolationFilters="sRGB"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+          >
+            <feFlood floodColor="#ffd23c" />
+            <feComposite in2="SourceAlpha" operator="in" />
+          </filter>
           <filter id={`${prefix}-white`}>
             <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
           </filter>
@@ -914,9 +971,7 @@ function useScene({
             );
           }
           if (item.kind === 'unit')
-            return occluders(item.visual).length ? null : (
-              <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>
-            );
+            return <g key={item.unit.id}>{drawUnit(item.unit, item.visual)}</g>;
           const layer = item.layer,
             key = layerKey(layer);
           if (
@@ -925,7 +980,7 @@ function useScene({
             night.previousEngine.id === layer.sprite.id
           ) {
             const sprite = layer.sprite as EngineSprite;
-            if (layer.slice.row !== sprite.cells[3]) return null;
+            if (layer !== layers.filter((l) => l.sprite?.id === sprite.id).at(-1)) return null;
             const previous = night.previousEngine;
             const raising = !previous.raisedAt && Boolean(sprite.engine.raisedAt);
             const duration = `${night.duration}ms`;
@@ -937,7 +992,7 @@ function useScene({
                 <animateTransform
                   attributeName="transform"
                   type="translate"
-                  from={`${(previous.x - sprite.engine.x) * FRAME.cw} ${(previous.y - sprite.engine.y) * FRAME.cd}`}
+                  from={`${boardAnchor({ ...previous, level: 'ground' })[0] - boardAnchor({ ...sprite.engine, level: 'ground' })[0]} ${boardAnchor({ ...previous, level: 'ground' })[1] - boardAnchor({ ...sprite.engine, level: 'ground' })[1]}`}
                   to="0 0"
                   dur={duration}
                   fill="freeze"
@@ -1040,6 +1095,7 @@ function useScene({
   const scene = useMemo(
     () => ({
       units,
+      plates,
       engines,
       decorations,
       layers,
@@ -1075,7 +1131,7 @@ function useScene({
         </>
       ),
     }),
-    [drawing],
+    [drawing, plates],
   );
   return scene;
 }
@@ -1192,7 +1248,11 @@ type Scene = ReturnType<typeof useScene>;
 function selectionSilhouettes({ units, occluders }: Scene) {
   // These replace the obscured figures, so no on-screen unit can lose its
   // visibility to an optional-image budget or selection priority.
-  return new Set(units.filter(({ visual }) => occluders(visual).length).map(({ unit }) => unit.id));
+  return new Set(
+    units
+      .filter(({ visual }) => visual.figures.length > 0 && occluders(visual).length)
+      .map(({ unit }) => unit.id),
+  );
 }
 
 // Full covered formations are still unit art. Keep their nodes stable when
@@ -1210,7 +1270,16 @@ const CoveredUnits = memo(function CoveredUnits({ scene }: { scene: Scene }) {
             opacity={SILHOUETTE_OPACITY}
             pointerEvents="none"
           >
-            {scene.drawUnit(unit, visual, true)}
+            <g mask={`url(#${scene.prefix}-cover-${unit.id})`}>
+              <g filter={`url(#${scene.prefix}-silhouette)`}>
+                <use
+                  data-sprite="silhouette"
+                  data-covered-unit={unit.id}
+                  href={`#${scene.prefix}-${unit.id}-figures`}
+                  transform={`translate(${visual.foot[0]} ${visual.foot[1]})`}
+                />
+              </g>
+            </g>
           </g>
         ) : null,
       )}
@@ -1219,7 +1288,7 @@ const CoveredUnits = memo(function CoveredUnits({ scene }: { scene: Scene }) {
 });
 
 interface OverlayHandle {
-  hover: (hit: { cell: SiegePosition | null; unitAtPoint?: string } | null) => void;
+  hover: (hit: { cell: SiegePosition | null; plateUnitId?: string } | null) => void;
 }
 const MapOverlays = forwardRef<
   OverlayHandle,
@@ -1256,7 +1325,8 @@ const MapOverlays = forwardRef<
 ) {
   countRender('overlays');
   const [hit, setHit] = useState<Parameters<OverlayHandle['hover']>[0]>(null);
-  const hover = hit?.cell;
+  const plateOwner = scene.units.find(({ unit }) => unit.id === hit?.plateUnitId)?.unit;
+  const hover = plateOwner ?? hit?.cell;
   const hoverRef = useRef(hit);
   useImperativeHandle(
     ref,
@@ -1267,7 +1337,7 @@ const MapOverlays = forwardRef<
           previous?.cell?.x === next?.cell?.x &&
           previous?.cell?.y === next?.cell?.y &&
           previous?.cell?.level === next?.cell?.level &&
-          previous?.unitAtPoint === next?.unitAtPoint
+          previous?.plateUnitId === next?.plateUnitId
         )
           return;
         hoverRef.current = next;
@@ -1310,8 +1380,7 @@ const MapOverlays = forwardRef<
       selectedUnit?.unit ??
       (selectedEngine && { ...selectedEngine.engine, level: 'ground' as const });
     const frames = tutorialCells.map((c) => {
-      const [x, y] = project(FRAME, c.x, c.y, cellHeight(state, c.x, c.y, c.level));
-      return { cell: c, rect: [x, y, x + FRAME.cw, y + FRAME.cd] as ScreenRect };
+      return { cell: c, rect: planeRect(c) };
     });
     for (const engine of engines) {
       if (engine.id === selected || !fadesEngine(engine.engine.kind)) continue;
@@ -1339,7 +1408,7 @@ const MapOverlays = forwardRef<
             : '1';
   }, [scene, selected, xray, tutorialCells, state]);
   const hoverResult = resolveMapClick(
-    { ...clickContext, unitAtPoint: hit?.unitAtPoint },
+    { ...clickContext, plateUnitId: hit?.plateUnitId },
     hover ?? null,
   );
   const hoverColor = mapClickColor(hoverResult);
@@ -1356,6 +1425,7 @@ const MapOverlays = forwardRef<
 
       {selectedUnit && (
         <>
+          {cellOutline(selectedUnit.unit, '#e7b84e', 'selection', 0.02, 2)}
           <defs>
             <mask
               id={`${prefix}-selection-visible`}
@@ -1385,18 +1455,10 @@ const MapOverlays = forwardRef<
           </g>
         </>
       )}
-      {selectedEngine && (
-        <rect
-          x={selectedEngine.rect[0]}
-          y={selectedEngine.rect[1]}
-          width={selectedEngine.rect[2] - selectedEngine.rect[0]}
-          height={selectedEngine.rect[3] - selectedEngine.rect[1]}
-          stroke="#e7b84e"
-          strokeWidth={3}
-          fill="none"
-          pointerEvents="none"
-        />
-      )}
+      {selectedEngine &&
+        engineFootprint(selectedEngine.engine).map((c) =>
+          cellOutline(c, '#e7b84e', 'selection', 0.02, 2),
+        )}
       <g>
         {deploy && deployCells.map((c) => cellOutline(c, '#51835c', 'deploy', 0.12))}
         {climbableCells(state)
@@ -1418,12 +1480,7 @@ const MapOverlays = forwardRef<
         !deploy &&
         !night &&
         (() => {
-          const [x, y] = project(
-            FRAME,
-            climbBase.base.x + 0.5,
-            climbBase.base.y + 0.5,
-            climbBase.base.level === 'wall' ? 3 : 0,
-          );
+          const [x, y] = boardAnchor(climbBase.base, state);
           return (
             <g
               pointerEvents="none"
@@ -1456,7 +1513,7 @@ const MapOverlays = forwardRef<
             : null)
         }
       />
-      {hover && hoverColor && cellOutline(hover, hoverColor, 'hover', 0.04, 1)}
+      {hover && cellOutline(hover, hoverColor ?? '#f3d996', 'hover', 0.02, 1)}
     </>
   );
 });
@@ -1557,18 +1614,8 @@ function EngineFire({ sprite }: { sprite: EngineSprite }) {
   );
 }
 function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }) {
-  const [x, y] = project(
-      FRAME,
-      action.from.x + 0.5,
-      action.from.y + 0.5,
-      action.from.level === 'wall' ? 3 : 0,
-    ),
-    [tx, ty] = project(
-      FRAME,
-      action.to.x + 0.5,
-      action.to.y + 0.5,
-      action.to.level === 'wall' ? 3 : 0,
-    );
+  const [x, y] = boardAnchor(action.from),
+    [tx, ty] = boardAnchor(action.to);
   const fire = action.type === 'fireArrows';
   return (
     <g pointerEvents="none">
@@ -1598,6 +1645,118 @@ function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }
       >
         <animate attributeName="opacity" values="0;1;0" dur=".3s" />
       </image>
+    </g>
+  );
+}
+
+const Nameplates = memo(function Nameplates({
+  units,
+  rects,
+  locale,
+  selected,
+}: {
+  units: Scene['units'];
+  rects: Map<string, ScreenRect>;
+  locale: SiegeLocale;
+  selected?: string | null;
+}) {
+  return (
+    <g data-testid="unit-nameplates" pointerEvents="none">
+      {units.map(({ unit }) => {
+        const [x, y] = rects.get(unit.id)!,
+          portrait = portraitOf(unit);
+        const color = unit.side === 'shu' ? '#51836d' : '#4d6693';
+        return (
+          <g
+            key={unit.id}
+            data-nameplate={unit.id}
+            data-moved={Boolean(unit.moved)}
+            data-acted={Boolean(unit.acted)}
+            opacity={unit.moved && unit.acted ? 0.55 : 1}
+            transform={`translate(${x} ${y})`}
+          >
+            <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
+            <rect
+              width={92}
+              height={26}
+              rx={4}
+              fill="#282820"
+              fillOpacity={0.94}
+              stroke={selected === unit.id ? '#ffd23c' : color}
+              strokeWidth={selected === unit.id ? 2 : 1}
+            />
+            {portrait ? (
+              <image href={portrait} x={2} y={2} width={22} height={22} />
+            ) : (
+              <g>
+                <rect x={3} y={3} width={20} height={20} rx={3} fill={color} />
+                <text x={13} y={18} textAnchor="middle" fill="#fff4d5" fontSize={12}>
+                  {(locale === 'zh' ? unit.officer.chinese : unit.officer.name).slice(0, 1)}
+                </text>
+              </g>
+            )}
+            <text x={28} y={12} fontSize={11} fill="#fff4d5">
+              {unit.troops}
+              {unit.wounded > 0 ? '+' : ''}
+            </text>
+            <text
+              x={88}
+              y={12}
+              fontSize={10}
+              textAnchor="end"
+              fill={unit.morale < 40 ? '#f1a76e' : '#d2c8b0'}
+            >
+              {unit.morale}
+            </text>
+            <rect x={28} y={16} width={59} height={3} fill="#635847" />
+            <rect
+              x={28}
+              y={16}
+              width={(59 * unit.troops) / Math.max(1, unit.troops + unit.wounded)}
+              height={3}
+              fill={color}
+            />
+            <circle cx={34} cy={23} r={2} fill={unit.moved ? '#706b5d' : '#eac87a'} />
+            <circle cx={44} cy={23} r={2} fill={unit.acted ? '#706b5d' : '#eac87a'} />
+            {unit.morale < 40 && <path d="M77 24l4-4 4 4" stroke="#f1a76e" fill="none" />}
+          </g>
+        );
+      })}
+    </g>
+  );
+});
+function BoardReview({ state }: { state: SiegeState }) {
+  return (
+    <g data-testid="board-review" pointerEvents="none">
+      {standingPositions(state).map((p) => {
+        const [x, y, right, bottom] = hitRect(p, state)!,
+          at = centre([x, y, right, bottom]);
+        return (
+          <g key={`${p.x},${p.y},${p.level}`} data-review-cell={`${p.x},${p.y},${p.level}`}>
+            <rect
+              x={x}
+              y={y}
+              width={right - x}
+              height={bottom - y}
+              fill="none"
+              stroke={p.level === 'wall' ? '#cf4ba3' : '#168b84'}
+              strokeWidth={1.5}
+            />
+            <text
+              x={at[0]}
+              y={bottom - 4}
+              textAnchor="middle"
+              fontSize={12}
+              fill="#141812"
+              stroke="#fff4db"
+              strokeWidth={3}
+              paintOrder="stroke"
+            >
+              {p.x},{p.y},{p.level === 'wall' ? 'W' : 'G'}
+            </text>
+          </g>
+        );
+      })}
     </g>
   );
 }

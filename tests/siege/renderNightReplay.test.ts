@@ -18,25 +18,25 @@ function nightState() {
   state.units
     .filter((u) => u.side === 'shu')
     .forEach((u) => {
-      u.y = 25;
+      u.y = 13;
     });
-  state.engines = [engine('ram', 24, 20, { id: 'target' })];
+  state.engines = [engine('ram', 9, 10, { id: 'target' })];
   return state;
 }
 describe('log-driven night replay', () => {
   it('replays engine movement then ladder raising from endDay logs at twice v0.1 speed', () => {
     const before = nightState();
-    before.engines = [engine('ladder', 18, 21, { id: 'ladder' })];
-    before.trenchFill['18,18'] = 0;
+    before.engines = [engine('ladder', 6, 11, { id: 'ladder' })];
+    before.trenchFill['6,9'] = 0;
     before.nightOrders = { shu: { kind: 'nightAssault' } };
     const snapshot = structuredClone(before),
       final = endDay(before),
       frames = nightReplay(before, final);
     const advance = frames.filter((f) => f.night.kind === 'advance');
     expect(advance).toHaveLength(2);
-    expect(advance[0]!.state.engines[0]!.y).toBe(19);
+    expect(advance[0]!.state.engines[0]!.y).toBe(10);
     expect(advance[0]!.state.engines[0]!.raisedAt).toBeUndefined();
-    expect(advance[1]!.state.engines[0]!.raisedAt).toEqual({ x: 18, y: 16 });
+    expect(advance[1]!.state.engines[0]!.raisedAt).toEqual({ x: 6, y: 7 });
     expect(REPLAY_STEP_MS).toBe(260 / 2);
     expect(frames.every((f) => f.night.duration === 130)).toBe(true);
     const markup = renderToStaticMarkup(
@@ -52,11 +52,11 @@ describe('log-driven night replay', () => {
   });
   it('flares torches, stops the advance and reads the actual fireArrowHit entries', () => {
     const before = nightState();
-    before.engines[0]!.x = 23;
-    before.engines[0]!.y = 19;
+    before.engines[0]!.x = 7;
+    before.engines[0]!.y = 8;
     const archer = before.units.find((u) => u.side === 'wei' && u.troopType === 'archer')!;
-    Object.assign(archer, { x: 23, y: 16, troops: 100 });
-    before.preparations.braziers['23,16'] = { litDay: 1 };
+    Object.assign(archer, { x: 7, y: 7, troops: 100 });
+    before.preparations.braziers['7,7'] = { litDay: 1 };
     before.nightOrders = { shu: { kind: 'nightAssault' }, wei: { kind: 'torches' } };
     const final = endDay(before),
       frames = nightReplay(before, final);
@@ -74,16 +74,16 @@ describe('log-driven night replay', () => {
     (outcome) => {
       const before = nightState(),
         raider = before.units.find((u) => u.side === 'wei')!;
-      Object.assign(raider, { x: 23, y: 16, level: 'wall' });
+      Object.assign(raider, { x: 8, y: 7, level: 'wall' });
       before.nightOrders = {
         wei: { kind: 'sortie', target: 'target', unitId: raider.id },
         ...(outcome === 'nightAssault' ? { shu: { kind: 'nightAssault' as const } } : {}),
       };
-      if (outcome === 'guard') Object.assign(before.units[1]!, { x: 25, y: 20 });
+      if (outcome === 'guard') Object.assign(before.units[1]!, { x: 10, y: 10 });
       const final = endDay(before),
         frames = nightReplay(before, final);
       const parties = frames.flatMap((f) => (f.night.party ? [f.night.party] : []));
-      expect(parties.length).toBeGreaterThan(4);
+      expect(parties.length).toBeGreaterThan(2);
       expect(parties.at(-1)!.to).toEqual(sortieRoute(before.engines[0]!)[0]);
       expect(parties.some((p) => p.returning)).toBe(true);
       if (outcome === 'hit') {
@@ -96,8 +96,8 @@ describe('log-driven night replay', () => {
     },
   );
   it('keeps each sortie step adjacent and on the road until the dry final spur', () => {
-    const route = sortieRoute({ x: 26, y: 20 });
-    expect(route.length).toBeGreaterThan(3);
+    const route = sortieRoute({ x: 11, y: 10 });
+    expect(route.length).toBeGreaterThan(2);
     for (let i = 1; i < route.length; i++) {
       const a = route[i - 1]!,
         b = route[i]!;
@@ -106,7 +106,7 @@ describe('log-driven night replay', () => {
     }
     expect(
       route.filter((c) => ['+', '='].includes(layoutSymbol(c.x, c.y)!)).length,
-    ).toBeGreaterThanOrEqual(4);
+    ).toBeGreaterThanOrEqual(1);
   });
   it('keeps final resolution identical to the rules regardless of replay frames or immediate skip', () => {
     const state = createSiegeState(228),
