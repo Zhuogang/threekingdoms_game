@@ -1,4 +1,11 @@
 export const en = {
+  strikeRouted: 'Routed',
+  strikeMorale: 'Morale +{n}',
+  forecastRoutOnly: 'Routs target',
+  forecastRout: 'Routs target, morale +{n}',
+  howRoutMorale:
+    'Routing an enemy gives the unit +{source} morale and allies within {radius} cells of the enemy’s original position +{nearby}.',
+  routMorale: 'Rout morale',
   devServerLost:
     'Development server disconnected: images not yet loaded may be missing. Restart the server, then refresh.',
   climbRouteBlocked: 'The route to this base is blocked. Clear the route or use another base.',

@@ -60,7 +60,7 @@ async function iconClick(page: Page, id: string, kind = 'attack') {
   await page.mouse.click(point.x, point.y);
 }
 for (const side of ['shu', 'wei'] as const) {
-  test(`${side}: finishing selects the next executable actor and reveals it; Tab and Next include move-only actors`, async ({
+  test(`${side}: standby immediately selects the next executable actor and smoothly reveals it; Tab and Next include move-only actors`, async ({
     page,
   }) => {
     const state = createSiegeState(228);
@@ -78,27 +78,29 @@ for (const side of ['shu', 'wei'] as const) {
     const before = await page.getByTestId('siege-map').getAttribute('viewBox');
     const expected = nextActor(standBy(state, own[0]!.id, side), own[0]!.id, side)!;
     await page.getByTestId('command-standby').click();
-    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', expected.id);
+    // Read once: auto-retrying here would hide an unwanted standby hold.
+    expect(await page.getByTestId('siege-map').getAttribute('data-selected')).toBe(expected.id);
     await expect(page.getByTestId('siege-map')).not.toHaveAttribute('viewBox', before!);
-    const comfortablyInside = await page.getByTestId('siege-map').evaluate(
-      (svg, p) => {
-        const [x, y, w, h] = svg.getAttribute('viewBox')!.split(' ').map(Number) as [
-          number,
-          number,
-          number,
-          number,
-        ];
-        const at = window.__siegeGeometry!.anchor(p);
-        return (
-          at[0] > x + w * 0.12 &&
-          at[0] < x + w * 0.88 &&
-          at[1] > y + h * 0.12 &&
-          at[1] < y + h * 0.88
-        );
-      },
-      { ...expected, level: 'level' in expected ? expected.level : 'ground' },
-    );
-    expect(comfortablyInside).toBe(true);
+    const comfortablyInside = () =>
+      page.getByTestId('siege-map').evaluate(
+        (svg, p) => {
+          const [x, y, w, h] = svg.getAttribute('viewBox')!.split(' ').map(Number) as [
+            number,
+            number,
+            number,
+            number,
+          ];
+          const at = window.__siegeGeometry!.anchor(p);
+          return (
+            at[0] > x + w * 0.12 &&
+            at[0] < x + w * 0.88 &&
+            at[1] > y + h * 0.12 &&
+            at[1] < y + h * 0.88
+          );
+        },
+        { ...expected, level: 'level' in expected ? expected.level : 'ground' },
+      );
+    await expect.poll(comfortablyInside).toBe(true);
     await expectNoPanelScroll(page, 'action-panel');
   });
 }

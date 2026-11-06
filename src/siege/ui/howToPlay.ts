@@ -84,10 +84,15 @@ export function howToSections(
 ) {
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(locale, key, params);
+  const routLine = t('howRoutMorale', {
+    source: rules.tuning.routMoraleSource,
+    nearby: rules.tuning.routMoraleNearby,
+    radius: rules.tuning.routMoraleRadius,
+  });
   if (playerSide === 'wei')
     return [
       { title: 'howWeiGoal', lines: [t('howWeiGoalBody', { days: rules.tuning.days })] },
-      { title: 'howDay', lines: [t('howWeiDay')] },
+      { title: 'howDay', lines: [t('howWeiDay'), routLine] },
       {
         title: 'defenseStores',
         lines: [
@@ -146,7 +151,7 @@ export function howToSections(
         t('howCourtyardClear'),
       ],
     },
-    { title: 'howDay', lines: [t('howDayBody')] },
+    { title: 'howDay', lines: [t('howDayBody'), routLine] },
     {
       title: 'howBuild',
       lines: [

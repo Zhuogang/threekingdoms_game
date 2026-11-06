@@ -26,6 +26,7 @@ import {
 } from '../content/chencang';
 import {
   activeUnit,
+  unitBroke,
   climbingFrontage,
   climbingPosition,
   changeFoothold,
@@ -47,6 +48,7 @@ import { endDay } from './day';
 import { cellTerrain, isMapCell } from './map';
 import { engineReachable, pathTo, swapTargets, insideCity } from './movement';
 import { siegeOutcome } from './outcome';
+import { awardRoutMorale } from './routMorale';
 import type {
   GateId,
   SiegeAction,
@@ -200,6 +202,7 @@ function applyOrder(
 function performAction(
   state: SiegeState,
   action: Exclude<SiegeAction, { type: 'endDay' | 'withdraw' }>,
+  resolution?: { counterBroke?: boolean },
 ): string | null {
   if (action.type === 'order') return applyOrder(state, action);
   if (action.type === 'queueEngine') {
@@ -514,8 +517,11 @@ function performAction(
         source.climbing = true;
       }
       Object.assign(target, inflictCasualties(state, target, forecast.casualties));
-      if (forecast.counterattack.possible && 'side' in source)
+      if (forecast.counterattack.possible && 'side' in source) {
+        const beforeCounter = { ...source };
         Object.assign(source, inflictCasualties(state, source, forecast.counterattack.casualties));
+        if (resolution) resolution.counterBroke = unitBroke(beforeCounter, source);
+      }
       const mounted =
         'side' in source &&
         activeUnit(source) &&
@@ -712,8 +718,10 @@ export function applySiegeAction(state: SiegeState, action: SiegeAction): SiegeA
     next.outcome = 'historical';
     next.withdrawn = true;
   } else {
-    const reason = performAction(next, action);
+    const resolution: { counterBroke?: boolean } = {};
+    const reason = performAction(next, action, resolution);
     if (reason) return { ok: false, reason };
+    awardRoutMorale(state, next, action, resolution.counterBroke === true);
     if (
       ['attack', 'ram', 'suppress', 'fireArrows', 'dropMillstone', 'dropBoulders'].includes(
         action.type,

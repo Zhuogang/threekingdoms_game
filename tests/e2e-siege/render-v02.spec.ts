@@ -39,7 +39,8 @@ for (const scene of RENDER_SCENES)
     for (const [index, zoom] of [0.75, 1, 1.5].entries()) {
       await page.getByTestId(`zoom-${zoom}`).click();
       await expect(map).toHaveAttribute('data-zoom', zoom.toFixed(2));
-      const unit = fixture.state.units[index % 2 ? 6 : 5]!;
+      // The gate scenes hold only four or five units.
+      const unit = fixture.state.units[(index % 2 ? 6 : 5) % fixture.state.units.length]!;
       await panToCell(page, unit);
       await clickPlate(page, unit.id);
       await expect(page.getByTestId('preview-selection')).toHaveText(unit.id);
@@ -78,7 +79,7 @@ for (const scene of RENDER_SCENES)
     }
     expect(errors).toEqual([]);
   });
-test('storming/repulse follow ladders; gate figures stay behind the roof and yellow pixels above it', async ({
+test('storming/repulse follow ladders; a unit on a gate top draws in front of its tower, with no silhouette', async ({
   page,
 }) => {
   await page.goto('/?siege-map&scene=assault');
@@ -107,9 +108,9 @@ test('storming/repulse follow ladders; gate figures stay behind the roof and yel
         Boolean(el.compareDocumentPosition(roof) & Node.DOCUMENT_POSITION_FOLLOWING),
       ),
     ),
-  ).toBe(true);
+  ).toBe(false);
 
-  await expect(map.locator(`[data-covered-unit="${id}"]`)).toHaveCount(1);
+  await expect(map.locator(`[data-covered-unit="${id}"]`)).toHaveCount(0);
   await clickPlate(page, id);
   await expect(page.getByTestId('preview-selection')).toHaveText(id);
 });

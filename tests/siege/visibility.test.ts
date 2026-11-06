@@ -48,14 +48,14 @@ describe('V2 living units remain findable while figures retain depth', () => {
       expect(new Set(counts).size).toBe(1);
     },
   );
-  it('a gate-top formation is behind its roof and has a clipped yellow duplicate above it', () => {
+  it('a gate-top formation is in front of its roof without a yellow duplicate', () => {
     const fixture = createRenderScene('visible'),
       unit = fixture.state.units.find((u) => u.id === 'wei-haozhao')!;
     const markup = renderToStaticMarkup(createElement(SiegeMapView, { ...fixture, locale: 'en' }));
     const i = markup.indexOf(`data-unit="${unit.id}"`),
       roof = markup.lastIndexOf('data-object="gate-south"');
-    expect(i).toBeLessThan(roof);
-    expect(markup.indexOf(`data-covered-unit="${unit.id}"`)).toBeGreaterThan(roof);
+    expect(i).toBeGreaterThan(roof);
+    expect(markup).not.toContain(`data-covered-unit="${unit.id}"`);
   });
   it('nameplates show independent move/action availability and wounded/low morale', () => {
     const fixture = createRenderScene('visible');

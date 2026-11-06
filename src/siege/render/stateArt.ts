@@ -17,14 +17,21 @@ import {
   INNER_WALL_SEGMENTS,
   SOUTH_TRENCH,
   cellKey,
+  layoutSymbol,
 } from '../content/chencang';
 import { isWallFoot } from '../rules/map';
 import { usableEngine } from '../rules/combat';
 import type { SiegeEngine, SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
-import { FRAME, INNER_WALL_JOB, POSE_SETS, patchOf, sheet } from './assets';
+import { FRAME, MAP, INNER_WALL_JOB, POSE_SETS, patchOf, sheet } from './assets';
 import { placeAnchoredPiece, type Sprite } from './mapPieces';
-import { type SceneObject, type ScreenRect } from './scene';
+import {
+  STANDING_EPSILON,
+  rectsOverlap,
+  sliceObject,
+  type SceneObject,
+  type ScreenRect,
+} from './scene';
 import {
   climberPoses,
   climbingWall,
@@ -269,7 +276,7 @@ export function unitVisual(
     [`${dir}-${action}`, `north-${action}`, `${dir}-idle`, 'south-idle', 'north-idle'].find((n) =>
       poses.has(n),
     ) ?? poses.keys().next().value!;
-  const gateTop = unit.level === 'wall' ? gateTowerAt(unit) : undefined;
+  const gateTop = layoutSymbol(unit.x, unit.y) === 'G' ? gateTowerAt(unit) : undefined;
   const foot =
     storming || climbing
       ? climbingFoot(state, wall!, unit)
@@ -311,6 +318,22 @@ export function unitVisual(
   const figureRects: ScreenRect[] = storming
     ? [bounds] // The storm sprite is drawn without a facing transform.
     : figures.map((figure) => mirror(figureBounds([figure], foot)));
+  const standing = depthOf(climbing || storming ? climbingBase(state, wall!, unit) : unit, state);
+  const depth = gateTop
+    ? {
+        // Ground formations also overlap the adjoining ramp/wall fringe.
+        // Borrow only intersecting static slices; the next standing row stays in front.
+        row: Math.max(
+          standing.row,
+          gateTop.cells[3]!,
+          ...MAP.objects
+            .flatMap((object) => sliceObject(FRAME, object))
+            .filter((slice) => rectsOverlap(slice.rect, rect))
+            .map((slice) => slice.row),
+        ),
+        height: gateTop.height + STANDING_EPSILON,
+      }
+    : standing;
   return {
     set,
     cell: { x: unit.x, y: unit.y, level: unit.level },
@@ -325,6 +348,6 @@ export function unitVisual(
     rect,
     figureRects,
     gateTop: gateTop?.id,
-    depth: depthOf(climbing || storming ? climbingBase(state, wall!, unit) : unit, state),
+    depth,
   };
 }

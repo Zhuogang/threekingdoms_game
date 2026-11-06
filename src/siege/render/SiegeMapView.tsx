@@ -33,6 +33,7 @@ import { isMapCell } from '../rules/map';
 import { activeUnit } from '../rules/combat';
 import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
+import type { StrikeResult } from '../ui/strikePresentation';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { fireRangeCells } from '../ui/fireRange';
 import { actorTodo } from '../ui/actorTodo';
@@ -106,7 +107,7 @@ interface Layer {
 export interface SiegeMapHandle {
   zoom: (scale: number) => void;
   focus: (position?: SiegePosition) => void;
-  reveal: (position: SiegePosition) => void;
+  reveal: (position: SiegePosition, options?: { smooth?: boolean }) => void;
   full: () => void;
 }
 interface Props {
@@ -132,6 +133,8 @@ interface Props {
   facings?: Record<string, Facing>;
   activity?: { id: string; type: string } | null;
   effectAction?: { from: SiegePosition; to: SiegePosition; type: string } | null;
+  strikeResults?: StrikeResult[];
+  strikeHoldMs?: number;
   initialFocus?: SiegePosition;
   initialZoom?: number;
   night?: NightPresentation | null;
@@ -169,6 +172,8 @@ export const SiegeMapView = memo(
       facings = NO_FACINGS,
       activity,
       effectAction,
+      strikeResults,
+      strikeHoldMs,
       night,
       initialFocus,
       initialZoom = 1,
@@ -210,6 +215,11 @@ export const SiegeMapView = memo(
     });
     const viewRef = useRef(view);
     const panFrame = useRef<number | null>(null);
+    const tweenFrame = useRef<number | null>(null);
+    const cancelTween = () => {
+      if (tweenFrame.current !== null) cancelAnimationFrame(tweenFrame.current);
+      tweenFrame.current = null;
+    };
     const writeViewBox = () => {
       const current = viewRef.current;
       svg.current?.setAttribute(
@@ -220,6 +230,7 @@ export const SiegeMapView = memo(
     const setView = (
       update: BattlefieldViewBox | ((current: BattlefieldViewBox) => BattlefieldViewBox),
     ) => {
+      cancelTween();
       if (panFrame.current !== null) cancelAnimationFrame(panFrame.current);
       panFrame.current = null;
       viewRef.current = typeof update === 'function' ? update(viewRef.current) : update;
@@ -228,6 +239,7 @@ export const SiegeMapView = memo(
     };
     useEffect(
       () => () => {
+        cancelTween();
         if (panFrame.current !== null) cancelAnimationFrame(panFrame.current);
       },
       [],
@@ -309,7 +321,10 @@ export const SiegeMapView = memo(
         setView(zoomBattlefieldViewport(current, BOUNDS, focus, scale / (width / current.width)));
       },
       focus,
-      reveal(position) {
+      reveal(position, options) {
+        const moving = tweenFrame.current !== null;
+        cancelTween();
+        if (moving) setViewState(viewRef.current);
         const current = viewRef.current;
         const r = positionBounds(position);
         const marginX = current.width * 0.12,
@@ -320,8 +335,31 @@ export const SiegeMapView = memo(
           r[2] > current.left + current.width - marginX ||
           r[1] < current.top + marginY ||
           r[3] > current.top + current.height - marginY
-        )
-          focus(position);
+        ) {
+          if (!options?.smooth || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            focus(position);
+            return;
+          }
+          const [x, y] = centre(r);
+          const destination = recenterBattlefieldViewport(current, BOUNDS, { x, y });
+          const start = performance.now();
+          const tick = (now: number) => {
+            const progress = Math.min(1, (now - start) / 320);
+            const eased = 1 - (1 - progress) ** 3;
+            viewRef.current = {
+              ...current,
+              left: current.left + (destination.left - current.left) * eased,
+              top: current.top + (destination.top - current.top) * eased,
+            };
+            writeViewBox();
+            if (progress < 1) tweenFrame.current = requestAnimationFrame(tick);
+            else {
+              tweenFrame.current = null;
+              setViewState(viewRef.current);
+            }
+          };
+          tweenFrame.current = requestAnimationFrame(tick);
+        }
       },
       full() {
         setView(fitBattlefieldViewport(BOUNDS, viewRef.current.width / viewRef.current.height, 0));
@@ -447,6 +485,7 @@ export const SiegeMapView = memo(
                 dy = event.clientY - d.y;
               if (Math.abs(dx) + Math.abs(dy) > 4) d.moved = true;
               if (d.moved) {
+                cancelTween();
                 const r = svg.current!.getBoundingClientRect();
                 viewRef.current = panBattlefieldViewport(
                   d.view,
@@ -513,6 +552,14 @@ export const SiegeMapView = memo(
             selected={selected}
           />
           <TargetIcons entries={iconRects} prefix={prefix} />
+          {strikeResults && strikeResults.length > 0 && (
+            <StrikeResults
+              key={state.log.length}
+              results={strikeResults}
+              locale={locale}
+              duration={strikeHoldMs!}
+            />
+          )}
           {boardReview && <BoardReview state={state} />}
           {/* Invisible geometry for specs only; input uses the pure resolver. */}
           <g data-testid="unit-hit-targets">
@@ -1675,6 +1722,7 @@ function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }
   return (
     <g pointerEvents="none">
       <line
+        className="siege-battle-line"
         x1={x}
         y1={y - 20}
         x2={tx}
@@ -1682,10 +1730,9 @@ function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }
         stroke={fire ? '#c35c27' : '#66533d'}
         strokeWidth={fire ? 3 : 2}
         strokeDasharray="10 12"
-      >
-        <animate attributeName="stroke-dashoffset" from="100" to="0" dur=".3s" />
-      </line>
+      />
       <image
+        className="siege-battle-impact"
         href={effect(
           fire
             ? 'flame-small'
@@ -1697,9 +1744,7 @@ function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }
         y={ty - 50}
         width={56}
         height={56}
-      >
-        <animate attributeName="opacity" values="0;1;0" dur=".3s" />
-      </image>
+      />
     </g>
   );
 }
@@ -1816,6 +1861,52 @@ function BoardReview({ state }: { state: SiegeState }) {
             >
               {p.x},{p.y},{p.level === 'wall' ? 'W' : 'G'}
             </text>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function StrikeResults({
+  results,
+  locale,
+  duration,
+}: {
+  results: StrikeResult[];
+  locale: SiegeLocale;
+  duration: number;
+}) {
+  return (
+    <g
+      data-testid="strike-result"
+      pointerEvents="none"
+      fontSize={22}
+      fontWeight={700}
+      textAnchor="middle"
+      stroke="#fff5dd"
+      strokeWidth={3}
+      paintOrder="stroke"
+      fill="#bd302b"
+    >
+      {results.map((result, i) => {
+        const [x, y] = boardAnchor(result.position);
+        const lines = [
+          result.loss > 0 ? `-${result.loss}` : null,
+          result.routed ? siegeText(locale, 'strikeRouted') : null,
+          result.moraleGain > 0
+            ? siegeText(locale, 'strikeMorale', { n: result.moraleGain })
+            : null,
+        ].filter((line): line is string => line !== null);
+        return (
+          <g key={i} transform={`translate(${x} ${y - 110})`}>
+            <g className="siege-strike-result" style={{ animationDuration: `${duration}ms` }}>
+              {lines.map((line, j) => (
+                <text key={j} y={-j * 25}>
+                  {line}
+                </text>
+              ))}
+            </g>
           </g>
         );
       })}

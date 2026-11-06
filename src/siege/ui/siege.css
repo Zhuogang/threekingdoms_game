@@ -304,6 +304,68 @@
   }
 }
 
+.siege-strike-result {
+  animation: siege-strike-result linear forwards;
+}
+@keyframes siege-strike-result {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+.siege-battle-line {
+  animation: siege-battle-line 500ms linear forwards;
+}
+@keyframes siege-battle-line {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 100;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+.siege-battle-impact {
+  animation: siege-battle-impact 500ms linear forwards;
+}
+@keyframes siege-battle-impact {
+  0% {
+    opacity: 0;
+  }
+  20%,
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes siege-strike-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .siege-strike-result {
+    animation-name: siege-strike-fade;
+  }
+}
+
 .siege-topbar,
 .siege-sidebar,
 .siege-sidebar .v03-panel,

@@ -23,8 +23,8 @@ for (const zoom of [1, 0.75])
       page,
       fixture.state.units.find((u) => u.id === gate)!,
     );
-    await expect(map.locator(`[data-covered-unit="${gate}"]`)).toHaveCount(1);
-    const cover = map.locator(`[data-covered-unit="${gate}"]`);
+    await expect(map.locator(`[data-covered-unit="${gate}"]`)).toHaveCount(0);
+    const cover = map.locator('[data-covered-unit]').first();
     expect(
       await cover.evaluate((el) => Boolean(el.closest('[mask]') && el.closest('[filter]'))),
     ).toBe(true);

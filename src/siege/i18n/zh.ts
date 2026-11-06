@@ -1,5 +1,11 @@
 import type { en, enReasons } from './en';
 export const zh = {
+  strikeRouted: '溃散',
+  strikeMorale: '士气 +{n}',
+  forecastRoutOnly: '可击溃',
+  forecastRout: '可击溃，士气 +{n}',
+  howRoutMorale: '击溃敌军使本队士气 +{source}，距敌军原位置 {radius} 格内的友军士气 +{nearby}。',
+  routMorale: '击溃鼓舞',
   devServerLost: '开发服务器已断开：还没载入的图片会显示不出来。重启服务器后刷新页面。',
   climbRouteBlocked: '到梯底或墙根的路线被堵住，先清出道路或换条路线。',
   nextActor: '下一队 ({n})',

@@ -139,18 +139,19 @@ describe('V2 board geometry contract', () => {
     const hero = state.units[0]!;
     expect(unitVisual(state, hero).set).toBe('s5-05');
   });
-  it('gate-top and behind-building units draw in true depth, with only masked yellow silhouettes above art', () => {
+  it('gate-top units draw in front while behind-building units keep masked yellow silhouettes', () => {
     const state = createSiegeState(228);
     Object.assign(state.units[1]!, { x: 7, y: 6, level: 'ground', troops: 3000 });
     const markup = renderToStaticMarkup(
       createElement(SiegeMapView, { state, locale: 'en', showRange: false }),
     );
     for (const id of ['wei-haozhao', state.units[1]!.id]) {
-      expect(markup).toContain(`data-covered-unit="${id}"`);
+      if (id !== 'wei-haozhao') expect(markup).toContain(`data-covered-unit="${id}"`);
       const figureIndex = markup.indexOf(`data-unit="${id}"`);
       const plateIndex = markup.indexOf(`data-nameplate="${id}"`);
       expect(plateIndex).toBeGreaterThan(markup.lastIndexOf('data-object='));
-      expect(figureIndex).toBeLessThan(markup.indexOf(`data-covered-unit="${id}"`));
+      if (id === 'wei-haozhao') expect(markup).not.toContain(`data-covered-unit="${id}"`);
+      else expect(figureIndex).toBeLessThan(markup.indexOf(`data-covered-unit="${id}"`));
     }
     expect(markup.match(/<feFlood flood-color="#ffd23c"/g)).toHaveLength(1);
     expect(markup).toContain('operator="in"');

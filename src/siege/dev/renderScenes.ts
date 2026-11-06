@@ -1,6 +1,6 @@
 import { createSiegeState } from '../rules/state';
 import { ENGINE_RULES } from '../rules/tuning';
-import { INNER_WALL_SEGMENTS, RAMPS, SOUTH_TRENCH } from '../content/chencang';
+import { GATES, INNER_WALL_SEGMENTS, RAMPS, SOUTH_TRENCH } from '../content/chencang';
 import type { EngineKind, SiegeEngine, SiegeState } from '../rules/types';
 import type { Facing } from '../save';
 import type { NightPresentation } from '../render/nightReplay';
@@ -8,6 +8,8 @@ import { standingPositions } from '../render/boardGeometry';
 
 export const RENDER_SCENES = [
   'board',
+  'gates',
+  'gatesGround',
   'footholds',
   'assault',
   'mounds',
@@ -79,6 +81,21 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     }));
     result.legend =
       'V2 review sheet: half-open hit rectangles; teal ground, magenta wall. One full-size figure per position, including trench fill targets and both gate planes. Gate planes are schematic, not simultaneous legal occupants.';
+  } else if (name === 'gates' || name === 'gatesGround') {
+    const ground = name === 'gatesGround';
+    const positions = Object.values(GATES).map((g) => ({
+      ...g.cells[0]!,
+      level: ground ? ('ground' as const) : ('wall' as const),
+    }));
+    if (ground) {
+      for (const gate of Object.values(state.gates))
+        Object.assign(gate, { broken: true, durability: 0 });
+      positions.push({ x: 8, y: 6, level: 'ground' });
+    }
+    state.units = positions.map((position, i) => ({ ...state.units[i + 1]!, ...position }));
+    result.legend = ground
+      ? 'Four broken gate mouths and the south inner yard (8,6). Ordinary figures in front of each gatehouse; yard foot north of the roof ridge.'
+      : 'One ordinary formation on each intact gate top, in front of its tower and parapet.';
   } else if (name === 'ramps') {
     RAMPS.forEach(({ ground }, i) => {
       Object.assign(state.units[i]!, ground, { level: 'ground', troops: 800 });

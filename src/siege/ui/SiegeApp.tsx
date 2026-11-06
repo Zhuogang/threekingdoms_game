@@ -84,10 +84,13 @@ import type { SiegeDev } from './devPlaythrough';
 import { portrait } from '../render/portraits';
 import { artPreloadProgress, subscribeArtPreload, startArtPreload } from '../render/preloadArt';
 import { DevServerNotice } from './DevServerNotice';
+import { isStrike, strikePresentation, type StrikeResult } from './strikePresentation';
 import './siege.css';
 
 type Tab = 'commands' | 'defence' | 'workshop' | 'log';
 type Mode = 'move' | 'attack' | 'climb' | 'fillTrench' | null;
+export const STRIKE_HOLD_MS = 1100;
+export const ACTION_HOLD_MS = 450;
 const KINDS: EngineKind[] = ['ladder', 'ram', 'earthCart', 'tower'];
 function initialGame(playerSide: SiegeSide = 'shu'): SiegeSave {
   const querySeed =
@@ -163,6 +166,14 @@ export default function SiegeApp({
     to: SiegePosition;
     type: string;
   } | null>(null);
+  const [strikeResults, setStrikeResults] = useState<StrikeResult[]>([]);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelAdvance = () => {
+    if (holdTimer.current !== null) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    setEffectAction(null);
+    setStrikeResults([]);
+  };
   const resolvingRef = useRef(false);
   const resolutionVersion = useRef(0);
   const resolutionRun = useRef<Promise<void> | null>(null);
@@ -243,7 +254,8 @@ export default function SiegeApp({
     game.phase === 'battle' &&
     !state.outcome &&
     presentation.attackerTurnDay !== state.day;
-  const ended = Boolean(state.outcome) && !playing;
+  // The rule outcome is already final; let the last player strike finish drawing.
+  const ended = Boolean(state.outcome) && !playing && !effectAction;
   const banner =
     !opening &&
     !deploy &&
@@ -466,6 +478,7 @@ export default function SiegeApp({
     setEffectAction(null);
   };
   const load = (latest = false) => {
+    cancelAdvance();
     try {
       const saved = loadSiege(localStorage, latest ? undefined : playerSide);
       if (!saved) {
@@ -506,6 +519,7 @@ export default function SiegeApp({
     if (initialLoad) load(true);
     return () => {
       clearTimer();
+      if (holdTimer.current !== null) clearTimeout(holdTimer.current);
       resolutionVersion.current++;
       resolvingRef.current = false;
     };
@@ -545,6 +559,7 @@ export default function SiegeApp({
     }
   };
   const act = (action: SiegeAction) => {
+    cancelAdvance();
     if (playing || opening || banner || reportVisible || howTo) return;
     if ('unitId' in action && state.units.find((u) => u.id === action.unitId)?.side !== playerSide)
       return;
@@ -572,20 +587,26 @@ export default function SiegeApp({
     setFocusPlace(null);
     if (action.type === 'order') setShowOrders(false);
     setFeedback({});
+    const strike = strikePresentation(state, action, result);
+    if (strike) {
+      setEffectAction(strike.effect);
+      setStrikeResults(strike.results);
+    }
     if (id) {
       setActivity({ id, type: action.type === 'moveEngine' ? 'move' : action.type });
     }
-    if (
+    const finished = Boolean(
       selected &&
       id === selected &&
       !deploy &&
       !result.state.outcome &&
-      actorTodo(result.state, selected, playerSide) === 'none'
-    ) {
-      chooseNext(result.state);
-    }
+      actorTodo(result.state, selected, playerSide) === 'none',
+    );
+    if (isStrike(action) || finished)
+      holdAdvance(result.state, isStrike(action) ? STRIKE_HOLD_MS : ACTION_HOLD_MS, finished);
   };
   const end = () => {
+    cancelAdvance();
     if (playing || opening || banner || reportVisible || howTo || deploy || state.outcome) return;
     void startResolution(() => resolveSiegeDayAsync(state, playerSide));
   };
@@ -594,6 +615,7 @@ export default function SiegeApp({
       | { frames: PlaybackFrame[]; final: SiegeState }
       | Promise<{ frames: PlaybackFrame[]; final: SiegeState }>,
   ) => {
+    cancelAdvance();
     if (resolvingRef.current) return;
     const version = ++resolutionVersion.current;
     resolvingRef.current = true;
@@ -672,6 +694,7 @@ export default function SiegeApp({
     if (needsAttacker && !playing) void startResolution(() => resolveAttackerPhaseAsync(state));
   }, [needsAttacker, playing]);
   const select = (id: string) => {
+    cancelAdvance();
     setSelected(id);
     setFocusPlace(null);
     explainAction(null);
@@ -683,15 +706,29 @@ export default function SiegeApp({
     setTab('commands');
     setFeedback({});
   };
-  const chooseNext = (nextState = state) => {
+  const chooseNext = (nextState = state, smooth = false) => {
+    cancelAdvance();
     if (deploy || playing || opening || banner || reportVisible || howTo || ended) return;
     const next = nextActor(nextState, selected, playerSide);
     if (next) {
       select(next.id);
-      map.current?.reveal('level' in next ? next : { ...next, level: 'ground' });
+      map.current?.reveal('level' in next ? next : { ...next, level: 'ground' }, { smooth });
     }
   };
+  const holdAdvance = (nextState: SiegeState, duration: number, advance = true) => {
+    holdTimer.current = setTimeout(() => {
+      holdTimer.current = null;
+      setEffectAction(null);
+      setStrikeResults([]);
+      if (advance) chooseNext(nextState, true);
+    }, duration);
+  };
+  useEffect(() => {
+    if ((playing || banner || reportVisible || opening || howTo) && holdTimer.current !== null)
+      cancelAdvance();
+  }, [playing, banner, reportVisible, opening, howTo]);
   const openTarget = (id: string, action?: SiegeAction) => {
+    cancelAdvance();
     if (deploy || playing || banner || reportVisible || howTo) return;
     const candidate = action ?? legalTargets.find((t) => t.id === id)?.action;
     setTargetAction(candidate && candidate.type !== 'attack' ? candidate : null);
@@ -744,6 +781,7 @@ export default function SiegeApp({
     );
   };
   const command = (kind: CommandKind) => {
+    cancelAdvance();
     if (!selected || playing || opening || banner || reportVisible || howTo || deploy) return;
     const entry = commands.find((c) => c.kind === kind);
     if (entry?.reason) {
@@ -780,7 +818,7 @@ export default function SiegeApp({
       setMode(null);
       setTarget(null);
       setTargetAction(null);
-      if (next !== state) chooseNext(next);
+      if (next !== state) chooseNext(next, true);
       return;
     }
     if (kind === 'climb' && entry?.action?.type === 'climb') {
@@ -823,6 +861,7 @@ export default function SiegeApp({
         return;
       if (event.key.toLowerCase() === 'h') {
         event.preventDefault();
+        cancelAdvance();
         setHowTo((show) => !show);
         return;
       }
@@ -847,6 +886,7 @@ export default function SiegeApp({
       }
       if (playing || deploy || ended) return;
       if (event.key.toLowerCase() === 'q') {
+        cancelAdvance();
         event.preventDefault();
         setGame((g) => ({ ...g, state: standByAll(g.state, playerSide) }));
         setMode(null);
@@ -1037,7 +1077,14 @@ export default function SiegeApp({
               {text('morningReport')}
             </Button>
           )}
-          <Button onClick={() => setHowTo(true)} aria-haspopup="dialog" aria-expanded={howTo}>
+          <Button
+            onClick={() => {
+              cancelAdvance();
+              setHowTo(true);
+            }}
+            aria-haspopup="dialog"
+            aria-expanded={howTo}
+          >
             {text('howToPlay')}
           </Button>
           <Button onClick={save}>{text('save')}</Button>
@@ -1228,6 +1275,8 @@ export default function SiegeApp({
               facings={game.facings}
               activity={activity}
               effectAction={effectAction}
+              strikeResults={strikeResults}
+              strikeHoldMs={STRIKE_HOLD_MS}
               night={night}
               forecastCell={
                 forecastHovered
@@ -1550,9 +1599,11 @@ export default function SiegeApp({
                             {(!unit || unit.side === playerSide) && (
                               <details
                                 open={showOrders}
-                                onToggle={(event) => setShowOrders(event.currentTarget.open)}
+                                onToggle={(event) => {
+                                  setShowOrders(event.currentTarget.open);
+                                }}
                               >
-                                <summary>{text('order')}</summary>
+                                <summary onClick={cancelAdvance}>{text('order')}</summary>
                                 <p>{text('nightUnknown')}</p>
                                 {playerSide === 'shu' && (
                                   <Button
@@ -1639,6 +1690,7 @@ export default function SiegeApp({
                                     key={id}
                                     size="sm"
                                     onClick={() => {
+                                      cancelAdvance();
                                       setTarget(id);
                                       setMode('attack');
                                     }}
@@ -1880,6 +1932,7 @@ export default function SiegeApp({
 }
 function logKey(code: string): SiegeTextKey {
   const known: Record<string, SiegeTextKey> = {
+    routMorale: 'routMorale',
     suppress: 'suppress',
     coverEngine: 'coverEngine',
     covered: 'covered',

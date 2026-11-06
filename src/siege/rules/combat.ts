@@ -24,6 +24,20 @@ import type { Cell, SiegeEngine, SiegeState, SiegeUnit } from './types';
 
 export const activeUnit = (unit: SiegeUnit): boolean =>
   unit.troops > 0 && !unit.routed && unit.morale >= ROUTED_MORALE;
+/** A Shu fall resets morale to the active threshold, but still counts as a break.
+ * Ordinary descents neither lose personnel nor morale. This also works on silent AI drafts. */
+export function unitBroke(before: SiegeUnit, after: SiegeUnit | undefined): boolean {
+  return (
+    activeUnit(before) &&
+    (!after ||
+      !activeUnit(after) ||
+      (before.side === 'shu' &&
+        before.level === 'wall' &&
+        after.level === 'ground' &&
+        after.morale === ROUTED_MORALE &&
+        (after.troops < before.troops || after.morale < before.morale)))
+  );
+}
 export const usableEngine = (engine: SiegeEngine): boolean =>
   !engine.wrecked && engine.durability > 0;
 export const distance = (a: Cell, b: Cell): number => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
@@ -433,6 +447,8 @@ export interface SiegeAttackForecast extends SiegeEngagement {
   wouldMount: boolean;
   inRange: boolean;
   casualties: number;
+  routsTarget: boolean;
+  sourceRoutMoraleGain: number;
   targetMoraleAfter: number;
   sourceMoraleAfter: number;
   counterattack: SiegeEngagement & { possible: boolean; casualties: number };
@@ -511,6 +527,8 @@ export function predictSiegeAttack(
             ),
           )
         : 0,
+      routsTarget: false,
+      sourceRoutMoraleGain: 0,
       targetMoraleAfter: target.morale,
       sourceMoraleAfter: source.morale,
       counterattack: { ...engagement(state, target, source), possible: false, casualties: 0 },
@@ -550,6 +568,47 @@ export function predictSiegeAttack(
   const footholdAfter = position
     ? Math.min(T.footholdComplete, wallFoothold(state, target) + footholdGain)
     : 0;
+  const wouldMount = footholdGain > 0 && footholdAfter === T.footholdComplete;
+  let targetAfter = survivor;
+  if (wouldMount) {
+    // Completed footholds may break a surviving defender through forced displacement.
+    // Use the same wall resolution rather than predicting its retreat a second way.
+    const projected = cloneSiegeState(state);
+    const projectedTarget = projected.units.find((u) => u.id === target.id)!;
+    Object.assign(projectedTarget, inflictCasualties(projected, projectedTarget, casualties));
+    const projectedSource = projected.units.find((u) => u.id === source.id)!;
+    if (counterCasualties)
+      Object.assign(
+        projectedSource,
+        inflictCasualties(projected, projectedSource, counterCasualties),
+      );
+    gainWall(projected, projectedSource, target, footholdGain);
+    targetAfter = projectedTarget;
+  }
+  const routsTarget = inRange && unitBroke(target, targetAfter);
+  const counterSettled =
+    source.side === 'shu' &&
+    source.level === 'wall' &&
+    source.troops > counterCasualties &&
+    counterMorale < ROUTED_MORALE
+      ? ROUTED_MORALE
+      : counterMorale;
+  let sourceMoraleAfter = Math.max(
+    MIN_MORALE,
+    counterSettled - (options.assault ? T.assaultMoraleLoss : 0),
+  );
+  // Only a Shu source on the wall (including one just mounted) survives a morale fall.
+  const sourceActive =
+    source.troops > counterCasualties &&
+    !source.routed &&
+    (sourceMoraleAfter >= ROUTED_MORALE ||
+      (source.side === 'shu' && (source.level === 'wall' || wouldMount)));
+  if (sourceActive && sourceMoraleAfter < ROUTED_MORALE) sourceMoraleAfter = ROUTED_MORALE;
+  const sourceRoutMoraleGain =
+    !engine && routsTarget && sourceActive
+      ? Math.min(T.routMoraleSource, T.moraleMax - sourceMoraleAfter)
+      : 0;
+  sourceMoraleAfter += sourceRoutMoraleGain;
   return {
     ...clash,
     footholdGain,
@@ -560,10 +619,9 @@ export function predictSiegeAttack(
     inRange,
     casualties,
     targetMoraleAfter,
-    sourceMoraleAfter: Math.max(
-      MIN_MORALE,
-      counterMorale - (options.assault ? T.assaultMoraleLoss : 0),
-    ),
+    routsTarget,
+    sourceRoutMoraleGain,
+    sourceMoraleAfter,
     counterattack: { ...counter, possible, casualties: counterCasualties },
   };
 }

@@ -279,7 +279,7 @@ describe('v0.2 pure sprite mapping and registration', () => {
       }
     }
   });
-  it('draws gate-top units at the parapet behind the tower with a clipped silhouette', () => {
+  it('draws gate-top units in front of the tower without a silhouette', () => {
     const fixture = createRenderScene('preparations'),
       unit = fixture.state.units.find((u) => u.side === 'wei')!;
     for (const [x, y, id] of [
@@ -293,8 +293,8 @@ describe('v0.2 pure sprite mapping and registration', () => {
       expect(visual.foot).toEqual(anchor(unit));
       const markup = markupFor(fixture);
       expect(markup).toContain(`data-gate-top="${id}"`);
-      expect(markup).toContain(`data-covered-unit="${unit.id}"`);
-      expect(markup.indexOf(`data-unit="${unit.id}"`)).toBeLessThan(
+      expect(markup).not.toContain(`data-covered-unit="${unit.id}"`);
+      expect(markup.indexOf(`data-unit="${unit.id}"`)).toBeGreaterThan(
         markup.lastIndexOf(`data-object="${id}"`),
       );
     }

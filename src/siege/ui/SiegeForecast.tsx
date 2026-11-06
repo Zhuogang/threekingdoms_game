@@ -30,6 +30,7 @@ function Comparison({
   const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
     siegeText(c.locale, key, params);
   const columns = forecastTableData(normal, assault, c.footholdBefore ?? 0);
+  const chosen = c.checked && assault ? assault : normal;
   const selected = c.checked && assault ? 'assault' : 'normal';
   const modifiers = (engagement: SiegeEngagement) => (
     <div className="siege-modifiers">
@@ -115,6 +116,13 @@ function Comparison({
           )}
         </tbody>
       </table>
+      {'routsTarget' in chosen && chosen.routsTarget && (
+        <p data-testid="forecast-rout">
+          {chosen.sourceRoutMoraleGain > 0
+            ? t('forecastRout', { n: chosen.sourceRoutMoraleGain })
+            : t('forecastRoutOnly')}
+        </p>
+      )}
       <details data-testid="forecast-details">
         <summary>{t('detailedModifiers')}</summary>
         {[normal, ...(assault ? [assault] : [])].map((f, i) => (

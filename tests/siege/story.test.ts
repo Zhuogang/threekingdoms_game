@@ -140,7 +140,7 @@ describe('Chencang story and summary', () => {
   );
   it.each([
     [1, 'historical', 12],
-    [8, 'historical', 12],
+    [8, 'victory', 10],
     [228, 'victory', 8],
     [11, 'historical', 12],
   ] as const)(

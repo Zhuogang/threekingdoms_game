@@ -3,6 +3,9 @@ import type { EngineKind } from './types';
 /** The v0.2 rules table. All tunable siege values live here; no mutable runtime state. */
 export const SIEGE_TUNING = {
   days: 12,
+  routMoraleSource: 10,
+  routMoraleNearby: 5,
+  routMoraleRadius: 2,
   zhangheDistance: 14,
   act2Day: 4,
   earlyAct2Losses: 2,
