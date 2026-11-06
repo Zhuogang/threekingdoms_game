@@ -4,6 +4,7 @@ import { gateAt } from '../rules/map';
 import type { SiegePosition, SiegeSide, SiegeState } from '../rules/types';
 import { engineFootprint, engineSprite } from '../render/stateArt';
 import { compareDepth } from '../render/scene';
+import { actorTargets } from './commands';
 
 export interface MapClickContext {
   state: SiegeState;
@@ -39,7 +40,7 @@ export function resolveMapClick(
   if (blocked) return none;
   const plate = state.units.find((u) => u.id === plateUnitId && u.troops > 0);
   if (plate) {
-    if (!mode) return { type: 'select', id: plate.id };
+    if (!mode && (plate.side === playerSide || !selected)) return { type: 'select', id: plate.id };
     cell = { x: plate.x, y: plate.y, level: plate.level };
   }
   if (!cell) return none;
@@ -56,7 +57,15 @@ export function resolveMapClick(
     if ((playerSide === 'shu' ? DEPLOY_SHU : DEPLOY_WEI).some(at)) return { type: 'deploy', cell };
   }
   const engines = state.engines
-    .filter((e) => engineFootprint(e).some(at))
+    .filter(
+      (e) =>
+        engineFootprint(e).some(at) &&
+        (!e.wrecked ||
+          (!standing.length &&
+            !state.engines.some(
+              (other) => other.id !== e.id && !other.wrecked && sameCell(other, e),
+            ))),
+    )
     .sort((a, b) => {
       const depth = (e: typeof a) => {
         const sprite = engineSprite(e);
@@ -80,6 +89,15 @@ export function resolveMapClick(
   if (ownActor && swap) return { type: 'swap', id: swap.id };
   const green = ownActor && reachable.some(at);
   if (green && (mode === 'move' || mode === 'fillTrench')) return { type: mode, cell };
+  if (ownActor && !mode) {
+    const target = actorTargets(state, selected!, playerSide).find(
+      (t) =>
+        (t.id === gate && cell.level === 'ground') ||
+        units.some((u) => u.id === t.id) ||
+        engines.some((e) => e.id === t.id),
+    );
+    if (target) return { type: 'target', id: target.id };
+  }
   if (enemy) return { type: ownActor ? 'target' : 'select', id: enemy.id };
   const cycle = (occupants: string[]) =>
     occupants.length > 1
@@ -96,7 +114,7 @@ export function resolveMapClick(
     return cycle([
       ...unitIds,
       ...state.engines
-        .filter((e) => units.some((u) => u.level === 'ground' && sameCell(e, u)))
+        .filter((e) => !e.wrecked && units.some((u) => u.level === 'ground' && sameCell(e, u)))
         .map((e) => e.id),
     ]);
   if (own) return { type: 'select', id: own.id };

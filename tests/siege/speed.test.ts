@@ -9,6 +9,7 @@ import { createSiegeState } from '../../src/siege/rules/state';
 import { endDay } from '../../src/siege/rules/day';
 import { runAttackerTurn, type AttackerMethod } from '../../src/siege/ai/attacker';
 import { runDefenderTurn } from '../../src/siege/ai/defender';
+import { actorTodo } from '../../src/siege/ui/actorTodo';
 import {
   actionContext,
   actorCommandKinds,
@@ -46,7 +47,7 @@ function executionReason(state: SiegeState, action: SiegeAction): string | null 
   return result.ok ? null : result.reason;
 }
 // Frozen reference from before Q. Deliberately retains every exhaustive candidate,
-// original ordering and execution-based legality rather than sharing the optimisation.
+// execution-based legality; V3 uses fixed type slots rather than sharing the optimisation.
 function exhaustiveCommands(
   state: SiegeState,
   id: string,
@@ -152,7 +153,11 @@ function exhaustiveCommands(
       {
         type: 'raiseLadder',
         engineId:
-          unit?.side === 'shu' && unit.troopType === 'infantry' && unit.level === 'ground'
+          unit?.side === 'shu' &&
+          activeUnit(unit) &&
+          !unit.acted &&
+          unit.troopType === 'infantry' &&
+          unit.level === 'ground'
             ? (state.engines.find(
                 (e) => e.kind === 'ladder' && usableEngine(e) && !e.raisedAt && sameCell(e, unit),
               )?.id ?? id)
@@ -189,9 +194,7 @@ function exhaustiveCommands(
     },
   ];
   const kinds = actorCommandKinds(state, id, playerSide);
-  return commands
-    .filter((c) => kinds.includes(c.kind))
-    .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)));
+  return kinds.map((kind) => commands.find((c) => c.kind === kind)!);
 }
 function freezeLog(state: SiegeState) {
   for (const entry of state.log) {
@@ -293,6 +296,7 @@ describe('Q state copies and exhaustive legality equivalence', () => {
           freezeLog(state);
           const before = structuredClone(state);
           const candidates = new Map<string, SiegeAction>();
+          const queueState = cloneSiegeState(state);
           for (const side of ['shu', 'wei'] as const)
             for (const actor of [...state.units, ...state.engines, { id: 'missing' }]) {
               const expected = exhaustiveCommands(state, actor.id, side, (actions) => {
@@ -303,6 +307,17 @@ describe('Q state copies and exhaustive legality equivalence', () => {
                 expected,
               );
               expect(siegeCommands(state, actor.id, side)).toBe(commands);
+              const legal = commands.filter(
+                (c) => !c.reason && c.action && c.kind !== 'order' && c.kind !== 'standby',
+              );
+              const todo = legal.some(
+                (c) => c.action!.type !== 'move' && c.action!.type !== 'moveEngine',
+              )
+                ? 'act'
+                : legal.length
+                  ? 'move'
+                  : 'none';
+              expect(actorTodo(queueState, actor.id, side), `todo/${actor.id}/${side}`).toBe(todo);
               commandChecks++;
             }
           addCandidates(state, candidates);

@@ -11,7 +11,7 @@ import {
 } from '../rules/combat';
 import { isWallFoot } from '../rules/map';
 import { SIEGE_TUNING as T } from '../rules/tuning';
-import { makeWayDestination, reachableCells } from '../rules/movement';
+import { makeWayDestination, reachableCells, walkingDistances } from '../rules/movement';
 import type { Cell, SiegeState } from '../rules/types';
 import { siegeText, type SiegeLocale } from '../i18n';
 
@@ -36,7 +36,14 @@ export type ClimbGuide =
       breach: boolean;
       blocked?: 'moved' | 'boxed';
     }
-  | { kind: 'ladderNotRaised'; ladderId: string; base: Cell; atBase: boolean; steps: number }
+  | {
+      kind: 'ladderNotRaised';
+      ladderId: string;
+      base: Cell;
+      atBase: boolean;
+      steps: number;
+      noPath?: boolean;
+    }
   | {
       kind: 'walkToBase';
       route: 'ladder' | 'wallFoot';
@@ -45,6 +52,7 @@ export type ClimbGuide =
       canReach: boolean;
       moved: boolean;
       occupiedBy?: string;
+      noPath?: boolean;
     }
   | { kind: 'noRoute' };
 
@@ -98,6 +106,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
       breach: wallFoothold(state, ally) === T.footholdComplete,
     };
 
+  const walks = walkingDistances(state, unitId);
   const routes = [
     ...state.engines
       .filter((e) => e.kind === 'ladder' && usableEngine(e))
@@ -117,7 +126,12 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     })),
   ].map((route) => ({
     ...route,
-    steps: distance(unit, route.base),
+    steps:
+      walks.find((p) => p.level === 'ground' && sameCell(p, route.base))?.cost ??
+      distance(unit, route.base),
+    noPath:
+      !sameCell(unit, route.base) &&
+      !walks.some((p) => p.level === 'ground' && sameCell(p, route.base)),
     occupiedBy: state.units.find(
       (u) =>
         u.id !== unitId &&
@@ -138,8 +152,16 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
   const route = routes[0];
   if (!route) return { kind: 'noRoute' };
   const { base, steps } = route;
+  const blocked = route.noPath ? { noPath: true } : {};
   if (!route.raised)
-    return { kind: 'ladderNotRaised', ladderId: route.ladderId, base, atBase: steps === 0, steps };
+    return {
+      kind: 'ladderNotRaised',
+      ladderId: route.ladderId,
+      base,
+      atBase: steps === 0,
+      steps,
+      ...blocked,
+    };
   const allyAbove = state.units.find(
     (u) =>
       u.side === 'shu' && u.troops > 0 && u.level === 'wall' && route.top && sameCell(u, route.top),
@@ -166,6 +188,7 @@ export function climbGuide(state: SiegeState, unitId: string): ClimbGuide | null
     canReach: reachableCells(state, unitId).some((c) => c.level === 'ground' && sameCell(c, base)),
     moved: unit.moved,
     occupiedBy: route.occupiedBy,
+    ...blocked,
   };
 }
 
@@ -207,10 +230,12 @@ export function climbGuideText(
         { name: nameOf(guide.allyId) },
       );
     case 'ladderNotRaised':
+      if (guide.noPath) return siegeText(locale, 'climbRouteBlocked');
       return siegeText(locale, guide.atBase ? 'climbRaiseAtBase' : 'climbRaiseThenWalk');
     case 'walkToBase':
       if (guide.occupiedBy)
         return siegeText(locale, 'climbOccupied', { name: nameOf(guide.occupiedBy) });
+      if (guide.noPath) return siegeText(locale, 'climbRouteBlocked');
       return siegeText(
         locale,
         guide.moved

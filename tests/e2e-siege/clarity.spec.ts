@@ -38,11 +38,14 @@ for (const locale of ['en', 'zh'] as const) {
       await selectActor(page, id);
       await expectNoPanelScroll(page, 'action-panel');
       await expect(page.getByTestId('withdraw')).toBeInViewport({ ratio: 1 });
-      await expect(page.getByTestId('selected-actor')).not.toContainText(/\d+,\d+/);
+      if (state.engines.find((e) => e.id === id)?.kind === 'ram')
+        await expect(page.getByTestId('action-context')).toContainText('(8,8)');
+      else await expect(page.getByTestId('selected-actor')).not.toContainText(/\d+,\d+/);
     }
     await selectActor(page, 'shu-weiyan');
-    for (const action of ['suppress', 'raiseLadder', 'ram', 'buildWall'])
+    for (const action of ['suppress', 'ram', 'buildWall'])
       await expect(page.getByTestId(`command-${action}`)).toHaveCount(0);
+    await expect(page.getByTestId('command-raiseLadder')).toHaveAttribute('aria-disabled', 'true');
     const unavailable = page.getByTestId('action-panel').locator('[aria-disabled="true"]').first();
     const expected = await unavailable.getAttribute('title');
     await unavailable.focus();

@@ -178,11 +178,16 @@ describe('R cell click priority, first match wins', () => {
       id: 'engine',
     });
   });
-  it('a raised ladder is clickable at the painted row-eight base while its logical row-ten unit still cycles it', () => {
+  it('a raised ladder is clickable at its row-ten base and cycles with its operating unit', () => {
     const { state, own } = fixture();
     Object.assign(own, ground(6, 10));
     state.engines = [engine('ladder', 6, 10, { raisedAt: { x: 6, y: 7 } })];
-    expect(resolveMapClick({ state }, ground(6, 8))).toEqual({ type: 'select', id: 'engine' });
+    expect(resolveMapClick({ state }, ground(6, 8))).toEqual({ type: 'cell', cell: ground(6, 8) });
+    const empty = { ...state, units: [] };
+    expect(resolveMapClick({ state: empty }, ground(6, 10))).toEqual({
+      type: 'select',
+      id: 'engine',
+    });
     expect(resolveMapClick({ state, selected: own.id }, own)).toEqual({
       type: 'select',
       id: 'engine',
@@ -209,13 +214,13 @@ describe('R cell click priority, first match wins', () => {
     expect(mapClickColor({ type: 'none' })).toBeNull();
     expect(mapClickColor({ type: 'cell', cell })).toBeNull();
   });
-  it('plates select their living owner over any underlying cell, including enemies', () => {
+  it('plates resolve their owner cell; enemy plates forecast when an own actor is selected', () => {
     const { state, own, enemy } = fixture();
     const cell = ground(6, 9);
     for (const unit of [own, enemy])
       for (const selected of [null, own.id, enemy.id])
         expect(resolveMapClick({ state, selected, plateUnitId: unit.id }, cell)).toEqual({
-          type: 'select',
+          type: unit === enemy && selected === own.id ? 'target' : 'select',
           id: unit.id,
         });
     expect(resolveMapClick({ state, plateUnitId: own.id }, null)).toEqual({

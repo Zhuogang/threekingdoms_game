@@ -1,6 +1,7 @@
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { describe, expect, it } from 'vitest';
-import { deployUnit, siegeCommands, standBy, nextShuUnit } from '../../src/siege/ui/commands';
+import { deployUnit, siegeCommands, standBy } from '../../src/siege/ui/commands';
+import { nextActor } from '../../src/siege/ui/actorTodo';
 import { resolveSiegeDay } from '../../src/siege/ui/playback';
 import {
   statePatches,
@@ -31,7 +32,7 @@ describe('playable siege adapters', () => {
       id = state.units[1]!.id;
     const commands = siegeCommands(state, id);
     expect(commands.find((c) => c.kind === 'move')?.reason).toBeNull();
-    expect(commands.some((c) => c.kind === 'raiseLadder')).toBe(false);
+    expect(commands.find((c) => c.kind === 'raiseLadder')?.reason).toBeTruthy();
     expect(commands.some((c) => c.kind === 'buildWall')).toBe(false);
     expect(commands.find((c) => c.kind === 'climb')?.reason).toMatch(/Climb/);
     const next = standBy(state, id);
@@ -40,7 +41,7 @@ describe('playable siege adapters', () => {
       /cannot move today/,
     );
     expect(standBy(next, id)).toBe(next);
-    expect(nextShuUnit(next, id)?.id).toBe('shu-jiangwei');
+    expect(nextActor(next, id, 'shu')?.id).toBe('shu-jiangwei');
     expect(state.units[1]!.acted).toBe(false);
   });
   it('keeps playback final state identical to the daily resolver, including when frames are skipped', () => {

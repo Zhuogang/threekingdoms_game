@@ -151,6 +151,8 @@ for (const locale of ['zh', 'en'] as const) {
           });
           expect(after.state.footholds['6,7']).toBe(T.footholdComplete);
         }
+        // A finished actor may have advanced automatically; inspect it explicitly.
+        await selectActor(page, wangping.id);
         await expectNoPanelScroll(page, 'action-panel');
       });
   test(`${locale}: default guide, grey explanation and walkthrough stay readable at three zooms`, async ({
@@ -241,6 +243,7 @@ for (const locale of ['zh', 'en'] as const) {
         const after = await snapshot(page);
         expect(after.state.day).toBe(1);
         expect(after.state.footholds[`${x},7`]).toBe(T.climbFoothold);
+        await selectActor(page, unitId);
         await expectGuide(page, locale, 'acted');
       });
   test(`${locale}: moved approach explains tomorrow, then the next morning can reach the base`, async ({
@@ -301,6 +304,7 @@ for (const locale of ['zh', 'en'] as const) {
     const after = await snapshot(page);
     expect(after.state.trenchFill['6,9']).toBe(T.infantryFill);
     expect(after.state.units[0]).toMatchObject({ x: 6, y: 10, acted: true });
+    await selectActor(page, unit.id);
     await expectNoPanelScroll(page, 'action-panel');
   });
   test(`${locale}: a defender above the ladder explains attacking and leaves Attack usable`, async ({
@@ -335,11 +339,17 @@ for (const locale of ['zh', 'en'] as const) {
     state.trenchFill['6,8'] = state.trenchFill['6,9'] = T.trenchCapacity;
     await loadSkippedBattle(page, state, locale);
     await selectActor(page, unit.id);
-    await expectGuide(page, locale, 'walkToBase');
+    await expectGuide(page, locale, 'allyAbove');
     await clickGreyClimb(page);
     await expectLabel(page, '6,8,ground', siegeText(locale, 'climbWallFootLabel'));
     await page.getByTestId('command-move').click();
     await clickCell(page, 'reachable', '6,8,ground');
+    // No one has executable work left: keep this unit and its guidance visible.
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unit.id);
+    await expect(page.getByTestId('end-day')).toHaveAttribute('data-actions-done', 'true');
+    await page.keyboard.press('Tab');
+    await expect(page.getByTestId('next-actor')).toBeDisabled();
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unit.id);
     await expectGuide(page, locale, 'allyAbove');
     await clickGreyClimb(page);
     await expectLabel(page, '6,8,ground', siegeText(locale, 'climbWallFootLabel'));

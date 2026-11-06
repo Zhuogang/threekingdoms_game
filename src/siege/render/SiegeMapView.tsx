@@ -36,6 +36,10 @@ import type { SiegePosition, SiegeState, SiegeUnit } from '../rules/types';
 import type { Facing } from '../save';
 import { siegeText, type SiegeLocale } from '../i18n';
 import { fireRangeCells } from '../ui/fireRange';
+import { actorTodo } from '../ui/actorTodo';
+import { hoverInfo } from '../ui/hoverInfo';
+import type { ActorTarget } from '../ui/commands';
+import { TargetIcons, targetIconRects } from './TargetIcons';
 import {
   resolveMapClick,
   mapClickColor,
@@ -93,6 +97,7 @@ const BOUNDS = { left: 0, top: 0, right: W, bottom: H, width: W, height: H };
 const NO_CELLS: SiegePosition[] = [];
 const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
+const NO_TARGETS: ActorTarget[] = [];
 export const SILHOUETTE_OPACITY = 0.7;
 const portraitFiles = import.meta.glob(
   '/docs/siege/chencang/art/s5-0{7,8}-*/runtime/*-small.webp',
@@ -110,6 +115,7 @@ interface Layer {
 export interface SiegeMapHandle {
   zoom: (scale: number) => void;
   focus: (position?: SiegePosition) => void;
+  reveal: (position: SiegePosition) => void;
   full: () => void;
 }
 interface Props {
@@ -119,6 +125,8 @@ interface Props {
   clickMode?: MapClickContext['mode'];
   clickBlocked?: boolean;
   onTarget?: (id: string) => void;
+  onTargetAction?: (target: ActorTarget) => void;
+  actorTargets?: ActorTarget[];
   onSwap?: (id: string) => void;
   reachable?: SiegePosition[];
   targets?: SiegePosition[];
@@ -153,6 +161,8 @@ export const SiegeMapView = memo(
       clickMode,
       clickBlocked,
       onTarget,
+      onTargetAction,
+      actorTargets = NO_TARGETS,
       onSwap,
       reachable = NO_CELLS,
       targets = NO_CELLS,
@@ -292,12 +302,7 @@ export const SiegeMapView = memo(
             u.troops > 0 && u.x === position.x && u.y === position.y && u.level === position.level,
         );
       const [x, y] = occupant
-        ? unitVisual(
-            state,
-            occupant,
-            facings[occupant.id],
-            activity?.id === occupant.id ? activity.type : undefined,
-          ).foot
+        ? centre(positionBounds(occupant))
         : position
           ? boardAnchor(position, state)
           : [1536, 840];
@@ -311,6 +316,20 @@ export const SiegeMapView = memo(
         setView(zoomBattlefieldViewport(current, BOUNDS, focus, scale / (width / current.width)));
       },
       focus,
+      reveal(position) {
+        const current = viewRef.current;
+        const r = positionBounds(position);
+        const marginX = current.width * 0.12,
+          marginY = current.height * 0.12;
+        // Include the formation and its plate, so selection is usable at the edge.
+        if (
+          r[0] < current.left + marginX ||
+          r[2] > current.left + current.width - marginX ||
+          r[1] < current.top + marginY ||
+          r[3] > current.top + current.height - marginY
+        )
+          focus(position);
+      },
       full() {
         setView(fitBattlefieldViewport(BOUNDS, viewRef.current.width / viewRef.current.height, 0));
       },
@@ -373,14 +392,41 @@ export const SiegeMapView = memo(
       else if ('cell' in result) onCell?.(result.cell);
     };
     const { units, engines, decorations } = scene;
+    const positionBounds = (p: SiegePosition): ScreenRect => {
+      const unit = units.find(
+        ({ unit }) => unit.x === p.x && unit.y === p.y && unit.level === p.level,
+      );
+      if (unit) {
+        const plate = scene.plates.get(unit.unit.id)!,
+          r = unit.visual.rect;
+        return [
+          Math.min(r[0], plate[0]),
+          Math.min(r[1], plate[1]),
+          Math.max(r[2], plate[2]),
+          Math.max(r[3], plate[3]),
+        ];
+      }
+      const at = boardAnchor(p, state);
+      return [at[0] - 48, at[1] - 80, at[0] + 48, at[1] + 20];
+    };
+    const iconRects = useMemo(
+      () => targetIconRects(state, actorTargets, scene.plates),
+      [state, actorTargets, scene.plates],
+    );
     const hitAt = (clientX: number, clientY: number) => {
       const point = pointAt(clientX, clientY);
+      const icon = iconRects.find(({ rect }) => contains(rect, point.x, point.y));
       const plateUnitId = [...units]
         .reverse()
         .find(({ unit }) => contains(scene.plates.get(unit.id)!, point.x, point.y))?.unit.id;
-      return { cell: pickAt(clientX, clientY), plateUnitId };
+      return {
+        cell: icon?.position ?? pickAt(clientX, clientY),
+        plateUnitId,
+        actorTarget: icon?.target,
+      };
     };
     const overlay = useRef<OverlayHandle>(null);
+    const hoverLine = useRef<HTMLDivElement>(null);
     const spriteCount = scene.budget.used;
     const silhouetteFigures = units.reduce(
       (n, { visual }) => n + (scene.occluders(visual).length ? visual.figures.length : 0),
@@ -446,6 +492,10 @@ export const SiegeMapView = memo(
               return;
             }
             const hit = hitAt(event.clientX, event.clientY);
+            if (hit.actorTarget && !clickContext.blocked && !deploy) {
+              onTargetAction?.(hit.actorTarget);
+              return;
+            }
             dispatchClick(
               resolveMapClick({ ...clickContext, plateUnitId: hit.plateUnitId }, hit.cell),
             );
@@ -474,9 +524,18 @@ export const SiegeMapView = memo(
             forecastCell={forecastCell}
             scale={view.width / (frame.current?.clientWidth || view.width)}
             xray={xray}
+            locale={locale}
+            hoverLine={hoverLine}
           />
           {scene.effects}
-          <Nameplates units={units} rects={scene.plates} locale={locale} selected={selected} />
+          <Nameplates
+            state={state}
+            units={units}
+            rects={scene.plates}
+            locale={locale}
+            selected={selected}
+          />
+          <TargetIcons entries={iconRects} prefix={prefix} />
           {boardReview && <BoardReview state={state} />}
           {/* Invisible geometry for specs only; input uses the pure resolver. */}
           <g data-testid="unit-hit-targets">
@@ -503,6 +562,7 @@ export const SiegeMapView = memo(
               })}
           </g>
         </svg>
+        <div ref={hoverLine} className="siege-hover-line" data-testid="hover-line" />
         {notice && (
           <MapNotice
             selection={
@@ -1293,6 +1353,8 @@ interface OverlayHandle {
 const MapOverlays = forwardRef<
   OverlayHandle,
   Pick<Props, 'state' | 'selected' | 'climbBase' | 'night' | 'forecastCell' | 'xray'> & {
+    locale: SiegeLocale;
+    hoverLine: React.RefObject<HTMLDivElement | null>;
     scene: Scene;
     clickContext: MapClickContext;
     reachable: SiegePosition[];
@@ -1320,6 +1382,8 @@ const MapOverlays = forwardRef<
     forecastCell,
     scale,
     xray,
+    locale,
+    hoverLine,
   },
   ref,
 ) {
@@ -1328,6 +1392,14 @@ const MapOverlays = forwardRef<
   const plateOwner = scene.units.find(({ unit }) => unit.id === hit?.plateUnitId)?.unit;
   const hover = plateOwner ?? hit?.cell;
   const hoverRef = useRef(hit);
+  const writeHover = (next: Parameters<OverlayHandle['hover']>[0]) => {
+    const owner = state.units.find((u) => u.id === next?.plateUnitId);
+    if (hoverLine.current)
+      hoverLine.current.textContent = hoverInfo(state, owner ?? next?.cell ?? null, locale);
+  };
+  useLayoutEffect(() => {
+    writeHover(hoverRef.current);
+  }, [state, locale]);
   useImperativeHandle(
     ref,
     () => ({
@@ -1341,10 +1413,11 @@ const MapOverlays = forwardRef<
         )
           return;
         hoverRef.current = next;
+        writeHover(next);
         setHit(next);
       },
     }),
-    [],
+    [state, locale],
   );
   const { units, engines, prefix, occluders } = scene;
   const cellOutline = (
@@ -1650,11 +1723,13 @@ function BattleEffect({ action }: { action: NonNullable<Props['effectAction']> }
 }
 
 const Nameplates = memo(function Nameplates({
+  state,
   units,
   rects,
   locale,
   selected,
 }: {
+  state: SiegeState;
   units: Scene['units'];
   rects: Map<string, ScreenRect>;
   locale: SiegeLocale;
@@ -1666,13 +1741,15 @@ const Nameplates = memo(function Nameplates({
         const [x, y] = rects.get(unit.id)!,
           portrait = portraitOf(unit);
         const color = unit.side === 'shu' ? '#51836d' : '#4d6693';
+        const todo = actorTodo(state, unit.id, unit.side);
         return (
           <g
             key={unit.id}
             data-nameplate={unit.id}
             data-moved={Boolean(unit.moved)}
             data-acted={Boolean(unit.acted)}
-            opacity={unit.moved && unit.acted ? 0.55 : 1}
+            data-todo={todo}
+            opacity={todo === 'none' ? 0.55 : 1}
             transform={`translate(${x} ${y})`}
           >
             <title>{locale === 'zh' ? unit.officer.chinese : unit.officer.name}</title>
@@ -1718,6 +1795,9 @@ const Nameplates = memo(function Nameplates({
             />
             <circle cx={34} cy={23} r={2} fill={unit.moved ? '#706b5d' : '#eac87a'} />
             <circle cx={44} cy={23} r={2} fill={unit.acted ? '#706b5d' : '#eac87a'} />
+            {todo === 'act' && (
+              <circle data-todo-marker="act" cx={56} cy={23} r={2.5} fill="#f3d378" />
+            )}
             {unit.morale < 40 && <path d="M77 24l4-4 4 4" stroke="#f1a76e" fill="none" />}
           </g>
         );

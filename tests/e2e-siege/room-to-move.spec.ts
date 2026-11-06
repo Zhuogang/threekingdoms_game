@@ -38,6 +38,7 @@ async function move(page: Page, id: string, cell: string) {
   await selectActor(page, id);
   await page.getByTestId('command-move').click();
   await clickCell(page, 'reachable', cell);
+  await selectActor(page, id); // Inspect even if the queue advanced after a move with no action.
   await expectNoPanelScroll(page, 'action-panel');
 }
 function fixture() {
@@ -80,9 +81,9 @@ for (const locale of ['zh', 'en'] as const) {
     await move(page, unit.id, '7,6,ground');
     expect((await snapshot(page)).state.units[0]).toMatchObject({ x: 7, y: 6, level: 'ground' });
     await expect(page.getByTestId('action-context')).toHaveText(
-      siegeText(locale, 'nextGate', { n: 1 }),
+      siegeText(locale, 'nextTomorrowMoved', { plan: siegeText(locale, 'nextGate', { n: 1 }) }),
     );
-    await expect(page.getByTestId('climb-base-label')).toHaveAttribute('data-cell', '8,6,ground');
+    await expect(page.getByTestId('climb-base-label')).toHaveCount(0);
     await endDay(page);
     await closeReport(page);
     await move(page, unit.id, '8,6,ground');
@@ -91,9 +92,10 @@ for (const locale of ['zh', 'en'] as const) {
     await expect(open).toHaveAttribute('aria-disabled', 'false');
     await expect(page.getByTestId('action-panel').getByRole('button').first()).toHaveAttribute(
       'data-testid',
-      'command-openGate',
+      'command-move',
     );
     await open.click();
+    await selectActor(page, unit.id);
     expect((await snapshot(page)).state.gates.south).toMatchObject({
       opened: true,
       broken: true,
@@ -129,6 +131,7 @@ for (const locale of ['zh', 'en'] as const) {
     expect((await snapshot(page)).state.units.find((u) => u.id === enemy.id)!.troops).toBeLessThan(
       enemy.troops,
     );
+    await selectActor(page, unit.id);
     await expectNoPanelScroll(page, 'action-panel');
   });
 
@@ -197,6 +200,7 @@ for (const locale of ['zh', 'en'] as const) {
     await page.getByTestId('attack-confirm').click();
     after = (await snapshot(page)).state;
     expect(after.units[2]!.troops).toBeLessThan(enemy.troops);
+    await selectActor(page, follower.id);
     await expectNoPanelScroll(page, 'action-panel');
   });
 }

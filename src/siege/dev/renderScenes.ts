@@ -143,7 +143,8 @@ export function createRenderScene(name: RenderSceneName): RenderScene {
     ladder(10, 2, 2);
     state.units[1]!.assaultedDay = state.units[2]!.assaultedDay = state.day;
     result.repulsedUnits = [state.units[2]!.id];
-    result.legend = 'Storming mass at (6,8), repulsed at (10,8); original uniform art size.';
+    result.legend =
+      'Storming mass at the row-10 ladder base (6,10), repulsed at (10,10); original uniform art size.';
   } else if (name === 'mounds') {
     [5, 6, 7, 9, 10].forEach((x, i) => {
       state.mounds[`${x},8`] = [1, 2, 3, 5, 6][i] as 1 | 2 | 3 | 5 | 6;

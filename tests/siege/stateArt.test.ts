@@ -9,6 +9,7 @@ import {
   hitRect,
   planeRect,
   positionAt,
+  raisedLadderFoot,
 } from '../../src/siege/render/boardGeometry';
 import { engineFootprint, engineSprite, unitVisual } from '../../src/siege/render/stateArt';
 import { SiegeMapView } from '../../src/siege/render/SiegeMapView';
@@ -46,25 +47,24 @@ describe('V2 engine footprints, original figures and cell registration', () => {
     for (const covered of [false, true]) {
       const e = engine('ladder', 6, 10, { covered, raisedAt: { x: 6, y: 7 } }),
         sprite = engineSprite(e),
-        source = sheet(sprite.sheet),
-        object = source.pieces[covered ? 2 : 0]!.objects[0]!;
+        source = sheet(sprite.sheet);
+      expect(source.pieces.length).toBeGreaterThan(0);
       expect(engineFootprint(e)).toEqual([
-        { x: 6, y: 8, level: 'ground' },
+        { x: 6, y: 10, level: 'ground' },
         { x: 6, y: 7, level: 'wall' },
       ]);
       const sx = (sprite.rect[2] - sprite.rect[0]) / (sprite.crop[2] - sprite.crop[0]),
         sy = (sprite.rect[3] - sprite.rect[1]) / (sprite.crop[3] - sprite.crop[1]);
       expect(sx).toBeCloseTo(sy, 10);
-      const origin = source.pieces[covered ? 2 : 0]!.origin;
-      const top = object.registration?.wallTop?.pixel ?? [384, 258],
-        base = object.registration?.cartBase?.pixel ?? [384, 786];
+      const top = [(sprite.crop[0] + sprite.crop[2]) / 2, sprite.crop[1]],
+        base = [top[0]!, sprite.crop[3]];
       const mapped = (pixel: number[]) => [
         sprite.rect[0] + (pixel[0]! - sprite.crop[0]) * sx,
         sprite.rect[1] + (pixel[1]! - sprite.crop[1]) * sy,
       ];
       expect(mapped(top)).toEqual(anchor({ x: 6, y: 7, level: 'wall' }));
-      expect(mapped(base)).toEqual(anchor({ x: 6, y: 8, level: 'ground' }));
-      expect(origin.every(Number.isFinite)).toBe(true);
+      expect(mapped(base)).toEqual(raisedLadderFoot(e));
+      expect(sx).toBeCloseTo(covered ? 216 / 486 : 216 / 534, 10);
       e.wrecked = true;
       expect(engineFootprint(e)).toHaveLength(1);
     }
@@ -160,7 +160,7 @@ describe('V2 engine footprints, original figures and cell registration', () => {
     for (const locale of ['zh', 'en'] as const)
       expect(actionContext(state, id, locale)).toBe(siegeText(locale, 'climbRaiseAtBase'));
     state = act(state, command.action!);
-    expect(siegeCommands(state, id).some((c) => c.kind === 'raiseLadder')).toBe(false);
+    expect(siegeCommands(state, id).find((c) => c.kind === 'raiseLadder')?.reason).toBeTruthy();
     expect(siegeCommands(state, id).find((c) => c.kind === 'climb')?.reason).toBeNull();
   });
   it('inside units retain next-goal guidance and a boxed-in wall defender retains context', () => {

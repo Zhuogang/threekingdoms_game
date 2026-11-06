@@ -6,6 +6,7 @@ import type { SiegePosition, SiegeState } from '../rules/types';
 import { siegeText, type SiegeLocale } from '../i18n';
 
 export type NextGoalGuide =
+  | { kind: 'tomorrow'; reason: 'acted' | 'moved'; guide: NextGoalGuide | null }
   | { kind: 'gate' | 'courtyard'; target: SiegePosition; steps: number }
   | { kind: 'openNow' }
   | { kind: 'guarded'; defenderId: string };
@@ -25,6 +26,17 @@ export function nextGoalGuide(state: SiegeState, unitId: string): NextGoalGuide 
   for (const gate of gates)
     if (!validateSiegeAction(state, { type: 'openGate', unitId, gateId: gate.id }))
       return { kind: 'openNow' };
+  if (unit.acted || unit.moved) {
+    const tomorrow = {
+      ...state,
+      units: state.units.map((u) => (u.id === unitId ? { ...u, acted: false, moved: false } : u)),
+    };
+    return {
+      kind: 'tomorrow',
+      reason: unit.acted ? 'acted' : 'moved',
+      guide: nextGoalGuide(tomorrow, unitId),
+    };
+  }
   const cells = walkingDistances(state, unitId);
   if (gates.some((gate) => state.gates[gate.id].broken)) {
     const target = cells.find((p) => p.level === 'ground' && COURTYARD.some((c) => sameCell(c, p)));
@@ -59,6 +71,12 @@ export function nextGoalGuideText(
   locale: SiegeLocale,
   nameOf: (id: string) => string,
 ): string {
+  if (guide.kind === 'tomorrow')
+    return siegeText(locale, guide.reason === 'acted' ? 'nextTomorrowActed' : 'nextTomorrowMoved', {
+      plan: guide.guide
+        ? nextGoalGuideText(guide.guide, locale, nameOf)
+        : siegeText(locale, 'courtyard'),
+    });
   if (guide.kind === 'openNow') return siegeText(locale, 'nextOpenNow');
   if (guide.kind === 'guarded')
     return siegeText(locale, 'nextGateGuarded', { name: nameOf(guide.defenderId) });

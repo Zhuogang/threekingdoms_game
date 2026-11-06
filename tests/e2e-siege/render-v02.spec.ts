@@ -98,7 +98,8 @@ test('storming/repulse follow ladders; gate figures stay behind the roof and yel
     ).toBe(true);
   }
   await page.goto('/?siege-map&scene=preparations');
-  const unit = map.locator('[data-gate-top="gate-south"]');
+  const id = createRenderScene('preparations').state.units.find((u) => u.x === 8 && u.y === 7)!.id;
+  const unit = map.locator(`g[data-unit="${id}"]`);
   await expect(unit).toHaveCount(1);
   expect(
     await unit.evaluate((el) =>
@@ -107,7 +108,7 @@ test('storming/repulse follow ladders; gate figures stay behind the roof and yel
       ),
     ),
   ).toBe(true);
-  const id = (await unit.getAttribute('data-unit'))!;
+
   await expect(map.locator(`[data-covered-unit="${id}"]`)).toHaveCount(1);
   await clickPlate(page, id);
   await expect(page.getByTestId('preview-selection')).toHaveText(id);

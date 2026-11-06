@@ -148,7 +148,7 @@ describe('workshops and engine movement', () => {
     expect(state.engines[0]).toMatchObject(WORKSHOPS[0]!.spawns[1]!);
   });
 
-  it('caps map engines at eight even when two workshops finish together; wrecks retain their cells', () => {
+  it('caps map engines at eight even when two workshops finish together; wreck art retains its coordinates', () => {
     let state = createSiegeState(7);
     state.engines = Array.from({ length: 7 }, (_, x) =>
       engine('ladder', x, 11, { id: `old-${x}` }),
@@ -242,7 +242,7 @@ describe('Wei countermeasures', () => {
     ).toBe(2000 - Math.floor(300 * T.boulderCoefficient));
   });
 
-  it('turns destroyed engines into blocking wrecks and schedules act 2 after two losses', () => {
+  it('turns destroyed engines into passable wrecks and schedules act 2 after two losses', () => {
     const { state, wei } = duel({}, { troopType: 'archer', troops: 300 });
     readyCounters(state);
     state.engines = [
@@ -256,7 +256,7 @@ describe('Wei countermeasures', () => {
     expect(next.day).toBe(3);
     expect(next.enginesLostAct1).toBe(2);
     Object.assign(next.units[0]!, { x: 6, y: 10 });
-    expect(pathTo(next, next.units[0]!.id, 7, 10, 'ground')).toBeNull();
+    expect(pathTo(next, next.units[0]!.id, 7, 10, 'ground')).toHaveLength(2);
     refused(next, { type: 'moveEngine', engineId: 'engine', x: 6, y: 10 });
   });
 
@@ -313,9 +313,7 @@ it.each(WORKSHOPS)(
   '$id tries both north cells before the existing nearest-free fallback',
   (workshop) => {
     let state = createSiegeState(42);
-    state.engines = workshop.spawns.map((p, i) =>
-      engine('ram', p.x, p.y, { id: `block-${i}`, wrecked: true, durability: 0 }),
-    );
+    state.engines = workshop.spawns.map((p, i) => engine('ram', p.x, p.y, { id: `block-${i}` }));
     state = act(state, { type: 'queueEngine', workshopId: workshop.id, kind: 'earthCart' });
     const next = endDay(state);
     const completed = next.engines.find((e) => e.kind === 'earthCart')!;

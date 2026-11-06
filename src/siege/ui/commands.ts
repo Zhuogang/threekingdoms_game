@@ -15,7 +15,9 @@ import { siegeText, type SiegeLocale } from '../i18n';
 import { placeName } from './places';
 import { nextGoalGuide, nextGoalGuideText } from './nextGoalGuide';
 import { climbGuide, climbGuideText } from './climbGuide';
-import { engineReachable, reachableCells } from '../rules/movement';
+import { engineGuide, engineGuideText } from './engineGuide';
+import { engineReachable, reachableCells, insideCity } from '../rules/movement';
+import { fireArrowsReason, millstonePosition } from '../rules/preparations';
 import type { SiegeAction, SiegePosition, SiegeState, SiegeSide } from '../rules/types';
 
 export type ExtraCommandKind =
@@ -47,7 +49,13 @@ export interface SiegeCommand {
 }
 function unraisedLadderUnder(state: SiegeState, id: string) {
   const unit = state.units.find(
-    (u) => u.id === id && u.side === 'shu' && u.troopType === 'infantry' && u.level === 'ground',
+    (u) =>
+      u.id === id &&
+      u.side === 'shu' &&
+      activeUnit(u) &&
+      !u.acted &&
+      u.troopType === 'infantry' &&
+      u.level === 'ground',
   );
   return (
     unit &&
@@ -74,22 +82,19 @@ export function actorCommandKinds(
         'hoistMillstone',
         'dropMillstone',
         'dropBoulders',
-        ...(state.act >= 2 ? (['buildWall'] as const) : []),
+        'buildWall',
         'order',
         'standby',
       ];
-    const canOpen = Object.values(GATES).some(
-      (gate) => !validateSiegeAction(state, { type: 'openGate', unitId: id, gateId: gate.id }),
-    );
     return unit.troopType === 'archer'
       ? ['move', 'attack', 'suppress', 'order', 'standby']
       : [
-          ...(canOpen ? ['openGate' as const] : []),
           'move',
           'attack',
+          'openGate',
           'coverEngine',
           'pileEarth',
-          ...(unraisedLadderUnder(state, id) ? ['raiseLadder' as const] : []),
+          'raiseLadder',
           'climb',
           'fillTrench',
           'order',
@@ -130,6 +135,8 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
   const unit = state.units.find((u) => u.id === id);
   const actor = unit ?? state.engines.find((e) => e.id === id);
   if (!actor) return '';
+  const engineHint = engineGuide(state, id);
+  if (engineHint) return engineGuideText(engineHint, locale);
   const nextGoal = nextGoalGuide(state, id);
   if (nextGoal)
     return nextGoalGuideText(nextGoal, locale, (unitId) => {
@@ -188,20 +195,114 @@ function computeActionContext(state: SiegeState, id: string, locale: SiegeLocale
 export function actionReason(state: SiegeState, action: SiegeAction): string | null {
   return validateSiegeAction(state, action);
 }
+const isActorAction = (action: SiegeAction) =>
+  action.type !== 'move' && action.type !== 'moveEngine' && action.type !== 'order';
+
+/** Same choose/plausibility/validator path as the panel, stopping at its first
+ * executable actor action. Queue/plates need no movement search or disabled list. */
+export function hasActorAction(state: SiegeState, id: string, side: SiegeSide): boolean {
+  const cached = commandCache.get(state)?.get(JSON.stringify([id, side]));
+  return (cached ?? computeSiegeCommands(state, id, side, true)).some(
+    (c) => !c.reason && c.action && isActorAction(c.action),
+  );
+}
+
+/** Shared candidate enumeration for the Attack button and the map's icons. */
+export function attackCandidates(state: SiegeState, id: string, side: SiegeSide): SiegeAction[] {
+  const unit = state.units.find((u) => u.id === id);
+  const attacks: SiegeAction[] = state.units
+    .filter((u) => u.side !== side && u.troops > 0)
+    .map((u) =>
+      unit
+        ? { type: 'attack', unitId: id, targetId: u.id }
+        : { type: 'attack', engineId: id, targetId: u.id },
+    );
+  if (unit?.side === 'shu')
+    attacks.push(
+      ...Object.values(GATES).map((gate) => ({
+        type: 'attack' as const,
+        unitId: id,
+        gateId: gate.id,
+      })),
+    );
+  return attacks;
+}
+
+export type TargetIcon = 'sword' | 'bow' | 'hammer' | 'fire' | 'stone' | 'suppress';
+export interface ActorTarget {
+  id: string;
+  action: SiegeAction;
+  icon: TargetIcon;
+}
+const targetCache = new WeakMap<SiegeState, Map<string, ActorTarget[]>>();
+/** Only commands offered to this actor type participate; validators are authoritative. */
+export function actorTargets(state: SiegeState, id: string, side: SiegeSide): ActorTarget[] {
+  let cache = targetCache.get(state);
+  if (!cache) targetCache.set(state, (cache = new Map()));
+  const key = JSON.stringify([id, side]);
+  if (!cache.has(key)) cache.set(key, computeActorTargets(state, id, side));
+  return cache.get(key)!;
+}
+function computeActorTargets(state: SiegeState, id: string, side: SiegeSide): ActorTarget[] {
+  const kinds = actorCommandKinds(state, id, side);
+  const ranged =
+    state.units.find((u) => u.id === id)?.troopType === 'archer' ||
+    state.engines.find((e) => e.id === id)?.kind === 'tower';
+  const actions: SiegeAction[] = [
+    ...(kinds.includes('attack') ? attackCandidates(state, id, side) : []),
+    ...(kinds.includes('ram')
+      ? Object.values(GATES).map((gate) => ({
+          type: 'ram' as const,
+          engineId: id,
+          gateId: gate.id,
+        }))
+      : []),
+    ...(['suppress', 'fireArrows', 'dropMillstone', 'dropBoulders'] as const)
+      .filter((kind) => kinds.includes(kind))
+      .flatMap((kind) => extraActionTargets(state, id, kind, side)),
+  ];
+  return actions
+    .filter((action) => !actionReason(state, action))
+    .map((action) => ({
+      action,
+      id:
+        'gateId' in action
+          ? action.gateId
+          : 'targetId' in action
+            ? action.targetId
+            : 'engineId' in action
+              ? action.engineId
+              : '',
+      icon:
+        action.type === 'ram' || 'gateId' in action
+          ? 'hammer'
+          : action.type === 'fireArrows'
+            ? 'fire'
+            : action.type === 'suppress'
+              ? 'suppress'
+              : action.type === 'dropMillstone' || action.type === 'dropBoulders'
+                ? 'stone'
+                : ranged
+                  ? 'bow'
+                  : 'sword',
+    }));
+}
 /** Every action entry uses the same validator as its eventual execution. */
 function computeSiegeCommands(
   state: SiegeState,
   id: string,
   playerSide: SiegeSide = 'shu',
+  findAction = false,
 ): SiegeCommand[] {
   const unit = state.units.find((u) => u.id === id),
     engine = state.engines.find((e) => e.id === id);
   const kinds = actorCommandKinds(state, id, playerSide);
-  const move = kinds.includes('move')
-    ? unit
-      ? reachableCells(state, id)
-      : engineReachable(state, id)
-    : [];
+  const move =
+    !findAction && kinds.includes('move')
+      ? unit
+        ? reachableCells(state, id)
+        : engineReachable(state, id)
+      : [];
   const moveAction = (p: SiegePosition): SiegeAction =>
     unit
       ? { type: 'move', unitId: id, ...p }
@@ -210,6 +311,25 @@ function computeSiegeCommands(
   // Necessary conditions only, retaining the exhaustive candidate order. No legal
   // candidate can be skipped, so the first legal action and fallback stay identical.
   const plausible = (action: SiegeAction): boolean => {
+    if (action.type === 'openGate')
+      return Boolean(
+        unit &&
+        GATES[action.gateId].cells.some((c) =>
+          unit.level === 'wall' ? sameCell(c, unit) : insideCity(unit) && distance(c, unit) === 1,
+        ),
+      );
+    if (action.type === 'fireArrows') {
+      const target = state.engines.find((e) => e.id === action.engineId);
+      return Boolean(unit && target && !fireArrowsReason(state, unit, target));
+    }
+    if (action.type === 'dropMillstone') {
+      const target = state.engines.find((e) => e.id === action.engineId);
+      return Boolean(unit && target?.kind === 'ram' && millstonePosition(unit));
+    }
+    if (action.type === 'dropBoulders') {
+      const target = state.units.find((u) => u.id === action.targetId);
+      return Boolean(unit && target && climbingPosition(state, target, unit));
+    }
     if (action.type === 'fillTrench' || action.type === 'pileEarth')
       return Boolean(actor && distance(actor, action) === 1);
     if (action.type === 'coverEngine') {
@@ -230,29 +350,28 @@ function computeSiegeCommands(
       return Boolean(engine && GATES[action.gateId].approaches.some((c) => sameCell(c, engine)));
     return true;
   };
+  let foundAction: SiegeCommand | null = null;
   const choose = (kind: CommandKind, actions: SiegeAction[]): SiegeCommand => {
-    if (!kinds.includes(kind)) return { kind, reason: null };
+    if (
+      !kinds.includes(kind) ||
+      (findAction && (foundAction || kind === 'move' || kind === 'order'))
+    )
+      return { kind, reason: null };
     for (const action of actions)
-      if (plausible(action) && actionReason(state, action) === null)
-        return { kind, action, reason: null };
+      if (
+        (!findAction || isActorAction(action)) &&
+        plausible(action) &&
+        actionReason(state, action) === null
+      ) {
+        const command = { kind, action, reason: null };
+        if (findAction) foundAction = command;
+        return command;
+      }
+    if (findAction) return { kind, reason: null };
     const action = actions[0] ?? { type: 'suppress', unitId: id, targetId: '' };
     return { kind, action, reason: actionReason(state, action) };
   };
-  const attacks: SiegeAction[] = state.units
-    .filter((u) => u.side !== playerSide && u.troops > 0)
-    .map((u) =>
-      unit
-        ? { type: 'attack', unitId: id, targetId: u.id }
-        : { type: 'attack', engineId: id, targetId: u.id },
-    );
-  if (unit?.side === 'shu')
-    attacks.push(
-      ...(Object.keys(GATES) as Array<keyof typeof GATES>).map((gateId) => ({
-        type: 'attack' as const,
-        unitId: id,
-        gateId,
-      })),
-    );
+  const attacks = attackCandidates(state, id, playerSide);
   const commanderTarget =
     unit?.side === playerSide
       ? unit.id
@@ -350,9 +469,11 @@ function computeSiegeCommands(
           : 'This attacker cannot act today.',
     },
   ];
-  return commands
-    .filter((c) => kinds.includes(c.kind))
-    .sort((a, b) => Number(Boolean(a.reason)) - Number(Boolean(b.reason)));
+  return findAction
+    ? foundAction
+      ? [foundAction]
+      : []
+    : kinds.map((kind) => commands.find((c) => c.kind === kind)!);
 }
 export function standBy(state: SiegeState, id: string, playerSide: SiegeSide = 'shu'): SiegeState {
   const unit = state.units.find((u) => u.id === id),
@@ -386,7 +507,7 @@ export function deployUnit(
   if (!unit || !cells.some((c) => sameCell(c, to) && to.level === c.level)) return state;
   if (
     state.engines.some(
-      (engine) => sameCell(engine, to) && !(engine.kind === 'ladder' && usableEngine(engine)),
+      (engine) => usableEngine(engine) && sameCell(engine, to) && engine.kind !== 'ladder',
     )
   )
     return state;
@@ -397,21 +518,6 @@ export function deployUnit(
   if (other) Object.assign(other, { x: actor.x, y: actor.y, level: actor.level });
   Object.assign(actor, { x: to.x, y: to.y, level: to.level });
   return next;
-}
-
-/** Cycle from the selected roster position, including when that unit just spent its action. */
-export function nextShuUnit(
-  state: SiegeState,
-  selected: string | null,
-  playerSide: SiegeSide = 'shu',
-) {
-  const roster = state.units.filter((unit) => unit.side === playerSide);
-  const index = roster.findIndex((unit) => unit.id === selected);
-  for (let offset = 1; offset <= roster.length; offset++) {
-    const candidate = roster[(index + offset) % roster.length]!;
-    if (activeUnit(candidate) && !candidate.acted) return candidate;
-  }
-  return null;
 }
 
 /** Presentation standby uses the existing per-actor standby operation. */

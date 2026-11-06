@@ -16,8 +16,10 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = ROOT / '.artifacts/siege/v2-scenes'
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--revision', choices=['v2', 'v3'], default='v2')
 parser.add_argument('--scene', help='Render just one scene; default: all review SVGs')
 args = parser.parse_args()
+DIRECTORY = ROOT / f'.artifacts/siege/{args.revision}-scenes'
 
 rsvg = ctypes.CDLL('librsvg-2.so.2')
 cairo = ctypes.CDLL('libcairo.so.2')
@@ -102,5 +104,5 @@ for path in paths:
     results.append(result)
     print(json.dumps(result), flush=True)
 
-report = ROOT / f'.artifacts/siege/v2-raster-{args.scene or "all"}.json'
+report = ROOT / f'.artifacts/siege/{args.revision}-raster-{args.scene or "all"}.json'
 report.write_text(json.dumps(results, indent=2) + '\n')

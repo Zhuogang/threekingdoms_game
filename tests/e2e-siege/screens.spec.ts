@@ -61,7 +61,8 @@ test('review screenshot: assault-forecast', async ({ page }) => {
   const game = reviewFixture();
   await loadFixture(page, game);
   await selectActor(page, 'shu-weiyan');
-  await selectActor(page, 'wei-captain-1');
+  const defender = game.state.units.find((u) => u.side === 'wei' && u.x === 6 && u.y === 7)!;
+  await selectActor(page, defender.id);
   await page.getByTestId('assault-toggle').check();
   await shot(page, 'assault-forecast');
 });

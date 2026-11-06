@@ -5,10 +5,10 @@ import {
   fineFootprint,
   formationFor,
   gateTowerAt,
-  ladderBase,
+  raisedLadderFoot,
   climbingBase,
+  climbingFoot,
   moundFoot,
-  wallFaceFoot,
 } from './boardGeometry';
 import { fineCellsOf } from '../content/coarseGrid';
 import trenchJob from '../../../docs/siege/chencang/art/s3-01-trench-fill/job.json';
@@ -108,15 +108,14 @@ export function statePatches(state: SiegeState): StatePatch[] {
 /** Presentation footprint only. Wrecks retain their cart footprint. */
 export function engineFootprint(engine: SiegeEngine): SiegePosition[] {
   return [
-    ladderBase(engine),
+    { x: engine.x, y: engine.y, level: 'ground' },
     ...(engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked
       ? [{ ...engine.raisedAt, level: 'wall' as const }]
       : []),
   ];
 }
 
-/** Rules keep the ladder's operating unit at its logical base. The raised art
- * has a separate base registration; neither may occlude its own operating unit. */
+/** An engine never occludes the operating unit standing in its own cell. */
 export function sharesEngineCell(engine: SiegeEngine, p: SiegePosition): boolean {
   return (
     (p.level === 'ground' && engine.x === p.x && engine.y === p.y) ||
@@ -154,32 +153,55 @@ export function engineSprite(engine: SiegeEngine, facing: Facing = 'north'): Eng
   }
   const source = sheet(asset),
     object = source.pieces[piece]!.objects[0]!;
-  const ground = ladderBase(engine);
-  const base = anchor(ground);
   const raised = engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked;
+  const ground: SiegePosition = { ...engine, level: 'ground' };
+  const base = raised ? raisedLadderFoot(engine) : anchor(ground);
   const top = raised ? anchor({ ...engine.raisedAt!, level: 'wall' }) : base;
   const origin = source.pieces[piece]!.origin;
   const registration = object.registration;
-  const basePixel: [number, number] = registration?.cartBase?.pixel ??
+  let basePixel: [number, number] = registration?.cartBase?.pixel ??
     object.footCentreAnchor ?? [
       origin[0] + ((object.cells[0] + object.cells[2] + 1) / 2) * source.cell[0],
       object.anchor[1],
     ];
-  const topPixel: [number, number] = registration?.wallTop?.pixel ?? [
+  let topPixel: [number, number] = registration?.wallTop?.pixel ?? [
     basePixel[0],
     origin[1] + object.cells[1] * source.cell[1] - object.height * source.level,
   ];
-  // Uniform registration, never vertical stretching: old ladders span 3.5 fine
-  // rows; the coarse inner trench base is closer to the parapet.
+  // Measured alpha bounds of the approved PNGs, including the hooks and wheels.
+  // Endpoints share the alpha box's centre x; registration never stretches art.
+  const alpha: ScreenRect | undefined = raised
+    ? engine.covered && !engine.burning
+      ? [1219, 253, 1339, 739]
+      : engine.burning
+        ? [1077, 236, 1228, 770]
+        : [308, 236, 459, 770]
+    : undefined;
+  if (alpha) {
+    topPixel = [(alpha[0] + alpha[2]) / 2, alpha[1]];
+    basePixel = [topPixel[0], alpha[3]];
+  }
   const scale = raised ? (base[1] - top[1]) / (basePixel[1] - topPixel[1]) : undefined;
+  const placed = placeAnchoredPiece(source, piece, artCell(engine), FRAME, {
+    id: engine.id,
+    kind: 'engine',
+    anchor: raised ? topPixel : basePixel,
+    target: top,
+    scale,
+  });
   return {
-    ...placeAnchoredPiece(source, piece, artCell(engine), FRAME, {
-      id: engine.id,
-      kind: 'engine',
-      anchor: raised ? topPixel : basePixel,
-      target: top,
-      scale,
-    }),
+    ...placed,
+    ...(alpha && scale
+      ? {
+          crop: alpha,
+          rect: [
+            top[0] + (alpha[0] - topPixel[0]) * scale,
+            top[1],
+            top[0] + (alpha[2] - topPixel[0]) * scale,
+            base[1],
+          ] as ScreenRect,
+        }
+      : {}),
     cells: fineFootprint(raised ? [ground, engine.raisedAt!] : [engine]),
     flip: facing === 'west' && !engine.raisedAt && !engine.wrecked,
     burning: engine.burning && !engine.wrecked,
@@ -248,10 +270,9 @@ export function unitVisual(
       poses.has(n),
     ) ?? poses.keys().next().value!;
   const gateTop = unit.level === 'wall' ? gateTowerAt(unit) : undefined;
-  const foot = storming
-    ? wallFaceFoot(wall!)
-    : climbing
-      ? anchor(climbingBase(wall!))
+  const foot =
+    storming || climbing
+      ? climbingFoot(state, wall!, unit)
       : moundHeight !== undefined
         ? moundFoot(unit, moundHeight)
         : anchor(unit, state);
@@ -300,6 +321,6 @@ export function unitVisual(
     figures,
     rect,
     gateTop: gateTop?.id,
-    depth: depthOf(climbing || storming ? climbingBase(wall!) : unit, state),
+    depth: depthOf(climbing || storming ? climbingBase(state, wall!, unit) : unit, state),
   };
 }

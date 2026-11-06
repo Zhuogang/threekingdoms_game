@@ -5,7 +5,7 @@ import {
   moundFoot,
   moundRegistration,
   planeRect,
-  wallFaceFoot,
+  climbingFoot,
 } from '../../src/siege/render/boardGeometry';
 import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
@@ -255,9 +255,9 @@ describe('v0.2 pure sprite mapping and registration', () => {
       expect(sx).toBeCloseTo(sy, 10);
       expect(sprite.rect[3] - sprite.rect[1]).toBe(84);
       expect(sprite.rect[0] + (object.footCentreAnchor![0] - sprite.crop[0]) * sx).toBe(
-        wallFaceFoot({ x: 6, y: 7 })[0],
+        climbingFoot(state, { x: 6, y: 7 }, unit)[0],
       );
-      expect(sprite.rect[3]).toBe(wallFaceFoot({ x: 6, y: 7 })[1]);
+      expect(sprite.rect[3]).toBe(climbingFoot(state, { x: 6, y: 7 }, unit)[1]);
     }
     expect(unitVisual(state, unit).figures).toHaveLength(0);
     unit.level = 'wall';

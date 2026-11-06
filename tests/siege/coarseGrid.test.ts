@@ -93,7 +93,7 @@ describe('coarse board contract', () => {
     },
   );
   it.each(['ladder', 'ram', 'earthCart', 'tower'] as const)(
-    'deployment shares an engine cell only with a usable ladder (%s)',
+    'deployment shares usable ladders and ignores wrecks (%s)',
     (kind) => {
       const state = createSiegeState(42),
         unit = state.units[1]!,
@@ -105,7 +105,7 @@ describe('coarse board contract', () => {
         expect(placed.units[1]).toMatchObject(destination);
         expect(placed.engines[0]).toMatchObject({ x: destination.x, y: destination.y });
         engine.wrecked = true;
-        expect(deployUnit(state, unit.id, destination)).toBe(state);
+        expect(deployUnit(state, unit.id, destination).units[1]).toMatchObject(destination);
       } else expect(placed).toBe(state);
       expect(unit).toMatchObject({ x: 7, y: 11 });
     },

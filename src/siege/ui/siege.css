@@ -97,7 +97,7 @@
   border-left: 1px solid #b8a889;
   background: #ede5d4;
 }
-/* Keep the walkthrough visible while the workshop and unit controls scroll. */
+/* Keep the walkthrough visible above the working card. */
 .siege-sidebar-content {
   flex: 1;
   min-height: 0;
@@ -787,24 +787,26 @@
   gap: 4px;
 }
 .siege-sidebar .v03-tabs button {
-  padding: 6px;
+  padding: 4px;
+  min-height: 28px;
   font-size: 12px;
 }
 .siege-sidebar .v03-panel {
-  padding: 8px;
+  padding: 5px;
 }
 .siege-sidebar h3 {
-  margin: 0 0 6px;
+  margin: 0 0 2px;
   font-size: 15px;
 }
 .siege-unit-card {
   gap: 8px;
   margin-bottom: 6px;
   font-size: 12px;
+  line-height: 1.35;
 }
 .siege-unit-card > img {
-  width: 52px;
-  height: 64px;
+  width: 44px;
+  height: 48px;
 }
 .siege-unit-card > .siege-idle-portrait {
   object-fit: contain;
@@ -812,30 +814,32 @@
 }
 .siege-unit-card > div {
   display: grid;
-  grid-template-columns: auto auto;
-  column-gap: 12px;
+  grid-template-columns: repeat(3, auto);
+  column-gap: 8px;
 }
 .siege-unit-card strong,
 .siege-unit-card small {
   grid-column: 1 / -1;
 }
 .siege-actions {
-  gap: 3px 6px;
+  gap: 2px 6px;
   margin-top: 4px;
 }
 .siege-actions button {
   width: 100%;
-  padding: 5px 4px;
+  padding: 3px 4px;
+  height: 28px;
+  font-size: 12px;
 }
 .siege-actions button[data-unavailable='true'] {
   font-size: 12px;
-  padding: 3px;
+  padding: 3px 4px;
   color: #73634f;
   background: #e6ddcd;
 }
-.siege-actions button[data-unavailable='true'] .siege-icon {
-  width: 18px;
-  height: 18px;
+.siege-actions .siege-icon {
+  width: 20px;
+  height: 20px;
 }
 .siege-action-context {
   margin: 2px 0;
@@ -845,9 +849,14 @@
 }
 .siege-action-reason {
   font-size: 12px;
-  min-height: 35px;
+  line-height: 1.35;
+  min-height: 32px;
   margin: 4px 0;
   color: #735527;
+}
+.siege-sidebar summary {
+  font-size: 12px;
+  line-height: 1.35;
 }
 .siege-roster-picker > summary {
   cursor: pointer;
@@ -895,7 +904,7 @@
 }
 .siege-forecast th,
 .siege-forecast td {
-  padding: 5px 3px;
+  padding: 3px;
   text-align: center;
   border-bottom: 1px solid #c4b18c;
 }
@@ -1075,4 +1084,27 @@
 .siege-actor-preparation {
   display: block;
   font-weight: normal;
+}
+
+.siege-day-ready {
+  outline: 2px solid #a88b4d;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px #b39b6426;
+}
+.siege-hover-line {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 25px;
+  padding: 3px 10px;
+  background: #f4eddeed;
+  border-top: 1px solid #b8a889;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.siege-minimap {
+  bottom: 37px;
 }

@@ -60,7 +60,7 @@ describe('Wei playable interface', () => {
     expect(
       siegeCommands(state, archer.id, 'wei').find((c) => c.kind === 'lightBrazier')?.reason,
     ).toBeNull();
-    expect(hao.map((c) => c.kind)).not.toContain('buildWall');
+    expect(hao.find((c) => c.kind === 'buildWall')?.reason).toBeTruthy();
     const act2 = { ...state, act: 2 as const };
     expect(siegeCommands(act2, 'wei-haozhao', 'wei').map((c) => c.kind)).toContain('buildWall');
     expect(standBy(state, state.engines[0]!.id, 'wei')).toBe(state);

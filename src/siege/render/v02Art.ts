@@ -2,6 +2,7 @@ import {
   anchor,
   artCell,
   climbingBase,
+  climbingFoot,
   depthOf,
   fineFootprint,
   gateTowerAt,
@@ -86,12 +87,12 @@ export function stormingSprite(
     id: `storm-${unit.id}`,
     kind: repulsed ? 'storm-repulsed' : 'storm',
     anchor: object.footCentreAnchor!,
-    target: wallFaceFoot(wall),
+    target: climbingFoot(state, wall, unit),
     scale: (object.fitHeightLevels! * FRAME.lh) / (box[3] - box[1]),
   });
   // Fit to the actual alpha box, without transparent margin.
   const scale = (object.fitHeightLevels! * FRAME.lh) / (box[3] - box[1]);
-  const foot = wallFaceFoot(wall);
+  const foot = climbingFoot(state, wall, unit);
   sprite.crop = box;
   sprite.rect = [
     foot[0] + (box[0] - object.footCentreAnchor![0]) * scale,
@@ -99,7 +100,7 @@ export function stormingSprite(
     foot[0] + (box[2] - object.footCentreAnchor![0]) * scale,
     foot[1] + (box[3] - object.footCentreAnchor![1]) * scale,
   ];
-  sprite.cells = fineFootprint([climbingBase(wall)]);
+  sprite.cells = fineFootprint([climbingBase(state, wall, unit)]);
   return sprite;
 }
 

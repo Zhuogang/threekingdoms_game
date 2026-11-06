@@ -626,6 +626,7 @@ export function settleUnitRout(state: SiegeState, original: SiegeUnit): SiegeUni
       ) &&
       !state.engines.some(
         (engine) =>
+          usableEngine(engine) &&
           sameCell(engine, cell) &&
           !(engine.kind === 'ladder' && usableEngine(engine) && engine.raisedAt),
       );

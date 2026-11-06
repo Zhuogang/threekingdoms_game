@@ -52,6 +52,7 @@ test('selection changes only overlays; repeated hover in the same cell renders n
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await paint(page);
   const hovered = await counts(page);
+  const hoverText = await page.getByTestId('hover-line').textContent();
   await map.evaluate((svg) => {
     const box = svg.getBoundingClientRect();
     for (let i = 0; i < 10; i++)
@@ -65,6 +66,7 @@ test('selection changes only overlays; repeated hover in the same cell renders n
   });
   await paint(page);
   expect(await counts(page)).toEqual(hovered);
+  await expect(page.getByTestId('hover-line')).toHaveText(hoverText ?? '');
 });
 
 test('dragging changes viewBox without rendering React layers, then commits the minimap on release', async ({
@@ -103,7 +105,7 @@ test('the thinking state paints before work and night replay retains all static 
   state.weather = 'clear';
   for (const unit of state.units) {
     unit.acted = true;
-    if (unit.side === 'shu') unit.y = 25;
+    // Keep the real deployment coordinates, all on the 17×14 board.
   }
   state.ordersUsed.wei[state.day] = true;
   state.engines = [{ ...state.engines[0]!, id: 'replay-ladder', kind: 'ladder', x: 6, y: 11 }];

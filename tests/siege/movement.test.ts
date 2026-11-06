@@ -134,9 +134,7 @@ describe('Shu approaches, climbing and gates', () => {
           ...(condition === 'destroyed' ? { durability: 0 } : {}),
         }),
       ];
-      if (condition === 'unraised')
-        expect(at(state, unit.id, approach())).toEqual([approach(5), approach()]);
-      else expect(at(state, unit.id, approach())).toBeNull();
+      expect(at(state, unit.id, approach())).toEqual([approach(5), approach()]);
       expect(at(state, unit.id, southWall())).toBeNull();
     },
   );
@@ -190,18 +188,14 @@ describe('budgets, obstacles and deterministic paths', () => {
     ]);
     expect(at(state, unit.id, ground({ x: 5, y: 6 }))).toBeNull();
   });
-  it.each(['unit', 'engine', 'wreck'] as const)(
-    'cannot enter or pass through a blocking %s',
-    (obstacle) => {
-      const { state, unit } = isolatedUnit('shu', approach());
-      if (obstacle === 'unit')
-        state.units.push({ ...unit, id: 'enemy', side: 'wei', ...approach(7) });
-      else
-        state.engines.push(engine('earthCart', 7, APPROACH_ROW, { wrecked: obstacle === 'wreck' }));
-      expect(at(state, unit.id, approach(7))).toBeNull();
-      expect(at(state, unit.id, approach(8))).toBeNull();
-    },
-  );
+  it.each(['unit', 'engine'] as const)('cannot enter or pass through a blocking %s', (obstacle) => {
+    const { state, unit } = isolatedUnit('shu', approach());
+    if (obstacle === 'unit')
+      state.units.push({ ...unit, id: 'enemy', side: 'wei', ...approach(7) });
+    else state.engines.push(engine('earthCart', 7, APPROACH_ROW, {}));
+    expect(at(state, unit.id, approach(7))).toBeNull();
+    expect(at(state, unit.id, approach(8))).toBeNull();
+  });
   it('shares gate occupancy across top and passage', () => {
     const { state, unit } = isolatedUnit('wei', southWall(7));
     state.units.push({ ...unit, id: 'below', ...ground(southWall(8)) });
@@ -298,7 +292,7 @@ describe('engine movement', () => {
       expect(cells).toContainEqual({ ...approach(8), cost: 2 });
     }
   });
-  it('blocks engines with units and wrecks and never mutates input', () => {
+  it('blocks engines with units, permits wrecks and never mutates input', () => {
     const state = fixture('earthCart');
     state.engines.push(
       engine('ram', 7, APPROACH_ROW, { id: 'wreck', wrecked: true, durability: 0 }),
@@ -306,7 +300,8 @@ describe('engine movement', () => {
     state.units = [{ ...createSiegeState(1).units[0]!, ...approach(5) }];
     const original = JSON.stringify(state),
       cells = engineReachable(state, 'engine');
-    expect(cells.some((p) => p.y === APPROACH_ROW && [5, 7, 8].includes(p.x))).toBe(false);
+    expect(cells.some((p) => p.y === APPROACH_ROW && p.x === 5)).toBe(false);
+    for (const x of [7, 8]) expect(cells.some((p) => p.y === APPROACH_ROW && p.x === x)).toBe(true);
     expect(JSON.stringify(state)).toBe(original);
     expect(engineReachable(state, 'wreck')).toEqual([]);
     expect(engineReachable(state, 'missing')).toEqual([]);

@@ -2,7 +2,7 @@ import { project, rectsOverlap, STANDING_EPSILON, type DepthKey, type ScreenRect
 import { CHENCANG_LAYOUT, layoutSymbol } from '../content/chencang';
 import { fineSpanOf } from '../content/coarseGrid';
 import { cellTerrain, isMapCell } from '../rules/map';
-import type { Cell, SiegeEngine, SiegePosition, SiegeState } from '../rules/types';
+import type { Cell, SiegePosition, SiegeState } from '../rules/types';
 import MAP from '../../../docs/siege/chencang/art/s2-01-full-map/footprints.json' with { type: 'json' };
 
 const FRAME = {
@@ -265,17 +265,27 @@ export function layoutNameplates(
   return placed;
 }
 
-/** V1 logical raise/base stays at row 10. V2 painting puts its feet in the
- * inner trench; this adapter is presentation-only, never fed back to rules. */
-export function ladderBase(engine: SiegeEngine): SiegePosition {
-  return {
-    x: engine.x,
-    y: engine.kind === 'ladder' && engine.raisedAt && !engine.wrecked ? 8 : engine.y,
-    level: 'ground',
-  };
+/** The outer bank is the northern sixth of the ladder's own approach cell. */
+export function raisedLadderFoot(engine: Cell): [number, number] {
+  const r = planeRect({ ...engine, level: 'ground' });
+  return [(r[0] + r[2]) / 2, r[1] + (r[3] - r[1]) / 6];
 }
-export function climbingBase(wall: Cell): SiegePosition {
-  return { x: wall.x, y: wall.y + 1, level: 'ground' };
+export function climbingBase(state: SiegeState, wall: Cell, climber?: Cell): SiegePosition {
+  if (climber?.y === wall.y + 1) return { x: wall.x, y: wall.y + 1, level: 'ground' };
+  const ladder = state.engines.find(
+    (e) =>
+      (!climber || (e.x === climber.x && e.y === climber.y)) &&
+      e.kind === 'ladder' &&
+      !e.wrecked &&
+      e.durability > 0 &&
+      e.raisedAt?.x === wall.x &&
+      e.raisedAt.y === wall.y,
+  );
+  return { x: ladder?.x ?? wall.x, y: ladder?.y ?? wall.y + 1, level: 'ground' };
+}
+export function climbingFoot(state: SiegeState, wall: Cell, climber: Cell): [number, number] {
+  const base = climbingBase(state, wall, climber);
+  return base.y === wall.y + 1 ? anchor(base) : raisedLadderFoot(base);
 }
 
 export interface BoardGeometryHandle {

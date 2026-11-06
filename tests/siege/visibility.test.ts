@@ -62,7 +62,7 @@ describe('V2 living units remain findable while figures retain depth', () => {
     Object.assign(fixture.state.units[1]!, { moved: true, acted: true, wounded: 50, morale: 20 });
     const markup = renderToStaticMarkup(createElement(SiegeMapView, { ...fixture, locale: 'en' }));
     expect(markup).toContain(
-      `data-nameplate="${fixture.state.units[1]!.id}" data-moved="true" data-acted="true" opacity="0.55"`,
+      `data-nameplate="${fixture.state.units[1]!.id}" data-moved="true" data-acted="true" data-todo="none" opacity="0.55"`,
     );
     expect(markup).toContain('#f1a76e');
     expect(markup).toContain(`${fixture.state.units[1]!.troops}+`);

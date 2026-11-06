@@ -147,7 +147,7 @@ function applyOrder(
             other.troops > 0 &&
             other.level === 'ground' &&
             sameCell(other, cell),
-        ) && !state.engines.some((engine) => sameCell(engine, cell)),
+        ) && !state.engines.some((engine) => usableEngine(engine) && sameCell(engine, cell)),
     );
     if (!free) return 'There is no free camp cell.';
     Object.assign(unit, free, {
@@ -314,7 +314,7 @@ function performAction(
         ? unit.side !== 'shu' ||
           unit.troopType !== 'infantry' ||
           unit.level !== 'ground' ||
-          state.engines.some((entry) => sameCell(entry, unit))
+          state.engines.some((entry) => usableEngine(entry) && sameCell(entry, unit))
         : !engine || engine.kind !== 'earthCart'
     )
       return 'Use Shu infantry without an engine or an earth cart.';

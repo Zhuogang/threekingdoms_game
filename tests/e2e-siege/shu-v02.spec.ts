@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { siegeSaveKey } from '../../src/siege/save';
 import { SIEGE_TUNING as T } from '../../src/siege/rules/tuning';
 import { predictSiegeAttack, predictSiegeClimb } from '../../src/siege/rules/combat';
+import { startWalkthrough } from '../../src/siege/ui/walkthrough';
 import { createSiegeState } from '../../src/siege/rules/state';
 import {
   begin,
@@ -32,7 +33,12 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
     playerSide: 'shu',
     phase: 'deploy',
     facings: {},
-    presentation: { openingStep: 6, bannersSeen: [], dismissedHints: [] },
+    presentation: {
+      openingStep: 6,
+      bannersSeen: [],
+      dismissedHints: [],
+      walkthrough: startWalkthrough(initial),
+    },
   });
   await selectActor(page, 'shu-weiyan');
   await clickCell(page, 'deploy', '4,10,ground');
@@ -60,9 +66,8 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   await expectNoPanelScroll(page, 'climb-forecast');
   await page.getByTestId('climb-confirm').click();
   expect((await snapshot(page)).state.footholds['6,7']).toBe(T.climbFoothold);
+  // Deployed to (5,10) above, already in range.
   await selectActor(page, 'shu-captain-3');
-  await page.getByTestId('command-move').click();
-  await clickCell(page, 'reachable', '5,10,ground');
   const defender = (await snapshot(page)).state.units.find(
     (u) => u.side === 'wei' && u.x === 5 && u.y === 7,
   )!;
@@ -143,6 +148,9 @@ test('Shu start through day three: footholds, suppression, morning, cover, both 
   expect((await snapshot(page)).state.nightOrders.shu?.kind).toBe('nightAssault');
   await endDay(page);
   await expect(page.getByTestId('siege-day')).toHaveText('Day 3');
+  // The report shows the top items first; the order's result can be behind 'More'.
+  const more = page.getByTestId('morning-report').getByRole('button', { name: /^More/ });
+  if (await more.count()) await more.click();
   await expect(page.getByTestId('morning-report')).toContainText(/night assault|torches/);
   await closeReport(page);
   await dismissCounters(page);

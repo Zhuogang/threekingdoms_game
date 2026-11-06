@@ -573,7 +573,7 @@ describe('day-one access and save compatibility', () => {
       expect(state.units.find((u) => u.id === entry.id)).toMatchObject({ x, y });
     });
   });
-  it('reports the new day-one access honestly: three infantry can reach an opening ladder', () => {
+  it('reports all four day-one routes, including Jiang Wei going around the ram to the eastern ladder', () => {
     const state = createSiegeState(228);
     for (const ladder of state.engines.filter((e) => e.kind === 'ladder'))
       ladder.raisedAt = { x: ladder.x, y: 7 };
@@ -587,7 +587,13 @@ describe('day-one access and save compatibility', () => {
         expect(climbGuideText(guide, 'en', () => '')).toContain('too far today');
       }
     }
-    expect(ready).toEqual(['shu-wangping', 'shu-wuyi', 'shu-liaohua']);
+    expect(ready).toEqual(['shu-jiangwei', 'shu-wangping', 'shu-wuyi', 'shu-liaohua']);
+    expect(reachableCells(state, 'shu-jiangwei')).toContainEqual({
+      x: 10,
+      y: 10,
+      level: 'ground',
+      cost: 3,
+    });
   });
   it.each([
     ['shu-weiyan', 6],
@@ -749,7 +755,7 @@ describe('S guidance after mounting and ally make-way', () => {
         siegeText(locale, 'nextOpenNow'),
       );
       const commands = siegeCommands(state, unit.id, 'shu');
-      expect(commands[0]).toMatchObject({ kind: 'openGate', reason: null });
+      expect(commands.find((c) => c.kind === 'openGate')).toMatchObject({ reason: null });
       const enemy = {
         ...unit,
         id: 'guard',

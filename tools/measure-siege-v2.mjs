@@ -6,7 +6,9 @@ import { resolve } from 'node:path';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
-const directory = '.artifacts/siege/v2-scenes';
+const revision = process.argv[2] ?? 'v2';
+if (!/^v[23]$/.test(revision)) throw new Error('Use v2 or v3');
+const directory = `.artifacts/siege/${revision}-scenes`;
 await mkdir(directory, { recursive: true });
 const vite = await createServer({
   server: { middlewareMode: true, hmr: false, ws: false, watch: null },
@@ -135,7 +137,7 @@ try {
       covered,
       markupBytes: Buffer.byteLength(markup),
     };
-    const end = markup.indexOf('</svg><svg class="siege-minimap"') + 6;
+    const end = markup.indexOf('</svg><div class="siege-hover-line"') + 6;
     let svg = markup
       .slice(markup.indexOf('<svg '), end)
       .replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')
@@ -191,7 +193,7 @@ try {
     return {
       covered,
       logicalBase: { x: 6, y: 10 },
-      paintedBase: g.anchor(g.ladderBase(ladder)),
+      paintedBase: g.raisedLadderFoot(ladder),
       top: g.anchor({ x: 6, y: 7, level: 'wall' }),
       scale: (sprite.rect[2] - sprite.rect[0]) / (sprite.crop[2] - sprite.crop[0]),
       rect: sprite.rect,
@@ -213,7 +215,10 @@ try {
     limitations:
       'SSR includes React and markup construction. It excludes browser rasterization, filters, image decoding and frame scheduling. Librsvg review images are static evidence, not Chromium screenshots.',
   };
-  await writeFile('.artifacts/siege/v2-measurements.json', JSON.stringify(report, null, 2) + '\n');
+  await writeFile(
+    `.artifacts/siege/${revision}-measurements.json`,
+    JSON.stringify(report, null, 2) + '\n',
+  );
   console.log(JSON.stringify(report, null, 2));
 } finally {
   await vite.close();

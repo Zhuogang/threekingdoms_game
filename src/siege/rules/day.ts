@@ -49,7 +49,7 @@ function spawnCell(state: SiegeState, exits: readonly Cell[], kind: EngineKind):
       cellTerrain(state, cell.x, cell.y) === 'plain' &&
       (kind !== 'ram' || layoutSymbol(cell.x, cell.y) !== '-') &&
       !state.units.some((unit) => unit.troops > 0 && sameCell(unit, cell)) &&
-      !state.engines.some((engine) => sameCell(engine, cell)),
+      !state.engines.some((engine) => usableEngine(engine) && sameCell(engine, cell)),
   );
   const preferred = exits.find((exit) => free.some((cell) => sameCell(cell, exit)));
   if (preferred) return preferred;
@@ -123,7 +123,9 @@ function nightAdvance(state: SiegeState): void {
         if (
           cellTerrain(state, to.x, to.y) !== 'plain' ||
           state.units.some((unit) => unit.troops > 0 && sameCell(unit, to)) ||
-          state.engines.some((other) => other.id !== engine.id && sameCell(other, to))
+          state.engines.some(
+            (other) => other.id !== engine.id && usableEngine(other) && sameCell(other, to),
+          )
         )
           break;
         engine.y--;

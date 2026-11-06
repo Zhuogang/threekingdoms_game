@@ -41,7 +41,7 @@ import {
   actionReason,
   actionContext,
   deployUnit,
-  nextShuUnit,
+  actorTargets,
   siegeCommands,
   standBy,
   standByAll,
@@ -49,19 +49,21 @@ import {
   type CommandKind,
   type ExtraCommandKind,
 } from './commands';
+import { actorQueue, actorTodo, nextActor } from './actorTodo';
 import { resolveSiegeDayAsync, resolveAttackerPhaseAsync, type PlaybackFrame } from './playback';
 import { REPLAY_STEP_MS, type NightPresentation } from '../render/nightReplay';
 import { OPENING, encounteredHints, engineKey } from './story';
 import { SiegeActBanner, SiegeEnding, SiegeHint, SiegeOpening, paperStyle } from './SiegeStory';
 import { SiegeIcon, storyArt } from './storyAssets';
 import { SiegeHowToPlay, SiegeWalkthroughBox } from './SiegeHowToPlay';
-import { Forecast, ClimbForecast } from './SiegeForecast';
+import { Forecast, ClimbForecast, ActionForecast } from './SiegeForecast';
 import { SiegeMorningReport } from './SiegeMorningReport';
 import { morningReport, reportObservations, rememberReport } from './report';
 import { counterCards } from './counters';
 import { enqueueCards, visibleCard, type QueuedCard } from './cardQueue';
 import { placeName } from './places';
 import { nextGoalGuide } from './nextGoalGuide';
+import { engineGuide } from './engineGuide';
 import { climbGuide, climbGuideText } from './climbGuide';
 import { unitVisual } from '../render/stateArt';
 import {
@@ -145,6 +147,7 @@ export default function SiegeApp({
   const [mode, setMode] = useState<Mode>(null);
   const [showOrders, setShowOrders] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
+  const [targetAction, setTargetAction] = useState<SiegeAction | null>(null);
   const [feedback, setFeedback] = useState<{ key?: SiegeTextKey; reason?: string }>({});
   const [zoom, setZoom] = useState(1),
     [xray, setXray] = useState(false),
@@ -177,9 +180,24 @@ export default function SiegeApp({
     () => (selected ? nextGoalGuide(state, selected) : null),
     [state, selected],
   );
+  const engineHint = useMemo(
+    () => (selected ? engineGuide(state, selected) : null),
+    [state, selected],
+  );
   const commands = useMemo(
     () => (selected ? siegeCommands(state, selected, playerSide) : []),
     [state, selected, playerSide],
+  );
+  const queue = useMemo(() => actorQueue(state, playerSide), [state, playerSide]);
+  const actCount = queue.filter((a) => actorTodo(state, a.id, playerSide) === 'act').length;
+  const moveCount = queue.length - actCount;
+  const legalTargets = useMemo(
+    () => (selected ? actorTargets(state, selected, playerSide) : []),
+    [state, selected, playerSide],
+  );
+  const actionPreview = useMemo(
+    () => (targetAction ? applySiegeAction(state, targetAction) : null),
+    [state, targetAction],
   );
   const renderActionReason = useMemo(() => {
     const reasons = new Map<string, string | null>();
@@ -382,25 +400,33 @@ export default function SiegeApp({
     setExplanationKind(kind);
   };
   const guideBase =
-    !deploy && !playing && nextGoal && 'target' in nextGoal
-      ? nextGoal.target
-      : !deploy && !playing && guide && 'base' in guide
-        ? { ...guide.base, level: 'ground' as const }
-        : null;
+    !deploy && !playing && engineHint && !engineHint.done
+      ? engineHint.target
+      : !deploy && !playing && nextGoal && 'target' in nextGoal
+        ? nextGoal.target
+        : !deploy && !playing && guide && 'base' in guide
+          ? { ...guide.base, level: 'ground' as const }
+          : null;
   const guideLabel = text(
-    nextGoal && 'target' in nextGoal
-      ? nextGoal.kind === 'gate'
-        ? 'openGate'
-        : 'courtyard'
-      : guide?.kind === 'ladderNotRaised'
-        ? 'climbUnraisedLabel'
-        : ((guide?.kind === 'walkToBase' || guide?.kind === 'allyAbove') &&
-              guide.route === 'wallFoot') ||
-            (guide?.kind === 'defenderAbove' &&
-              unit &&
-              climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')
-          ? 'climbWallFootLabel'
-          : 'climbBaseLabel',
+    engineHint
+      ? engine?.kind === 'ram'
+        ? 'ram'
+        : engine?.kind === 'earthCart'
+          ? 'fillTrench'
+          : 'climbBaseLabel'
+      : nextGoal && 'target' in nextGoal
+        ? nextGoal.kind === 'gate'
+          ? 'openGate'
+          : 'courtyard'
+        : guide?.kind === 'ladderNotRaised'
+          ? 'climbUnraisedLabel'
+          : ((guide?.kind === 'walkToBase' || guide?.kind === 'allyAbove') &&
+                guide.route === 'wallFoot') ||
+              (guide?.kind === 'defenderAbove' &&
+                unit &&
+                climbingPosition(state, unit, { ...guide.top, level: 'wall' }) !== 'ladder')
+            ? 'climbWallFootLabel'
+            : 'climbBaseLabel',
   );
   const clearTimer = () => {
     if (timer.current !== null) {
@@ -469,6 +495,7 @@ export default function SiegeApp({
       );
       setMode(null);
       setTarget(null);
+      setTargetAction(null);
       setFeedback({ key: 'loaded' });
     } catch {
       setFeedback({ key: 'badSave' });
@@ -539,10 +566,22 @@ export default function SiegeApp({
     });
     setMode(null);
     setTarget(null);
+    setTargetAction(null);
+    setExtraKind(null);
+    setFocusPlace(null);
     if (action.type === 'order') setShowOrders(false);
     setFeedback({});
     if (id) {
       setActivity({ id, type: action.type === 'moveEngine' ? 'move' : action.type });
+    }
+    if (
+      selected &&
+      id === selected &&
+      !deploy &&
+      !result.state.outcome &&
+      actorTodo(result.state, selected, playerSide) === 'none'
+    ) {
+      chooseNext(result.state);
     }
   };
   const end = () => {
@@ -592,6 +631,7 @@ export default function SiegeApp({
     setPlaying(true);
     setMode(null);
     setTarget(null);
+    setTargetAction(null);
     setFeedback({});
     let index = 0;
     const advance = () => {
@@ -632,13 +672,32 @@ export default function SiegeApp({
   }, [needsAttacker, playing]);
   const select = (id: string) => {
     setSelected(id);
+    setFocusPlace(null);
     explainAction(null);
     setTarget(null);
+    setTargetAction(null);
     setMode(null);
     setExtraKind(null);
     setAssault(false);
     setTab('commands');
     setFeedback({});
+  };
+  const chooseNext = (nextState = state) => {
+    if (deploy || playing || opening || banner || reportVisible || howTo || ended) return;
+    const next = nextActor(nextState, selected, playerSide);
+    if (next) {
+      select(next.id);
+      map.current?.reveal('level' in next ? next : { ...next, level: 'ground' });
+    }
+  };
+  const openTarget = (id: string, action?: SiegeAction) => {
+    if (deploy || playing || banner || reportVisible || howTo) return;
+    const candidate = action ?? legalTargets.find((t) => t.id === id)?.action;
+    setTargetAction(candidate && candidate.type !== 'attack' ? candidate : null);
+    setTarget(candidate?.type === 'attack' || !candidate ? id : null);
+    setExtraKind(null);
+    setTab('commands');
+    setMode('attack');
   };
   const cell = (to: SiegePosition) => {
     if (deploy && !selected) {
@@ -710,13 +769,17 @@ export default function SiegeApp({
       setExtraKind(kind);
       setMode(null);
       setTarget(null);
+      setTargetAction(null);
       return;
     }
     setExtraKind(null);
     if (kind === 'standby') {
-      setGame((g) => ({ ...g, state: standBy(g.state, selected, playerSide) }));
+      const next = standBy(state, selected, playerSide);
+      setGame((g) => ({ ...g, state: next }));
       setMode(null);
       setTarget(null);
+      setTargetAction(null);
+      if (next !== state) chooseNext(next);
       return;
     }
     if (kind === 'climb' && entry?.action?.type === 'climb') {
@@ -726,6 +789,7 @@ export default function SiegeApp({
       }
       setMode('climb');
       setTarget(null);
+      setTargetAction(null);
       setExtraKind(null);
       return;
     }
@@ -739,6 +803,10 @@ export default function SiegeApp({
     if (kind === 'order') {
       setShowOrders(true);
       setMode(null);
+      return;
+    }
+    if (kind === 'ram' && entry?.action && 'gateId' in entry.action) {
+      openTarget(entry.action.gateId, entry.action);
       return;
     }
     if (entry?.action) act(entry.action);
@@ -771,14 +839,9 @@ export default function SiegeApp({
         return;
       }
       if (event.key === 'Tab') {
-        if ((event.target as HTMLElement).closest('button,summary,[role=dialog]')) return;
+        if (playing || deploy || ended || showOrders) return;
         event.preventDefault();
-        if (playing) return;
-        const next = nextShuUnit(state, selected, playerSide);
-        if (next) {
-          select(next.id);
-          map.current?.focus(next);
-        }
+        chooseNext();
         return;
       }
       if (playing || deploy || ended) return;
@@ -787,6 +850,7 @@ export default function SiegeApp({
         setGame((g) => ({ ...g, state: standByAll(g.state, playerSide) }));
         setMode(null);
         setTarget(null);
+        setTargetAction(null);
         setExtraKind(null);
       }
       if (event.key.toLowerCase() === 'e') {
@@ -825,6 +889,7 @@ export default function SiegeApp({
         }));
         setMode(null);
         setTarget(null);
+        setTargetAction(null);
         setCards([]);
         setSummary(false);
         return next.outcome;
@@ -1004,10 +1069,16 @@ export default function SiegeApp({
                 onClick={end}
                 data-testid="end-day"
                 disabled={playing || banner || reportVisible}
-                className={pulse(
-                  walkStep === (playerSide === 'wei' ? 5 : 7) ||
-                    (walkStep === 3 && walkthroughNeedsEndDay(walkthrough, state, playerSide)),
-                )}
+                data-actions-done={actCount === 0}
+                className={[
+                  actCount === 0 ? 'siege-day-ready' : '',
+                  pulse(
+                    walkStep === (playerSide === 'wei' ? 5 : 7) ||
+                      (walkStep === 3 && walkthroughNeedsEndDay(walkthrough, state, playerSide)),
+                  ),
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
               >
                 {text('endDay')}
               </Button>
@@ -1016,6 +1087,24 @@ export default function SiegeApp({
       </header>
       {(feedback.key || feedback.reason || (!opening && !ended)) && (
         <div className="siege-status" role="status">
+          {!deploy && !opening && !ended && !playing && (
+            <>
+              <Button
+                size="sm"
+                data-testid="next-actor"
+                disabled={!queue.length || Boolean(banner) || reportVisible || howTo || showOrders}
+                onClick={() => chooseNext()}
+              >
+                {text('nextActor', { n: actCount })}
+              </Button>
+              {actCount === 0 && (
+                <span data-testid="army-done">
+                  {text('armyDone')}
+                  {moveCount > 0 ? ` · ${text('armyCanMove', { n: moveCount })}` : ''}
+                </span>
+              )}
+            </>
+          )}
           {resolving ? (
             <strong data-testid="siege-resolving">
               {text(playerSide === 'shu' ? 'resolving' : 'resolvingWei')}
@@ -1037,7 +1126,7 @@ export default function SiegeApp({
             text('chooseTarget')
           ) : mode === 'fillTrench' ? (
             text('chooseTrench')
-          ) : (
+          ) : actCount === 0 ? null : (
             text('keys')
           )}
         </div>
@@ -1112,11 +1201,13 @@ export default function SiegeApp({
                 playing || opening || Boolean(banner) || reportVisible || howTo || ended
               }
               onSwap={(id) => selected && act({ type: 'swap', unitId: selected, withUnitId: id })}
-              onTarget={(id) => {
-                setTarget(id);
-                setTab('commands');
-                setMode('attack');
-              }}
+              onTarget={openTarget}
+              onTargetAction={(t) => openTarget(t.id, t.action)}
+              actorTargets={
+                !deploy && !playing && !banner && !reportVisible && !howTo && !ended
+                  ? legalTargets
+                  : []
+              }
               deploy={deploy}
               playerSide={playerSide}
               reachable={!deploy ? rangedReachable : []}
@@ -1282,9 +1373,26 @@ export default function SiegeApp({
                               reason={forecastReason}
                               confirm={executeAttack}
                               disabled={playing || deploy}
-                              cancel={() => setTarget(null)}
+                              cancel={() => {
+                                setTarget(null);
+                                setMode(null);
+                                setAssault(false);
+                              }}
                             />
                           </div>
+                        )}
+                        {targetAction && actionPreview?.ok && (
+                          <ActionForecast
+                            before={state}
+                            after={actionPreview.state}
+                            action={targetAction}
+                            locale={locale}
+                            confirm={() => act(targetAction)}
+                            cancel={() => {
+                              setTargetAction(null);
+                              setMode(null);
+                            }}
+                          />
                         )}
                         {!deploy && climbForecast && assaultClimb && (
                           <div
@@ -1370,7 +1478,7 @@ export default function SiegeApp({
                             </Button>
                           </section>
                         )}
-                        {!deploy && !forecast && !climbForecast && !extraKind && (
+                        {!deploy && !forecast && !targetAction && !climbForecast && !extraKind && (
                           <>
                             <p className="siege-action-context" data-testid="action-context">
                               {actionContext(state, actor.id, locale)}
@@ -1385,10 +1493,10 @@ export default function SiegeApp({
                                   ))}
                             </p>
                             <div className="siege-actions" data-testid="action-panel">
-                              {commands.map((c) => (
-                                <div key={c.kind}>
+                              {commands.map((c, slot) => (
+                                <div key={c.kind} data-command-slot={slot}>
                                   <Button
-                                    size={c.reason ? 'sm' : 'md'}
+                                    size="sm"
                                     data-unavailable={Boolean(c.reason)}
                                     data-testid={`command-${c.kind}`}
                                     className={pulse(

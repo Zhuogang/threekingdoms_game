@@ -58,7 +58,7 @@ async function logicalClick(page: Page, cell: SiegePosition) {
 }
 for (const locale of ['zh', 'en'] as const) {
   for (const fixture of ['default', 'crowd', 'walkway', 'day9'] as const)
-    test(`${locale}: all plates select their owners at 100%/75%, empty engine cells select (${fixture})`, async ({
+    test(`${locale}: own plates select their owners at 100%/75%, empty engine cells select (${fixture})`, async ({
       page,
     }) => {
       test.setTimeout(180000);
@@ -80,9 +80,18 @@ for (const locale of ['zh', 'en'] as const) {
       }
       const before = await snapshot(page),
         alive = before.state.units.filter((u) => u.troops > 0 && isMapCell(u.x, u.y));
+      if (fixture === 'day9') {
+        const ladder = before.state.engines.find((e) => e.id === 'starting-ladder-1')!,
+          tower = before.state.engines.find((e) => e.id === 'workshop-1-tower-5-1')!;
+        expect(ladder).toMatchObject({ x: 6, y: 10, wrecked: true, durability: 0 });
+        expect(tower).toMatchObject({ x: 6, y: 10, wrecked: false });
+        // The wreck is intentionally hidden from cell clicks, but inspectable in the roster.
+        await selectActor(page, ladder.id);
+        await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', ladder.id);
+      }
       for (const zoom of [100, 75]) {
         await page.getByRole('button', { name: `${zoom}%`, exact: true }).click();
-        for (const unit of alive) {
+        for (const unit of alive.filter((u) => u.side === 'shu')) {
           await selectActor(page, alive.find((u) => u.side === 'shu' && u.id !== unit.id)!.id);
           await panToCell(page, unit);
           await clickPlate(page, unit.id);
@@ -90,6 +99,9 @@ for (const locale of ['zh', 'en'] as const) {
         }
         for (const engine of before.state.engines) {
           if (alive.some((u) => u.x === engine.x && u.y === engine.y)) continue;
+          // Stacks cycle by paint order; a first click need not select this entry.
+          if (before.state.engines.filter((e) => e.x === engine.x && e.y === engine.y).length > 1)
+            continue;
           await selectActor(page, engine.id);
           await selectActor(page, alive.find((u) => u.side === 'shu')!.id);
           await logicalClick(page, { ...engine, level: 'ground' });
@@ -187,6 +199,7 @@ test('hover always outlines the inverse hit rectangle and leaves art/figure node
     const hover = page.locator('[data-overlay="hover"]');
     await expect(hover).toHaveCount(1);
     await expect(hover).toHaveAttribute('data-cell', `${cell.x},${cell.y},${cell.level}`);
+    await expect(page.getByTestId('hover-line')).not.toBeEmpty();
   }
   const after = await page.evaluate(() => ({ ...window.__siegeDev!.renderCounts }));
   expect(after.static - before.static).toBe(0);
@@ -195,30 +208,39 @@ test('hover always outlines the inverse hit rectangle and leaves art/figure node
 test('figures outside their cell use the cell under the cursor; nameplates are the explicit exception', async ({
   page,
 }) => {
-  await page.goto('/?siege-map&scene=visible');
+  const state = createSiegeState(228),
+    unit = state.units.find((u) => u.id === 'shu-weiyan')!;
+  // A wall cell is one row deep, so the figure's head stands over the yard behind it.
+  Object.assign(unit, { x: 5, y: 7, level: 'wall' });
+  state.units = [unit];
+  state.engines = [];
+  await battle(page, state);
   const map = page.getByTestId('siege-map');
   await expect(map).toHaveAttribute('data-ready', 'true');
-  const fixture = createRenderScene('visible'),
-    unit = fixture.state.units.find((u) => u.id === 'shu-weiyan')!;
+  await page.getByRole('button', { name: '100%', exact: true }).click();
   await panToCell(page, unit);
   const point = await map.evaluate((svg) => {
     const el = svg.querySelector<SVGImageElement>('[data-unit="shu-weiyan"] image')!,
       r = el.getBBox(),
-      matrix = el.getCTM()!,
-      mapPoint = new DOMPoint(r.x + r.width / 2, r.y + 1).matrixTransform(matrix),
+      screen = new DOMPoint(r.x + r.width / 2, r.y + 1).matrixTransform(el.getScreenCTM()!),
+      mapPoint = screen.matrixTransform((svg as SVGSVGElement).getScreenCTM()!.inverse()),
       owner = window.__siegeGeometry!.positionAt(mapPoint.x, mapPoint.y);
-    const screen = mapPoint.matrixTransform((svg as SVGSVGElement).getScreenCTM()!);
     return { owner, x: screen.x, y: screen.y };
   });
-  if (point.owner) {
-    await page.mouse.move(point.x, point.y);
-    await expect(map.locator('[data-overlay="hover"]')).toHaveAttribute(
-      'data-cell',
-      `${point.owner.x},${point.owner.y},${point.owner.level}`,
-    );
-  }
+  const bounds = (await map.boundingBox())!;
+  expect(point.x).toBeGreaterThan(bounds.x);
+  expect(point.x).toBeLessThan(bounds.x + bounds.width);
+  expect(point.y).toBeGreaterThan(bounds.y);
+  expect(point.y).toBeLessThan(bounds.y + bounds.height);
+  expect(point.owner).not.toBeNull();
+  expect(point.owner).not.toEqual({ x: unit.x, y: unit.y, level: unit.level });
+  await page.mouse.move(point.x, point.y);
+  await expect(map.locator('[data-overlay="hover"]')).toHaveAttribute(
+    'data-cell',
+    `${point.owner!.x},${point.owner!.y},${point.owner!.level}`,
+  );
   await clickPlate(page, unit.id);
-  await expect(page.getByTestId('preview-selection')).toHaveText(unit.id);
+  await expect(map).toHaveAttribute('data-selected', unit.id);
 });
 test('hint text passes clicks through to the map and its dismissal button still works', async ({
   page,

@@ -137,8 +137,8 @@ function unitSearch(state: SiegeState, unitId: string, budget?: number): Map<str
   );
   for (const engine of state.engines) {
     // A usable ladder admits troops before or after raising, in either action order.
-    // All other engines, including wrecks, occupy their ground cell.
-    if (engine.kind !== 'ladder' || engine.wrecked || engine.durability <= 0)
+    // Wrecks occupy nothing. Other usable engines block their ground cell.
+    if (!engine.wrecked && engine.durability > 0 && engine.kind !== 'ladder')
       occupied.add(cellKey(engine));
   }
   return search(
@@ -209,7 +209,9 @@ export function engineReachable(state: SiegeState, engineId: string): ReachableC
   };
   const occupied = new Set([
     ...state.units.filter((unit) => unit.troops > 0).map(cellKey),
-    ...state.engines.filter((other) => other.id !== engineId).map(cellKey),
+    ...state.engines
+      .filter((other) => other.id !== engineId && !other.wrecked && other.durability > 0)
+      .map(cellKey),
   ]);
   return destinations(
     search(

@@ -3,6 +3,7 @@ import { siegeText, rejectionText, type SiegeLocale, type SiegeTextKey } from '.
 import type { SiegeAttackForecast, SiegeClimbForecast, SiegeEngagement } from '../rules/combat';
 import { SIEGE_TUNING as T } from '../rules/tuning';
 import { forecastTableData } from './forecastData';
+import type { SiegeAction, SiegeState } from '../rules/types';
 
 interface Controls {
   locale: SiegeLocale;
@@ -203,5 +204,87 @@ export function ClimbForecast({
       testId="climb-forecast"
       {...c}
     />
+  );
+}
+
+/** Countermeasures and ramming use a dry run of the real rule, never UI damage math. */
+export function ActionForecast({
+  before,
+  after,
+  action,
+  locale,
+  confirm,
+  cancel,
+}: {
+  before: SiegeState;
+  after: SiegeState;
+  action: SiegeAction;
+  locale: SiegeLocale;
+  confirm: () => void;
+  cancel: () => void;
+}) {
+  const t = (key: SiegeTextKey, params: Record<string, string | number> = {}) =>
+    siegeText(locale, key, params);
+  return (
+    <section className="siege-forecast" data-testid="attack-forecast">
+      <h4>
+        {t(action.type as SiegeTextKey)} · {t('forecast')}
+      </h4>
+      {before.units.flatMap((u) => {
+        const next = after.units.find((v) => v.id === u.id)!;
+        return next.troops !== u.troops
+          ? [
+              <p key={u.id}>
+                {locale === 'zh' ? u.officer.chinese : u.officer.name}:{' '}
+                {t('troops', { n: u.troops })} → {next.troops}
+              </p>,
+            ]
+          : [];
+      })}
+      {before.engines.flatMap((e) => {
+        const next = after.engines.find((v) => v.id === e.id)!;
+        return next.durability !== e.durability
+          ? [
+              <p key={e.id}>
+                {t('durability', { n: e.durability, max: e.max })} → {next.durability}
+                {next.burning ? ` · ${t('burning')}` : ''}
+              </p>,
+            ]
+          : [];
+      })}
+      {(Object.keys(before.gates) as (keyof typeof before.gates)[]).flatMap((id) => {
+        const gate = before.gates[id];
+        const next = after.gates[id];
+        return next.durability !== gate.durability
+          ? [
+              <p key={id}>
+                {t('gateDamage', { n: gate.durability - next.durability })} · {gate.durability} →{' '}
+                {next.durability}
+              </p>,
+            ]
+          : [];
+      })}
+      {action.type === 'suppress' && <p>{t('suppressHelp')}</p>}
+      {Object.entries(before.footholds)
+        .filter(([key, n]) => after.footholds[key] !== n)
+        .map(([key, n]) => (
+          <p key={key}>
+            {t('footholdComparison', {
+              before: n,
+              after: after.footholds[key] ?? 0,
+              max: T.footholdComplete,
+              mount: '',
+            })}
+          </p>
+        ))}
+      <div className="siege-forecast-controls">
+        <Button size="sm" variant="primary" data-testid="attack-confirm" onClick={confirm}>
+          {t('confirm')}
+        </Button>
+        <Button size="sm" onClick={cancel}>
+          {t('cancel')}
+        </Button>
+      </div>
+    </section>
   );
 }

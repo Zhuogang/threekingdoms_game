@@ -1,4 +1,30 @@
 export const en = {
+  climbRouteBlocked: 'The route to this base is blocked. Clear the route or use another base.',
+  nextActor: 'Next ({n})',
+  armyDone: 'No executable actions remain',
+  armyCanMove: '{n} can still move',
+  hoverHeight: 'Height {n}',
+  hoverEmpty: 'Empty',
+  terrainCover: 'Terrain damage ×{n}',
+  parapetCover: 'Parapet: ground Shu volley ×{n}',
+  holdFastCover: 'Hold fast: Wei damage taken ×{n}',
+  plain: 'Open ground',
+  hill: 'Hill',
+  wood: 'Woods',
+  water: 'Water',
+  trench: 'Trench',
+  building: 'Building',
+  ramp: 'Ramp',
+  works: 'Works',
+  gate: 'Gate',
+  nextTomorrowActed: 'Done for today. Tomorrow: {plan}',
+  nextTomorrowMoved: 'Move spent today. Tomorrow: {plan}',
+  nextTomorrowEngine: 'Done moving or acting today. Tomorrow: {plan}',
+  engineGoRam: 'Move to the south-gate approach (8,8), then ram the gate.',
+  engineGoLadder: 'Move to the gold frame in row 10, then raise the ladder.',
+  engineClearTrench: 'Finish filling the outer trench before raising this ladder.',
+  engineGoCart: 'Move to the gold frame beside the trench, then fill or pile earth.',
+
   courtyard: 'Courtyard',
   openGate: 'Open gate',
   nextGate: 'Next: open the gate from its tower or just inside. {n} to go.',
@@ -306,14 +332,14 @@ export const en = {
     'Night raids burn engines: guard them nearby or withdraw beyond {range} cells of the south-gate approach; mounds cannot burn. Snow nights extinguish braziers.',
   howFoothold: 'Climbing and footholds',
   howFootholdBody:
-    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: an unmoved ally on top makes way and the follower goes straight up with its action left, at most one unit per ladder each day. The breach closes only when Wei stands on that cell, throws the unit off the wall, or destroys the ladder.',
+    'The ladder base is the ladder’s own cell, marked by a gold frame when infantry is selected. Raise the ladder before climbing from its base, or use a filled wall foot. Without a completed mound, empty walls still require climbing: normal +{climb} with no casualties, assault +{assault} with frontage ×{loss} self-loss. Attack defenders to build footholds; at {max}, mount and displace them. Uphill attacks ×{uphill}. Normal mound attacks gain +{mound}. Low wall morale throws troops down; recover and climb again. After mounting, the breach stays open: an unmoved ally on top makes way and the follower goes straight up with its action left, at most one unit per ladder each day. The breach closes when Wei stands on that cell, throws the unit off the wall, or destroys its ladder with no filled wall foot remaining.',
   howMovementBody:
-    'Each cell holds one living unit; gate top and passage share occupancy. Pass through allies, but stop on a free cell. With Move pressed, click an ally that has neither moved nor acted to swap. Step down directly inside from any wall cell; open an unguarded gate from its tower or just inside.',
+    'Wrecks do not block units or engines. Each cell holds one living unit; gate top and passage share occupancy. Pass through allies, but stop on a free cell. With Move pressed, click an ally that has neither moved nor acted to swap. Step down directly inside from any wall cell; open an unguarded gate from its tower or just inside.',
   howCourtyardClear:
     'The courtyard must be clear of active Wei units at day’s end to count as captured.',
   howKeys: 'Keyboard',
   howKeysBody:
-    'Tab: next active unit; A: attack; W: selected unit stands by; Q: all remaining units stand by; E: end day; Esc: skip replay; H: guide.',
+    'Tab: next actor with an action, then those with only a move; A: attack; W: selected unit stands by; Q: all remaining units stand by; E: end day; Esc: skip replay; H: guide.',
   scoreTitle: 'Rating and score',
   scoreValue: 'Score {n}',
   scoreHistory:
@@ -377,10 +403,11 @@ export const en = {
     'Supervise advances a workshop by {days} day; Rally, Supervise, Rotate and Night assault share the daily order.',
   howUse: 'Use engines',
   howCart:
-    'Move an earth cart to row {row} south of the trench, fill outer row {outer}, then inner row {inner}. Each load fills {cart}; infantry fill {infantry}, a ratio of {ratio}.',
+    'Move an earth cart to row {row} south of the trench, fill outer row {outer}, then stand on the filled outer cell to fill inner row {inner}. Each load fills {cart}; infantry fill {infantry}, a ratio of {ratio}.',
   howLadder:
-    'Ladder → move south of the trench and press Raise ladder first. Its base is its own cell, marked by a gold frame when infantry is selected. Move infantry onto that frame and press Climb.',
-  howRam: 'Ram → follow the road to the bridge before the south gate, then Ram gate once per day.',
+    'Ladder → stand in row 10 on the outer bank and press Raise ladder. It spans the moat to row 7; infantry climb from row 10. A filled wall foot is in row 8. Its base is its own cell, marked by a gold frame when infantry is selected. Move infantry onto that frame and press Climb.',
+  howRam:
+    'Ram → follow the road to the bridge before the south gate, at (8,8), then Ram gate once per day.',
   howTower: 'Siege tower → select an enemy and Attack; it shoots over the parapet.',
   howDefenceBody:
     'Fire arrows burn engines near the wall; millstones break rams. Frontage limits how many troops fight: check the attack forecast. Keep wounded units rotating.',
@@ -605,7 +632,7 @@ export const en = {
   spent: 'Already acted today.',
   chooseFriendly: 'Choose an active Shu unit or engine.',
   deploymentOnly: 'Deploy within the green zone.',
-  keys: 'Tab next unit · A attack · W stand by · Q all stand by · E end day · H guide',
+  keys: 'Tab next actor · A attack · W stand by · Q all stand by · E end day · H guide',
 } as const;
 export const enReasons = {
   'Use Shu infantry on an unguarded gate top or directly inside an unbroken gate.':

@@ -159,22 +159,21 @@ describe('fire range means a ladder can burn today', () => {
 });
 
 describe('actor actions and forecast comparison', () => {
-  it('filters impossible unit actions and orders enabled actions first for either player side', () => {
+  it('filters actions by actor type and keeps fixed slots for either player side', () => {
     const state = createSiegeState(228);
     const infantry = actorCommandKinds(state, 'shu-weiyan', 'shu');
-    for (const kind of ['suppress', 'raiseLadder', 'ram', 'buildWall'])
-      expect(infantry).not.toContain(kind);
+    for (const kind of ['suppress', 'ram', 'buildWall']) expect(infantry).not.toContain(kind);
     const archer = actorCommandKinds(state, 'shu-captain-3', 'shu');
     for (const kind of ['coverEngine', 'climb', 'fillTrench', 'pileEarth'])
       expect(archer).not.toContain(kind);
     expect(actorCommandKinds(state, 'wei-haozhao', 'shu')).toEqual([]);
-    expect(actorCommandKinds(state, 'wei-haozhao', 'wei')).not.toContain('buildWall');
+    expect(
+      siegeCommands(state, 'wei-haozhao', 'wei').find((c) => c.kind === 'buildWall')?.reason,
+    ).toBeTruthy();
     state.act = 2;
     expect(actorCommandKinds(state, 'wei-haozhao', 'wei')).toContain('buildWall');
     const commands = siegeCommands(state, 'shu-weiyan');
-    const split = commands.findIndex((c) => c.reason);
-    expect(commands.slice(0, split).every((c) => !c.reason)).toBe(true);
-    expect(commands.slice(split).every((c) => c.reason)).toBe(true);
+    expect(commands.map((c) => c.kind)).toEqual(infantry);
   });
   it.each(['ladder', 'ram', 'earthCart', 'tower'] as const)(
     '%s gets only its own actions',
