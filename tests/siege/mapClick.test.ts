@@ -219,20 +219,20 @@ describe('R cell click priority, first match wins', () => {
     const cell = ground(6, 9);
     for (const unit of [own, enemy])
       for (const selected of [null, own.id, enemy.id])
-        expect(resolveMapClick({ state, selected, plateUnitId: unit.id }, cell)).toEqual({
+        expect(resolveMapClick({ state, selected, pickedUnitId: unit.id }, cell)).toEqual({
           type: unit === enemy && selected === own.id ? 'target' : 'select',
           id: unit.id,
         });
-    expect(resolveMapClick({ state, plateUnitId: own.id }, null)).toEqual({
+    expect(resolveMapClick({ state, pickedUnitId: own.id }, null)).toEqual({
       type: 'select',
       id: own.id,
     });
-    expect(resolveMapClick({ state, blocked: true, plateUnitId: own.id }, cell)).toEqual({
+    expect(resolveMapClick({ state, blocked: true, pickedUnitId: own.id }, cell)).toEqual({
       type: 'none',
     });
     own.troops = 0;
-    expect(resolveMapClick({ state, plateUnitId: own.id }, cell)).toEqual({ type: 'cell', cell });
-    expect(resolveMapClick({ state, plateUnitId: 'missing' }, null)).toEqual({ type: 'none' });
+    expect(resolveMapClick({ state, pickedUnitId: own.id }, cell)).toEqual({ type: 'cell', cell });
+    expect(resolveMapClick({ state, pickedUnitId: 'missing' }, null)).toEqual({ type: 'none' });
   });
   it.each(['move', 'fillTrench', 'attack'] as const)(
     'armed %s treats a plate as its owner cell',
@@ -240,12 +240,12 @@ describe('R cell click priority, first match wins', () => {
       const { state, own, enemy } = fixture(),
         under = ground(6, 9);
       expect(
-        resolveMapClick({ state, selected: own.id, mode, plateUnitId: enemy.id }, under),
+        resolveMapClick({ state, selected: own.id, mode, pickedUnitId: enemy.id }, under),
       ).toEqual({ type: 'target', id: enemy.id });
       if (mode !== 'attack')
         expect(
           resolveMapClick(
-            { state, selected: own.id, mode, reachable: [enemy], plateUnitId: enemy.id },
+            { state, selected: own.id, mode, reachable: [enemy], pickedUnitId: enemy.id },
             under,
           ),
         ).toEqual({ type: mode, cell: { x: enemy.x, y: enemy.y, level: enemy.level } });
@@ -255,7 +255,7 @@ describe('R cell click priority, first match wins', () => {
     const { state, own, enemy } = fixture();
     expect(
       resolveMapClick(
-        { state, playerSide: 'wei', selected: enemy.id, mode: 'attack', plateUnitId: own.id },
+        { state, playerSide: 'wei', selected: enemy.id, mode: 'attack', pickedUnitId: own.id },
         ground(6, 9),
       ),
     ).toEqual({ type: 'target', id: own.id });

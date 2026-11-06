@@ -173,6 +173,19 @@ for (const [path, file] of Object.entries(POSE_FILES)) {
   if (poses.size && !['s5-04'].includes(id)) POSE_SETS[id] = { side, poses };
 }
 
+/** Runtime sources only: grid.png and superseded pose variants are review art. */
+export const battleArtUrls = [
+  ...Object.entries(MAP_FILES)
+    .filter(([path]) => !path.endsWith('/grid.png'))
+    .map(([, url]) => url),
+  ...Object.values(SHEET_IMAGES),
+  ...Object.values(PATCH_IMAGES),
+  ...Object.values(INNER_WALL_MASKS),
+  ...Object.values(EFFECT_IMAGES),
+  ...Object.values(POSE_SETS).flatMap(({ poses }) => [...poses.values()].map(({ href }) => href)),
+];
+export { SHEET_IMAGES, PATCH_IMAGES, EFFECT_IMAGES };
+
 export {
   ART,
   MAP_DIR,

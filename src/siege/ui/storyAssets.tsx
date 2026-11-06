@@ -12,6 +12,8 @@ const urls = import.meta.glob<string>(
   { query: '?url', import: 'default', eager: true },
 );
 
+export const storyArtUrls = Object.values(urls);
+
 function asset(part: string): string {
   const value = Object.entries(urls).find(([path]) => path.includes(part))?.[1];
   if (!value) throw new Error(`Missing siege UI art: ${part}`);

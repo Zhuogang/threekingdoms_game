@@ -289,7 +289,7 @@ export function unitVisual(
       ? climberPoses(progress).map((poseName, i) => ({
           name: poseName,
           pose: POSE_SETS['s5-01']!.poses.get(poseName)!,
-          // Follow the painted ladder. Picking still uses the logical base cell.
+          // Follow the painted ladder; displaced figures also own their drawn boxes.
           offset: [
             0,
             (anchor({ ...wall!, level: 'wall' })[1] - foot[1]) *
@@ -301,25 +301,29 @@ export function unitVisual(
             ? { name: followerName, pose: followers.get(followerName)!, offset }
             : { name, pose, offset },
         );
-  // Storming keeps the approved art bounds. Its logical hit cell is handled
-  // independently by boardGeometry, including overhanging figures.
+  // Storming keeps the approved art bounds.
   const bounds: ScreenRect = storming
     ? stormingSprite(state, unit)!.rect
     : figureBounds(figures, foot);
-  const rect: ScreenRect =
-    facing === 'west'
-      ? [2 * foot[0] - bounds[2], bounds[1], 2 * foot[0] - bounds[0], bounds[3]]
-      : bounds;
+  const mirror = (r: ScreenRect): ScreenRect =>
+    facing === 'west' ? [2 * foot[0] - r[2], r[1], 2 * foot[0] - r[0], r[3]] : r;
+  const rect = storming ? bounds : mirror(bounds);
+  const figureRects: ScreenRect[] = storming
+    ? [bounds] // The storm sprite is drawn without a facing transform.
+    : figures.map((figure) => mirror(figureBounds([figure], foot)));
   return {
     set,
     cell: { x: unit.x, y: unit.y, level: unit.level },
     action,
     pose,
     climbing,
+    storming,
+    displaced: climbing || storming || moundHeight !== undefined,
     flip: facing === 'west',
     foot,
     figures,
     rect,
+    figureRects,
     gateTop: gateTop?.id,
     depth: depthOf(climbing || storming ? climbingBase(state, wall!, unit) : unit, state),
   };

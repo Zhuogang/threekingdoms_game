@@ -128,7 +128,7 @@ describe('V2 engine footprints, original figures and cell registration', () => {
       for (const unit of state.units.filter((u) => u.troops > 0 && u.x >= 0)) {
         const picked = positionAt(state, ...centre(hitRect(unit, state)!));
         expect(picked).toEqual({ x: unit.x, y: unit.y, level: unit.level });
-        expect(resolveMapClick({ state, plateUnitId: unit.id }, picked)).toEqual({
+        expect(resolveMapClick({ state, pickedUnitId: unit.id }, picked)).toEqual({
           type: 'select',
           id: unit.id,
         });

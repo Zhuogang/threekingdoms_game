@@ -1,14 +1,13 @@
 import {
   anchor as boardAnchor,
   centre,
-  contains,
   hitRect,
   planeRect,
   layoutNameplates,
   standingPositions,
 } from './boardGeometry';
 import { swapTargets } from '../rules/movement';
-import { officerPortraitPath } from '../../v03/rendering/officer-portraits';
+import { portraitOf } from './portraits';
 import {
   forwardRef,
   memo,
@@ -62,7 +61,7 @@ import {
   sheet,
   sheetImage,
 } from './assets';
-import { pickMapPosition } from './picking';
+import { pickMapPosition, pickMapHit, type ArtPick } from './picking';
 import { spriteObject, type Sprite } from './mapPieces';
 import {
   compareDepth,
@@ -99,14 +98,6 @@ const NO_FACINGS: Record<string, Facing> = {};
 const NO_IDS: readonly string[] = [];
 const NO_TARGETS: ActorTarget[] = [];
 export const SILHOUETTE_OPACITY = 0.7;
-const portraitFiles = import.meta.glob(
-  '/docs/siege/chencang/art/s5-0{7,8}-*/runtime/*-small.webp',
-  { query: '?url', import: 'default', eager: true },
-) as Record<string, string>;
-const portraitOf = (unit: SiegeUnit) =>
-  Object.entries(portraitFiles).find(([path]) =>
-    path.endsWith(`/${unit.officer.id}-small.webp`),
-  )?.[1] ?? (unit.officer.portraitId ? officerPortraitPath(unit.officer.portraitId) : undefined);
 interface Layer {
   slice: SceneSlice;
   sprite?: Sprite;
@@ -151,6 +142,7 @@ interface Props {
   onMove?: (cell: SiegePosition) => void;
   onZoom?: (scale: number) => void;
   notice?: ReactNode;
+  status?: ReactNode;
 }
 export const SiegeMapView = memo(
   forwardRef<SiegeMapHandle, Props>(function SiegeMapView(
@@ -187,6 +179,7 @@ export const SiegeMapView = memo(
       onMove,
       onZoom,
       notice,
+      status,
     },
     ref,
   ) {
@@ -342,10 +335,6 @@ export const SiegeMapView = memo(
         y: current.top + ((clientY - rect.top) / rect.height) * current.height,
       };
     };
-    const pickAt = (clientX: number, clientY: number): SiegePosition | null => {
-      const p = pointAt(clientX, clientY);
-      return pickMapPosition(state, p.x, p.y);
-    };
     useEffect(() => {
       const element = frame.current!;
       const wheel = (event: WheelEvent) => {
@@ -413,18 +402,8 @@ export const SiegeMapView = memo(
       () => targetIconRects(state, actorTargets, scene.plates),
       [state, actorTargets, scene.plates],
     );
-    const hitAt = (clientX: number, clientY: number) => {
-      const point = pointAt(clientX, clientY);
-      const icon = iconRects.find(({ rect }) => contains(rect, point.x, point.y));
-      const plateUnitId = [...units]
-        .reverse()
-        .find(({ unit }) => contains(scene.plates.get(unit.id)!, point.x, point.y))?.unit.id;
-      return {
-        cell: icon?.position ?? pickAt(clientX, clientY),
-        plateUnitId,
-        actorTarget: icon?.target,
-      };
-    };
+    const hitAt = (clientX: number, clientY: number) =>
+      pickMapHit(clickContext, pointAt(clientX, clientY), units, engines, scene.plates, iconRects);
     const overlay = useRef<OverlayHandle>(null);
     const hoverLine = useRef<HTMLDivElement>(null);
     const spriteCount = scene.budget.used;
@@ -496,9 +475,7 @@ export const SiegeMapView = memo(
               onTargetAction?.(hit.actorTarget);
               return;
             }
-            dispatchClick(
-              resolveMapClick({ ...clickContext, plateUnitId: hit.plateUnitId }, hit.cell),
-            );
+            dispatchClick(resolveMapClick({ ...clickContext, ...hit }, hit.cell));
           }}
           onPointerCancel={() => {
             if (drag.current?.moved) setView(viewRef.current);
@@ -562,6 +539,7 @@ export const SiegeMapView = memo(
               })}
           </g>
         </svg>
+        {status}
         <div ref={hoverLine} className="siege-hover-line" data-testid="hover-line" />
         {notice && (
           <MapNotice
@@ -678,6 +656,7 @@ function useScene({
           position: unit,
           foot: visual.foot,
           rect: visual.rect,
+          belowFoot: visual.climbing || visual.storming,
         })),
         !boardReview,
       ),
@@ -1348,7 +1327,7 @@ const CoveredUnits = memo(function CoveredUnits({ scene }: { scene: Scene }) {
 });
 
 interface OverlayHandle {
-  hover: (hit: { cell: SiegePosition | null; plateUnitId?: string } | null) => void;
+  hover: (hit: ({ cell: SiegePosition | null } & ArtPick) | null) => void;
 }
 const MapOverlays = forwardRef<
   OverlayHandle,
@@ -1389,11 +1368,16 @@ const MapOverlays = forwardRef<
 ) {
   countRender('overlays');
   const [hit, setHit] = useState<Parameters<OverlayHandle['hover']>[0]>(null);
-  const plateOwner = scene.units.find(({ unit }) => unit.id === hit?.plateUnitId)?.unit;
-  const hover = plateOwner ?? hit?.cell;
+  const pickedOwner = (next: Parameters<OverlayHandle['hover']>[0]): SiegePosition | undefined => {
+    const unit = state.units.find((u) => u.id === next?.pickedUnitId);
+    if (unit) return unit;
+    const engine = state.engines.find((e) => e.id === next?.pickedEngineId);
+    return engine ? { ...engine, level: 'ground' } : undefined;
+  };
+  const hover = pickedOwner(hit) ?? hit?.cell;
   const hoverRef = useRef(hit);
   const writeHover = (next: Parameters<OverlayHandle['hover']>[0]) => {
-    const owner = state.units.find((u) => u.id === next?.plateUnitId);
+    const owner = pickedOwner(next);
     if (hoverLine.current)
       hoverLine.current.textContent = hoverInfo(state, owner ?? next?.cell ?? null, locale);
   };
@@ -1409,7 +1393,8 @@ const MapOverlays = forwardRef<
           previous?.cell?.x === next?.cell?.x &&
           previous?.cell?.y === next?.cell?.y &&
           previous?.cell?.level === next?.cell?.level &&
-          previous?.plateUnitId === next?.plateUnitId
+          previous?.pickedUnitId === next?.pickedUnitId &&
+          previous?.pickedEngineId === next?.pickedEngineId
         )
           return;
         hoverRef.current = next;
@@ -1480,10 +1465,7 @@ const MapOverlays = forwardRef<
             ? '0.4'
             : '1';
   }, [scene, selected, xray, tutorialCells, state]);
-  const hoverResult = resolveMapClick(
-    { ...clickContext, plateUnitId: hit?.plateUnitId },
-    hover ?? null,
-  );
+  const hoverResult = resolveMapClick({ ...clickContext, ...hit }, hover ?? null);
   const hoverColor = mapClickColor(hoverResult);
   useLayoutEffect(() => {
     const svg = anchor.current?.ownerSVGElement;

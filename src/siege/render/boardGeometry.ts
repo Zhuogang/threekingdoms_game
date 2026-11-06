@@ -228,10 +228,15 @@ export function plateRect(
   p: SiegePosition,
   formationAnchor = anchor(p),
   figureTop = formationAnchor[1] - 44,
+  belowFoot = false,
 ): ScreenRect {
   const [x, y] = formationAnchor;
-  const top = Math.max(2, Math.min(y - 70, figureTop - 30));
-  return [x - 46, top, x + 46, top + 26];
+  const top = Math.max(
+    2,
+    Math.min(MAP.size[1]! - 28, belowFoot ? y + 10 : Math.min(y - 70, figureTop - 30)),
+  );
+  const left = Math.max(2, Math.min(MAP.size[0]! - 94, x - 46));
+  return [left, top, left + 92, top + 26];
 }
 
 export interface PlateFormation {
@@ -239,8 +244,9 @@ export interface PlateFormation {
   position: SiegePosition;
   foot: [number, number];
   rect: ScreenRect;
+  belowFoot?: boolean;
 }
-/** Keep each plate over its own formation's x anchor. Resolve nearby plates
+/** Keep each plate centred on its formation (clamped at map edges). Resolve nearby plates
  * upward with a 4px gap; the dense synthetic board sheet uses preferred slots.
  * At the map's north edge visibility takes priority over clearing a figure. */
 export function layoutNameplates(
@@ -251,7 +257,7 @@ export function layoutNameplates(
   for (const f of [...formations].sort(
     (a, b) => a.foot[1] - b.foot[1] || a.foot[0] - b.foot[0] || a.id.localeCompare(b.id),
   )) {
-    let r = plateRect(f.position, f.foot, f.rect[1]);
+    let r = plateRect(f.position, f.foot, f.rect[1], f.belowFoot);
     if (spread)
       for (let i = 0; i < formations.length; i++) {
         const blocker = [...placed.values()].find((b) =>
@@ -259,6 +265,12 @@ export function layoutNameplates(
         );
         if (!blocker || blocker[1] - 30 < 2) break;
         r = [r[0], blocker[1] - 30, r[2], blocker[1] - 4];
+        // A foot plate pushed upward past a neighbour must clear the ladder's
+        // durability bar too (foot + 3 through + 7), rather than straddle it.
+        if (f.belowFoot && r[1] < f.foot[1] + 7 && r[3] > f.foot[1] + 3) {
+          const top = Math.max(2, f.foot[1] - 27);
+          r = [r[0], top, r[2], top + 26];
+        }
       }
     placed.set(f.id, r);
   }

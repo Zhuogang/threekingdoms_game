@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Button, Panel, Select, Tabs } from '../../v03/ui/kit';
 import {
   DEPLOY_SHU,
@@ -81,17 +81,14 @@ import {
   type WeiOrderKind,
 } from './wei';
 import type { SiegeDev } from './devPlaythrough';
+import { portrait } from '../render/portraits';
+import { artPreloadProgress, subscribeArtPreload, startArtPreload } from '../render/preloadArt';
+import { DevServerNotice } from './DevServerNotice';
 import './siege.css';
 
 type Tab = 'commands' | 'defence' | 'workshop' | 'log';
 type Mode = 'move' | 'attack' | 'climb' | 'fillTrench' | null;
 const KINDS: EngineKind[] = ['ladder', 'ram', 'earthCart', 'tower'];
-const portraitFiles = import.meta.glob(
-  '/docs/siege/chencang/art/s5-0{7,8}-*/runtime/*-small.webp',
-  { query: '?url', import: 'default', eager: true },
-) as Record<string, string>;
-const portrait = (id: string) =>
-  Object.entries(portraitFiles).find(([path]) => path.endsWith(`/${id}-small.webp`))?.[1];
 function initialGame(playerSide: SiegeSide = 'shu'): SiegeSave {
   const querySeed =
     import.meta.env.DEV && typeof window !== 'undefined'
@@ -127,6 +124,10 @@ export default function SiegeApp({
   initialSide?: SiegeSide;
 }) {
   const [game, setGame] = useState<SiegeSave>(() => initialGame(initialSide));
+  const art = useSyncExternalStore(subscribeArtPreload, artPreloadProgress, artPreloadProgress);
+  useEffect(() => {
+    void startArtPreload();
+  }, []);
   const state = game.state;
   const playerSide = game.playerSide ?? 'shu';
   const [reportOpen, setReportOpen] = useState(false);
@@ -1001,6 +1002,7 @@ export default function SiegeApp({
   return (
     <main
       className="siege-app"
+      data-art-preload={`${art.loaded}/${art.total}/${art.failed}`}
       style={paperStyle}
       data-phase={ended ? 'ending' : game.phase}
       data-walk-step={walkStep}
@@ -1222,6 +1224,7 @@ export default function SiegeApp({
               )}
               climbBase={guideBase ? { base: guideBase, label: guideLabel } : undefined}
               notice={activeCard ? notice : null}
+              status={import.meta.env.DEV ? <DevServerNotice locale={locale} /> : null}
               facings={game.facings}
               activity={activity}
               effectAction={effectAction}
@@ -1674,7 +1677,10 @@ export default function SiegeApp({
                                     u.troopType === 'archer'),
                               )}
                               aria-pressed={selected === u.id}
-                              onClick={() => select(u.id)}
+                              onClick={() => {
+                                select(u.id);
+                                map.current?.reveal(u);
+                              }}
                             >
                               {name(u.id)}
                               {u.acted ? ' ✓' : ''}
@@ -1694,7 +1700,10 @@ export default function SiegeApp({
                                   walkStep === 1 && e.kind === 'ladder' && usableEngine(e),
                                 )}
                                 aria-pressed={selected === e.id}
-                                onClick={() => select(e.id)}
+                                onClick={() => {
+                                  select(e.id);
+                                  map.current?.reveal({ ...e, level: 'ground' });
+                                }}
                               >
                                 {name(e.id)} · {placeName(e.raisedAt ?? e, locale)}
                               </Button>

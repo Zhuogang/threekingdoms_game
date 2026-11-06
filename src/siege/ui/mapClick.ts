@@ -1,6 +1,7 @@
 import { DEPLOY_SHU, DEPLOY_WEI, sameCell } from '../content/chencang';
 import { swapTargets } from '../rules/movement';
 import { gateAt } from '../rules/map';
+import { usableEngine } from '../rules/combat';
 import type { SiegePosition, SiegeSide, SiegeState } from '../rules/types';
 import { engineFootprint, engineSprite } from '../render/stateArt';
 import { compareDepth } from '../render/scene';
@@ -14,8 +15,9 @@ export interface MapClickContext {
   reachable?: readonly SiegePosition[];
   blocked?: boolean;
   deploy?: boolean;
-  /** Nameplate under the cursor, supplied by the view. Figures never intercept cells. */
-  plateUnitId?: string | null;
+  /** Nameplate or figure under the cursor, supplied by the view. */
+  pickedUnitId?: string | null;
+  pickedEngineId?: string | null;
 }
 export type MapClickResult =
   | { type: 'select' | 'target' | 'swap'; id: string }
@@ -32,17 +34,20 @@ export function resolveMapClick(
     reachable = [],
     blocked,
     deploy,
-    plateUnitId,
+    pickedUnitId,
+    pickedEngineId,
   }: MapClickContext,
   cell: SiegePosition | null,
 ): MapClickResult {
   const none: MapClickResult = { type: 'none' };
   if (blocked) return none;
-  const plate = state.units.find((u) => u.id === plateUnitId && u.troops > 0);
+  const plate = state.units.find((u) => u.id === pickedUnitId && u.troops > 0);
   if (plate) {
     if (!mode && (plate.side === playerSide || !selected)) return { type: 'select', id: plate.id };
     cell = { x: plate.x, y: plate.y, level: plate.level };
   }
+  if (!mode && !deploy && state.engines.some((e) => e.id === pickedEngineId && usableEngine(e)))
+    return { type: 'select', id: pickedEngineId! };
   if (!cell) return none;
   const at = (p: SiegePosition) => sameCell(p, cell) && p.level === cell.level;
   const standing = state.units.filter((u) => u.troops > 0 && at(u));

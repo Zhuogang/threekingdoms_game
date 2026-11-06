@@ -164,19 +164,28 @@ describe('V2 board geometry contract', () => {
       expect(block).toContain('opacity="0.7"');
     }
   });
-  it('keeps common-scene plates above every figure and separates them without horizontal drift', () => {
+  it('keeps common-scene plates above ordinary figures or below ladder feet, spreading without horizontal drift', () => {
     let positions = 0,
       pairs = 0;
     for (const name of ['visible', 'worst', 'footholds', 'assault', 'mounds', 'ramps'] as const) {
       const { state } = createRenderScene(name);
       const figures = state.units.map((unit) => {
         const visual = unitVisual(state, unit);
-        return { id: unit.id, position: unit, foot: visual.foot, rect: visual.rect };
+        return {
+          id: unit.id,
+          position: unit,
+          foot: visual.foot,
+          rect: visual.rect,
+          belowFoot: visual.climbing || visual.storming,
+        };
       });
       const plates = layoutNameplates(figures);
       for (const [i, f] of figures.entries()) {
         const r = plates.get(f.id)!;
-        expect(r[3]).toBeLessThanOrEqual(f.rect[1] - 4);
+        if (f.belowFoot) {
+          expect(r[1]).toBeLessThanOrEqual(f.foot[1] + 10);
+          expect(r[3] <= f.foot[1] + 3 || r[1] >= f.foot[1] + 7).toBe(true);
+        } else expect(r[3]).toBeLessThanOrEqual(f.rect[1] - 4);
         expect((r[0] + r[2]) / 2).toBeCloseTo(f.foot[0], 8);
         positions++;
         for (const other of figures.slice(i + 1)) {

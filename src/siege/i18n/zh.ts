@@ -1,5 +1,6 @@
 import type { en, enReasons } from './en';
 export const zh = {
+  devServerLost: '开发服务器已断开：还没载入的图片会显示不出来。重启服务器后刷新页面。',
   climbRouteBlocked: '到梯底或墙根的路线被堵住，先清出道路或换条路线。',
   nextActor: '下一队 ({n})',
   armyDone: '全军已无可执行行动',

@@ -1,4 +1,6 @@
 export const en = {
+  devServerLost:
+    'Development server disconnected: images not yet loaded may be missing. Restart the server, then refresh.',
   climbRouteBlocked: 'The route to this base is blocked. Clear the route or use another base.',
   nextActor: 'Next ({n})',
   armyDone: 'No executable actions remain',

@@ -1108,3 +1108,16 @@
 .siege-minimap {
   bottom: 37px;
 }
+
+.siege-dev-server-lost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  padding: 4px 10px;
+  background: #8c321e;
+  color: #fff4da;
+  font-size: 12px;
+  pointer-events: none;
+}

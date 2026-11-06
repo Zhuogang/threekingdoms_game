@@ -2,8 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 import { createSiegeState } from '../../src/siege/rules/state';
 import { createRenderScene } from '../../src/siege/dev/renderScenes';
 import { isMapCell } from '../../src/siege/rules/map';
+import { usableEngine } from '../../src/siege/rules/combat';
+import { engineBodyPoint } from './engine-body';
 import type { SiegePosition, SiegeState } from '../../src/siege/rules/types';
 import type { SiegeLocale } from '../../src/siege/i18n';
+import { siegeSaveKey } from '../../src/siege/save';
 import {
   cellPoint,
   clickCell,
@@ -104,7 +107,26 @@ for (const locale of ['zh', 'en'] as const) {
             continue;
           await selectActor(page, engine.id);
           await selectActor(page, alive.find((u) => u.side === 'shu')!.id);
-          await logicalClick(page, { ...engine, level: 'ground' });
+          if (usableEngine(engine)) {
+            const point = await engineBodyPoint(page, engine.id);
+            await page.mouse.click(point.x, point.y);
+          } else {
+            // A wreck is cell-only, so a neighbour's figure standing over its cell owns
+            // those pixels. The roster, checked above, still reaches it.
+            const cell = { ...engine, level: 'ground' as const };
+            await panToCell(page, cell);
+            const p = await cellPoint(page, cell);
+            const covered = await page.evaluate(
+              ({ x, y }) =>
+                [...document.querySelectorAll('[data-sprite="figure"]')].some((el) => {
+                  const r = el.getBoundingClientRect();
+                  return x >= r.left && x < r.right && y >= r.top && y < r.bottom;
+                }),
+              p,
+            );
+            if (covered) continue;
+            await page.mouse.click(p.x, p.y);
+          }
           await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', engine.id);
         }
       }
@@ -205,13 +227,13 @@ test('hover always outlines the inverse hit rectangle and leaves art/figure node
   expect(after.static - before.static).toBe(0);
   expect(after.units - before.units).toBe(0);
 });
-test('figures outside their cell use the cell under the cursor; nameplates are the explicit exception', async ({
+test('with nothing armed, a figure owns its pixels unless the underlying cell has an occupant or is a legal move; nameplates still select', async ({
   page,
 }) => {
   const state = createSiegeState(228),
     unit = state.units.find((u) => u.id === 'shu-weiyan')!;
   // A wall cell is one row deep, so the figure's head stands over the yard behind it.
-  Object.assign(unit, { x: 5, y: 7, level: 'wall' });
+  Object.assign(unit, { x: 5, y: 7, level: 'wall', moved: true });
   state.units = [unit];
   state.engines = [];
   await battle(page, state);
@@ -237,10 +259,32 @@ test('figures outside their cell use the cell under the cursor; nameplates are t
   await page.mouse.move(point.x, point.y);
   await expect(map.locator('[data-overlay="hover"]')).toHaveAttribute(
     'data-cell',
-    `${point.owner!.x},${point.owner!.y},${point.owner!.level}`,
+    `${unit.x},${unit.y},${unit.level}`,
   );
+  await page.mouse.click(point.x, point.y);
+  await expect(map).toHaveAttribute('data-selected', unit.id);
   await clickPlate(page, unit.id);
   await expect(map).toHaveAttribute('data-selected', unit.id);
+  // Reload the same fixture with movement available: this very point keeps the yard cell.
+  unit.moved = false;
+  await page.evaluate(
+    ({ state, key }) => {
+      const saved = JSON.parse(localStorage.getItem(key)!);
+      saved.state = state;
+      localStorage.setItem(key, JSON.stringify(saved));
+    },
+    { state, key: siegeSaveKey('shu') },
+  );
+  await page.reload();
+  await expect(map).toHaveAttribute('data-ready', 'true');
+  await page.getByRole('button', { name: '100%', exact: true }).click();
+  await panToCell(page, unit);
+  await page.mouse.move(point.x, point.y);
+  await expect(map.locator('[data-overlay="hover"]')).toHaveAttribute(
+    'data-cell',
+    `${point.owner!.x},${point.owner!.y},${point.owner!.level}`,
+  );
+  await expect(map.locator('[data-overlay="hover"]')).toHaveAttribute('stroke', '#609d80');
 });
 test('hint text passes clicks through to the map and its dismissal button still works', async ({
   page,
