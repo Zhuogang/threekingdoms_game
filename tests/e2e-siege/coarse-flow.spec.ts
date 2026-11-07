@@ -16,6 +16,7 @@ import {
   selectActor,
   snapshot,
   start,
+  waitForCamera,
 } from './helpers';
 
 test.use({ viewport: { width: 1280, height: 720 } });
@@ -60,7 +61,7 @@ async function iconClick(page: Page, id: string, kind = 'attack') {
   await page.mouse.click(point.x, point.y);
 }
 for (const side of ['shu', 'wei'] as const) {
-  test(`${side}: standby immediately selects the next executable actor and smoothly reveals it; Tab and Next include move-only actors`, async ({
+  test(`${side}: standby keeps selection and camera; explicit Next smoothly reveals the next move-only actor`, async ({
     page,
   }) => {
     const state = createSiegeState(228);
@@ -77,9 +78,18 @@ for (const side of ['shu', 'wei'] as const) {
     await panToCell(page, own[0]!);
     const before = await page.getByTestId('siege-map').getAttribute('viewBox');
     const expected = nextActor(standBy(state, own[0]!.id, side), own[0]!.id, side)!;
+    const offscreen = await page.getByTestId('siege-map').evaluate((svg, p) => {
+      const [x, y, w, h] = svg.getAttribute('viewBox')!.split(' ').map(Number);
+      const at = window.__siegeGeometry!.anchor({ ...p, level: 'level' in p ? p.level : 'ground' });
+      return at[0] < x! || at[0] > x! + w! || at[1] < y! || at[1] > y! + h!;
+    }, expected);
+    expect(offscreen).toBe(true);
     await page.getByTestId('command-standby').click();
-    // Read once: auto-retrying here would hide an unwanted standby hold.
-    expect(await page.getByTestId('siege-map').getAttribute('data-selected')).toBe(expected.id);
+    expect(await page.getByTestId('siege-map').getAttribute('data-selected')).toBe(own[0]!.id);
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('viewBox', before!);
+    await page.getByTestId('next-actor').click();
+    await waitForCamera(page);
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', expected.id);
     await expect(page.getByTestId('siege-map')).not.toHaveAttribute('viewBox', before!);
     const comfortablyInside = () =>
       page.getByTestId('siege-map').evaluate(
@@ -130,10 +140,11 @@ test('a nearby next actor keeps the camera; a move that leaves an action keeps s
   const p = await cellPoint(page, { x: 6, y: 10, level: 'ground' });
   await page.mouse.click(p.x, p.y);
   await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', first.id);
-  // The camera follows a move by design, so what's under test starts after it settles.
-  await page.waitForTimeout(500);
   const camera = await page.getByTestId('siege-map').getAttribute('viewBox');
   await page.getByTestId('command-standby').click();
+  await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', first.id);
+  await page.getByTestId('next-actor').click();
+  await waitForCamera(page);
   await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', second.id);
   await expect(page.getByTestId('siege-map')).toHaveAttribute('viewBox', camera!);
 });
@@ -204,7 +215,7 @@ test('fixed command slots survive changed availability and fit 1280×720', async
   const before = await slots();
   await expectNoPanelScroll(page, 'action-panel');
   await page.getByTestId('command-standby').click();
-  await selectActor(page, unit.id);
+  await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unit.id);
   expect(await slots()).toEqual(before);
   await expectNoPanelScroll(page, 'action-panel');
   expect(before.map((s) => s.command)).toEqual(

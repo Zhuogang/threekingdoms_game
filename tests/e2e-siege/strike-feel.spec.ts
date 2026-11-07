@@ -54,10 +54,10 @@ async function attackFixture(page: Page) {
   return { actor, other, third, target, next };
 }
 
-test('a completed attack holds selection and camera for 900ms, shows logged losses, then advances within 1600ms', async ({
+test('a completed attack holds selection and camera for 900ms, shows logged losses, clears the strike within 1600ms and stays selected', async ({
   page,
 }) => {
-  const { actor, target, next } = await attackFixture(page);
+  const { actor, target } = await attackFixture(page);
   const map = page.getByTestId('siege-map'),
     camera = (await map.getAttribute('viewBox'))!;
   // Age the SVG document past both old SMIL durations before inserting the strike.
@@ -161,10 +161,14 @@ test('a completed attack holds selection and camera for 900ms, shows logged loss
   expect(last.opacity).toBeLessThan(0.5);
   expect(last.top).toBeLessThan(samples[0]!.top);
   expect(impacts.some((sample) => sample.afterClick <= 300 && sample.opacity > 0.5)).toBe(true);
-  await expect(map).toHaveAttribute('data-selected', next.id, {
+  await expect(page.getByTestId('strike-result')).toHaveCount(0, {
     timeout: Math.max(1, 1600 - (Date.now() - started)),
   });
-  await expect(page.getByTestId('strike-result')).toHaveCount(0);
+  await expect(map).toHaveAttribute('data-selected', actor.id);
+  await expect(map).toHaveAttribute('viewBox', camera);
+  await page.waitForTimeout(500);
+  await expect(map).toHaveAttribute('data-selected', actor.id);
+  await expect(map).toHaveAttribute('viewBox', camera);
 });
 
 test('a Shu player sees a newly running CSS impact during the enemy replay', async ({ page }) => {
@@ -247,7 +251,9 @@ test('a Shu player sees a newly running CSS impact during the enemy replay', asy
   expect(animations[0]!.progress!).toBeLessThan(1);
 });
 
-test('selecting another actor during a strike cancels the pending advance', async ({ page }) => {
+test('selecting another actor during a strike clears the strike and keeps that selection', async ({
+  page,
+}) => {
   const { actor, third } = await attackFixture(page);
   await mouseButton(page, 'attack-confirm');
   await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', actor.id);
@@ -257,7 +263,9 @@ test('selecting another actor during a strike cancels the pending advance', asyn
   await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', third.id);
 });
 
-test('Next during a strike advances immediately and only once', async ({ page }) => {
+test('Next during a strike clears the strike and selects the next actor immediately, only once', async ({
+  page,
+}) => {
   const { next } = await attackFixture(page);
   await mouseButton(page, 'attack-confirm');
   await mouseButton(page, 'next-actor');

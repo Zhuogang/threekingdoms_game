@@ -22,7 +22,7 @@ import {
 import { SIEGE_TUNING as T } from '../rules/tuning';
 import { ENGINE_RULES } from '../rules/day';
 import { applySiegeAction } from '../rules/actions';
-import { isWallFoot } from '../rules/map';
+import { isMapCell, isWallFoot } from '../rules/map';
 import { engineReachable, reachableCells } from '../rules/movement';
 import { createSiegeState } from '../rules/state';
 import type {
@@ -90,7 +90,6 @@ import './siege.css';
 type Tab = 'commands' | 'defence' | 'workshop' | 'log';
 type Mode = 'move' | 'attack' | 'climb' | 'fillTrench' | null;
 export const STRIKE_HOLD_MS = 1100;
-export const ACTION_HOLD_MS = 450;
 const KINDS: EngineKind[] = ['ladder', 'ram', 'earthCart', 'tower'];
 function initialGame(playerSide: SiegeSide = 'shu'): SiegeSave {
   const querySeed =
@@ -168,7 +167,7 @@ export default function SiegeApp({
   } | null>(null);
   const [strikeResults, setStrikeResults] = useState<StrikeResult[]>([]);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cancelAdvance = () => {
+  const clearStrike = () => {
     if (holdTimer.current !== null) clearTimeout(holdTimer.current);
     holdTimer.current = null;
     setEffectAction(null);
@@ -478,7 +477,7 @@ export default function SiegeApp({
     setEffectAction(null);
   };
   const load = (latest = false) => {
-    cancelAdvance();
+    clearStrike();
     try {
       const saved = loadSiege(localStorage, latest ? undefined : playerSide);
       if (!saved) {
@@ -559,7 +558,7 @@ export default function SiegeApp({
     }
   };
   const act = (action: SiegeAction) => {
-    cancelAdvance();
+    clearStrike();
     if (playing || opening || banner || reportVisible || howTo) return;
     if ('unitId' in action && state.units.find((u) => u.id === action.unitId)?.side !== playerSide)
       return;
@@ -595,18 +594,15 @@ export default function SiegeApp({
     if (id) {
       setActivity({ id, type: action.type === 'moveEngine' ? 'move' : action.type });
     }
-    const finished = Boolean(
-      selected &&
-      id === selected &&
-      !deploy &&
-      !result.state.outcome &&
-      actorTodo(result.state, selected, playerSide) === 'none',
-    );
-    if (isStrike(action) || finished)
-      holdAdvance(result.state, isStrike(action) ? STRIKE_HOLD_MS : ACTION_HOLD_MS, finished);
+    if ('unitId' in action) {
+      const actedUnit = result.state.units.find((u) => u.id === action.unitId);
+      if (!actedUnit || actedUnit.troops <= 0 || !isMapCell(actedUnit.x, actedUnit.y))
+        setSelected(null);
+    }
+    if (isStrike(action)) holdStrike();
   };
   const end = () => {
-    cancelAdvance();
+    clearStrike();
     if (playing || opening || banner || reportVisible || howTo || deploy || state.outcome) return;
     void startResolution(() => resolveSiegeDayAsync(state, playerSide));
   };
@@ -615,7 +611,7 @@ export default function SiegeApp({
       | { frames: PlaybackFrame[]; final: SiegeState }
       | Promise<{ frames: PlaybackFrame[]; final: SiegeState }>,
   ) => {
-    cancelAdvance();
+    clearStrike();
     if (resolvingRef.current) return;
     const version = ++resolutionVersion.current;
     resolvingRef.current = true;
@@ -694,7 +690,7 @@ export default function SiegeApp({
     if (needsAttacker && !playing) void startResolution(() => resolveAttackerPhaseAsync(state));
   }, [needsAttacker, playing]);
   const select = (id: string) => {
-    cancelAdvance();
+    clearStrike();
     setSelected(id);
     setFocusPlace(null);
     explainAction(null);
@@ -706,29 +702,24 @@ export default function SiegeApp({
     setTab('commands');
     setFeedback({});
   };
-  const chooseNext = (nextState = state, smooth = false) => {
-    cancelAdvance();
+  const chooseNext = () => {
+    clearStrike();
     if (deploy || playing || opening || banner || reportVisible || howTo || ended) return;
-    const next = nextActor(nextState, selected, playerSide);
+    const next = nextActor(state, selected, playerSide);
     if (next) {
       select(next.id);
-      map.current?.reveal('level' in next ? next : { ...next, level: 'ground' }, { smooth });
+      map.current?.reveal('level' in next ? next : { ...next, level: 'ground' }, { smooth: true });
     }
   };
-  const holdAdvance = (nextState: SiegeState, duration: number, advance = true) => {
-    holdTimer.current = setTimeout(() => {
-      holdTimer.current = null;
-      setEffectAction(null);
-      setStrikeResults([]);
-      if (advance) chooseNext(nextState, true);
-    }, duration);
+  const holdStrike = () => {
+    holdTimer.current = setTimeout(clearStrike, STRIKE_HOLD_MS);
   };
   useEffect(() => {
     if ((playing || banner || reportVisible || opening || howTo) && holdTimer.current !== null)
-      cancelAdvance();
+      clearStrike();
   }, [playing, banner, reportVisible, opening, howTo]);
   const openTarget = (id: string, action?: SiegeAction) => {
-    cancelAdvance();
+    clearStrike();
     if (deploy || playing || banner || reportVisible || howTo) return;
     const candidate = action ?? legalTargets.find((t) => t.id === id)?.action;
     setTargetAction(candidate && candidate.type !== 'attack' ? candidate : null);
@@ -781,7 +772,7 @@ export default function SiegeApp({
     );
   };
   const command = (kind: CommandKind) => {
-    cancelAdvance();
+    clearStrike();
     if (!selected || playing || opening || banner || reportVisible || howTo || deploy) return;
     const entry = commands.find((c) => c.kind === kind);
     if (entry?.reason) {
@@ -818,7 +809,6 @@ export default function SiegeApp({
       setMode(null);
       setTarget(null);
       setTargetAction(null);
-      if (next !== state) chooseNext(next, true);
       return;
     }
     if (kind === 'climb' && entry?.action?.type === 'climb') {
@@ -861,7 +851,7 @@ export default function SiegeApp({
         return;
       if (event.key.toLowerCase() === 'h') {
         event.preventDefault();
-        cancelAdvance();
+        clearStrike();
         setHowTo((show) => !show);
         return;
       }
@@ -886,7 +876,7 @@ export default function SiegeApp({
       }
       if (playing || deploy || ended) return;
       if (event.key.toLowerCase() === 'q') {
-        cancelAdvance();
+        clearStrike();
         event.preventDefault();
         setGame((g) => ({ ...g, state: standByAll(g.state, playerSide) }));
         setMode(null);
@@ -1079,7 +1069,7 @@ export default function SiegeApp({
           )}
           <Button
             onClick={() => {
-              cancelAdvance();
+              clearStrike();
               setHowTo(true);
             }}
             aria-haspopup="dialog"
@@ -1603,7 +1593,7 @@ export default function SiegeApp({
                                   setShowOrders(event.currentTarget.open);
                                 }}
                               >
-                                <summary onClick={cancelAdvance}>{text('order')}</summary>
+                                <summary onClick={clearStrike}>{text('order')}</summary>
                                 <p>{text('nightUnknown')}</p>
                                 {playerSide === 'shu' && (
                                   <Button
@@ -1690,7 +1680,7 @@ export default function SiegeApp({
                                     key={id}
                                     size="sm"
                                     onClick={() => {
-                                      cancelAdvance();
+                                      clearStrike();
                                       setTarget(id);
                                       setMode('attack');
                                     }}
@@ -1731,7 +1721,7 @@ export default function SiegeApp({
                               aria-pressed={selected === u.id}
                               onClick={() => {
                                 select(u.id);
-                                map.current?.reveal(u);
+                                map.current?.reveal(u, { smooth: true });
                               }}
                             >
                               {name(u.id)}
@@ -1754,7 +1744,7 @@ export default function SiegeApp({
                                 aria-pressed={selected === e.id}
                                 onClick={() => {
                                   select(e.id);
-                                  map.current?.reveal({ ...e, level: 'ground' });
+                                  map.current?.reveal({ ...e, level: 'ground' }, { smooth: true });
                                 }}
                               >
                                 {name(e.id)} · {placeName(e.raisedAt ?? e, locale)}

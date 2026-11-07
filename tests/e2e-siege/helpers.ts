@@ -6,6 +6,26 @@ export async function snapshot(page: Page) {
   await page.waitForFunction(() => typeof window.__siegeDev?.snapshot === 'function');
   return page.evaluate(() => window.__siegeDev!.snapshot());
 }
+/** Roster selection may tween the camera. Observe three identical animation frames. */
+export async function waitForCamera(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        let previous: string | null = null;
+        let identical = 0;
+        const sample = () => {
+          const current = document
+            .querySelector('[data-testid="siege-map"]')!
+            .getAttribute('viewBox');
+          identical = current === previous ? identical + 1 : 1;
+          previous = current;
+          if (identical >= 3) resolve();
+          else requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      }),
+  );
+}
 export async function selectActor(page: Page, id: string) {
   const side = await page.locator('.siege-app').getAttribute('data-player-side');
   if ((side === 'wei' && !id.startsWith('wei-')) || (side !== 'wei' && id.startsWith('wei-'))) {
@@ -19,6 +39,7 @@ export async function selectActor(page: Page, id: string) {
   if (!(await picker.evaluate((el) => (el as HTMLDetailsElement).open)))
     await picker.locator('summary').click();
   await page.getByTestId(`select-${id}`).click();
+  await waitForCamera(page);
   await picker.locator('summary').click();
 }
 export async function expectNoPanelScroll(page: Page, testId: string) {

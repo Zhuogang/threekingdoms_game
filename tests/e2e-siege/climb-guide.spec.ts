@@ -243,7 +243,7 @@ for (const locale of ['zh', 'en'] as const) {
         const after = await snapshot(page);
         expect(after.state.day).toBe(1);
         expect(after.state.footholds[`${x},7`]).toBe(T.climbFoothold);
-        await selectActor(page, unitId);
+        await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unitId);
         await expectGuide(page, locale, 'acted');
       });
   test(`${locale}: moved approach explains tomorrow, then the next morning can reach the base`, async ({

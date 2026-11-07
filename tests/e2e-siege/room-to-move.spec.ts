@@ -38,7 +38,7 @@ async function move(page: Page, id: string, cell: string) {
   await selectActor(page, id);
   await page.getByTestId('command-move').click();
   await clickCell(page, 'reachable', cell);
-  await selectActor(page, id); // Inspect even if the queue advanced after a move with no action.
+  await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', id);
   await expectNoPanelScroll(page, 'action-panel');
 }
 function fixture() {
@@ -95,7 +95,7 @@ for (const locale of ['zh', 'en'] as const) {
       'command-move',
     );
     await open.click();
-    await selectActor(page, unit.id);
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unit.id);
     expect((await snapshot(page)).state.gates.south).toMatchObject({
       opened: true,
       broken: true,
@@ -131,7 +131,7 @@ for (const locale of ['zh', 'en'] as const) {
     expect((await snapshot(page)).state.units.find((u) => u.id === enemy.id)!.troops).toBeLessThan(
       enemy.troops,
     );
-    await selectActor(page, unit.id);
+    await expect(page.getByTestId('siege-map')).toHaveAttribute('data-selected', unit.id);
     await expectNoPanelScroll(page, 'action-panel');
   });
 

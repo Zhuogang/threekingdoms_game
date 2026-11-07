@@ -38,7 +38,8 @@
 }
 .siege-status {
   padding: 5px 14px;
-  min-height: 32px;
+  /* Above the height with its small button (40.3px): a shorter row while resolving shifted the map. */
+  min-height: 41px;
   background: #ded3bb;
   display: flex;
   align-items: center;
